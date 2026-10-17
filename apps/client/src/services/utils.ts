@@ -1,30 +1,34 @@
 import { dayjs, filterAttributeName, isValidAttributeName } from "@triliumnext/commons";
+import type { ViteHotContext } from "vite/types/hot.js";
 
 import FNote from "../entities/fnote";
+import { getNoteImageUrl } from "./image_urls.js";
 import type { ViewMode, ViewScope } from "./link.js";
 
 const SVG_MIME = "image/svg+xml";
 
-export const isShare = !window.glob;
+export const isShare = !window.glob || !!window.glob.isShare;
 
 /**
- * True when the client is showing one of the DB-initialized *pre-auth* SPA screens — the login
- * screen (`loggedIn: false`) or the set-password screen (`passwordSet: false`).
+ * True when the client is showing a *pre-auth* SPA screen — the login screen (`loggedIn: false`),
+ * the set-password screen (`passwordSet: false`), or a setup wizard still waiting to be unlocked
+ * (`setupAuthRequired: true`).
  *
- * These screens run with the database already initialized, so `glob.dbInitialized` (the historical
+ * The first two run with the database already initialized, so `glob.dbInitialized` (the historical
  * proxy for "pre-auth", back when setup was the only pre-auth screen) does NOT catch them. The eager
  * module-load side effects — froca's initial tree load, the WebSocket auto-connect, and the options /
  * keyboard-actions / fonts fetches — must skip on these screens too, otherwise they fire
  * unauthenticated requests that 401 with "Logged in session not found" (#10589).
  *
- * The setup screen (`dbInitialized: false`) is deliberately NOT flagged here: froca and the WebSocket
- * already gate on `!glob.dbInitialized`, and the options / keyboard-actions / fonts requests are
- * accepted unauthenticated server-side while the DB is uninitialized. The strict `=== false`
- * comparison is intentional: an unset flag (the fully-authenticated app, or a unit-test `glob`) must
- * not be treated as pre-auth, so the eager loads keep working there.
+ * An ordinary setup screen (`dbInitialized: false`) is deliberately NOT flagged: froca and the
+ * WebSocket already gate on `!glob.dbInitialized`, and those requests are accepted unauthenticated
+ * server-side while there is no database to protect. A wizard standing over a knowledge base is the
+ * exception — there the server asks for the wizard's password first, which this screen has not been
+ * given yet. The strict comparisons are intentional: an unset flag (the fully-authenticated app, or
+ * a unit-test `glob`) must not be treated as pre-auth, so the eager loads keep working there.
  */
 export function isPreAuthScreen(): boolean {
-    return glob.loggedIn === false || glob.passwordSet === false;
+    return glob.loggedIn === false || glob.passwordSet === false || glob.setupAuthRequired === true;
 }
 
 export function reloadFrontendApp(reason?: string) {
@@ -247,20 +251,39 @@ export function escapeQuotes(value: string) {
     return value.replaceAll('"', "&quot;");
 }
 
-export function formatSize(size: number | null | undefined) {
+/** The units a size is shown in, largest last, each 1024 of the one before it. */
+const SIZE_UNITS = ["B", "KiB", "MiB", "GiB", "TiB"];
+
+/**
+ * A byte count in the largest unit it fits in.
+ *
+ * @param decimals places to keep, trailing zeros and all. Omit it to round to at most two and drop
+ *   what is not needed, which reads best for a size at rest. Pass a number for a counter that is
+ *   still climbing: there, dropping a trailing zero shortens the text on every other update and the
+ *   line shifts about while it is being read.
+ * @param unitOf a size whose unit to show `size` in instead, so that a column of sizes shares one
+ *   unit and can be summed by eye: the largest of them, or their total.
+ */
+export function formatSize(size: number | null | undefined, decimals?: number, unitOf?: number) {
     if (size === null || size === undefined) {
         return "";
     }
 
-    if (size === 0) {
+    const reference = unitOf ?? size;
+    if (reference <= 0) {
         return "0 B";
     }
 
-    const k = 1024;
-    const sizes = ["B", "KiB", "MiB", "GiB"];
-    const i = Math.floor(Math.log(size) / Math.log(k));
+    const unit = Math.min(Math.floor(Math.log(reference) / Math.log(1024)), SIZE_UNITS.length - 1);
+    const value = size / Math.pow(1024, unit);
+    // Nothing below a byte to show, however many places were asked for.
+    const places = decimals !== undefined && unit === 0 ? 0 : decimals;
+    const step = Math.pow(10, -(places ?? 2));
+    if (size > 0 && value < step / 2) {
+        return `<${step.toFixed(places ?? 2)} ${SIZE_UNITS[unit]}`;
+    }
 
-    return `${Math.round((size / Math.pow(k, i)) * 100) / 100} ${sizes[i]}`;
+    return `${places === undefined ? Math.round(value * 100) / 100 : value.toFixed(places)} ${SIZE_UNITS[unit]}`;
 }
 
 function toObject<T, R>(array: T[], fn: (arg0: T) => [key: string, value: R]) {
@@ -295,6 +318,24 @@ export function isMobile() {
 }
 
 /**
+ * Whether the viewport is as narrow as a phone's. In the mobile layout, a menu is a bottom sheet
+ * only then; a tablet's wider layout places it beside what opened it. Must match the media query
+ * around the `.mobile-bottom-menu` rules in style.css.
+ */
+export function isNarrowLayout() {
+    return window.matchMedia(NARROW_LAYOUT).matches;
+}
+
+/** Calls `onChange` whenever {@link isNarrowLayout} changes, until the returned function runs. */
+export function onNarrowLayoutChange(onChange: () => void) {
+    const query = window.matchMedia(NARROW_LAYOUT);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+}
+
+const NARROW_LAYOUT = "(max-width: 991px)";
+
+/**
  * Returns true if the client device is an Apple iOS one (iPad, iPhone, iPod).
  * Does not check if the user requested the mobile or desktop layout, use {@link isMobile} for that.
  *
@@ -302,6 +343,16 @@ export function isMobile() {
  */
 export function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent);
+}
+
+/**
+ * The `accept` value for a file input, widened to every file on Android and iOS: both turn `accept`
+ * into a MIME filter (`Intent.EXTRA_MIME_TYPES`, UTIs) whose tables lack `.gpx`, `.enex` and
+ * `.tnbackup`, so a document provider types those files as `application/octet-stream` and the picker
+ * greys out every one of them. A caller offering `.zip`, which both tables name, keeps its filter.
+ */
+export function fileAccept(accept: string) {
+    return /Android|iPad|iPhone|iPod/.test(navigator.userAgent) ? "*/*" : accept;
 }
 
 export function isDesktop() {
@@ -355,6 +406,7 @@ export function isHtmlEmpty(html: string) {
     return (
         !html.includes("<img") &&
         !html.includes("<section") &&
+        !html.includes("include-note") &&
         !html.includes("link-mention") &&
         // the line below will actually attempt to load images so better to check for images first
         $("<div>").html(html).text().trim().length === 0
@@ -634,7 +686,7 @@ function copyHtmlToClipboard(html: string, plainText: string = html) {
 }
 
 export function createImageSrcUrl(note: FNote) {
-    return `api/images/${note.noteId}/${encodeURIComponent(note.title)}?timestamp=${Date.now()}`;
+    return getNoteImageUrl(note.noteId, note.title, `timestamp=${Date.now()}`);
 }
 
 
@@ -915,6 +967,21 @@ export function* causeChain(e: unknown): Generator<unknown> {
     }
 }
 
+/**
+ * Returns the instance a previous evaluation of the calling module stored in `hot.data`, or
+ * creates and stores one. Pass `import.meta.hot` from a module that holds an app-wide
+ * singleton: an HMR update can import that module again under a new `?t=` URL, and without
+ * this the re-evaluated copy builds a second, uninitialized instance.
+ */
+export function reuseAcrossHotReloads<T>(hot: ViteHotContext | undefined, create: () => T): T {
+    const data = hot?.data as { instance?: T } | undefined;
+    if (!data) {
+        return create();
+    }
+    data.instance ??= create();
+    return data.instance;
+}
+
 export function replaceHtmlEscapedSlashes(str: string) {
     return str.replace(/&#x2F;/g, "/");
 }
@@ -956,6 +1023,8 @@ export default {
     toObject,
     randomString,
     isMobile,
+    isNarrowLayout,
+    onNarrowLayoutChange,
     isDesktop,
     setCookie,
     getNoteTypeClass,

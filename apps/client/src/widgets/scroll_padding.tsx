@@ -47,7 +47,7 @@ export default function ScrollPadding() {
         <div
             ref={ref}
             className="scroll-padding-widget"
-            style={{ height }}
+            style={{ height: `${height}px` }}
             onClick={() => parentComponent.triggerCommand("scrollToEnd", { ntxId })}
         />
         : <div />

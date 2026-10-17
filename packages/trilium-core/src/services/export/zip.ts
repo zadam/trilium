@@ -1,10 +1,13 @@
 import { getImageAttachmentTitle, imageMimeForExtension, isAcceptedImageMime, NoteType } from "@triliumnext/commons";
+import mimeTypes from "mime-types";
 import sanitize from "sanitize-filename";
 
 import packageInfo from "../../../package.json" with { type: "json" };
 import becca from "../../becca/becca.js";
+import type BAttribute from "../../becca/entities/battribute.js";
 import BBranch from "../../becca/entities/bbranch.js";
 import type BNote from "../../becca/entities/bnote.js";
+import type { Response } from "../../http_interface";
 import dateUtils from "../utils/date.js";
 import { getLog } from "../log.js";
 import protectedSessionService from "../protected_session.js";
@@ -23,14 +26,22 @@ import { stripListItemIds } from "./strip_list_item_ids.js";
 // Most filesystems cap a single path component at 255 bytes; keep exported file names within that.
 const MAX_FILENAME_BYTES = 255;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, format: ExportFormat, res: Record<string, any>, setHeaders = true, zipExportOptions?: AdvancedExportOptions) {
+/**
+ * Where the archive is written: a {@link Response} when a client asked for the download, or the
+ * writable a {@link FileStream} exposes when it goes to disk. `"sendStatus" in destination` tells
+ * the two apart — only the HTTP one carries a status code and headers.
+ */
+export type ZipExportDestination = Response | { write(chunk: string | Uint8Array): boolean; end(): unknown };
+
+async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, format: ExportFormat, res: ZipExportDestination, setHeaders = true, zipExportOptions?: AdvancedExportOptions) {
     const archive = getZipProvider().createZipArchive();
     const rewriteFn = (zipExportOptions?.customRewriteLinks ? zipExportOptions?.customRewriteLinks(rewriteLinks, getNoteTargetUrl) : rewriteLinks);
     const provider = await buildProvider();
     const log = getLog();
 
     const noteIdToMeta: Record<string, NoteMeta> = {};
+    /** The file holding the content of an image or file note in a share export, beside its page. */
+    const noteIdToRawFileName: Record<string, string> = {};
 
     async function buildProvider() {
         const providerData: ZipExportProviderData = {
@@ -40,6 +51,11 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
             rewriteFn,
             zipExportOptions
         };
+
+        if (format === "share") {
+            const { ensureShareHighlighting } = await import("../../share/index.js");
+            await ensureShareHighlighting();
+        }
 
         return getZipExportProviderFactory()(format, providerData);
     }
@@ -83,6 +99,15 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
         // titles and attachment names. This replaces the old arbitrary 30-char cap.
         const named = dropReplacedPictureExtension(fileName, existingExtension, newExtension);
         const base = truncateUtf8Bytes(sanitize(named), MAX_FILENAME_BYTES - extension.length);
+
+        return getUniqueFilename(existingFileNames, `${base}${extension}`);
+    }
+
+    /** Names the file that holds a note's content as it is, keeping or deriving its extension. */
+    function getRawFileName(mime: string, baseFileName: string, existingFileNames: Record<string, number>): string {
+        const fileName = baseFileName.trim() || "note";
+        const extension = extname(fileName) ? "" : `.${mimeTypes.extension(mime) || "dat"}`;
+        const base = truncateUtf8Bytes(sanitize(fileName), MAX_FILENAME_BYTES - extension.length);
 
         return getUniqueFilename(existingFileNames, `${base}${extension}`);
     }
@@ -138,17 +163,19 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
         meta.isExpanded = branch.isExpanded;
         meta.type = note.type;
         meta.mime = note.mime;
-        meta.attributes = note.getOwnedAttributes().map((attribute) => {
-            const attrMeta: AttributeMeta = {
-                type: attribute.type,
-                name: attribute.name,
-                value: attribute.value,
-                isInheritable: attribute.isInheritable,
-                position: attribute.position
-            };
+        meta.attributes = note.getOwnedAttributes()
+            .filter((attribute) => !isRebuiltOnImport(attribute))
+            .map((attribute) => {
+                const attrMeta: AttributeMeta = {
+                    type: attribute.type,
+                    name: attribute.name,
+                    value: attribute.value,
+                    isInheritable: attribute.isInheritable,
+                    position: attribute.position
+                };
 
-            return attrMeta;
-        });
+                return attrMeta;
+            });
 
         taskContext.increaseProgressCount();
 
@@ -169,6 +196,9 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
 
         // if it's a leaf, then we'll export it even if it's empty
         if (shouldIncludeFile) {
+            if (format === "share" && (note.type === "image" || note.type === "file")) {
+                noteIdToRawFileName[note.noteId] = getRawFileName(note.mime, baseFileName, existingFileNames);
+            }
             meta.dataFileName = getDataFileName(note.type, note.mime, baseFileName, existingFileNames);
         }
 
@@ -265,7 +295,8 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
             : undefined;
 
         // Falls back to the note's own data file when the attachment was never generated.
-        return getNoteTargetUrl(targetNoteId, sourceMeta, attachmentMeta?.dataFileName);
+        return getNoteTargetUrl(targetNoteId, sourceMeta,
+            attachmentMeta?.dataFileName ?? noteIdToRawFileName[targetNoteId]);
     }
 
     function rewriteLinks(content: string, noteMeta: NoteMeta): string {
@@ -297,10 +328,12 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
         });
 
         if (format === "share") {
-            content = content.replace(/src="[^"]*api\/notes\/([a-zA-Z0-9_]+)\/download"/g, (match, targetNoteId) => {
-                const url = getNoteTargetUrl(targetNoteId, noteMeta);
+            // A PDF's frame and a file's download button reach the note's content through the API.
+            const apiUrl = /(src="|location\.href=')[^"']*api\/notes\/([a-zA-Z0-9_]+)\/(?:download|view)(["'])/g;
+            content = content.replace(apiUrl, (match, prefix, targetNoteId, quote) => {
+                const url = getNoteTargetUrl(targetNoteId, noteMeta, noteIdToRawFileName[targetNoteId]);
 
-                return url ? `src="${url}"` : match;
+                return url ? `${prefix}${url}${quote}` : match;
             });
         }
 
@@ -383,6 +416,17 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
 
             // Pace the synchronous tree walk against the archive's drain so the
             // whole export isn't buffered into archiver's queue at once.
+            await archive.waitForCapacity?.();
+        }
+
+        const rawFileName = noteIdToRawFileName[noteMeta.noteId];
+        if (rawFileName) {
+            archive.append(note.getContent(), {
+                name: filePathPrefix + rawFileName,
+                date: dateUtils.parseDateTime(note.utcDateModified),
+                store: shouldStoreUncompressed(noteMeta.mime)
+            });
+
             await archive.waitForCapacity?.();
         }
 
@@ -515,6 +559,17 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
     }
 }
 
+/**
+ * Whether the importer discards the attribute and rebuilds it from the note's content, which
+ * `saveLinks()` does for `internalLink` and `imageLink`. Exporting those writes a set nothing reads
+ * back, in an order that differs between a note the editor has appended a link to and the same note
+ * derived on import. `includeNoteLink` and `relationMapLink` stay: `services/import/zip.ts` reads
+ * them to remap note ids inside the content it imports.
+ */
+function isRebuiltOnImport(attribute: BAttribute): boolean {
+    return attribute.type === "relation" && ["internalLink", "imageLink"].includes(attribute.name);
+}
+
 /** Counts the notes in a metadata tree — i.e. the number of `saveNote()` calls the content-writing pass will make. */
 function countMetaNodes(meta: NoteMeta): number {
     let count = 1;
@@ -534,7 +589,7 @@ async function exportToZipFile(noteId: string, format: ExportFormat, zipFilePath
         throw new ValidationError(`Note ${noteId} not found.`);
     }
 
-    await exportToZip(taskContext, note.getParentBranches()[0], format, destination as Record<string, any>, false, zipExportOptions);
+    await exportToZip(taskContext, note.getParentBranches()[0], format, destination as ZipExportDestination, false, zipExportOptions);
     await waitForFinish();
 
     getLog().info(`Exported '${noteId}' with format '${format}' to '${zipFilePath}'`);
@@ -556,7 +611,7 @@ async function exportBranchToZipFile(branchId: string, format: ExportFormat, zip
     const { destination, waitForFinish } = getZipProvider().createFileStream(zipFilePath);
 
     try {
-        await exportToZip(taskContext, branch, format, destination as Record<string, any>, false);
+        await exportToZip(taskContext, branch, format, destination as ZipExportDestination, false);
         await waitForFinish();
         // exportToZip defers success for non-HTTP destinations: only now, with the file fully flushed to
         // disk, is the export genuinely complete — so report it here rather than before the final write.

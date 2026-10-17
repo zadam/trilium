@@ -1,14 +1,18 @@
-import { RefObject } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
-import svgPanZoom from "svg-pan-zoom";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
 import { t } from "../../../services/i18n";
 import server from "../../../services/server";
 import toast from "../../../services/toast";
-import utils from "../../../services/utils";
-import { useElementSize, useTriliumEvent } from "../../react/hooks";
+import utils, { isMobile } from "../../../services/utils";
+import { useContextualShortcutHints, useEffectiveReadOnly, useNoteLabel, useTriliumEvent } from "../../react/hooks";
+import OverlayControlGroup, { ZoomControls } from "../../react/OverlayControlGroup";
 import { RawHtmlBlock } from "../../react/RawHtml";
-import SplitEditor, { PreviewButton, SplitEditorProps } from "./SplitEditor";
+import { useZoomPanPinch, useZoomPanWheel } from "../../react/zoom_pan";
+import { useZoomPanKeyboard, ZOOM_PAN_HINTS, ZOOM_PAN_VIEWPORT_CLASS } from "../../react/zoom_pan_keyboard";
+import { ShortcutHintOverlayButton } from "../../shortcut_hints/shortcut_hint_button";
+import SplitEditor, { SplitEditorProps } from "./SplitEditor";
+import { resolveDisplayMode } from "./split_editor_mode";
 
 interface SvgSplitEditorProps extends Omit<SplitEditorProps, "previewContent"> {
     /**
@@ -40,7 +44,17 @@ interface SvgSplitEditorProps extends Omit<SplitEditorProps, "previewContent"> {
 export default function SvgSplitEditor({ ntxId, note, attachmentTitle, renderSvg, ...props }: SvgSplitEditorProps) {
     const [ svg, setSvg ] = useState<string>();
     const [ error, setError ] = useState<string | null | undefined>();
-    const containerRef = useRef<HTMLDivElement>(null);
+    const zoom = useZoomPanPinch({ minScale: MIN_ZOOM, maxScale: MAX_ZOOM, resetOn: note.noteId });
+    const [ previewEl, setPreviewEl ] = useState<HTMLDivElement | null>(null);
+
+    // Wire the keys in every display mode: without a pointer there is no other way to pan the
+    // diagram. Source-only mounts no preview, so it registers no hints for it.
+    const [ displayMode ] = useNoteLabel(note, "displayMode");
+    const readOnly = useEffectiveReadOnly(note, props.noteContext);
+    const mode = resolveDisplayMode(displayMode, readOnly);
+    useZoomPanKeyboard(zoom.ref, previewEl);
+    useZoomPanWheel(zoom.ref, previewEl);
+    useContextualShortcutHints(mode !== "source" ? ZOOM_PAN_HINTS : []);
 
     // Reset the render state when switching notes so a previous note's render (and the
     // "showing last valid render" badge) can't briefly carry over to a different note.
@@ -89,8 +103,8 @@ export default function SvgSplitEditor({ ntxId, note, attachmentTitle, renderSvg
         }).catch(e => console.error("Failed to get attachments for SVGSplitEditor", e));
     }, [ note, svg, attachmentTitle, onSave ]);
 
-    // Import/export. The renderer's `svg` string is exported rather than the on-screen element,
-    // which svg-pan-zoom has wrapped in a viewport transform reflecting the current pan/zoom.
+    // Import/export. Exports the `svg` string from `renderSvg()` rather than the on-screen element,
+    // which CSS has sized to the preview pane.
     useTriliumEvent("exportSvg", ({ ntxId: eventNtxId }) => {
         if (eventNtxId !== ntxId || !svg) return;
 
@@ -112,9 +126,6 @@ export default function SvgSplitEditor({ ntxId, note, attachmentTitle, renderSvg
         }
     });
 
-    // Pan & zoom.
-    const zoomRef = useResizer(containerRef, note.noteId, svg);
-
     return (
         <SplitEditor
             className="svg-editor"
@@ -125,87 +136,58 @@ export default function SvgSplitEditor({ ntxId, note, attachmentTitle, renderSvg
             dataSaved={onSave}
             placeholder={t("mermaid.placeholder")}
             previewContent={(
-                <RawHtmlBlock
-                    className="render-container"
-                    containerRef={containerRef}
-                    html={svg}
-                />
+                <div
+                    ref={setPreviewEl}
+                    tabIndex={0}
+                    role="group"
+                    aria-label={t("svg.preview")}
+                    className={`svg-preview-root ${ZOOM_PAN_VIEWPORT_CLASS}`}
+                >
+                    <TransformWrapper
+                        // The transform sits on an ancestor of the diagram, so it survives a re-render
+                        // of the same note. Keying it on the note drops it when a different one opens.
+                        key={note.noteId}
+                        ref={zoom.ref}
+                        minScale={MIN_ZOOM}
+                        maxScale={MAX_ZOOM}
+                        centerOnInit
+                        centerZoomedOut
+                        wheel={zoom.wheel}
+                        doubleClick={{ mode: "reset" }}
+                        onTransform={zoom.onTransform}
+                    >
+                        <TransformComponent wrapperClass="svg-preview-viewport" contentClass="svg-preview-content">
+                            <RawHtmlBlock className="render-container" html={svg} />
+                        </TransformComponent>
+                    </TransformWrapper>
+                </div>
             )}
-            previewButtons={
-                <>
-                    <PreviewButton
-                        icon="bx bx-zoom-in"
-                        text={t("relation_map_buttons.zoom_in_title")}
-                        onClick={() => zoomRef.current?.zoomIn()}
+            previewButtons={!!svg && (
+                <OverlayControlGroup className="svg-preview-controls" placement="bottom-end">
+                    {/* At the leading end of the group rather than in the corner opposite, which the
+                        render-error card spans the full width of. */}
+                    {!isMobile() && <ShortcutHintOverlayButton />}
+                    <ZoomControls
+                        percent={zoom.scale * 100}
+                        canZoomIn={zoom.canZoomIn}
+                        canZoomOut={zoom.canZoomOut}
+                        onZoomIn={zoom.zoomIn}
+                        onZoomOut={zoom.zoomOut}
+                        onReset={zoom.reset}
                     />
-                    <PreviewButton
-                        icon="bx bx-zoom-out"
-                        text={t("relation_map_buttons.zoom_out_title")}
-                        onClick={() => zoomRef.current?.zoomOut()}
-                    />
-                    <PreviewButton
-                        icon="bx bx-crop"
-                        text={t("relation_map_buttons.reset_pan_zoom_title")}
-                        onClick={() => zoomRef.current?.fit().center()}
-                    />
-                </>
-            }
+                </OverlayControlGroup>
+            )}
             {...props}
         />
     );
 }
 
-function useResizer(containerRef: RefObject<HTMLDivElement>, noteId: string, svg: string | undefined) {
-    const lastPanZoom = useRef<{ pan: SvgPanZoom.Point, zoom: number }>();
-    const lastNoteId = useRef<string>();
-    const wasEmpty = useRef<boolean>(false);
-    const zoomRef = useRef<SvgPanZoom.Instance>();
-    const width = useElementSize(containerRef);
-
-    // Set up pan & zoom.
-    useEffect(() => {
-        if (zoomRef.current || width?.width === 0) return;
-
-        const shouldPreservePanZoom = (lastNoteId.current === noteId) && !wasEmpty.current;
-        const svgEl = containerRef.current?.querySelector("svg");
-        if (!svgEl) {
-            if (svg?.trim().length === 0) {
-                wasEmpty.current = true;
-            }
-            return;
-        };
-
-        const zoomInstance = svgPanZoom(svgEl, {
-            zoomEnabled: true,
-            controlIconsEnabled: false
-        });
-
-        // Restore the previous pan/zoom if the user updates same note.
-        if (shouldPreservePanZoom && lastPanZoom.current) {
-            zoomInstance.zoom(lastPanZoom.current.zoom);
-            zoomInstance.pan(lastPanZoom.current.pan);
-        } else {
-            zoomInstance.resize().center().fit();
-        }
-
-        lastNoteId.current = noteId;
-        zoomRef.current = zoomInstance;
-
-        return () => {
-            lastPanZoom.current = {
-                pan: zoomInstance.getPan(),
-                zoom: zoomInstance.getZoom()
-            };
-            zoomRef.current = undefined;
-            zoomInstance.destroy();
-        };
-    }, [ containerRef, noteId, svg, width ]);
-
-    // React to container changes.
-    useEffect(() => {
-        if (!zoomRef.current || (width?.width ?? 0) < 1) return;
-        zoomRef.current.resize().fit().center();
-    }, [ width ]);
-
-    return zoomRef;
-}
+/**
+ * Zoom bounds, as a multiple of the fitted view.
+ *
+ * CSS fits the SVG to the preview pane through its `viewBox` and `preserveAspectRatio` (see the SVG
+ * section of SplitEditor.css), so a scale of 1 is already that fitted view and these bounds need no
+ * measurement.
+ */
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 10;

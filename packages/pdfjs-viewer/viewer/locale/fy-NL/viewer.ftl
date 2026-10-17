@@ -182,28 +182,11 @@ pdfjs-print-progress-message = Dokumint tariede oar ôfdrukken…
 #   $progress (Number) - percent value
 pdfjs-print-progress-percent = { $progress }%
 pdfjs-print-progress-close-button = Annulearje
-pdfjs-printing-not-supported = Warning: Printen is net folslein stipe troch dizze browser.
-pdfjs-printing-not-ready = Warning: PDF is net folslein laden om ôf te drukken.
+pdfjs-printing-not-supported = Warskôging: ôfdrukken wurdt net folslein stipe troch dizze browser.
+pdfjs-printing-not-ready = Warskôging: PDF is net folslein laden om ôf te drukken.
 
 ## Tooltips and alt text for side panel toolbar buttons
 
-pdfjs-toggle-sidebar-button =
-    .title = Sidebalke yn-/útskeakelje
-pdfjs-toggle-sidebar-notification-button =
-    .title = Sidebalke yn-/útskeakelje (dokumint befettet oersjoch/bylagen/lagen)
-pdfjs-toggle-sidebar-button-label = Sidebalke yn-/útskeakelje
-pdfjs-document-outline-button =
-    .title = Dokumintoersjoch toane (dûbelklik om alle items út/yn te klappen)
-pdfjs-document-outline-button-label = Dokumintoersjoch
-pdfjs-attachments-button =
-    .title = Bylagen toane
-pdfjs-attachments-button-label = Bylagen
-pdfjs-layers-button =
-    .title = Lagen toane (dûbelklik om alle lagen nei de standertsteat werom te setten)
-pdfjs-layers-button-label = Lagen
-pdfjs-thumbs-button =
-    .title = Miniatueren toane
-pdfjs-thumbs-button-label = Miniatueren
 pdfjs-current-outline-item-button =
     .title = Aktueel item yn ynhâldsopjefte sykje
 pdfjs-current-outline-item-button-label = Aktueel item yn ynhâldsopjefte
@@ -214,10 +197,6 @@ pdfjs-additional-layers = Oanfoljende lagen
 
 ## Thumbnails panel item (tooltip and alt text for images)
 
-# Variables:
-#   $page (Number) - the page number
-pdfjs-thumb-page-title =
-    .title = Side { $page }
 # Variables:
 #   $page (Number) - the page number
 pdfjs-thumb-page-canvas =
@@ -235,8 +214,8 @@ pdfjs-thumb-page-title1 =
 ## Find panel button title and messages
 
 pdfjs-find-input =
-    .title = Sykje
     .placeholder = Sykje yn dokumint…
+    .title = Sykje
 pdfjs-find-previous-button =
     .title = It foarige foarkommen fan de tekst sykje
 pdfjs-find-previous-button-label = Foarige
@@ -331,16 +310,16 @@ pdfjs-editor-highlight-button =
     .title = Markearje
 pdfjs-editor-highlight-button-label = Markearje
 pdfjs-highlight-floating-button1 =
-    .title = Markearje
     .aria-label = Markearje
+    .title = Markearje
 pdfjs-highlight-floating-button-label = Markearje
 pdfjs-comment-floating-button =
-    .title = Opmerking
     .aria-label = Opmerking
+    .title = Opmerking
 pdfjs-comment-floating-button-label = Opmerking
 pdfjs-editor-comment-button =
-    .title = Opmerking
     .aria-label = Opmerking
+    .title = Opmerking
 pdfjs-editor-comment-button-label = Opmerking
 pdfjs-editor-signature-button =
     .title = Hantekening tafoegje
@@ -413,8 +392,8 @@ pdfjs-editor-comments-sidebar-title =
        *[other] Opmerkingen
     }
 pdfjs-editor-comments-sidebar-close-button =
-    .title = De sydbalke slute
     .aria-label = De sydbalke slute
+    .title = De sydbalke slute
 pdfjs-editor-comments-sidebar-close-button-label = De sydbalke slute
 # Instructional copy to add a comment by selecting text or an annotations.
 pdfjs-editor-comments-sidebar-no-comments1 = Sjogge jo wat it neamen wurdich? Markearje it en lit in opmerking efter.
@@ -476,7 +455,7 @@ pdfjs-editor-colorpicker-green =
 pdfjs-editor-colorpicker-blue =
     .title = Blau
 pdfjs-editor-colorpicker-pink =
-    .title = Roze
+    .title = Rôs
 pdfjs-editor-colorpicker-red =
     .title = Read
 
@@ -537,13 +516,6 @@ pdfjs-editor-alt-text-settings-dialog-label = Ynstellingen foar alternative teks
 pdfjs-editor-alt-text-settings-automatic-title = Automatyske alternative tekst
 pdfjs-editor-alt-text-settings-create-model-button-label = Alternative tekst automatysk oanmeitsje
 pdfjs-editor-alt-text-settings-create-model-description = Stelt beskriuwingen foar om minsken te helpen dy’t de ôfbylding net sjen kinne of foar wa’t de ôfbylding net laden wurdt.
-# Variables:
-#   $totalSize (Number) - the total size (in MB) of the AI model.
-pdfjs-editor-alt-text-settings-download-model-label = AI-model foar alternative tekst ({ $totalSize } MB)
-pdfjs-editor-alt-text-settings-ai-model-description = Wurdt lokaal op jo apparaat útfierd, sadat jo gegevens privee bliuwe. Fereaske foar automatyske alternative tekst.
-pdfjs-editor-alt-text-settings-delete-model-button = Fuortsmite
-pdfjs-editor-alt-text-settings-download-model-button = Downloade
-pdfjs-editor-alt-text-settings-downloading-model-button = Downloade…
 pdfjs-editor-alt-text-settings-editor-title = Alternative-tekstbewurker
 pdfjs-editor-alt-text-settings-show-dialog-button-label = Alternative-tekstbewurker daliks toane by tafoegjen fan in ôfbylding
 pdfjs-editor-alt-text-settings-show-dialog-description = Helpt jo derfoar te soargjen dat al jo ôfbyldingen alternative tekst hawwe.
@@ -581,7 +553,7 @@ pdfjs-editor-undo-bar-close-button-label = Slute
 
 ## Add a signature dialog
 
-pdfjs-editor-add-signature-dialog-label = Mei dizze modal kin de brûker in hantekening meitsje om oan in PDF-dokumint ta te foegjen. De brûker kin de namme bewurkje (dy't ek tsjinnet as alternative tekst), en opsjoneel de ûndertekening bewarje foar werhelle gebrûk.
+pdfjs-editor-add-signature-dialog-label = Mei dizze modal kin de brûker in hantekening meitsje om oan in PDF-dokumint ta te foegjen. De brûker kin de namme bewurkje (dy’t ek tsjinnet as alternative tekst), en opsjoneel de ûndertekening bewarje foar werhelle gebrûk.
 pdfjs-editor-add-signature-dialog-title = In hantekening tafoegje
 
 ## Tab names
@@ -623,7 +595,7 @@ pdfjs-editor-add-signature-clear-button-label = Hantekening wiskje
 pdfjs-editor-add-signature-clear-button =
     .title = Hantekening wiskje
 pdfjs-editor-add-signature-save-checkbox = Hantekening bewarje
-pdfjs-editor-add-signature-save-warning-message = Jo hawwe de limyt fan 5 bewarre hantekeningen berikt. Ferwiderje ien om in oar te bewarjen.
+pdfjs-editor-add-signature-save-warning-message = Jo hawwe de limyt fan 5 bewarre hantekeningen berikt. Smyt ien fuort om in oar te bewarjen.
 pdfjs-editor-add-signature-image-upload-error-title = Kin de ôfbylding net oplade
 pdfjs-editor-add-signature-image-upload-error-description = Kontrolearje jo netwurkferbining of probearje in oare ôfbylding.
 pdfjs-editor-add-signature-image-no-data-error-title = Kin dizze ôfbylding net nei in hantekening konvertearje
@@ -756,8 +728,8 @@ pdfjs-toggle-views-manager-button1 =
 ## Digital signature properties (signature verification panel)
 
 pdfjs-digital-signature-properties-button =
-    .title = Eigenskippen fan digitale hantekening
     .aria-label = Eigenskippen fan digitale hantekening
+    .title = Eigenskippen fan digitale hantekening
 pdfjs-digital-signature-properties-button-label = Eigenskippen fan digitale hantekening
 
 ## Banner shown above the signature list summarising the overall

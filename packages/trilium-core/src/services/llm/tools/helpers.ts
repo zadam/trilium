@@ -5,6 +5,7 @@
 import type BAttachment from "../../../becca/entities/battachment.js";
 import becca from "../../../becca/becca.js";
 import type BNote from "../../../becca/entities/bnote.js";
+import blobService from "../../../services/blob.js";
 import markdownExport from "../../../services/export/markdown.js";
 import markdownImport from "../../../services/import/markdown.js";
 import { unwrapStringOrBuffer } from "../../../services/utils/binary.js";
@@ -13,6 +14,19 @@ const CONTENT_PREVIEW_MAX_LENGTH = 500;
 const ATTACHMENT_PREVIEW_MAX_LENGTH = 200;
 /** Skip expensive content loading/conversion for notes larger than this. */
 const CONTENT_PREVIEW_SIZE_THRESHOLD = 10_000;
+
+/**
+ * Note types the LLM can create or change a note to; each one stores string content. An `image` must
+ * be an SVG ({@link getSvgImageError}).
+ */
+export const LLM_NOTE_TYPES = [
+    "text", "code", "render", "book", "mermaid", "canvas", "webView", "relationMap", "search", "mindMap", "image"
+] as const;
+
+export const SVG_MIME = "image/svg+xml";
+
+/** An optional XML prolog, doctype and comments, then an `<svg>` root element through to `</svg>`. */
+const SVG_SOURCE_RE = /^\s*(?:<\?xml[\s\S]*?\?>\s*)?(?:(?:<!--(?:(?!-->)[\s\S])*-->|<!DOCTYPE[^>]*>)\s*)*<svg[\s>/][\s\S]*<\/svg>\s*$/i;
 
 /** Note IDs that must not be deleted, moved, or cloned by the LLM. */
 export const PROTECTED_SYSTEM_NOTES = new Set(["root", "_hidden", "_share", "_lbRoot", "_globalNoteMap"]);
@@ -42,8 +56,9 @@ export function getNoteContentForLlm(note: BNote) {
     if (typeof content !== "string") {
         // For binary content (images, files), use extracted text if available.
         const blob = note.blobId ? becca.getBlob({ blobId: note.blobId }) : null;
-        if (blob?.textRepresentation) {
-            return `[extracted text from ${note.type}]\n${blob.textRepresentation}`;
+        const extractedText = blobService.decryptTextRepresentation(blob?.textRepresentation, !!note.isProtected);
+        if (extractedText) {
+            return `[extracted text from ${note.type}]\n${extractedText}`;
         }
         return "[binary content]";
     }
@@ -63,6 +78,20 @@ export function setNoteContentFromLlm(note: BNote, content: string) {
     } else {
         note.setContent(content);
     }
+}
+
+/**
+ * Why the LLM cannot write `content` into an image note of `mime`, or `undefined` if it can. The LLM
+ * writes only SVG images, and a truncated reply must not leave a broken image behind.
+ */
+export function getSvgImageError(mime: string, content: string): string | undefined {
+    if (mime !== SVG_MIME) {
+        return `Only SVG images are supported; use mime '${SVG_MIME}'`;
+    }
+    if (!SVG_SOURCE_RE.test(content)) {
+        return "Image content must be complete SVG source: an <svg> root element and its closing </svg>";
+    }
+    return undefined;
 }
 
 /** A single find-and-replace edit applied to note content. */
@@ -160,7 +189,7 @@ export function getAttachmentContentPreview(att: BAttachment): string | null {
         text = unwrapStringOrBuffer(content);
     } else {
         const blob = att.blobId ? becca.getBlob({ blobId: att.blobId }) : null;
-        text = blob?.textRepresentation ?? null;
+        text = blobService.decryptTextRepresentation(blob?.textRepresentation, !!att.isProtected) || null;
     }
 
     if (!text) {

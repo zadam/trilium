@@ -6,6 +6,7 @@ import optionService from "./options.js";
 import {
     backUpExistingData,
     deleteExistingData,
+    discardExistingData,
     getExistingBackupDefaults,
     getExistingBackupProgress,
     getExistingBackupStatus,
@@ -17,6 +18,7 @@ import { enterSetupMode, initSetupPlatform, leaveSetupMode } from "./setup_mode.
 
 const platform = {
     writeMarker: vi.fn(async () => {}),
+    hasMarker: vi.fn(async () => false),
     removeMarker: vi.fn(async () => {}),
     removeDatabase: vi.fn(async () => {})
 };
@@ -92,12 +94,53 @@ describe("what becomes of the existing database", () => {
         expect(platform.removeDatabase).toHaveBeenCalled();
     });
 
+    it("treats it as gone once it is, refusing everything that would act on it again", async () => {
+        await deleteExistingData();
+        platform.removeDatabase.mockClear();
+
+        // Every one of these acts on a file that no longer exists. Keeping it, in particular, would
+        // reopen a database that has been deleted and come up on an empty one.
+        await expect(deleteExistingData()).rejects.toThrow(/already been discarded/);
+        await expect(backUpExistingData(ANY_SETTINGS)).rejects.toThrow(/already been discarded/);
+        await expect(keepExistingData()).rejects.toThrow(/already been discarded/);
+        expect(platform.removeDatabase).not.toHaveBeenCalled();
+    });
+
+    it("erases only where there is something to erase, for the paths that create a database", async () => {
+        // Called by creating a document and by syncing from a server, both of which run identically
+        // on a first run, where there never was anything here.
+        await discardExistingData();
+        expect(platform.removeDatabase).toHaveBeenCalledOnce();
+
+        // Asked again by a second path taken in the same wizard, which has nothing left to do.
+        await discardExistingData();
+        expect(platform.removeDatabase).toHaveBeenCalledOnce();
+
+        leaveSetupMode();
+        await expect(discardExistingData()).resolves.toBeUndefined();
+        expect(platform.removeDatabase).toHaveBeenCalledOnce();
+    });
+
     it("puts the instance back as it was when the answer is to keep it", async () => {
         await keepExistingData();
 
         // The marker goes first: a start that finds one comes up as the wizard all over again.
         expect(platform.removeMarker).toHaveBeenCalled();
         expect(platform.removeDatabase).not.toHaveBeenCalled();
+    });
+
+    it("says so rather than half-starting where the platform cannot write a backup at all", async () => {
+        // The standalone platform streams its backup into a download and has no `backupAs`. Both
+        // ways in have to refuse, and the one that answers before it starts has to refuse loudest:
+        // the screen behind it waits on a status that would otherwise never change.
+        const backup = getBackup() as { backupAs?: unknown };
+        const previous = backup.backupAs;
+        backup.backupAs = undefined;
+
+        await expect(backUpExistingData(ANY_SETTINGS)).rejects.toThrow(/cannot write a backup/);
+        expect(() => startBackUpExistingData(new Date())).toThrow(/cannot write a backup/);
+
+        backup.backupAs = previous;
     });
 
     it("refuses every one of them where there is no existing database to act on", async () => {

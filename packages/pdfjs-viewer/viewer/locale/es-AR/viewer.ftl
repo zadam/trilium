@@ -103,7 +103,7 @@ pdfjs-document-properties-button =
     .title = Propiedades del documento…
 pdfjs-document-properties-button-label = Propiedades del documento…
 pdfjs-document-properties-file-name = Nombre de archivo:
-pdfjs-document-properties-file-size = Tamaño de archovo:
+pdfjs-document-properties-file-size = Tamaño de archivo:
 # Variables:
 #   $kb (Number) - the PDF file size in kilobytes
 #   $b (Number) - the PDF file size in bytes
@@ -122,7 +122,7 @@ pdfjs-document-properties-modification-date = Fecha de modificación:
 #   $dateObj (Date) - the creation/modification date and time of the PDF file
 pdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
 pdfjs-document-properties-creator = Creador:
-pdfjs-document-properties-producer = PDF Productor:
+pdfjs-document-properties-producer = Productor PDF:
 pdfjs-document-properties-version = Versión de PDF:
 pdfjs-document-properties-page-count = Cantidad de páginas:
 pdfjs-document-properties-page-size = Tamaño de página:
@@ -187,23 +187,6 @@ pdfjs-printing-not-ready = Advertencia: El PDF no está completamente cargado pa
 
 ## Tooltips and alt text for side panel toolbar buttons
 
-pdfjs-toggle-sidebar-button =
-    .title = Alternar barra lateral
-pdfjs-toggle-sidebar-notification-button =
-    .title = Alternar barra lateral (el documento contiene esquemas/adjuntos/capas)
-pdfjs-toggle-sidebar-button-label = Alternar barra lateral
-pdfjs-document-outline-button =
-    .title = Mostrar esquema del documento (doble clic para expandir/colapsar todos los ítems)
-pdfjs-document-outline-button-label = Esquema del documento
-pdfjs-attachments-button =
-    .title = Mostrar adjuntos
-pdfjs-attachments-button-label = Adjuntos
-pdfjs-layers-button =
-    .title = Mostrar capas (doble clic para restablecer todas las capas al estado predeterminado)
-pdfjs-layers-button-label = Capas
-pdfjs-thumbs-button =
-    .title = Mostrar miniaturas
-pdfjs-thumbs-button-label = Miniaturas
 pdfjs-current-outline-item-button =
     .title = Buscar elemento de esquema actual
 pdfjs-current-outline-item-button-label = Elemento de esquema actual
@@ -214,10 +197,6 @@ pdfjs-additional-layers = Capas adicionales
 
 ## Thumbnails panel item (tooltip and alt text for images)
 
-# Variables:
-#   $page (Number) - the page number
-pdfjs-thumb-page-title =
-    .title = Página { $page }
 # Variables:
 #   $page (Number) - the page number
 pdfjs-thumb-page-canvas =
@@ -235,8 +214,8 @@ pdfjs-thumb-page-title1 =
 ## Find panel button title and messages
 
 pdfjs-find-input =
-    .title = Buscar
     .placeholder = Buscar en documento…
+    .title = Buscar
 pdfjs-find-previous-button =
     .title = Buscar la aparición anterior de la frase
 pdfjs-find-previous-button-label = Anterior
@@ -248,7 +227,7 @@ pdfjs-find-match-case-checkbox-label = Coincidir mayúsculas
 pdfjs-find-match-diacritics-checkbox-label = Coincidir diacríticos
 pdfjs-find-entire-word-checkbox-label = Palabras completas
 pdfjs-find-reached-top = Inicio de documento alcanzado, continuando desde abajo
-pdfjs-find-reached-bottom = Fin de documento alcanzando, continuando desde arriba
+pdfjs-find-reached-bottom = Fin de documento alcanzado, continuando desde arriba
 # Variables:
 #   $current (Number) - the index of the currently active find result
 #   $total (Number) - the total number of matches in the document
@@ -286,7 +265,7 @@ pdfjs-page-landmark =
 ## Loading indicator messages
 
 pdfjs-loading-error = Ocurrió un error al cargar el PDF.
-pdfjs-invalid-file-error = Archivo PDF no válido o cocrrupto.
+pdfjs-invalid-file-error = Archivo PDF no válido o corrupto.
 pdfjs-missing-file-error = Archivo PDF faltante.
 pdfjs-unexpected-response-error = Respuesta del servidor inesperada.
 pdfjs-rendering-error = Ocurrió un error al dibujar la página.
@@ -331,16 +310,16 @@ pdfjs-editor-highlight-button =
     .title = Resaltar
 pdfjs-editor-highlight-button-label = Resaltar
 pdfjs-highlight-floating-button1 =
-    .title = Resaltar
     .aria-label = Resaltar
+    .title = Resaltar
 pdfjs-highlight-floating-button-label = Resaltar
 pdfjs-comment-floating-button =
-    .title = Comentar
     .aria-label = Comentar
+    .title = Comentar
 pdfjs-comment-floating-button-label = Comentar
 pdfjs-editor-comment-button =
-    .title = Comentar
     .aria-label = Comentar
+    .title = Comentar
 pdfjs-editor-comment-button-label = Comentar
 pdfjs-editor-signature-button =
     .title = Agregar firma
@@ -413,8 +392,8 @@ pdfjs-editor-comments-sidebar-title =
        *[other] Comentarios
     }
 pdfjs-editor-comments-sidebar-close-button =
-    .title = Cerrar la barra lateral
     .aria-label = Cerrar la barra lateral
+    .title = Cerrar la barra lateral
 pdfjs-editor-comments-sidebar-close-button-label = Cerrar la barra lateral
 # Instructional copy to add a comment by selecting text or an annotations.
 pdfjs-editor-comments-sidebar-no-comments1 = ¿Ve algo digno de mención? Resáltelo y deje un comentario.
@@ -425,7 +404,7 @@ pdfjs-editor-comments-sidebar-no-comments-link = Conocer más
 pdfjs-editor-alt-text-button-label = Texto alternativo
 pdfjs-editor-alt-text-edit-button =
     .aria-label = Editar texto alternativo
-pdfjs-editor-alt-text-dialog-label = Eligir una opción
+pdfjs-editor-alt-text-dialog-label = Elegir una opción
 pdfjs-editor-alt-text-dialog-description = El texto alternativo (texto alternativo) ayuda cuando las personas no pueden ver la imagen o cuando no se carga.
 pdfjs-editor-alt-text-add-description-label = Agregar una descripción
 pdfjs-editor-alt-text-add-description-description = Intente escribir 1 o 2 oraciones que describan el tema, el entorno o las acciones.
@@ -537,13 +516,6 @@ pdfjs-editor-alt-text-settings-dialog-label = Configuración de texto alternativ
 pdfjs-editor-alt-text-settings-automatic-title = Texto alternativo automático
 pdfjs-editor-alt-text-settings-create-model-button-label = Crear texto alternativo automáticamente
 pdfjs-editor-alt-text-settings-create-model-description = Sugiere descripciones para ayudar a las personas que no pueden ver la imagen o cuando la imagen no se carga.
-# Variables:
-#   $totalSize (Number) - the total size (in MB) of the AI model.
-pdfjs-editor-alt-text-settings-download-model-label = Modelo de IA de texto alternativo ({ $totalSize } MB)
-pdfjs-editor-alt-text-settings-ai-model-description = Se ejecuta localmente en el dispositivo para que los datos se mantengan privados. Requerido para texto alternativo automático.
-pdfjs-editor-alt-text-settings-delete-model-button = Borrar
-pdfjs-editor-alt-text-settings-download-model-button = Descargar
-pdfjs-editor-alt-text-settings-downloading-model-button = Descargando…
 pdfjs-editor-alt-text-settings-editor-title = Editor de texto alternativo
 pdfjs-editor-alt-text-settings-show-dialog-button-label = Mostrar el editor de texto alternativo inmediatamente al agregar una imagen
 pdfjs-editor-alt-text-settings-show-dialog-description = Te ayuda a asegurarse de que todas las imágenes tengan texto alternativo.
@@ -562,7 +534,7 @@ pdfjs-editor-signature-added-alert = Firma agregada
 pdfjs-editor-undo-bar-message-highlight = Resaltado eliminado
 pdfjs-editor-undo-bar-message-freetext = Texto eliminado
 pdfjs-editor-undo-bar-message-ink = Dibujo eliminado
-pdfjs-editor-undo-bar-message-stamp = Imagen eliminado
+pdfjs-editor-undo-bar-message-stamp = Imagen eliminada
 pdfjs-editor-undo-bar-message-signature = Firma eliminada
 pdfjs-editor-undo-bar-message-comment = Comentario eliminado
 # Variables:
@@ -686,7 +658,7 @@ pdfjs-views-manager-outlines-title1 = Esquema del documento
     .title = Esquema del documento (doble clic para expandir/colapsar todos los ítems)
 pdfjs-views-manager-attachments-title = Adjuntos
 pdfjs-views-manager-layers-title1 = Capas
-    .title = Capas (doble clic para restablecer todas las cañas al estado predeterminado)
+    .title = Capas (doble clic para restablecer todas las capas al estado predeterminado)
 pdfjs-views-manager-pages-option-label = Páginas
 pdfjs-views-manager-outlines-option-label = Esquema del documento
 pdfjs-views-manager-attachments-option-label = Adjuntos
@@ -756,8 +728,8 @@ pdfjs-toggle-views-manager-button1 =
 ## Digital signature properties (signature verification panel)
 
 pdfjs-digital-signature-properties-button =
-    .title = Propiedades de firma digital
     .aria-label = Propiedades de firma digital
+    .title = Propiedades de firma digital
 pdfjs-digital-signature-properties-button-label = Propiedades de firma digital
 
 ## Banner shown above the signature list summarising the overall
@@ -786,7 +758,7 @@ pdfjs-digital-signature-properties-banner-expired =
     }
 pdfjs-digital-signature-properties-banner-invalid =
     { $count ->
-        [one] El documento tiene { $count } firmas digital inválida
+        [one] El documento tiene { $count } firma digital inválida
        *[other] El documento tiene { $count } firmas digitales inválidas
     }
 pdfjs-digital-signature-properties-banner-revoked =

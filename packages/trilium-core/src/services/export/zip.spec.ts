@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { PassThrough } from "stream";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { isLocalPreviewImageSrc } from "@triliumnext/commons";
 
@@ -13,9 +13,16 @@ import type { ExportFormat, NoteMetaFile } from "../../meta.js";
 import { getContext } from "../context.js";
 import noteService from "../notes.js";
 import sql_init from "../sql_init.js";
+import { decodeUtf8 } from "../utils/binary.js";
 import type { ZipArchive, ZipArchiveEntryOptions, ZipProvider } from "../zip_provider.js";
 import { getZipProvider, initZipProvider } from "../zip_provider.js";
 import zip, { shouldStoreUncompressed } from "./zip.js";
+import ShareThemeExportProvider from "./zip/share_theme.js";
+import {
+    getZipExportProviderFactory,
+    initZipExportProviderFactory,
+    type ZipExportProviderFactory
+} from "./zip_export_provider_factory.js";
 
 // happy-dom (standalone/WASM) exposes `window`; the Node server suite does not.
 const isBrowserRuntime = typeof window !== "undefined";
@@ -96,7 +103,7 @@ async function exportSubtree(branch: BBranch, format: ExportFormat = "html") {
     const ctx = new taskContext("no-progress-reporting", "export", null);
     const res = new FakeResponse();
     const done = collect(res);
-    await zip.exportToZip(ctx, branch, format, res as unknown as Record<string, unknown>);
+    await zip.exportToZip(ctx, branch, format, res);
     const buffer = await done;
     return { buffer, res, entries: await readArchive(buffer) };
 }
@@ -113,10 +120,19 @@ function parseMeta(entries: Record<string, Buffer>): NoteMetaFile {
 // provider does not support (createFileStream throws). The browser zip provider
 // has different streaming semantics and is validated separately.
 describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
+    // The server's share factory reads the theme from the client build, which a test run lacks.
+    let platformFactory: ZipExportProviderFactory;
     beforeAll(async () => {
         sql_init.initializeDb();
         await sql_init.dbReady;
+        platformFactory = getZipExportProviderFactory();
+        const noAssets = { files: new Map(), readBuiltinFont: () => undefined };
+        initZipExportProviderFactory(async (format, data) => (format === "share"
+            ? new ShareThemeExportProvider(data, noAssets)
+            : platformFactory(format, data)));
     });
+
+    afterAll(() => initZipExportProviderFactory(platformFactory));
 
     describe("exportToZip", () => {
         it("produces a meta file plus the note's data file and sets the zip headers", async () => {
@@ -239,6 +255,65 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
             expect(attrs.some((a) => a.name === "outsideRel")).toBe(false);
         });
 
+        it("leaves out the link relations the importer rebuilds, and keeps the ones it reads back", async () => {
+            // Both notes go inside the exported subtree: a relation pointing out of it is dropped
+            // by the containment filter, which would hide what this test is about.
+            const { note: parent } = createNote("root", { title: "LinkHost", content: "" });
+            const { note: target } = createNote(parent.noteId, { title: "LinkTarget", content: "<p>t</p>" });
+            const { note } = createNote(parent.noteId, { title: "Linker", content: "<p>x</p>" });
+            getContext().init(() => {
+                note.addRelation("internalLink", target.noteId);
+                note.addRelation("imageLink", target.noteId);
+                // The importer reads these two back to remap note ids inside the content.
+                note.addRelation("includeNoteLink", target.noteId);
+                note.addRelation("relationMapLink", target.noteId);
+                note.addRelation("userRelation", target.noteId);
+            });
+
+            const { entries } = await exportSubtree(parent.getParentBranches()[0], "html");
+            const children = parseMeta(entries).files[0].children ?? [];
+            const linkerMeta = children.find((child) => child.title === "Linker");
+            const names = (linkerMeta?.attributes ?? []).map((a) => a.name);
+
+            expect(names).not.toContain("internalLink");
+            expect(names).not.toContain("imageLink");
+            expect(names).toContain("includeNoteLink");
+            expect(names).toContain("relationMapLink");
+            expect(names).toContain("userRelation");
+        });
+
+        it("comes back with those relations anyway, rebuilt from content and pointing at the new notes", async () => {
+            const { note: parent } = createNote("root", { title: "LinkRoundTrip", content: "" });
+            const { note: target } = createNote(parent.noteId, { title: "Target", content: "<p>t</p>" });
+            const { note: picture } = createNote(parent.noteId,
+                { title: "Picture", content: "png-bytes", type: "image", mime: "image/png" });
+            const { note: source } = createNote(parent.noteId, { title: "Source", content: "" });
+            getContext().init(() => source.setContent(
+                `<p>See <a href="#root/${target.noteId}">Target</a>.</p>`
+                + `<p><img src="api/images/${picture.noteId}/Picture.png"></p>`
+            ));
+
+            const taskContext = (await import("../task_context.js")).default;
+            const importZip = (await import("../import/zip.js")).default;
+            const { buffer } = await exportSubtree(parent.getParentBranches()[0], "html");
+            const imported = await getContext().init(async () => await importZip.importZip(
+                new taskContext("no-progress-reporting", "importNotes", {}),
+                buffer,
+                becca.getNoteOrThrow("root")
+            ));
+
+            const childByTitle = (title: string) =>
+                imported.getChildNotes().find((child) => child.title === title);
+            const importedSource = childByTitle("Source");
+            const relationTargets = (name: string) =>
+                (importedSource?.getRelations() ?? []).filter((rel) => rel.name === name).map((rel) => rel.value);
+
+            // New ids on the far side, so a relation copied out of the export could not have pointed here.
+            expect(childByTitle("Target")?.noteId).not.toBe(target.noteId);
+            expect(relationTargets("internalLink")).toStrictEqual([childByTitle("Target")?.noteId]);
+            expect(relationTargets("imageLink")).toStrictEqual([childByTitle("Picture")?.noteId]);
+        });
+
         it("excludes notes marked with #excludeFromExport", async () => {
             const { note: parent } = createNote("root", { title: "WithExcluded", content: "" });
             const { note: kept } = createNote(parent.noteId, { title: "Kept", content: "<p>kept</p>" });
@@ -348,7 +423,7 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
             const { note } = createNote("root", { title: "BinaryAttachHost", content: "<p>host</p>" });
             // Bytes that are not valid UTF-8 (0x00, 0xFF, lone 0x80 continuation byte)
             // so any accidental string coercion in the export path would corrupt them.
-            const binaryContent = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x80, 0x01, 0xfe]);
+            const binaryContent = new Uint8Array([ 0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x80, 0x01, 0xfe ]);
             getContext().init(() =>
                 note.saveAttachment({ role: "image", mime: "image/png", title: "pixel.png", content: binaryContent })
             );
@@ -362,7 +437,7 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
             const attFileName = attMeta.dataFileName ?? "";
             expect(entries[attFileName]).toBeDefined();
             // The exported bytes must equal the stored bytes exactly.
-            expect(Buffer.compare(entries[attFileName], binaryContent)).toBe(0);
+            expect([ ...entries[attFileName] ]).toEqual([ ...binaryContent ]);
         });
 
         it("resolves embedded mermaid/canvas images to their rendered image attachment", async () => {
@@ -520,7 +595,7 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
                 const ctx = new taskContext("no-progress-reporting", "export", null);
                 const res = new FakeResponse();
                 const done = collect(res);
-                await zip.exportToZip(ctx, branch, "html", res as unknown as Record<string, unknown>);
+                await zip.exportToZip(ctx, branch, "html", res);
                 await done;
             } finally {
                 initZipProvider(original);
@@ -617,6 +692,35 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
             const { entries } = await exportSubtree(note.getParentBranches()[0], "share");
 
             expect(parseMeta(entries).files[0].dataFileName).toBe("public-alias.html");
+        });
+
+        it("writes an image or file note of a share export as a page plus its raw file", async () => {
+            const bytes = new Uint8Array([ 0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x80 ]);
+            const { note: host } = createNote("root", { title: "BinaryShareHost", content: "" });
+            const { note: image } = createNote(host.noteId, { title: "Photo.png", type: "image", mime: "image/png" });
+            const { note: pdf } = createNote(host.noteId, { title: "Manual", type: "file", mime: "application/pdf" });
+            const { note: file } = createNote(host.noteId, { title: "Data.bin", type: "file", mime: "application/octet-stream" });
+            getContext().init(() => {
+                for (const note of [ image, pdf, file ]) note.setContent(bytes);
+                host.setContent(`<p><img src="api/images/${image.noteId}/Photo.png"></p>`);
+            });
+
+            const { entries } = await exportSubtree(host.getParentBranches()[0], "share");
+            const pageOf = (noteId: string) => {
+                const meta = (parseMeta(entries).files[0].children ?? []).find((c) => c.noteId === noteId);
+                return meta?.dataFileName ?? "";
+            };
+
+            expect([ pageOf(image.noteId), pageOf(pdf.noteId), pageOf(file.noteId) ])
+                .toEqual([ "Photo.png.html", "Manual.html", "Data.bin.html" ]);
+            for (const raw of [ "Photo.png", "Manual.pdf", "Data.bin" ]) {
+                expect([ ...entries[raw] ?? [] ], raw).toEqual([ ...bytes ]);
+            }
+            expect(decodeUtf8(entries["Photo.png.html"])).toContain(`<img src="Photo.png"`);
+            expect(decodeUtf8(entries["Manual.html"])).toContain(`src="Manual.pdf"`);
+            expect(decodeUtf8(entries["Data.bin.html"])).toContain(`location.href='Data.bin'`);
+            expect(decodeUtf8(entries[parseMeta(entries).files[0].dataFileName ?? ""]))
+                .toContain(`<img src="Photo.png"`);
         });
 
         it("rewrites links to notes inside the export and leaves outside ones alone", async () => {

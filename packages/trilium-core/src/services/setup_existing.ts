@@ -11,7 +11,13 @@ import { getBackup } from "./backup.js";
 import eventService from "./events.js";
 import { getLog } from "./log.js";
 import optionService from "./options.js";
-import { getSetupPlatform, isInitialSetup, leaveSetupMode } from "./setup_mode.js";
+import {
+    getSetupPlatform,
+    hasExistingData,
+    isInitialSetup,
+    leaveSetupMode,
+    markExistingDataDiscarded
+} from "./setup_mode.js";
 import sqlInit from "./sql_init.js";
 
 /**
@@ -189,16 +195,33 @@ function reportProgress(fraction: number): void {
 /**
  * Erases the existing database, which is the point of no return.
  *
- * Only ever reached from a screen that has said as much, and only after the user has either taken a
- * backup or refused one. What follows is the rest of the wizard, on an instance that now genuinely
- * has nothing.
+ * Deliberately late: the user answers for a backup on the way into the wizard, but nothing is
+ * touched until they pick a path that replaces the database, and this is what those paths call
+ * first. Up to here every screen can still be left through Cancel with the knowledge base intact.
+ *
+ * The one path that does not call it is restoring a backup, and for a reason worth keeping: a
+ * restore validates the file and only then swaps the database, so a backup that turns out to be
+ * unusable leaves the user with what they already had. Erasing first would throw that away.
  */
 export async function deleteExistingData(): Promise<void> {
     requireExistingData();
 
     getLog().info("Setup: erasing the existing database at the user's request.");
     await getSetupPlatform().removeDatabase();
+    markExistingDataDiscarded();
     getLog().info("Setup: the existing database is gone.");
+}
+
+/**
+ * The same, for callers that do not know whether there is anything to erase.
+ *
+ * Which is every path that creates a database: it runs identically on a first run, where there
+ * never was one, and on an instance the app sent here, where there is one right up until this call.
+ */
+export async function discardExistingData(): Promise<void> {
+    if (hasExistingData()) {
+        await deleteExistingData();
+    }
 }
 
 /**
@@ -225,10 +248,17 @@ export async function keepExistingData(): Promise<void> {
  * These operations only make sense between an app asking for setup and the wizard getting past the
  * question, and each of them is destructive or irreversible in its own way. A first run reaching
  * them means something is wrong, not that there is an empty database to erase.
+ *
+ * The second case is the same thing later on: once the user has picked a path and the database has
+ * gone, a screen still offering to back it up or to go back to it is a screen acting on something
+ * that is no longer there.
  */
 function requireExistingData(): void {
     if (isInitialSetup()) {
         throw new Error("There is no existing database: this instance is being set up for the first time.");
+    }
+    if (!hasExistingData()) {
+        throw new Error("The existing database has already been discarded during this setup.");
     }
 }
 

@@ -20,6 +20,8 @@ import isSvg from "is-svg";
 import { Jimp } from "jimp";
 import * as UPNG from "upng-js";
 
+import { asBuffer } from "./binary.js";
+
 /**
  * Where a line the codec wants written goes. Dropped by default, since nothing here needs it.
  *
@@ -115,7 +117,9 @@ export function planFromBytes(
     // to an image should not cost more than doing it. Dimensions the header does not give up — past
     // the end of a prefix, or behind metadata — leave this open, and the decode settles it.
     const declared = inspectImage(bytes);
-    const declaredEdge = Math.max(declared.width ?? 0, declared.height ?? 0);
+    const declaredEdge = request.widthOnly
+        ? declared.width ?? 0
+        : Math.max(declared.width ?? 0, declared.height ?? 0);
     const mayNeedResize = request.resize && (declaredEdge === 0 || declaredEdge > request.maxWidthHeight);
 
     if (!mayNeedResize && !worthReencoding) {
@@ -208,18 +212,6 @@ export function decodeCostOf({ width, height }: InspectedImage): number | null {
  */
 export function decodeImage(buffer: Uint8Array, budgetMb: number = DECODE_MEMORY_MB) {
     return Jimp.fromBuffer(asBuffer(buffer), { "image/jpeg": { maxMemoryUsageInMB: budgetMb } });
-}
-
-/**
- * The same bytes as a `Buffer`, over the same memory.
- *
- * `Buffer.from(uint8Array)` duplicates what it is given, and the libraries below each want one —
- * so an image was being copied whole several times on its way through, for readers that only ever
- * read. On a run over a tree that is a second copy of every photograph in it, allocated and thrown
- * away again, which costs more in collection than the copying does outright.
- */
-export function asBuffer(bytes: Uint8Array): Buffer {
-    return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 }
 
 /** What {@link decodeImage} hands back, for the helpers that work on a decoded image. */
@@ -388,7 +380,8 @@ export async function compressImageBytes(
     const start = Date.now();
     const image = await decodeImage(buffer, budgetMb);
     const { width, height } = image.bitmap;
-    const needsResize = request.resize && Math.max(width, height) > request.maxWidthHeight;
+    const needsResize = request.resize
+        && (request.widthOnly ? width : Math.max(width, height)) > request.maxWidthHeight;
 
     // Only consulted where it changes the answer. JPEG has no alpha channel, so a transparent
     // image cannot be converted — it is optimized instead, that being the best still available
@@ -409,7 +402,7 @@ export async function compressImageBytes(
     }
 
     if (needsResize) {
-        if (width >= height) {
+        if (request.widthOnly || width >= height) {
             image.resize({ w: request.maxWidthHeight });
         } else {
             image.resize({ h: request.maxWidthHeight });

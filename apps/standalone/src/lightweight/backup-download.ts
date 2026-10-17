@@ -1,10 +1,13 @@
 import {
     type ScryptParams,
-    streamedContainerSize,
+    containerSize,
     writeBackupContainer
 } from "@triliumnext/backup-container/web";
 
-import { type LiveDatabaseReader, streamLiveDatabasePages } from "./backup-stream.js";
+import {
+    type LiveDatabaseReader,
+    streamLiveDatabasePages
+} from "./backup-stream.js";
 
 /**
  * Feeds a database backup into a download the service worker is holding open.
@@ -19,11 +22,11 @@ import { type LiveDatabaseReader, streamLiveDatabasePages } from "./backup-strea
  * the service worker asks for a chunk each time the download can take more, so a slow disk slows
  * the database reads rather than piling chunks up in a message queue.
  *
- * The payload is the plain database, or, given a passphrase, a streamed encrypted container: the
- * format's forward-only shape, whose GCM frames carry the integrity a patched-in digest cannot on
- * a destination already streamed away. Compression is never used here — at these sizes it is more
- * than a low-end device can afford — and either shape's exact size is known up front, which is
- * what gives the download its `Content-Length` and the browser its progress bar.
+ * The payload is always a container, encrypted when a passphrase is given and plain otherwise, and
+ * either way its trailer carries a digest over what was written. Nothing is ever written back to,
+ * which is what lets a destination like this one hold the format at all. Compression is never used
+ * here, at these sizes it is more than a low-end device can afford, and leaving it off is also what
+ * keeps the size exact: that is what gives the download its `Content-Length` and its progress bar.
  *
  * Protocol, from the service worker's side: it receives `begin` (with the exact byte size), then
  * one `chunk` per `pull` it sends, then `end`; `error` may arrive at any point, and `cancel` may
@@ -47,11 +50,27 @@ export interface DownloadOutcome {
 }
 
 export interface DownloadOptions {
-    /** Wraps the stream in an encrypted, streamed container. Plain database bytes otherwise. */
+    /** Encrypts the container. Without one it is still a container, just an unlocked one. */
     passphrase?: string;
     /** scrypt cost override, for tests that cannot afford the production one. */
     scrypt?: ScryptParams;
+    /**
+     * How much of the download has been handed over, for a screen to show.
+     *
+     * Called no more often than {@link PROGRESS_INTERVAL_MS}, and once at the end. Bytes rather
+     * than a fraction, because the screen shows both, and this is the only place that knows the
+     * total before the browser does.
+     */
+    onProgress?: (sentBytes: number, totalBytes: number) => void;
 }
+
+/**
+ * How often progress is worth reporting.
+ *
+ * A backup hands over thousands of chunks, and a message per chunk would be thousands of renders
+ * for a number that a person reads a few times a minute.
+ */
+const PROGRESS_INTERVAL_MS = 250;
 
 /**
  * How long the stream waits to be asked for more before giving the download up for dead.
@@ -110,18 +129,32 @@ export async function streamDatabaseDownload(
         return requests.shift() ?? "cancel";
     };
 
+    let sentBytes = 0;
+    let totalBytes = 0;
+    let reportedAt = 0;
+
     /** Posts one chunk per granted pull, or throws the stop that was granted instead. */
     const sendChunk = async (chunk: Uint8Array): Promise<void> => {
         const request = await nextRequest();
+
         if (request !== "pull") {
             throw new DownloadStopped(request);
         }
 
+        const length = chunk.byteLength;
         // Fresh, whole buffers are handed over rather than copied; anything else is copied first.
         const data = chunk.byteOffset === 0 && chunk.byteLength === chunk.buffer.byteLength
             ? chunk.buffer
             : chunk.slice().buffer;
         port.postMessage({ type: "chunk", data }, [ data ]);
+
+        // Counted after the hand-over, so what is reported is what has actually gone.
+        sentBytes += length;
+        const now = Date.now();
+        if (now - reportedAt >= PROGRESS_INTERVAL_MS) {
+            reportedAt = now;
+            options.onProgress?.(sentBytes, totalBytes);
+        }
     };
 
     let source: ReadableStream<Uint8Array> | undefined;
@@ -130,23 +163,28 @@ export async function streamDatabaseDownload(
         source = stream;
 
         // A container either way, so every backup this application writes has one shape and one
-        // extension. Without a passphrase it is the database with a header in front of it, held to
-        // the size that header records; with one, every frame is authenticated as well.
+        // extension. Without a passphrase it is the database between a header and a trailer, the
+        // trailer's digest vouching for it; with one, every frame is authenticated as well.
         const encrypted = !!options.passphrase;
-        port.postMessage({ type: "begin", byteSize: streamedContainerSize(byteSize, encrypted) });
+        totalBytes = containerSize(byteSize, encrypted);
+        port.postMessage({ type: "begin", byteSize: totalBytes });
         await writeBackupContainer(
             stream,
             new WritableStream<Uint8Array>({ write: sendChunk }),
             {
                 passphrase: options.passphrase,
-                streamed: true,
                 // Never compressed: at these sizes it costs more than a low-end device can spare,
-                // and the browser is downloading to a disk rather than over a wire.
+                // and the browser is downloading to a disk rather than over a wire. It is also what
+                // keeps the size above exact, which is what gives the download a progress bar.
                 plaintextSize: byteSize,
                 scrypt: options.scrypt
             }
         );
         port.postMessage({ type: "end" });
+        // The last one is unconditional: a throttled report would otherwise leave the screen a
+        // chunk short of the total it is about to be told is finished.
+        options.onProgress?.(sentBytes, totalBytes);
+
         return { status: "done" };
     } catch (e) {
         if (e instanceof DownloadStopped) {

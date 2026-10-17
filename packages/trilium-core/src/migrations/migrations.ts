@@ -19,7 +19,7 @@ export const MIGRATIONS: (SqlMigration | JsMigration)[] = [
     // The rows for indirectly-keyed entities must be removed from entity_changes before their
     // base rows disappear from under the subselects.
     {
-        version: 241,
+        version: 242,
         sql: /*sql*/`
             DELETE FROM entity_changes WHERE entityName = 'branches' AND entityId IN
                 (SELECT branchId FROM branches WHERE noteId LIKE '\\_help%' ESCAPE '\\' OR parentNoteId LIKE '\\_help%' ESCAPE '\\');
@@ -40,6 +40,11 @@ export const MIGRATIONS: (SqlMigration | JsMigration)[] = [
             DELETE FROM attachments WHERE ownerId LIKE '\\_help%' ESCAPE '\\';
             DELETE FROM notes WHERE noteId LIKE '\\_help%' ESCAPE '\\';
         `
+    },
+    // Delete the globe icon the web clipper wrote onto clippings, so they take the icon of their clipType
+    {
+        version: 241,
+        module: () => import("./0241__drop_clipper_globe_icon.js")
     },
     // Give every board its own select definition for the label it groups by, so the columns stop
     // living only in the board.json attachment

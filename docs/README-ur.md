@@ -19,10 +19,14 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes ایک مفت اور اوپن سورس، کراس پلیٹ فارم، درجہ بندی پر مبنی نوٹ لینے
 کی ایپلیکیشن ہے جو بڑے ذاتی علم کے ذخائر بنانے پر توجہ مرکوز کرتی ہے۔
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -112,7 +116,7 @@ Trilium Notes ایک مفت اور اوپن سورس، کراس پلیٹ فار�
   اینڈ](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend)
 * بلٹ ان [ڈارک تھیم](https://docs.triliumnotes.org/user-guide/concepts/themes)،
   یوزر تھیمز کی سپورٹ
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   اور [Markdown امپورٹ اور
   ایکسپورٹ](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * ویب مواد آسانی سے محفوظ کرنے کے لیے [ویب
@@ -362,12 +366,6 @@ Trilium اس کے پیچھے موجود ٹیکنالوجیز کے بغیر مم�
   ہونے والی انٹریکٹو ٹیبل کے لیے۔
 * [FancyTree](https://github.com/mar10/fancytree) - بھرپور فیچرز والی ٹری
   لائبریری جس کا کوئی حقیقی مقابلہ نہیں۔
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - بصری کنیکٹیویٹی لائبریری۔
-  [ریلیشن
-  میپس](https://docs.triliumnotes.org/user-guide/note-types/relation-map) اور
-  [لنک
-  میپس](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
-  میں استعمال کیا جاتا ہے
 
 ## 🤝 سپورٹ
 

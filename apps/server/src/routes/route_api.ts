@@ -6,7 +6,7 @@ import { readFile, rm } from "fs/promises";
 import multer from "multer";
 import { join } from "path";
 
-import { namespace } from "../cls_provider.js";
+import { bindEmitter } from "../cls_provider.js";
 import auth from "../services/auth.js";
 import { cls } from "@triliumnext/core";
 import { getLog } from "@triliumnext/core";
@@ -87,8 +87,8 @@ function internalRoute<P extends ParamsDictionary>(method: HttpMethod, path: str
         const start = Date.now();
 
         try {
-            namespace.bindEmitter(req);
-            namespace.bindEmitter(res);
+            bindEmitter(req);
+            bindEmitter(res);
 
             const result = cls.init(() => {
                 cls.set("componentId", req.headers["trilium-component-id"]);
@@ -101,6 +101,10 @@ function internalRoute<P extends ParamsDictionary>(method: HttpMethod, path: str
             });
 
             if (!resultHandler) {
+                // The handler writes its own response, but a rejection still needs one.
+                if (result instanceof Promise) {
+                    result.catch((e: unknown) => handleException(e, method, path, res));
+                }
                 return;
             }
 

@@ -32,6 +32,8 @@ function getOpenFileUrl(type: string, noteId: string) {
 function download(url: string) {
     if (window.electronApi) {
         window.electronApi.shell.downloadURL(url);
+    } else if (window.standaloneApi?.save) {
+        void saveToDevice(url);
     } else {
         window.location.href = url;
     }
@@ -110,7 +112,9 @@ async function openExternally(type: string, entityId: string, mime: string) {
         if (canOpenInBrowser(mime)) {
             window.open(getOpenFileUrl(type, entityId));
         } else {
-            window.location.href = getFileUrl(type, entityId);
+            // What cannot be previewed is downloaded, which on mobile means the share sheet:
+            // navigating to the attachment response would be dropped there (see download()).
+            download(getFileUrl(type, entityId));
         }
     }
 }
@@ -156,10 +160,43 @@ async function openDirectory(directory: string) {
     }
 }
 
+/**
+ * Shows a file in the file manager, selected, rather than opening it — which is what to do with a
+ * file the user has no reader for. The database is the one such file Trilium points at.
+ *
+ * Nothing comes back, so nothing can be reported: the OS is asked to bring a window forward, and
+ * whether it did is not something Electron answers.
+ */
+function revealFile(filePath: string) {
+    if (!utils.isElectron()) {
+        console.error("Not running in an Electron environment.");
+        return;
+    }
+
+    window.electronApi?.shell.showItemInFolder(filePath);
+}
+
 /** Reported to the user, not only the console: a silent failure reads as the link doing nothing at all. */
 function reportDirectoryFailure(directory: string, reason: string) {
     console.error("Failed to open directory:", directory, reason);
     toast.showError(t("open.directory_failed", { directory, reason }));
+}
+
+/**
+ * Saves a download through the mobile app's share sheet, which is how a file leaves the Capacitor
+ * WebView: it has no download manager, so `window.location.href` would resolve to an `attachment`
+ * response that nothing ever writes.
+ *
+ * The sheet is the confirmation, so only a failure is worth a message; dismissing it is a choice,
+ * not an error.
+ */
+async function saveToDevice(url: string) {
+    const result = await window.standaloneApi?.save?.saveUrl(url);
+
+    if (result?.status === "failed") {
+        console.error("Failed to save the download:", url, result.message);
+        toast.showError(t("open.download_failed", { reason: result.message ?? "" }));
+    }
 }
 
 export default {
@@ -173,5 +210,6 @@ export default {
     openNoteCustom,
     openAttachmentCustom,
     openNoteOnServer,
-    openDirectory
+    openDirectory,
+    revealFile
 };

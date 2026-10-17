@@ -6,9 +6,19 @@ import prefresh from "@prefresh/vite";
 import { defineConfig, type Plugin } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
+import { shareTheme, stripUniverEmojiData, stripUniverHyphenation } from "../client/vite-plugins.mjs";
+
 const clientAssets = ["assets", "stylesheets", "fonts", "translations"];
 
 const isDev = process.env.NODE_ENV === "development";
+const FULL_COVERAGE = { lines: 100, functions: 100, branches: 100, statements: 100 };
+
+// The share pages resolve built-in assets against `assets/v<version>`, the same prefix the server
+// serves them under. Read from trilium-core because that is the version `assetUrlFragment` is
+// built from; `chore:update-version` keeps every package.json in step.
+const coreVersion = JSON.parse(
+    fs.readFileSync(join(__dirname, "../../packages/trilium-core/package.json"), "utf-8")
+).version;
 
 // Watch client files and trigger reload in development
 const clientWatchPlugin = () => ({
@@ -182,6 +192,8 @@ function copyHelpAssetsPlugin(): Plugin {
 }
 
 let plugins: any = [
+    stripUniverHyphenation(),
+    stripUniverEmojiData(),
     sqliteWasmDedupePlugin(),
     sqliteWasmPlugin,
     viteStaticCopy({
@@ -209,6 +221,24 @@ let plugins: any = [
         ]
     }),
     copyHelpAssetsPlugin(),
+    // What the share theme's own pages load besides its bundle: the icon-pack fonts the client ships
+    // and the logo, each at the path content_renderer.ts writes into the page. The server answers
+    // these from express.static routes it registers in routes/assets.ts; here they are copied into
+    // the build instead.
+    viteStaticCopy({
+        targets: [
+            {
+                src: "../../client/src/fonts/**/*",
+                dest: "share/assets/fonts",
+                rename: { stripBase: 3 }
+            },
+            {
+                src: "../../server/src/assets/images/**/*",
+                dest: `assets/v${coreVersion}/images`,
+                rename: { stripBase: 4 }
+            }
+        ]
+    }),
     // PDF.js viewer for PDF preview support
     // stripBase: 4 removes packages/pdfjs-viewer/dist/web (or /build)
     viteStaticCopy({
@@ -230,7 +260,8 @@ let plugins: any = [
         prefresh(),
         clientWatchPlugin(),
         pdfjsServePlugin()
-    ] : [])
+    ] : []),
+    ...shareTheme({ stubDir: "share/assets" })
 ];
 
 if (!isDev) {
@@ -340,6 +371,13 @@ export default defineConfig(() => ({
             {
                 find: /^puppeteer$/,
                 replacement: join(__dirname, "src/stubs/empty.ts")
+            },
+            // EJS renders the share pages. Its ESM entry imports `node:fs` and `node:path` for the
+            // file-loading it only reaches without an `includer`; the share renderer always passes
+            // one, so the package's own browser build serves it and resolves in this bundle.
+            {
+                find: /^ejs$/,
+                replacement: join(__dirname, "../../node_modules/ejs/ejs.min.js")
             }
         ],
         dedupe: [
@@ -472,7 +510,12 @@ export default defineConfig(() => ({
             // so paths would emit as bare `main.ts` / `../../../packages/trilium-core/src/…`,
             // which are ambiguous in this monorepo and get attributed to whichever project wins
             // the match. Anchor to the repo root so every path is unambiguous.
-            reporter: ["text", "html", ["lcov", { projectRoot: join(__dirname, "../..") }]]
+            reporter: ["text", "html", ["lcov", { projectRoot: join(__dirname, "../..") }]],
+            // Threshold globs match paths relative to the root, `src`.
+            thresholds: {
+                "../../../packages/trilium-core/src/share/**": FULL_COVERAGE,
+                "lightweight/share_provider.ts": FULL_COVERAGE
+            }
         },
         server: {
             deps: {

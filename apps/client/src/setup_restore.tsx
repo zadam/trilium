@@ -8,13 +8,14 @@ import { ChunkedUploadError, uploadInChunks } from "./services/chunked_upload";
 import { describeDatabaseFile, describeDatabaseFormat } from "./services/database_files";
 import { t } from "./services/i18n";
 import server from "./services/server";
-import { formatSize } from "./services/utils";
+import { fileAccept, formatSize } from "./services/utils";
 import Button from "./widgets/react/Button";
 import { Card, CardSection } from "./widgets/react/Card";
 import DatabaseFileBadges from "./widgets/react/DatabaseFileBadges";
 import FormGroup from "./widgets/react/FormGroup";
 import FormTextBox from "./widgets/react/FormTextBox";
 import Icon from "./widgets/react/Icon";
+import ProgressBar from "./widgets/react/ProgressBar";
 import SetupPage from "./widgets/react/SetupPage";
 import SlidePages from "./widgets/react/SlidePages";
 
@@ -318,6 +319,10 @@ function headlineFor(reason: string | undefined): string {
         case "database-too-old": return t("setup.restore-error-too-old");
         case "database-not-initialized": return t("setup.restore-error-unfinished");
         case "swap-failed": return t("setup.restore-error-swap-failed");
+        case "swap-failed-reload": return t("setup.restore-error-swap-failed-reload");
+        case "check-failed": return t("setup.restore-error-check-failed");
+        case "restore-failed": return t("setup.restore-error-failed");
+        case "backup-incomplete": return t("setup.restore-error-incomplete");
         case "migration-failed": return t("setup.restore-error-would-not-open");
         case "restore-refused": return t("setup.restore-error-refused");
         case "already-initialized": return t("setup.restore-error-already-initialized");
@@ -400,7 +405,7 @@ function PickBackup({ backups, onPick, onUpload, onFailure }: {
                     <input
                         ref={fileInput}
                         type="file"
-                        accept=".db,.tnbackup"
+                        accept={fileAccept(".db,.tnbackup")}
                         class="restore-file-input"
                         onChange={(e) => {
                             const file = (e.target as HTMLInputElement).files?.[0];
@@ -462,7 +467,7 @@ function UploadProgress({ upload }: { upload: UploadState }) {
                     <Icon icon="bx bx-loader-circle bx-spin" /> {t("setup.restore-uploading")}
                 </div>
 
-                <progress value={upload.sentBytes} max={upload.totalBytes} />
+                <ProgressBar value={upload.sentBytes} max={upload.totalBytes} />
 
                 <div class="restore-progress-detail">
                     <span>
@@ -601,13 +606,13 @@ function RestoreProgress({ reported, onRestored, onFailed }: {
     // the user three things they will never see happen.
     return (
         <div class="restore-current-step">
-            <div class="restore-step-name">{t(`setup.restore-stage-${shownStage}`)}</div>
+            <div class="restore-step-name">{stageLabel(shownStage)}</div>
 
             {/* Only where the step can say how far it has got. The ones that cannot show nothing,
                 rather than an empty bar that never moves. */}
             {shownFraction !== null && (
                 <div class="restore-stage-progress">
-                    <progress value={shownFraction} max={1} />
+                    <ProgressBar value={shownFraction} max={1} />
                     <span>{Math.floor(shownFraction * 100)}%</span>
                 </div>
             )}
@@ -615,4 +620,29 @@ function RestoreProgress({ reported, onRestored, onFailed }: {
             <small class="restore-do-not-close">{t("setup.restore-do-not-close")}</small>
         </div>
     );
+}
+
+/**
+ * What to call the stage the restore says it is at.
+ *
+ * Spelled out rather than composed into a key. Built as `restore-stage-${stage}`, a stage nobody
+ * wrote a sentence for printed its own key at the user: `done` is reported by the browser-only
+ * restore in the moment between the last step and the reload, and that moment is the one the user
+ * is watching hardest.
+ *
+ * `done` is not a step at all but what follows the last one, so it says what is about to happen
+ * instead of naming something already finished. A failure says nothing here, because the screen it
+ * is about to be replaced by says it properly.
+ */
+export function stageLabel(stage: string): string {
+    switch (stage) {
+        case "validating": return t("setup.restore-stage-validating");
+        case "swapping": return t("setup.restore-stage-swapping");
+        case "migrating": return t("setup.restore-stage-migrating");
+        case "done": return t("setup.redirecting");
+        case "failed": return "";
+        // Staging both as itself and as the answer for a stage this does not know: whatever it is
+        // called, a restore that has not ended is one still working on the backup.
+        default: return t("setup.restore-stage-staging");
+    }
 }

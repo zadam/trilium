@@ -46,6 +46,13 @@ describe("Route transport & middleware", () => {
             expect(res.body.isMainWindow).toBe(false);
         });
 
+        it("includes the server's platform and CPU architecture in the payload", async () => {
+            // The client picks the Antigravity ACP server download for the machine running Trilium.
+            const res = await supertest(app).get("/bootstrap").expect(200);
+            expect(res.body.platform).toBe(process.platform);
+            expect(res.body.arch).toBe(process.arch);
+        });
+
         it("includes platform in the setup (uninitialized DB) payload", async () => {
             // The setup window relies on `glob.platform` to apply the
             // platform-darwin drag-region CSS on macOS.
@@ -68,18 +75,42 @@ describe("Route transport & middleware", () => {
                 .expect(403);
         });
 
+        it("accepts a valid CSRF token in a browser form body", async () => {
+            const agent = supertest.agent(app);
+            await agent.post("/login").send({ password: "demo1234" }).expect(302);
+            const csrfToken = (await agent.get("/bootstrap").expect(200)).body.csrfToken;
+
+            await agent.post("/logout")
+                .type("form")
+                .send({ "x-csrf-token": csrfToken })
+                .expect(302);
+        });
+
+        it("returns a failed logout form navigation to the app, keeping any prefix", async () => {
+            // "." resolves against the request URL, so /trilium/logout lands on /trilium/ rather
+            // than the origin root; ".." would drop the prefix and strand the user outside the app.
+            const res = await supertest(app).post("/logout")
+                .type("form")
+                .set("Accept", "text/html")
+                .send({ "x-csrf-token": "bogustoken1234567890" })
+                .expect(302);
+            expect(res.headers.location).toBe(".");
+        });
+
         it("returns a 404 body for an unknown route", async () => {
             const res = await supertest(app).get("/this-route-does-not-exist").expect(404);
             expect(res.body.message).toBeTruthy();
         });
 
         it("serves a [statusCode, string] handler result as plain text", async () => {
-            // /api/login/token returns [401, "Incorrect credential"] on a bad
-            // password — exercising apiResultHandler's array form and send()'s
-            // text-error branch.
-            const res = await supertest(app).post("/api/login/token").send({ password: "wrong" }).expect(401);
+            // /api/onenote-import/device-poll returns [400, "No sign-in is in progress."] on a
+            // session without a pending sign-in — exercising apiResultHandler's array form and
+            // send()'s text-error branch.
+            const res = await ctx.agent.post("/api/onenote-import/device-poll")
+                .set("x-csrf-token", ctx.csrfToken)
+                .expect(400);
             expect(res.headers["content-type"]).toContain("text/plain");
-            expect(res.text).toBe("Incorrect credential");
+            expect(res.text).toBe("No sign-in is in progress.");
         });
 
         it("maps a thrown ValidationError to a 400 JSON body", async () => {
@@ -265,11 +296,12 @@ describe("Route transport & middleware", () => {
 
                 cls.init(() => optionService.setOption("mcpEnabled", "true"));
 
-                // Nothing above was an authentication failure, so a valid token must still be
-                // served. If every 4xx/5xx counts, this is a 429 — and since the limiter runs
-                // ahead of the guard, an unauthenticated caller can spend the budget on purpose
-                // and lock out a legitimate client, or everyone sharing a NAT or Docker bridge
-                // address, for fifteen minutes.
+                // Nothing above was an authentication failure, so none of it may cost budget —
+                // and a valid token is skipped by the limiter outright in any case. If either
+                // rule slips, this is a 429: the limiter runs ahead of the guard, so an
+                // unauthenticated caller could otherwise spend the budget on purpose and lock
+                // out a legitimate client, or everyone sharing a NAT or Docker bridge address,
+                // for fifteen minutes.
                 const res = await mcpPostFrom("203.0.113.1")
                     .set("Authorization", `Bearer ${authToken}`)
                     .send(initializeRequest);
@@ -285,12 +317,20 @@ describe("Route transport & middleware", () => {
                 }
 
                 // Repeated bad tokens are what the limiter exists for: once the budget is gone
-                // the IP is cut off, valid token or not. Guards against "fixing" the above by
+                // the guessing stops being answered. Guards against "fixing" the above by
                 // dropping the limiter.
+                await mcpPostFrom("203.0.113.2")
+                    .set("Authorization", "Bearer still_not_a_real_token")
+                    .send(initializeRequest)
+                    .expect(429);
+
+                // The client that does hold a token is served throughout: it never spends
+                // budget, so it cannot be locked out by someone else's guessing from the same
+                // address — which is everyone, behind a NAT, a Docker bridge or a proxy.
                 const res = await mcpPostFrom("203.0.113.2")
                     .set("Authorization", `Bearer ${authToken}`)
                     .send(initializeRequest);
-                expect(res.status).toBe(429);
+                expect(res.status).toBe(200);
             });
         });
     });

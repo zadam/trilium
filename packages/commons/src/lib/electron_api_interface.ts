@@ -1,3 +1,6 @@
+import type { SecurityToggleApi } from "./security_settings.js";
+import type { TranscriptSource } from "./transcript.js";
+
 /**
  * Parameters delivered by the main process to the renderer when the user opens
  * the system context menu (right-click) somewhere inside a web view.
@@ -78,13 +81,16 @@ export interface ElectronWindowApi {
     /**
      * Customizes the Windows and Linux native title bar overlay (the area containing the
      * minimize / maximize / close buttons). `height` also controls their vertical placement,
-     * since the buttons are centred within the overlay.
+     * since the buttons are centred within the overlay. It is given in device-independent
+     * pixels, which the page zoom does not scale — see {@link setWindowButtonPosition}.
      */
     setTitleBarOverlay(options: { color: string; symbolColor: string; height?: number }): void;
 
     /**
-     * Repositions the macOS traffic-light window buttons.
-     * Coordinates are in CSS pixels relative to the window's top-left corner.
+     * Repositions the macOS traffic-light window buttons. Coordinates are relative to the
+     * window's top-left corner and given in device-independent pixels: the buttons are drawn by
+     * the system rather than by the page, so unlike the surrounding chrome they are unaffected by
+     * the page zoom factor and callers have to scale the offsets themselves.
      */
     setWindowButtonPosition(position: { x: number; y: number }): void;
 
@@ -122,12 +128,6 @@ export interface ElectronWindowApi {
 
     /** Closes the current window. */
     closeWindow(): void;
-
-    /**
-     * Opens a new top-level Trilium window navigated to the given hash route.
-     * @param extraWindowHash The URL hash fragment (without the leading `#`) for the new window.
-     */
-    createExtraWindow(extraWindowHash: string): void;
 
     /** Synchronously returns whether the window is pinned above all others. */
     isAlwaysOnTop(): boolean;
@@ -231,6 +231,12 @@ export interface ElectronClipboardApi {
      * grant the sensitive `clipboard-read` permission to the whole session.
      */
     readText(): Promise<string>;
+
+    /**
+     * Reads the HTML flavor of the system clipboard, the same way as {@link readText}. Empty when
+     * the clipboard has no HTML.
+     */
+    readHTML(): Promise<string>;
 }
 
 /**
@@ -271,10 +277,28 @@ export interface ElectronShellApi {
     openPath(path: string): Promise<string>;
 
     /**
+     * Shows a local file in the OS file manager, with the file itself selected,
+     * via `electron.shell.showItemInFolder`. For pointing at a file the user is
+     * not meant to open — the database, whose reader is Trilium itself.
+     *
+     * **Security:** the same sandbox as {@link openPath}, with the database
+     * file added as a root of its own, since `TRILIUM_DOCUMENT_PATH` may put it
+     * outside the data directory. Revealing is the milder act of the two, the
+     * file being selected rather than launched, but a path the renderer names
+     * is still a path the renderer must not be free to choose.
+     *
+     * Nothing is reported back: the OS is asked to bring a window forward, and
+     * whether it did is not something Electron answers.
+     */
+    showItemInFolder(path: string): void;
+
+    /**
      * Opens a `file://` URL with its default OS handler. Exists as a separate
-     * channel from {@link openExternal} because Electron's `shell.openExternal`
-     * mishandles Unicode characters in `file:` URLs on Windows; converting to
-     * a filesystem path and calling `shell.openPath` works correctly.
+     * channel from {@link openExternal} because neither Electron API opens every
+     * target correctly on Windows: `shell.openExternal` mishandles Unicode
+     * characters in `file:` URLs, while `shell.openPath` opens a directory with
+     * the Explorer-specific `explore` verb, bypassing the user's file manager.
+     * The main process picks between them per target.
      *
      * **Security:** the URL must use the `file:` scheme and must have an
      * empty hostname. UNC paths (`file://attacker.example/share/x`) are
@@ -379,8 +403,11 @@ export interface ElectronPrintingApi {
      */
     onPrintProgress(callback: (data: { progress: number; action: string }) => void): void;
 
-    /** Subscribes to the "print finished" event, fired once the OS print job is dispatched. */
-    onPrintDone(callback: (printReport: unknown) => void): void;
+    /**
+     * Subscribes to the "print finished" event, fired once the OS print job is dispatched.
+     * `liveJobId` names the live print the job ended, for a job that printed the app window itself.
+     */
+    onPrintDone(callback: (printReport: unknown, liveJobId?: number) => void): void;
 
     /** Removes all listeners registered via {@link onPrintProgress} and {@link onPrintDone}. */
     removePrintListeners(): void;
@@ -396,7 +423,7 @@ export interface ElectronPrintingApi {
     exportAsPdfPreview(opts: Record<string, unknown>): void;
 
     /** Subscribes to the result of an {@link exportAsPdfPreview} call. */
-    onExportAsPdfPreviewResult(callback: (result: { buffer?: Uint8Array; error?: string }) => void): void;
+    onExportAsPdfPreviewResult(callback: (result: { buffer?: Uint8Array; error?: string; requestId?: number }) => void): void;
 
     /** Removes the listener registered via {@link onExportAsPdfPreviewResult}. */
     removeExportAsPdfPreviewResultListener(): void;
@@ -472,17 +499,7 @@ export interface ElectronNavigationApi {
  * to prevent malicious scripts from modifying them. Changes require a native
  * OS confirmation dialog and an app restart to take effect.
  */
-export interface ElectronSecurityApi {
-    /**
-     * Requests a change to a security setting. Shows a native OS confirmation
-     * dialog before writing. Returns `true` if the user confirmed and the
-     * change was written (restart required to take effect), `false` if cancelled.
-     */
-    setBackendScriptingEnabled(enabled: boolean): Promise<boolean>;
-
-    /** Requests a change to the SQL console setting. Same flow as above. */
-    setSqlConsoleEnabled(enabled: boolean): Promise<boolean>;
-
+export interface ElectronSecurityApi extends SecurityToggleApi {
     /**
      * Requests enabling/disabling LAN access. When enabled, the desktop binds
      * its TCP listener to all interfaces (instead of loopback) so other devices
@@ -685,6 +702,104 @@ export interface ElectronDialogApi {
      * before any path comes back.
      */
     pickDirectory(opts?: { defaultPath?: string }): Promise<NativeDirectoryPickResult>;
+
+    /**
+     * Prompts a native message box before the application restarts into the setup screen, where the
+     * user may replace or erase their knowledge base.
+     *
+     * An OS dialog rather than one of the application's own, for the reason the security toggles use
+     * one: a note script can reach every dialog the app draws for itself, and this one guards the
+     * path to losing everything. It is never suppressible, so there is no "don't ask again" here.
+     */
+    confirmStartOver(): Promise<boolean>;
+}
+
+/** Phase of the meeting transcription; at most one recording runs at a time. */
+export type TranscriptionStatus = "idle" | "starting" | "recording" | "stopping";
+
+/**
+ * Why a source's audio is not being transcribed: its capture did not start (`not_captured`), it
+ * has delivered no audio for 10 s (`no_audio`), as when its capture hangs, or it has delivered
+ * only digital silence for a while (`silent`), as from a muted device.
+ */
+export type TranscriptSourceIssue = "not_captured" | "no_audio" | "silent";
+
+/** What {@link ElectronTranscriptionApi} reports to every window. */
+export interface TranscriptionState {
+    status: TranscriptionStatus;
+    /** The meeting note the recording belongs to, or `null` when idle. */
+    noteId: string | null;
+    /** The sources heard speaking, or whose speech is still being transcribed. */
+    pendingSources: TranscriptSource[];
+    /**
+     * While recording, the sources whose audio is not being transcribed, and why; absent when
+     * every source delivers sound.
+     */
+    sourceIssues?: Partial<Record<TranscriptSource, TranscriptSourceIssue>>;
+    /**
+     * When the recording started, in milliseconds since the epoch: set once it records, kept while
+     * it stops, absent otherwise.
+     */
+    startedAt?: number;
+    /**
+     * A problem to tell the user about, sent once with the state it concerns: the recording ended
+     * without being stopped, or its transcript cannot be saved. `getState()` never returns it.
+     */
+    error?: string;
+}
+
+/**
+ * Meeting transcription, recorded and transcribed on this computer by the main process. The
+ * renderer only starts and stops it; the audio never passes through the renderer.
+ */
+export interface ElectronTranscriptionApi {
+    /**
+     * Whether this build can transcribe on this computer: `false` when it carries no speech
+     * recognition engine for the platform and processor it runs on.
+     */
+    isSupported(): Promise<boolean>;
+
+    /**
+     * Starts recording the microphone and the system audio for the meeting note `noteId`.
+     *
+     * @returns An empty string once recording runs, or an error message when it cannot start.
+     */
+    start(noteId: string): Promise<string>;
+
+    /** Stops the recording, once the speech already captured has been transcribed. */
+    stop(): Promise<void>;
+
+    getState(): Promise<TranscriptionState>;
+
+    /**
+     * Names a speaker of the transcript attachment `attachmentId`, or restores the default name
+     * when `name` is blank, if a running recording writes that transcript. The recording applies
+     * it, so no utterance it writes meanwhile is lost.
+     *
+     * @returns `false` when no recording writes `attachmentId`; it can then be saved whole.
+     */
+    renameSpeaker(attachmentId: string, key: string, name: string): Promise<boolean>;
+
+    /**
+     * Returns the directory that keeps the audio and the transcript as produced of each recording
+     * while `transcriptionKeepRecordings` is on, creating it if needed.
+     */
+    getRecordingsDirectory(): Promise<string>;
+
+    /**
+     * Calls `callback` every time the state changes, in any window.
+     *
+     * @returns A function that removes the listener.
+     */
+    onStateChanged(callback: (state: TranscriptionState) => void): () => void;
+
+    /**
+     * Calls `callback` with the RMS, from 0 to 1, of every chunk a source of the running recording
+     * delivers, about four times a second per source.
+     *
+     * @returns A function that stops the calls.
+     */
+    onLevel(callback: (source: TranscriptSource, level: number) => void): () => void;
 }
 
 /**
@@ -731,4 +846,6 @@ export interface ElectronApi {
     dialog: ElectronDialogApi;
     /** Choosing a backup to restore during setup, read where it lies rather than uploaded. */
     restore: ElectronRestoreApi;
+    /** Meeting transcription: starting and stopping a recording, and following its state. */
+    transcription: ElectronTranscriptionApi;
 }

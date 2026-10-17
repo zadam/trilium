@@ -203,6 +203,21 @@
                                         "name": "iconClass",
                                         "value": "bx bxl-tux"
                                     }
+                                ],
+                                "children": [
+                                    {
+                                        "id": "_help_ZNAjFcxqHr9V",
+                                        "title": "Simple auto-update for server",
+                                        "type": "code",
+                                        "attributes": [
+                                            {
+                                                "type": "label",
+                                                "name": "iconClass",
+                                                "value": "bx bx-file"
+                                            }
+                                        ],
+                                        "mime": "text/x-sh"
+                                    }
                                 ]
                             },
                             {
@@ -634,6 +649,23 @@
                         "value": "bx bx-folder-open"
                     }
                 ]
+            },
+            {
+                "id": "_help_ebyr7ES2SwOW",
+                "title": "Downloaded resources",
+                "type": "text",
+                "attributes": [
+                    {
+                        "type": "label",
+                        "name": "docUrl",
+                        "value": "https://docs.triliumnotes.org/user-guide/setup/downloaded-resources"
+                    },
+                    {
+                        "type": "label",
+                        "name": "iconClass",
+                        "value": "bx bx-download"
+                    }
+                ]
             }
         ]
     },
@@ -793,23 +825,6 @@
                         ]
                     },
                     {
-                        "id": "_help_BlN9DFI679QC",
-                        "title": "Ribbon",
-                        "type": "text",
-                        "attributes": [
-                            {
-                                "type": "label",
-                                "name": "docUrl",
-                                "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/ribbon"
-                            },
-                            {
-                                "type": "label",
-                                "name": "iconClass",
-                                "value": "bx bx-dots-horizontal"
-                            }
-                        ]
-                    },
-                    {
                         "id": "_help_3seOhtN8uLIY",
                         "title": "Tabs",
                         "type": "text",
@@ -845,6 +860,23 @@
                     },
                     {
                         "id": "_help_8YBEPzcpUgxw",
+                        "title": "Note menu",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/note-menu"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-dots-horizontal-rounded"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_1P8QXI5edXNd",
                         "title": "Note buttons",
                         "type": "text",
                         "attributes": [
@@ -856,7 +888,7 @@
                             {
                                 "type": "label",
                                 "name": "iconClass",
-                                "value": "bx bx-dots-vertical-rounded"
+                                "value": "bx bx-download"
                             }
                         ]
                     },
@@ -891,23 +923,6 @@
                                 "type": "label",
                                 "name": "iconClass",
                                 "value": "bx bx-dock-right"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "_help_XpOYSgsLkTJy",
-                        "title": "Floating buttons",
-                        "type": "text",
-                        "attributes": [
-                            {
-                                "type": "label",
-                                "name": "docUrl",
-                                "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/floating-buttons"
-                            },
-                            {
-                                "type": "label",
-                                "name": "iconClass",
-                                "value": "bx bx-rectangle"
                             }
                         ]
                     },
@@ -1045,59 +1060,6 @@
                         ]
                     },
                     {
-                        "id": "_help_IjZS7iK5EXtb",
-                        "title": "New Layout",
-                        "type": "text",
-                        "attributes": [
-                            {
-                                "type": "label",
-                                "name": "docUrl",
-                                "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/new-layout"
-                            },
-                            {
-                                "type": "label",
-                                "name": "iconClass",
-                                "value": "bx bx-layout"
-                            }
-                        ],
-                        "children": [
-                            {
-                                "id": "_help_I6p2a06hdnL6",
-                                "title": "Breadcrumb",
-                                "type": "text",
-                                "attributes": [
-                                    {
-                                        "type": "label",
-                                        "name": "docUrl",
-                                        "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/new-layout/breadcrumb"
-                                    },
-                                    {
-                                        "type": "label",
-                                        "name": "iconClass",
-                                        "value": "bx bx-chevron-right"
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "_help_AlJ73vBCjWDw",
-                                "title": "Status bar",
-                                "type": "text",
-                                "attributes": [
-                                    {
-                                        "type": "label",
-                                        "name": "docUrl",
-                                        "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/new-layout/status-bar"
-                                    },
-                                    {
-                                        "type": "label",
-                                        "name": "iconClass",
-                                        "value": "bx bx-dock-bottom"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
                         "id": "_help_SL5f1Auq7sVN",
                         "title": "Note types with split view",
                         "type": "text",
@@ -1128,6 +1090,57 @@
                                 "type": "label",
                                 "name": "iconClass",
                                 "value": "bx bx-detail"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_jcQVxzYybYgz",
+                        "title": "Note contextual menu",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/note-context-menu"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-menu"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_AlJ73vBCjWDw",
+                        "title": "Status bar",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/status-bar"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-dock-bottom"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_I6p2a06hdnL6",
+                        "title": "Breadcrumb",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/ui/breadcrumb"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-chevron-right"
                             }
                         ]
                     }
@@ -1389,6 +1402,57 @@
                                 "value": "bx bx-trash-alt"
                             }
                         ]
+                    },
+                    {
+                        "id": "_help_m3VlURMSeOrd",
+                        "title": "New note type switcher",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/notes/new-note-type-switcher"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bxs-widget"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_B5dihXRDksTk",
+                        "title": "Note badges",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/notes/note-badges"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-square-rounded"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_Bsm4fyzPJkSc",
+                        "title": "Save status indicator",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/notes/save-status-indicator"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-save"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1491,6 +1555,42 @@
                                 "type": "label",
                                 "name": "iconClass",
                                 "value": "bx bx-search-alt-2"
+                            }
+                        ],
+                        "children": [
+                            {
+                                "id": "_help_Oxyb6jOjjVNL",
+                                "title": "Under the hood",
+                                "type": "text",
+                                "attributes": [
+                                    {
+                                        "type": "label",
+                                        "name": "docUrl",
+                                        "value": "https://docs.triliumnotes.org/user-guide/concepts/navigation/search/under-the-hood"
+                                    },
+                                    {
+                                        "type": "label",
+                                        "name": "iconClass",
+                                        "value": "bx bxs-cog"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "_help_WbjlujkUhEb5",
+                                "title": "How search matches your text",
+                                "type": "text",
+                                "attributes": [
+                                    {
+                                        "type": "label",
+                                        "name": "docUrl",
+                                        "value": "https://docs.triliumnotes.org/user-guide/concepts/navigation/search/matching"
+                                    },
+                                    {
+                                        "type": "label",
+                                        "name": "iconClass",
+                                        "value": "bx bx-file-find"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -1665,6 +1765,23 @@
                                 "value": "bx bx-package"
                             }
                         ]
+                    },
+                    {
+                        "id": "_help_w4rMEhJsALlA",
+                        "title": "Personalizing the font",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/concepts/themes/fonts"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-font"
+                            }
+                        ]
                     }
                 ]
             },
@@ -1751,7 +1868,26 @@
                                     {
                                         "type": "label",
                                         "name": "iconClass",
-                                        "value": "bx bx-window-open"
+                                        "value": "tn-brand tn-brand-onenote"
+                                    }
+                                ],
+                                "children": [
+                                    {
+                                        "id": "_help_LpvyEIBIAAj7",
+                                        "title": "Tags",
+                                        "type": "text",
+                                        "attributes": [
+                                            {
+                                                "type": "label",
+                                                "name": "docUrl",
+                                                "value": "https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/onenote/tags"
+                                            },
+                                            {
+                                                "type": "label",
+                                                "name": "iconClass",
+                                                "value": "bx bx-star"
+                                            }
+                                        ]
                                     }
                                 ]
                             },
@@ -1768,7 +1904,7 @@
                                     {
                                         "type": "label",
                                         "name": "iconClass",
-                                        "value": "bx bx-window-open"
+                                        "value": "tn-brand tn-brand-notion"
                                     }
                                 ]
                             },
@@ -1785,7 +1921,7 @@
                                     {
                                         "type": "label",
                                         "name": "iconClass",
-                                        "value": "bx bx-window-open"
+                                        "value": "tn-brand tn-brand-google-keep"
                                     }
                                 ]
                             },
@@ -1802,7 +1938,7 @@
                                     {
                                         "type": "label",
                                         "name": "iconClass",
-                                        "value": "bx bx-window-open"
+                                        "value": "tn-brand tn-brand-evernote"
                                     }
                                 ],
                                 "children": [
@@ -1839,7 +1975,7 @@
                                     {
                                         "type": "label",
                                         "name": "iconClass",
-                                        "value": "bx bx-window-open"
+                                        "value": "tn-brand tn-brand-anytype"
                                     }
                                 ]
                             },
@@ -1856,7 +1992,7 @@
                                     {
                                         "type": "label",
                                         "name": "iconClass",
-                                        "value": "bx bx-window-open"
+                                        "value": "tn-brand tn-brand-obsidian"
                                     }
                                 ]
                             }
@@ -2020,6 +2156,23 @@
                         ]
                     },
                     {
+                        "id": "_help_klC3ilXa9kUE",
+                        "title": "Block references",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/note-types/text/block-references"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-paragraph"
+                            }
+                        ]
+                    },
+                    {
                         "id": "_help_4n4oQUVbnOxa",
                         "title": "Collapsible blocks",
                         "type": "text",
@@ -2050,6 +2203,23 @@
                                 "type": "label",
                                 "name": "iconClass",
                                 "value": "bx bx-align-right"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_EK2ckIZ74tbT",
+                        "title": "Content tabs",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/note-types/text/content-tabs"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "cke cke-trilium-tabs"
                             }
                         ]
                     },
@@ -2228,6 +2398,42 @@
                         ]
                     },
                     {
+                        "id": "_help_VRoP0g1uHHc2",
+                        "title": "In-editor AI assistant",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/note-types/text/ai-assistant"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-bot"
+                            }
+                        ],
+                        "children": [
+                            {
+                                "id": "_help_mVEYwt20exhO",
+                                "title": "Custom AI quick actions",
+                                "type": "text",
+                                "attributes": [
+                                    {
+                                        "type": "label",
+                                        "name": "docUrl",
+                                        "value": "https://docs.triliumnotes.org/user-guide/note-types/text/ai-assistant/custom-quick-actions"
+                                    },
+                                    {
+                                        "type": "label",
+                                        "name": "iconClass",
+                                        "value": "bx bx-file"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
                         "id": "_help_nBAXQFj20hS1",
                         "title": "Include Note",
                         "type": "text",
@@ -2258,6 +2464,25 @@
                                 "type": "label",
                                 "name": "iconClass",
                                 "value": "bx bx-plus"
+                            }
+                        ],
+                        "children": [
+                            {
+                                "id": "_help_hD8GawVuazff",
+                                "title": "Icons",
+                                "type": "text",
+                                "attributes": [
+                                    {
+                                        "type": "label",
+                                        "name": "docUrl",
+                                        "value": "https://docs.triliumnotes.org/user-guide/note-types/text/insert-buttons/icons"
+                                    },
+                                    {
+                                        "type": "label",
+                                        "name": "iconClass",
+                                        "value": "bx bx-sticker"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -2413,6 +2638,23 @@
                                 "type": "label",
                                 "name": "iconClass",
                                 "value": "bx bx-math"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_wYDzQ1fBFgfT",
+                        "title": "Multicolumn layout",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/note-types/text/multicolumn-layout"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "cke cke-trilium-multicolumn"
                             }
                         ]
                     },
@@ -2596,7 +2838,7 @@
                     {
                         "type": "label",
                         "name": "iconClass",
-                        "value": "bx bxs-network-chart"
+                        "value": "bx bx-shape-polygon"
                     }
                 ]
             },
@@ -2943,6 +3185,42 @@
                         "type": "label",
                         "name": "iconClass",
                         "value": "bx bx-map-alt"
+                    }
+                ],
+                "children": [
+                    {
+                        "id": "_help_C2H9HK4BzwG7",
+                        "title": "Drawing shapes",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/collections/geomap/shapes"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-shape-square"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_ZRDXGc0nAIh4",
+                        "title": "Image maps",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/collections/geomap/image-maps"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-image-alt"
+                            }
+                        ]
                     }
                 ]
             },
@@ -3394,7 +3672,7 @@
                     {
                         "type": "label",
                         "name": "iconClass",
-                        "value": "bx bx-copy"
+                        "value": "bx bx-detail"
                     }
                 ]
             },
@@ -3954,7 +4232,7 @@
                     {
                         "type": "label",
                         "name": "iconClass",
-                        "value": "bx bx-hash"
+                        "value": "bx bx-fingerprint"
                     }
                 ]
             },
@@ -4155,6 +4433,25 @@
                         "name": "iconClass",
                         "value": "bx bx-cog"
                     }
+                ],
+                "children": [
+                    {
+                        "id": "_help_eFhxp9laTW1S",
+                        "title": "Subscription-based providers",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/llm/providers/subscription-based"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-coin"
+                            }
+                        ]
+                    }
                 ]
             },
             {
@@ -4185,6 +4482,23 @@
                         "value": "bx bx-network-chart"
                     }
                 ]
+            }
+        ]
+    },
+    {
+        "id": "_help_Y84QCbArmK3z",
+        "title": "Meeting transcription",
+        "type": "text",
+        "attributes": [
+            {
+                "type": "label",
+                "name": "docUrl",
+                "value": "https://docs.triliumnotes.org/user-guide/transcription"
+            },
+            {
+                "type": "label",
+                "name": "iconClass",
+                "value": "bx bx-microphone"
             }
         ]
     },
@@ -4572,6 +4886,23 @@
                                 ]
                             }
                         ]
+                    },
+                    {
+                        "id": "_help_irkwjdNtjcxR",
+                        "title": "Frontend Events",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/scripts/frontend-basics/events"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-rss"
+                            }
+                        ]
                     }
                 ]
             },
@@ -4611,7 +4942,7 @@
                     },
                     {
                         "id": "_help_GPERMystNGTB",
-                        "title": "Events",
+                        "title": "Backend Events",
                         "type": "text",
                         "attributes": [
                             {
@@ -4824,6 +5155,40 @@
                     }
                 ],
                 "children": [
+                    {
+                        "id": "_help_IjZS7iK5EXtb",
+                        "title": "v0.107.0: Removal of the old layout",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/scripts/breaking-changes/old-layout-removal"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-layout"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "_help_kTx7WqLdZ3Ry",
+                        "title": "v0.106.0: Removal of cheerio",
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "type": "label",
+                                "name": "docUrl",
+                                "value": "https://docs.triliumnotes.org/user-guide/scripts/breaking-changes/cheerio-removal"
+                            },
+                            {
+                                "type": "label",
+                                "name": "iconClass",
+                                "value": "bx bx-file"
+                            }
+                        ]
+                    },
                     {
                         "id": "_help_YeOa2l7Pu39I",
                         "title": "v0.104.0: Disabling the Node integration in Electron",

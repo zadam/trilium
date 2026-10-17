@@ -68,6 +68,14 @@ describe("help_tools", () => {
         search = vi.fn(() => []);
     });
 
+    it("reads only the User Guide, which ships with Trilium, never the user's data", () => {
+        const readsUserData = (name: string) => {
+            const definition = getTool(name);
+            return definition.mutates ? true : definition.readsUserData;
+        };
+        expect([ "search_help", "get_help_toc" ].map(readsUserData)).toEqual([ false, false ]);
+    });
+
     describe("search_help", () => {
         it("searches the guide and nothing else, passing the query through as written", () => {
             buildHelpTree();

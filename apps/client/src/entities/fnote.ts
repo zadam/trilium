@@ -1,11 +1,9 @@
-import { getNoteIcon } from "@triliumnext/commons";
+import { getNoteIcon, HighlightedTokenInfo, isMarkdownMime } from "@triliumnext/commons";
 
-import bundleService from "../services/bundle.js";
 import cssClassManager from "../services/css_class_manager.js";
 import type { Froca } from "../services/froca-interface.js";
 import noteAttributeCache from "../services/note_attribute_cache.js";
 import protectedSessionHolder from "../services/protected_session_holder.js";
-import search from "../services/search.js";
 import server from "../services/server.js";
 import utils from "../services/utils.js";
 import type FAttachment from "./fattachment.js";
@@ -74,6 +72,9 @@ export default class FNote {
     // Managed by Froca.
     searchResultsLoaded?: boolean;
     highlightedTokens?: string[];
+    /** Structured, diacritic/regex-aware counterpart of {@link highlightedTokens}; prefer this
+     *  when present. */
+    highlightedTokenInfos?: HighlightedTokenInfo[];
 
     constructor(froca: Froca, row: FNoteRow) {
         this.froca = froca;
@@ -258,7 +259,8 @@ export default class FNote {
         const isHiddenNote = this.noteId.startsWith("_");
         const isSearchNote = this.type === "search";
         if (!includeArchived && !isHiddenNote && !isSearchNote) {
-            const unorderedIds = new Set(await search.searchForNoteIds(`note.parents.noteId="${this.noteId}" #!archived`));
+            const query = `note.parents.noteId="${this.noteId}" #!archived`;
+            const unorderedIds = new Set(await this.froca.searchNoteIds(query, this.noteId));
             const results: string[] = [];
             for (const id of this.children) {
                 if (unorderedIds.has(id)) {
@@ -270,13 +272,19 @@ export default class FNote {
         return this.children;
     }
 
-    async getSubtreeNoteIds(includeArchived = false) {
+    /**
+     * @param maxDepth how many levels below the children to descend: `0` returns only the children,
+     *                 and a negative value descends without limit.
+     */
+    async getSubtreeNoteIds(includeArchived = false, maxDepth = -1) {
         const noteIds: (string | string[])[] = [];
         for (const child of await this.getChildNotes()) {
             if (child.isArchived && !includeArchived) continue;
 
             noteIds.push(child.noteId);
-            noteIds.push(await child.getSubtreeNoteIds(includeArchived));
+            if (maxDepth !== 0) {
+                noteIds.push(await child.getSubtreeNoteIds(includeArchived, maxDepth - 1));
+            }
         }
         return noteIds.flat();
     }
@@ -434,12 +442,16 @@ export default class FNote {
 
     getSortedNotePathRecords(hoistedNoteId = "root", activeNotePath: string | null = null): NotePathRecord[] {
         const isHoistedRoot = hoistedNoteId === "root";
+        // Every ancestor in a path comes out of `froca.notes`, but the last segment is this note,
+        // which a view can still hold after `froca_updater` drops it from the cache.
+        const getPathNote = (noteId: string) =>
+            noteId === this.noteId ? this : this.froca.notes[noteId];
 
         const notePaths: NotePathRecord[] = this.getAllNotePaths().map((path) => ({
             notePath: path,
             isInHoistedSubTree: isHoistedRoot || path.includes(hoistedNoteId),
-            isArchived: path.some((noteId) => this.froca.notes[noteId].isArchived),
-            isSearch: path.some((noteId) => this.froca.notes[noteId].type === "search"),
+            isArchived: path.some((noteId) => getPathNote(noteId).isArchived),
+            isSearch: path.some((noteId) => getPathNote(noteId).type === "search"),
             isHidden: path.includes("_hidden")
         }));
 
@@ -450,16 +462,6 @@ export default class FNote {
         };
 
         notePaths.sort((a, b) => {
-            if (activeNotePath) {
-                const activeSegments = activeNotePath.split('/');
-                const aOverlap = prefixMatchLength(a.notePath, activeSegments);
-                const bOverlap = prefixMatchLength(b.notePath, activeSegments);
-                // Paths with more matching prefix segments are prioritized
-                // when the match count is equal, other criteria are used for sorting
-                if (bOverlap !== aOverlap) {
-                    return bOverlap - aOverlap;
-                }
-            }
             if (a.isInHoistedSubTree !== b.isInHoistedSubTree) {
                 return a.isInHoistedSubTree ? -1 : 1;
             } else if (a.isArchived !== b.isArchived) {
@@ -471,6 +473,19 @@ export default class FNote {
                 return a.isSearch ? 1 : -1;
             }
             /* v8 ignore stop */
+
+            if (activeNotePath) {
+                // Among otherwise equal paths, the one sharing the longest prefix with the active
+                // note wins, so opening a clone keeps the user where they came from. The checks
+                // above outrank it: an active `_hidden` note must not promote a bookmark clone.
+                const activeSegments = activeNotePath.split("/");
+                const aOverlap = prefixMatchLength(a.notePath, activeSegments);
+                const bOverlap = prefixMatchLength(b.notePath, activeSegments);
+                if (bOverlap !== aOverlap) {
+                    return bOverlap - aOverlap;
+                }
+            }
+
             return a.notePath.length - b.notePath.length;
         });
 
@@ -588,7 +603,8 @@ export default class FNote {
             mime: this.mime,
             iconClass: iconClassLabels.length > 0 ? iconClassLabels[0].value : undefined,
             workspaceIconClass,
-            isFolder: this.isFolder.bind(this)
+            isFolder: this.isFolder.bind(this),
+            getLabelValue: this.getLabelValue.bind(this)
         });
         return `tn-icon ${icon}`;
     }
@@ -859,6 +875,79 @@ export default class FNote {
         return relations.map((rel) => this.froca.notes[rel.value]);
     }
 
+    /**
+     * The value a note created under this one would be given for the attribute without asking for
+     * it, or `null` where it would be given none: a `child:`-prefixed attribute copied onto every
+     * new child, an inheritable attribute handed down the tree, or one lent by a template the child
+     * is given. Checked in that order, which is the order `getAttributes()` lists them in on the
+     * child itself.
+     *
+     * Mirrors `copyChildAttributes()` in trilium-core, which is where the copying happens. Two
+     * uses: previewing a note that does not exist yet (see GhostPin in the geo map), and telling a
+     * default apart from a value the user chose — what a note would be given anyway is not worth
+     * writing onto it, and writing it defeats the setting that would have given it.
+     *
+     * `childType` is the type the caller is about to create. A `~child:template` of another type is
+     * skipped by core when the type was chosen explicitly (#3015) and lends such a child nothing;
+     * left out, the template is taken to apply. The title is not answered for: `#titleTemplate` is
+     * evaluated by the server against values the client does not hold.
+     */
+    getAttributeValueForNewChild(type: AttributeType, name: string, childType?: NoteType) {
+        const copied = this.getAttributeValue(type, `child:${name}`);
+        if (copied !== null) {
+            return copied;
+        }
+
+        const inherited = this.getAttributes(type, name).find((attr) => attr.isInheritable);
+        if (inherited) {
+            return inherited.value;
+        }
+
+        for (const template of this.__getTemplatesForNewChild(childType)) {
+            const value = template.getAttributeValue(type, name);
+            if (value !== null) {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param name - label name
+     * @returns the label value a note created under this one would be given, or null
+     */
+    getLabelValueForNewChild(name: string, childType?: NoteType) {
+        return this.getAttributeValueForNewChild(LABEL, name, childType);
+    }
+
+    /**
+     * The templates a note created under this one would be given: the target of a `~child:template`
+     * copied onto it, and the targets of the inheritable `~template` / `~inherit` it inherits.
+     *
+     * @private
+     */
+    __getTemplatesForNewChild(childType?: NoteType) {
+        const templates: FNote[] = [];
+
+        for (const attr of this.getAttributes(RELATION)) {
+            const isCopied = attr.name === "child:template";
+            const isHandedDown = attr.isInheritable && ["template", "inherit"].includes(attr.name);
+            if (!isCopied && !isHandedDown) {
+                continue;
+            }
+
+            const template = this.froca.notes[attr.value];
+            if (!template || (isCopied && childType && template.type !== childType)) {
+                continue;
+            }
+
+            templates.push(template);
+        }
+
+        return templates;
+    }
+
     getPromotedDefinitionAttributes() {
         if (this.isLabelTruthy("hidePromotedAttributes")) {
             return [];
@@ -1050,9 +1139,11 @@ export default class FNote {
         const env = this.getScriptEnv();
 
         if (env === "frontend") {
+            const { default: bundleService } = await import("../services/bundle.js");
             return await bundleService.getAndExecuteBundle(this.noteId);
         } else if (env === "backend") {
-            await server.post(`script/run/${this.noteId}`);
+            const { runBackendScript } = await import("../services/backend_scripting.js");
+            await runBackendScript(this.noteId);
         } else {
             throw new Error(`Unrecognized env type ${env} for note ${this.noteId}`);
         }
@@ -1095,7 +1186,7 @@ export default class FNote {
     }
 
     isMarkdown() {
-        return this.type === "code" && (this.mime === "text/markdown" || this.mime === "text/x-markdown" || this.mime === "text/x-gfm");
+        return this.type === "code" && isMarkdownMime(this.mime);
     }
 
     isIconPack() {

@@ -1,6 +1,6 @@
 import {
     FIXED_HEADER_BYTES,
-    peekBackupContainer,
+    getInfo,
     writeBackupContainer
 } from "@triliumnext/backup-container";
 import type {
@@ -11,7 +11,6 @@ import type {
 import { BackupOptionsService, BackupService, getLog, sync_mutex as syncMutexService, utils as coreUtils, ws } from "@triliumnext/core";
 import type { Response } from "express";
 import fs from "fs";
-import fsp from "fs/promises";
 import { t } from "i18next";
 import path from "path";
 
@@ -36,6 +35,13 @@ export interface ServerBackupConfig {
      * desktop application, which is the only one with an OS keyring to keep a passphrase in.
      */
     getPassphrase?: () => Promise<string | null>;
+    /**
+     * Stores the backup passphrase, or lets go of the stored one when given `null`. Set alongside
+     * {@link getPassphrase}, and used by the restore rather than by any screen: unset, an instance
+     * simply has nowhere to keep a passphrase, and there is nothing for a restore to bring up to
+     * date.
+     */
+    setPassphrase?: (passphrase: string | null) => Promise<void>;
 }
 
 /** How a backup is to be written, once the options and the passphrase have both had their say. */
@@ -184,6 +190,19 @@ export default class ServerBackupService extends BackupService {
     }
 
     /**
+     * Takes on the passphrase a restored backup was locked with, or lets go of the stored one when
+     * the backup brought none.
+     *
+     * The passphrase is not kept in the database, so a restore replaces every option that says how
+     * this instance backs up while leaving the password those options are carried out with. What is
+     * left is an instance encrypting its backups with the password of a database that is no longer
+     * here, saying nothing about it, and producing backups the user cannot open.
+     */
+    async adoptPassphrase(passphrase: string | null): Promise<void> {
+        await this.config.setPassphrase?.(passphrase);
+    }
+
+    /**
      * Settles what the backup is written as, from what the user asked for where they were asked at
      * all, and from the instance's own options where they were not.
      *
@@ -306,7 +325,8 @@ function listBackupsIn(directory: string): DatabaseBackup[] {
  * the shape it was written in, whatever the settings have since become.
  *
  * Only the fixed header is read, so this costs a few dozen bytes per file and never needs the
- * passphrase. A file whose header does not parse is listed as a plain one rather than not at all.
+ * passphrase. A file that is not a container this build can open is still listed, saying why: it is
+ * sitting in the backup directory being counted as a backup, and the user is relying on it.
  */
 function describeContainer(filePath: string, fileName: string): Partial<DatabaseBackup> {
     if (!fileName.endsWith(CONTAINER_EXTENSION)) {
@@ -314,11 +334,13 @@ function describeContainer(filePath: string, fileName: string): Partial<Database
     }
 
     const head = Buffer.alloc(FIXED_HEADER_BYTES);
+    let read: number;
     let descriptor: number | undefined;
     try {
         descriptor = fs.openSync(filePath, "r");
-        fs.readSync(descriptor, head, 0, head.length, 0);
+        read = fs.readSync(descriptor, head, 0, head.length, 0);
     } catch {
+        // Nothing was learned, which is not the same as having learned the file is no good.
         return {};
     } finally {
         if (descriptor !== undefined) {
@@ -326,16 +348,21 @@ function describeContainer(filePath: string, fileName: string): Partial<Database
         }
     }
 
-    const info = peekBackupContainer(head);
-    if (!info) {
-        return {};
+    // Only what the file actually held, so a file too short to have a header is judged on that
+    // rather than on the zeroes the buffer came with.
+    const info = getInfo(head.subarray(0, read));
+    if (!info.isValid) {
+        return { unreadable: "invalid" };
+    }
+    if (!info.isSupported) {
+        return { unreadable: "unsupported-version" };
     }
 
     return {
-        compressed: info.compressed,
-        encrypted: info.encrypted,
+        compressed: info.isCompressed,
+        encrypted: info.isEncrypted,
         // Recorded as 0 when the writer did not know it, which reads the same as "not stated".
-        plaintextSize: info.plaintextSize > 0 ? info.plaintextSize : undefined
+        plaintextSize: info.size > 0 ? info.size : undefined
     };
 }
 
@@ -401,17 +428,7 @@ async function writeContainer(
             compress: format.compress,
             passphrase: format.passphrase ?? undefined,
             plaintextSize: fs.statSync(snapshot).size,
-            onProgress,
-            // The digest is only known once the payload is written, so it is patched in afterwards.
-            patchHeader: async (offset, data) => {
-                const handle = await fsp.open(partial, "r+");
-                try {
-                    await handle.write(data, 0, data.length, offset);
-                    await handle.sync();
-                } finally {
-                    await handle.close();
-                }
-            }
+            onProgress
         });
 
         // Renamed last, so a half-written container is never mistaken for a finished one.

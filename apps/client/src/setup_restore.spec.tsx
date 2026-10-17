@@ -7,6 +7,8 @@ vi.mock("./services/i18n", () => ({
     t: (key: string, values?: Record<string, unknown>) => [ key, ...Object.values(values ?? {}) ].join(" ")
 }));
 
+import en from "./translations/en/entry.json";
+
 const serverMock = vi.hoisted(() => ({
     // The default serves what transitively imported modules ask for as they load (keyboard_actions
     // fetches its shortcut list on import); the routing installed in beforeEach overrides it.
@@ -27,7 +29,7 @@ const uploadMock = vi.hoisted(() => ({
 }));
 vi.mock("./services/chunked_upload", () => uploadMock);
 
-import RestoreFromBackup from "./setup_restore";
+import RestoreFromBackup, { stageLabel } from "./setup_restore";
 
 const BACKUPS = [
     { fileName: "backup-daily.db", filePath: "/data/backup/backup-daily.db", mtime: "2026-08-01T10:00:00Z", fileSize: 2048, encrypted: false },
@@ -456,7 +458,7 @@ describe("uploading a backup", () => {
             .toContain("setup.restore-upload-reconnecting");
         expect(container.querySelector(".restore-upload-speed")).toBeFalsy();
         // Still on the upload rather than thrown back to the picker: waiting is not failing.
-        expect(container.querySelector("progress")).toBeTruthy();
+        expect(container.querySelector("[role=progressbar]")).toBeTruthy();
 
         report({ sentBytes: 2048, totalBytes: 4096, fraction: 0.5, bytesPerSecond: 512, reconnecting: false });
         await flushEffects();
@@ -586,8 +588,8 @@ describe("following the restore", () => {
         restore = { stage: "staging", fraction: 0.42 };
         await nextPoll();
 
-        const bar = container.querySelector<HTMLProgressElement>(".restore-current-step progress");
-        expect(bar?.value).toBe(0.42);
+        const bar = container.querySelector(".restore-current-step [role=progressbar]");
+        expect(bar?.getAttribute("aria-valuenow")).toBe("0.42");
         expect(container.querySelector(".restore-stage-progress")?.textContent).toContain("42%");
     });
 
@@ -596,14 +598,14 @@ describe("following the restore", () => {
 
         restore = { stage: "staging", fraction: 0.9 };
         await nextPoll();
-        expect(container.querySelector(".restore-current-step progress")).toBeTruthy();
+        expect(container.querySelector(".restore-current-step [role=progressbar]")).toBeTruthy();
 
         // Checking a database reads it from end to end with nothing to report along the way; the
         // previous step's bar must not be left sitting under it.
         restore = { stage: "validating" };
         await nextPoll();
 
-        expect(container.querySelector(".restore-current-step progress")).toBeFalsy();
+        expect(container.querySelector(".restore-current-step [role=progressbar]")).toBeFalsy();
     });
 
     it("finishes setup once the restore is done", async () => {
@@ -672,5 +674,33 @@ describe("following the restore", () => {
         restore = { stage: "failed", reason: "database-too-old", error: "version 200" };
         await nextPoll();
         expect(headline()).toBe("setup.restore-error-too-old");
+    });
+});
+
+describe("what the restore calls the stage it is at", () => {
+    // Every stage either restore reports: the server's, and the browser-only one which is alone in
+    // reporting the two that end it.
+    const stages = [ "staging", "validating", "swapping", "migrating", "done", "failed" ];
+
+    it("has a sentence for every stage a restore can report", () => {
+        // t() is mocked to hand back the key, so what a label comes back as is the key it looked
+        // up: it has to be one the catalogue actually defines, or the user is shown the key itself.
+        for (const stage of stages) {
+            const label = stageLabel(stage);
+            if (!label) {
+                continue;
+            }
+
+            const [ namespace, key ] = label.split(".");
+            expect(namespace).toBe("setup");
+            expect(en.setup).toHaveProperty(key);
+        }
+    });
+
+    it("says what happens next once it is done, rather than naming a finished step", () => {
+        // The frame between the last step and the reload, and the one the user watches hardest.
+        expect(stageLabel("done")).toBe("setup.redirecting");
+        // Nothing is said about a failure here: the screen replacing this one says it properly.
+        expect(stageLabel("failed")).toBe("");
     });
 });

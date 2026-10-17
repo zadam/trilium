@@ -3,6 +3,7 @@ import { encodeUtf8 } from "../../../services/utils/binary.js";
 import type { LanguageModel } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { TOOL_CALL_DECLINED_REASON, ToolApprovals } from "../tool_approval.js";
 import type { LlmProviderConfig, ModelInfo } from "../types.js";
 
 const { streamTextMock, generateTextMock, noteMetaMock, errorLogMock, beccaStub } = vi.hoisted(() => ({
@@ -52,6 +53,11 @@ import {
     type ProviderPrices,
     type RemoteModel
 } from "./base_provider.js";
+import { installGlobalFetchAsApiTransport } from "../../../test/request_provider.js";
+
+// A provider reaches its endpoint through the request provider rather than the global `fetch`, so
+// the specs that stub that global need one installed which leads back to it.
+beforeEach(installGlobalFetchAsApiTransport);
 
 const TEST_MODELS: Parameters<typeof buildModelList>[0] = [
     { id: "cheap", name: "Cheap", pricing: { input: 1, output: 2 } },
@@ -93,7 +99,7 @@ class TestProvider extends BaseProvider {
         return this.applyNoteHint(m, c);
     }
     public callBuildMessages(m: LlmMessage[]) {
-        return this.buildMessages(m);
+        return this.buildMessages(m, "mid");
     }
     /** Reach the base implementation past this class's own override. */
     public callBaseFetchRemoteModels() {
@@ -244,6 +250,22 @@ describe("listModels", () => {
         expect(models.map((m) => m.id)).toEqual(["cheap", "mid", "spendy"]);
     });
 
+    it("lists attachmentKinds only on models that don't read every kind", async () => {
+        class NoPdfProvider extends TestProvider {
+            protected override acceptsAttachment(kind: "image" | "file", modelId: string) {
+                return kind === "image" || modelId === "spendy";
+            }
+        }
+        const fromTable = await new NoPdfProvider().listModels();
+        expect(fromTable.map(m => m.attachmentKinds)).toEqual([["image"], ["image"], undefined]);
+
+        const listed = new NoPdfProvider();
+        listed.fetchRemoteModelsMock.mockResolvedValue([{ id: "mid" }, { id: "brand-new" }]);
+        expect((await listed.listModels()).map(m => m.attachmentKinds)).toEqual([["image"], ["image"]]);
+
+        expect((await new TestProvider().listModels()).some(m => "attachmentKinds" in m)).toBe(false);
+    });
+
     it("merges the remote list with price-table metadata and caches the result", async () => {
         const provider = new TestProvider();
         provider.fetchRemoteModelsMock.mockResolvedValue([{ id: "mid" }, { id: "brand-new" }]);
@@ -366,6 +388,25 @@ describe("buildModelMessage", () => {
         expect(part.type).toBe("text");
         expect(part.text).toContain("<file name=\"image.svg\">");
         expect(part.text).toContain("<svg/>");
+    });
+
+    it("names an attachment the filter rejects, but still inlines an SVG, which is text", () => {
+        beccaStub.getAttachment.mockImplementation((id: string) => makeAttachment(id === "svg1"
+            ? { mime: "image/svg+xml", title: "d.svg", getContent: () => encodeUtf8("<svg/>") }
+            : { mime: id === "f1" ? "application/pdf" : "image/png" }));
+        const msg = buildModelMessage({
+            role: "user",
+            content: [
+                { type: "image", attachmentId: "a1", mime: "image/png" },
+                { type: "file", attachmentId: "f1", mime: "application/pdf", filename: "doc.pdf" },
+                { type: "image", attachmentId: "svg1", mime: "image/svg+xml" }
+            ]
+        }, () => false);
+        const parts = msg.content as any[];
+        expect(parts.map(p => p.type)).toEqual(["text", "text", "text"]);
+        expect(parts[0].text).toContain("[attached image]");
+        expect(parts[1].text).toContain("[attached file: doc.pdf]");
+        expect(parts[2].text).toContain("<svg/>");
     });
 
     it("resolves a file attachment, using part overrides for mime and filename", () => {
@@ -577,6 +618,30 @@ describe("BaseProvider chat / pricing / models / title", () => {
         expect(opts.toolChoice).toBe("auto");
         expect(opts.stopWhen).toBeDefined();
         expect(opts.maxOutputTokens).toBe(1234);
+        // Nothing to ask the user through, so the tools run unasked.
+        expect(opts.toolApproval).toBeUndefined();
+    });
+
+    it("holds every call the provider does not run itself until the user answers it", async () => {
+        const toolApprovals = new ToolApprovals();
+        const requests: unknown[] = [];
+        toolApprovals.onRequest = (request) => requests.push(request);
+        new TestProvider().chat([{ role: "user", content: "hi" }], { enableNoteTools: true, toolApprovals });
+        const { toolApproval } = streamTextMock.mock.calls[0][0] as any;
+        const call = (toolCallId: string, providerExecuted?: boolean) =>
+            toolApproval({ toolCall: { toolCallId, toolName: "fake_tool", input: { q: 1 }, providerExecuted } });
+
+        const approved = call("c1");
+        expect(requests).toEqual([{ toolCallId: "c1", toolName: "fake_tool", toolInput: { q: 1 } }]);
+        toolApprovals.answer("c1", true);
+        await expect(approved).resolves.toBe("approved");
+
+        const declined = call("c2");
+        toolApprovals.answer("c2", false);
+        await expect(declined).resolves.toEqual({ type: "denied", reason: TOOL_CALL_DECLINED_REASON });
+
+        await expect(call("c3", true)).resolves.toBe("not-applicable");
+        expect(requests).toHaveLength(2);
     });
 
     it("creates the model from config.model, falling back to the default", () => {
@@ -596,6 +661,7 @@ describe("BaseProvider chat / pricing / models / title", () => {
         expect(provider.createdModelIds).toContain("cheap");
         const args = generateTextMock.mock.calls[0][0] as any;
         expect(args.maxOutputTokens).toBe(30);
+        expect(args.reasoning).toBe("none");
         expect(args.messages[0].content).toContain("Some long first message");
     });
 

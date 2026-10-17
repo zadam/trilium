@@ -1,4 +1,5 @@
 import type { LlmStreamChunk } from "./llm_api.js";
+import type { ResourceDownloadProgress } from "./resources.js";
 
 export interface EntityChange {
     id?: number | null;
@@ -77,8 +78,11 @@ export type TaskResult<T extends TaskType> = TaskResultDefinitions[T];
  * "throttled" is a transient state rather than a pipeline stage: the task is alive but deliberately
  * waiting out an external service's rate limiting (e.g. the OneNote importer under Graph throttling),
  * so the count will not move for a while and the client should say why instead of looking hung.
+ *
+ * "erasing" is the same kind of state for a permanent delete: `eraseNotesWithDeleteIds` runs bulk
+ * SQL with nothing to count per item, so the client drops the bar and says what is happening.
  */
-export type ProgressPhase = "extracting" | "processing" | "throttled";
+export type ProgressPhase = "extracting" | "processing" | "throttled" | "erasing";
 
 type TaskDefinition<T extends TaskType> = {
     type: "taskProgressCount",
@@ -109,6 +113,11 @@ export interface OpenedFileUpdateStatus {
     entityId: string;
     lastModifiedMs?: number;
     filePath: string;
+}
+
+export interface SyncPullProgress {
+    pulled: number;
+    total: number;
 }
 
 type AllTaskDefinitions =
@@ -160,11 +169,26 @@ export type WebSocketMessage = AllTaskDefinitions | {
     originEntityName: string;
     originEntityId?: string | null;
 } | {
-    type: "reload-frontend";
+    type: "reload-frontend" | "reload-froca";
     reason: string;
 } | {
-    type: "sync-pull-in-progress" | "sync-push-in-progress" | "sync-finished" | "sync-failed";
+    type: "sync-push-in-progress" | "sync-finished" | "sync-failed";
     lastSyncedPush: number;
+} | {
+    type: "sync-pull-in-progress";
+    lastSyncedPush: number;
+    /** How many of the changes known to this sync run have been applied so far. */
+    progress?: SyncPullProgress;
+} | {
+    /**
+     * Syncing stopped because the content hashes of these sectors kept differing from the sync
+     * server's even after re-syncing them: the two databases hold data sync cannot reconcile. Unlike
+     * every other sync failure this one does not resolve itself by retrying, so it is surfaced to
+     * the user instead of only being logged.
+     */
+    type: "sync-hash-check-failed";
+    /** The diverged sectors, each as `entityName/sector` (e.g. `blobs/9`). */
+    sectors: string[];
 } | {
     type: "consistency-checks-failed"
 } | {
@@ -202,4 +226,7 @@ export type WebSocketMessage = AllTaskDefinitions | {
      */
     type: "llm-stream-end";
     streamId: string;
+} | {
+    type: "resource-download";
+    download: ResourceDownloadProgress;
 }

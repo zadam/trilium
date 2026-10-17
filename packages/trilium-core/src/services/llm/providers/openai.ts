@@ -3,6 +3,7 @@ import type { ToolSet } from "ai";
 
 import type { ModelInfo } from "../types.js";
 import { BaseProvider, type RemoteModel } from "./base_provider.js";
+import { llmFetch } from "./fetch.js";
 
 const OFFICIAL_BASE_URL = "https://api.openai.com/v1";
 
@@ -23,7 +24,7 @@ export class OpenAiProvider extends BaseProvider {
         if (!apiKey) {
             throw new Error("API key is required for OpenAI provider");
         }
-        this.openai = createOpenAI({ apiKey, ...(baseURL && { baseURL }) });
+        this.openai = createOpenAI({ apiKey, ...(baseURL && { baseURL }), fetch: llmFetch });
     }
 
     protected createModel(modelId: string) {

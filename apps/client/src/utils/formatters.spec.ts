@@ -16,7 +16,7 @@ vi.mock("../services/i18n", async () => {
 import { LOCALES } from "@triliumnext/commons";
 
 import options from "../services/options";
-import { formatDateNumeric, formatDateTime, formatDuration, getMeasurementSystem, isContentRightToLeft, normalizeLocale, resolveContentLanguage } from "./formatters";
+import { formatDateNumeric, formatDateTime, formatDuration, getMeasurementSystem, isContentRightToLeft, resolveContentLanguage } from "./formatters";
 
 describe("formatters", () => {
     it("tolerates incorrect locale", () => {
@@ -35,14 +35,6 @@ describe("formatters", () => {
         expect(formatDateTime(new Date())).toBeTruthy();
         expect(formatDateTime(new Date(), "full", "none")).toBeTruthy();
         expect(formatDateTime(new Date(), "none", "full")).toBeTruthy();
-    });
-
-    it("normalizes locale", () => {
-        expect(normalizeLocale("zh_CN")).toBe("zh-CN");
-        expect(normalizeLocale("cn")).toBe("zh-CN");
-        expect(normalizeLocale("tw")).toBe("zh-TW");
-        // The default branch returns the (underscore-normalized) locale unchanged.
-        expect(normalizeLocale("en_US")).toBe("en-US");
     });
 
     it("returns an empty string for falsy dates", () => {
@@ -100,6 +92,29 @@ describe("formatters", () => {
         // With both dateStyle and timeStyle "none", every formatting branch is
         // skipped and execution reaches the final guard.
         expect(() => formatDateTime(new Date(), "none", "none")).toThrow("Incorrect state.");
+    });
+
+    it("follows a locale change rather than reusing the formatter memoized for the previous one", () => {
+        // Formatters are cached to keep collection views from rebuilding one per row. The cache is
+        // keyed on locale as well as style precisely so this keeps working: keyed on style alone, it
+        // would go on rendering the first locale's pattern after the setting changed.
+        const date = new Date(Date.UTC(2026, 0, 25, 13, 30));
+
+        options.set("formattingLocale", "en-US");
+        const american = formatDateTime(date, "short", "none");
+
+        options.set("formattingLocale", "de");
+        const german = formatDateTime(date, "short", "none");
+
+        // Compared against a formatter built on the spot, so the assertion tracks whatever patterns
+        // the environment's ICU actually carries.
+        expect(american).toBe(new Intl.DateTimeFormat("en-US", { dateStyle: "short" }).format(date));
+        expect(german).toBe(new Intl.DateTimeFormat("de", { dateStyle: "short" }).format(date));
+        expect(german).not.toBe(american);
+
+        // Back again: the first entry has to still be right, not overwritten by the second locale.
+        options.set("formattingLocale", "en-US");
+        expect(formatDateTime(date, "short", "none")).toBe(american);
     });
 
     describe("formatDateNumeric", () => {

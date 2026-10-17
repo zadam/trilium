@@ -3,12 +3,13 @@
  * Studio and generic "OpenAI-compatible" provider cards.
  *
  * Every local runtime worth supporting (llama.cpp, vLLM, SGLang, LocalAI, Jan,
- * KoboldCpp, llamafile, LiteLLM, …) exposes the OpenAI-compatible `/v1`
- * surface, so that is the chat path in all cases. Two of them additionally
- * serve a *native* model listing carrying metadata `/v1/models` omits — Ollama's
- * `/api/tags` (parameter size, quantization) and LM Studio's `/api/v0/models`
- * (quantization, context length) — so listing probes those first and falls back
- * to `/v1/models` for everything else.
+ * KoboldCpp, llamafile, LiteLLM, …) exposes the OpenAI-compatible surface, so
+ * that is the chat path in all cases — under `/v1`, or under whichever version
+ * the configured URL names. Two of them additionally serve a *native* model
+ * listing carrying metadata the OpenAI one omits — Ollama's `/api/tags`
+ * (parameter size, quantization) and LM Studio's `/api/v0/models` (quantization,
+ * context length) — so listing probes those first and falls back to the
+ * OpenAI-compatible `/models` for everything else.
  *
  * The named cards exist only to prefill a URL and a setup hint in the UI; all
  * three dispatch here, and the card id arrives as {@link LocalProviderKind}.
@@ -19,6 +20,7 @@ import { getLog } from "../../../services/log.js";
 
 import type { ModelInfo, ModelPricing } from "../types.js";
 import { BaseProvider, type RemoteModel } from "./base_provider.js";
+import { llmFetch } from "./fetch.js";
 
 /** Provider card ids that map to this implementation. */
 export type LocalProviderKind = "ollama" | "lmstudio" | "openai-compatible";
@@ -48,6 +50,17 @@ const TITLE_MODEL_MAX_PARAMS_B = 4;
 /** Id shapes that suggest a small model, used when no parameter count is reported. */
 const SMALL_MODEL_NAME = /small|mini|tiny|phi|gemma.*2b/i;
 
+/**
+ * The two roots a card resolves to: the OpenAI-compatible paths hang off
+ * `apiBaseURL`, the native listings off `root` beside it.
+ */
+interface Endpoint {
+    /** What the native listing paths hang off. */
+    root: string;
+    /** What the OpenAI-compatible paths hang off. */
+    apiBaseURL: string;
+}
+
 /** A listed model, plus the parameter count when the endpoint reports one. */
 interface LocalModel extends RemoteModel {
     /** Parameter count in billions. */
@@ -60,11 +73,18 @@ export class LocalProvider extends BaseProvider {
     // whatever the user installed, so there is nothing sensible to hardcode.
     protected defaultModel = "";
     protected titleModel = "";
+    /**
+     * The OpenAI package sends `reasoning_effort: "none"` to any model, and self-hosted
+     * servers disagree on what that means, so a thinking model gets the larger retry instead.
+     */
+    protected override titleSkipsReasoning = false;
 
     private readonly kind: LocalProviderKind;
     private openai: OpenAISDKProvider;
-    /** Canonical endpoint root, without a trailing `/v1`. */
+    /** Endpoint root the native listings hang off, without a trailing `/v1`. */
     private root: string;
+    /** OpenAI-compatible API base: the configured URL, or a bare host plus `/v1`. */
+    private apiBaseURL: string;
     /**
      * Whether the models are known to come from a local runtime, and are
      * therefore free to run. The named cards are local by definition; the
@@ -78,11 +98,14 @@ export class LocalProvider extends BaseProvider {
         this.kind = kind;
         this.name = kind;
         this.isLocalRuntime = kind !== "openai-compatible";
-        this.root = resolveRoot(kind, this.baseURL);
+        const endpoint = resolveEndpoint(kind, this.baseURL);
+        this.root = endpoint.root;
+        this.apiBaseURL = endpoint.apiBaseURL;
 
         this.openai = createOpenAI({
             apiKey: apiKey || PLACEHOLDER_API_KEY,
-            baseURL: `${this.root}/v1`
+            baseURL: this.apiBaseURL,
+            fetch: llmFetch
         });
     }
 
@@ -139,7 +162,7 @@ export class LocalProvider extends BaseProvider {
      */
     private async listNativeModels(): Promise<LocalModel[] | null> {
         if (this.kind !== "lmstudio") {
-            const payload = await this.probeJson(`${this.root}/api/tags`);
+            const payload = await this.probeJson(`${this.root}/api/tags`, { optional: true });
             const models = payload !== undefined ? parseOllamaTags(payload) : null;
             if (models) {
                 this.isLocalRuntime = true;
@@ -153,7 +176,7 @@ export class LocalProvider extends BaseProvider {
             }
         }
         if (this.kind !== "ollama") {
-            const payload = await this.probeJson(`${this.root}/api/v0/models`);
+            const payload = await this.probeJson(`${this.root}/api/v0/models`, { optional: true });
             const models = payload !== undefined ? parseLmStudioModels(payload) : null;
             if (models) {
                 this.isLocalRuntime = true;
@@ -166,12 +189,12 @@ export class LocalProvider extends BaseProvider {
         return null;
     }
 
-    /** The universal fallback: the OpenAI-compatible `/v1/models` listing. */
+    /** The universal fallback: the OpenAI-compatible `/models` listing. */
     private async listOpenAiCompatibleModels(): Promise<LocalModel[]> {
-        const url = `${this.root}/v1/models`;
+        const url = `${this.apiBaseURL}/models`;
         const payload = await this.probeJson(url);
         if (payload === undefined) {
-            throw new Error(`No model listing endpoint found at ${this.root} — is this an OpenAI-compatible server?`);
+            throw new Error(`No model listing endpoint found at ${this.apiBaseURL} — is this an OpenAI-compatible server?`);
         }
         const data = (payload as { data?: unknown }).data;
         if (!Array.isArray(data)) {
@@ -190,21 +213,34 @@ export class LocalProvider extends BaseProvider {
      * else throws: an unreachable host or a rejected credential is a real
      * problem the add/edit-provider screen must report, not a reason to keep
      * trying other URLs.
+     *
+     * `optional` marks a probe that exists only to enrich the listing — the two
+     * native endpoints. Those paths sit outside the OpenAI-compatible namespace,
+     * so anything fronting the endpoint (a CDN's WAF, an API gateway, a
+     * forward-auth proxy) routinely rejects them while `/v1/*` works perfectly:
+     * a 403 HTML block page on `/api/tags` says nothing about the credential.
+     * Any error status therefore just advances the chain, leaving only
+     * `/v1/models` — the endpoint the provider actually depends on — able to
+     * fail the operation. A genuinely rejected key still surfaces, because
+     * `/v1/models` answers it with the same status.
      */
-    private async probeJson(url: string): Promise<unknown | undefined> {
+    private async probeJson(url: string, { optional = false } = {}): Promise<unknown | undefined> {
         let response: Response;
         try {
-            response = await fetch(url, {
+            response = await llmFetch(url, {
                 headers: this.apiKey ? { Authorization: `Bearer ${this.apiKey}` } : {},
                 signal: AbortSignal.timeout(MODEL_LIST_TIMEOUT_MS)
             });
         } catch (e) {
+            // Unlike a status, a transport failure is a fact about the host, not
+            // the path: the later probes go to that same host and would only
+            // burn another timeout each to reach the same verdict.
             throw new Error(`Could not reach ${url}: ${e instanceof Error ? e.message : String(e)}`);
         }
-        if (response.status === 404 || response.status === 405) {
-            return undefined;
-        }
         if (!response.ok) {
+            if (optional || response.status === 404 || response.status === 405) {
+                return undefined;
+            }
             if (response.status === 401 || response.status === 403) {
                 throw new Error(`Authentication failed (HTTP ${response.status}) — check the API key and base URL.`);
             }
@@ -244,38 +280,47 @@ export class LocalProvider extends BaseProvider {
 }
 
 /**
- * Canonical endpoint root for a card: the configured URL (validated), or the
- * card's own default, with any trailing `/v1` removed so both spellings a user
- * might enter — `http://localhost:1234` and `http://localhost:1234/v1` — resolve
- * to the same instance. The `/v1` is re-appended for the SDK and the
- * OpenAI-compatible listing; the native listings hang off the root.
+ * Endpoints for a card: the configured URL (validated), or the card's own
+ * default, split by {@link endpointFromUrl}.
  */
-function resolveRoot(kind: LocalProviderKind, baseURL: string | undefined): string {
+function resolveEndpoint(kind: LocalProviderKind, baseURL: string | undefined): Endpoint {
     const fallback = DEFAULT_BASE_URLS[kind];
     if (!baseURL) {
         if (!fallback) {
             throw new Error("A base URL is required for an OpenAI-compatible provider.");
         }
-        return stripApiVersion(fallback);
+        return endpointFromUrl(fallback);
     }
     try {
         const parsed = new URL(baseURL);
         if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
             throw new Error(`unsupported protocol ${parsed.protocol}`);
         }
-        return stripApiVersion(baseURL);
+        return endpointFromUrl(baseURL);
     } catch (e) {
         if (!fallback) {
             throw new Error(`Invalid base URL "${baseURL}": ${e instanceof Error ? e.message : String(e)}`);
         }
         getLog().error(`${kind}: invalid base URL "${baseURL}" (${e}), falling back to ${fallback}`);
-        return stripApiVersion(fallback);
+        return endpointFromUrl(fallback);
     }
 }
 
-/** Trailing slashes are already gone (the base class normalizes them). */
-function stripApiVersion(url: string): string {
-    return url.endsWith("/v1") ? url.slice(0, -"/v1".length) : url;
+/**
+ * Split a URL into the roots of {@link Endpoint}. A URL carrying a path is the
+ * API base as entered, so an endpoint under a version of its own — Zhipu's
+ * `/api/paas/v4` — reaches that version rather than a `/v1` below it; a bare
+ * host names no API and takes the conventional `/v1`.
+ *
+ * Only `/v1` is dropped from `root`: it is the exact suffix of the two runtimes
+ * that serve the native listings, which sit beside it. Trailing slashes are
+ * already gone (the base class normalizes them).
+ */
+function endpointFromUrl(url: string): Endpoint {
+    return {
+        root: url.endsWith("/v1") ? url.slice(0, -"/v1".length) : url,
+        apiBaseURL: new URL(url).pathname === "/" ? `${url}/v1` : url
+    };
 }
 
 /**

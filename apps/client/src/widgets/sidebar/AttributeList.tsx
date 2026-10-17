@@ -1,9 +1,9 @@
+import "../attribute_widgets/attribute_kind.css";
 import "./AttributeList.css";
 
 import { promotedAttributeDefinitionParser } from "@triliumnext/commons";
 import clsx from "clsx";
-import { ComponentChildren } from "preact";
-import { createPortal } from "preact/compat";
+import { ComponentChildren, createPortal } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import FAttribute from "../../entities/fattribute";
@@ -15,7 +15,8 @@ import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import server from "../../services/server";
 import { isMobile } from "../../services/utils";
-import { AttributeDetail, AttributeDetailOpts, AttributeForm, AttrType, DEFINITION_TYPES, getAttrType, RELATION_DEFINITION_TYPE } from "../attribute_widgets/attribute_detail";
+import { AttributeDetail, AttributeDetailOpts, AttributeForm, AttrType, DEFINITION_TYPES, getAttrType } from "../attribute_widgets/attribute_detail";
+import { attributeKindIcon, RELATION_DEFINITION_TYPE } from "../attribute_widgets/attribute_types";
 import { ColorChip, renderLabelValue } from "../attribute_widgets/label_value_display";
 import ActionButton from "../react/ActionButton";
 import { FormListItem } from "../react/FormList";
@@ -72,7 +73,7 @@ export default function AttributeList() {
 
     // Collected while rendering rather than in an effect, which would leave one frame listing the
     // attributes of the note navigated away from. The initial `undefined` is what collects the first.
-    const shownNoteId = useRef<string | null>();
+    const shownNoteId = useRef<string | null | undefined>(undefined);
     if (shownNoteId.current !== (note?.noteId ?? null)) {
         // An attribute left open for editing — in the popup or in its own row — is closed by the
         // change of note, and closing keeps what was typed into it — as a press outside does — rather
@@ -148,7 +149,6 @@ export default function AttributeList() {
             attribute,
             isOwned,
             x: e.pageX,
-            y: e.pageY,
             anchor: anchor ?? undefined,
             // Presses on another row swap the shown attribute instead of dismissing the popup first.
             parent: spawningArea()
@@ -190,7 +190,6 @@ export default function AttributeList() {
             attribute,
             isOwned: true,
             x: e.pageX,
-            y: e.pageY,
             focus: "name",
             // There is no row to anchor to yet: the attribute only joins the list once it is saved.
             anchor: containerRef.current ?? undefined,
@@ -328,6 +327,12 @@ export default function AttributeList() {
             />
         )
     } : undefined;
+    // A draft still being created keeps the place it was added in — the foot of the list, next to the
+    // row that opened it — instead of the one its name will file it under: nameless, it is not a name
+    // Trilium reads for itself, so the sort has nothing to go on and would hoist the editor above the
+    // system rows, away from the press that opened it. It settles into place once the name is saved.
+    const creationRow = activeCreation && sections.owned.find((entry) => entry.attribute === activeCreation);
+    const ownedRows = creationRow ? sections.owned.filter((entry) => entry !== creationRow) : sections.owned;
     const rowProps = {
         note,
         activeAttribute: detail?.attribute,
@@ -389,11 +394,15 @@ export default function AttributeList() {
                         the two lists of plain attributes reading as one ledger. The definitions keep
                         prose order: their "value" is a summary of settings, not a value. */}
                     <div class="attribute-list-panel align-values-end" ref={containerRef} onClick={commit}>
-                        {sections.owned.length > 0 ? (
-                            <AttributeRowList rows={sections.owned} {...rowProps} />
-                        ) : (
+                        {ownedRows.length > 0 ? (
+                            <AttributeRowList rows={ownedRows} {...rowProps} />
+                        ) : !creationRow && (
                             <NoItems icon="bx bx-hash" text={t("attribute_list_panel.no_attributes")} />
                         )}
+
+                        {/* The draft under creation, kept last (see above) and so out of the split the
+                            list above draws between the note's own names and Trilium's. */}
+                        {creationRow && <AttributeRowList rows={[ creationRow ]} {...rowProps} />}
 
                         {/* Only on a desktop: a phone adds from the header, page flow and all. */}
                         {!IS_MOBILE && note && (
@@ -613,7 +622,7 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, showOwne
     const rowRef = useRef<HTMLLIElement>(null);
     const attrType = getAttributeKind(attribute);
     const markerClass = getKindMarkerClass(attribute, attrType, isSystem);
-    const kindIcon = getKindIcon(attribute, attrType);
+    const kindIcon = attributeKindIcon(attribute.type, attribute.name, attribute.value ?? "");
     const kindTooltip = getKindTooltip(attribute, attrType, isSystem);
     const rowClass = clsx("attribute-row", active && "active", valueEditor && "editing");
 
@@ -720,24 +729,9 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, showOwne
 const IS_MOBILE = isMobile();
 
 /**
- * What the attribute is, as an icon. A definition takes the icon of the field it sets up, the same one
- * the popup offers that field under — it needs no marker of its own, being only ever listed in a card
- * of definitions. Everything else is the icon of a label or of a relation.
- */
-function getKindIcon(attribute: Attribute, attrType: AttributeKind) {
-    if (isDefinition(attrType)) {
-        // A definition written by hand can name a field the popup knows nothing of, leaving the icon of
-        // the label it defines to stand for it.
-        return getDefinitionType(attribute, attrType)?.icon ?? "bx bx-hash";
-    }
-
-    return attrType === "relation" ? "bx bx-transfer" : "bx bx-hash";
-}
-
-/**
  * The badge the kind icon carries on its corner, where there is one to carry: a cog for the names
  * Trilium reads for itself, and a chevron for a definition whose field is promoted — lifted, that is,
- * out of the attributes and into the note's own ribbon. At most one of the two, which no attribute is
+ * out of the attributes and into the note's promoted attributes section. At most one of the two, which no attribute is
  * ever both of: no built-in name is a definition. The class alone: what either badge means is a line
  * of the icon's own tooltip (see {@link getKindTooltip}), the two being read as one mark.
  */

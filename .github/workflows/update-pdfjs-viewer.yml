@@ -30,6 +30,9 @@ permissions:
 
 jobs:
   vendor-viewer:
+    # Forks inherit the schedule, and the bump PR is only useful in the repository
+    # pdfjs-dist is pinned from.
+    if: ${{ github.repository == vars.REPO_MAIN }}
     # Matched to the e2e-pdfjs-viewer job in playwright.yml, which runs the same suite.
     runs-on: ubuntu-22.04
     name: Bump pdf.js and re-vendor the viewer
@@ -38,7 +41,9 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - name: Set up node & dependencies
         uses: actions/setup-node@v7
         with:
@@ -49,12 +54,16 @@ jobs:
       - name: Bump pdfjs-dist
         id: bump
         # `update --latest` writes both package.json and the lockfile, and keeps the
-        # exact pin exact. It installs too, which the re-vendor and the suites below
-        # need — build.ts copies the library straight out of node_modules.
+        # exact pin exact. A filtered update also installs only the filtered project,
+        # which prunes every other package from the hoisted node_modules and breaks the
+        # root postinstall, so it only rewrites the lockfile and a full install follows.
+        # The re-vendor and the suites below need that install: build.ts copies the
+        # library straight out of node_modules.
         run: |
           read_version() { node -p "require('./packages/pdfjs-viewer/package.json').devDependencies['pdfjs-dist']"; }
           from=$(read_version)
-          pnpm --filter pdfjs-viewer update pdfjs-dist --latest
+          pnpm --filter pdfjs-viewer update pdfjs-dist --latest --lockfile-only
+          pnpm install --frozen-lockfile
           to=$(read_version)
           [ "$from" = "$to" ] && changed=false || changed=true
           {
@@ -124,6 +133,13 @@ jobs:
           # link, which is always exact.
           printf '[Upstream comparison](https://github.com/mozilla/pdf.js/compare/v%s...v%s)\n\n' "$FROM" "$TO" >> "$body"
           notes=$(gh api "/repos/mozilla/pdf.js/releases/tags/v$TO" --jq .body 2>/dev/null || true)
+          # A zero-width space after `@` stops GitHub from notifying the upstream authors,
+          # and `redirect.github.com` stops it from adding a cross-reference to each
+          # upstream pull request.
+          zwsp=$'​'
+          notes=$(printf '%s' "$notes" | sed -E \
+            -e "s/(^|[^[:alnum:]_.\`/-])@([[:alnum:]])/\1@${zwsp}\2/g" \
+            -e 's#https://github\.com/#https://redirect.github.com/#g')
           if [ -n "$notes" ]; then
             if [ "${#notes}" -gt 30000 ]; then
               notes=$(printf '%s' "$notes" | head -c 30000)
@@ -139,7 +155,7 @@ jobs:
           fi
       - name: Open a PR
         if: steps.bump.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           add-paths: |
             packages/pdfjs-viewer/package.json

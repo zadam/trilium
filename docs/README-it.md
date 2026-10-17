@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes è un'applicazione per appunti ad organizzazione gerarchica,
 studiata per la costruzione di archivi di conoscenza personali di grandi
 dimensioni.
+
+Cerchi "Trillium Notes"? La grafia ufficiale del progetto è "Trilium Notes", con
+una sola `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -117,7 +121,7 @@ La nostra documentazione è disponibile in diversi formati:
 * Tema scuro integrato
   (https://docs.triliumnotes.org/user-guide/concepts/themes), supporto per temi
   utente
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   e [Importazione ed esportazione
   Markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) per
@@ -380,11 +384,6 @@ Trilium non sarebbe possibile senza le tecnologie che lo supportano:
   interattiva utilizzata nelle raccolte.
 * [FancyTree](https://github.com/mar10/fancytree) - libreria ad albero ricca di
   funzionalità senza reale concorrenza.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - libreria di connettività
-  visiva. Utilizzata in [relation
-  maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) e
-  [link
-  maps](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Supporto
 

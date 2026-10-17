@@ -1,10 +1,12 @@
+import "./tooltip.css";
+
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
-import { FilterLabelsByType, KeyboardActionNames, NoteType, OptionNames, RelationNames } from "@triliumnext/commons";
+import { FilterLabelsByType, HighlightedTokenInfo, KeyboardActionNames, NoteType, OptionNames, RelationNames } from "@triliumnext/commons";
 import { Tooltip } from "bootstrap";
 import Mark from "mark.js";
-import { Ref, RefObject, VNode } from "preact";
-import { CSSProperties, useSyncExternalStore } from "preact/compat";
-import { MutableRef, useCallback, useContext, useDebugValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import { CSSProperties, Ref, RefObject, VNode } from "preact";
+import { useSyncExternalStore } from "preact/compat";
+import { useCallback, useContext, useDebugValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import appContext, { EventData, EventNames } from "../../components/app_context";
 import Component from "../../components/component";
@@ -16,9 +18,12 @@ import { expandAncestorDetails } from "../../services/collapsible";
 import froca from "../../services/froca";
 import { t } from "../../services/i18n";
 import keyboard_actions from "../../services/keyboard_actions";
+import { formatShortcut, joinShortcut } from "../../services/keyboard_shortcut_display";
 import { parseNavigationStateFromUrl, ViewScope } from "../../services/link";
+import { getNoteTypeOptions, type NoteTypeOption } from "../../services/note_types";
 import options, { type OptionValue } from "../../services/options";
 import protected_session_holder from "../../services/protected_session_holder";
+import { consumeSearchTerms } from "../../services/search_jump";
 import server from "../../services/server";
 import type { ShortcutHintDefinition, ShortcutHintProvider } from "../../services/shortcut_hints";
 import shortcuts, { Handler, removeIndividualBinding } from "../../services/shortcuts";
@@ -26,13 +31,13 @@ import SpacedUpdate, { type StateCallback } from "../../services/spaced_update";
 import { getEffectiveThemeStyle } from "../../services/theme";
 import toast, { ToastOptions } from "../../services/toast";
 import tree from "../../services/tree";
-import utils, { escapeRegExp, getErrorMessage, randomString, reloadFrontendApp } from "../../services/utils";
+import utils, { getErrorMessage, isShare, randomString, reloadFrontendApp } from "../../services/utils";
 import ws from "../../services/ws";
 import BasicWidget, { ReactWrappedWidget } from "../basic_widget";
 import NoteContextAwareWidget from "../note_context_aware_widget";
-import { DragData } from "../note_tree";
 import { noteSavedDataStore } from "./NoteStore";
-import { NoteContextContext, ParentComponent, refToJQuerySelector } from "./react_utils";
+import { findClosestNoteContext, NoteContextContext, ParentComponent, refToJQuerySelector } from "./react_utils";
+import type FAttachment from "../../entities/fattachment";
 
 export function useTriliumEvent<T extends EventNames>(eventName: T, handler: (data: EventData<T>) => void) {
     const parentComponent = useContext(ParentComponent);
@@ -95,17 +100,21 @@ export function useSpacedUpdate(callback: () => void | Promise<void>, interval =
 
 export interface SavedData {
     content: string;
+    /** The blocks that `content` holds, a `block` link parameter, for an editor of some blocks. */
+    block?: string;
     attachments?: {
+        /** The attachment to update. Without it, the attachment is matched by its title. */
+        attachmentId?: string;
         role: string;
         title: string;
         mime: string;
         content: string;
-        position: number;
+        position?: number;
         encoding?: "base64";
     }[];
 }
 
-export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval }: {
+export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, block }: {
     noteType: NoteType;
     note: FNote | null | undefined,
     noteContext: NoteContext | null | undefined,
@@ -113,14 +122,26 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     onContentChange: (newContent: string) => void,
     dataSaved?: (savedData: SavedData) => void,
     updateInterval?: number;
+    /**
+     * The blocks of the note to edit instead of the whole note, a `block` link parameter. Each
+     * save replaces them, and the blocks that `getData()` reports are the ones the next save
+     * replaces.
+     */
+    block?: string;
 }) {
     const parentComponent = useContext(ParentComponent);
-    const blob = useNoteBlob(note, parentComponent?.componentId, { reportLoadStateTo: noteContext });
+    const blockRef = useRef(block ?? "");
+    const blob = useNoteBlob(note, parentComponent?.componentId, {
+        reportLoadStateTo: noteContext,
+        load: block === undefined
+            ? undefined
+            : (loadedNote) => loadBlocks(loadedNote, blockRef.current)
+    });
 
     // The note whose content is currently loaded in the editor. Editor instances are reused
     // across note switches, so until the new note's blob arrives the editor still holds the
     // previous note's content — content that must never be saved under the new noteId (#9614).
-    const loadedNoteIdRef = useRef<string>();
+    const loadedNoteIdRef = useRef<string | undefined>(undefined);
 
     const prepare = useCallback(() => {
         if (!note || loadedNoteIdRef.current !== note.noteId) return undefined;
@@ -128,16 +149,23 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     }, [ note, getData ]);
 
     const commit = useCallback(async (data: SavedData | undefined) => {
-        // for read only notes, or if note is not yet available (e.g. lazy creation)
-        if (data === undefined || !note || note.type !== noteType) return;
+        // for read only notes, or if note is not yet available (e.g. lazy creation); a visitor of a
+        // shared page cannot save
+        if (data === undefined || !note || note.type !== noteType || isShare) return;
 
         protected_session_holder.touchProtectedSessionIfNecessary(note);
 
-        await server.put(`notes/${note.noteId}/data`, data, parentComponent?.componentId);
-
-        noteSavedDataStore.set(note.noteId, data.content);
+        if (block === undefined) {
+            await server.put(`notes/${note.noteId}/data`, data, parentComponent?.componentId);
+            noteSavedDataStore.set(note.noteId, data.content);
+        } else {
+            const { block: savedBlock, ...blocks } = data;
+            const url = `notes/${note.noteId}/blocks?block=${encodeURIComponent(blockRef.current)}`;
+            await server.put(url, blocks, parentComponent?.componentId);
+            blockRef.current = savedBlock ?? blockRef.current;
+        }
         dataSaved?.(data);
-    }, [ note, dataSaved, noteType, parentComponent ]);
+    }, [ note, dataSaved, noteType, parentComponent, block ]);
 
     const stateCallback = useCallback<StateCallback>((state) => {
         noteContext?.setContextData("saveState", {
@@ -149,7 +177,7 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
         stateCallbackRef.current = stateCallback;
     }, [ stateCallback ]);
 
-    const spacedUpdateRef = useRef<SpacedUpdate<SavedData | undefined>>();
+    const spacedUpdateRef = useRef<SpacedUpdate<SavedData | undefined> | undefined>(undefined);
     if (!spacedUpdateRef.current) {
         spacedUpdateRef.current = new SpacedUpdate<SavedData | undefined>(
             { key: note?.noteId ?? null, prepare, commit },
@@ -169,7 +197,11 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     // React to note/blob changes.
     useEffect(() => {
         if (!blob || !note) return;
-        noteSavedDataStore.set(note.noteId, blob.content);
+        // Changes not saved here yet stay when another editor saves the note, and replace it.
+        if (loadedNoteIdRef.current === note.noteId && spacedUpdate.hasUnsavedChanges()) return;
+        if (block === undefined) {
+            noteSavedDataStore.set(note.noteId, blob.content);
+        }
         spacedUpdate.allowUpdateWithoutChange(() => onContentChange(blob.content));
         loadedNoteIdRef.current = note.noteId;
     }, [ blob ]);
@@ -180,26 +212,45 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
         spacedUpdate.setUpdateInterval(updateInterval);
     }, [ updateInterval ]);
 
-    // Save if needed upon switching tabs.
+    useSaveBeforeLeaving(spacedUpdate, noteContext);
+
+    return spacedUpdate;
+}
+
+/**
+ * Saves the pending changes of `spacedUpdate` before the note of `noteContext` switches, before
+ * its tab closes and before the window closes.
+ */
+export function useSaveBeforeLeaving<T>(
+    spacedUpdate: SpacedUpdate<T>,
+    noteContext: NoteContext | null | undefined
+) {
     useTriliumEvent("beforeNoteSwitch", async ({ noteContext: eventNoteContext }) => {
         if (eventNoteContext.ntxId !== noteContext?.ntxId) return;
         await spacedUpdate.updateNowIfNecessary();
     });
 
-    // Save if needed upon tab closing.
     useTriliumEvent("beforeNoteContextRemove", async ({ ntxIds }) => {
         if (!noteContext?.ntxId || !ntxIds.includes(noteContext.ntxId)) return;
         await spacedUpdate.updateNowIfNecessary();
     });
 
-    // Save if needed upon window/browser closing.
     useEffect(() => {
         const listener = () => spacedUpdate.isAllSavedAndTriggerUpdate();
         appContext.addBeforeUnloadListener(listener);
         return () => appContext.removeBeforeUnloadListener(listener);
-    }, []);
+    }, [ spacedUpdate ]);
+}
 
-    return spacedUpdate;
+/** The blocks of `note` that `block` points at, or `null` when they cannot be read. */
+async function loadBlocks(note: FNote, block: string) {
+    try {
+        return await server.getWithSilentNotFound<{ content: string }>(
+            `notes/${note.noteId}/blocks?block=${encodeURIComponent(block)}`
+        );
+    } catch {
+        return null;
+    }
 }
 
 export function useBlobEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, replaceWithoutRevision }: {
@@ -218,7 +269,7 @@ export function useBlobEditorSpacedUpdate({ note, noteType, noteContext, getData
 
     // Same provenance guard as useEditorSpacedUpdate: never save content under a note it
     // was not loaded from (#9614).
-    const loadedNoteIdRef = useRef<string>();
+    const loadedNoteIdRef = useRef<string | undefined>(undefined);
 
     const prepare = useCallback(() => {
         if (loadedNoteIdRef.current !== note.noteId) return undefined;
@@ -244,7 +295,7 @@ export function useBlobEditorSpacedUpdate({ note, noteType, noteContext, getData
         stateCallbackRef.current = stateCallback;
     }, [ stateCallback ]);
 
-    const spacedUpdateRef = useRef<SpacedUpdate<Blob | undefined>>();
+    const spacedUpdateRef = useRef<SpacedUpdate<Blob | undefined> | undefined>(undefined);
     if (!spacedUpdateRef.current) {
         spacedUpdateRef.current = new SpacedUpdate<Blob | undefined>(
             { key: note.noteId, prepare, commit },
@@ -273,24 +324,7 @@ export function useBlobEditorSpacedUpdate({ note, noteType, noteContext, getData
         spacedUpdate.setUpdateInterval(updateInterval);
     }, [ updateInterval ]);
 
-    // Save if needed upon switching tabs.
-    useTriliumEvent("beforeNoteSwitch", async ({ noteContext: eventNoteContext }) => {
-        if (eventNoteContext.ntxId !== noteContext?.ntxId) return;
-        await spacedUpdate.updateNowIfNecessary();
-    });
-
-    // Save if needed upon tab closing.
-    useTriliumEvent("beforeNoteContextRemove", async ({ ntxIds }) => {
-        if (!noteContext?.ntxId || !ntxIds.includes(noteContext.ntxId)) return;
-        await spacedUpdate.updateNowIfNecessary();
-    });
-
-    // Save if needed upon window/browser closing.
-    useEffect(() => {
-        const listener = () => spacedUpdate.isAllSavedAndTriggerUpdate();
-        appContext.addBeforeUnloadListener(listener);
-        return () => appContext.removeBeforeUnloadListener(listener);
-    }, []);
+    useSaveBeforeLeaving(spacedUpdate, noteContext);
 
     return spacedUpdate;
 }
@@ -468,7 +502,7 @@ export function useNoteContext() {
         setNotePath(noteContext.notePath);
         setViewScope(noteContext.viewScope);
         // Navigating resets the view scope, so the temporary "enable editing" toggle must be reset too.
-        // Otherwise the stale value prevents consumers (e.g. the ribbon) from refreshing when the user
+        // Otherwise the stale value prevents consumers from refreshing when the user
         // re-enables editing on a note that was previously made temporarily editable.
         setIsReadOnlyTemporarilyDisabled(noteContext?.viewScope?.readOnlyTemporarilyDisabled);
     });
@@ -509,23 +543,56 @@ export function useNoteContext() {
 }
 
 /**
- * Finds the note context held by the closest legacy ancestor component (e.g. the note split's
- * `NoteWrapperWidget`). Used to initialize {@link useNoteContext} for components that mount after
- * the initial `setNoteContext` event has been dispatched (e.g. components rendered via
- * `LazyComponent`), which would otherwise not know their context until the next note switch.
+ * Whether the tab holding `noteContext` has been shown since the component mounted. A tab
+ * restored or opened in the background reads `false` until the user switches to it. Every split
+ * of a tab is shown with it, so the check is keyed on the tab's main context. Special contexts (an
+ * ntxId starting with "_", such as the popup editor) always read `true`.
  */
-function findClosestNoteContext(component: Component | null): NoteContext | undefined {
-    let current: Component | undefined = component ?? undefined;
-    while (current) {
-        if ("noteContext" in current) {
-            const { noteContext } = current as { noteContext?: NoteContext };
-            if (noteContext) {
-                return noteContext;
-            }
+export function useHasTabBeenShown(noteContext: NoteContext | undefined) {
+    const isShown = () => (noteContext?.ntxId?.startsWith("_") ?? false)
+        || isContextInActiveTab(noteContext, appContext.tabManager.getActiveMainContext()?.ntxId);
+    const [ hasBeenShown, setHasBeenShown ] = useState(isShown);
+
+    useEffect(() => {
+        if (!hasBeenShown && isShown()) {
+            setHasBeenShown(true);
         }
-        current = current.parent as Component | undefined;
+    }, [ noteContext, hasBeenShown ]); // eslint-disable-line react-hooks/exhaustive-deps
+    useTriliumEvent("activeNoteChanged", () => {
+        if (!hasBeenShown && isShown()) {
+            setHasBeenShown(true);
+        }
+    });
+
+    return hasBeenShown;
+}
+
+/**
+ * True when the given context belongs to the active tab, identified by `activeMainNtxId` (the
+ * ntxId of the active tab's main context). A tab can hold several splits, but only one of them is
+ * the "active" context at a time; every split of the active tab is visible and must load eagerly,
+ * so the deferral check is keyed on the tab (the main context), not the individual split.
+ */
+export function isContextInActiveTab(
+    noteContext: NoteContext | undefined,
+    activeMainNtxId: string | null | undefined
+): boolean {
+    if (!noteContext || activeMainNtxId == null) {
+        return false;
     }
-    return undefined;
+
+    return activeMainNtxId === noteContext.getMainContext().ntxId;
+}
+
+/**
+ * Registers `noteContext`, built outside the tab row, with `TabManager` for as long as the component
+ * uses it, so that commands naming its `ntxId` resolve to it.
+ */
+export function useDetachedNoteContext(noteContext: NoteContext) {
+    useEffect(() => {
+        appContext.tabManager.registerDetachedContext(noteContext);
+        return () => appContext.tabManager.unregisterDetachedContext(noteContext);
+    }, [ noteContext ]);
 }
 
 /**
@@ -694,7 +761,7 @@ export function useNoteLabel(note: FNote | undefined | null, labelName: FilterLa
  * themselves, e.g. a label a `#calendar:startDate` renaming points at. Prefer {@link useNoteLabel}
  * wherever the name is a builtin one, as it holds the name to the declared vocabulary.
  */
-export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => void] {
+export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => Promise<unknown>] {
     const [ , setLabelValue ] = useState<string | null | undefined>();
 
     useEffect(() => setLabelValue(note?.getLabelValue(labelName) ?? null), [ note, labelName ]);
@@ -711,12 +778,12 @@ export function useNoteLabelByName(note: FNote | undefined | null, labelName: st
         }
     });
 
-    const setter = useCallback((value: string | null | undefined) => {
+    const setter = useCallback(async (value: string | null | undefined) => {
         if (note) {
             if (value !== null) {
-                attributes.setLabel(note.noteId, labelName, value);
+                await attributes.setLabel(note.noteId, labelName, value);
             } else {
-                attributes.removeOwnedLabelByName(note, labelName);
+                await attributes.removeOwnedLabelByName(note, labelName);
             }
         }
     }, [note, labelName]);
@@ -737,8 +804,15 @@ export function useNoteLabelWithDefault(note: FNote | undefined | null, labelNam
 export function useNoteLabelBoolean(note: FNote | undefined | null, labelName: FilterLabelsByType<boolean>): [ boolean, (newValue: boolean) => void] {
     const [, forceRender] = useState({});
 
+    // Not on the first run: the render that mounted the component has already read the label, so
+    // forcing another draws every consumer twice for a value that has not changed. 72 components
+    // use this hook, and a board draws it once a card.
+    const seenNote = useRef<FNote | undefined | null>(undefined);
     useEffect(() => {
-        forceRender({});
+        if (seenNote.current !== undefined) {
+            forceRender({});
+        }
+        seenNote.current = note;
     }, [ note ]);
 
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
@@ -787,7 +861,7 @@ export function useNoteLabelInt(note: FNote | undefined | null, labelName: Filte
     ];
 }
 
-export function useNoteBlob(note: FNote | null | undefined, componentId?: string, opts?: {
+export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote | null | undefined, componentId?: string, opts?: {
     /** Publish the fetch progress as `contentLoad` context data on the given note context, so
      * the note detail can show a loading state instead of the previous note's content. Should
      * only be set by widgets whose main content display is gated on this blob. (Passed
@@ -803,8 +877,10 @@ export function useNoteBlob(note: FNote | null | undefined, componentId?: string
      * produced by a sibling under the same parent component (e.g. the read-only text view behind
      * the editor), own-component changes are somebody else's edits that must eventually show. */
     refreshOnShow?: boolean;
-}): FBlob | null | undefined {
-    const [ blob, setBlob ] = useState<FBlob | null>();
+    /** Reads the content instead of the blob of the note, resolving to `null` when it fails. */
+    load?: (note: FNote) => Promise<T | null>;
+}): T | null | undefined {
+    const [ blob, setBlob ] = useState<T | null>();
     const requestIdRef = useRef(0);
     const missedContentChangeRef = useRef(false);
 
@@ -820,7 +896,9 @@ export function useNoteBlob(note: FNote | null | undefined, componentId?: string
         if (note) {
             reportLoadState("loading");
         }
-        const newBlob = await note?.getBlob();
+        const newBlob = note && opts?.load
+            ? await opts.load(note)
+            : await note?.getBlob() as T | null | undefined;
 
         // Only update if this is the latest request.
         if (requestId === requestIdRef.current) {
@@ -862,6 +940,36 @@ export function useNoteBlob(note: FNote | null | undefined, componentId?: string
     useDebugValue(note?.noteId);
 
     return blob;
+}
+
+/**
+ * Calls `consumeSearchTerms` when a search result is re-clicked while its note is already open.
+ * That switch does not change the blob, so the widget's own content-ready path does not re-run.
+ * The switch must target the note this widget shows: a switch to a different note belongs to the
+ * newly mounted widget, and consuming it here would clear the terms before its content is ready.
+ */
+export function useSearchTermsConsumer(note: FNote | null | undefined, noteContext: NoteContext | undefined, ntxId: string | null | undefined) {
+    useTriliumEvent("noteSwitched", ({ noteContext: switchedContext }) => {
+        if (switchedContext.ntxId !== ntxId) return;
+        if (switchedContext.note?.noteId !== note?.noteId) return;
+        consumeSearchTerms(noteContext, ntxId);
+    });
+}
+
+/**
+ * Calls `callback` when the note context `ntxId` switches to `note`, the note the widget shows
+ * already, as when a link to a part of the open note is followed.
+ */
+export function useSameNoteSwitch(
+    note: FNote | null | undefined,
+    ntxId: string | null | undefined,
+    callback: () => void
+) {
+    useTriliumEvent("noteSwitched", ({ noteContext }) => {
+        if (noteContext.ntxId === ntxId && noteContext.note?.noteId === note?.noteId) {
+            callback();
+        }
+    });
 }
 
 export function useLegacyWidget<T extends BasicWidget>(widgetFactory: () => T, { noteContext, containerClassName, containerStyle }: {
@@ -931,7 +1039,7 @@ export function useLegacyWidget<T extends BasicWidget>(widgetFactory: () => T, {
  * @param ref a ref to a {@link HTMLElement} to determine the size and observe the changes in size.
  * @returns the size of the element, reacting to changes.
  */
-export function useElementSize(ref: RefObject<HTMLElement>) {
+export function useElementSize(ref: RefObject<HTMLElement | null>) {
     const [ size, setSize ] = useState<DOMRect | undefined>(ref.current?.getBoundingClientRect());
 
     useEffect(() => {
@@ -969,6 +1077,89 @@ export function useElementSize(ref: RefObject<HTMLElement>) {
  *          screen actually changed — a request the browser refuses (no user gesture behind it, a
  *          policy against it) leaves the view exactly as it was.
  */
+/**
+ * Whether any part of an element is on screen, for something that floats over the page on the
+ * element's account and has no business there once the element is scrolled out of sight.
+ *
+ * Watched only while `enabled`, and true whenever it is not: an element that is not being watched
+ * is taken as on screen, and watching starts from that until the observer says otherwise.
+ */
+export function useIsOnScreen(ref: RefObject<Element | null>, enabled: boolean) {
+    const [ isOnScreen, setIsOnScreen ] = useState(true);
+
+    useEffect(() => {
+        const element = ref.current;
+        if (!enabled || !element) {
+            setIsOnScreen(true);
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([ entry ]) => setIsOnScreen(entry.isIntersecting));
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [ ref, enabled ]);
+
+    return isOnScreen;
+}
+
+/**
+ * Whether the focus is in the element, including in an `<iframe>` or a `<webview>` inside it,
+ * which the document reports as its `activeElement`. Switching to another window keeps the value.
+ */
+export function useFocusWithin(ref: RefObject<HTMLElement | null>) {
+    const [ isFocusWithin, setIsFocusWithin ] = useState(false);
+
+    useEffect(() => {
+        const element = ref.current;
+        if (!element) return;
+
+        let timer: number | undefined;
+        const update = () => setIsFocusWithin(element.contains(document.activeElement));
+        // Reads the focus once it has moved: during `focusout`, the active element is the body.
+        const updateLater = () => {
+            window.clearTimeout(timer);
+            timer = window.setTimeout(update);
+        };
+
+        update();
+        element.addEventListener("focusin", update);
+        element.addEventListener("focusout", updateLater);
+        // A frame taking or returning the focus fires no focus event inside the document.
+        window.addEventListener("blur", updateLater);
+        window.addEventListener("focus", updateLater);
+        return () => {
+            window.clearTimeout(timer);
+            element.removeEventListener("focusin", update);
+            element.removeEventListener("focusout", updateLater);
+            window.removeEventListener("blur", updateLater);
+            window.removeEventListener("focus", updateLater);
+        };
+    }, [ ref ]);
+
+    return isFocusWithin;
+}
+
+/**
+ * `value`, held at true for `ms` after it turns false, for something that leaves the page with an
+ * animation: what draws it keeps drawing it that long, and tells it that it is leaving.
+ */
+export function useLingeringTrue(value: boolean, ms: number) {
+    const [ isLingering, setIsLingering ] = useState(value);
+
+    useEffect(() => {
+        if (value) {
+            setIsLingering(true);
+            return;
+        }
+
+        const timer = window.setTimeout(() => setIsLingering(false), ms);
+        return () => window.clearTimeout(timer);
+    }, [ value, ms ]);
+
+    return value || isLingering;
+}
+
 export function useFullscreen(element: HTMLElement | null | undefined, onChange?: () => void): [ boolean, () => Promise<boolean> ] {
     const [ isFullscreen, setFullscreen ] = useState(() => !!element && document.fullscreenElement === element);
     // Read afresh on every change rather than closed over, so that a listener bound once follows a
@@ -1054,7 +1245,11 @@ TooltipProto.dispose = function () {
  *                to put in front of the user — see {@link Dropdown}, which silences its toggle's title
  *                for as long as the menu that title opened is on screen.
  */
-export function useTooltip(elRef: RefObject<HTMLElement>, config: Partial<Tooltip.Options>, enabled = true) {
+export function useTooltip(
+    elRef: RefObject<HTMLElement | null>,
+    config: Partial<Tooltip.Options>,
+    enabled = true
+) {
     const tooltipRef = useRef<Tooltip | null>(null);
 
     useEffect(() => {
@@ -1140,7 +1335,10 @@ const tooltips = new Set<Tooltip>();
  * @param elRef the element to bind the tooltip to.
  * @param config optionally, the tooltip configuration.
  */
-export function useStaticTooltip(elRef: RefObject<Element>, config?: Partial<Tooltip.Options>) {
+export function useStaticTooltip(
+    elRef: RefObject<Element | null>,
+    config?: Partial<Tooltip.Options>
+) {
     useEffect(() => {
         const hasTooltip = config?.title || elRef.current?.getAttribute("title");
         if (!elRef?.current || !hasTooltip) return;
@@ -1177,7 +1375,62 @@ export function useStaticTooltip(elRef: RefObject<Element>, config?: Partial<Too
         };
         element.addEventListener("click", dismissOnPress);
 
+        // For delegated (`selector:`) configs, a hovered child gets its own per-target Tooltip
+        // instance (see the sweep at the end of the cleanup below) that only ever hides on its
+        // own mouseleave. If that child leaves the DOM while its popup is still shown — the note
+        // icon picker's virtualized grid re-keys its cells on every keystroke in the search box,
+        // and does the same on scroll — no mouseleave ever fires, so the instance never hides and
+        // its popup is orphaned in `document.body` until reload (#10680). While a delegate has its
+        // popup up, watch the container for removals and put the popup away the moment its trigger
+        // is gone — the hook's own cleanup cannot be relied on, since a grid re-render driven by the
+        // grid's own state never re-runs this effect. The observer is connected only for as long
+        // as a popup is shown, so it costs nothing while the grid is merely typed into or scrolled.
+        let disposeDelegateTracking = () => {};
+        if (config?.selector) {
+            const shownDelegates = new Set<Element>();
+            const delegateObserver = new MutationObserver(() => {
+                for (const target of shownDelegates) {
+                    if (target.isConnected) continue;
+                    const instance = Tooltip.getInstance(target);
+                    if (instance) {
+                        // Reuses the bootstrap#37474 guard the patched dispose() above installs.
+                        instance.dispose();
+                    } else {
+                        // Belt-and-braces: the instance may already be gone on its own.
+                        const popupId = target.getAttribute("aria-describedby");
+                        if (popupId) {
+                            document.getElementById(popupId)?.remove();
+                        }
+                    }
+                    shownDelegates.delete(target);
+                }
+                if (!shownDelegates.size) delegateObserver.disconnect();
+            });
+            // Bootstrap's component events bubble from the delegate up to the container.
+            const onDelegateShown = (event: Event) => {
+                if (!(event.target instanceof Element) || event.target === element) return;
+                if (!shownDelegates.size) {
+                    delegateObserver.observe(element, { childList: true, subtree: true });
+                }
+                shownDelegates.add(event.target);
+            };
+            const onDelegateHidden = (event: Event) => {
+                if (!(event.target instanceof Element)) return;
+                shownDelegates.delete(event.target);
+                if (!shownDelegates.size) delegateObserver.disconnect();
+            };
+            element.addEventListener("inserted.bs.tooltip", onDelegateShown);
+            element.addEventListener("hidden.bs.tooltip", onDelegateHidden);
+
+            disposeDelegateTracking = () => {
+                delegateObserver.disconnect();
+                element.removeEventListener("inserted.bs.tooltip", onDelegateShown);
+                element.removeEventListener("hidden.bs.tooltip", onDelegateHidden);
+            };
+        }
+
         return () => {
+            disposeDelegateTracking();
             element.removeEventListener("click", dismissOnPress);
             tooltips.delete(tooltip);
             // Dispose even when the trigger element is already detached (e.g. a keyed remount
@@ -1209,10 +1462,17 @@ export function useStaticTooltip(elRef: RefObject<Element>, config?: Partial<Too
     }, [ elRef, config ]);
 }
 
-export function useStaticTooltipWithKeyboardShortcut(elRef: RefObject<Element>, title: string, actionName: KeyboardActionNames | undefined, opts?: Omit<Partial<Tooltip.Options>, "title">) {
+export function useStaticTooltipWithKeyboardShortcut(
+    elRef: RefObject<Element | null>,
+    title: string,
+    actionName: KeyboardActionNames | undefined,
+    opts?: Omit<Partial<Tooltip.Options>, "title">
+) {
     const [ keyboardShortcut, setKeyboardShortcut ] = useState<string[]>();
     useStaticTooltip(elRef, {
-        title: keyboardShortcut?.length ? `${title} (${keyboardShortcut?.join(",")})` : title,
+        title: keyboardShortcut?.length
+            ? `${title} (${keyboardShortcut.map((shortcut) => joinShortcut(formatShortcut(shortcut))).join(", ")})`
+            : title,
         ...opts
     });
 
@@ -1247,8 +1507,9 @@ export function useLegacyImperativeHandlers(handlers: Record<string, Function>) 
  * marks its own element (see `BasicWidget.render`), and a React tree mounted under one answers to
  * that same widget, so the two already agree everywhere else.
  */
-export function useLegacyComponentElement(elRef: RefObject<HTMLElement>) {
-    const parentComponent = useContext(ParentComponent);
+export function useLegacyComponentElement(elRef: RefObject<HTMLElement | null>, component?: Component) {
+    const contextComponent = useContext(ParentComponent);
+    const parentComponent = component ?? contextComponent;
 
     useEffect(() => {
         const el = elRef.current;
@@ -1269,6 +1530,21 @@ export function useLegacyComponentElement(elRef: RefObject<HTMLElement>) {
 }
 
 type ComponentElement = HTMLElement & { component?: Component };
+
+/** Whether the CSS media `query` matches, following it as the window changes. */
+export function useMediaQuery(query: string) {
+    const [ matches, setMatches ] = useState(() => window.matchMedia(query).matches);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia(query);
+        const update = () => setMatches(mediaQuery.matches);
+        update();
+        mediaQuery.addEventListener("change", update);
+        return () => mediaQuery.removeEventListener("change", update);
+    }, [ query ]);
+
+    return matches;
+}
 
 /**
  * Registers this widget's contextual shortcut hints on its host component. When the user requests
@@ -1311,7 +1587,30 @@ export function useContextualShortcutHints(hints: ShortcutHintDefinition | (() =
     useDebugValue("contextual-shortcut-hints");
 }
 
-export function useSyncedRef<T>(externalRef?: Ref<T>, initialValue: T | null = null): RefObject<T> {
+/**
+ * The element a ref points at, as state, so an effect keyed on it runs once the element is there.
+ *
+ * Filling a ref triggers no render, so an effect that reads `ref.current` in its dependencies never
+ * hears the element arrive. Containers drawn only once their content has loaded are the ordinary
+ * case for that.
+ */
+export function useTrackedElement<T extends HTMLElement>(ref: RefObject<T | null>): T | null {
+    const [ element, setElement ] = useState<T | null>(null);
+
+    // Every render, and set only where it changed, so this settles in one further pass.
+    useLayoutEffect(() => {
+        if (ref.current !== element) {
+            setElement(ref.current);
+        }
+    });
+
+    return element;
+}
+
+export function useSyncedRef<T>(
+    externalRef?: Ref<T>,
+    initialValue: T | null = null
+): RefObject<T | null> {
     const ref = useRef<T>(initialValue);
 
     useEffect(() => {
@@ -1325,19 +1624,25 @@ export function useSyncedRef<T>(externalRef?: Ref<T>, initialValue: T | null = n
     return ref;
 }
 
-export function useImperativeSearchHighlighlighting(highlightedTokens: string[] | null | undefined) {
-    const mark = useRef<Mark>();
-    const highlightRegex = useMemo(() => {
+/** Longer regex tokens are rejected outright rather than compiled, to avoid pathological patterns. */
+const MAX_REGEX_TOKEN_LENGTH = 1000;
+/** Caps the number of matches a single regex token can wrap, mirroring the cap mark.js's own term API implicitly applies via node-at-a-time processing. */
+const MAX_REGEX_MATCHES = 500;
+
+export function useImperativeSearchHighlighlighting(
+    highlightedTokens: (string | HighlightedTokenInfo)[] | null | undefined
+) {
+    const mark = useRef<Mark | undefined>(undefined);
+    const tokenInfos = useMemo<HighlightedTokenInfo[] | null>(() => {
         if (!highlightedTokens?.length) return null;
-        const regex = highlightedTokens.map((token) => escapeRegExp(token)).join("|");
-        return new RegExp(regex, "gi");
+        return highlightedTokens.map((token) => (typeof token === "string" ? { token, type: "plain" as const } : token));
     }, [ highlightedTokens ]);
 
     return (el: HTMLElement | null | undefined) => {
         if (!el) return;
 
         // Nothing has ever been highlighted here, so there is also nothing to clear.
-        if (!mark.current && !highlightRegex) return;
+        if (!mark.current && !tokenInfos) return;
 
         if (!mark.current) {
             mark.current = new Mark(el);
@@ -1348,21 +1653,61 @@ export function useImperativeSearchHighlighlighting(highlightedTokens: string[] 
         // previous highlights, which would otherwise stay in the DOM for good.
         mark.current.unmark();
 
-        if (!highlightRegex) return;
+        if (!tokenInfos) return;
 
-        mark.current.markRegExp(highlightRegex, {
-            element: "span",
-            className: "ck-find-result",
-            // Reveal matches that landed inside collapsed <details> blocks — they
-            // are highlighted in the DOM but hidden until the block is expanded.
-            done: () => {
-                el.querySelectorAll<HTMLElement>(".ck-find-result").forEach(expandAncestorDetails);
+        const plainTokens = tokenInfos.filter((info) => info.type === "plain").map((info) => info.token);
+        if (plainTokens.length) {
+            // Term API (not markRegExp): its diacritics map lets an unaccented query like "ktory"
+            // (the server strips diacritics before indexing) still highlight "ktorý" (#10616).
+            // separateWordSearch: false keeps a multi-word token as one literal phrase; the default
+            // "partially" accuracy keeps plain substring matching, so CJK tokens without word
+            // boundaries (e.g. "笔记" inside "我的笔记本") keep working.
+            mark.current.mark(plainTokens, {
+                separateWordSearch: false,
+                diacritics: true,
+                caseSensitive: false,
+                element: "span",
+                className: "ck-find-result"
+            });
+        }
+
+        for (const info of tokenInfos) {
+            if (info.type !== "regex" || info.token.length > MAX_REGEX_TOKEN_LENGTH) continue;
+
+            let regex: RegExp;
+            try {
+                regex = new RegExp(info.token, "gi");
+            } catch {
+                // Invalid regex (e.g. from a malformed %= search) - skip rather than crash the render.
+                continue;
             }
-        });
+
+            mark.current.markRegExp(regex, {
+                element: "span",
+                className: "ck-find-result",
+                // markRegExp's filter is called as (node, match, totalCounter so far); returning
+                // false once the cap is hit stops further matches from being wrapped.
+                filter: (_node, _match, totalCounter) => totalCounter < MAX_REGEX_MATCHES
+            });
+        }
+
+        // Reveal matches that landed inside collapsed <details> blocks, which are highlighted in
+        // the DOM but hidden until the block is expanded.
+        el.querySelectorAll<HTMLElement>(".ck-find-result").forEach(expandAncestorDetails);
     };
 }
 
-export function useNoteTreeDrag(containerRef: MutableRef<HTMLElement | null | undefined>, { dragEnabled, dragNotEnabledMessage, callback }: {
+/** A note the note tree's drag carries, as JSON under the `text` type. */
+export interface DragData {
+    noteId: string;
+    branchId: string;
+    title: string;
+}
+
+/** The type that marks a drag as holding notes from the note tree, as fancytree's `dnd5` sets. */
+export const TREE_CLIPBOARD_TYPE = "application/x-fancytree-node";
+
+export function useNoteTreeDrag(containerRef: RefObject<HTMLElement | null | undefined>, { dragEnabled, dragNotEnabledMessage, callback }: {
     dragEnabled: boolean,
     dragNotEnabledMessage: Omit<ToastOptions, "id">;
     callback: (data: DragData[], e: DragEvent) => void
@@ -1431,7 +1776,7 @@ export function useNoteTreeDrag(containerRef: MutableRef<HTMLElement | null | un
  * The `callback` should return the IDs of the notes it actually added (cloned) to the collection so
  * the warning only mentions newly-copied notes, not ones that were already present.
  */
-export function useCollectionTreeDrag(containerRef: MutableRef<HTMLElement | null | undefined>, { dragEnabled, includeArchived, callback }: {
+export function useCollectionTreeDrag(containerRef: RefObject<HTMLElement | null | undefined>, { dragEnabled, includeArchived, callback }: {
     dragEnabled: boolean,
     includeArchived: boolean,
     callback: (data: DragData[], e: DragEvent) => string[] | Promise<string[]>
@@ -1532,7 +1877,7 @@ export function useLongPressContextMenu(handler: (e: MouseEvent) => void, holdMs
     };
 }
 
-export function useResizeObserver(ref: RefObject<HTMLElement>, callback: () => void) {
+export function useResizeObserver(ref: RefObject<HTMLElement | null>, callback: () => void) {
     const resizeObserver = useRef<ResizeObserver>(null);
     useEffect(() => {
         resizeObserver.current?.disconnect();
@@ -1547,7 +1892,12 @@ export function useResizeObserver(ref: RefObject<HTMLElement>, callback: () => v
     }, [ callback, ref ]);
 }
 
-export function useKeyboardShortcuts(scope: "code-detail" | "text-detail", containerRef: RefObject<HTMLElement>, parentComponent: Component | undefined, ntxId: string | null | undefined) {
+export function useKeyboardShortcuts(
+    scope: "code-detail" | "text-detail",
+    containerRef: RefObject<HTMLElement | null>,
+    parentComponent: Component | undefined,
+    ntxId: string | null | undefined
+) {
     useEffect(() => {
         if (!parentComponent) return;
         const $container = refToJQuerySelector(containerRef);
@@ -1803,6 +2153,66 @@ export function useNoteColorClass(note: FNote | null | undefined) {
     return colorClass;
 }
 
+/**
+ * Everything a note can be created from: the note types, the templates the app ships and the
+ * reader's own.
+ *
+ * Read when the caller mounts and again whenever a template is made, deleted, renamed or given
+ * another icon, so what is offered is what exists now. Not read at all while `enabled` is off,
+ * for a caller that has nothing to create, such as a read-only board.
+ */
+export function useNoteTypeOptions(enabled = true) {
+    const [ options, setOptions ] = useState<NoteTypeOption[]>([]);
+    /** How many reads were asked for, and the newest one answered. */
+    const asked = useRef(0);
+    const answered = useRef(0);
+
+    const read = useCallback(() => {
+        const attempt = ++asked.current;
+        getNoteTypeOptions().then((types) => {
+            // Two reads can be in flight at once, the one made on arrival and one a template being
+            // made asks for. They need not answer in the order they were asked, and one of them can
+            // fail and leave no answer at all, so what is taken is what no newer answer has taken
+            // over.
+            if (attempt > answered.current) {
+                answered.current = attempt;
+                setOptions(types);
+            }
+        }).catch((e) => console.error("Failed to read what a note can be made from:", e));
+    }, []);
+
+    useEffect(() => {
+        if (!enabled) {
+            return;
+        }
+        read();
+        // A read still in flight when the caller goes has nothing left to answer.
+        return () => { answered.current = asked.current + 1; };
+    }, [ read, enabled ]);
+
+    useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
+        const offered = new Set(options
+            .map((option) => option.options.templateNoteId)
+            .filter((noteId) => !!noteId));
+        // A note taking `#template` or losing it changes what can be created. So does any attribute
+        // of a note already offered: the icon comes from `iconClass`, from `workspaceIconClass`
+        // where there is none, and from a `#geoLocation` on a text note, all of them labels rather
+        // than part of the note row a reload would report.
+        const templated = loadResults.getAttributeRows().some((attribute) =>
+            attribute.name === "template"
+                || (!!attribute.noteId && offered.has(attribute.noteId)));
+        const renamed = options.some((option) =>
+            option.options.templateNoteId
+                && loadResults.isNoteReloaded(option.options.templateNoteId));
+
+        if (enabled && (templated || renamed)) {
+            read();
+        }
+    });
+
+    return options;
+}
+
 export function useTextEditor(noteContext: NoteContext | null | undefined) {
     const [ textEditor, setTextEditor ] = useState<CKTextEditor | null>(null);
     const requestIdRef = useRef(0);
@@ -1959,7 +2369,7 @@ export function useColorScheme() {
  * @param containerRef - Ref to the container element that may contain math elements
  * @param deps - Dependencies that trigger re-rendering (e.g., text content)
  */
-export function useMathRendering(containerRef: RefObject<HTMLElement>, deps: unknown[]) {
+export function useMathRendering(containerRef: RefObject<HTMLElement | null>, deps: unknown[]) {
     useEffect(() => {
         if (!containerRef.current) return;
         const mathElements = containerRef.current.querySelectorAll(".math-tex");
@@ -2013,7 +2423,7 @@ export function useMathRendering(containerRef: RefObject<HTMLElement>, deps: unk
  * runs first) can opt out entirely via a `data-no-contained-navigation` attribute.
  */
 export function useContainedLinkNavigation(
-    containerRef: RefObject<HTMLElement>,
+    containerRef: RefObject<HTMLElement | null>,
     onNavigate: (notePath: string, viewScope: ViewScope | undefined) => void
 ) {
     useEffect(() => {
@@ -2122,4 +2532,22 @@ export function useDebouncedValue<T>(value: T, delay: number): T {
     }, [ value, delay ]);
 
     return settled;
+}
+
+export function useAttachments(note: FNote) {
+    const [ attachments, setAttachments ] = useState<FAttachment[]>([]);
+
+    function refresh() {
+        note.getAttachments().then(attachments => setAttachments(Array.from(attachments)));
+    }
+
+    useEffect(refresh, [ note ]);
+
+    useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
+        if (loadResults.getAttachmentRows().some((att) => att.attachmentId && att.ownerId === note.noteId)) {
+            refresh();
+        }
+    });
+
+    return attachments;
 }

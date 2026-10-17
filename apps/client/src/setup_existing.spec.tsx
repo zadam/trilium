@@ -87,12 +87,6 @@ async function askForBackup() {
     await settle();
 }
 
-/**
- * The last question before the erase, answered here so the tests get past it. happy-dom has no
- * `confirm` of its own, so it is stubbed rather than spied on.
- */
-const confirmErase = vi.fn(() => true);
-
 beforeEach(() => {
     vi.useFakeTimers();
     onProceed.mockReset();
@@ -102,8 +96,6 @@ beforeEach(() => {
     openMock.download.mockClear();
     electronMock.isElectron.mockReset().mockReturnValue(false);
     electronMock.openPath.mockClear();
-    confirmErase.mockReset().mockReturnValue(true);
-    vi.stubGlobal("confirm", confirmErase);
     window.electronApi = undefined;
 });
 
@@ -114,7 +106,7 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-describe("choosing what happens to the existing knowledge base", () => {
+describe("offering a copy of the existing knowledge base", () => {
     it("will not continue until one of the two has been chosen", async () => {
         renderScreens();
         await settle();
@@ -134,45 +126,46 @@ describe("choosing what happens to the existing knowledge base", () => {
 
         choose("back-up");
         await settle();
-        choose("delete");
+        choose("skip");
         await settle();
 
         const checked = [ ...container.querySelectorAll<HTMLInputElement>("input[type=radio]") ]
             .filter((radio) => radio.checked)
             .map((radio) => radio.value);
         // Two groups as far as the browser is concerned, one answer as far as the screen is.
-        expect(checked).toEqual([ "delete" ]);
+        expect(checked).toEqual([ "skip" ]);
     });
 
-    it("warns about erasure only once erasure is what was chosen", async () => {
+    it("says what continuing without a copy does and does not cost, once that is the answer", async () => {
         renderScreens();
         await settle();
 
         expect(container.querySelector(".existing-data-warning")).toBeNull();
 
-        choose("delete");
+        choose("skip");
         await settle();
         expect(container.querySelector(".existing-data-warning")?.textContent)
-            .toContain("setup.existing-data-delete-warning");
+            .toContain("setup.existing-data-skip-warning");
 
-        // Changing one's mind takes the warning away with it.
+        // Changing one's mind takes it away again.
         choose("back-up");
         await settle();
         expect(container.querySelector(".existing-data-warning")).toBeNull();
     });
 
-    it("erases and moves on when that is the answer", async () => {
+    it("moves on without erasing anything when the copy is declined", async () => {
         renderScreens();
         await settle();
 
-        choose("delete");
+        choose("skip");
         await settle();
         button("setup.continue")?.click();
         await settle();
 
-        expect(serverMock.post).toHaveBeenCalledWith("setup/existing/delete");
         expect(onProceed).toHaveBeenCalled();
-        // Nothing was backed up, since nothing was asked to be.
+        // Neither backed up nor erased: the knowledge base is untouched until the user picks a path
+        // in the menu that follows, and each of those erases for itself.
+        expect(serverMock.post).not.toHaveBeenCalledWith("setup/existing/delete");
         expect(serverMock.post).not.toHaveBeenCalledWith("setup/existing/backup", expect.anything());
     });
 
@@ -185,6 +178,43 @@ describe("choosing what happens to the existing knowledge base", () => {
 
         expect(serverMock.post).toHaveBeenCalledWith("setup/existing/keep");
         expect(onKept).toHaveBeenCalled();
+    });
+
+    it("stays put and says why when the database will not reopen", async () => {
+        // Cancel is the way out of every screen here, so a failure in it has to be visible: the
+        // alternative is a button that does nothing and a user with no idea why.
+        serverMock.post.mockRejectedValue('{"message":"the database would not open"}');
+        renderScreens();
+        await settle();
+
+        button("setup.existing-data-cancel")?.click();
+        await settle();
+
+        expect(container.querySelector(".page-error")?.textContent).toContain("the database would not open");
+        expect(onKept).not.toHaveBeenCalled();
+        expect(container.querySelector("input[type=radio]")).not.toBeNull();
+    });
+
+    it("reads whatever the failure had to say, in each of the shapes one arrives in", async () => {
+        // A rejected request is not an Error: the client's own layer rejects with the response body
+        // as a string, which is JSON for a server error and a bare word when the browser dropped it.
+        for (const [ rejection, expected ] of [
+            [ new Error("an Error"), "an Error" ],
+            [ "rejected by browser", "rejected by browser" ],
+            [ { message: "an object carrying one" }, "an object carrying one" ],
+            [ 42, "setup.existing-data-keep-failed" ]
+        ] as const) {
+            serverMock.post.mockRejectedValue(rejection);
+            renderScreens();
+            await settle();
+
+            button("setup.existing-data-cancel")?.click();
+            await settle();
+
+            expect(container.querySelector(".page-error")?.textContent).toContain(expected);
+            render(null, container);
+            container.remove();
+        }
     });
 });
 
@@ -206,6 +236,24 @@ describe("backing it up first", () => {
         await vi.advanceTimersByTimeAsync(1100);
         await settle();
     }
+
+    it("still offers the plainest backup there is when the instance's own answers cannot be read", async () => {
+        // Losing the prefilled answers is not worth losing the backup over.
+        serverMock.get.mockImplementation(async (url: string) =>
+            (url === "setup/existing/backup-defaults" ? Promise.reject(new Error("no answer")) : {}));
+        renderScreens();
+        await settle();
+
+        choose("back-up");
+        await settle();
+        button("setup.continue")?.click();
+        await settle();
+
+        expect(container.textContent).toContain("setup.backup-name");
+        // Offered, and off: the fallback is a backup with nothing switched on.
+        expect(container.textContent).toContain("setup.backup-compress");
+        expect(container.textContent).not.toContain("setup.backup-use-stored-password");
+    });
 
     it("asks what the backup should be before taking it, and sends those answers", async () => {
         serverMock.get.mockImplementation(async (url: string) =>
@@ -242,41 +290,24 @@ describe("backing it up first", () => {
         });
     });
 
-    it("says what was written, and erases nothing until that is confirmed", async () => {
+    it("says what was written, and erases nothing on the way out of it", async () => {
         statusAnswers({ state: "done", fraction: 1, result: BACKUP });
         await backUpAndWait();
 
         expect(serverMock.post)
             .toHaveBeenCalledWith("setup/existing/backup", expect.objectContaining({ compress: false }));
-        // The path in full: the option holding a custom backup directory is in the database that is
-        // about to go, so this may be the last chance to read it.
+        // The path in full: the option holding a custom backup directory is in the database the user
+        // is on their way to replacing, so this may be the last chance to read it.
         expect(container.textContent).toContain(BACKUP.fileName);
         // The folder, not the whole path: the file name is on the line above it.
         expect(container.textContent).toContain(BACKUP.directoryPath);
         expect(container.textContent).not.toContain(BACKUP.filePath);
         expect(container.textContent).toContain("200 MiB");
-        expect(serverMock.post).not.toHaveBeenCalledWith("setup/existing/delete");
 
         button("setup.continue")?.click();
         await settle();
-        expect(confirmErase).toHaveBeenCalledWith("setup.existing-data-erase-confirm");
-        expect(serverMock.post).toHaveBeenCalledWith("setup/existing/delete");
         expect(onProceed).toHaveBeenCalled();
-    });
-
-    it("erases nothing when the last question is answered no", async () => {
-        confirmErase.mockReturnValue(false);
-        statusAnswers({ state: "done", fraction: 1, result: BACKUP });
-        await backUpAndWait();
-
-        button("setup.continue")?.click();
-        await settle();
-
-        expect(confirmErase).toHaveBeenCalled();
         expect(serverMock.post).not.toHaveBeenCalledWith("setup/existing/delete");
-        expect(onProceed).not.toHaveBeenCalled();
-        // Still on the screen it was answered from, so the backup can be taken again or kept.
-        expect(container.textContent).toContain(BACKUP.fileName);
     });
 
     it("shows how far along the write is, once the writer has said anything", async () => {
@@ -290,7 +321,8 @@ describe("backing it up first", () => {
 
         statusAnswers({ state: "running", fraction: 0.42 });
         await vi.advanceTimersByTimeAsync(1000);
-        expect(container.querySelector("progress")?.value).toBeCloseTo(0.42);
+        expect(Number(container.querySelector("[role=progressbar]")?.getAttribute("aria-valuenow")))
+            .toBeCloseTo(0.42);
         expect(container.textContent).toContain("42%");
         // ...and steps aside once there is one, rather than the two competing.
         expect(container.querySelector(".spinner-border")).toBeNull();
@@ -414,7 +446,8 @@ describe("backing up straight to a download on standalone", () => {
         // The suggested name, and no password, which is what the parameters screen was left at.
         expect(downloadDatabase).toHaveBeenCalledWith(
             expect.stringMatching(/^Trilium data \(\d{4}-\d{2}-\d{2} \d{2}-\d{2}-\d{2}\)\.tnbackup$/),
-            undefined);
+            undefined,
+            expect.any(Function));
         expect(container.textContent).toContain("setup.backup-downloading");
         expect(arrivingButton("setup.continue")?.disabled).toBe(true);
 
@@ -425,25 +458,8 @@ describe("backing up straight to a download on standalone", () => {
 
         arrivingButton("setup.continue")?.click();
         await settle();
-        // Asked once more before the data goes, since this screen is about the copy rather than
-        // about what continuing costs.
-        expect(confirmErase).toHaveBeenCalledWith("setup.existing-data-erase-confirm");
-        expect(serverMock.post).toHaveBeenCalledWith("setup/existing/delete");
         expect(onProceed).toHaveBeenCalled();
-    });
-
-    it("keeps the data when that last question is answered no", async () => {
-        confirmErase.mockReturnValue(false);
-        downloadDatabase.mockResolvedValue({ status: "done" });
-        await reachDownloadScreen();
-
-        arrivingButton("setup.backup-download")?.click();
-        await settle();
-        arrivingButton("setup.continue")?.click();
-        await settle();
-
         expect(serverMock.post).not.toHaveBeenCalledWith("setup/existing/delete");
-        expect(onProceed).not.toHaveBeenCalled();
     });
 
     it("shows what stopped a failed download, and keeps Continue out of reach", async () => {

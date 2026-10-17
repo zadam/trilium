@@ -6,10 +6,12 @@ import {
     getSetupLanguage,
     getSetupPlatform,
     getSetupTargetScreen,
+    hasExistingData,
     initSetupPlatform,
     isInitialSetup,
     isSetupRequested,
     leaveSetupMode,
+    markExistingDataDiscarded,
     parseSetupMarker
 } from "./setup_mode.js";
 
@@ -79,11 +81,36 @@ describe("being in setup because it was asked for", () => {
     });
 });
 
+describe("whether there is still a knowledge base behind the wizard", () => {
+    it("is what a marker means, until the wizard erases what the marker was about", () => {
+        expect(hasExistingData()).toBe(false);
+
+        enterSetupMode({ lang: "de" });
+        expect(hasExistingData()).toBe(true);
+
+        markExistingDataDiscarded();
+        expect(hasExistingData()).toBe(false);
+        // How it was reached does not change, which is a different question and a settled one.
+        expect(isInitialSetup()).toBe(false);
+        expect(isSetupRequested()).toBe(true);
+    });
+
+    it("comes back with the next start, since that one has a database of its own again", () => {
+        enterSetupMode({ lang: "de" });
+        markExistingDataDiscarded();
+        leaveSetupMode();
+
+        enterSetupMode({ lang: "de" });
+        expect(hasExistingData()).toBe(true);
+    });
+});
+
 describe("what setup reaches for on its platform", () => {
     it("carries what a route writes to whichever platform registered itself", async () => {
         const written: unknown[] = [];
         initSetupPlatform({
             writeMarker: async (marker) => { written.push(marker); },
+            hasMarker: async () => written.length > 0,
             removeMarker: async () => {},
             removeDatabase: async () => {}
         });

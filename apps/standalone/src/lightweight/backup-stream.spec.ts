@@ -49,7 +49,10 @@ async function drain(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
 
 describe("streamLiveDatabasePages against the real engine", () => {
     function readerFor(provider: BrowserSqlProvider): LiveDatabaseReader {
-        return { getValue: (sql, params) => provider.prepare(sql).pluck().get(params ?? []) };
+        return {
+            getValue: (sql, params) => provider.prepare(sql).pluck().get(params ?? []),
+            getColumn: (sql, params) => provider.prepare(sql).pluck().all(params ?? []) as unknown[]
+        };
     }
 
     function populatedProvider(): BrowserSqlProvider {
@@ -98,11 +101,21 @@ describe("streamLiveDatabasePages against the real engine", () => {
 
     it("errors the stream when a page comes back the wrong size", async () => {
         const reader: LiveDatabaseReader = {
-            getValue: (sql) => sql.includes("sqlite_dbpage")
-                ? new Uint8Array(3)
-                : sql.includes("page_size") ? 512 : sql.includes("page_count") ? 4 : 0
+            getValue: (sql) =>
+                sql.includes("page_size") ? 512 : sql.includes("page_count") ? 4 : 0,
+            // A page short of what the page size says it must be, four times over.
+            getColumn: () => Array.from({ length: 4 }, () => new Uint8Array(3))
         };
         await expect(drain(streamLiveDatabasePages(reader).stream)).rejects.toThrow(/malformed/);
+    });
+
+    it("errors the stream when the range comes back short of the pages it asked for", async () => {
+        const reader: LiveDatabaseReader = {
+            getValue: (sql) =>
+                sql.includes("page_size") ? 512 : sql.includes("page_count") ? 4 : 0,
+            getColumn: () => [ new Uint8Array(512) ]
+        };
+        await expect(drain(streamLiveDatabasePages(reader).stream)).rejects.toThrow(/got 1 of 4/);
     });
 });
 

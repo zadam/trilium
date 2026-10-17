@@ -37,6 +37,12 @@ vi.mock("../tools/helpers.js", async (importOriginal) => {
 });
 
 import { AnthropicProvider } from "./anthropic.js";
+import { installGlobalFetchAsApiTransport } from "../../../test/request_provider.js";
+import { llmFetch } from "./fetch.js";
+
+// A provider reaches its endpoint through the request provider rather than the global `fetch`, so
+// the specs that stub that global need one installed which leads back to it.
+beforeEach(installGlobalFetchAsApiTransport);
 
 describe("AnthropicProvider construction", () => {
     beforeEach(() => {
@@ -48,7 +54,8 @@ describe("AnthropicProvider construction", () => {
         expect(createAnthropicMock).toHaveBeenCalledTimes(1);
         expect(createAnthropicMock).toHaveBeenCalledWith({
             apiKey: "sk-ant-test",
-            headers: { "anthropic-dangerous-direct-browser-access": "true" }
+            headers: { "anthropic-dangerous-direct-browser-access": "true" },
+            fetch: llmFetch
         });
     });
 
@@ -57,7 +64,8 @@ describe("AnthropicProvider construction", () => {
         expect(createAnthropicMock).toHaveBeenCalledWith({
             apiKey: "sk-ant-test",
             headers: { "anthropic-dangerous-direct-browser-access": "true" },
-            baseURL: "https://proxy.example.com/v1"
+            baseURL: "https://proxy.example.com/v1",
+            fetch: llmFetch
         });
     });
 
@@ -65,7 +73,8 @@ describe("AnthropicProvider construction", () => {
         new AnthropicProvider("sk-ant-test", "");
         expect(createAnthropicMock).toHaveBeenCalledWith({
             apiKey: "sk-ant-test",
-            headers: { "anthropic-dangerous-direct-browser-access": "true" }
+            headers: { "anthropic-dangerous-direct-browser-access": "true" },
+            fetch: llmFetch
         });
     });
 
@@ -186,6 +195,15 @@ describe("AnthropicProvider tool handling", () => {
         expect(opts.maxOutputTokens).toBe(16000);
         expect(opts.toolChoice).toBe("auto");
         expect(opts.stopWhen).toBeDefined();
+    });
+
+    it("passes the turn's abort signal to streamText, with or without extended thinking", () => {
+        const provider = new AnthropicProvider("sk-ant-test");
+        const signal = new AbortController().signal;
+        provider.chat([{ role: "user", content: "hi" }], {}, signal);
+        provider.chat([{ role: "user", content: "hi" }], { enableExtendedThinking: true }, signal);
+
+        expect(streamTextMock.mock.calls.map(([ opts ]) => (opts as any).abortSignal)).toEqual([ signal, signal ]);
     });
 
     it("defaults the thinking budget and floors maxOutputTokens when unset", () => {

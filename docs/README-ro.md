@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes este o aplicație gratuită și open-source pentru notițe structurate
 ierarhic cu scopul de a crea o bază de date de cunoștințe personală, de mari
 dimensiuni.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -119,7 +123,7 @@ Documentația este disponibilă în mai multe formate:
 * [Temă întunecată](https://docs.triliumnotes.org/user-guide/concepts/themes)
   predefinită, dar și suport pentru teme personalizate
 * Import și export pentru
-  [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+  [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   și
   [Markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper)
@@ -370,11 +374,6 @@ Trilium nu ar fi fost posibil fără tehnologiile pe care este bazat:
   interactive folosite în colecții.
 * [FancyTree](https://github.com/mar10/fancytree) - bibliotecă pentru
   vizualizare de tip arbore.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - bibliotecă de conectivitate
-  vizuală. Folosită în [hărți de tip
-  relație](https://docs.triliumnotes.org/user-guide/note-types/relation-map) și
-  [hărți de
-  legături](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Sprijiniți proiectul
 

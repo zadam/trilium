@@ -22,6 +22,7 @@ import { type SetupMarker, type SetupTargetScreen } from "@triliumnext/commons";
 const TARGET_SCREENS: readonly SetupTargetScreen[] = [ "restore-backup", "backup-database" ];
 
 let requested: SetupMarker | null = null;
+let dataDiscarded = false;
 
 /**
  * Puts the instance into setup for the rest of this process.
@@ -31,6 +32,7 @@ let requested: SetupMarker | null = null;
  */
 export function enterSetupMode(marker: SetupMarker | null): void {
     requested = marker;
+    dataDiscarded = false;
 }
 
 /**
@@ -42,6 +44,23 @@ export function enterSetupMode(marker: SetupMarker | null): void {
  */
 export function leaveSetupMode(): void {
     requested = null;
+    dataDiscarded = false;
+}
+
+/**
+ * Whether the knowledge base the wizard was booted away from is still there.
+ *
+ * Not the same question as {@link isInitialSetup}, which answers for how the wizard was reached and
+ * never changes. This one stops being true the moment the user picks a path that replaces the
+ * database, which is the point everything offering to back it up, or to go back to it, has to stop.
+ */
+export function hasExistingData(): boolean {
+    return requested !== null && !dataDiscarded;
+}
+
+/** Records that it is gone. Nothing takes this back: the file it refers to no longer exists. */
+export function markExistingDataDiscarded(): void {
+    dataDiscarded = true;
 }
 
 /** Whether this instance was asked to be in setup rather than being there for want of a database. */
@@ -123,6 +142,14 @@ export function asSetupTargetScreen(value: unknown): SetupTargetScreen | undefin
 export interface SetupPlatform {
     /** Leaves the marker that makes the next start the wizard. */
     writeMarker(marker: SetupMarker): Promise<void>;
+    /**
+     * Whether one is lying there waiting to be read.
+     *
+     * Asked by an instance that cannot restart itself, where the marker outlives the page that
+     * wrote it: a server is restarted by hand, possibly days later, and until then this is the only
+     * thing that can tell the owner a start-over is pending, or let them call it off.
+     */
+    hasMarker(): Promise<boolean>;
     /** Takes it back, for a request that was made and then abandoned. */
     removeMarker(): Promise<void>;
     /**

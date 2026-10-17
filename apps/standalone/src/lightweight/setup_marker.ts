@@ -41,6 +41,17 @@ export async function consumeSetupMarker(): Promise<SetupMarker | null> {
     return parseSetupMarker(raw);
 }
 
+/** Whether one is lying there waiting to be read, which on this platform is only ever briefly. */
+export async function hasSetupMarker(): Promise<boolean> {
+    try {
+        const root = await navigator.storage.getDirectory();
+        await root.getFileHandle(SETUP_MARKER_FILE_NAME);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 /** Leaves the marker that makes the next start the wizard. */
 export async function writeSetupMarker(marker: SetupMarker): Promise<void> {
     const root = await navigator.storage.getDirectory();

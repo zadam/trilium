@@ -32,6 +32,9 @@ describe("NoteWrapperWidget", () => {
         expect(hasBackgroundEffects(audio)).toBe(true);
 
         expect(hasBackgroundEffects(buildNote({ title: "Grid", type: "book", "#viewType": "grid" }))).toBe(true);
+        // The board lays its columns on a bare surface, the way the grid lays its cards.
+        expect(hasBackgroundEffects(
+            buildNote({ title: "Board", type: "book", "#viewType": "board" }))).toBe(true);
 
         // Notes whose content paints its own background stay opaque.
         expect(hasBackgroundEffects(buildNote({ title: "Plain", type: "text" }))).toBe(false);
@@ -51,6 +54,7 @@ describe("isAlwaysFullWidthByType", () => {
 
     it("is true for layout-heavy types, media/PDF files and non-list/grid searches", () => {
         expect(isAlwaysFullWidthByType(buildNote({ title: "Canvas", type: "canvas" }))).toBe(true);
+        expect(isAlwaysFullWidthByType(buildNote({ title: "Relations", type: "relationMap" }))).toBe(true);
 
         const pdf = buildNote({ title: "PDF", type: "file" });
         pdf.mime = "application/pdf";

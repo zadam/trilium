@@ -23,6 +23,12 @@ vi.mock("ai", async (importOriginal) => {
 });
 
 import { isOpenAiChatModel, openAiModelName, OpenAiProvider } from "./openai.js";
+import { installGlobalFetchAsApiTransport } from "../../../test/request_provider.js";
+import { llmFetch } from "./fetch.js";
+
+// A provider reaches its endpoint through the request provider rather than the global `fetch`, so
+// the specs that stub that global need one installed which leads back to it.
+beforeEach(installGlobalFetchAsApiTransport);
 
 describe("OpenAiProvider construction", () => {
     beforeEach(() => {
@@ -32,20 +38,21 @@ describe("OpenAiProvider construction", () => {
     it("forwards apiKey only when no baseURL provided", () => {
         new OpenAiProvider("sk-test");
         expect(createOpenAIMock).toHaveBeenCalledTimes(1);
-        expect(createOpenAIMock).toHaveBeenCalledWith({ apiKey: "sk-test" });
+        expect(createOpenAIMock).toHaveBeenCalledWith({ apiKey: "sk-test", fetch: llmFetch });
     });
 
     it("forwards apiKey and baseURL when both provided", () => {
         new OpenAiProvider("sk-test", "http://localhost:11434/v1");
         expect(createOpenAIMock).toHaveBeenCalledWith({
             apiKey: "sk-test",
-            baseURL: "http://localhost:11434/v1"
+            baseURL: "http://localhost:11434/v1",
+            fetch: llmFetch
         });
     });
 
     it("omits baseURL when empty string is provided", () => {
         new OpenAiProvider("sk-test", "");
-        expect(createOpenAIMock).toHaveBeenCalledWith({ apiKey: "sk-test" });
+        expect(createOpenAIMock).toHaveBeenCalledWith({ apiKey: "sk-test", fetch: llmFetch });
     });
 
     it("throws when apiKey is missing", () => {

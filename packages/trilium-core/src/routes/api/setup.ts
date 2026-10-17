@@ -3,25 +3,37 @@ import setupService from "../../services/setup.js";
 import { getRunningSetupOperation, withSetupLock } from "../../services/setup_lock.js";
 import {
     deleteExistingData,
+    discardExistingData,
     getExistingBackupDefaults,
     getExistingBackupStatus,
     keepExistingData,
     startBackUpExistingData
 } from "../../services/setup_existing.js";
-import { asSetupTargetScreen, getSetupPlatform } from "../../services/setup_mode.js";
+import { authenticateSetup, isSetupAuthRequired, isSetupSecondFactorRequired } from "../../services/setup_auth.js";
+import { asSetupTargetScreen, getSetupPlatform, hasExistingData } from "../../services/setup_mode.js";
 import { getLog } from "../../services/log.js";
 import appInfo from "../../services/app_info.js";
 import optionService from "../../services/options.js";
-import type { Request } from "express";
+import type { Request } from "../../http_interface";
 import { SetupSyncFromServerResponse } from "@triliumnext/commons";
 
 function getStatus() {
     const isInitialized = sqlInit.isDbInitialized();
     const schemaExists = sqlInit.schemaExists();
+    // Whether the wizard has to be unlocked before it will do anything, which the screen has to know
+    // before it can ask. Says only that a password is wanted, never anything about the password.
+    const authRequired = isSetupAuthRequired();
 
     return {
         isInitialized,
         schemaExists,
+        authRequired,
+        // Says a second factor is wanted, never which kind nor anything about the answer.
+        secondFactorRequired: isSetupSecondFactorRequired(),
+        // Asked again rather than taken from the page's own start: the paths that replace a
+        // knowledge base erase it here, and a wizard that failed after one of them did would go on
+        // offering a way back to something that no longer exists.
+        hasExistingData: hasExistingData(),
         syncVersion: appInfo.syncVersion,
         // What another tab, or this one after a reload, has already started. Lets the wizard say so
         // rather than only finding out by being refused.
@@ -29,14 +41,34 @@ function getStatus() {
         // After a FAILED sync-from-server attempt the sync options are already stored in
         // the partial DB; expose them so the wizard can prefill the form when the user
         // goes back to correct it (#10548). Pre-initialization only: this endpoint is
-        // unauthenticated, and once the instance is live the host must not leak here.
-        ...(schemaExists && !isInitialized
+        // unauthenticated, and once the instance is live the host must not leak here. Withheld
+        // too while the wizard is locked, since that is a live instance's own database sitting
+        // behind it, and its sync server is not for anyone who can reach the port to read.
+        ...(schemaExists && !isInitialized && !authRequired
             ? {
                 syncServerHost: optionService.getOptionOrNull("syncServerHost") ?? "",
                 syncProxy: optionService.getOptionOrNull("syncProxy") ?? ""
             }
             : {})
     };
+}
+
+/**
+ * Unlocks the wizard with the password of the knowledge base sitting behind it.
+ *
+ * Returns the token the rest of the setup routes require, or 401 and nothing else: a wrong password
+ * and a wrong second factor are refused identically, which is all this ever says about either.
+ *
+ * The 401 is what makes a failed attempt count. `loginRateLimiter` runs with
+ * `skipSuccessfulRequests`, and express-rate-limit refunds the hit for every response below 400, so
+ * answering a refusal with 200 lets the password and the second factor be guessed without limit.
+ */
+async function authenticate(req: Request) {
+    const password = typeof req.body?.password === "string" ? req.body.password : "";
+    const totpToken = typeof req.body?.totpToken === "string" ? req.body.totpToken : "";
+    const token = await authenticateSetup(password, totpToken);
+
+    return token ? { authenticated: true, token } : [ 401, { authenticated: false } ];
 }
 
 /**
@@ -55,6 +87,24 @@ async function bootToSetup(req: Request) {
     });
 
     getLog().info(`Boot to setup requested${targetScreen ? ` for "${targetScreen}"` : ""}.`);
+}
+
+/**
+ * Whether a request made earlier is still waiting to be acted on.
+ *
+ * Of interest only where the instance cannot restart itself: an owner who asked their server to
+ * start over restarts it by hand, and until they do, this is the difference between a request that
+ * was made and one that was not.
+ */
+async function isBootToSetupRequested() {
+    return { requested: await getSetupPlatform().hasMarker() };
+}
+
+/** Calls it off, for a request made and then thought better of before the restart. */
+async function cancelBootToSetup() {
+    await getSetupPlatform().removeMarker();
+
+    getLog().info("Boot to setup cancelled.");
 }
 
 /**
@@ -105,17 +155,31 @@ async function keepExisting() {
     await keepExistingData();
 }
 
+/**
+ * The knowledge base the wizard was booted away from, where there is one, is erased here rather
+ * than on the way into the wizard: this is the first moment the user has committed to replacing it.
+ * Inside the lock, so the erasure and what replaces it are one operation as far as any other
+ * request is concerned.
+ */
 async function setupNewDocument(req: Request) {
     const { skipDemoDb } = req.query;
     const locale = req.body?.locale;
 
-    await withSetupLock("new-document", () => sqlInit.createInitialDatabase(skipDemoDb !== undefined, locale));
+    await withSetupLock("new-document", async () => {
+        await discardExistingData();
+        await sqlInit.createInitialDatabase(skipDemoDb !== undefined, locale);
+    });
 }
 
 /**
- * The lock covers fetching the seed and creating the schema, not the sync that follows: an
- * interrupted sync is resumed and retried across later requests, and a failed one has to leave the
- * user free to take another path instead.
+ * The lock covers erasing what was there, fetching the seed and creating the schema, not the sync
+ * that follows: an interrupted sync is resumed and retried across later requests, and a failed one
+ * has to leave the user free to take another path instead.
+ *
+ * The erasure is not done here, unlike the path above it. Reaching a sync server can fail on a
+ * mistyped host, a refused password or a version mismatch, and each of those has to leave the
+ * knowledge base where it was — so it is done inside, once the server has answered and the next
+ * step is the one that cannot be taken back.
  */
 function setupSyncFromServer(req: Request): Promise<SetupSyncFromServerResponse> {
     const { syncServerHost, syncProxy, password, syncMaxBlobContentSize } = req.body;
@@ -126,10 +190,30 @@ function setupSyncFromServer(req: Request): Promise<SetupSyncFromServerResponse>
         setupService.setupSyncFromSyncServer(syncServerHost, syncProxy, password, maxBlobContentSize));
 }
 
+/**
+ * Takes a database pushed by another desktop, which is how the sync-from-desktop path is fed.
+ *
+ * The push arrives from the other device and carries nothing this instance issued, so it cannot be
+ * held to the wizard's own password. What holds it instead is the state it is allowed to arrive in:
+ * a schema is created here by wiping whatever is in the way, so this is refused outright while there
+ * is still a knowledge base behind the wizard. The local user clears that themselves, on the screen
+ * that starts waiting for the push, and that screen is behind the password.
+ *
+ * A first run has nothing behind the wizard and is unaffected, which is the case this route exists
+ * for.
+ */
 async function saveSyncSeed(req: Request) {
     const { options, syncVersion } = req.body;
 
     const log = getLog();
+    if (hasExistingData()) {
+        const message = "This instance still holds a knowledge base of its own. Choose \"Connect a desktop app\" on its setup screen first.";
+
+        log.error(`Refused a pushed sync seed: ${message}`);
+
+        return [ 400, { error: message } ];
+    }
+
     if (appInfo.syncVersion !== syncVersion) {
         const message = `Could not setup sync since local sync protocol version is ${appInfo.syncVersion} while remote is ${syncVersion}. To fix this issue, use same Trilium version on all instances.`;
 
@@ -189,7 +273,10 @@ function getSyncSeed() {
 
 export default {
     getStatus,
+    authenticate,
     bootToSetup,
+    isBootToSetupRequested,
+    cancelBootToSetup,
     backUpExisting,
     existingBackupDefaults,
     existingBackupStatus,

@@ -1,8 +1,8 @@
 import type { HelpMetaItem } from "@triliumnext/commons";
-import type { NoteMeta } from "@triliumnext/core";
+import type { NoteMeta, NoteMetaFile } from "@triliumnext/core";
 import { describe, expect, it } from "vitest";
 
-import { buildHelpMeta } from "./help_meta_generator.js";
+import { buildHelpMeta, stripAppVersion } from "./help_meta_generator.js";
 
 const BASE_URL = "https://docs.triliumnotes.org";
 
@@ -145,5 +145,22 @@ describe("buildHelpMeta", () => {
     it("returns nothing when the export has no files", () => {
         expect(buildHelpMeta({ formatVersion: 2, appVersion: "0.103.0", files: undefined as never }))
             .toEqual({ meta: [], sources: {} });
+    });
+});
+
+describe("stripAppVersion", () => {
+    it("drops the version stamp and keeps everything else the docs metadata carries", () => {
+        const meta = {
+            formatVersion: 2,
+            appVersion: "0.105.0",
+            files: [{ noteId: "abc", title: "Note", attributes: [] }]
+        } as unknown as NoteMetaFile;
+
+        const stripped = stripAppVersion(meta);
+
+        expect("appVersion" in stripped).toBe(false);
+        expect(stripped).toStrictEqual({ formatVersion: 2, files: meta.files });
+        // The input is left alone: the help tree is derived from the same object afterwards.
+        expect(meta.appVersion).toBe("0.105.0");
     });
 });

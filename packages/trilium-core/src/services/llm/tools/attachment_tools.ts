@@ -6,6 +6,7 @@ import { unwrapStringOrBuffer } from "../../../services/utils/binary.js";
 import { z } from "zod";
 
 import becca from "../../../becca/becca.js";
+import blobService from "../../../services/blob.js";
 import { defineTools } from "./tool_registry.js";
 
 export const attachmentTools = defineTools({
@@ -54,11 +55,12 @@ export const attachmentTools = defineTools({
 
             // For binary attachments, try OCR/extracted text from the blob.
             const blob = attachment.blobId ? becca.getBlob({ blobId: attachment.blobId }) : null;
-            if (blob?.textRepresentation) {
+            const extractedText = blobService.decryptTextRepresentation(blob?.textRepresentation, !!attachment.isProtected);
+            if (extractedText) {
                 return {
                     attachmentId: attachment.attachmentId,
                     source: "ocr" as const,
-                    content: blob.textRepresentation
+                    content: extractedText
                 };
             }
 

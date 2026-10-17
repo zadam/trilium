@@ -12,6 +12,9 @@ vi.mock("../../../becca/becca.js", async (importOriginal) => {
     return { default: { ...actual.default, getBlob: getBlobMock } };
 });
 
+import blobService from "../../blob.js";
+import protectedSessionService from "../../protected_session.js";
+import { encodeUtf8 } from "../../utils/binary.js";
 import {
     applyTextEdits,
     flag,
@@ -19,6 +22,7 @@ import {
     getContentPreview,
     getNoteContentForLlm,
     getNoteMeta,
+    getSvgImageError,
     setNoteContentFromLlm
 } from "./helpers.js";
 
@@ -55,6 +59,8 @@ function docNoteStub(docName: string | null) {
         getLabelValue: (name: string) => (name === "docName" ? docName : null)
     });
 }
+
+const PROTECTED_KEY = encodeUtf8("0123456789abcdef"); // exactly 16 bytes
 
 function attachmentStub(overrides: Partial<Record<string, unknown>> = {}): BAttachment {
     return {
@@ -95,6 +101,23 @@ describe("getNoteContentForLlm", () => {
         const note = noteStub({ type: "image", getContent: () => new Uint8Array([1, 2, 3]) });
         getBlobMock.mockReturnValue({ textRepresentation: "scanned words" });
         expect(getNoteContentForLlm(note)).toBe("[extracted text from image]\nscanned words");
+    });
+
+    it("decrypts a protected note's extracted text, and withholds it when locked", () => {
+        const note = noteStub({ type: "image", isProtected: true, getContent: () => new Uint8Array([1, 2, 3]) });
+
+        protectedSessionService.setDataKey(PROTECTED_KEY);
+        try {
+            getBlobMock.mockReturnValue({
+                textRepresentation: blobService.encryptTextRepresentation("scanned secret", true)
+            });
+            expect(getNoteContentForLlm(note)).toBe("[extracted text from image]\nscanned secret");
+        } finally {
+            protectedSessionService.resetDataKey();
+        }
+
+        // Locked, with the same blob still in hand: the model must not be fed the ciphertext.
+        expect(getNoteContentForLlm(note)).toBe("[binary content]");
     });
 
     it("falls back to a binary-content marker when no extracted text exists", () => {
@@ -189,6 +212,22 @@ describe("getAttachmentContentPreview", () => {
         getBlobMock.mockReturnValue({ textRepresentation: "ocr text" });
         const att = attachmentStub({ hasStringContent: () => false, mime: "image/png" });
         expect(getAttachmentContentPreview(att)).toBe("ocr text");
+    });
+
+    it("decrypts a protected attachment's extracted text, and withholds it when locked", () => {
+        const att = attachmentStub({ hasStringContent: () => false, mime: "image/png", isProtected: true });
+
+        protectedSessionService.setDataKey(PROTECTED_KEY);
+        try {
+            getBlobMock.mockReturnValue({
+                textRepresentation: blobService.encryptTextRepresentation("ocr secret", true)
+            });
+            expect(getAttachmentContentPreview(att)).toBe("ocr secret");
+        } finally {
+            protectedSessionService.resetDataKey();
+        }
+
+        expect(getAttachmentContentPreview(att)).toBeNull();
     });
 
     it("returns null when no readable text exists", () => {
@@ -304,5 +343,33 @@ describe("applyTextEdits", () => {
         // so a partially-applied batch can never reach the note.
         expect(result).toMatchObject({ ok: false, error: expect.stringContaining("edit 2 of 2") });
         expect(result).not.toHaveProperty("content");
+    });
+});
+
+describe("getSvgImageError", () => {
+    it("accepts SVG source, with or without a prolog, doctype or comment", () => {
+        expect(getSvgImageError("image/svg+xml", "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>")).toBeUndefined();
+        expect(getSvgImageError("image/svg+xml", [
+            "<?xml version=\"1.0\"?>",
+            "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"x.dtd\">",
+            "<!-- logo -->",
+            "<SVG viewBox=\"0 0 1 1\">",
+            "  <rect/>",
+            "</SVG>\n"
+        ].join("\n"))).toBeUndefined();
+    });
+
+    it("rejects another mime, other markup and a truncated SVG", () => {
+        expect(getSvgImageError("image/png", "<svg></svg>")).toBe("Only SVG images are supported; use mime 'image/svg+xml'");
+        const notSvg = "Image content must be complete SVG source: an <svg> root element and its closing </svg>";
+        expect(getSvgImageError("image/svg+xml", "<svgx></svgx>")).toBe(notSvg);
+        expect(getSvgImageError("image/svg+xml", "Here is your drawing: <svg></svg>")).toBe(notSvg);
+        expect(getSvgImageError("image/svg+xml", "<svg><rect/>")).toBe(notSvg);
+    });
+
+    it("rejects a run of empty comments in linear time", () => {
+        const start = performance.now();
+        expect(getSvgImageError("image/svg+xml", `<!--${"--><!--".repeat(30)}x`)).toBeDefined();
+        expect(performance.now() - start).toBeLessThan(1000);
     });
 });

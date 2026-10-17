@@ -23,6 +23,12 @@ vi.mock("ai", async (importOriginal) => {
 });
 
 import { GoogleProvider, isGoogleChatModel } from "./google.js";
+import { installGlobalFetchAsApiTransport } from "../../../test/request_provider.js";
+import { llmFetch } from "./fetch.js";
+
+// A provider reaches its endpoint through the request provider rather than the global `fetch`, so
+// the specs that stub that global need one installed which leads back to it.
+beforeEach(installGlobalFetchAsApiTransport);
 
 describe("GoogleProvider construction", () => {
     beforeEach(() => {
@@ -32,20 +38,21 @@ describe("GoogleProvider construction", () => {
     it("forwards apiKey only when no baseURL provided", () => {
         new GoogleProvider("test-key");
         expect(createGoogleMock).toHaveBeenCalledTimes(1);
-        expect(createGoogleMock).toHaveBeenCalledWith({ apiKey: "test-key" });
+        expect(createGoogleMock).toHaveBeenCalledWith({ apiKey: "test-key", fetch: llmFetch });
     });
 
     it("forwards apiKey and baseURL when both provided", () => {
         new GoogleProvider("test-key", "https://proxy.example.com/v1beta");
         expect(createGoogleMock).toHaveBeenCalledWith({
             apiKey: "test-key",
-            baseURL: "https://proxy.example.com/v1beta"
+            baseURL: "https://proxy.example.com/v1beta",
+            fetch: llmFetch
         });
     });
 
     it("omits baseURL when empty string is provided", () => {
         new GoogleProvider("test-key", "");
-        expect(createGoogleMock).toHaveBeenCalledWith({ apiKey: "test-key" });
+        expect(createGoogleMock).toHaveBeenCalledWith({ apiKey: "test-key", fetch: llmFetch });
     });
 
     it("throws when apiKey is missing", () => {
@@ -121,6 +128,14 @@ describe("GoogleProvider message building", () => {
         // Extended thinking forwards Gemini's thinkingConfig.
         expect(opts.providerOptions.google.thinkingConfig.thinkingBudget).toBe(10000);
     });
+
+    it("chat() with extended thinking passes the turn's abort signal to streamText", () => {
+        const provider = new GoogleProvider("test-key");
+        const signal = new AbortController().signal;
+        provider.chat([{ role: "user", content: "hello" }], { enableExtendedThinking: true }, signal);
+
+        expect((streamTextMock.mock.calls[0][0] as any).abortSignal).toBe(signal);
+    });
 });
 
 describe("GoogleProvider tool handling", () => {
@@ -136,6 +151,8 @@ describe("GoogleProvider tool handling", () => {
         expect(googleSearchMock).toHaveBeenCalledOnce();
         const opts = streamTextMock.mock.calls[0][0] as any;
         expect(opts.tools.google_search).toEqual({ kind: "google_search" });
+        // The built-in search reads pages its own way.
+        expect(opts.tools.read_web_page).toBeUndefined();
         expect(opts.toolChoice).toBe("auto");
     });
 
@@ -153,6 +170,23 @@ describe("GoogleProvider tool handling", () => {
         expect(Object.keys(opts.tools).length).toBeGreaterThan(0);
         // The system prompt gains the conflict explanation.
         expect(opts.system).toContain("web search is unavailable in this turn");
+    });
+
+    it("keeps note tools beside a configured search provider, which has no conflict to drop", () => {
+        const provider = new GoogleProvider("test-key");
+        provider.chat([{ role: "user", content: "hi" }], {
+            enableWebSearch: true,
+            enableNoteTools: true,
+            webSearch: { provider: "tavily", apiKey: "tk" }
+        });
+
+        expect(googleSearchMock).not.toHaveBeenCalled();
+        const opts = streamTextMock.mock.calls[0][0] as any;
+        expect(opts.tools.google_search).toBeUndefined();
+        expect(opts.tools.web_search).toBeDefined();
+        expect(opts.tools.read_web_page).toBeDefined();
+        expect(opts.tools.search_notes).toBeDefined();
+        expect(opts.system).not.toContain("web search is unavailable in this turn");
     });
 
     it("forwards thinkingBudget override under extended thinking with tools enabled", () => {

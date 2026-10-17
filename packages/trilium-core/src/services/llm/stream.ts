@@ -2,9 +2,10 @@
  * Shared streaming utilities for converting AI SDK streams to SSE chunks.
  */
 
-import type { LlmErrorDetails, LlmStreamChunk } from "@triliumnext/commons";
+import { isToolErrorResult, type LlmErrorDetails, type LlmStreamChunk } from "@triliumnext/commons";
 import { APICallError, type LanguageModelUsage } from "ai";
 
+import { TOOL_CALL_DECLINED_REASON } from "./tool_approval.js";
 import type { ModelPricing, StreamResult } from "./types.js";
 
 // Cache pricing assumes Anthropic's 5-min ephemeral rates (writes 1.25× input, reads 0.1× input).
@@ -163,7 +164,7 @@ export async function* streamToChunks(result: StreamResult, options: StreamOptio
 
                 case "tool-result": {
                     const output = part.output;
-                    const isError = typeof output === "object" && output !== null && "error" in output;
+                    const isError = isToolErrorResult(output);
                     yield {
                         type: "tool_result",
                         toolCallId: part.toolCallId,
@@ -175,6 +176,16 @@ export async function* streamToChunks(result: StreamResult, options: StreamOptio
                     };
                     break;
                 }
+
+                case "tool-output-denied":
+                    yield {
+                        type: "tool_result",
+                        toolCallId: part.toolCallId,
+                        toolName: part.toolName,
+                        result: JSON.stringify({ error: TOOL_CALL_DECLINED_REASON }),
+                        isError: true
+                    };
+                    break;
 
                 case "source":
                     // Citation from web search (only URL sources have url property)

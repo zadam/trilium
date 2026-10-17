@@ -5,6 +5,7 @@ import getSharedBootstrapItems, { getIconConfig } from "./bootstrap_utils.js";
 import * as cls from "./context.js";
 import notes from "./notes.js";
 import options from "./options.js";
+import { getPlatform } from "./platform.js";
 import { enterSetupMode, leaveSetupMode } from "./setup_mode.js";
 import sqlInit from "./sql_init.js";
 
@@ -65,13 +66,13 @@ describe("bootstrap_utils (real DB)", () => {
         try {
             // A first run: nowhere in particular to go, and nothing behind the wizard.
             expect(getSharedBootstrapItems(ASSET_PATH, false)).toMatchObject({
-                initialSetup: true, setupTargetScreen: undefined
+                hasExistingData: false, setupTargetScreen: undefined
             });
 
             enterSetupMode({ lang: "ro", targetScreen: "restore-backup" });
             const items = getSharedBootstrapItems(ASSET_PATH, false);
 
-            expect(items).toMatchObject({ initialSetup: false, setupTargetScreen: "restore-backup" });
+            expect(items).toMatchObject({ hasExistingData: true, setupTargetScreen: "restore-backup" });
             // The schema of a finished database says nothing about an interrupted sync, so the
             // wizard must not be sent to the sync-progress screen instead of the one asked for.
             expect(items.syncInProgress).toBe(false);
@@ -140,6 +141,31 @@ describe("bootstrap_utils (real DB)", () => {
         expect(items.themeCssUrl).toBe(`api/notes/download/${noteId}`);
         expect(items.customThemeCssUrl).toBe(`api/notes/download/${noteId}`);
         expect(items.themeBase).toBe("next-dark");
+    });
+
+    it("withholds both custom theme URLs in safe mode", () => {
+        cls.init(() => {
+            const { note } = notes.createNewNote({
+                parentNoteId: "root",
+                title: "Custom Theme",
+                content: "body {}",
+                type: "code",
+                mime: "text/css"
+            });
+            attributes.createLabel(note.noteId, "appTheme", "mySafeModeTheme");
+        });
+
+        // Safe mode reaches core through the platform provider rather than `process.env`: the
+        // browser build has no `process` and takes the value from a `?safeMode` URL parameter.
+        const envSpy = vi.spyOn(getPlatform(), "getEnv")
+            .mockImplementation((key) => (key === "TRILIUM_SAFE_MODE" ? "1" : undefined));
+        try {
+            const items = fullPayload("mySafeModeTheme");
+            expect(items.themeCssUrl).toBe(false);
+            expect(items.customThemeCssUrl).toBeUndefined();
+        } finally {
+            envSpy.mockRestore();
+        }
     });
 
     it("falls back to the baseline light theme for an unknown theme with no matching note", () => {

@@ -34,7 +34,7 @@ describe("Hidden Subtree", () => {
 
         it("provides the help subtree as virtual notes, with no persisted rows left behind", () => {
             // The help subtree is injected into becca from the bundled meta as virtual notes;
-            // the fixture DB carried persisted _help rows which migration 241 must have
+            // the fixture DB carried persisted _help rows which migration 242 must have
             // removed, entity_changes included.
             const helpRoot = becca.getNoteOrThrow("_help");
             expect(helpRoot.isVirtual).toBe(true);

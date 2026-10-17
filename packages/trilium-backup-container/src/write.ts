@@ -10,9 +10,8 @@ import {
     authenticatedHeaderEnd,
     type ContainerHeader,
     DEFAULT_MAX_KDF_MEMORY_BYTES,
-    DIGEST_BYTES,
-    digestOffset,
     encodeHeader,
+    encodeTrailer,
     FORMAT_VERSION,
     FRAME_FINAL_FLAG,
     FRAME_SIZE,
@@ -33,29 +32,14 @@ import { createProgressReporter, type ProgressOptions, type ProgressReporter } f
 
 const EMPTY = new Uint8Array(0);
 
-/**
- * Writes `data` at an absolute offset in the destination that is already being streamed to.
- *
- * The payload digest is only known once the payload has been written, so it is patched into the
- * header afterwards. A destination that cannot be written out of order cannot hold this format.
- */
-export type PatchHeader = (offset: number, data: Uint8Array) => Promise<void> | void;
-
 export interface WriteBackupContainerOptions extends ProgressOptions {
     /**
-     * Patches the payload digest into the header once the payload is complete. Required, except
-     * for a {@link streamed} container, which records no digest and never writes backwards.
-     */
-    patchHeader?: PatchHeader;
-    /**
-     * Write front to back, recording no payload digest â€” for a destination that cannot be
-     * revisited, such as a download already on its way to the user.
+     * When the backup was taken, in milliseconds since the Unix epoch. Defaults to now.
      *
-     * Encrypted, the GCM frame tags stand in for the digest. Unencrypted, {@link
-     * WriteBackupContainerOptions.plaintextSize} does, so it is required: without either, nothing
-     * about the payload could be checked.
+     * Taken as an option rather than read here so that a caller can record when the database was
+     * actually copied, which for a backup written from a snapshot is not when this ran.
      */
-    streamed?: boolean;
+    timestamp?: number;
     /** Compress the payload with gzip. */
     compress?: boolean;
     /** Encrypt the payload. Encryption is on exactly when a passphrase is given. */
@@ -90,13 +74,14 @@ export interface WriteBackupContainerResult {
  * Wraps a database into a container. This is the runtime-neutral core; the Node and web entry
  * points wrap it with their stream types and their backend.
  *
- * The header is written first with a zeroed digest, then the payload streams through gzip and the
- * frame encryptor as configured, and finally the digest is patched into the header.
+ * The header is written first and never returned to, then the payload streams through gzip and the
+ * frame encryptor as configured, and finally the trailer records the digest and the length the
+ * payload came to. One forward pass, so the destination need not be seekable.
  *
  * @param input the database bytes.
  * @param output the destination, which is ended by this call.
  * @param backend the platform's crypto and compression primitives.
- * @param options see {@link WriteBackupContainerOptions}; `patchHeader` is required.
+ * @param options see {@link WriteBackupContainerOptions}.
  * @returns what was written, see {@link WriteBackupContainerResult}.
  * @throws BackupContainerError with `reason` set, see {@link BackupContainerErrorReason}.
  */
@@ -106,21 +91,6 @@ export async function writeContainer(
     backend: ContainerBackend,
     options: WriteBackupContainerOptions
 ): Promise<WriteBackupContainerResult> {
-    const streamed = options.streamed === true;
-    if (streamed && options.passphrase === undefined && !(options.plaintextSize ?? 0)) {
-        throw new BackupContainerError(
-            "invalid-options",
-            "A streamed container that is not encrypted must record its plaintext size: with "
-                + "neither that nor frame tags, nothing about the payload could be checked."
-        );
-    }
-    if (!streamed && typeof options.patchHeader !== "function") {
-        throw new BackupContainerError(
-            "invalid-options",
-            "patchHeader is required to write the payload digest."
-        );
-    }
-
     const plaintextSize = options.plaintextSize ?? 0;
     if (!Number.isSafeInteger(plaintextSize) || plaintextSize < 0) {
         throw new BackupContainerError(
@@ -137,13 +107,12 @@ export async function writeContainer(
     // final.
     const header: ContainerHeader = {
         version: FORMAT_VERSION,
+        timestamp: options.timestamp ?? Date.now(),
         compressed,
         encrypted,
-        streamed,
         plaintextSize,
         headerLength: headerLengthFor(encrypted),
-        encryption: null,
-        digest: new Uint8Array(DIGEST_BYTES)
+        encryption: null
     };
 
     let key: unknown = null;
@@ -180,7 +149,10 @@ export async function writeContainer(
     await output.write(headerBytes);
 
     // input -> gzip -> frames -> digest -> output, with the stages the flags call for.
-    let payload = input;
+    // Counted at the input, before any of them, so the trailer records the database's own length
+    // rather than whatever the payload compressed or framed to.
+    const plaintext = { bytes: 0 };
+    let payload: ByteSource = countBytes(input, plaintext);
     if (progress) {
         payload = tapProgress(payload, progress);
     }
@@ -191,24 +163,23 @@ export async function writeContainer(
         payload = encryptFrames(backend, key, header.encryption.noncePrefix, aad, payload);
     }
 
-    const hash = backend.createSha256();
+    const hash = await backend.createSha256();
     let payloadBytes = 0;
     for await (const chunk of payload) {
         hash.update(chunk);
         payloadBytes += chunk.length;
         await output.write(chunk);
     }
+
+    // The trailer is the last thing in the file, and the only part that could not be written until
+    // now. Written before the sink is closed, so a destination that can only be appended to still
+    // ends up holding a complete container.
+    const digest = hash.digest();
+    await output.write(encodeTrailer({ digest, plaintextSize: plaintext.bytes }));
     await output.end();
 
-    const digest = hash.digest();
-    // A streamed container keeps the zeros: its frames authenticate themselves, and there is no
-    // going back to the header of a destination already streamed away.
-    if (!streamed) {
-        await options.patchHeader?.(digestOffset(header.headerLength), digest);
-    }
-
-    // After the patch rather than after the payload: the container is not written until the digest
-    // is in its header.
+    // After the trailer rather than after the payload: the container is not written until what
+    // vouches for it is.
     progress?.complete();
 
     return {
@@ -232,6 +203,14 @@ async function* tapProgress(source: ByteSource, progress: ProgressReporter): Byt
     for await (const chunk of source) {
         bytes += chunk.length;
         progress.at(bytes);
+        yield chunk;
+    }
+}
+
+/** Counts what passes through, so the trailer can state a length nobody had to be told. */
+async function* countBytes(source: ByteSource, counted: { bytes: number }): ByteSource {
+    for await (const chunk of source) {
+        counted.bytes += chunk.length;
         yield chunk;
     }
 }

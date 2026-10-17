@@ -67,8 +67,8 @@ pdfjs-page-rotate-cw-button =
     .title = Im Uhrzeigersinn drehen
 pdfjs-page-rotate-cw-button-label = Im Uhrzeigersinn drehen
 pdfjs-page-rotate-ccw-button =
-    .title = Gegen Uhrzeigersinn drehen
-pdfjs-page-rotate-ccw-button-label = Gegen Uhrzeigersinn drehen
+    .title = Gegen den Uhrzeigersinn drehen
+pdfjs-page-rotate-ccw-button-label = Gegen den Uhrzeigersinn drehen
 pdfjs-cursor-text-select-tool-button =
     .title = Textauswahl-Werkzeug aktivieren
 pdfjs-cursor-text-select-tool-button-label = Textauswahl-Werkzeug
@@ -187,23 +187,6 @@ pdfjs-printing-not-ready = Warnung: Die PDF-Datei ist nicht vollständig geladen
 
 ## Tooltips and alt text for side panel toolbar buttons
 
-pdfjs-toggle-sidebar-button =
-    .title = Sidebar umschalten
-pdfjs-toggle-sidebar-notification-button =
-    .title = Sidebar umschalten (Dokument enthält Dokumentstruktur/Anhänge/Ebenen)
-pdfjs-toggle-sidebar-button-label = Sidebar umschalten
-pdfjs-document-outline-button =
-    .title = Dokumentstruktur anzeigen (Doppelklicken, um alle Einträge aus- bzw. einzuklappen)
-pdfjs-document-outline-button-label = Dokumentstruktur
-pdfjs-attachments-button =
-    .title = Anhänge anzeigen
-pdfjs-attachments-button-label = Anhänge
-pdfjs-layers-button =
-    .title = Ebenen anzeigen (Doppelklicken, um alle Ebenen auf den Standardzustand zurückzusetzen)
-pdfjs-layers-button-label = Ebenen
-pdfjs-thumbs-button =
-    .title = Miniaturansichten anzeigen
-pdfjs-thumbs-button-label = Miniaturansichten
 pdfjs-current-outline-item-button =
     .title = Aktuelles Struktur-Element finden
 pdfjs-current-outline-item-button-label = Aktuelles Struktur-Element
@@ -214,10 +197,6 @@ pdfjs-additional-layers = Zusätzliche Ebenen
 
 ## Thumbnails panel item (tooltip and alt text for images)
 
-# Variables:
-#   $page (Number) - the page number
-pdfjs-thumb-page-title =
-    .title = Seite { $page }
 # Variables:
 #   $page (Number) - the page number
 pdfjs-thumb-page-canvas =
@@ -235,8 +214,8 @@ pdfjs-thumb-page-title1 =
 ## Find panel button title and messages
 
 pdfjs-find-input =
-    .title = Suchen
     .placeholder = Dokument durchsuchen…
+    .title = Suchen
 pdfjs-find-previous-button =
     .title = Vorheriges Vorkommen des Suchbegriffs finden
 pdfjs-find-previous-button-label = Zurück
@@ -299,7 +278,7 @@ pdfjs-rendering-error = Beim Darstellen der Seite trat ein Fehler auf.
 # (32000-1:2008 Table 169 – Annotation types).
 # Some common types are e.g.: "Check", "Text", "Comment", "Note"
 pdfjs-text-annotation-type =
-    .alt = [Anlage: { $type }]
+    .alt = [{ $type } Anmerkung]
 # Variables:
 #   $dateObj (Date) - the modification date and time of the annotation
 pdfjs-annotation-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
@@ -331,16 +310,16 @@ pdfjs-editor-highlight-button =
     .title = Hervorheben
 pdfjs-editor-highlight-button-label = Hervorheben
 pdfjs-highlight-floating-button1 =
-    .title = Hervorheben
     .aria-label = Hervorheben
+    .title = Hervorheben
 pdfjs-highlight-floating-button-label = Hervorheben
 pdfjs-comment-floating-button =
-    .title = Kommentieren
     .aria-label = Kommentieren
+    .title = Kommentieren
 pdfjs-comment-floating-button-label = Kommentieren
 pdfjs-editor-comment-button =
-    .title = Kommentar
     .aria-label = Kommentar
+    .title = Kommentar
 pdfjs-editor-comment-button-label = Kommentar
 pdfjs-editor-signature-button =
     .title = Unterschrift hinzufügen
@@ -413,8 +392,8 @@ pdfjs-editor-comments-sidebar-title =
        *[other] Kommentare
     }
 pdfjs-editor-comments-sidebar-close-button =
-    .title = Sidebar schließen
     .aria-label = Sidebar schließen
+    .title = Sidebar schließen
 pdfjs-editor-comments-sidebar-close-button-label = Sidebar schließen
 # Instructional copy to add a comment by selecting text or an annotations.
 pdfjs-editor-comments-sidebar-no-comments1 = Haben Sie etwas Bemerkenswertes entdeckt? Heben Sie es hervor und hinterlassen Sie einen Kommentar.
@@ -537,13 +516,6 @@ pdfjs-editor-alt-text-settings-dialog-label = Alternativ-Text-Einstellungen für
 pdfjs-editor-alt-text-settings-automatic-title = Automatischer Alternativ-Text
 pdfjs-editor-alt-text-settings-create-model-button-label = Alternativ-Text automatisch erstellen
 pdfjs-editor-alt-text-settings-create-model-description = Schlägt Beschreibungen vor, um Personen zu helfen, die die Grafik nicht sehen können, oder wenn die Grafik nicht geladen wird.
-# Variables:
-#   $totalSize (Number) - the total size (in MB) of the AI model.
-pdfjs-editor-alt-text-settings-download-model-label = Alternativ-Text-KI-Modell ({ $totalSize } MB)
-pdfjs-editor-alt-text-settings-ai-model-description = Wird lokal auf Ihrem Gerät ausgeführt, sodass Ihre Daten privat bleiben. Erforderlich für automatischen Alternativ-Text.
-pdfjs-editor-alt-text-settings-delete-model-button = Löschen
-pdfjs-editor-alt-text-settings-download-model-button = Herunterladen
-pdfjs-editor-alt-text-settings-downloading-model-button = Wird heruntergeladen…
 pdfjs-editor-alt-text-settings-editor-title = Alternativ-Texteditor
 pdfjs-editor-alt-text-settings-show-dialog-button-label = Alternativ-Texteditor beim Hinzufügen einer Grafik anzeigen
 pdfjs-editor-alt-text-settings-show-dialog-description = Hilft Ihnen, sicherzustellen, dass alle Ihre Grafiken Alternativ-Text haben.
@@ -626,7 +598,7 @@ pdfjs-editor-add-signature-save-checkbox = Unterschrift speichern
 pdfjs-editor-add-signature-save-warning-message = Sie haben die Grenze von 5 gespeicherten Unterschriften erreicht. Entfernen Sie eine, um weitere zu speichern.
 pdfjs-editor-add-signature-image-upload-error-title = Grafik konnte nicht hochgeladen werden
 pdfjs-editor-add-signature-image-upload-error-description = Überprüfen Sie Ihre Netzwerkverbindung, oder versuchen Sie es mit einer anderen Grafik.
-pdfjs-editor-add-signature-image-no-data-error-title = Kann Grafik nicht in eine Signatur umwandeln
+pdfjs-editor-add-signature-image-no-data-error-title = Kann Grafik nicht in eine Unterschrift umwandeln
 pdfjs-editor-add-signature-image-no-data-error-description = Bitte versuchen Sie, eine andere Grafik hochzuladen.
 pdfjs-editor-add-signature-error-close-button = Schließen
 
@@ -730,9 +702,9 @@ pdfjs-views-manager-pages-status-undo-delete-label =
     }
 pdfjs-views-manager-pages-status-waiting-ready-label = Ihre Datei wird vorbereitet…
 pdfjs-views-manager-pages-status-waiting-uploading-label = Datei wird hochgeladen…
-pdfjs-views-manager-status-warning-cut-label = Ausschneiden war nicht möglich. Aktualisieren Sie die Seite und versuchen Sie es erneut.
+pdfjs-views-manager-status-warning-cut-label = Ausschneiden nicht möglich. Aktualisieren Sie die Seite und versuchen Sie es erneut.
 pdfjs-views-manager-status-warning-copy-label = Kopieren nicht möglich. Aktualisieren Sie die Seite und versuchen Sie es erneut.
-pdfjs-views-manager-status-warning-delete-label = Löschen war nicht möglich. Aktualisieren Sie die Seite und versuchen Sie es erneut.
+pdfjs-views-manager-status-warning-delete-label = Löschen nicht möglich. Aktualisieren Sie die Seite und versuchen Sie es erneut.
 pdfjs-views-manager-status-warning-save-label = Speichern nicht möglich. Aktualisieren Sie die Seite und versuchen Sie es erneut.
 pdfjs-views-manager-status-undo-button-label = Rückgängig
 pdfjs-views-manager-status-done-button-label = Fertig
@@ -756,8 +728,8 @@ pdfjs-toggle-views-manager-button1 =
 ## Digital signature properties (signature verification panel)
 
 pdfjs-digital-signature-properties-button =
-    .title = Eigenschaften digitaler Signatur
     .aria-label = Eigenschaften digitaler Signatur
+    .title = Eigenschaften digitaler Signatur
 pdfjs-digital-signature-properties-button-label = Eigenschaften digitaler Signatur
 
 ## Banner shown above the signature list summarising the overall
@@ -824,8 +796,8 @@ pdfjs-digital-signature-properties-certificate-revoked = Zertifikat: Widerrufen
 ## Main menu for adding/removing signatures
 
 pdfjs-editor-delete-signature-button1 =
-    .title = Gespeicherte Signatur entfernen
-pdfjs-editor-delete-signature-button-label1 = Gespeicherte Signatur entfernen
+    .title = Gespeicherte Unterschrift entfernen
+pdfjs-editor-delete-signature-button-label1 = Gespeicherte Unterschrift entfernen
 
 ## Editor toolbar
 

@@ -12,8 +12,13 @@ vi.mock("../../../becca/becca.js", async (importOriginal) => {
     return { default: { ...actual.default, getAttachment: getAttachmentMock, getBlob: getBlobMock } };
 });
 
+import blobService from "../../blob.js";
+import protectedSessionService from "../../protected_session.js";
+import { encodeUtf8 } from "../../utils/binary.js";
 import { attachmentTools } from "./attachment_tools.js";
 import type { ToolDefinition } from "./tool_registry.js";
+
+const PROTECTED_KEY = encodeUtf8("0123456789abcdef"); // exactly 16 bytes
 
 function getTool(name: string): ToolDefinition {
     for (const [n, def] of attachmentTools) {
@@ -87,6 +92,33 @@ describe("attachment_tools", () => {
                 source: "ocr",
                 content: "OCR extracted"
             });
+        });
+
+        it("decrypts a protected attachment's OCR text, and withholds it when locked", () => {
+            getAttachmentMock.mockReturnValue(stubAttachment({
+                hasStringContent: () => false,
+                mime: "image/png",
+                blobId: "blob1",
+                isProtected: true
+            }));
+
+            protectedSessionService.setDataKey(PROTECTED_KEY);
+            try {
+                getBlobMock.mockReturnValue({
+                    textRepresentation: blobService.encryptTextRepresentation("OCR extracted", true)
+                });
+                expect(getTool("get_attachment_content").execute({ attachmentId: "att1" })).toEqual({
+                    attachmentId: "att1",
+                    source: "ocr",
+                    content: "OCR extracted"
+                });
+            } finally {
+                protectedSessionService.resetDataKey();
+            }
+
+            // Locked: reported as unreadable rather than answered with the ciphertext.
+            expect(getTool("get_attachment_content").execute({ attachmentId: "att1" }))
+                .toEqual({ error: "Attachment has no readable text content" });
         });
 
         it("returns an error for binary attachments with no readable text (no blobId, or empty blob)", () => {

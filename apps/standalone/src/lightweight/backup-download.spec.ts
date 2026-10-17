@@ -1,5 +1,5 @@
 import { readBackupContainer } from "@triliumnext/backup-container";
-import { streamedContainerSize } from "@triliumnext/backup-container/web";
+import { containerSize } from "@triliumnext/backup-container/web";
 import { Readable, Writable } from "stream";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -15,10 +15,13 @@ const FAST_SCRYPT = { log2N: 10, r: 8, p: 1 };
 /** A reader serving `PAGE_COUNT` constant-filled pages, with steady write counters. */
 function fakeReader(): LiveDatabaseReader {
     return {
-        getValue(sql: string, params?: unknown[]) {
-            if (sql.includes("sqlite_dbpage")) {
-                return new Uint8Array(PAGE_SIZE).fill((params?.[0] as number) & 0xff);
-            }
+        getColumn(_sql: string, params?: unknown[]) {
+            const [ first, last ] = params as [ number, number ];
+
+            return Array.from({ length: last - first + 1 }, (_unused, index) =>
+                new Uint8Array(PAGE_SIZE).fill((first + index) & 0xff));
+        },
+        getValue(sql: string) {
             if (sql.includes("page_size")) {
                 return PAGE_SIZE;
             }
@@ -106,7 +109,7 @@ describe("streamDatabaseDownload", () => {
         expect(outcome).toEqual({ status: "done" });
         // One format whether or not a password was given, so one extension and one restore path.
         expect(port.sent[0])
-            .toEqual({ type: "begin", byteSize: streamedContainerSize(PAGE_SIZE * PAGE_COUNT, false) });
+            .toEqual({ type: "begin", byteSize: containerSize(PAGE_SIZE * PAGE_COUNT, false) });
         expect(port.chunks().reduce((total, chunk) => total + chunk.byteLength, 0))
             .toBe(port.sent[0].byteSize);
         expect(port.sent.at(-1)).toEqual({ type: "end" });
@@ -131,7 +134,7 @@ describe("streamDatabaseDownload", () => {
         expect(outcome).toEqual({ status: "done" });
         // The announced size is what the download's Content-Length becomes, so it must be exact.
         const announced = port.sent[0].byteSize;
-        expect(announced).toBe(streamedContainerSize(PAGE_SIZE * PAGE_COUNT, true));
+        expect(announced).toBe(containerSize(PAGE_SIZE * PAGE_COUNT, true));
         const streamed = port.chunks().reduce((total, chunk) => total + chunk.byteLength, 0);
         expect(streamed).toBe(announced);
 
@@ -172,7 +175,7 @@ describe("streamDatabaseDownload", () => {
 
     it("reports a database that cannot even be sized, before any begin", async () => {
         const port = fakePort();
-        const outcome = await streamDatabaseDownload({ getValue: () => 0 }, port);
+        const outcome = await streamDatabaseDownload({ getValue: () => 0, getColumn: () => [] }, port);
 
         expect(outcome).toMatchObject({ status: "failed" });
         expect(port.sent).toHaveLength(1);
@@ -184,8 +187,9 @@ describe("streamDatabaseDownload", () => {
     it("reports a failure mid-stream through the port rather than throwing", async () => {
         const reader = fakeReader();
         const broken: LiveDatabaseReader = {
-            getValue: (sql, params) =>
-                sql.includes("sqlite_dbpage") ? new Uint8Array(3) : reader.getValue(sql, params)
+            getValue: (sql, params) => reader.getValue(sql, params),
+            getColumn: (sql, params) =>
+                (reader.getColumn(sql, params) as Uint8Array[]).map(() => new Uint8Array(3))
         };
         const port = fakePort();
         const running = streamDatabaseDownload(broken, port);

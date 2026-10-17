@@ -19,10 +19,14 @@ LiberaPay](https://img.shields.io/liberapay/patrons/ElianDoran)\
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes – это приложение для заметок с иерархической структурой,
 ориентированное на создание больших персональных баз знаний.
+
+Ищете "Trillium Notes"? Каноническое написание названия проекта — "Trilium
+Notes", с одной буквой `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -115,7 +119,7 @@ Trilium Notes – это приложение для заметок с иера�
   смартфонов и планшетов
 * [Темная тема](https://docs.triliumnotes.org/user-guide/concepts/themes)
 * Импорт и экпорт
-  [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+  [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   и данных в
   [markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
   формате
@@ -349,12 +353,12 @@ pnpm run --filter desktop electron-forge:make --arch=x64 --platform=win32
 * [antoniotejada](https://github.com/nriver) за оригинальный виджет подсветки
   синтаксиса.
 * [Tabler Icons](https://tabler.io/icons) за системные иконки.
-*   The application icons in the import dialog are from:
-    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+*   Значки приложений в диалоговом окне импорта взяты из:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) для
         OneNote, Google Keep, Evernote.
-    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
-    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
-*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
+    *   [Font Awesome](https://fontawesome.com/) для Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) для Anytype.
+*  Значки поставщиков LLM взяты из[Lobe Icons](https://lobehub.com/icons).
 
 Trilium не существовал бы без технологий, лежащих в его основе:
 
@@ -372,11 +376,6 @@ Trilium не существовал бы без технологий, лежащ
   используемые в коллекциях.
 * [FancyTree](https://github.com/mar10/fancytree) - многофункциональная
   библиотека деревьев, не имеющая себе равных.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - библиотека визуальных связей.
-  Используется в [картах
-  связей](https://docs.triliumnotes.org/user-guide/note-types/relation-map) и
-  [картах
-  ссылок](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Поддержка
 

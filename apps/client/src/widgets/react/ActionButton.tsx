@@ -7,8 +7,13 @@ import keyboard_actions from "../../services/keyboard_actions";
 import { formatShortcut, joinShortcut } from "../../services/keyboard_shortcut_display";
 import { isMobile } from "../../services/utils";
 import { useStaticTooltip } from "./hooks";
+import { useCommandTrigger } from "./react_utils";
 
-export interface ActionButtonProps extends Pick<HTMLAttributes<HTMLButtonElement>, "onClick" | "onAuxClick" | "onContextMenu" | "onBlur" | "style"> {
+export interface ActionButtonProps extends Pick<
+    HTMLAttributes<HTMLButtonElement>,
+    "onClick" | "onAuxClick" | "onContextMenu" | "onBlur" | "style" | "aria-expanded"
+    | "aria-pressed"
+> {
     text: string;
     titlePosition?: "top" | "right" | "bottom" | "left";
     /** Extra class applied to the tooltip popup (e.g. `tooltip-top` to raise its z-index above modals). */
@@ -17,6 +22,13 @@ export interface ActionButtonProps extends Pick<HTMLAttributes<HTMLButtonElement
     tooltipHtml?: boolean;
     icon: string;
     className?: string;
+    /**
+     * Keeps the tooltip off a touch screen, where there is no hover to open it with: the tap that
+     * presses the button opens it instead, and it then sits over whatever the press brought up until
+     * something else takes the focus. For a button whose meaning is already plain where it stands.
+     * The label is still given to assistive technology, which is what the tooltip was carrying it for.
+     */
+    noTooltipOnTouch?: boolean;
     triggerCommand?: CommandNames;
     noIconActionClass?: boolean;
     frame?: boolean;
@@ -26,16 +38,18 @@ export interface ActionButtonProps extends Pick<HTMLAttributes<HTMLButtonElement
 
 const cachedIsMobile = isMobile();
 
-export default function ActionButton({ text, icon, className, triggerCommand, titlePosition, tooltipClass, tooltipHtml, noIconActionClass, frame, active, disabled, ...restProps }: ActionButtonProps) {
+export default function ActionButton({ text, icon, className, triggerCommand, titlePosition, tooltipClass, tooltipHtml, noIconActionClass, noTooltipOnTouch, frame, active, disabled, ...restProps }: ActionButtonProps) {
     const buttonRef = useRef<HTMLButtonElement>(null);
     const [ keyboardShortcut, setKeyboardShortcut ] = useState<string[]>();
+    const triggerOwnCommand = useCommandTrigger(triggerCommand);
 
     const title = keyboardShortcut?.length
         ? `${text} (${keyboardShortcut.map((shortcut) => joinShortcut(formatShortcut(shortcut))).join(", ")})`
         : text;
     const titleRef = useRef(title);
     titleRef.current = title;
-    const hasTitle = !!title && title.length > 0;
+    const declined = !!noTooltipOnTouch && cachedIsMobile;
+    const hasTitle = !!title && title.length > 0 && !declined;
 
     // The tooltip is recreated only when its structural options (or its presence) change — not when
     // the label text changes. A plain text change is pushed into the live tooltip via setContent
@@ -73,7 +87,10 @@ export default function ActionButton({ text, icon, className, triggerCommand, ti
         // (e.g. the error-dismiss button stealing the login form's Enter).
         type="button"
         class={`${className ?? ""} ${!noIconActionClass ? "icon-action" : "btn"} ${icon} ${frame ? "btn btn-primary" : ""} ${disabled ? "disabled" : ""} ${active ? "active" : ""}`}
-        data-trigger-command={triggerCommand}
+        onClick={triggerOwnCommand}
+        // Only where the tooltip that would otherwise carry it has been declined: elsewhere the
+        // tooltip is the button's name, and a second one here would be read out beside it.
+        aria-label={declined ? title : undefined}
         disabled={disabled}
         {...restProps}
     />;

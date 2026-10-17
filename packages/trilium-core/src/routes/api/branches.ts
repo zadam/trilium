@@ -1,7 +1,7 @@
 import branchService from "../../services/branches.js";
 import eraseService from "../../services/erase.js";
 import eventService from "../../services/events.js";
-import type { Request } from "express";
+import type { Request } from "../../http_interface";
 
 import becca from "../../becca/becca.js";
 import entityChangesService from "../../services/entity_changes.js";
@@ -17,17 +17,41 @@ import { ValidationError } from "../../errors.js";
  * for not deleted branches. There may be multiple deleted note-parent note relationships.
  */
 
-function moveBranchToParent(req: Request<{ branchId: string, parentBranchId: string }>) {
-    const { branchId, parentBranchId } = req.params;
+/**
+ * Moves the branches in `branchIds`, in order, under the note of `parentBranchId`. All moves run in one
+ * transaction, so the client receives them as a single frontend update. The first move that fails
+ * validation stops the batch; the moves before it stay.
+ */
+function moveBranchesToParent(req: Request<{ parentBranchId: string }>) {
+    const { parentBranchId } = req.params;
+    const { branchIds } = req.body;
 
-    const branchToMove = becca.getBranch(branchId);
-    const targetParentBranch = becca.getBranch(parentBranchId);
-
-    if (!branchToMove || !targetParentBranch) {
-        throw new ValidationError(`One or both branches '${branchId}', '${parentBranchId}' have not been found`);
+    if (!Array.isArray(branchIds)) {
+        throw new ValidationError("branchIds must be an array");
     }
 
-    return branchService.moveBranchToBranch(branchToMove, targetParentBranch, branchId);
+    const targetParentBranch = becca.getBranch(parentBranchId);
+    if (!targetParentBranch) {
+        throw new ValidationError(`Target branch '${parentBranchId}' has not been found`);
+    }
+
+    const branchesToMove = branchIds.map((branchId) => {
+        const branch = typeof branchId === "string" ? becca.getBranch(branchId) : null;
+        if (!branch) {
+            throw new ValidationError(`Branch '${branchId}' has not been found`);
+        }
+        return { branchId: branchId as string, branch };
+    });
+
+    for (const { branchId, branch } of branchesToMove) {
+        const res = branchService.moveBranchToBranch(branch, targetParentBranch, branchId);
+
+        if (!("success" in res) || !res.success) {
+            return res;
+        }
+    }
+
+    return { success: true };
 }
 
 function moveBranchBeforeNote(req: Request<{ branchId: string, beforeBranchId: string }>) {
@@ -151,29 +175,33 @@ function setExpanded(req: Request<{ branchId: string, expanded: string }>) {
 
 function setExpandedForSubtree(req: Request<{ branchId: string, expanded: string }>) {
     const { branchId } = req.params;
-    const expanded = parseInt(req.params.expanded);
+    const expanded = req.params.expanded === "1" ? 1 : 0;
     const sql = getSql();
 
-    let branchIds = sql.getColumn<string>(
-        `
+    // The state filter sits outside the recursion so that the walk reaches every descendant;
+    // `none_root` is excluded because the root is always expanded.
+    const branchIds = sql.getColumn<string>(/*sql*/`
         WITH RECURSIVE
-        tree(branchId, noteId) AS (
-            SELECT branchId, noteId FROM branches WHERE branchId = ?
-            UNION
-            SELECT branches.branchId, branches.noteId FROM branches
-                JOIN tree ON branches.parentNoteId = tree.noteId
-            WHERE branches.isDeleted = 0
-                AND branches.isExpanded = 1
-        )
-        SELECT branchId FROM tree`,
-        [branchId]
+            tree(branchId, noteId) AS (
+                SELECT branchId, noteId FROM branches WHERE branchId = ?
+                UNION
+                SELECT branches.branchId, branches.noteId
+                FROM branches
+                    JOIN tree ON branches.parentNoteId = tree.noteId
+                WHERE branches.isDeleted = 0
+            )
+        SELECT tree.branchId
+        FROM tree
+            JOIN branches USING (branchId)
+        WHERE branches.isExpanded != ?
+            AND tree.branchId != 'none_root'`,
+        [ branchId, expanded ]
     );
 
-    // root is always expanded
-    branchIds = branchIds.filter((branchId) => branchId !== "none_root");
-
-    const expandedValue = expanded ? 1 : 0;
-    sql.executeMany(/*sql*/`UPDATE branches SET isExpanded = ${expandedValue} WHERE branchId IN (???)`, branchIds);
+    sql.executeMany(
+        /*sql*/`UPDATE branches SET isExpanded = ${expanded} WHERE branchId IN (???)`,
+        branchIds
+    );
 
     for (const branchId of branchIds) {
         const branch = becca.branches[branchId];
@@ -246,13 +274,14 @@ function deleteBranch(req: Request<{ branchId: string }>) {
     if (eraseNotes) {
         // erase automatically means deleting all clones + note itself
         branch.getNote().deleteNote(deleteId, taskContext);
-        eraseService.eraseNotesWithDeleteId(deleteId);
+        taskContext.scheduleErase(deleteId);
         noteDeleted = true;
     } else {
         noteDeleted = branch.deleteBranch(deleteId, taskContext);
     }
 
     if (last) {
+        eraseService.eraseNotesWithDeleteIds(taskContext.takeScheduledErases());
         taskContext.taskSucceeded(null);
     }
 
@@ -304,7 +333,7 @@ function setPrefixBatch(req: Request) {
 }
 
 export default {
-    moveBranchToParent,
+    moveBranchesToParent,
     moveBranchBeforeNote,
     moveBranchAfterNote,
     setExpanded,

@@ -69,6 +69,11 @@
     justify-content: flex-end;
 }
 
+/* A card option without a card, so it needs the room a segment would have given it. */
+.options-header-switch {
+    padding-block: 4px;
+}
+
 /* A full-width bar that sticks to the top of the scrolling content, so cards scroll cleanly beneath
    it. The background is painted per context (below) so the sticky bar matches its surroundings. */
 .options-page-header {
@@ -81,10 +86,8 @@
     padding-block: 10px;
 }
 
-/* Break out of the option page's inline padding (25px in the new layout) so the bar — and its bottom
-   border — spans the full content width; re-add the inset as padding so the title and actions still
-   line up with the option cards. */
-body.experimental-feature-new-layout .options-page-header {
+/* Matches the options page's inline padding in pages.css. */
+.options-page-header {
     margin-inline: -25px;
     padding-inline: 25px;
 }
@@ -111,20 +114,8 @@ body.experimental-feature-new-layout .options-page-header {
     }
 
     /* The name was all it carried, so it stands down rather than leaving an empty band above the
-       first card. */
-    .options-page-header-title-only:not(:has(.options-page-header-help)) {
-        display: none;
-    }
-
-    /* All but the help button, which stays reachable — as a page action at the head of the content,
-       though, rather than as a bar: the bar was there to hold the name. */
+       first card. Its help mark, where it had one, is handed to the header holding the name. */
     .options-page-header-title-only {
-        position: static;
-        border-bottom: none;
-        padding-block: 0;
-
-        .options-page-header-main {
-            justify-content: flex-end;
-        }
+        display: none;
     }
 }

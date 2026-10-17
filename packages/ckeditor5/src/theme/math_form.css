@@ -16,15 +16,12 @@
     z-index: calc(var(--ck-z-panel) + 2000) !important;
     position: fixed !important;
 }
-.ck.ck-balloon-panel, .ck.ck-balloon-panel .ck-balloon-panel__content {
-    overflow: visible !important;
-}
 
 /* === MAIN DIALOG === */
 .ck.ck-math-form {
     display: flex;
     flex-direction: column;
-    padding: var(--ck-spacing-standard);
+    padding: var(--ck-spacing-standard, var(--ck-spacing-base));
     box-sizing: border-box;
 	min-width: 400px;
     max-width: 60vw;
@@ -40,7 +37,7 @@
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-    gap: var(--ck-spacing-standard);
+    gap: var(--ck-spacing-standard, var(--ck-spacing-base));
     min-height: 0;
     width: 100%;
 }
@@ -49,7 +46,7 @@
 .ck.ck-math-input {
     display: flex;
     flex-direction: column;
-    gap: var(--ck-spacing-standard);
+    gap: var(--ck-spacing-standard, var(--ck-spacing-base));
     width: fit-content;
     min-width: 100%;
     max-width: 100%;
@@ -63,7 +60,7 @@
     position: relative;
     width: 100%;
     min-height: 50px;
-    padding: var(--ck-spacing-small);
+    padding: var(--ck-spacing-small, var(--ck-spacing-sm));
     border: 1px solid var(--ck-color-input-border);
     border-radius: var(--ck-border-radius);
     background: var(--ck-color-input-background) !important;
@@ -110,7 +107,7 @@
     width: fit-content;
     min-width: 100%;
     max-width: 100%;
-    padding: var(--ck-spacing-small);
+    padding: var(--ck-spacing-small, var(--ck-spacing-sm));
     border: 1px solid var(--ck-color-input-border);
     border-radius: var(--ck-border-radius);
     background: var(--ck-color-input-background) !important;
@@ -125,7 +122,7 @@
     font-weight: 600;
     color: var(--ck-color-text);
     opacity: 0.8;
-    margin: 0 0 var(--ck-spacing-small) 0;
+    margin: 0 0 var(--ck-spacing-small, var(--ck-spacing-sm)) 0;
     flex-shrink: 0;
 }
 .ck.ck-math-input .ck-latex-textarea {
@@ -149,7 +146,8 @@
 /* === DISPLAY TOGGLE === */
 .ck-button-display-toggle {
     align-self: flex-start;
-    padding: var(--ck-spacing-small) var(--ck-spacing-standard);
+    padding-block: var(--ck-spacing-small, var(--ck-spacing-sm));
+    padding-inline: var(--ck-spacing-standard, var(--ck-spacing-base));
     background: var(--ck-color-input-background);
     color: var(--ck-color-text);
     border: 1px solid var(--ck-color-input-border);
@@ -164,7 +162,7 @@
 .ck.ck-math-preview {
     width: 100%;
     min-height: 40px;
-    padding: var(--ck-spacing-small);
+    padding: var(--ck-spacing-small, var(--ck-spacing-sm));
     background: transparent !important;
     border: none !important;
     display: block;
@@ -179,20 +177,21 @@
 }
 
 .ck-math-preview.ck-error, .ck-math-render-error {
-    border-color: var(--ck-color-error-text);
+    border-color: var(--ck-color-feedback-error);
     background: var(--ck-color-base-background);
-    color: var(--ck-color-error-text);
+    color: var(--ck-color-feedback-error);
 }
 
 /* === BUTTONS === */
 .ck-math-button-row {
     display: flex;
-    gap: var(--ck-spacing-standard);
+    gap: var(--ck-spacing-standard, var(--ck-spacing-base));
     justify-content: flex-end;
-    margin-top: var(--ck-spacing-standard);
+    margin-top: var(--ck-spacing-standard, var(--ck-spacing-base));
 }
 .ck-button-save, .ck-button-cancel {
-    padding: var(--ck-spacing-small) var(--ck-spacing-standard);
+    padding-block: var(--ck-spacing-small, var(--ck-spacing-sm));
+    padding-inline: var(--ck-spacing-standard, var(--ck-spacing-base));
     border: 1px solid var(--ck-color-input-border);
     border-radius: var(--ck-border-radius);
     cursor: pointer;
@@ -209,12 +208,3 @@
 .ck-button-save:hover { opacity: 0.9; }
 .ck-button-cancel:hover { background: var(--ck-color-base-background); }
 
-/* === OVERFLOW FIX: Allow tooltips to escape === */
-.ck.ck-balloon-panel,
-.ck.ck-balloon-panel .ck-balloon-panel__content,
-.ck.ck-math-form,
-.ck-math-view,
-.ck.ck-math-input {
-    overflow: visible !important;
-    clip-path: none !important;
-}

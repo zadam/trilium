@@ -6,7 +6,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("./services/i18n", () => ({ t: (key: string) => key }));
 
 const mocks = vi.hoisted(() => ({
-    startBackupDownload: vi.fn(async () => ({ status: "done" }) as { status: string; message?: string })
+    startBackupDownload: vi.fn(
+        async (
+            _fileName: string,
+            _passphrase?: string,
+            _onProgress?: (sentBytes: number, totalBytes: number) => void
+        ) => ({ status: "done" }) as { status: string; message?: string; location?: string }
+    )
 }));
 
 vi.mock("./services/backup_download", async (importOriginal) => ({
@@ -162,7 +168,7 @@ describe("choosing what the backup is called and whether it is locked", () => {
         await settle();
 
         expect(mocks.startBackupDownload)
-            .toHaveBeenCalledWith("Before the big import.tnbackup", "hunter2");
+            .toHaveBeenCalledWith("Before the big import.tnbackup", "hunter2", expect.any(Function));
     });
 
     it("downloads under the suggested name, without a password, when neither was touched", async () => {
@@ -173,7 +179,8 @@ describe("choosing what the backup is called and whether it is locked", () => {
         await settle();
 
         // Empty, not absent: the service turns that into an unencrypted container.
-        expect(mocks.startBackupDownload).toHaveBeenCalledWith(`${chosen}.tnbackup`, "");
+        expect(mocks.startBackupDownload)
+            .toHaveBeenCalledWith(`${chosen}.tnbackup`, "", expect.any(Function));
     });
 });
 
@@ -331,6 +338,48 @@ describe("backing up from the setup screen", () => {
         expect(button("setup.backup-download")?.disabled).toBe(false);
         expect(container.querySelector(".backup-download-file")).not.toBeNull();
         expect(button("setup.backup-finish")?.disabled).toBe(false);
+    });
+
+    it("names where the file went on a platform that puts it somewhere it can name", async () => {
+        // The mobile shell writes the backup itself rather than handing it to a download manager,
+        // so it is the only thing that knows where the user should go looking.
+        mocks.startBackupDownload.mockResolvedValue({
+            status: "done",
+            location: "/documents/Trilium/b.tnbackup"
+        });
+        await reachDownload();
+
+        button("setup.backup-download")?.click();
+        await settle();
+
+        const outcome = container.querySelector(".backup-download-outcome")?.textContent;
+        expect(outcome).toContain("setup.backup-saved-to");
+        expect(outcome).not.toContain("setup.backup-downloaded");
+    });
+
+    it("counts the download as it goes, since the browser's own progress is out of sight on a phone", async () => {
+        let report: ((sent: number, total: number) => void) | undefined;
+        mocks.startBackupDownload.mockImplementation((_name, _passphrase, onProgress) => {
+            report = onProgress;
+
+            return new Promise(() => {});
+        });
+        await reachDownload();
+
+        button("setup.backup-download")?.click();
+        await settle();
+        // Nothing yet: a total of nothing has no percentage, and the spinner already says "working".
+        expect(container.querySelector(".backup-download-progress")).toBeNull();
+
+        report?.(512 * 1024 * 1024, 1024 * 1024 * 1024);
+        await settle();
+        expect(container.querySelector(".backup-download-progress")?.textContent)
+            .toContain("setup.backup-downloading-size");
+        // Its own element, which is what lets a width be held for it.
+        expect(container.querySelector(".backup-download-percent")?.textContent)
+            .toBe("setup.backup-downloading-percent");
+        expect(mocks.startBackupDownload).toHaveBeenCalledWith(
+            expect.any(String), "", expect.any(Function));
     });
 
     it("shows what stopped a failed download, and offers another go", async () => {

@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes ist eine freie, Open-Source, plattformübergreifende, hierarchische
 Notiz-Anwendung mit Fokus auf die Erstellung großer persönlicher
 Wissenssammlungen.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -116,7 +120,7 @@ Unsere Dokumentation ist verfügbar in mehreren Formaten:
 * Integriertes [dunkles
   Design](https://docs.triliumnotes.org/user-guide/concepts/themes),
   Unterstützung für benutzerdefinierte Designs
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   und [Markdown importieren und
   exportieren](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) zum
@@ -357,12 +361,13 @@ enthält weitere Details. Bei offenen Fragen kann über die im Abschnitt
 * [antoniotejada](https://github.com/nriver) für das ursprüngliche
   Syntaxhervorhebungs-Widget.
 * [Tabler-Icons](https://tabler.io/icons) für die Symbole in der Taskleiste.
-*   The application icons in the import dialog are from:
-    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
-        OneNote, Google Keep, Evernote.
-    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
-    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
-*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
+*   Die Anwendungssymbole im Importdialog stammen von:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) für
+        OneNote, Google Keep und Evernote.
+    *   [Font Awesome](https://fontawesome.com/) für Notion und Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) für Anytype.
+*  Die Symbole der LLM-Anbieter stammen von [Lobe
+   Icons](https://lobehub.com/icons).
 
 Trilium wäre ohne die zugrundeliegenden Technologien nicht möglich:
 
@@ -380,11 +385,6 @@ Trilium wäre ohne die zugrundeliegenden Technologien nicht möglich:
   Tabelle in Kollektionen.
 * [FancyTree](https://github.com/mar10/fancytree) – funktionsreiche
   Baum-Bibliothek ohne echte Konkurrenz.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) – visuelle
-  Verbindungsbibliothek. Verwendet in
-  [Beziehungskarten](https://docs.triliumnotes.org/user-guide/note-types/relation-map)
-  und
-  [Link-Karten](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Unterstützung
 

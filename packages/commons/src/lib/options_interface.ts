@@ -116,6 +116,7 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     totpEncryptionSalt: string;
     totpEncryptedSecret: string;
     totpVerificationHash: string;
+    totpLastUsedStep: number;
     encryptedRecoveryCodes: boolean;
     recoveryCodeInitialVector: string;
     recoveryCodeSecurityKey: string;
@@ -155,7 +156,6 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     autoReadonlySizeCode: number;
     maxContentWidth: number;
     centerContent: boolean;
-    minTocHeadings: number;
     eraseUnusedAttachmentsAfterSeconds: number;
     eraseUnusedAttachmentsAfterTimeScale: number;
     logRetentionDays: number;
@@ -182,6 +182,13 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     backendScriptingEnabled: boolean;
     sqlConsoleEnabled: boolean;
     allowLanAccess: boolean;
+    /**
+     * Sync address actually in use, with any `user:password@` removed, or empty when sync is off.
+     * Read-only: derived from config.ini / environment variables and the stored `syncServerHost`.
+     */
+    effectiveSyncServerHost: string;
+    /** Whether config.ini or an environment variable supplies the sync address. Read-only. */
+    syncServerHostOverridden: boolean;
     hasUserBackendScripts: boolean;
     isPasswordSet: boolean;
     overrideThemeFonts: boolean;
@@ -195,6 +202,22 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     autoFixConsistencyIssues: boolean;
     vimKeymapEnabled: boolean;
     codeLineWrapEnabled: boolean;
+    /** Whether meetings can be transcribed: shows the launcher and the transcription settings. */
+    transcriptionEnabled: boolean;
+    /** Whether a meeting transcript is shown without filler words and stutters. */
+    transcriptCleanupEnabled: boolean;
+    /**
+     * The speech recognition model a recording runs on, a key of `TRANSCRIPTION_MODELS`. Not synced:
+     * each device downloads and runs its own.
+     */
+    transcriptionModel: string;
+    /** Whether a recording tells the other participants apart, labeling each utterance with its speaker. */
+    transcriptionSpeakersEnabled: boolean;
+    /**
+     * Whether a recording keeps its audio and the transcript as produced in the data directory, for
+     * troubleshooting. Not synced: the files stay on the device that recorded.
+     */
+    transcriptionKeepRecordings: boolean;
     leftPaneVisible: boolean;
     rightPaneVisible: boolean;
     nativeTitleBarVisible: boolean;
@@ -263,14 +286,31 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     textNoteCompletionEnabled: boolean;
     /** Whether keyboard auto-completion for editing commands is triggered when typing `/`. */
     textNoteSlashCommandsEnabled: boolean;
+    /** Whether the MathLive visual editor is shown when editing math. If false, only the LaTeX textarea is used. */
+    mathFieldEnabled: boolean;
     /** Whether the editor surfaces content-area hints (bottom-corner popups that document how to interact with the element under the caret or pointer, e.g. task-state cycle, collapsible-summary shortcut, drag-handle label). */
     textNoteContentHintsEnabled: boolean;
     /** Whether a URL typed or pasted into a text note is automatically turned into a link preview. The "Link preview" dialog is unaffected and always inserts one on request. */
     textNoteAutoLinkPreviewsEnabled: boolean;
+    /**
+     * Whether the header rows of a table stay at the top of the note while the rest of the table
+     * scrolls past.
+     */
+    textNoteStickyTableHeadersEnabled: boolean;
+    /**
+     * Whether the editor preserves the HTML tags it has no editing feature of its own for — the
+     * ones named by `allowedHtmlTags`, carried through CKEditor's General HTML Support.
+     *
+     * Off by default: GHS renders such a tag as an opaque blob that is awkward to navigate and, for
+     * an unknown element, invisible while editing (#10989). The price of leaving it off is that
+     * those tags are dropped from a note the first time it is edited and saved. The server-side
+     * sanitizer reads the same `allowedHtmlTags` list and keeps accepting them on import either way,
+     * so an imported note shows them correctly until it is edited.
+     */
+    textNoteHtmlSupportEnabled: boolean;
     /** Whether copying note content embeds internal images as data: URIs so they paste into external apps (internal paste stays reference-based). Hidden kill-switch. */
     clipboardImageEmbedEnabled: boolean;
     backgroundEffects: boolean;
-    newLayout: boolean;
 
     // PDF settings
     /**
@@ -285,6 +325,8 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     searchEnableFuzzyMatching: boolean;
     /** Whether fuzzy matching is enabled for autocomplete (typing in search bar). Disabled by default for faster response. */
     searchAutocompleteFuzzy: boolean;
+    /** Number of search results shown per page on the full-search results view. */
+    searchResultsPageSize: number;
 
     // Share settings
     redirectBareDomain: boolean;
@@ -293,14 +335,17 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     seenCallToActions: string;
     experimentalFeatures: string;
 
-    // Include note settings
-    includeNoteDefaultBoxSize: "small" | "medium" | "full" | "expandable";
-
     // AI / LLM
     /** Whether the AI/LLM features (chat sidebar, LLM chat notes) are enabled. */
     aiEnabled: boolean;
     /** JSON array of configured LLM providers with their API keys */
     llmProviders: string;
+    /** Config id of the search provider the chat's web search uses; empty for the model's built-in search. */
+    llmWebSearchProvider: string;
+    /** The permission mode picked last in any chat, which a new chat starts in. */
+    llmPermissionMode: string;
+    /** The model the text editor's AI assistant runs on, as JSON `{ providerId, provider, model }`; empty to follow the first configured provider's default. */
+    aiAssistantModel: string;
     /** Whether the MCP (Model Context Protocol) server endpoint is enabled. */
     mcpEnabled: boolean;
 

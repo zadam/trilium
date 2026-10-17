@@ -109,7 +109,7 @@ describe("keyboard_actions", () => {
         expect(treeActions.map((a) => a.actionName)).toEqual(["treeA"]);
     });
 
-    it("binds window-scoped shortcuts globally at module load", async () => {
+    it("setupWindowShortcuts binds window-scoped shortcuts globally, and only when asked", async () => {
         let spy: ReturnType<typeof vi.spyOn> | undefined;
         const { kb } = await loadModule(
             [
@@ -123,9 +123,13 @@ describe("keyboard_actions", () => {
             }
         );
 
-        // wait for the module-load `getActionsForScope("window").then(...)` to settle
+        // Importing the module must not bind anything: the handlers read `appContext.tabManager`,
+        // which only exists once `AppContext.initComponents()` has run and called setupWindowShortcuts.
         await kb.default.getActions();
         await Promise.resolve();
+        expect(spy).not.toHaveBeenCalled();
+
+        await kb.default.setupWindowShortcuts();
 
         expect(spy).toHaveBeenCalledTimes(2);
         const boundShortcuts = spy!.mock.calls.map((c) => c[0]);
@@ -137,6 +141,22 @@ describe("keyboard_actions", () => {
         expect(appContext.triggerCommand).toHaveBeenCalledWith("winA", { ntxId: "ntx-active" });
 
         spy!.mockRestore();
+    });
+
+    it("setupWindowShortcutsForElement binds the window-scoped shortcuts on an element", async () => {
+        const { kb } = await loadModule([
+            action({ actionName: "winA", scope: "window", effectiveShortcuts: [ "ctrl+1" ] }),
+            action({ actionName: "treeA", scope: "note-tree", effectiveShortcuts: [ "ctrl+9" ] })
+        ]);
+        vi.mocked(appContext.triggerCommand).mockClear();
+
+        const $el = $("<div></div>");
+        const bindings = await kb.default.setupWindowShortcutsForElement($el as any);
+
+        expect(bindings.map((binding) => binding.shortcut)).toEqual([ "ctrl+1" ]);
+        expect(bindings[0].element).toBe($el[0]);
+        bindings[0].handler(new KeyboardEvent("keydown"));
+        expect(appContext.triggerCommand).toHaveBeenCalledWith("winA", { ntxId: "ntx-active" });
     });
 
     it("setupActionsForElement returns [] for an empty jQuery element", async () => {

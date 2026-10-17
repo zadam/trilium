@@ -12,15 +12,15 @@
 }
 
 .ck.ck-link-embed-form__heading {
-    font-size: var(--ck-font-size-small);
+    font-size: var(--ck-font-size-small, var(--ck-font-size-sm));
     font-weight: bold;
-    margin-bottom: var(--ck-spacing-standard);
+    margin-bottom: var(--ck-spacing-standard, var(--ck-spacing-base));
 }
 
 .ck.ck-link-embed-form__actions {
     display: flex;
     align-items: center;
-    gap: var(--ck-spacing-standard);
+    gap: var(--ck-spacing-standard, var(--ck-spacing-base));
     margin-top: 8px;
 
     /* The responsive form indents its children; the row places them itself. */

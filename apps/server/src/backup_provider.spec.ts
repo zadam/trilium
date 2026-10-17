@@ -257,7 +257,7 @@ describe("ServerBackupService: backup format", () => {
         expect(byName.get("backup-plain.db")).not.toHaveProperty("plaintextSize");
     });
 
-    it("lists a container it cannot make sense of, rather than dropping it", async () => {
+    it("lists a container it cannot make sense of, saying so rather than dropping it", async () => {
         fs.mkdirSync(DEFAULT_DIR, { recursive: true });
         fs.writeFileSync(
             path.join(DEFAULT_DIR, "backup-damaged.tnbackup"),
@@ -266,9 +266,32 @@ describe("ServerBackupService: backup format", () => {
 
         const backups = await desktopService("").getExistingBackups();
 
+        // Listed, because a file sitting in the backup directory is one the user is relying on,
+        // and saying it is no good is the whole point of listing it.
         expect(backups.map((b) => b.fileName)).toEqual([ "backup-damaged.tnbackup" ]);
+        expect(backups[0]).toMatchObject({ unreadable: "invalid" });
         expect(backups[0]).not.toHaveProperty("compressed");
         expect(backups[0]).not.toHaveProperty("encrypted");
+    });
+
+    it("tells a backup from a newer Trilium apart from one that is not a backup", async () => {
+        fs.mkdirSync(DEFAULT_DIR, { recursive: true });
+
+        const compressing = desktopService("", { backupEnableCompression: "true" });
+        const newer = fs.readFileSync(await compressing.backupNow("daily"));
+        // The version byte, straight after the magic. Everything else about the file is intact,
+        // which is exactly the case that must not read as damaged.
+        newer.writeUInt8(2, 20);
+        fs.writeFileSync(path.join(DEFAULT_DIR, "backup-newer.tnbackup"), newer);
+
+        const byName = new Map(
+            (await desktopService("").getExistingBackups()).map((b) => [ b.fileName, b ])
+        );
+
+        expect(byName.get("backup-newer.tnbackup")).toMatchObject({
+            unreadable: "unsupported-version"
+        });
+        expect(byName.get("backup-daily.tnbackup")).not.toHaveProperty("unreadable");
     });
 });
 
@@ -654,5 +677,23 @@ describe("ServerBackupService: sending a backup for download", () => {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- as above.
         expect(desktopService(CUSTOM_DIR).sendBackup?.("/etc/passwd", res as any)).toBe(false);
+    });
+});
+
+describe("ServerBackupService.adoptPassphrase", () => {
+    it("hands the password to wherever this platform keeps one, and clears it on null", async () => {
+        const stored: (string | null)[] = [];
+        const service = desktopService("", {}, { setPassphrase: async (p) => void stored.push(p) });
+
+        await service.adoptPassphrase("the restored database's password");
+        await service.adoptPassphrase(null);
+
+        expect(stored).toEqual([ "the restored database's password", null ]);
+    });
+
+    it("does nothing where there is nowhere to keep one, rather than failing the restore", async () => {
+        // The server has no keyring, so it has no stored passphrase for a restore to bring up to
+        // date; the restore calls this the same way regardless of the platform it is running on.
+        await expect(serverService(null).adoptPassphrase("a password")).resolves.toBeUndefined();
     });
 });

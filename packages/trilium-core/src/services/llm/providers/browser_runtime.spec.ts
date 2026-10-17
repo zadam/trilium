@@ -12,6 +12,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { streamToChunks } from "../stream.js";
 import { AnthropicProvider } from "./anthropic.js";
+import { installGlobalFetchAsApiTransport } from "../../../test/request_provider.js";
+
+// A provider reaches its endpoint through the request provider rather than the global `fetch`, so
+// the specs that stub that global need one installed which leads back to it.
+beforeEach(installGlobalFetchAsApiTransport);
 
 /** Collected while a case runs; asserted empty at the end of each. */
 const leaked: unknown[] = [];

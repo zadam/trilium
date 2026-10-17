@@ -27,8 +27,19 @@ export * from "./services/sql/index";
 export { default as sql_init } from "./services/sql_init";
 export { getRunningSetupOperation, holdSetup, withSetupLock } from "./services/setup_lock";
 export {
+    authenticateSetup,
+    initSetupSecondFactor,
+    isSetupAuthorized,
+    isSetupAuthRequired,
+    isSetupSecondFactorRequired,
+    resetSetupAuth,
+    type SetupSecondFactor
+} from "./services/setup_auth";
+export {
+    enterSetupMode,
     getSetupLanguage,
     getSetupTargetScreen,
+    hasExistingData,
     isInitialSetup,
     isSetupRequested,
     leaveSetupMode,
@@ -117,6 +128,7 @@ export { type SearchParams } from "./services/search/services/types";
 export { checkImageAttachments, collectCanvasImageFileIds, default as note_service, findBookmarks, findLlmChatLinks, findMindMapLinks, saveLinks } from "./services/notes";
 export type { NoteParams } from "./services/notes";
 export * as sanitize from "./services/sanitizer";
+export { assertScriptingEnabled, assertSqlConsoleEnabled, isScriptingEnabled } from "./services/scripting_guard";
 export * as routes from "./routes";
 export { default as ws } from "./services/ws";
 export { default as request } from "./services/request";
@@ -139,18 +151,23 @@ export {
     type VirtualSubtreeAttribute,
     type VirtualSubtreeItem
 } from "./services/virtual_notes";
-export { type ImageProvider, type ImageFormat, type ImageCompressionOutcome, type ImageCompressionRequest, type ProcessedImage, getImageProvider } from "./services/image_provider";
+export { type ImageProvider, type ImageFormat, type ImageCompressionOutcome, type ImageCompressionRequest, type ImageShrink, type ProcessedImage, getImageProvider } from "./services/image_provider";
 export { default as imageCompressionService } from "./services/image_compression";
 export { default as imageInventoryService, type ImageInventoryOptions } from "./services/image_inventory";
+export { getContentCounts } from "./services/space_usage";
+export { getDatabaseSizeBytes, getReclaimableBytes } from "./services/database_size";
+export { checkIntegrity } from "./services/database_maintenance";
 export { default as imageInfoService } from "./services/image_info";
 export { estimateJpegQuality } from "./services/jpeg_quality";
 export { inspectImage, type InspectedImage, UNKNOWN_FORMAT } from "./services/image_inspect";
 export { type CoreConfig, initConfig, getConfig } from "./services/config";
 export { default as imageService } from "./services/image";
 export { t } from "i18next";
-export type { RequestProvider, ExecOpts, CookieJar, FetchResourceOpts, FetchedResource } from "./services/request";
+export type { RequestProvider, ExecOpts, CookieJar, FetchApiOpts, FetchResourceOpts, FetchedResource } from "./services/request";
 export type * from "./meta";
+export type { QueryString, QueryValue, Request, RequestHeaders, Response } from "./http_interface";
 export * as routeHelpers from "./routes/helpers";
+export { resolveYouTubePreview, storeFavicon } from "./routes/api/link_embed";
 
 export { getZipProvider, type ZipArchive, type ZipProvider } from "./services/zip_provider";
 export { default as zipImportService } from "./services/import/zip";

@@ -1,6 +1,6 @@
 import { becca_loader, cls, entity_changes, getLog, initializeCore, options, sql_init, ws } from "@triliumnext/core";
 import ServerBackupService from "@triliumnext/server/src/backup_provider.js";
-import ClsHookedExecutionContext from "@triliumnext/server/src/cls_provider.js";
+import AsyncLocalStorageExecutionContext from "@triliumnext/server/src/cls_provider.js";
 import { loadCoreSchema } from "@triliumnext/server/src/core_assets.js";
 import NodejsCryptoProvider from "@triliumnext/server/src/crypto_provider.js";
 import NodejsInAppHelpProvider from "@triliumnext/server/src/in_app_help_provider.js";
@@ -28,6 +28,7 @@ import CompositeMessagingProvider from "./composite_messaging_provider";
 import IpcMessagingProvider from "./ipc_messaging_provider";
 import DesktopPlatformProvider from "./platform_provider";
 import { registerTriliumAppScheme, setupTriliumAppProtocol } from "./protocol";
+import { setupAsarReadStreams } from "./services/asar_read_stream";
 import { applyLaunchOnStartup, setupAutoLaunch, wasLaunchedHidden } from "./services/auto_launch";
 import { setupCustomDictionary } from "./services/custom_dictionary";
 import { setupReferer } from "./services/referer";
@@ -35,16 +36,18 @@ import { setupDialogHandlers } from "./services/dialog";
 import { setupExportHandlers } from "./services/export";
 import { setupImportHandlers } from "./services/import";
 import {
+    adoptBackupPassphrase,
     getBackupPassphrase,
     registerBackupPassphraseIpcHandlers
 } from "./services/backup_passphrase";
 import { setupOneNoteHandlers } from "./services/onenote";
 import { setupPrintingHandlers } from "./services/printing";
-import ElectronRequestProvider from "./services/request";
+import ElectronRequestProvider, { setupResourceDownloads } from "./services/request";
 import { setupRestoreHandlers } from "./services/restore";
 import { getSecuritySettings, registerSecurityIpcHandlers } from "./services/security_settings";
 import { setupShellHandlers } from "./services/shell";
 import { markStartupMetric, setupStartupMetricsIpc } from "./services/startup_metrics";
+import { setupTranscriptionHandlers } from "./services/transcription";
 import { setupSystemTray } from "./services/tray";
 import windowService, { setupWindowing } from "./services/window";
 
@@ -62,6 +65,7 @@ export async function main() {
     }
 
     registerTriliumAppScheme();
+    setupAsarReadStreams();
 
     const userDataPath = getUserData();
     app.setPath("userData", userDataPath);
@@ -142,21 +146,23 @@ export async function main() {
     registerSecurityIpcHandlers();
     registerBackupPassphraseIpcHandlers();
     setupStartupMetricsIpc();
+    setupResourceDownloads();
+    setupTranscriptionHandlers();
 
     app.on("will-quit", () => {
         globalShortcut.unregisterAll();
     });
 
     app.on("second-instance", (event, commandLine) => {
-        const lastFocusedWindow = windowService.getLastFocusedWindow();
         if (commandLine.includes("--new-window")) {
             windowService.createExtraWindow("");
-        } else if (lastFocusedWindow) {
-            if (lastFocusedWindow.isMinimized()) {
-                lastFocusedWindow.restore();
+        } else {
+            // A window that started hidden has no focus history, so use the main window.
+            const targetWindow = windowService.getLastFocusedWindow()
+                ?? windowService.getMainWindow();
+            if (targetWindow) {
+                windowService.showAndFocusWindow(targetWindow);
             }
-            lastFocusedWindow.show();
-            lastFocusedWindow.focus();
         }
     });
 
@@ -261,7 +267,7 @@ export async function main() {
         zip: new NodejsZipProvider(),
         zipExportProviderFactory: (await import("@triliumnext/server/src/services/export/zip/factory.js")).serverZipExportProviderFactory,
         request: new ElectronRequestProvider(),
-        executionContext: new ClsHookedExecutionContext(),
+        executionContext: new AsyncLocalStorageExecutionContext(),
         messaging,
         schema: loadCoreSchema(),
         platform: new DesktopPlatformProvider(),
@@ -275,7 +281,11 @@ export async function main() {
         // Only the desktop lets the user pick where backups go; the server uses TRILIUM_BACKUP_DIR.
         backup: new ServerBackupService(
             options,
-            { allowCustomDirectory: true, getPassphrase: getBackupPassphrase }
+            {
+                allowCustomDirectory: true,
+                getPassphrase: getBackupPassphrase,
+                setPassphrase: adoptBackupPassphrase
+            }
         ),
         image: (await import("@triliumnext/server/src/services/image_provider.js")).serverImageProvider,
         config,
@@ -374,8 +384,9 @@ async function onReady() {
                     // window that was never focused, so fall back to the main window
                     // to reveal it on a dock-icon click.
                     const win = windowService.getLastFocusedWindow() ?? windowService.getMainWindow();
-                    win?.show();
-                    win?.focus();
+                    if (win) {
+                        windowService.showAndFocusWindow(win);
+                    }
                 }
             });
         }

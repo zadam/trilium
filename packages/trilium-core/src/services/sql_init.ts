@@ -234,6 +234,12 @@ async function createInitialDatabase(skipDemoDb?: boolean, locale?: string) {
 
     log.info("Schema and initial content generated.");
 
+    // A database has been brought up, so whatever asked for setup has had its answer. Done here
+    // rather than left to `setDbAsInitialized`, which this path deliberately does not go through
+    // (see below): without it the instance goes on reporting itself uninitialized for the rest of
+    // the process, and the window that opens next comes up as the wizard all over again.
+    leaveSetupMode();
+
     initDbConnection();
 
     // `initNotSyncedOptions(true, ...)` above already set the "initialized"

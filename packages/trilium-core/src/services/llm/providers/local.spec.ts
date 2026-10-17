@@ -16,7 +16,22 @@ vi.mock("@ai-sdk/openai", () => ({
     }
 }));
 
+const { generateTextMock } = vi.hoisted(() => ({
+    generateTextMock: vi.fn(async (..._args: unknown[]) => ({ text: "A title", finishReason: "stop", usage: {} }) as any)
+}));
+
+vi.mock("ai", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("ai")>();
+    return { ...actual, generateText: generateTextMock };
+});
+
 import { LocalProvider } from "./local.js";
+import { installGlobalFetchAsApiTransport } from "../../../test/request_provider.js";
+import { llmFetch } from "./fetch.js";
+
+// A provider reaches its endpoint through the request provider rather than the global `fetch`, so
+// the specs that stub that global need one installed which leads back to it.
+beforeEach(installGlobalFetchAsApiTransport);
 
 /** Minimal /api/tags payload with the fields the provider reads. */
 function ollamaTags(models: Array<{ name: string; parameter_size?: string; quantization_level?: string }>) {
@@ -83,36 +98,46 @@ describe("LocalProvider", () => {
     describe("endpoint resolution", () => {
         it("prefills each card's default endpoint", () => {
             new LocalProvider("ollama");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:11434/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:11434/v1", fetch: llmFetch });
 
             new LocalProvider("lmstudio");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:1234/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:1234/v1", fetch: llmFetch });
         });
 
         it("accepts a URL written with or without the /v1 suffix", () => {
             new LocalProvider("openai-compatible", "", "http://box:8080");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://box:8080/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://box:8080/v1", fetch: llmFetch });
 
             new LocalProvider("openai-compatible", "", "http://box:8080/v1");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://box:8080/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://box:8080/v1", fetch: llmFetch });
         });
 
         it("keeps a path prefix intact (proxied endpoints)", () => {
             new LocalProvider("openai-compatible", "", "https://proxy.example.com/llm/v1");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "https://proxy.example.com/llm/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "https://proxy.example.com/llm/v1", fetch: llmFetch });
+        });
+
+        it("uses a path-carrying URL as entered, appending /v1 only to a bare host", () => {
+            // Zhipu serves its OpenAI-compatible API under /v4, so /v1 must not be appended.
+            new LocalProvider("openai-compatible", "", "https://open.bigmodel.cn/api/paas/v4");
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "https://open.bigmodel.cn/api/paas/v4", fetch: llmFetch });
+
+            // A path naming no version is used as entered too — appending /v1 would invent a route.
+            new LocalProvider("openai-compatible", "", "https://gateway.example.com/openai");
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "https://gateway.example.com/openai", fetch: llmFetch });
         });
 
         it("forwards a supplied API key to the SDK", () => {
             new LocalProvider("openai-compatible", "sk-proxy", "http://box:8080/v1");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "sk-proxy", baseURL: "http://box:8080/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "sk-proxy", baseURL: "http://box:8080/v1", fetch: llmFetch });
         });
 
         it("falls back to the card's default for an invalid URL, but rejects one it cannot replace", () => {
             new LocalProvider("ollama", "", "not a url");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:11434/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:11434/v1", fetch: llmFetch });
 
             new LocalProvider("ollama", "", "ftp://example.com");
-            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:11434/v1" });
+            expect(createOpenAiMock).toHaveBeenLastCalledWith({ apiKey: "local", baseURL: "http://localhost:11434/v1", fetch: llmFetch });
 
             // The generic card has no default to fall back to.
             expect(() => new LocalProvider("openai-compatible", "", "not a url")).toThrow(/Invalid base URL/);
@@ -183,6 +208,20 @@ describe("LocalProvider", () => {
             expect(provider.getModelPricing("gpt-4.1")).toBeUndefined();
         });
 
+        it("lists models from an explicit non-v1 API version", async () => {
+            fetchMock.mockImplementation(routes({ "/api/paas/v4/models": openAiModels(["glm-4.5"]) }));
+
+            const provider = new LocalProvider("openai-compatible", "", "https://open.bigmodel.cn/api/paas/v4");
+
+            await expect(provider.listModels()).resolves.toEqual([expect.objectContaining({ id: "glm-4.5" })]);
+            // Only `/v1` is dropped from the probe root, so a `/v4` endpoint keeps its full path.
+            expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+                "https://open.bigmodel.cn/api/paas/v4/api/tags",
+                "https://open.bigmodel.cn/api/paas/v4/api/v0/models",
+                "https://open.bigmodel.cn/api/paas/v4/models"
+            ]);
+        });
+
         it("prices an endpoint identified as a local runtime as free", async () => {
             fetchMock.mockImplementation(routes({ "/api/tags": ollamaTags([{ name: "m1" }]) }));
             const provider = new LocalProvider("openai-compatible", "", "http://box:11434");
@@ -235,14 +274,32 @@ describe("LocalProvider", () => {
             );
         });
 
-        it("reports a rejected credential instead of probing on", async () => {
-            fetchMock.mockImplementation(routes({ "/api/tags": status(401) }));
+        it("reports a rejected credential from the endpoint it depends on", async () => {
+            // A key the endpoint really rejects is refused by /v1/models too, so
+            // tolerating the native probes costs nothing: the verdict still comes,
+            // it just comes from the path that decides it.
+            fetchMock.mockImplementation(routes({ "/api/tags": status(401), "/v1/models": status(401) }));
             await expect(new LocalProvider("ollama").listModels()).rejects.toThrow(/Authentication failed \(HTTP 401\)/);
         });
 
-        it("reports a server error instead of probing on", async () => {
-            fetchMock.mockImplementation(routes({ "/api/tags": status(500) }));
-            await expect(new LocalProvider("ollama").listModels()).rejects.toThrow(/HTTP 500/);
+        it("reports a server error from the endpoint it depends on", async () => {
+            fetchMock.mockImplementation(routes({ "/v1/models": status(500) }));
+            await expect(new LocalProvider("openai-compatible", "", "http://box:8080").listModels())
+                .rejects.toThrow(/HTTP 500/);
+        });
+
+        it("advances past a gateway that rejects the native probe paths", async () => {
+            // A CDN or WAF in front of a hosted OpenAI-compatible API blocks the
+            // paths outside /v1 outright — apihub.agnes-ai.com answers /api/tags
+            // with a 403 HTML block page. That is a verdict on the path, not on
+            // the credential, so the chain must still reach /v1/models. (#10996)
+            fetchMock.mockImplementation(routes({
+                "/api/tags": status(403),
+                "/api/v0/models": status(403),
+                "/v1/models": openAiModels(["gpt-4o"])
+            }));
+            const models = await new LocalProvider("openai-compatible", "sk-key", "https://apihub.example.com/v1").listModels();
+            expect(models.map(m => m.id)).toEqual(["gpt-4o"]);
         });
 
         it("reports an endpoint that serves no listing at all", async () => {
@@ -415,6 +472,16 @@ describe("LocalProvider", () => {
             await provider.generateTitle("Hello again");
             expect(fetchMock.mock.calls.length).toBe(probes);
             generateTitle.mockRestore();
+        });
+
+        it("leaves the title call's reasoning to the server", async () => {
+            // Servers disagree on `reasoning_effort: "none"`, so a thinking model gets the larger retry instead.
+            fetchMock.mockImplementation(routes({ "/api/tags": ollamaTags([{ name: "tiny", parameter_size: "1B" }]) }));
+            generateTextMock.mockClear();
+
+            await expect(new LocalProvider("ollama").generateTitle("Hello")).resolves.toBe("A title");
+            expect(generateTextMock).toHaveBeenCalledOnce();
+            expect(generateTextMock.mock.calls[0][0]).not.toHaveProperty("reasoning");
         });
     });
 });

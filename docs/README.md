@@ -7,10 +7,12 @@
 
 <!-- translate:off -->
 <!-- LANGUAGE SWITCHER -->
-[Arabic](./README-ar.md) | [Chinese (Simplified Han script)](./README-ZH_CN.md) | [Chinese (Traditional Han script)](./README-ZH_TW.md) | [Czech](./README-cs.md) | [English (United Kingdom)](./README-en_GB.md) | [English](../README.md) | [French](./README-fr.md) | [German](./README-de.md) | [Greek](./README-el.md) | [Indonesian](./README-id.md) | [Irish](./README-ga.md) | [Italian](./README-it.md) | [Japanese](./README-ja.md) | [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md) | [Russian](./README-ru.md) | [Spanish](./README-es.md) | [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+[Arabic](./README-ar.md) | [Chinese (Simplified Han script)](./README-ZH_CN.md) | [Chinese (Traditional Han script)](./README-ZH_TW.md) | [Czech](./README-cs.md) | [English (United Kingdom)](./README-en_GB.md) | [English](../README.md) | [French](./README-fr.md) | [German](./README-de.md) | [Greek](./README-el.md) | [Indonesian](./README-id.md) | [Irish](./README-ga.md) | [Italian](./README-it.md) | [Japanese](./README-ja.md) | [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md) | [Russian](./README-ru.md) | [Spanish](./README-es.md) | [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md) | [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes is a free and open-source, cross-platform hierarchical note taking application with focus on building large personal knowledge bases.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -58,7 +60,7 @@ Our documentation is available in multiple formats:
 * Scales well in both usability and performance upwards of 100 000 notes
 * Touch optimized [mobile frontend](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend) for smartphones and tablets
 * Built-in [dark theme](https://docs.triliumnotes.org/user-guide/concepts/themes), support for user themes
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote) and [Markdown import & export](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html) and [Markdown import & export](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) for easy saving of web content
 * Customizable UI (sidebar buttons, user-defined widgets, ...)
 * [Metrics](https://docs.triliumnotes.org/user-guide/advanced-usage/metrics), along with a Grafana Dashboard.
@@ -244,7 +246,6 @@ Trilium would not be possible without the technologies behind it:
 * [Leaflet](https://github.com/Leaflet/Leaflet) - for rendering geographical maps.
 * [Tabulator](https://github.com/olifolkerd/tabulator) - for the interactive table used in collections.
 * [FancyTree](https://github.com/mar10/fancytree) - feature-rich tree library without real competition. 
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - visual connectivity library. Used in [relation maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) and [link maps](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Support
 

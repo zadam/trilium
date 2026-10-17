@@ -9,7 +9,7 @@ async function freshOverlay(): Promise<typeof import("./error-overlay.js")> {
 
 beforeEach(() => {
     document.body.innerHTML = "";
-    document.body.style.display = "";
+    sessionStorage.clear();
 });
 
 afterEach(() => {
@@ -17,9 +17,9 @@ afterEach(() => {
 });
 
 describe("showErrorOverlay", () => {
-    it("renders the title, message, detail and a reload button, and reveals the body", async () => {
+    it("renders title, message, detail and a reload button, and removes the splash", async () => {
         const { showErrorOverlay } = await freshOverlay();
-        document.body.style.display = "none";
+        document.body.innerHTML = `<div id="splash"></div>`;
 
         showErrorOverlay("Trilium couldn't start", "MIME type wrong", "at worker.js:1");
 
@@ -29,8 +29,8 @@ describe("showErrorOverlay", () => {
         expect(overlay?.textContent).toContain("MIME type wrong");
         expect(overlay?.querySelector("pre")?.textContent).toBe("at worker.js:1");
         expect(overlay?.querySelector("button")?.textContent).toBe("Reload");
-        // The pre-client shell may hide the body; the overlay must un-hide it.
-        expect(document.body.style.display).toBe("block");
+        // The startup splash sits above everything and would cover the overlay.
+        expect(document.getElementById("splash")).toBeNull();
     });
 
     it("omits the detail block when no detail is given", async () => {
@@ -74,5 +74,42 @@ describe("showErrorOverlay", () => {
         expect(reload).toHaveBeenCalled();
 
         Object.defineProperty(window, "location", { value: original, configurable: true });
+    });
+
+    it("reloads once instead of showing a chunk that failed to download", async () => {
+        const reload = vi.fn();
+        const original = window.location;
+        Object.defineProperty(window, "location", {
+            value: { ...original, reload },
+            configurable: true
+        });
+
+        try {
+            document.body.innerHTML = `<div id="splash"></div>`;
+            let { showErrorOverlay } = await freshOverlay();
+            showErrorOverlay("Trilium couldn't start", "Importing a module script failed.");
+            expect(reload).toHaveBeenCalledTimes(1);
+            expect(document.getElementById("trilium-error-overlay")).toBeNull();
+            expect(document.getElementById("splash")).not.toBeNull();
+
+            // The page after the reload fails the same way: the overlay shows rather than a loop.
+            ({ showErrorOverlay } = await freshOverlay());
+            showErrorOverlay("Trilium couldn't start", "Importing a module script failed.");
+            expect(reload).toHaveBeenCalledTimes(1);
+            expect(document.getElementById("trilium-error-overlay")?.textContent)
+                .toContain("Importing a module script failed.");
+        } finally {
+            Object.defineProperty(window, "location", { value: original, configurable: true });
+        }
+    });
+
+    it("recognizes each engine's module load failure and nothing else", async () => {
+        const { isModuleLoadFailure } = await freshOverlay();
+        expect(isModuleLoadFailure("Importing a module script failed.")).toBe(true);
+        expect(isModuleLoadFailure("Failed to fetch dynamically imported module: https://x/a.js"))
+            .toBe(true);
+        expect(isModuleLoadFailure("error loading dynamically imported module: https://x/a.js"))
+            .toBe(true);
+        expect(isModuleLoadFailure("SQLITE_CORRUPT: database disk image is malformed")).toBe(false);
     });
 });

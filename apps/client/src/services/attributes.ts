@@ -51,15 +51,15 @@ export async function setBooleanWithInheritance(note: FNote, labelName: string, 
 
     if (hasInheritedValue) {
         if (value) {
-            setLabel(note.noteId, labelName, "");
+            await setLabel(note.noteId, labelName, "");
         } else {
             // Label is inherited - override to false.
-            setLabel(note.noteId, labelName, "false");
+            await setLabel(note.noteId, labelName, "false");
         }
     } else if (value) {
-        setLabel(note.noteId, labelName, "");
+        await setLabel(note.noteId, labelName, "");
     } else {
-        removeOwnedLabelByName(note, labelName);
+        await removeOwnedLabelByName(note, labelName);
     }
 }
 
@@ -83,10 +83,10 @@ export async function removeOwnedAttributesByNameOrType(note: FNote, type: Attri
  * @param labelName the name of the label to remove.
  * @returns `true` if an attribute was identified and removed, `false` otherwise.
  */
-function removeOwnedLabelByName(note: FNote, labelName: string) {
+async function removeOwnedLabelByName(note: FNote, labelName: string) {
     const label = note.getOwnedLabel(labelName);
     if (label) {
-        removeAttributeById(note.noteId, label.attributeId);
+        await removeAttributeById(note.noteId, label.attributeId);
         return true;
     }
     return false;
@@ -100,10 +100,10 @@ function removeOwnedLabelByName(note: FNote, labelName: string) {
  * @param relationName the name of the relation to remove.
  * @returns `true` if an attribute was identified and removed, `false` otherwise.
  */
-function removeOwnedRelationByName(note: FNote, relationName: string) {
+async function removeOwnedRelationByName(note: FNote, relationName: string) {
     const relation = note.getOwnedRelation(relationName);
     if (relation) {
-        removeAttributeById(note.noteId, relation.attributeId);
+        await removeAttributeById(note.noteId, relation.attributeId);
         return true;
     }
     return false;

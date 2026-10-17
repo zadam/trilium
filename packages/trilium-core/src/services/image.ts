@@ -9,7 +9,7 @@ import sanitizeFilename from "sanitize-filename";
 import becca from "../becca/becca.js";
 import { getContext } from "./context.js";
 import { getLog } from "./log.js";
-import { getImageProvider } from "./image_provider.js";
+import { getImageProvider, type ImageShrink } from "./image_provider.js";
 import noteService from "./notes.js";
 import protectedSessionService from "./protected_session.js";
 import { getSql } from "./sql/index.js";
@@ -176,7 +176,7 @@ function saveImageToAttachment(
     noteId: string,
     uploadBuffer: Uint8Array,
     originalName: string,
-    shrinkImageSwitch?: boolean,
+    shrinkImageSwitch?: ImageShrink,
     trimFilename = false,
     /** Which kind of picture this is; see {@link IMAGE_ATTACHMENT_ROLES}. */
     role: ImageAttachmentRole = "image"
@@ -234,7 +234,7 @@ function saveImageToAttachment(
 
     // Process image asynchronously
     const attachmentId = attachment.attachmentId;
-    trackWrite(getImageProvider().processImage(uploadBuffer, originalName, !!shrinkImageSwitch).then(({ buffer, format }) => {
+    trackWrite(getImageProvider().processImage(uploadBuffer, originalName, shrinkImageSwitch ?? false).then(({ buffer, format }) => {
         getContext().init(() => {
             getSql().transactional(() => {
                 if (!attachmentId) {

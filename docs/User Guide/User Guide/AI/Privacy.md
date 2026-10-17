@@ -1,7 +1,7 @@
 # Privacy
 Trilium sends nothing to an AI provider until you send a message. Enabling the integration, adding a provider or opening a chat transmits nothing on its own, the one exception is that listing a provider's models sends your API key to that provider, so the list can be fetched.
 
-Once you send a message, what leaves your machine depends on the provider you chose and on which context options are enabled.
+Once you send a message or run the <a class="reference-link" href="../Note%20Types/Text/In-editor%20AI%20assistant.md">In-editor AI assistant</a>, what leaves your machine depends on the provider you chose and on which context options are enabled.
 
 ## Where your notes go
 
@@ -10,9 +10,12 @@ Once you send a message, what leaves your machine depends on the provider you ch
 | Cloud providers | The provider's servers (Anthropic, OpenAI, Google, DeepSeek) |
 | Subscription-based | The provider's servers, via Claude Code running locally |
 | Local / self-hosted | Nothing leaves the machine running the model |
-| Custom endpoint | Wherever you pointed it — which may be your own hardware or a hosted service |
+| Custom endpoint | Wherever it was pointed, which may be your own hardware or a hosted service |
 
-This is the reason the provider list is grouped this way, and why Trilium pre-selects nothing: the choice of where your notes travel is made explicitly, by you, before anything is sent.
+This is the reason the provider list is grouped this way, and why Trilium pre-selects nothing: the choice of where your note content is sent is made explicitly by you, before anything is sent.
+
+> [!NOTE]
+> The <a class="reference-link" href="../Note%20Types/Text/In-editor%20AI%20assistant.md">In-editor AI assistant</a> has a model selection of its own, so it may be answered by a different provider than the one in the chat. The row at the bottom of the assistant's menu always names the one being used.
 
 ## What is actually sent
 
@@ -25,20 +28,37 @@ This is the reason the provider list is grouped this way, and why Trilium pre-se
     *   Notes above a size threshold send a size hint instead of the text, and the model must call a tool to read further.
 *   **Any note the model asks for, when note access is enabled.**
     *   Tools let the model search your tree and read notes, attributes and attachments beyond the current one.
-    *   It decides what to fetch; there is no per-note permission system, so the reachable scope is your whole tree.
+    *   It decides what to fetch, and each call waits for you to allow it, unless the chat's permission mode lets reads or every call run on their own, or you allowed that tool for the chat. There is no per-note permission system, so the reachable scope is your whole tree.
 *   **Attachments and mentions**, when you add them: images, PDFs and text files are sent to the provider, and an `@` mention makes that note fetchable.
-*   **Your search query**, when web search is enabled, the model's search terms reach the provider's own search infrastructure.
+*   **Your search query**, when web search is enabled, the model's search terms reach the provider's own search infrastructure, or the search provider chosen in the _Tools_ menu (Brave Search, Tavily, Exa, Serper, Perplexity or your SearXNG instance).
+*   **The pages the model reads**, when web search goes through a search provider: Trilium fetches each page the model asks for from the site itself, so the site sees a request from the machine running Trilium. The page's text is then sent to the model's provider.
+
+## The in-editor AI assistant
+
+A run of the <a class="reference-link" href="../Note%20Types/Text/In-editor%20AI%20assistant.md">In-editor AI assistant</a> sends a different set than a chat message. For quick actions, it sends it the moment you pick an action, there is no send button to reconsider at. For the free-form _Ask AI_, there is a dedicated send button and model selector.
+
+*   **The passage you selected**, or the paragraph the cursor is in when you pick a quick action without selecting anything.
+*   **Up to 1500 characters of the note on each side of that passage**, as plain text. The assistant is told this is context only and must not be rewritten, but it is sent regardless of whether you selected it: a run on a single sentence still transmits the paragraphs around it.
+*   **Where the note sits**: its title and the titles of its parents, as a breadcrumb.
+*   **Trilium's writing-assistant instructions**, which describe the formatting it may produce.
+*   **Earlier turns of the same exchange**, once you follow up on a response.
+
+No note metadata block is sent, web search is never enabled, and the assistant has no note tools so it can read nothing beyond the text listed above.
 
 ## Protected notes
 
-While your [protected session](../Basic%20Concepts%20and%20Features/Notes/Protected%20Notes.md) is locked, protected notes send neither title nor content. **While it is unlocked they are treated like any other note** — a note the model reads through a tool is sent to the provider in full. If you keep sensitive material in protected notes, be aware that unlocking them removes that boundary for the duration of the session.
+While your [protected session](../Basic%20Concepts%20and%20Features/Notes/Protected%20Notes.md) is locked, protected notes send neither title nor content. **While it is unlocked they are treated like any other note,** a note the model reads through a tool is sent to the provider in full. If you keep sensitive material in protected notes, be aware that unlocking them removes that boundary for the duration of the session.
+
+The same applies to the <a class="reference-link" href="../Note%20Types/Text/In-editor%20AI%20assistant.md">In-editor AI assistant</a>: it works on whatever is open in the editor, so running it inside an unlocked protected note sends that note's text like any other.
 
 ## What you control
 
 *   **Which provider**: the single decision that determines whether anything leaves your machine at all.
-*   **Note access**: turn tools off from the model selector at the bottom of the chat, and the model can read nothing beyond what you type.
+*   **Note access**: turn it off in the <span class="tn-icon bx bx-shield-quarter"></span>_Tools_ menu at the bottom of the chat, and the model can read nothing beyond what you type.
 *   **The current note:** the file icon in the sidebar chat.
-*   **Web search:** also in the model selector.
+*   **Web search:** also in the _Tools_ menu.
+*   **Which tool calls ask first:** the _Permissions_ submenu of the _Tools_ menu. _Always ask_ has every call wait for you, reads included. A new chat starts in the mode you picked last, so a chat after one set to _Don't ask_ asks about nothing either. Until you pick a mode, chats start in _Ask before changes_, where the AI reads and searches your notes without asking.
+*   **The editor assistant**: it has no per-run toggles. What you control is whether you run it, what you select before you do and which model answers.
 
 With note access and note context both off, the provider receives only the words you typed.
 

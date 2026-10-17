@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { buildNote } from "../test/easy-froca.js";
 import appContext from "./app_context.js";
+import NoteContext from "./note_context.js";
 import TabManager, { buildNoteContextStatesFromUrl } from "./tab_manager.js";
 
 describe("TabManager tab placement", () => {
@@ -54,6 +56,24 @@ describe("TabManager tab placement", () => {
 
         // inserting right after p1 would split the pinned group, so it clamps past the group
         expect(ntxOrder(tm)).toEqual([p1.ntxId, p2.ntxId, fromLink.ntxId, a.ntxId]);
+    });
+
+    it("places a tab from openInNewTab() after the active tab only when asked to", async () => {
+        const tm = new TabManager();
+        const [a, b, c] = await openEmptyTabs(tm, 3);
+        tm.activeNtxId = b.ntxId;
+
+        // `order()` maps an unknown tab identifier to "new".
+        const known = [a.ntxId, b.ntxId, c.ntxId];
+        const order = () =>
+            ntxOrder(tm).map((ntxId) => (known.includes(ntxId) ? ntxId : "new"));
+
+        // An empty note ID makes setNote() return early, so only the placement is exercised.
+        await tm.openInNewTab("", null, false, "afterCurrent");
+        expect(order()).toEqual([a.ntxId, b.ntxId, "new", c.ntxId]);
+
+        await tm.openInNewTab("", null);
+        expect(order()).toEqual([a.ntxId, b.ntxId, "new", c.ntxId, "new"]);
     });
 });
 
@@ -138,6 +158,28 @@ describe("handing a tab over to a window of its own", () => {
     });
 });
 
+describe("TabManager after froca is rebuilt", () => {
+    it("unpins and empties a tab whose note the rebuild no longer holds", async () => {
+        vi.spyOn(appContext, "triggerEvent").mockResolvedValue(undefined as any);
+        const tm = new TabManager();
+        appContext.tabManager = tm;
+        const kept = buildNote({ title: "Kept" });
+        const gone = await tm.openEmptyTab(null, "root", null, true);
+        const stays = await tm.openEmptyTab(null, "root", null, true);
+        gone.noteId = "goneAfterRebuild";
+        gone.notePath = "root/goneAfterRebuild";
+        stays.noteId = kept.noteId;
+        stays.notePath = `root/${kept.noteId}`;
+
+        await tm.handleEvent("frocaReloaded", {});
+
+        expect(gone.pinned).toBe(false);
+        expect(gone.noteId).toBeNull();
+        expect(stays.pinned).toBe(true);
+        expect(stays.noteId).toBe(kept.noteId);
+    });
+});
+
 describe("buildNoteContextStatesFromUrl", () => {
     it("rebuilds the panes as one tab, with the focused one active", () => {
         const states = buildNoteContextStatesFromUrl({
@@ -190,6 +232,43 @@ describe("buildNoteContextStatesFromUrl", () => {
     });
 });
 
+describe("moving the focus between splits", () => {
+    it("steps one pane at a time and stops at both ends of the tab", async () => {
+        const tm = new TabManager();
+        // a pane resolves its siblings by asking the app which contexts are open
+        appContext.tabManager = tm;
+        const [ main ] = await openEmptyTabs(tm, 1);
+        const split = await tm.openEmptyTab(null, "root", main.ntxId);
+        const otherTab = await tm.openEmptyTab();
+        expect(tm.children.map((nc) => nc.ntxId)).toEqual([ main.ntxId, split.ntxId, otherTab.ntxId ]);
+
+        await tm.activateNoteContext(main.ntxId);
+        const triggerEvent = vi.spyOn(tm, "triggerEvent").mockReturnValue(undefined);
+
+        await tm.focusNoteSplitRightCommand();
+        expect(tm.activeNtxId).toBe(split.ntxId);
+        // activating the pane moves the tree; the caret follows on its own event
+        expect(triggerEvent).toHaveBeenCalledWith("focusOnDetail", { ntxId: split.ntxId });
+
+        // the tab next door is not the next pane
+        await tm.focusNoteSplitRightCommand();
+        expect(tm.activeNtxId).toBe(split.ntxId);
+
+        await tm.focusNoteSplitLeftCommand();
+        expect(tm.activeNtxId).toBe(main.ntxId);
+
+        // and nothing sits to the left of the first pane
+        await tm.focusNoteSplitLeftCommand();
+        expect(tm.activeNtxId).toBe(main.ntxId);
+
+        // a pane closed between the keypress and the handler leaves the id behind; resolving it is
+        // what getActiveMainContext() would throw over
+        tm.activeNtxId = "already-gone";
+        await tm.focusNoteSplitRightCommand();
+        expect(tm.activeNtxId).toBe("already-gone");
+    });
+});
+
 function openEmptyTabs(tm: TabManager, count: number) {
     return Promise.all(Array.from({ length: count }, () => tm.openEmptyTab()));
 }
@@ -197,3 +276,38 @@ function openEmptyTabs(tm: TabManager, count: number) {
 function ntxOrder(tm: TabManager) {
     return tm.mainNoteContexts.map((nc) => nc.ntxId);
 }
+
+describe("note contexts outside the tab row", () => {
+    it("resolves a registered context by its id without listing it among the tabs", async () => {
+        const tm = new TabManager();
+        await openEmptyTabs(tm, 1);
+        const popupContext = new NoteContext("_popup-editor");
+
+        tm.registerDetachedContext(popupContext);
+        expect(tm.getNoteContextById("_popup-editor")).toBe(popupContext);
+        expect(tm.getNoteContexts()).not.toContain(popupContext);
+
+        // `getCommandContext()` returns the context with the given `ntxId`, or the active one without it.
+        const [ tab ] = tm.getNoteContexts();
+        tm.activeNtxId = tab.ntxId;
+        expect(tm.getCommandContext("_popup-editor")).toBe(popupContext);
+        expect(tm.getCommandContext(undefined)).toBe(tab);
+    });
+
+    it("forgets a context once unregistered, and resolves an unknown one to nothing", async () => {
+        const tm = new TabManager();
+        await openEmptyTabs(tm, 1);
+        const replaced = new NoteContext("_tree-popup");
+        const current = new NoteContext("_tree-popup");
+
+        tm.registerDetachedContext(replaced);
+        tm.registerDetachedContext(current);
+        // Unregistering the context a host replaced leaves the one it replaced it with.
+        tm.unregisterDetachedContext(replaced);
+        expect(tm.getCommandContext("_tree-popup")).toBe(current);
+
+        tm.unregisterDetachedContext(current);
+        expect(tm.getCommandContext("_tree-popup")).toBeNull();
+        expect(tm.getCommandContext("_nowhere")).toBeNull();
+    });
+});

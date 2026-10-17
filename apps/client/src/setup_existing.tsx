@@ -4,7 +4,8 @@ import type {
     SetupBackupDefaults,
     SetupBackupSettings,
     SetupExistingBackup,
-    SetupExistingBackupStatus
+    SetupExistingBackupStatus,
+    SetupStatusResponse
 } from "@triliumnext/commons";
 import { useEffect, useState } from "preact/hooks";
 
@@ -16,32 +17,34 @@ import { formatSize, isElectron } from "./services/utils";
 import { BackupDownloadPanel, BackupParameters, useBackupDownload } from "./setup_backup";
 import Admonition from "./widgets/react/Admonition";
 import Button from "./widgets/react/Button";
-import { Card, CardOption, CardSection } from "./widgets/react/Card";
+import { Card, CardSection, OptionCardSection } from "./widgets/react/Card";
 import FormRadioGroup from "./widgets/react/FormRadioGroup";
 import Icon from "./widgets/react/Icon";
+import ProgressBar from "./widgets/react/ProgressBar";
 import SetupPage from "./widgets/react/SetupPage";
 import SlidePages from "./widgets/react/SlidePages";
 
 /**
- * What happens to the knowledge base that was already here.
+ * The offer to save the knowledge base that was already here.
  *
  * The wizard is normally the first thing an instance ever shows. When the app asks for it instead,
- * there is a database behind it, and every path onwards from here replaces or erases that database.
- * So this is the first screen, before the menu, and nothing else can be reached until it is answered.
+ * there is a database behind it, and most of what the menu offers will eventually replace it. So
+ * this is the first screen, before the menu: the one chance to take a copy while the database is
+ * open but nothing is running against it.
  *
- * Three screens, one question. The choice, the wait while a backup is written, and what was written.
- * Every one of them can be left through Cancel, which puts the instance back the way it was: nothing
- * is touched until the last Continue.
+ * Nothing here is destructive. The copy is taken or it is not, and either way the instance still
+ * has everything it had; the erasure happens later, inside whichever path the user picks, and only
+ * for the paths that create a database. Cancel, available on every screen, puts the instance back.
  *
  * @module
  */
 
-/** What the user decided to do with the database that is already here. */
-type Choice = "back-up" | "delete";
+/** What the user decided about a copy of the database that is already here. */
+type Choice = "back-up" | "skip";
 
 const CHOICES: { value: Choice; label: string }[] = [
     { value: "back-up", label: "setup.existing-data-back-up" },
-    { value: "delete", label: "setup.existing-data-delete" }
+    { value: "skip", label: "setup.existing-data-skip" }
 ];
 
 /** The screens, in the order they can be reached, which is also the order they slide in. */
@@ -55,8 +58,9 @@ const STEP_ORDER: Step[] = [ "choice", "backup-parameters", "backing-up", "downl
  * and what the user has answered so far lives here rather than being spread through the wizard's own
  * state machine.
  *
- * @param onProceed the database is gone; carry on with the rest of setup.
- * @param onKept nothing was touched; the app is coming back.
+ * @param onProceed the question has been answered; carry on to the menu. The knowledge base is still
+ *                  there, and stays there until the user picks something that replaces it.
+ * @param onKept the app is coming back; the wizard is over.
  */
 export default function ExistingData({ onProceed, onKept }: { onProceed: () => void; onKept: () => void }) {
     const [ step, setStep ] = useState<Step>("choice");
@@ -69,33 +73,6 @@ export default function ExistingData({ onProceed, onKept }: { onProceed: () => v
     function raiseError(message: string) {
         setError(message);
         setErrorId((previous) => previous + 1);
-    }
-
-    /** Erases the database and moves on, which is the one irreversible thing these screens do. */
-    async function erase() {
-        try {
-            await deleteExistingData();
-            onProceed();
-        } catch (e) {
-            setStep("choice");
-            raiseError(messageOf(e) ?? t("setup.existing-data-delete-failed"));
-        }
-    }
-
-    /**
-     * The same, asked about first, for the screens reached by taking a backup.
-     *
-     * Those screens are about the copy that was just made, and the erasure is what Continue does
-     * once the user is done reading about it — which is exactly the sort of thing a hand already
-     * moving towards the button does not notice. The wizard has no dialog stack of its own, so this
-     * is the browser's own, which is both unmissable and available on every platform.
-     */
-    async function confirmAndErase() {
-        if (!window.confirm(t("setup.existing-data-erase-confirm"))) {
-            return;
-        }
-
-        await erase();
     }
 
     /**
@@ -147,7 +124,7 @@ export default function ExistingData({ onProceed, onKept }: { onProceed: () => v
                             error={error}
                             errorId={errorId}
                             onBackUp={() => void backUp()}
-                            onDelete={() => void erase()}
+                            onSkip={onProceed}
                             onCancel={() => void keep()}
                         />
                     )}
@@ -174,14 +151,14 @@ export default function ExistingData({ onProceed, onKept }: { onProceed: () => v
                     {shown === "downloading" && settings && (
                         <ExistingDataDownloading
                             settings={settings}
-                            onContinue={() => void confirmAndErase()}
+                            onContinue={onProceed}
                             onCancel={() => void keep()}
                         />
                     )}
                     {shown === "backed-up" && backup && (
                         <ExistingDataBackedUp
                             backup={backup}
-                            onContinue={() => void confirmAndErase()}
+                            onContinue={onProceed}
                             onCancel={() => void keep()}
                         />
                     )}
@@ -227,11 +204,11 @@ function messageOfBody(body: string): string {
     return body;
 }
 
-export function ExistingDataChoice({ error, errorId, onBackUp, onDelete, onCancel }: {
+export function ExistingDataChoice({ error, errorId, onBackUp, onSkip, onCancel }: {
     error?: string;
     errorId?: number;
     onBackUp: () => void;
-    onDelete: () => void;
+    onSkip: () => void;
     onCancel: () => void;
 }) {
     const [ choice, setChoice ] = useState<Choice | null>(null);
@@ -239,8 +216,8 @@ export function ExistingDataChoice({ error, errorId, onBackUp, onDelete, onCance
     return (
         <SetupPage
             className="existing-data"
-            // A question and nothing else: the answer decides whether a knowledge base survives,
-            // and a paragraph above it is the part someone in a hurry reads past.
+            // A question and nothing else: this is the one offer of a copy the user will get, and a
+            // paragraph above it is the part someone in a hurry reads past.
             title={t("setup.existing-data")}
             illustration={<Icon icon="bx bx-data" className="illustration-icon" />}
             error={error}
@@ -251,22 +228,23 @@ export function ExistingDataChoice({ error, errorId, onBackUp, onDelete, onCance
                     <Button
                         text={t("setup.continue")}
                         kind="primary"
-                        // Neither is chosen to begin with: one of them erases a knowledge base, and a
-                        // default would make that the answer of anyone who pressed on without reading.
+                        // Neither is chosen to begin with: a default would make the backup the
+                        // answer of anyone who pressed on without reading, either way round.
                         disabled={choice === null}
-                        onClick={() => (choice === "back-up" ? onBackUp() : onDelete())}
+                        onClick={() => (choice === "back-up" ? onBackUp() : onSkip())}
                     />
                 </>
             }
         >
             <Card className="existing-data-choices">
-                {/* A segment each, rather than two rows in one: this is the question the whole screen
-                    is for, and one of the answers erases a knowledge base. Which is checked is held
-                    here rather than by the browser's own grouping, so the two stay exclusive. */}
+                {/* A segment each, rather than two rows in one: this is the question the whole
+                    screen is for. Which is checked is held here rather than by the browser's own
+                    grouping, so the two stay exclusive. */}
                 {CHOICES.map(({ value, label }) => (
-                    // The answer that erases everything is coloured as such, so it is recognisable
-                    // before it is read rather than after.
-                    <CardSection key={value} className={value === "delete" ? "existing-data-destructive" : undefined}>
+                    // Going on without a copy is coloured as the app colours what cannot be taken
+                    // back: nothing is erased by choosing it, but it is the answer that leaves the
+                    // user with nothing to go back to once they pick a path from the menu after it.
+                    <CardSection key={value} className={value === "skip" ? "existing-data-destructive" : undefined}>
                         <FormRadioGroup
                             name="existing-data-choice"
                             currentValue={choice ?? ""}
@@ -277,9 +255,9 @@ export function ExistingDataChoice({ error, errorId, onBackUp, onDelete, onCance
                 ))}
             </Card>
 
-            {choice === "delete" && (
-                <Admonition type="caution" className="existing-data-warning">
-                    {t("setup.existing-data-delete-warning")}
+            {choice === "skip" && (
+                <Admonition type="note" className="existing-data-warning">
+                    {t("setup.existing-data-skip-warning")}
                 </Admonition>
             )}
         </SetupPage>
@@ -326,7 +304,7 @@ export function ExistingDataBackingUp() {
 
                 {fraction !== null && (
                     <div class="existing-data-progress-bar">
-                        <progress value={fraction} max={1} />
+                        <ProgressBar value={fraction} max={1} />
                         <span>{Math.floor(fraction * 100)}%</span>
                     </div>
                 )}
@@ -377,11 +355,11 @@ export function ExistingDataDownloading({ settings, onContinue, onCancel }: {
 }
 
 /**
- * What was written, before the database it was written from is erased.
+ * What was written, and where.
  *
  * The path is shown in full and not abbreviated: a custom backup directory is an option in a
- * database that is about to stop existing, so this may be the last time the user can see where their
- * backup actually went.
+ * database the user is on their way to replacing, so this may be the last time they can see where
+ * their backup actually went.
  */
 export function ExistingDataBackedUp({ backup, onContinue, onCancel }: {
     backup: SetupExistingBackup;
@@ -402,17 +380,17 @@ export function ExistingDataBackedUp({ backup, onContinue, onCancel }: {
             }
         >
             <Card>
-                <CardOption label={t("setup.existing-data-file-name")}>
+                <OptionCardSection label={t("setup.existing-data-file-name")}>
                     <span class="existing-data-file-name">{backup.fileName}</span>
-                </CardOption>
+                </OptionCardSection>
 
-                <CardOption label={t("setup.existing-data-file-path")}>
+                <OptionCardSection label={t("setup.existing-data-file-path")}>
                     <BackupDirectory path={backup.directoryPath} />
-                </CardOption>
+                </OptionCardSection>
 
-                <CardOption label={t("setup.existing-data-file-size")}>
+                <OptionCardSection label={t("setup.existing-data-file-size")}>
                     {formatSize(backup.fileSize)}
-                </CardOption>
+                </OptionCardSection>
 
                 <CardSection className="existing-data-actions">
                     <Button
@@ -523,12 +501,52 @@ export async function getBackupDefaults(): Promise<SetupBackupDefaults> {
     }
 }
 
-/** Erases it, which is the point of no return. */
-export function deleteExistingData(): Promise<void> {
-    return server.post("setup/existing/delete");
+/**
+ * Erases it, which is the point of no return.
+ *
+ * Called from the wizard only where the erasure cannot ride along with the thing that replaces the
+ * database: creating a document and syncing from a server both erase server-side as their first
+ * step, but a database pushed by another desktop arrives on its own schedule, so that path has to
+ * clear the way before it starts waiting.
+ */
+export async function deleteExistingData(): Promise<void> {
+    await server.post("setup/existing/delete");
+    // The wizard's own account of what is behind it, kept in step with what now is. Written back
+    // onto the bootstrap's own answer rather than tracked beside it: the two can never disagree,
+    // since the only erasure any of these screens can cause is the one just above.
+    window.glob.hasExistingData = false;
 }
 
-/** Leaves it alone and opens it, which is what every Cancel on these screens does. */
+/** Leaves it alone and opens it, which is what every Cancel in the wizard does. */
 export function keepExistingData(): Promise<void> {
     return server.post("setup/existing/keep");
+}
+
+/**
+ * Whether there is still a knowledge base behind the wizard.
+ *
+ * What the start of the wizard reported, until something here erases it. Not re-read from the
+ * server: a reload would ask the server again anyway, and within one run of the wizard this is the
+ * only thing that changes the answer.
+ */
+export function hasExistingData(): boolean {
+    return window.glob.hasExistingData === true;
+}
+
+/**
+ * Asks the server again, for the paths that erase without going through this page.
+ *
+ * Creating a document and syncing from a server both erase server-side, at the last moment before
+ * the database that replaces this one is built. Where that replacement then fails, the wizard stays
+ * open on a screen that came from a start which still believed there was something behind it — and
+ * would go on offering a way back to it. Never throws: a wizard that cannot reach its own server has
+ * a larger problem than a stale flag, and the screens read the flag while rendering.
+ */
+export async function refreshExistingData(): Promise<void> {
+    try {
+        const { hasExistingData } = await server.get<SetupStatusResponse>("setup/status");
+        window.glob.hasExistingData = hasExistingData === true;
+    } catch {
+        // Left as it was, which is the answer the page already had.
+    }
 }

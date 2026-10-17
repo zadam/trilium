@@ -15,12 +15,21 @@
  * @module
  */
 
-/** How many pages travel per stream chunk: 1 MiB at the default 8 KiB page size. */
-const BATCH_PAGES = 128;
+/**
+ * How many pages are fetched, and travel, per stream chunk.
+ *
+ * One statement covers the whole batch, so this is the number of rows a single query steps through
+ * rather than the number of queries. Larger batches therefore cost almost nothing extra in
+ * round trips and only buy fewer of them, while the memory held is one batch: 4 MiB at an 8 KiB
+ * page, 2 MiB at 4 KiB, which the container immediately re-cuts into its own 1 MiB frames.
+ */
+const BATCH_PAGES = 512;
 
 /** Reads the live database through the core SQL layer, which fronts the one connection there is. */
 export interface LiveDatabaseReader {
     getValue(sql: string, params?: unknown[]): unknown;
+    /** One column of every row, which is how a whole batch of pages arrives in one statement. */
+    getColumn(sql: string, params?: unknown[]): unknown[];
 }
 
 /** Thrown by {@link streamLiveDatabasePages} when a write lands mid-stream. The caller retries. */
@@ -57,6 +66,7 @@ export function streamLiveDatabasePages(db: LiveDatabaseReader): DatabaseStream 
     const fingerprint = fingerprintOf(db);
 
     let nextPage = 1;
+
     return {
         byteSize: pageSize * pageCount,
         stream: new ReadableStream<Uint8Array>({
@@ -71,10 +81,9 @@ export function streamLiveDatabasePages(db: LiveDatabaseReader): DatabaseStream 
                     }
 
                     const pages = Math.min(BATCH_PAGES, pageCount - nextPage + 1);
-                    const batch = new Uint8Array(pages * pageSize);
-                    for (let index = 0; index < pages; index++, nextPage++) {
-                        batch.set(readLivePage(db, nextPage, pageSize), index * pageSize);
-                    }
+                    const batch = readLivePages(db, nextPage, pages, pageSize);
+                    nextPage += pages;
+
                     controller.enqueue(batch);
                 } catch (e) {
                     controller.error(e);
@@ -84,13 +93,39 @@ export function streamLiveDatabasePages(db: LiveDatabaseReader): DatabaseStream 
     };
 }
 
-/** One page, checked to be exactly a page: anything else means the file is not what it claims. */
-function readLivePage(db: LiveDatabaseReader, pageNumber: number, pageSize: number): Uint8Array {
-    const data = db.getValue("SELECT data FROM sqlite_dbpage WHERE pgno = ?", [ pageNumber ]);
-    if (!(data instanceof Uint8Array) || data.byteLength !== pageSize) {
-        throw new Error(`Page ${pageNumber} came back malformed.`);
+/**
+ * A run of pages, in one statement rather than one per page.
+ *
+ * This is the whole of what a backup costs to read, and the difference between the two shapes is
+ * not small: a page at a time means preparing, binding, stepping and finalising a query against a
+ * virtual table for every page in the database, which for a multi-gigabyte one is over a million
+ * round trips into WebAssembly. Stepping one statement across the range does the same work once.
+ */
+function readLivePages(
+    db: LiveDatabaseReader,
+    firstPage: number,
+    pages: number,
+    pageSize: number
+): Uint8Array {
+    const rows = db.getColumn(
+        "SELECT data FROM sqlite_dbpage WHERE pgno BETWEEN ? AND ? ORDER BY pgno",
+        [ firstPage, firstPage + pages - 1 ]
+    );
+
+    if (rows.length !== pages) {
+        throw new Error(`Pages ${firstPage} to ${firstPage + pages - 1}: got ${rows.length} of ${pages}.`);
     }
-    return data;
+
+    const batch = new Uint8Array(pages * pageSize);
+    for (let index = 0; index < pages; index++) {
+        const data = rows[index];
+        if (!(data instanceof Uint8Array) || data.byteLength !== pageSize) {
+            throw new Error(`Page ${firstPage + index} came back malformed.`);
+        }
+        batch.set(data, index * pageSize);
+    }
+
+    return batch;
 }
 
 /**
