@@ -32,6 +32,7 @@ import {
     IshikawaDiagram,
     VennDiagram,
     usecaseText,
+    agentflowText,
     SankeyDiagram,
     xyChartText,
     packetText,
@@ -77,6 +78,8 @@ const diagramMap: Record<string, number> = {
     "ishikawa": IshikawaDiagram,
     "venn-beta": VennDiagram,
     "usecase-beta": usecaseText,
+    "swimlane-beta": flowchartText,
+    "agentflow-beta": agentflowText,
     "sankey-beta": SankeyDiagram,
     "sankey": SankeyDiagram,
     "xychart-beta": xyChartText,
@@ -109,7 +112,7 @@ const accessibleDiagrams = new Set([
     pieText, flowchartText, sequenceText, journeyText, requirementText, ganttText, quadrantText,
     radarText, treemapText, treeViewText, xyChartText, packetText, architectureText, classText,
     stateText, erText, gitText, c4Text, wardleyText, cynefinText, railroadText, railroadEbnfText,
-    railroadAbnfText, railroadPegText, usecaseText
+    railroadAbnfText, railroadPegText, usecaseText, agentflowText
 ]);
 
 /**

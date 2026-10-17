@@ -1,5 +1,9 @@
 @top FlowchartDiagram { document+ }
 
+// Agent flow diagrams (`agentflow-beta`) parse with this grammar in the `agentflow` dialect, which
+// adds their keywords; swimlanes (`swimlane-beta`) are flowcharts in Mermaid.
+@dialects { agentflow }
+
 @skip { spaces | LineComment }
 
 @skip {} {
@@ -26,6 +30,7 @@ subDocument {
   NodeEdge |
   ampersand |
   Keyword |
+  Metadata |
   emptyParentheses |
   colon |
   tripleColon |
@@ -77,7 +82,8 @@ Link {
 
 DiagramName {
   kw<"flowchart"> |
-  kw<"graph">
+  kw<"graph"> |
+  betaHeader
 }
 
 Orientation { 
@@ -105,11 +111,17 @@ Keyword {
   kw<"_self"> |
   kw<"_blank"> |
   kw<"_parent"> |
-  kw<"_to">
+  kw<"_to"> |
+  agentflowKw<"flow"> |
+  agentflowKw<"connector"> |
+  agentflowKw<"global">
 }
+
+agentflowKw<term> { @specialize[@dialect=agentflow]<identifier, term> }
 
 kw<term> { @specialize<identifier, term> }
 
+@external tokens headers from "./tokens.js" { betaHeader }
 @external tokens nodeEdgeText from "./tokens.js" { NodeEdgeText }
 @external tokens nodeText from "./tokens.js" { NodeText }
 @external tokens styleText from "./tokens.js" { StyleText }
@@ -128,6 +140,7 @@ The @specialize rule also helps makes "DiagramName" have higher priority for "fl
   stringContentDouble { !["]+ }
   stringContentBackTick { ![`]+ }
   LineComment { "%%" ![\n]* }
+  Metadata { "@{" ![}]* "}" }
   DoubleHyphen { "--" $[ \t]+ }
   DoubleEqual { "==" $[ \t]+ }
   linkType1 { ("<-" | "x-" | "o-") ("->" | "-x" | "-o")}

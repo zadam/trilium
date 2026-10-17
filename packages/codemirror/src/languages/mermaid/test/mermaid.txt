@@ -485,3 +485,36 @@ usecase-beta
 ==>
 
 MermaidDiagram(UsecaseDiagram(DiagramName,Keyword,Name))
+
+# Swimlane
+
+swimlane-beta LR
+  subgraph Customer
+    request[Request service]
+  end
+
+==>
+
+MermaidDiagram(FlowchartDiagram(DiagramName,Orientation,Keyword,NodeId,NodeId,Node(NodeText),Keyword))
+
+# Agent flow
+
+agentflow-beta TB
+  flow reviewer["Review Agent"]
+    changes["Gather changes"]@{ shape: input }
+    changes --> analyse
+  end
+  global connector
+
+==>
+
+MermaidDiagram(FlowchartDiagram(DiagramName,Orientation,Keyword,NodeId,Node(String),NodeId,Node(String),Metadata,NodeId,Link,NodeId,Keyword,Keyword,Keyword))
+
+# Agent flow keywords are node ids in a flowchart
+
+flowchart TB
+  flow --> global
+
+==>
+
+MermaidDiagram(FlowchartDiagram(DiagramName,Orientation,NodeId,Link,NodeId))

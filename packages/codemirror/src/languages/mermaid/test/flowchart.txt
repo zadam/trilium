@@ -579,3 +579,16 @@ flowchart LR
 ==>
 
 FlowchartDiagram(DiagramName,Orientation,StyleKeyword,NodeId,⚠)
+
+# Shape metadata
+
+flowchart TB
+  A@{ shape: rect }
+  B["Label"]@{
+    shape: tool
+  }
+  flow --> A
+
+==>
+
+FlowchartDiagram(DiagramName,Orientation,NodeId,Metadata,NodeId,Node(String),Metadata,NodeId,Link,NodeId)

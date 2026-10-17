@@ -50,6 +50,7 @@ export { foldByIndent } from "./extensions/index.js";
  * parser of that type.
  */
 export const DIAGRAM_PARSERS: Record<string, LRParser> = {
+    AgentflowDiagram: flowchartParser.configure({ dialect: "agentflow" }),
     ArchitectureDiagram: architectureParser,
     BlockDiagram: blockParser,
     C4Diagram: c4Parser,

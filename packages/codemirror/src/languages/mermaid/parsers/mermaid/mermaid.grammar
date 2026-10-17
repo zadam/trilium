@@ -27,6 +27,7 @@
     IshikawaDiagram |
     VennDiagram |
     UsecaseDiagram |
+    AgentflowDiagram |
     SankeyDiagram |
     XYChartDiagram |
     PacketDiagram |
@@ -58,6 +59,7 @@ RailroadEbnfDiagram { railroadEbnfText accessible* }
 RailroadAbnfDiagram { railroadAbnfText accessible* }
 RailroadPegDiagram { railroadPegText accessible* }
 UsecaseDiagram { usecaseText accessible* }
+AgentflowDiagram { agentflowText accessible* }
 XYChartDiagram { xyChartText accessible* }
 PacketDiagram { packetText accessible* }
 ArchitectureDiagram { architectureText accessible* }
@@ -118,6 +120,7 @@ AccDescr { accDescrKeyword (":" AccText? | "{" accBlockText? "}") }
   IshikawaDiagram,
   VennDiagram,
   usecaseText,
+  agentflowText,
   SankeyDiagram,
   xyChartText,
   packetText,

@@ -1,5 +1,5 @@
 import { ExternalTokenizer } from "@lezer/lr";
-import { NodeText, NodeEdgeText, StyleText } from  "./parser.terms.js";
+import { betaHeader, NodeText, NodeEdgeText, StyleText } from  "./parser.terms.js";
 
 const skipCodePoints = [ -1, 9, 13, 32, 34, 39, 96 ];
 const startBracketCodePoints = [ 40, 62, 91, 123, 124 ];
@@ -52,4 +52,19 @@ export const styleText = new ExternalTokenizer((input) => {
     }
 
     input.acceptToken(StyleText);
+});
+
+/** The `swimlane-beta` and `agentflow-beta` headers, whose `-` an identifier cannot hold. */
+export const headers = new ExternalTokenizer((input) => {
+    for (const header of [ "swimlane-beta", "agentflow-beta" ]) {
+        let length = 0;
+        while (length < header.length && input.peek(length) === header.charCodeAt(length)) length++;
+        const next = input.peek(length);
+        const wordCharacter = (next >= 48 && next <= 57) || (next >= 65 && next <= 90)
+            || (next >= 97 && next <= 122) || next === 95 || next === 45;
+        if (length === header.length && !wordCharacter) {
+            input.acceptToken(betaHeader, length);
+            return;
+        }
+    }
 });

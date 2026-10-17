@@ -36,11 +36,14 @@ describe("Mermaid grammars", () => {
     });
 
     it("wires the parser of every diagram into the top-level language", () => {
-        const wired = new Set(Object.values(DIAGRAM_PARSERS));
+        const { AgentflowDiagram, ...ownGrammars } = DIAGRAM_PARSERS;
+        const wired = new Set(Object.values(ownGrammars));
         for (const diagram of diagrams.filter((name) => name !== "mermaid")) {
             expect(wired.has(parserOf(diagram)), diagram).toBe(true);
         }
         expect(wired.size).toBe(diagrams.length - 1);
+        // Agent flow is the flowchart grammar in its `agentflow` dialect.
+        expect(AgentflowDiagram.nodeSet).toBe(parserOf("flowchart").nodeSet);
     });
 });
 
