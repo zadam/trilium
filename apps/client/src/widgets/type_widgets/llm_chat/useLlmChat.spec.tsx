@@ -504,6 +504,74 @@ describe("useLlmChat", () => {
         expect(answers.c2).not.toHaveBeenCalled();
     });
 
+    it("keeps a tool call waiting until the turn receives its answer, so a failed answer can be sent again", async () => {
+        type Answer = (approved: boolean, scope?: "chat") => Promise<void>;
+        let callbacks: {
+            onToolApprovalRequest: (request: { toolCallId: string; toolName: string; toolInput: Record<string, unknown> }, answer: Answer) => void;
+        } | undefined;
+        let finish: () => void = () => undefined;
+        streamChatCompletionMock.mockImplementation(async (_messages, _options, cb) => {
+            callbacks = cb;
+            await new Promise<void>(resolve => { finish = resolve; });
+            cb.onDone();
+        });
+        let failSend: (error: Error) => void = () => undefined;
+        const answers = {
+            c1: vi.fn<Answer>()
+                .mockImplementationOnce(() => new Promise<void>((_resolve, reject) => { failSend = reject; }))
+                .mockResolvedValue(undefined),
+            c2: vi.fn<Answer>(async () => {})
+        };
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+        await mountChat();
+        await act(async () => {
+            api().setInput("rename them");
+        });
+        await act(async () => {
+            void api().handleSubmit(new Event("submit"));
+        });
+        await act(async () => {
+            callbacks?.onToolApprovalRequest({ toolCallId: "c1", toolName: "rename_note", toolInput: {} }, answers.c1);
+            callbacks?.onToolApprovalRequest({ toolCallId: "c2", toolName: "rename_note", toolInput: {} }, answers.c2);
+        });
+
+        // While the answer is on its way, the call still waits and a second click sends nothing.
+        await act(async () => {
+            api().answerToolCall("c1", true, "chat");
+            api().answerToolCall("c1", true, "chat");
+        });
+        expect(answers.c1).toHaveBeenCalledOnce();
+        expect(api().streamingBlocks).toMatchObject([
+            { toolCall: { id: "c1", approval: "pending" } },
+            { toolCall: { id: "c2", approval: "pending" } }
+        ]);
+
+        await act(async () => {
+            failSend(new Error("offline"));
+        });
+        expect(api().streamingBlocks).toMatchObject([
+            { toolCall: { id: "c1", approval: "pending" } },
+            { toolCall: { id: "c2", approval: "pending" } }
+        ]);
+        expect(api().allowedTools).toEqual([]);
+
+        await act(async () => {
+            api().answerToolCall("c1", true, "chat");
+        });
+        expect(answers.c1).toHaveBeenCalledTimes(2);
+        expect(answers.c2).not.toHaveBeenCalled();
+        expect(api().streamingBlocks).toMatchObject([
+            { toolCall: { id: "c1", approval: undefined } },
+            { toolCall: { id: "c2", approval: undefined } }
+        ]);
+        expect(api().allowedTools).toEqual([ "rename_note" ]);
+
+        await act(async () => {
+            finish();
+        });
+        consoleError.mockRestore();
+    });
+
     it("allows a tool for the chat: releases its waiting calls, sends and saves the list, and revokes it", async () => {
         type Answer = (approved: boolean, scope?: "chat") => Promise<void>;
         let callbacks: {

@@ -89,10 +89,12 @@ function stripQuoteSourcesFromApiContent(content: string | LlmMessagePart[]): st
 /** A tool call of the running turn that waits for the user. */
 interface WaitingToolCall {
     toolName: string;
-    /** Send the user's answer to the turn. */
-    answer: (approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => void;
-    /** Stop waiting on a call the turn approved itself, without answering it. */
-    release: () => void;
+    /** Send the user's answer to the turn; resolves once the turn has received it. */
+    send: (approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => Promise<void>;
+    /** Stop waiting on the call, showing it declined or not. */
+    settle: (approved: boolean) => void;
+    /** Whether an answer is on its way, so a second click sends nothing. */
+    sending?: boolean;
 }
 
 export interface LlmChatOptions {
@@ -849,20 +851,14 @@ export function useLlmChat(
                         };
                         contentBlocks.push({ type: "tool_call", toolCall });
                     }
-                    const settle = (approved: boolean) => {
-                        toolApprovalAnswersRef.current.delete(toolCallId);
-                        updateToolCall(toolCallId, { approval: approved ? undefined : "declined" });
-                        setTargetBlocks([...contentBlocks]);
-                    };
                     toolApprovalAnswersRef.current.set(toolCallId, {
                         toolName,
-                        answer: (approved, scope) => {
-                            settle(approved);
-                            answer(approved, scope).catch((e: unknown) => {
-                                console.error("Failed to answer the tool call:", e);
-                            });
-                        },
-                        release: () => settle(true)
+                        send: answer,
+                        settle: (approved) => {
+                            toolApprovalAnswersRef.current.delete(toolCallId);
+                            updateToolCall(toolCallId, { approval: approved ? undefined : "declined" });
+                            setTargetBlocks([...contentBlocks]);
+                        }
                     });
                     setTargetBlocks([...contentBlocks]);
                 },
@@ -1014,20 +1010,31 @@ export function useLlmChat(
     }, [handleSubmit]);
 
     /**
-     * Allow or deny a tool call of the running turn that waits for the user. Allowed for the chat,
-     * its tool is added to `allowedTools`, and the other calls of it that wait stop waiting, since
-     * the turn approves them itself.
+     * Allow or deny a tool call of the running turn that waits for the user. The call keeps waiting
+     * until the turn has received the answer, so an answer that fails to send can be given again.
+     * Allowed for the chat, its tool is added to `allowedTools`, and the other calls of it that wait
+     * stop waiting, since the turn approves them itself.
      */
-    const answerToolCall = useCallback((toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => {
+    const answerToolCall = useCallback(async (toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => {
         const waiting = toolApprovalAnswersRef.current.get(toolCallId);
-        if (!waiting) return;
-        waiting.answer(approved, scope);
+        if (!waiting || waiting.sending) return;
+        waiting.sending = true;
+        try {
+            await waiting.send(approved, scope);
+        } catch (e) {
+            waiting.sending = false;
+            console.error("Failed to answer the tool call:", e);
+            return;
+        }
+        if (toolApprovalAnswersRef.current.get(toolCallId) !== waiting) return;
+
+        waiting.settle(approved);
         if (!approved || scope !== "chat") return;
 
         setAllowedTools(tools => (tools.includes(waiting.toolName) ? tools : [ ...tools, waiting.toolName ]));
         for (const other of [ ...toolApprovalAnswersRef.current.values() ]) {
             if (other.toolName === waiting.toolName) {
-                other.release();
+                other.settle(true);
             }
         }
     }, []);
