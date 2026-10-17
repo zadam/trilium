@@ -18,7 +18,9 @@ export type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.
 export type { ImageEditingSourceConfig } from "./plugins/image_editing_source.js";
 export type { FileUploadData, FileUploadEvent } from "./plugins/file_upload/fileuploadediting.js";
 export type { PasteTarget } from "./plugins/cuttonote.js";
-export type { ContentEmbedState } from "./plugins/content_embed/content_embed.js";
+export type {
+    ContentEmbedCodeView, ContentEmbedState
+} from "./plugins/content_embed/content_embed.js";
 export type { EmbedEdge } from "./plugins/content_embed/content_embed_caret.js";
 export type { AttachmentLinkChange } from "./plugins/referencelink.js";
 export type { default as TriliumEmojiMention, EmojiSuggestion } from "./plugins/mention/emoji_mention.js";

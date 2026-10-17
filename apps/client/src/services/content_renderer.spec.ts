@@ -469,6 +469,21 @@ describe("getRenderedContent editable code", () => {
         expect(attachmentEditor.release).toHaveBeenCalledWith(att.attachmentId);
     });
 
+    it("highlights a code file in the language that its embed sets, for CodeEmbed too", async () => {
+        const att = buildAttachment({ role: "file", mime: "text/plain", title: "a.py" });
+        att.getBlob = (async () => ({ content: "echo 1" })) as any;
+
+        await getRenderedContent(att, { codeLanguage: "text/x-sh" });
+        expect(applySingleBlockSyntaxHighlight.mock.lastCall?.[1]).toBe("text-x-sh");
+
+        await getRenderedContent(att, {
+            codeLanguage: "text/x-sh", interactive: true, attachmentEditor: buildEditor()
+        });
+        const props = codeEmbedComponent.mock.lastCall?.[0];
+        expect([ props.mime, props.codeLanguage ]).toEqual([ "text/x-python", "text/x-sh" ]);
+        expect(applySingleBlockSyntaxHighlight.mock.lastCall?.[1]).toBe("text-x-sh");
+    });
+
     it("mounts TextEmbed for an interactive text note, with a preview to render again", async () => {
         const note = buildNote({ title: "Doc", type: "text", content: "<p>Hi</p>" });
         const noteEditor = buildEditor();

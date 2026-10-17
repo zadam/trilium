@@ -132,10 +132,12 @@ export async function loadEmbeddedAttachment(
         showNoteIcon: true,
         viewScope
     });
-    const { $renderedContent, type } = await content_renderer.getRenderedContent(
-        attachment,
-        { interactive: true, mediaEnvironment: "embedded", attachmentEditor }
-    );
+    const { $renderedContent, type } = await content_renderer.getRenderedContent(attachment, {
+        interactive: true,
+        mediaEnvironment: "embedded",
+        attachmentEditor,
+        codeLanguage: el.closest(".include-note")?.getAttribute("data-code-language") ?? undefined
+    });
 
     const box = h(ContentEmbed, {
         boxSize: size,

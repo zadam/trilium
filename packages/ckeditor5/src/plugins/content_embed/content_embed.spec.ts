@@ -26,6 +26,7 @@ import ReferenceLink from "../referencelink.js";
 import ContentEmbed, {
     BOX_SIZE_COMMAND_NAME,
     BOX_SIZES,
+    CODE_VIEW_COMMAND_NAME,
     COMMAND_NAME,
     CONVERT_EMBED_TO_LINK_COMMAND,
     CONVERT_LINK_TO_EMBED_COMMAND,
@@ -1482,6 +1483,99 @@ describe("ContentEmbed title", () => {
         insertContentEmbed(editor, "n1", "medium");
         menu.fire("execute");
         expect(openContentEmbedMenu).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("ContentEmbed code view", () => {
+    const ATTACHMENT = "<figure class=\"include-note\" data-attachment-id=\"att1\""
+        + " data-box-size=\"full\">&nbsp;</figure>";
+    const CODE_VIEW = ATTACHMENT.replace("data-box-size=\"full\"", "data-box-size=\"full\""
+        + " data-code-language=\"text/x-python\" data-code-tab-width=\"2\""
+        + " data-code-indent-with-tabs=\"false\"");
+    let editor: ClassicEditor;
+    let loadEmbeddedAttachment: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+        loadEmbeddedAttachment = vi.fn();
+        installGlobMock({
+            getComponentByEl: () => ({ loadEmbeddedNote: vi.fn(), loadEmbeddedAttachment })
+        });
+
+        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ]);
+    });
+
+    function getCommand() {
+        const command = editor.commands.get(CODE_VIEW_COMMAND_NAME);
+        if (!command) {
+            throw new Error("Expected the code view command.");
+        }
+        return command;
+    }
+
+    /** The `data-code-*` attributes of the rendered embed. */
+    function getRenderedCodeView() {
+        const embed = editor.editing.view.getDomRoot()?.querySelector("figure.include-note");
+        return [ "language", "tab-width", "indent-with-tabs" ]
+            .map((name) => embed?.getAttribute(`data-code-${name}`) ?? null);
+    }
+
+    function selectEmbed() {
+        const embed = findContentEmbed(editor);
+        editor.model.change((writer) => writer.setSelection(embed ?? null, "on"));
+    }
+
+    it("loads and saves how an embed shows its code, and marks the embed it renders", () => {
+        editor.setData(CODE_VIEW);
+
+        expect(getModelData(editor.model, { withoutSelection: true })).toBe(
+            "<contentEmbed attachmentId=\"att1\" boxSize=\"full\" codeIndentWithTabs=\"false\""
+            + " codeLanguage=\"text/x-python\" codeTabWidth=\"2\"></contentEmbed>"
+        );
+        expect(editor.getData()).toBe(CODE_VIEW);
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "false" ]);
+
+        editor.setData(ATTACHMENT);
+        expect(getModelData(editor.model, { withoutSelection: true })).not.toContain("code");
+        expect(editor.getData()).toBe(ATTACHMENT);
+        expect(getRenderedCodeView()).toEqual([ null, null, null ]);
+    });
+
+    it("sets and removes the settings of the selected embed as one undo step each", () => {
+        editor.setData(ATTACHMENT);
+        selectEmbed();
+        const wrapper = editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper");
+
+        editor.execute(CODE_VIEW_COMMAND_NAME, {
+            language: "text/x-python", tabWidth: 2, indentWithTabs: true
+        });
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true" ]);
+        expect(editor.getData()).toBe(CODE_VIEW.replace("\"false\"", "\"true\""));
+
+        editor.execute(CODE_VIEW_COMMAND_NAME, { language: null, indentWithTabs: false });
+        expect(getRenderedCodeView()).toEqual([ null, "2", "false" ]);
+
+        editor.execute("undo");
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true" ]);
+        editor.execute("undo");
+        expect(getRenderedCodeView()).toEqual([ null, null, null ]);
+        expect(editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper"))
+            .toBe(wrapper);
+        expect(loadEmbeddedAttachment).toHaveBeenCalledTimes(1);
+    });
+
+    it("is enabled only on an embed of an attachment, whose included notes follow the note", () => {
+        setModelData(editor.model, "<paragraph>foo[]</paragraph>");
+        expect(getCommand().isEnabled).toBe(false);
+        editor.execute(CODE_VIEW_COMMAND_NAME, { language: "text/x-python" });
+
+        insertContentEmbed(editor, "n1", "full");
+        expect(getCommand().isEnabled).toBe(false);
+        editor.execute(CODE_VIEW_COMMAND_NAME, { language: "text/x-python" });
+        expect(editor.getData()).not.toContain("data-code-language");
+
+        editor.setData(ATTACHMENT);
+        selectEmbed();
+        expect(getCommand().isEnabled).toBe(true);
     });
 });
 

@@ -5,9 +5,7 @@ import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
 import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
 import { CodeMirrorFindTarget } from "../../find_in_code";
-import {
-    useNoteLabelInt, useNoteLabelOptionalBool, useTriliumOptionBool
-} from "../../react/hooks";
+import { useNoteLabelOptionalBool, useTriliumOptionBool } from "../../react/hooks";
 import { registerEmbedFindTarget } from "../text/content_embed_tools";
 import { useEmbedCaretNavigation } from "../text/editable_embed";
 import { CodeEditor } from "./Code";
@@ -17,6 +15,10 @@ export interface CodeEmbedEditorProps {
     editor: ContentEditor;
     content: string;
     mime: string;
+    /** The tab width, or `undefined` to follow the global option. */
+    tabWidth: number | undefined;
+    /** Whether to indent with tabs, or `undefined` to follow the global option. */
+    useTabs: boolean | undefined;
     /** Holds the CodeMirror view while the editor is open, and `null` once it goes away. */
     viewRef: RefObject<VanillaCodeMirror | null>;
     /** Receives the edited content when the editor goes away. */
@@ -25,12 +27,10 @@ export interface CodeEmbedEditorProps {
 
 /** CodeMirror over the content of a code embed, which `editor` saves as it changes. */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, viewRef, onClose
+    note, editor, content, mime, tabWidth, useTabs, viewRef, onClose
 }: CodeEmbedEditorProps) {
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
-    const [ noteTabWidth ] = useNoteLabelInt(note, "tabWidth");
-    const [ noteUseTabs ] = useNoteLabelOptionalBool(note, "indentWithTabs");
     const [ noteWrapLines ] = useNoteLabelOptionalBool(note, "wrapLines");
     useEmbedCaretNavigation(() => viewRef.current);
 
@@ -76,8 +76,8 @@ export default function CodeEmbedEditor({
                     editor.scheduleSave(() => viewRef.current?.getText() ?? "");
                 }
             }}
-            {...(noteTabWidth != null && { indentSize: noteTabWidth })}
-            {...(noteUseTabs != null && { useTabs: noteUseTabs })}
+            {...(tabWidth !== undefined && { indentSize: tabWidth })}
+            {...(useTabs !== undefined && { useTabs })}
             {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
         />
     );

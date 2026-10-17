@@ -197,12 +197,79 @@ describe("CodeEmbed", () => {
             expect(figure.querySelector(".editable-embed-preview")?.textContent)
                 .toBe("# if a:\n    b");
         });
+    });
 
-        const { figure: attachmentFigure } = await mount(buildAttachment("script.py"), editor, {
-            content: "a"
+    it("keeps the language and indentation of a file in its embed, set from its toolbar", async () => {
+        options.set("codeNoteTabWidth", "4");
+        options.set("codeNoteIndentWithTabs", "false");
+        options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python", "text/x-sh" ]));
+        const show = vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
+        const editor = buildEditor();
+        const { textEditor, editable } = buildTextEditor();
+        const { figure } = await mount(buildAttachment("script.py"), editor, {
+            content: "if a:\n  b",
+            mime: "text/x-python",
+            codeLanguage: "text/x-sh",
+            embedAttributes: { "data-code-language": "text/x-sh", "data-code-tab-width": "2" },
+            container: editable
         });
-        expect(getContentEmbedTools(attachmentFigure)?.getTools()).toEqual([]);
-        expect(getContentEmbedTools(attachmentFigure)?.hasEditableFlag).toBe(true);
+        const tools = getContentEmbedTools(figure);
+        expect(tools?.hasEditableFlag).toBe(true);
+        expect(tools?.getTools().map((tool) => tool.text))
+            .toEqual([ "Shell (bash)", "status_bar.tab_width_spaces_short 2" ]);
+        expect(renderCodePreview).not.toHaveBeenCalled();
+
+        /** Runs the item `title` of the menu `id`, of the "Re-indent" part when `isReindent`. */
+        const select = async (id: string, title: string, isReindent = false) => {
+            tools?.openMenu?.(id, document.createElement("button"));
+            const items = show.mock.lastCall?.[0].items ?? [];
+            const item = (isReindent ? items.slice(-7) : items)
+                .find((candidate) => "title" in candidate && candidate.title === title);
+            if (!item || "kind" in item) throw new Error(`No item titled ${title}.`);
+            await act(async () => item.handler?.(item, new MouseEvent("click")));
+        };
+
+        // The language of the file's name is its default, which the embed then leaves out.
+        await select("codeLanguage", "Python");
+        expect(textEditor.execute)
+            .toHaveBeenLastCalledWith("setContentEmbedCodeView", { language: null });
+        await vi.waitFor(() => {
+            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/x-python");
+        });
+        await select("codeLanguage", "Plain text");
+        expect(figure.getAttribute("data-code-language")).toBe("text/plain");
+        await vi.waitFor(() => {
+            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/plain");
+        });
+
+        // The indentation, which a re-indent sets with the content, as one change.
+        await select("tabWidth", "status_bar.tab_width_style_tabs");
+        await select("tabWidth", "status_bar.tab_width_spaces 4", true);
+        expect(vi.mocked(editor.scheduleSave).mock.lastCall?.[0]()).toBe("if a:\n    b");
+        expect(textEditor.execute.mock.calls.slice(-2).map(([ , codeView ]) => codeView))
+            .toEqual([
+                { tabWidth: undefined, indentWithTabs: true },
+                { tabWidth: 4, indentWithTabs: false }
+            ]);
+        expect([ "data-code-tab-width", "data-code-indent-with-tabs" ]
+            .map((name) => figure.getAttribute(name))).toEqual([ "4", "false" ]);
+
+        // CodeMirror follows the indentation of the embed.
+        figure.setAttribute("data-code-tab-width", "2");
+        figure.setAttribute("data-code-indent-with-tabs", "true");
+        await act(async () => {
+            figure.dataset.editable = "true";
+            await Promise.resolve();
+        });
+        const view = await findView(figure);
+        const { indentUnit } = await import("@codemirror/language");
+        expect([ view.state.tabSize, view.state.facet(indentUnit) ]).toEqual([ 2, "\t" ]);
+
+        // Nothing changes without the text editor of the embed.
+        textEditor.execute.mockClear();
+        textEditor.selectEmbedAt.mockReturnValue(false);
+        await select("tabWidth", "status_bar.tab_width_spaces 8");
+        expect(textEditor.execute).not.toHaveBeenCalled();
     });
 
     it("highlights an attachment with the MIME type it is given", async () => {
@@ -347,8 +414,13 @@ describe("CodeEmbed", () => {
 interface MountOptions {
     content?: string;
     mime?: string;
+    codeLanguage?: string;
     preview?: HTMLElement;
     isEditable?: boolean;
+    /** Attributes of the embed, such as `data-code-language`. */
+    embedAttributes?: Record<string, string>;
+    /** The element the embed goes in, such as the editable root of a text editor. */
+    container?: HTMLElement;
 }
 
 /** Renders `CodeEmbed` in the markup of an embed, as the host does. */
@@ -363,6 +435,9 @@ async function mount(
     if (options.isEditable) {
         figure.dataset.editable = "true";
     }
+    for (const [ name, value ] of Object.entries(options.embedAttributes ?? {})) {
+        figure.setAttribute(name, value);
+    }
     const wrapper = document.createElement("div");
     wrapper.className = "include-note-wrapper";
     const titleRow = document.createElement("div");
@@ -374,7 +449,7 @@ async function mount(
     box.className = "include-note-content";
     wrapper.append(titleRow, box);
     figure.append(wrapper);
-    document.body.append(figure);
+    (options.container ?? document.body).append(figure);
     figures.push(figure);
 
     await act(async () => {
@@ -385,6 +460,7 @@ async function mount(
                     editor={editor}
                     content={options.content ?? (await entity.getBlob())?.content ?? content}
                     mime={options.mime ?? entity.mime}
+                    codeLanguage={options.codeLanguage}
                     preview={options.preview ?? buildPreview(content)}
                 />
             </ParentComponent.Provider>,
@@ -406,6 +482,42 @@ function buildEditor(overrides: Partial<ContentEditor> = {}): ContentEditor {
         release: vi.fn(),
         ...overrides
     };
+}
+
+/**
+ * The editable root of a text editor, in the page, and the editor, whose code view command sets
+ * the `data-code-*` attributes of the embed it selects, as the text editor renders them.
+ */
+function buildTextEditor() {
+    let selected: Element | null = null;
+    const textEditor = {
+        selectEmbedAt: vi.fn((element: Element) => {
+            selected = element.closest(".include-note");
+            return true;
+        }),
+        plugins: { get: () => ({ selectEmbedAt: textEditor.selectEmbedAt }) },
+        execute: vi.fn((_name: string, codeView: Record<string, unknown>) => {
+            const attributes = {
+                language: "data-code-language",
+                tabWidth: "data-code-tab-width",
+                indentWithTabs: "data-code-indent-with-tabs"
+            };
+            for (const [ setting, attribute ] of Object.entries(attributes)) {
+                const value = codeView[setting];
+                if (value === null) {
+                    selected?.removeAttribute(attribute);
+                } else if (value !== undefined) {
+                    selected?.setAttribute(attribute, String(value));
+                }
+            }
+        })
+    };
+    const editable = document.createElement("div");
+    editable.className = "ck-editor__editable";
+    Object.assign(editable, { ckeditorInstance: textEditor });
+    document.body.append(editable);
+    figures.push(editable);
+    return { textEditor, editable };
 }
 
 function buildPreview(content: string) {

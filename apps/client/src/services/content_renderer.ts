@@ -72,6 +72,11 @@ export interface RenderOptions {
     onBlockChange?: (block: string) => void;
     /** The blocks of a text note to highlight, a `block` link parameter. Embeds are left out. */
     highlightBlock?: string;
+    /**
+     * The language of a code file that its embed sets, as a MIME type, which highlights the file
+     * in place of the language of its name.
+     */
+    codeLanguage?: string;
     showTextRepresentation?: boolean;
     /**
      * If enabled, note types that have a richer live representation (currently only web views) are
@@ -412,7 +417,8 @@ async function renderCode(
     const editor = options.interactive ? getContentEditor(entity, options) : undefined;
     const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
     const mime = getCodeMime(entity);
-    const preview = await renderCodePreview(content, mime);
+    const { codeLanguage } = options;
+    const preview = await renderCodePreview(content, codeLanguage ?? mime);
 
     if (!editor) {
         $renderedContent.append(preview);
@@ -424,7 +430,7 @@ async function renderCode(
     const container = $container.get(0);
     if (container) {
         await mountInteractiveWidget(
-            h(CodeEmbed, { entity, editor, content, mime, preview }),
+            h(CodeEmbed, { entity, editor, content, mime, codeLanguage, preview }),
             container
         );
     }

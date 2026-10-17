@@ -265,6 +265,31 @@ export function useIsContentEmbedEditable(ref: RefObject<HTMLElement | null>) {
 }
 
 /**
+ * The attribute `name` of the embed that contains `ref`, which follows its changes. `initial` until
+ * the content is in the embed, as content mounts before its embed box takes it in.
+ */
+export function useContentEmbedAttribute(
+    ref: RefObject<HTMLElement | null>,
+    name: string,
+    initial: string | null = null
+) {
+    const [ value, setValue ] = useState(initial);
+
+    useEffect(() => {
+        const embed = ref.current?.closest<HTMLElement>(".include-note");
+        if (!embed) return;
+
+        const update = () => setValue(embed.getAttribute(name));
+        const observer = new MutationObserver(update);
+        observer.observe(embed, { attributes: true, attributeFilter: [ name ] });
+        update();
+        return () => observer.disconnect();
+    }, [ ref, name ]);
+
+    return value;
+}
+
+/**
  * Calls `callback` when the embed that contains `ref` dispatches `name`. Listens on the document,
  * as content can mount before its embed box takes it in.
  */

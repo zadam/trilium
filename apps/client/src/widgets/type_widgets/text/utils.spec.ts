@@ -255,6 +255,19 @@ describe("loadEmbeddedAttachment", () => {
         expect(lastMount().props).toMatchObject({ isFocusedOnMount: true });
     });
 
+    it("renders a code file in the language that its embed sets", async () => {
+        const wrapper = createWrapper();
+        const embed = inPage(document.createElement("figure"));
+        embed.className = "include-note";
+        embed.setAttribute("data-code-language", "text/x-sh");
+        embed.append(wrapper);
+
+        await loadEmbeddedAttachment("att1", $(wrapper), "full");
+
+        expect(vi.mocked(content_renderer.getRenderedContent).mock.lastCall?.[1])
+            .toMatchObject({ codeLanguage: "text/x-sh" });
+    });
+
     it("leaves the box alone for a deleted attachment", async () => {
         vi.mocked(froca.getAttachment).mockResolvedValue(null);
 

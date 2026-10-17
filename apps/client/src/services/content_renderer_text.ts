@@ -141,7 +141,9 @@ async function renderContentEmbeds(contentEl: HTMLElement, context: ContentEmbed
                 const { ownerId, attachmentId } = attachment;
                 replaceWithReferenceLink(embedEl, getAttachmentEmbedHref(ownerId, attachmentId));
             } else {
-                const { $renderedContent } = await content_renderer.getRenderedContent(attachment);
+                const { $renderedContent } = await content_renderer.getRenderedContent(attachment, {
+                    codeLanguage: embedEl.getAttribute("data-code-language") ?? undefined
+                });
                 replaceEmbedContent(embedEl, $renderedContent.toArray());
             }
             continue;

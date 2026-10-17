@@ -38,7 +38,9 @@ import { NotePathsWidget, useSortedNotePaths } from "../sidebar/NotePaths";
 import type { RightPaneTabId } from "../sidebar/RightPaneTabs";
 import { useProcessedLocales } from "../type_widgets/options/components/LocaleSelector";
 import Breadcrumb from "./Breadcrumb";
-import { type CodeNoteMenu, useCodeLanguageMenu, useTabWidthMenu } from "./code_note_menus";
+import {
+    type CodeMenu, useCodeLanguageMenu, useNoteCodeSettings, useTabWidthMenu
+} from "./code_menus";
 import { NoteSizeWidget, useNoteMetadata } from "./note_metadata";
 
 interface StatusBarContext {
@@ -553,20 +555,20 @@ function NotePaths({ note, hoistedNoteId, notePath }: StatusBarContext) {
 //#region Tab width switcher
 function TabWidthSwitcher({ note, noteContext }: StatusBarContext) {
     const noteType = useNoteProperty(note, "type");
-    const menu = useTabWidthMenu(note, () => noteContext.getCodeEditor());
+    const menu = useTabWidthMenu(useNoteCodeSettings(note), () => noteContext.getCodeEditor());
 
-    return (noteType === "code" && <CodeNoteMenuDropdown menu={menu} />);
+    return (noteType === "code" && <CodeMenuDropdown menu={menu} />);
 }
 //#endregion
 
 //#region Code note switcher
 function CodeNoteSwitcher({ note }: StatusBarContext) {
     const noteType = useNoteProperty(note, "type");
-    const { menu, modal } = useCodeLanguageMenu(note);
+    const { menu, modal } = useCodeLanguageMenu(useNoteCodeSettings(note));
 
     return (noteType === "code" &&
         <>
-            <CodeNoteMenuDropdown
+            <CodeMenuDropdown
                 menu={menu}
                 dropdownContainerClassName="dropdown-code-note-switcher"
             />
@@ -575,8 +577,8 @@ function CodeNoteSwitcher({ note }: StatusBarContext) {
     );
 }
 
-function CodeNoteMenuDropdown({ menu, dropdownContainerClassName }: {
-    menu: CodeNoteMenu;
+function CodeMenuDropdown({ menu, dropdownContainerClassName }: {
+    menu: CodeMenu;
     dropdownContainerClassName?: string;
 }) {
     return (

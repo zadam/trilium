@@ -9,8 +9,9 @@ import options from "../../services/options";
 import server from "../../services/server";
 import { buildNote } from "../../test/easy-froca";
 import {
-    type CodeNoteMenu, type CodeText, useCodeLanguageMenu, useTabWidthMenu
-} from "./code_note_menus";
+    type CodeMenu, type CodeSettings, type CodeText, useCodeLanguageMenu, useNoteCodeSettings,
+    useTabWidthMenu
+} from "./code_menus";
 
 vi.mock("../../services/i18n", () => ({
     t: (key: string, values?: Record<string, unknown>) =>
@@ -110,6 +111,32 @@ describe("useTabWidthMenu", () => {
         await act(async () => select(reindentItems, "status_bar.tab_width_spaces 8"));
         expect(setLabel).toHaveBeenCalledTimes(4);
     });
+
+    it("hands each change to the code settings it shows, a re-indent as one change", async () => {
+        const settings: CodeSettings = {
+            mime: "text/x-python",
+            setMime: vi.fn(),
+            tabWidth: 2,
+            useTabs: undefined,
+            setIndentation: vi.fn()
+        };
+        let text = "a\n  b";
+        const menu = renderTabWidthMenu(settings, async () => ({
+            getText: () => text,
+            setText: (next: string) => {
+                text = next;
+            }
+        }));
+        expect(menu().text).toBe("status_bar.tab_width_spaces_short 2");
+
+        await act(async () => select(menu().items, "status_bar.tab_width_style_tabs"));
+        await act(async () => select(menu().items.slice(-7), "status_bar.tab_width_style_tabs"));
+        expect(text).toBe("a\n\tb");
+        expect(vi.mocked(settings.setIndentation).mock.calls).toEqual([
+            [ { useTabs: true } ],
+            [ { tabWidth: 2, useTabs: true } ]
+        ]);
+    });
 });
 
 describe("useCodeLanguageMenu", () => {
@@ -118,7 +145,7 @@ describe("useCodeLanguageMenu", () => {
         const note = buildCodeNote();
         let result: ReturnType<typeof useCodeLanguageMenu> | undefined;
         function Harness() {
-            result = useCodeLanguageMenu(note);
+            result = useCodeLanguageMenu(useNoteCodeSettings(note));
             return result.modal;
         }
         act(() => render(<Harness />, container));
@@ -152,14 +179,19 @@ function buildCodeNote(labels: Record<`#${string}`, string> = {}) {
     return buildNote({ title: "Script", type: "code", mime: "text/x-python", ...labels });
 }
 
-/** Renders `useTabWidthMenu()`, and returns a function reading its latest result. */
+/**
+ * Renders `useTabWidthMenu()` for the settings of a note, or for `source` itself, and returns a
+ * function reading its latest result.
+ */
 function renderTabWidthMenu(
-    note: FNote,
+    source: FNote | CodeSettings,
     getEditor: () => Promise<CodeText | null> = async () => null
 ) {
-    let menu: CodeNoteMenu | undefined;
+    let menu: CodeMenu | undefined;
+    const note = "noteId" in source ? source : null;
     function Harness() {
-        menu = useTabWidthMenu(note, getEditor);
+        const noteSettings = useNoteCodeSettings(note);
+        menu = useTabWidthMenu("noteId" in source ? noteSettings : source, getEditor);
         return null;
     }
     act(() => render(<Harness />, container));

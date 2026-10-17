@@ -14,8 +14,21 @@ import {
 import { codeLanguageItems, NoteTypeOptionsModal, useMimeTypes } from "./NoteTypeSwitcher";
 import { convertIndentation } from "./reindentation";
 
-/** A menu of the settings of a code note, and what the control that opens it shows. */
-export interface CodeNoteMenu {
+/** The language and indentation of a code note or a code file, and how to change them. */
+export interface CodeSettings {
+    /** The language, as a MIME type. */
+    mime: string | undefined;
+    setMime(mime: string): void;
+    /** The tab width, or `undefined` to follow the global option. */
+    tabWidth: number | undefined;
+    /** Whether to indent with tabs, or `undefined` to follow the global option. */
+    useTabs: boolean | undefined;
+    /** Sets each setting given, and follows the global option again for each given as `null`. */
+    setIndentation(indentation: { tabWidth?: number | null; useTabs?: boolean | null }): void;
+}
+
+/** A menu of the code settings, and what the control that opens it shows. */
+export interface CodeMenu {
     /** The name of the menu, shown as the tooltip of the control. */
     title: string;
     /** The current setting, shown as the text of the control. */
@@ -30,27 +43,46 @@ export interface CodeNoteMenu {
 export type CodeText = Pick<VanillaCodeMirror, "getText" | "setText">;
 
 /**
- * The "Change language mode" menu of `note`, and the dialog that its "Configure code notes" item
- * opens, which the caller renders.
+ * The code settings of `note`: its MIME type, and its `#tabWidth` and `#indentWithTabs` labels.
  */
-export function useCodeLanguageMenu(note: FNote | null | undefined) {
+export function useNoteCodeSettings(note: FNote | null | undefined): CodeSettings {
+    const mime = useNoteProperty(note, "mime");
+    const [ tabWidth, setTabWidth ] = useNoteLabelInt(note, "tabWidth");
+    const [ useTabs, setUseTabs ] = useNoteLabelOptionalBool(note, "indentWithTabs");
+
+    return {
+        mime,
+        setMime: (newMime) => {
+            if (note) void server.put(`notes/${note.noteId}/type`, { type: "code", mime: newMime });
+        },
+        tabWidth,
+        useTabs,
+        setIndentation: (indentation) => {
+            if (indentation.tabWidth !== undefined) setTabWidth(indentation.tabWidth);
+            if (indentation.useTabs !== undefined) setUseTabs(indentation.useTabs);
+        }
+    };
+}
+
+/**
+ * The "Change language mode" menu of `settings`, and the dialog that its "Configure code notes"
+ * item opens, which the caller renders.
+ */
+export function useCodeLanguageMenu({ mime, setMime }: CodeSettings) {
     const [ isModalShown, setIsModalShown ] = useState(false);
-    const currentMime = useNoteProperty(note, "mime");
     const { enabledMimeTypes, allMimeTypes } = useMimeTypes();
     const mimeType = useMemo(() => (
-        allMimeTypes.find((candidate) => candidate.mime === currentMime)
-    ), [ allMimeTypes, currentMime ]);
+        allMimeTypes.find((candidate) => candidate.mime === mime)
+    ), [ allMimeTypes, mime ]);
 
-    const menu: CodeNoteMenu = {
+    const menu: CodeMenu = {
         title: t("status_bar.code_note_switcher"),
         text: mimeType?.title ?? "",
         icon: getCodeLanguageIcon(mimeType),
         items: codeLanguageItems({
-            currentMimeType: currentMime,
+            currentMimeType: mime,
             mimeTypes: enabledMimeTypes,
-            changeNoteType: (type, mime) => {
-                if (note) void server.put(`notes/${note.noteId}/type`, { type, mime });
-            },
+            changeNoteType: (_type, newMime) => setMime(newMime),
             onConfigure: () => setIsModalShown(true)
         }),
         filterable: true
@@ -65,19 +97,17 @@ export function useCodeLanguageMenu(note: FNote | null | undefined) {
 const TAB_WIDTH_OPTIONS = [ 1, 2, 3, 4, 6, 8 ] as const;
 
 /**
- * The "Change tab width" menu of `note`. Its re-indent items convert the text of
+ * The "Change tab width" menu of `settings`. Its re-indent items convert the text of
  * `getCodeEditor()`, and do nothing while it returns no editor.
  */
 export function useTabWidthMenu(
-    note: FNote | null | undefined,
+    { tabWidth, useTabs, setIndentation }: CodeSettings,
     getCodeEditor: () => Promise<CodeText | null | undefined>
-): CodeNoteMenu {
+): CodeMenu {
     const [ globalTabWidth ] = useTriliumOptionInt("codeNoteTabWidth");
     const [ globalUseTabs ] = useTriliumOptionBool("codeNoteIndentWithTabs");
-    const [ noteTabWidth, setNoteTabWidth ] = useNoteLabelInt(note, "tabWidth");
-    const [ noteUseTabs, setNoteUseTabs ] = useNoteLabelOptionalBool(note, "indentWithTabs");
-    const effectiveTabWidth = noteTabWidth ?? globalTabWidth ?? 4;
-    const effectiveUseTabs = noteUseTabs ?? globalUseTabs;
+    const effectiveTabWidth = tabWidth ?? globalTabWidth ?? 4;
+    const effectiveUseTabs = useTabs ?? globalUseTabs;
 
     const reindentTo = async (targetUseTabs: boolean, targetWidth: number) => {
         const editor = await getCodeEditor();
@@ -90,24 +120,31 @@ export function useTabWidthMenu(
         if (converted !== editor.getText()) {
             editor.setText(converted);
         }
-        setNoteTabWidth(targetWidth);
-        setNoteUseTabs(targetUseTabs);
+        setIndentation({ tabWidth: targetWidth, useTabs: targetUseTabs });
     };
 
     const spacesName = t("status_bar.tab_width_style_spaces");
     const tabsName = t("status_bar.tab_width_style_tabs");
     const items: MenuItem<unknown>[] = [
         { kind: "header", title: t("status_bar.tab_width_style_header") },
-        { title: spacesName, checked: !effectiveUseTabs, handler: () => setNoteUseTabs(false) },
-        { title: tabsName, checked: effectiveUseTabs, handler: () => setNoteUseTabs(true) }
+        {
+            title: spacesName,
+            checked: !effectiveUseTabs,
+            handler: () => setIndentation({ useTabs: false })
+        },
+        {
+            title: tabsName,
+            checked: effectiveUseTabs,
+            handler: () => setIndentation({ useTabs: true })
+        }
     ];
-    if (noteUseTabs != null) {
+    if (useTabs !== undefined) {
         items.push({
             title: t("status_bar.tab_width_use_default_style", {
                 style: globalUseTabs ? tabsName : spacesName
             }),
             uiIcon: "bx bx-x",
-            handler: () => setNoteUseTabs(null)
+            handler: () => setIndentation({ useTabs: null })
         });
     }
 
@@ -116,14 +153,14 @@ export function useTabWidthMenu(
         items.push({
             title: t("status_bar.tab_width_spaces", { count: size }),
             checked: effectiveTabWidth === size,
-            handler: () => setNoteTabWidth(size)
+            handler: () => setIndentation({ tabWidth: size })
         });
     }
-    if (noteTabWidth != null) {
+    if (tabWidth !== undefined) {
         items.push({
             title: t("status_bar.tab_width_use_default", { width: globalTabWidth }),
             uiIcon: "bx bx-x",
-            handler: () => setNoteTabWidth(null)
+            handler: () => setIndentation({ tabWidth: null })
         });
     }
 
