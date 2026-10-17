@@ -59,17 +59,21 @@ describe("mermaid", () => {
         expect(support.language).toBe(mermaidLanguage);
 
         const tree = mermaidLanguage.parser.parse("%%{init: {}}%%\n\npie\n  \"A\": 1\n");
-        expect(tree.toString()).toBe("MermaidDiagram(PieDiagram(DiagramName,String,Number))");
+        expect(tree.toString())
+            .toBe("MermaidDiagram(Directive,PieDiagram(DiagramName,String,Number))");
         expect(mermaidLanguage.parser.parse("not a diagram\n").toString())
             .toBe("MermaidDiagram(⚠)");
     });
 
-    it("accepts whitespace after the dashes of front matter", () => {
+    it("accepts whitespace after front matter dashes and directives", () => {
         // Kept out of the `.txt` fixtures, where an editor can strip trailing whitespace.
         const tree = (doc: string) => mermaidLanguage.parser.parse(doc).toString();
-        const doc = "---\nconfig:\n  gantt: {}\n---\nsequenceDiagram\n  A->>B: hi";
+        const doc = "---\nconfig:\n  gantt: {}\n---\n%%{init: {}}%%\nsequenceDiagram\n  A->>B: hi";
         expect(tree(doc)).toContain("FrontMatter");
-        expect(tree(doc.replace("---\n", "--- \t\n").replace("\n---", "\n---  "))).toBe(tree(doc));
+        expect(tree(doc)).toContain("Directive");
+        const padded = doc.replace("---\n", "--- \t\n").replace("\n---", "\n---  ")
+            .replace("}%%", "}%% \t");
+        expect(tree(padded)).toBe(tree(doc));
     });
 
     it("toggles # comments in the front matter and %% comments in the diagram", () => {

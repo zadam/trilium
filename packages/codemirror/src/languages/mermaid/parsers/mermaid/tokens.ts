@@ -1,5 +1,6 @@
 import { ExternalTokenizer, type InputStream } from "@lezer/lr";
 import {
+    Directive,
     FrontMatterContent,
     frontMatterEnd,
     frontMatterStart,
@@ -23,7 +24,8 @@ import {
     StateDiagram,
     ERDiagram,
     GitDiagram,
-    C4Diagram
+    C4Diagram,
+    LineComment
 } from "./parser.terms.js";
 
 const skipCodePoints = [ -1, 9, 13, 32 ];
@@ -93,6 +95,16 @@ export const frontMatter = new ExternalTokenizer((input, stack) => {
 export const diagramText = new ExternalTokenizer((input) => {
     if (skipCodePoints.includes(input.next)) return;
 
+    if (input.next === 37 && input.peek(1) === 37) {
+        const directiveLength = input.peek(2) === 123 ? findDirectiveLength(input) : -1;
+        if (directiveLength > 0) {
+            input.acceptToken(Directive, directiveLength);
+        } else {
+            input.acceptToken(LineComment, lineLength(input));
+        }
+        return;
+    }
+
     let tokens = "";
 
     while (input.next != 10 && input.next !== -1) {
@@ -115,6 +127,26 @@ export const diagramText = new ExternalTokenizer((input) => {
         input.acceptToken(preDiagramLine);
     }
 });
+
+/**
+ * The length of the `%%{…}%%` directive at the stream position, which can span lines; -1 when it
+ * has no closing `}%%`.
+ */
+function findDirectiveLength(input: InputStream) {
+    for (let offset = 3; input.peek(offset) !== -1; offset++) {
+        const closes = input.peek(offset) === 125 && input.peek(offset + 1) === 37
+            && input.peek(offset + 2) === 37;
+        if (closes) return offset + 3;
+    }
+    return -1;
+}
+
+/** The length of the rest of the line at the stream position, newline excluded. */
+function lineLength(input: InputStream) {
+    let length = 0;
+    while (input.peek(length) !== 10 && input.peek(length) !== -1) length++;
+    return length;
+}
 
 /** The offset of the first `---` line at or after `offset`, or -1 when there is none. */
 function findClosingLine(input: InputStream, offset: number) {

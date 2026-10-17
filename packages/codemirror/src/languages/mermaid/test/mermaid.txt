@@ -213,7 +213,7 @@ pie
 
 ==>
 
-MermaidDiagram(PieDiagram(DiagramName,String,Number))
+MermaidDiagram(Directive,PieDiagram(DiagramName,String,Number))
 
 # Front matter with no diagram after it
 
@@ -236,3 +236,71 @@ pie
 ==>
 
 MermaidDiagram(PieDiagram(DiagramName,String,Number))
+
+# Comments and a directive before the diagram
+
+%% a comment
+  %%{init: {"theme": "dark"}}%%
+
+%%comment-without-space
+flowchart LR
+  A --> B
+
+==>
+
+MermaidDiagram(LineComment,Directive,LineComment,FlowchartDiagram(DiagramName,Orientation,NodeId,Link,NodeId))
+
+# Multi-line directive
+
+%%{
+  init: {
+    "theme": "dark"
+  }
+}%%
+pie
+  "A": 1
+
+==>
+
+MermaidDiagram(Directive,PieDiagram(DiagramName,String,Number))
+
+# Two directives on one line
+
+%%{init: {"theme": "dark"}}%%%%{wrap}%%
+sequenceDiagram
+  A->>B: hi
+
+==>
+
+MermaidDiagram(Directive,Directive,SequenceDiagram(DiagramName,NodeText,Arrow,NodeText,MessageText1))
+
+# Directive after front matter
+
+---
+title: x
+---
+%%{init: {"theme": "dark"}}%%
+pie
+  "A": 1
+
+==>
+
+MermaidDiagram(FrontMatter(DashLine,Stream(Document(BlockMapping(Pair(Key(Literal),":",Literal)))),DashLine),Directive,PieDiagram(DiagramName,String,Number))
+
+# Unclosed directive (invalid, parses as a comment)
+
+%%{init: {"theme": "dark"}
+pie
+  "A": 1
+
+==>
+
+MermaidDiagram(LineComment,PieDiagram(DiagramName,String,Number))
+
+# A comment with no diagram after it
+
+%% only a comment
+
+==>
+
+MermaidDiagram(LineComment,⚠)

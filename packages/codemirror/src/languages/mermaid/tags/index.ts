@@ -2,7 +2,9 @@ import { Tag, tags as t } from "@lezer/highlight";
 
 export const mermaidTags = {
     diagramName: Tag.define(t.typeName),
-    frontMatterDelimiter: Tag.define(t.meta)
+    frontMatterDelimiter: Tag.define(t.meta),
+    directive: Tag.define(t.processingInstruction),
+    lineComment: Tag.define(t.lineComment)
 };
 
 export const mindmapTags = {

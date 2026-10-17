@@ -33,17 +33,18 @@ languages/mermaid/
   LICENSE               upstream MIT licence — keep it
 ```
 
-How a document parses: `mermaid.grammar` first takes the front matter, the way Mermaid does: a
-`---` line at the very start of the document, opening only when a closing `---` line follows. Its
+How a document parses: `mermaid.grammar` first takes the front matter, the way Mermaid does: a `---`
+line at the very start of the document, opening only when a closing `---` line follows. Its
 `frontMatter` tokenizer (`parsers/mermaid/tokens.ts`) emits a `FrontMatter` node, and `parseMixed()`
 in `index.ts` mounts the YAML parser of `@codemirror/lang-yaml` on its content, so the tree shows
 YAML's `Stream` there. The front matter must be its own token, not lines for diagram detection:
 Mermaid's config keys (`flowchart:`, `gantt:`, `block:`, …) start with diagram keywords. The rest of
-the preamble (`%%{init}%%`, blank lines) parses as `preDiagramLine`s, then the `diagramText`
-tokenizer matches the first other line against `diagramMap` and emits one node for the rest of the
-document, such as `FlowchartDiagram`. `parseMixed()` looks that node's name up in `DIAGRAM_PARSERS`
-and mounts the diagram's own parser over it. A diagram with no entry there, or a keyword missing
-from `diagramMap`, gets no highlighting at all.
+the preamble is `Directive`s (`%%{…}%%`, which can span lines), `LineComment`s and blank
+`preDiagramLine`s, then the `diagramText` tokenizer matches the first other line against
+`diagramMap` and emits one node for the rest of the document, such as `FlowchartDiagram`.
+`parseMixed()` looks that node's name up in `DIAGRAM_PARSERS` and mounts the diagram's own parser
+over it. A diagram with no entry there, or a keyword missing from `diagramMap`, gets no highlighting
+at all.
 
 ## Rules
 
@@ -185,6 +186,10 @@ root; `\n`, `\r` and `\t` in an input are unescaped.
 - A bare word under a kanban column parses as another column, not a card.
 - Dotted edge labels (`A -. text .-> B`) parse as two links.
 - `flowchart` or `graph` without a direction (valid Mermaid, top to bottom) parses with errors.
-- `%%{init: …}%%` directives highlight as one comment, not as the JSON they hold.
+- Inside a diagram, only mindmap knows `Directive`; the other grammars highlight a directive as a
+  `LineComment`. None highlights the JSON a directive holds: Mermaid accepts single quotes there,
+  so a JSON parser would flag valid input.
+- Mermaid strips whole-line `%%` comments before any diagram parses, so they are valid anywhere;
+  check a grammar's `LineComment` before assuming it accepts one in every position.
 - No autocompletion exists for Mermaid in any editor library; it would be an
   `@codemirror/autocomplete` source written here.

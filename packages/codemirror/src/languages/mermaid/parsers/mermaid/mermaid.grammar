@@ -2,7 +2,7 @@
 // meaningful line and emits a single node for it. The main mermaidLanguage then
 // uses parseMixed to hand that node's range to the matching sub-diagram parser.
 @top MermaidDiagram {
-  FrontMatter? preDiagramLine* (
+  FrontMatter? (preDiagramLine | Directive | LineComment)* (
     PieDiagram |
     MindmapDiagram |
     FlowchartDiagram |
@@ -46,6 +46,8 @@
 
 @external tokens diagramText from "./tokens.js" {
   preDiagramLine,
+  Directive,
+  LineComment,
   PieDiagram,
   MindmapDiagram,
   FlowchartDiagram,

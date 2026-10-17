@@ -5,16 +5,16 @@ import {frontMatter, diagramText} from "./tokens.js"
 import {mermaidHighlighting} from "./highlight.js"
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "!^O!jQVOOO!qOQO'#CuOOQS'#Cv'#CvOVQTOOQOQPOOOVQTOOOOQS,59a,59aO!yOQO,59aOOQS-E6t-E6tOOQS1G.{1G.{",
-  stateData: "#O~OnOS~OSSOTSOUSOVSOWSOXSOYSOZSO[SO]SO^SO_SO`SOaSObSOcSOdSOeSOfSOgSOlQO~OPPO~PVOQVORUO~ORXO~O",
-  goto: "vkPPPPPPPPPPPPPPPPPPPPPPPPPloRTOSROTRWR",
-  nodeNames: "⚠ DashLine FrontMatterContent DashLine PieDiagram MindmapDiagram FlowchartDiagram SequenceDiagram JourneyDiagram RequirementDiagram GanttDiagram TimelineDiagram QuadrantDiagram SankeyDiagram XYChartDiagram PacketDiagram KanbanDiagram BlockDiagram ArchitectureDiagram ClassDiagram StateDiagram ERDiagram GitDiagram C4Diagram MermaidDiagram FrontMatter",
-  maxTerm: 30,
+  states: "!^O!pQVOOO!wOQO'#CwOOQS'#Cx'#CxOVQTOOQOQPOOOVQTOOOOQS,59c,59cO#POQO,59cOOQS-E6v-E6vOOQS1G.}1G.}",
+  stateData: "#U~OpOS~OSQOTQOUSOVSOWSOXSOYSOZSO[SO]SO^SO_SO`SOaSObSOcSOdSOeSOfSOgSOhSOiSOnQO~OPPO~PVOQVORUO~ORXO~O",
+  goto: "xmPPPPPPPPPPPPPPPPPPPPPPPPPPPnqRTOSROTRWR",
+  nodeNames: "⚠ DashLine FrontMatterContent DashLine Directive LineComment PieDiagram MindmapDiagram FlowchartDiagram SequenceDiagram JourneyDiagram RequirementDiagram GanttDiagram TimelineDiagram QuadrantDiagram SankeyDiagram XYChartDiagram PacketDiagram KanbanDiagram BlockDiagram ArchitectureDiagram ClassDiagram StateDiagram ERDiagram GitDiagram C4Diagram MermaidDiagram FrontMatter",
+  maxTerm: 32,
   propSources: [mermaidHighlighting],
   skippedNodes: [0],
   repeatNodeCount: 1,
-  tokenData: "j~RRXY[]^[pq[~aRn~XY[]^[pq[",
+  tokenData: "j~RRXY[]^[pq[~aRp~XY[]^[pq[",
   tokenizers: [0, frontMatter, diagramText],
-  topRules: {"MermaidDiagram":[0,24]},
+  topRules: {"MermaidDiagram":[0,26]},
   tokenPrec: 0
 })
