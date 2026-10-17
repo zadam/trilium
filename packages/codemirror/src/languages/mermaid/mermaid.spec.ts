@@ -114,7 +114,8 @@ describe("accessibility lines", () => {
         "pie\n  \"A\": 1", "journey\n  title X", "gitGraph\n  commit",
         "requirementDiagram\n  requirement r {\n    id: 1\n  }", "C4Context\n  Person(a, \"A\")",
         "quadrantChart\n  x-axis A --> B", "xychart-beta\n  bar [1, 2]",
-        "packet-beta\n  0-15: \"A\"", "architecture-beta\n  service a(server)[A]"
+        "packet-beta\n  0-15: \"A\"", "architecture-beta\n  service a(server)[A]",
+        "radar-beta\n  axis a"
     ];
     const lines = [
         "  accTitle: My title", "  accDescr: My description", "  accDescr {\n    Line one\n  }"
@@ -156,6 +157,18 @@ describe("kanban grammar", () => {
         const doc = "kanban\n  todo\n    my-card  [Task]";
         const id = parserOf("kanban").parse(doc).topNode.getChild("Card")?.getChild("NodeId");
         expect(id && doc.slice(id.from, id.to)).toBe("my-card");
+    });
+});
+
+describe("radar grammar", () => {
+    it("ends a title at a comment and leaves out the spaces around it", () => {
+        const doc = "radar-beta\n  title  Grades \t%% note\n  title\r\n  axis a";
+        const tree = parserOf("radar").parse(doc);
+        const titles = tree.topNode.getChildren("Title").map((title) => {
+            const text = title.getChild("TitleText");
+            return text && doc.slice(text.from, text.to);
+        });
+        expect(titles).toEqual([ "Grades", null ]);
     });
 });
 

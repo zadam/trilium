@@ -19,6 +19,7 @@ import {
     ganttText,
     TimelineDiagram,
     quadrantText,
+    radarText,
     SankeyDiagram,
     xyChartText,
     packetText,
@@ -49,6 +50,7 @@ const diagramMap: Record<string, number> = {
     "gantt": ganttText,
     "timeline": TimelineDiagram,
     "quadrantChart": quadrantText,
+    "radar-beta": radarText,
     "sankey-beta": SankeyDiagram,
     "sankey": SankeyDiagram,
     "xychart-beta": xyChartText,
@@ -79,7 +81,8 @@ const diagrams = Object.keys(diagramMap);
 // lines as content; mindmap, sankey and block reject them.
 const accessibleDiagrams = new Set([
     pieText, flowchartText, sequenceText, journeyText, requirementText, ganttText, quadrantText,
-    xyChartText, packetText, architectureText, classText, stateText, erText, gitText, c4Text
+    radarText, xyChartText, packetText, architectureText, classText, stateText, erText, gitText,
+    c4Text
 ]);
 
 /**

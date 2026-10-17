@@ -213,3 +213,19 @@ export const c4Tags = {
     string: Tag.define(t.string),
     lineComment: Tag.define(t.lineComment)
 };
+
+export const radarTags = {
+    axisRef: Tag.define(t.variableName),
+    boolean: Tag.define(t.bool),
+    brace: Tag.define(t.brace),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    graticule: Tag.define(t.atom),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    name: Tag.define(t.variableName),
+    number: Tag.define(t.number),
+    separator: Tag.define(t.separator),
+    squareBracket: Tag.define(t.squareBracket),
+    string: Tag.define(t.string),
+    titleText: Tag.define(t.string)
+};

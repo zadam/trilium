@@ -22,6 +22,7 @@ import { parser as mindmapParser } from "./parsers/mindmap/parser.js";
 import { parser as packetParser } from "./parsers/packet/parser.js";
 import { parser as pieParser } from "./parsers/pie/parser.js";
 import { parser as quadrantParser } from "./parsers/quadrant/parser.js";
+import { parser as radarParser } from "./parsers/radar/parser.js";
 import { parser as requirementParser } from "./parsers/requirement/parser.js";
 import { parser as sankeyParser } from "./parsers/sankey/parser.js";
 import { parser as sequenceParser } from "./parsers/sequence/parser.js";
@@ -51,6 +52,7 @@ export const DIAGRAM_PARSERS: Record<string, LRParser> = {
     PacketDiagram: packetParser,
     PieDiagram: pieParser,
     QuadrantDiagram: quadrantParser,
+    RadarDiagram: radarParser,
     RequirementDiagram: requirementParser,
     SankeyDiagram: sankeyParser,
     SequenceDiagram: sequenceParser,

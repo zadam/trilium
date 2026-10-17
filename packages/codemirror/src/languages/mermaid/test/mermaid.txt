@@ -368,3 +368,12 @@ gitGraph
 ==>
 
 MermaidDiagram(GitDiagram(AccDescr(Keyword,"{",AccText,"}")))
+
+# Radar
+
+radar-beta
+  axis a
+
+==>
+
+MermaidDiagram(RadarDiagram(DiagramName,Axes(Keyword,Axis(Name))))
