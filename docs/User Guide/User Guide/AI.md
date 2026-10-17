@@ -170,7 +170,7 @@ To make a chat ask about a tool again, open the <span class="tn-icon bx bx-shiel
 Every tool call asks, including the ones that only read: searching notes, reading a note or an attachment, and reading a web page through a search provider. A model's built-in web search runs on the provider's side and does not ask.
 
 > [!IMPORTANT]
-> The <a class="reference-link" href="AI/Providers/Subscription-based%20providers.md">Subscription-based providers</a> (Claude Code, GitHub Copilot, Google Antigravity and OpenAI Codex) don't ask yet: their tool calls run without approval.
+> Among the <a class="reference-link" href="AI/Providers/Subscription-based%20providers.md">Subscription-based providers</a>, Claude Code asks like any other provider. GitHub Copilot, Google Antigravity and OpenAI Codex don't ask yet: their tool calls run without approval.
 
 > [!NOTE]
 > Most changes you allow can be undone: a deleted note can be restored, and an edit reverted from its revision. Setting an attribute is harder to undo, since attributes have no history.
