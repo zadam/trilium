@@ -1,4 +1,5 @@
 import { t } from "../../services/i18n.js";
+import { ROUTINE_OCCURRENCES_PER_WEEK } from "../collections/calendar/recurrence.js";
 
 export interface AttrHelpEntry {
     description: string;
@@ -168,6 +169,9 @@ export const ATTR_HELP: AttrHelpMap = {
         "calendar:initialDate": t("attribute_detail.calendar_initial_date"),
         "calendar:hideWeekends": t("attribute_detail.calendar_hide_weekends"),
         "calendar:weekNumbers": t("attribute_detail.calendar_week_numbers"),
+        "calendar:hideRoutineEvents": t("attribute_detail.calendar_hide_routine_events", {
+            days: ROUTINE_OCCURRENCES_PER_WEEK
+        }),
         "calendar:slotDuration": t("attribute_detail.calendar_slot_duration"),
         "calendar:slotLabelInterval": t("attribute_detail.calendar_slot_label_interval"),
         "calendar:title": t("attribute_detail.calendar_title"),

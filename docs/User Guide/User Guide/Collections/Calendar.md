@@ -94,6 +94,7 @@ In the <a class="reference-link" href="Collection%20Properties.md">Collection P
 
 *   Hide weekends from the week view.
 *   Display week numbers on the calendar.
+*   Hide routine events from the month, year and list views (see [Hiding routine events](#hiding-routine-events)).
 *   Set the slot duration (the length of each time row in day/week view).
 *   Set the slot label interval (how often time labels appear on the axis in day/week view).
 
@@ -142,6 +143,10 @@ The following attributes can be added to the Collection type:
         <tr>
             <td><code>#calendar:weekNumbers</code></td>
             <td>When present (regardless of value), it will show the number of the week on the calendar.</td>
+        </tr>
+        <tr>
+            <td><code>#calendar:hideRoutineEvents</code></td>
+            <td>When present (regardless of value), it will hide routine events from the month, year and list views. See <a href="#hiding-routine-events">Hiding routine events</a>.</td>
         </tr>
         <tr>
             <td><code>#calendar:initialDate</code></td>
@@ -246,6 +251,23 @@ Also note that the recurrence label can be made promoted as with the start and e
 
 > [!WARNING]
 > If the recurrence string is not valid, a toast will be shown with the note ID and title of the note with the erroneous recurrence message. This note will not be added to the calendar
+
+### Hiding routine events
+
+Events that repeat on most days of the week, such as sleep or working hours, fill every cell of the month view. To hide them from the views that show many days at once, check _Hide routine events_ in the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> (or set `#calendar:hideRoutineEvents`).
+
+An event counts as routine when it has a start time and repeats on 4 or more days a week on average, for example:
+
+| Event | Days a week | Hidden from the month, year and list views |
+| --- | --- | --- |
+| Every day from 23:00 to 07:00 | 7 | Yes |
+| Monday to Friday from 09:00 to 17:00 | 5 | Yes |
+| Every other day at 07:00 | 3.5 | No |
+| Monday, Wednesday and Friday at 18:00 | 3 | No |
+| Every day, without a start time | 7 | No, as it lasts the whole day |
+| Every month or every year | — | No |
+
+The day and week views always show routine events. To show them everywhere again, uncheck the option.
 
 ## Customizing the slot duration and label interval
 
