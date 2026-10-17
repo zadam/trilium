@@ -178,7 +178,7 @@ A new chat starts in the mode you picked last, in any chat, or in _Ask before ch
 A tool allowed for the chat runs without asking in every mode. So does looking something up in what ships with Trilium (its User Guide, the skill sheets that teach the AI Trilium's search syntax and note types, and the icons), since it reads none of your notes. A model's built-in web search runs on the provider's side and never asks.
 
 > [!IMPORTANT]
-> Among the <a class="reference-link" href="AI/Providers/Subscription-based%20providers.md">Subscription-based providers</a>, Claude Code and Google Antigravity ask like any other provider. GitHub Copilot and OpenAI Codex don't ask yet: their tool calls run without approval.
+> Among the <a class="reference-link" href="AI/Providers/Subscription-based%20providers.md">Subscription-based providers</a>, Claude Code, Google Antigravity and OpenAI Codex ask like any other provider. GitHub Copilot doesn't ask yet: its tool calls run without approval.
 
 > [!NOTE]
 > Most changes you allow can be undone: a deleted note can be restored, and an edit reverted from its revision. Setting an attribute is harder to undo, since attributes have no history.
