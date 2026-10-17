@@ -163,6 +163,7 @@ export const hierarchyTools = defineTools({
             prefix: z.string().optional().describe("Optional branch prefix (displayed before the note title in the tree)")
         }),
         mutates: true,
+        additive: true,
         execute: ({ noteId, parentNoteId, prefix }) => {
             const note = becca.getNote(noteId);
             if (!note) {

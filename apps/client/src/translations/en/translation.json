@@ -2655,7 +2655,6 @@
     "search_notes_count_other": "({{count}} notes)",
     "search_notes_limited_one": "{{count}} total result, limited to {{limit}}",
     "search_notes_limited_other": "{{count}} total results, limited to {{limit}}",
-    "search_notes_scope": "Searched in <Note/>",
     "child_notes_count_one": "({{count}} child)",
     "child_notes_count_other": "({{count}} children)",
     "child_count_one": "{{count}} child",
@@ -2691,7 +2690,22 @@
     "manage_search_providers": "Manage search providers…",
     "web_search_builtin_unsupported": "This model has no built-in web search. Choose a search provider instead.",
     "web_search_provider_unsupported": "This model's provider searches the web with its own tools.",
-    "searched_with": "Searched with {{name}}"
+    "searched_with": "Searched with {{name}}",
+    "tool_approval_prompt": "Allow this tool call?",
+    "tool_approval_allow": "Allow",
+    "tool_approval_deny": "Deny",
+    "tool_approval_declined": "denied",
+    "tool_approval_allow_for_chat": "Always allow {{tool}} for this chat",
+    "allowed_tools": "Allowed in this chat",
+    "allowed_tools_count_one": "{{count}} tool",
+    "allowed_tools_count_other": "{{count}} tools",
+    "permissions": "Permissions",
+    "permission_mode_always_ask": "Always ask",
+    "permission_mode_always_ask_description": "Ask before every action, even reading",
+    "permission_mode_ask_before_changes": "Ask before changes",
+    "permission_mode_ask_before_changes_description": "Ask only before changing your notes",
+    "permission_mode_dont_ask": "Don't ask",
+    "permission_mode_dont_ask_description": "Run everything on its own, changes included"
   },
   "sidebar_chat": {
     "title": "AI Chat",
@@ -4263,7 +4277,8 @@
       "read_web_page": "Read web page",
       "note_moved_from": "<Note/> from <From/> to <To/>",
       "note_moved": "<Note/> to <To/>",
-      "attachment_in_note": "<Title/> in <Note/>"
+      "attachment_in_note": "<Title/> in <Note/>",
+      "search_in_subtree": "<Query/> in <Subtree/>"
     },
     "search_providers": "Search Providers",
     "no_search_providers_configured": "No search providers configured yet.",

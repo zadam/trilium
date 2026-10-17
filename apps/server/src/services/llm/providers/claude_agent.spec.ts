@@ -60,6 +60,7 @@ vi.mock("child_process", () => ({ spawn: spawnMock }));
 const { buildSeededPrompt, buildSubscriptionModelList, ClaudeAgentProvider, hashTranscript, resetAgentCwdForTests, resetSubscriptionModelCacheForTests, TITLE_TIMEOUT_MS } = await import("./claude_agent.js");
 const { MAX_WARM_SESSIONS, Pushable, releaseSession, rememberSession: rememberWarmSession, resetClaudeSessionPoolForTests } = await import("./claude_session_pool.js");
 const { buildTitlePrompt, MAX_TITLES_PER_SESSION } = await import("./transcript.js");
+const { TOOL_CALL_DECLINED_REASON, ToolApprovals } = await import("@triliumnext/core/src/services/llm/tool_approval.js");
 type PushablePrompt = { pending: readonly { message: { role: string; content: unknown[] } }[] };
 
 /**
@@ -481,14 +482,70 @@ describe("ClaudeAgentProvider.chatChunks", () => {
 
         const options = queryMock.mock.calls[0][0].options;
         expect(options.tools).toEqual([]);
-        expect(options.allowedTools).toEqual(["mcp__trilium"]);
+        // Note tools are not pre-approved: each call goes through `canUseTool`.
+        expect(options.allowedTools).toEqual([]);
+        expect(options.canUseTool).toEqual(expect.any(Function));
         // In-process (sdk) transport, not an HTTP endpoint — the instance is
         // Trilium's own createMcpServer(), tunneled over the SDK control channel.
         expect(options.mcpServers.trilium.type).toBe("sdk");
         expect(options.mcpServers.trilium.instance).toEqual({ mcpServerInstance: true });
         expect(createMcpServerMock).toHaveBeenCalled();
-        expect(options.permissionMode).toBe("dontAsk");
+        expect(options.permissionMode).toBe("default");
         expect(options.settingSources).toEqual([]);
+    });
+
+    it("asks the running turn's approvals before a note tool runs, across the turns of a warm session", async () => {
+        const config = { chatNoteId: "note-approval", enableNoteTools: true };
+        const signal = new AbortController().signal;
+        const sdk = { name: "trilium", source: "sdk" };
+        const ask = (options: { canUseTool: (...args: unknown[]) => Promise<unknown> }, toolName: string, toolUseID: string, mcpServer?: object) =>
+            options.canUseTool(toolName, { noteId: "n" }, { signal, toolUseID, requestId: "r", mcpServer });
+        const decisions: unknown[] = [];
+        queryMock.mockImplementation(({ options }) => Object.assign((async function* () {
+            decisions.push(await ask(options, "mcp__trilium__rename_note", "toolu_1", sdk));
+            decisions.push(await ask(options, "Bash", "toolu_2"));
+            yield textDelta("first reply");
+            yield successResult("sess-A");
+            decisions.push(await ask(options, "mcp__trilium__delete_note", "toolu_3", sdk));
+            yield successResult("sess-A");
+        })(), { setModel: setModelMock, close: closeMock }));
+
+        const provider = new ClaudeAgentProvider();
+        const requests: unknown[] = [];
+        const approvalsAnswering = (approved: boolean) => {
+            const approvals = new ToolApprovals();
+            approvals.onRequest = (request) => {
+                requests.push(request);
+                queueMicrotask(() => approvals.answer(request.toolCallId, approved));
+            };
+            return approvals;
+        };
+        await collect(provider.chatChunks([{ role: "user", content: "first" }], { ...config, toolApprovals: approvalsAnswering(true) }));
+        await collect(provider.chatChunks([
+            { role: "user", content: "first" },
+            { role: "assistant", content: "first reply" },
+            { role: "user", content: "second" }
+        ], { ...config, toolApprovals: approvalsAnswering(false) }));
+
+        expect(queryMock).toHaveBeenCalledOnce();
+        const { options } = queryMock.mock.calls[0][0];
+        expect(options.permissionMode).toBe("default");
+        expect(options.allowedTools).toEqual([]);
+        expect(requests).toEqual([
+            { toolCallId: "toolu_1", toolName: "rename_note", toolInput: { noteId: "n" } },
+            { toolCallId: "toolu_3", toolName: "delete_note", toolInput: { noteId: "n" } }
+        ]);
+        expect(decisions).toEqual([
+            { behavior: "allow", updatedInput: { noteId: "n" } },
+            { behavior: "deny", message: expect.any(String) },
+            { behavior: "deny", message: TOOL_CALL_DECLINED_REASON }
+        ]);
+        // Between turns no approvals are open, so a call runs unasked.
+        await expect(ask(options, "mcp__trilium__get_note", "toolu_4", sdk))
+            .resolves.toEqual({ behavior: "allow", updatedInput: { noteId: "n" } });
+        // A tool named like Trilium's but served from configuration is never Trilium's.
+        await expect(ask(options, "mcp__trilium__get_note", "toolu_5", { name: "trilium", source: "user" }))
+            .resolves.toMatchObject({ behavior: "deny" });
     });
 
     it("enables adaptive extended thinking when the turn requests it", async () => {

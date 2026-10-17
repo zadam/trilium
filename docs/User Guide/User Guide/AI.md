@@ -85,11 +85,11 @@ Pricing information is displayed for known models. The pricing information (pric
 
 The AI can optionally search the web to find more information about a specific topic. 
 
-Where the search comes from is chosen under _Web search_ in the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu next to the model selector at the bottom of the chat:
+Where the search comes from is chosen in the _Web search_ submenu of the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu next to the model selector at the bottom of the chat, whose row shows the source in use:
 
 *   _Disabled_ turns web search off for this chat.
 *   _Use the model's built-in search_, the default, lets the model search with its provider's own search. Anthropic, OpenAI and Google Gemini models have one, as do Claude Code, Google Antigravity and OpenAI Codex. DeepSeek, Ollama, LM Studio and custom endpoints don't, so this choice is disabled for their models.
-*   A search provider (Brave Search, Tavily, Exa, Serper, Perplexity or SearXNG) searches through that service instead, whichever model is answering. Search providers are added in the _Search Providers_ section of the AI settings, which the <span class="tn-icon bx bx-cog"></span> button beside the _Web search_ heading in the menu opens. The browser version can't use Brave Search, Exa or Perplexity, whose services refuse requests made from a web page, so they're shown disabled there.
+*   A search provider (Brave Search, Tavily, Exa, Serper, Perplexity or SearXNG) searches through that service instead, whichever model is answering. Search providers are added in the _Search Providers_ section of the AI settings, which _Manage search providers_ at the bottom of the submenu opens. The browser version can't use Brave Search, Exa or Perplexity, whose services refuse requests made from a web page, so they're shown disabled there.
 
 To use SearXNG, enable its JSON output by adding `json` to the search formats in the instance's `settings.yml`. SearXNG turns JSON off by default, and without it every search fails.
 
@@ -152,12 +152,36 @@ Here are a few tools that Trilium provides for the LLM:
     *   Get the content of an attachment.
 *   Skills (see the dedicated section).
 
-Each tool the AI uses appears in the chat as a single line naming the tool and the note or query it worked on; a renamed note shows its previous title struck through, a deleted note its title struck through, a moved note where it was moved from and to, an attribute the AI read, set or deleted as a pill (struck through once deleted), an attachment by its title, note and size, and a web page the AI read as a link. A line folds open only when there is something to read inline: the notes a search found, the pages a web search found, the icons an icon search found, the type, attributes or start of the content of a note the AI read, all the attributes of a note, the text of an attachment or of a web page, the User Guide pages the AI looked up or its table of contents (both open in the help panel), the children or the whole subtree of a note, what the AI wrote into a note it created, rewrote or added to, the changes of an edit, or the reason a tool failed. A search also shows how many notes it found, the part of the tree it was confined to, if any, and how many of the matches the AI asked for; each note it lists opens with a click. To see exactly what the AI sent to a tool and what it got back, hover the line and press the <span class="tn-icon bx bx-code-alt"></span> button next to it; on touch screens the button is always shown.
+Each tool the AI uses appears in the chat as a single line naming the tool and the note or query it worked on; a renamed note shows its previous title struck through, a deleted note its title struck through, a moved note where it was moved from and to, an attribute the AI read, set or deleted as a pill (struck through once deleted), an attachment by its title, note and size, and a web page the AI read as a link. A line folds open only when there is something to read inline: the notes a search found, the pages a web search found, the icons an icon search found, the type, attributes or start of the content of a note the AI read, all the attributes of a note, the text of an attachment or of a web page, the User Guide pages the AI looked up or its table of contents (both open in the help panel), the children or the whole subtree of a note, what the AI wrote into a note it created, rewrote or added to, the changes of an edit, or the reason a tool failed. A search names on its line the part of the tree it is confined to, if any, and also shows how many notes it found and how many of the matches the AI asked for; each note it lists opens with a click. To see exactly what the AI sent to a tool and what it got back, hover the line and press the <span class="tn-icon bx bx-code-alt"></span> button next to it; on touch screens the button is always shown.
 
 When the reply stops moving for a couple of seconds while the AI is still at work, for example while it reads what a tool returned, a _Still working…_ line appears under it until the next part of the reply arrives.
 
-> [!WARNING]
-> Currently there is **no permission management** implemented for note tools, meaning that the LLM could potentially remove existing notes or clutter the tree with notes. Generally most actions are easily reversible (deleting the notes, restoring deleted notes, reverting modifications to a note), but there are some that are harder to revert (e.g. setting an attribute because there is no attribute history).
+#### Approving tool calls
+
+Before the AI runs a tool, the chat asks whether to allow it. The tool's line is marked with a <span class="tn-icon bx bxs-hand"></span> icon and has _Allow_ and _Deny_ buttons below it. When the call would write to a note, the line opens on the text it would write or the changes of an edit. The reply waits until you answer.
+
+*   To let the call run, press _Allow_.
+*   To stop asking about a tool for the rest of the chat, open the menu next to _Allow_ and choose to always allow that tool for this chat. The call runs, and so do the other calls of that tool still waiting and every later one in this chat. Other tools keep asking, and a new chat asks again.
+*   To refuse it, press _Deny_. The AI is told that you declined, and its reply carries on without the call, which is marked _denied_.
+*   Stopping the reply denies every call that is still waiting.
+
+To make a chat ask about a tool again, open the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu at the bottom of the chat and, under _Allowed in this chat_, press the tool. The submenu is shown once the chat has allowed a tool.
+
+Which calls ask depends on the chat's permission mode, chosen in the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu under _Permissions_:
+
+*   _Always ask_: every call asks, including the ones that only read (searching notes, or reading a note or an attachment).
+*   _Ask before changes_: the calls that only read run on their own, and the ones that change your notes (creating, editing, renaming, moving or deleting a note, and setting or deleting an attribute) ask.
+*   _Don't ask_: every call runs without asking, changes included.
+
+A new chat starts in the mode you picked last, in any chat, or in _Ask before changes_ until you pick one. Picking _Don't ask_ therefore carries over to the next chat too.
+
+A tool allowed for the chat runs without asking in every mode. So does looking something up in what ships with Trilium (its User Guide, the skill sheets that teach the AI Trilium's search syntax and note types, and the icons), since it reads none of your notes. Searching the web and reading a web page never ask either: turning on web search in the _Tools_ menu is what allows them, whether the model searches on its own or through a search provider.
+
+> [!NOTE]
+> The <a class="reference-link" href="AI/Providers/Subscription-based%20providers.md">Subscription-based providers</a> (Claude Code, GitHub Copilot, Google Antigravity and OpenAI Codex) ask like any other provider.
+
+> [!NOTE]
+> Most changes you allow can be undone: a deleted note can be restored, and an edit reverted from its revision. Setting an attribute is harder to undo, since attributes have no history.
 
 > [!NOTE]
 > Gemini can't use its built-in search while note access is on. While it is, the built-in search choice in the _Tools_ menu is disabled and says why; a search provider works with note access on.

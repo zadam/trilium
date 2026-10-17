@@ -20,3 +20,7 @@
         opacity: 0.8;
     }
 }
+
+.tn-dropdown-portal.llm-chat-tools .dropdown-submenu .masked-icon.tn-icon {
+    --masked-icon-size: 1em;
+}

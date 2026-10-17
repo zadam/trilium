@@ -13,6 +13,14 @@
   listed below.</p>
 <p>The tools exposed to the MCP are the same tools that are supported by
   the internal chat (see the <em>Note access</em> section).</p>
+<h3>Approving tool calls</h3>
+<p>Trilium does not ask for approval of the calls an external assistant makes;
+  that is left to the assistant's own permission settings. To help it decide,
+  each tool tells the assistant whether it only reads your notes, only adds
+  to them (creating a note, cloning it or appending to it), or can overwrite
+  or remove something (editing, renaming, moving or deleting). An assistant
+  that supports these hints can then run reads on their own and ask before
+  changes, the way <em>Ask before changes</em> does in Trilium's chat.</p>
 <h3>Authentication</h3>
 <p>To protect your notes from unauthorized access, the MCP server requires
   authentication. Generally MCP servers need to support OAuth for authentication,

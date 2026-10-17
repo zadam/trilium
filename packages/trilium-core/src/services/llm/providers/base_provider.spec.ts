@@ -3,6 +3,7 @@ import { encodeUtf8 } from "../../../services/utils/binary.js";
 import type { LanguageModel } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { TOOL_CALL_DECLINED_REASON, ToolApprovals } from "../tool_approval.js";
 import type { LlmProviderConfig, ModelInfo } from "../types.js";
 
 const { streamTextMock, generateTextMock, noteMetaMock, errorLogMock, beccaStub } = vi.hoisted(() => ({
@@ -617,6 +618,30 @@ describe("BaseProvider chat / pricing / models / title", () => {
         expect(opts.toolChoice).toBe("auto");
         expect(opts.stopWhen).toBeDefined();
         expect(opts.maxOutputTokens).toBe(1234);
+        // Nothing to ask the user through, so the tools run unasked.
+        expect(opts.toolApproval).toBeUndefined();
+    });
+
+    it("holds every call the provider does not run itself until the user answers it", async () => {
+        const toolApprovals = new ToolApprovals();
+        const requests: unknown[] = [];
+        toolApprovals.onRequest = (request) => requests.push(request);
+        new TestProvider().chat([{ role: "user", content: "hi" }], { enableNoteTools: true, toolApprovals });
+        const { toolApproval } = streamTextMock.mock.calls[0][0] as any;
+        const call = (toolCallId: string, providerExecuted?: boolean) =>
+            toolApproval({ toolCall: { toolCallId, toolName: "fake_tool", input: { q: 1 }, providerExecuted } });
+
+        const approved = call("c1");
+        expect(requests).toEqual([{ toolCallId: "c1", toolName: "fake_tool", toolInput: { q: 1 } }]);
+        toolApprovals.answer("c1", true);
+        await expect(approved).resolves.toBe("approved");
+
+        const declined = call("c2");
+        toolApprovals.answer("c2", false);
+        await expect(declined).resolves.toEqual({ type: "denied", reason: TOOL_CALL_DECLINED_REASON });
+
+        await expect(call("c3", true)).resolves.toBe("not-applicable");
+        expect(requests).toHaveLength(2);
     });
 
     it("creates the model from config.model, falling back to the default", () => {

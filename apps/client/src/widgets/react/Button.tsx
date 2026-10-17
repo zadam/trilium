@@ -130,24 +130,27 @@ export function ButtonGroup({ size, className, children }: { size?: "sm" | "lg";
 }
 
 /** A button with the related actions in a menu beside it. */
-export function SplitButton({ text, icon, children, ...restProps }: {
+export function SplitButton({ text, icon, kind = "secondary", size = "normal", children, ...restProps }: {
     text: string;
     /** The icon's full class, as `"bx bx-search"`. */
     icon?: string;
+    kind?: "primary" | "secondary";
+    size?: "normal" | "small";
     title?: string;
     /** Click handler for the main button component (not the split). */
     onClick?: () => void;
     /** The menu's rows: `FormListItem`s and the other `FormList` rows. */
     children: ComponentChildren;
 }) {
+    const look = `btn-${kind}${size === "small" ? " btn-sm" : ""}`;
     return (
-        <ButtonGroup>
-            <button type="button" class="btn btn-secondary" {...restProps}>
+        <ButtonGroup size={size === "small" ? "sm" : undefined}>
+            <button type="button" class={`btn ${look}`} {...restProps}>
                 {icon && <Icon icon={icon} />}
                 {text}
             </button>
             <Dropdown
-                buttonClassName="btn-secondary dropdown-toggle-split"
+                buttonClassName={`${look} dropdown-toggle-split`}
                 buttonProps={{ "aria-label": t("split_button.more_actions") }}
                 noSelectButtonStyle
                 placement="bottom-end"

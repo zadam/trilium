@@ -20,7 +20,7 @@
  *     with every built-in Claude Code tool (file access, bash, …) disabled.
  */
 
-import type { Options as AgentOptions, query as queryFn, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKUserMessage, SpawnedProcess } from "@anthropic-ai/claude-agent-sdk";
+import type { CanUseTool, Options as AgentOptions, query as queryFn, SDKAssistantMessage, SDKMessage, SDKResultMessage, SDKUserMessage, SpawnedProcess } from "@anthropic-ai/claude-agent-sdk";
 import type { ContentBlockParam } from "@anthropic-ai/sdk/resources";
 import type { LlmMessage, LlmMessagePart, LlmStreamChunk } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
@@ -29,6 +29,7 @@ import { buildNoteHint } from "@triliumnext/core/src/services/llm/note_hint.js";
 import { anthropicRecommendedIds } from "@triliumnext/core/src/services/llm/providers/anthropic.js";
 import { buildModelList, mergeModelLists, type RemoteModel } from "@triliumnext/core/src/services/llm/providers/base_provider.js";
 import { buildSystemPrompt } from "@triliumnext/core/src/services/llm/system_prompt.js";
+import { TOOL_CALL_DECLINED_REASON, type ToolApprovals } from "@triliumnext/core/src/services/llm/tool_approval.js";
 import type { LlmProvider, LlmProviderConfig, ModelInfo, ModelPricing, StreamResult } from "@triliumnext/core/src/services/llm/types.js";
 import { encodeBase64 } from "@triliumnext/core/src/services/utils/binary.js";
 import { spawn as nodeSpawn } from "child_process";
@@ -443,11 +444,11 @@ export class ClaudeAgentProvider implements LlmProvider {
             } else {
                 yield { type: "status", status: "starting_agent" };
                 const input = new Pushable<SDKUserMessage>();
-                session = {
+                const created: ClaudeSession = {
                     query: query({
                         prompt: input,
                         options: {
-                            ...await this.buildBaseOptions(config),
+                            ...await this.buildBaseOptions(config, () => created.toolApprovals),
                             systemPrompt,
                             model,
                             resume,
@@ -462,12 +463,14 @@ export class ClaudeAgentProvider implements LlmProvider {
                     busy: true,
                     model
                 };
+                session = created;
                 if (config.chatNoteId) {
                     rememberWarmSession(config.chatNoteId, session);
                 }
             }
             const active = session;
             held = active;
+            active.toolApprovals = config.toolApprovals;
             await pushUserTurn(active.input, prompt);
 
             // Manual iteration on purpose: `for await (…) { break }` calls
@@ -632,6 +635,9 @@ export class ClaudeAgentProvider implements LlmProvider {
             yield { type: "error", error: describeAgentError(error) };
         } finally {
             signal?.removeEventListener("abort", onAbort);
+            if (held) {
+                held.toolApprovals = undefined;
+            }
             const reusable = held && config.chatNoteId && turnComplete && !held.closed && !signal?.aborted;
             if (reusable && held && config.chatNoteId) {
                 // Keep the subprocess warm; the pool reaps it when idle.
@@ -733,8 +739,14 @@ export class ClaudeAgentProvider implements LlmProvider {
         return buildSystemPrompt(messages, promptConfig) ?? "";
     }
 
-    /** Options shared by every agent invocation. */
-    private async buildBaseOptions(config: Pick<LlmProviderConfig, "enableNoteTools" | "enableWebSearch" | "enableExtendedThinking">): Promise<AgentOptions> {
+    /**
+     * Options shared by every agent invocation. `approvalsOf` gives the approvals of the turn
+     * that drives the session when a note tool is called; without it, note tools run unasked.
+     */
+    private async buildBaseOptions(
+        config: Pick<LlmProviderConfig, "enableNoteTools" | "enableWebSearch" | "enableExtendedThinking">,
+        approvalsOf?: () => ToolApprovals | undefined
+    ): Promise<AgentOptions> {
         // Built-in Claude Code tools (file access, bash, …) stay disabled — the
         // agent runs on the server host and must only ever touch notes. Web
         // search is the one opt-in exception.
@@ -786,8 +798,13 @@ export class ClaudeAgentProvider implements LlmProvider {
             options.mcpServers = {
                 trilium: { type: "sdk", name: "trilium", instance: await createMcpServer() }
             };
-            // Bare server prefix auto-allows every tool from that server.
-            allowedTools.push("mcp__trilium");
+            if (approvalsOf) {
+                options.permissionMode = "default";
+                options.canUseTool = askBeforeNoteTool(approvalsOf);
+            } else {
+                // Bare server prefix auto-allows every tool from that server.
+                allowedTools.push("mcp__trilium");
+            }
         }
 
         options.allowedTools = allowedTools;
@@ -1124,6 +1141,32 @@ async function pushUserTurn(input: Pushable<SDKUserMessage>, prompt: string | As
  * "mcp__trilium__search_notes"), and Claude Code's web tools under the names the other providers give
  * theirs. Their inputs already carry the `query` and `url` the chat shows.
  */
+/**
+ * Ask the user before a call to one of Trilium's note tools, through the approvals of the turn that
+ * makes it. Anything else is denied: the in-process server is the only one Trilium registers, and
+ * the agent has no other tool that is not pre-approved.
+ */
+function askBeforeNoteTool(approvalsOf: () => ToolApprovals | undefined): CanUseTool {
+    return async (toolName, input, { toolUseID, mcpServer }) => {
+        const isNoteTool = toolName.startsWith("mcp__trilium__")
+            && (mcpServer === undefined || (mcpServer.source === "sdk" && mcpServer.name === "trilium"));
+        if (!isNoteTool) {
+            getLog().info(`Claude Agent provider: denied the call to "${toolName}", which is not a note tool.`);
+            return { behavior: "deny", message: "Only Trilium's note tools are available." };
+        }
+
+        const approvals = approvalsOf();
+        const approved = !approvals || await approvals.request({
+            toolCallId: toolUseID,
+            toolName: friendlyToolName(toolName),
+            toolInput: input
+        });
+        return approved
+            ? { behavior: "allow", updatedInput: input }
+            : { behavior: "deny", message: TOOL_CALL_DECLINED_REASON };
+    };
+}
+
 function friendlyToolName(name: string): string {
     return BUILTIN_TOOL_NAMES[name] ?? name.replace(/^mcp__trilium__/, "");
 }

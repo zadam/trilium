@@ -80,6 +80,14 @@ describe("help_tools", () => {
         vi.clearAllMocks();
     });
 
+    it("reads only the User Guide, which ships with Trilium, never the user's data", () => {
+        const readsUserData = (name: string) => {
+            const definition = getTool(name);
+            return definition.mutates ? true : definition.readsUserData;
+        };
+        expect([ "search_help", "get_help_toc" ].map(readsUserData)).toEqual([ false, false ]);
+    });
+
     describe("search_help", () => {
         it("matches page bodies (which live on disk, invisible to regular search) and returns breadcrumb paths", () => {
             buildHelpTree();

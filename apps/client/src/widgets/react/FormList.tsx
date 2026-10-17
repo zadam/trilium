@@ -405,8 +405,12 @@ export interface FormDropdownSubmenuProps {
     icon?: string;
     /** The SVG of an icon drawn in place of {@link icon}, such as a CKEditor toolbar item's. */
     iconSvg?: string;
+    /** An element drawn in place of {@link icon}, such as a `MaskedIcon`, with the `tn-icon` class. */
+    iconElement?: ComponentChildren;
     title: ComponentChildren;
     children: ComponentChildren;
+    /** A line under the title, as {@link FormListItem} shows one. */
+    description?: string;
     /** Called when the row is clicked, or run from the keyboard, on the desktop. */
     onDropdownToggleClicked?: (e: MouseEvent) => void;
     /**
@@ -432,7 +436,7 @@ export function FormDropdownSubmenu(props: FormDropdownSubmenuProps) {
     return <MenuSubmenu {...props} menu={menu} />;
 }
 
-function MenuSubmenu({ menu, icon, iconSvg, title, children, onDropdownToggleClicked, split = !!onDropdownToggleClicked, disabled, className, filterable }: FormDropdownSubmenuProps & { menu: MenuContextValue }) {
+function MenuSubmenu({ menu, icon, iconSvg, iconElement, title, description, children, onDropdownToggleClicked, split = !!onDropdownToggleClicked, disabled, className, filterable }: FormDropdownSubmenuProps & { menu: MenuContextValue }) {
     const level = useContext(MenuLevelContext);
     const id = useUniqueName("menu-row");
     const openSubmenu = menu.open[level];
@@ -489,9 +493,14 @@ function MenuSubmenu({ menu, icon, iconSvg, title, children, onDropdownToggleCli
             }}
         >
             <span className="dropdown-toggle">
-                {iconSvg ? <SvgIcon svg={iconSvg} /> : <Icon icon={icon} />}
+                {iconSvg ? <SvgIcon svg={iconSvg} /> : iconElement ?? <Icon icon={icon} />}
                 <span className="tn-menu-gap" />
-                <span id={titleId(id)}>{title}</span>
+                {description ? (
+                    <div>
+                        <span id={titleId(id)}>{title}</span>
+                        <div className="description">{description}</div>
+                    </div>
+                ) : <span id={titleId(id)}>{title}</span>}
             </span>
             {split && !isMobile() && (
                 <span

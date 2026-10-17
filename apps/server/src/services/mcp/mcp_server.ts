@@ -20,12 +20,17 @@ import sql from "../sql.js";
  * Register a tool definition on the MCP server.
  *
  * Write operations are wrapped in CLS + transaction context so that
- * Becca entity tracking works correctly.
+ * Becca entity tracking works correctly. The annotations tell the client which
+ * tools only read and which overwrite or remove, so it can decide what to ask
+ * the user about.
  */
 function registerTool(server: McpServer, name: string, def: ToolDefinition) {
     server.registerTool(name, {
         description: def.description,
-        inputSchema: def.inputSchema
+        inputSchema: def.inputSchema,
+        annotations: def.mutates
+            ? { readOnlyHint: false, destructiveHint: def.additive !== true, openWorldHint: false }
+            : { readOnlyHint: true, openWorldHint: false }
     }, (args: any): CallToolResult => {
         const result = cls.init(() => {
             cls.set("componentId", "mcp");
