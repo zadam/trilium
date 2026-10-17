@@ -316,7 +316,7 @@ export function decideCodexPermission(
     if (request._meta?.is_mcp_tool_approval !== true) {
         return denyPermission(request, logLabel);
     }
-    const announced = mcpCalls?.callOf(toolCall?.toolCallId);
+    const announced = mcpCalls?.callOf(request.sessionId, toolCall?.toolCallId);
     if (announced) {
         return announced.server === NOTE_TOOLS_MCP_SERVER_NAME
             ? answerNoteToolCalls(request, logLabel, [ announced ], toolApprovals)
@@ -326,7 +326,7 @@ export function decideCodexPermission(
     if (standaloneServer !== NOTE_TOOLS_MCP_SERVER_NAME) {
         return denyPermission(request, logLabel);
     }
-    return answerNoteToolCalls(request, logLabel, mcpCalls?.pendingOn(NOTE_TOOLS_MCP_SERVER_NAME) ?? [], toolApprovals);
+    return answerNoteToolCalls(request, logLabel, mcpCalls?.pendingOn(request.sessionId, NOTE_TOOLS_MCP_SERVER_NAME) ?? [], toolApprovals);
 }
 
 /**

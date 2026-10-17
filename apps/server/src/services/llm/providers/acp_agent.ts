@@ -1212,42 +1212,55 @@ export interface AnnouncedMcpCall {
 }
 
 /**
- * The tool calls an agent announced and has not finished, by call id. `codex-acp` asks
- * permission for an MCP call with only its id, so the permission policy looks the call up here.
+ * The tool calls an agent announced and has not finished, by session and call id. `codex-acp` asks
+ * permission for an MCP call with only its id, so the permission policy looks the call up here. One
+ * agent process serves the sessions of several chats, so every lookup is confined to one session.
  */
 export class AnnouncedMcpCalls {
-    private readonly byToolCallId = new Map<string, AnnouncedMcpCall>();
-    private readonly updatesByToolCallId = new Map<string, AcpToolCallUpdate>();
+    private readonly bySession = new Map<string, {
+        calls: Map<string, AnnouncedMcpCall>;
+        updates: Map<string, AcpToolCallUpdate>;
+    }>();
 
     observe(method: string, params: unknown): void {
-        const update = method === "session/update" ? (params as AcpSessionUpdate | undefined)?.update : undefined;
-        if (!update?.toolCallId) {
+        const { sessionId, update } = method === "session/update" ? (params as Partial<AcpSessionUpdate> | undefined) ?? {} : {};
+        if (!sessionId || !update?.toolCallId) {
             return;
         }
         if (update.sessionUpdate === "tool_call") {
-            this.updatesByToolCallId.set(update.toolCallId, update);
+            let session = this.bySession.get(sessionId);
+            if (!session) {
+                session = { calls: new Map(), updates: new Map() };
+                this.bySession.set(sessionId, session);
+            }
+            session.updates.set(update.toolCallId, update);
             const { server, tool } = mcpToolCall(update) ?? {};
             if (server && tool) {
-                this.byToolCallId.set(update.toolCallId, { toolCallId: update.toolCallId, server, tool, input: mcpArguments(update.rawInput) });
+                session.calls.set(update.toolCallId, { toolCallId: update.toolCallId, server, tool, input: mcpArguments(update.rawInput) });
             }
         } else if (update.sessionUpdate === "tool_call_update" && (update.status === "completed" || update.status === "failed")) {
-            this.byToolCallId.delete(update.toolCallId);
-            this.updatesByToolCallId.delete(update.toolCallId);
+            const session = this.bySession.get(sessionId);
+            session?.calls.delete(update.toolCallId);
+            session?.updates.delete(update.toolCallId);
+            if (session?.updates.size === 0) {
+                this.bySession.delete(sessionId);
+            }
         }
     }
 
-    /** The announcement of any unfinished tool call, including one with no MCP marking. */
-    announcementOf(toolCallId: string | undefined): AcpToolCallUpdate | undefined {
-        return toolCallId ? this.updatesByToolCallId.get(toolCallId) : undefined;
+    /** The announcement of an unfinished tool call of `sessionId`, including one with no MCP marking. */
+    announcementOf(sessionId: string | undefined, toolCallId: string | undefined): AcpToolCallUpdate | undefined {
+        return sessionId && toolCallId ? this.bySession.get(sessionId)?.updates.get(toolCallId) : undefined;
     }
 
-    callOf(toolCallId: string | undefined): AnnouncedMcpCall | undefined {
-        return toolCallId ? this.byToolCallId.get(toolCallId) : undefined;
+    callOf(sessionId: string | undefined, toolCallId: string | undefined): AnnouncedMcpCall | undefined {
+        return sessionId && toolCallId ? this.bySession.get(sessionId)?.calls.get(toolCallId) : undefined;
     }
 
-    /** The calls to `server` that have not finished. */
-    pendingOn(server: string): AnnouncedMcpCall[] {
-        return [ ...this.byToolCallId.values() ].filter(call => call.server === server);
+    /** The calls of `sessionId` to `server` that have not finished. */
+    pendingOn(sessionId: string | undefined, server: string): AnnouncedMcpCall[] {
+        const calls = sessionId ? this.bySession.get(sessionId)?.calls.values() : undefined;
+        return calls ? [ ...calls ].filter(call => call.server === server) : [];
     }
 }
 

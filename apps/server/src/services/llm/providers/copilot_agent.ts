@@ -195,7 +195,7 @@ export function decideCopilotPermission(
     { mcpCalls, toolApprovals }: { mcpCalls?: AnnouncedMcpCalls; toolApprovals?: ToolApprovals } = {}
 ): AcpPermissionOutcome | Promise<AcpPermissionOutcome> {
     const toolCall = request.toolCall;
-    const announced = mcpCalls?.announcementOf(toolCall?.toolCallId);
+    const announced = mcpCalls?.announcementOf(request.sessionId, toolCall?.toolCallId);
     const tool = noteToolName(toolCall?.title) ?? noteToolName(announced?.title);
     if (!toolCall?.toolCallId || !tool) {
         return denyPermission(request, logLabel);

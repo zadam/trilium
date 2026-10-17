@@ -114,7 +114,7 @@ class FakeAcpClient {
 
 vi.mock("./acp_client.js", () => ({ AcpClient: FakeAcpClient, AcpError: FakeAcpError }));
 
-const { resetAcpAgentStateForTests } = await import("./acp_agent.js");
+const { AnnouncedMcpCalls, resetAcpAgentStateForTests } = await import("./acp_agent.js");
 const { ToolApprovals } = await import("@triliumnext/core/src/services/llm/tool_approval.js");
 const { buildCodexModelList, CitationStripper, CodexAgentProvider, decideCodexPermission, resetCodexCatalogForTests } = await import("./codex_agent.js");
 
@@ -403,6 +403,31 @@ describe("CodexAgentProvider note tools", () => {
             { toolCallId: "exec-5", toolName: "get_note", toolInput: { noteId: "d" } },
             { toolCallId: "exec-6", toolName: "delete_note", toolInput: { noteId: "d" } }
         ]);
+    });
+
+    it("asks only about the calls of the session that sends the request", async () => {
+        const mcpCalls = new AnnouncedMcpCalls();
+        const announce = (sessionId: string, toolCallId: string, tool: string) =>
+            mcpCalls.observe("session/update", { sessionId, update: mcpToolCall(toolCallId, "trilium", tool, {}) });
+        announce("sess-1", "exec-1", "get_note");
+        announce("sess-1", "exec-2", "get_note");
+        announce("sess-2", "exec-3", "delete_note");
+        // The same call id in another session is another call.
+        announce("sess-2", "exec-1", "delete_note");
+        const asked: string[] = [];
+        const toolApprovals = new ToolApprovals();
+        toolApprovals.onRequest = (request) => {
+            asked.push(`${request.toolCallId}:${request.toolName}`);
+            queueMicrotask(() => toolApprovals.answer(request.toolCallId, true));
+        };
+
+        const standalone = mcpApproval("elicitation:sess-1:trilium:1", { title: "MCP tool call approval", rawInput: { serverName: "trilium" } });
+        expect(await decideCodexPermission(standalone, "test", { mcpCalls, toolApprovals })).toEqual(ALLOWED);
+        expect(asked).toEqual([ "exec-1:get_note", "exec-2:get_note" ]);
+
+        const fromSecond = { ...mcpApproval("exec-1"), sessionId: "sess-2" };
+        expect(await decideCodexPermission(fromSecond, "test", { mcpCalls, toolApprovals })).toEqual(ALLOWED);
+        expect(asked).toEqual([ "exec-1:get_note", "exec-2:get_note", "exec-1:delete_note" ]);
     });
 
     it("outside a chat turn, approves a call the adapter could not match to its announcement by the server it names", async () => {

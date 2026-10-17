@@ -1012,19 +1012,19 @@ describe("decideCopilotPermission", () => {
         expect(await decideCopilotPermission(rename("rename_note"), "Copilot")).toEqual(ALLOWED);
     });
 
-    it("takes the tool and its arguments from the announced call when the request leaves them out", async () => {
+    it("takes the tool and its arguments from the call its own session announced when the request leaves them out", async () => {
         const mcpCalls = new AnnouncedMcpCalls();
         mcpCalls.observe("session/update", {
+            sessionId: "sess-1",
             update: { sessionUpdate: "tool_call", toolCallId: "toolu_s", title: "search_notes", rawInput: { query: "x" } }
         });
         const asked: unknown[] = [];
+        const request = (sessionId: string) => ({ sessionId, toolCall: { toolCallId: "toolu_s" }, options: OPTIONS });
 
-        expect(await decideCopilotPermission(
-            { toolCall: { toolCallId: "toolu_s" }, options: OPTIONS },
-            "Copilot",
-            { mcpCalls, toolApprovals: answering(true, asked) }
-        )).toEqual(ALLOWED);
+        expect(await decideCopilotPermission(request("sess-1"), "Copilot", { mcpCalls, toolApprovals: answering(true, asked) })).toEqual(ALLOWED);
         expect(asked).toEqual([ { toolCallId: "toolu_s", toolName: "search_notes", toolInput: { query: "x" } } ]);
+        expect(await decideCopilotPermission(request("sess-2"), "Copilot", { mcpCalls, toolApprovals: answering(true, asked) })).toEqual(REJECTED_ALWAYS);
+        expect(asked).toHaveLength(1);
     });
 
     it("denies a built-in tool, another server's tool and a tool Trilium does not define, without asking", async () => {
