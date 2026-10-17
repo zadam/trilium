@@ -7,6 +7,7 @@ import { z } from "zod";
 import { BaseProvider } from "./providers/base_provider.js";
 import { streamToChunks } from "./stream.js";
 import { TOOL_CALL_DECLINED_REASON, ToolApprovals } from "./tool_approval.js";
+import { isReadOnlyTool } from "./tools/index.js";
 
 const USAGE = {
     inputTokens: { total: 1, noCache: 1, cacheRead: 0, cacheWrite: 0 },
@@ -133,7 +134,7 @@ describe("ToolApprovals", () => {
 
 describe("ToolApprovals allowed for the chat", () => {
     it("runs a tool allowed for the chat without asking", async () => {
-        const approvals = new ToolApprovals(undefined, [ "rename_note" ]);
+        const approvals = new ToolApprovals(undefined, { allowedTools: [ "rename_note" ] });
         const onRequest = vi.fn();
         approvals.onRequest = onRequest;
 
@@ -161,5 +162,33 @@ describe("ToolApprovals allowed for the chat", () => {
         approvals.onRequest = asked;
         void approvals.request({ toolCallId: "c5", toolName: "delete_note", toolInput: {} });
         expect(asked).toHaveBeenCalledOnce();
+    });
+});
+
+describe("ToolApprovals permission modes", () => {
+    const isReadOnly = (toolName: string) => toolName === "get_note";
+    /** Which of a read and a change ask in `mode`. */
+    function asked(mode: "always_ask" | "ask_before_changes" | "dont_ask") {
+        const approvals = new ToolApprovals(undefined, { mode, isReadOnly });
+        const requests: string[] = [];
+        approvals.onRequest = (request) => requests.push(request.toolName);
+        void approvals.request({ toolCallId: "c1", toolName: "get_note", toolInput: {} });
+        void approvals.request({ toolCallId: "c2", toolName: "delete_note", toolInput: {} });
+        approvals.declineAll();
+        return requests;
+    }
+
+    it("asks about every call, only about changes, or about none", async () => {
+        expect(asked("always_ask")).toEqual([ "get_note", "delete_note" ]);
+        expect(asked("ask_before_changes")).toEqual([ "delete_note" ]);
+        expect(asked("dont_ask")).toEqual([]);
+
+        const approvals = new ToolApprovals(undefined, { mode: "ask_before_changes", isReadOnly });
+        await expect(approvals.request({ toolCallId: "c1", toolName: "get_note", toolInput: {} })).resolves.toBe(true);
+    });
+
+    it("counts a note tool that does not mutate and the web tools as reads, and anything unknown as a change", () => {
+        expect([ "get_note", "search_notes", "web_search", "read_web_page" ].map(isReadOnlyTool)).toEqual([ true, true, true, true ]);
+        expect([ "create_note", "delete_attribute", "some_mcp_tool" ].map(isReadOnlyTool)).toEqual([ false, false, false ]);
     });
 });

@@ -1,4 +1,4 @@
-import { LLM_REASONING_EFFORTS, type LlmCitation, type LlmMessage, type LlmMessagePart, type LlmModelInfo, type LlmReasoningEffort, type LlmStreamStatus, type LlmToolApprovalAnswer, type LlmUsage } from "@triliumnext/commons";
+import { LLM_PERMISSION_MODES, LLM_REASONING_EFFORTS, type LlmCitation, type LlmMessage, type LlmMessagePart, type LlmModelInfo, type LlmPermissionMode, type LlmReasoningEffort, type LlmStreamStatus, type LlmToolApprovalAnswer, type LlmUsage } from "@triliumnext/commons";
 import { RefObject } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
@@ -135,6 +135,8 @@ export interface UseLlmChatReturn {
     reasoningEffort: LlmReasoningEffort | undefined;
     /** The tools allowed for this chat, whose calls run without asking. */
     allowedTools: string[];
+    /** Which tool calls of the chat wait for the user. */
+    permissionMode: LlmPermissionMode;
     contextNoteId: string | undefined;
     /** The chat note's ID — used as the upload target for attachments. */
     chatNoteId: string | undefined;
@@ -174,6 +176,7 @@ export interface UseLlmChatReturn {
     setEnableNoteTools: (value: boolean) => void;
     setEnableExtendedThinking: (value: boolean) => void;
     setReasoningEffort: (value: LlmReasoningEffort | undefined) => void;
+    setPermissionMode: (value: LlmPermissionMode) => void;
     setContextNoteId: (noteId: string | undefined) => void;
     setChatNoteId: (noteId: string | undefined) => void;
     /** Append a freshly uploaded image or file to the pending-attachments list. */
@@ -244,6 +247,7 @@ export function useLlmChat(
     const [enableExtendedThinking, setEnableExtendedThinking] = useState(false);
     const [reasoningEffort, setReasoningEffort] = useState<LlmReasoningEffort | undefined>(undefined);
     const [allowedTools, setAllowedTools] = useState<string[]>([]);
+    const [permissionMode, setPermissionMode] = useState<LlmPermissionMode>("always_ask");
     const [contextNoteId, setContextNoteId] = useState<string | undefined>(initialContextNoteId);
     const [chatNoteId, setChatNoteIdState] = useState<string | undefined>(initialChatNoteId);
     const [lastPromptTokens, setLastPromptTokens] = useState<number>(0);
@@ -288,6 +292,8 @@ export function useLlmChat(
     enableNoteToolsRef.current = enableNoteTools;
     const allowedToolsRef = useRef(allowedTools);
     allowedToolsRef.current = allowedTools;
+    const permissionModeRef = useRef(permissionMode);
+    permissionModeRef.current = permissionMode;
     const enableExtendedThinkingRef = useRef(enableExtendedThinking);
     enableExtendedThinkingRef.current = enableExtendedThinking;
     const reasoningEffortRef = useRef(reasoningEffort);
@@ -563,6 +569,7 @@ export function useLlmChat(
             setEnableExtendedThinking(content.enableExtendedThinking);
         }
         setReasoningEffort(LLM_REASONING_EFFORTS.find(level => level === content.reasoningEffort));
+        setPermissionMode(LLM_PERMISSION_MODES.find(mode => mode === content.permissionMode) ?? "always_ask");
         setAllowedTools(Array.isArray(content.allowedTools)
             ? content.allowedTools.filter((name): name is string => typeof name === "string")
             : []);
@@ -581,7 +588,8 @@ export function useLlmChat(
             selectedProvider: selectedProviderRef.current || undefined,
             selectedProviderId: selectedProviderIdRef.current || undefined,
             enableWebSearch: enableWebSearchRef.current,
-            enableNoteTools: enableNoteToolsRef.current
+            enableNoteTools: enableNoteToolsRef.current,
+            permissionMode: permissionModeRef.current
         };
         if (supportsExtendedThinking) {
             content.enableExtendedThinking = enableExtendedThinkingRef.current;
@@ -675,7 +683,8 @@ export function useLlmChat(
             webSearchProviderId: webSearch.webSearchProviderId,
             enableNoteTools,
             contextNoteId,
-            chatNoteId: chatNoteIdRef.current
+            chatNoteId: chatNoteIdRef.current,
+            permissionMode
         };
         if (supportsExtendedThinking) {
             streamOptions.enableExtendedThinking = enableExtendedThinking;
@@ -928,7 +937,7 @@ export function useLlmChat(
             setIsStreaming(false);
             abortControllerRef.current = null;
         });
-    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, enableExtendedThinking, reasoningEffort, allowedTools, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
+    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, enableExtendedThinking, reasoningEffort, allowedTools, permissionMode, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
 
     const handleSubmit = useCallback(async (e: Event) => {
         e.preventDefault();
@@ -1068,6 +1077,7 @@ export function useLlmChat(
         enableExtendedThinking,
         reasoningEffort,
         allowedTools,
+        permissionMode,
         contextNoteId,
         chatNoteId,
         lastPromptTokens,
@@ -1094,6 +1104,7 @@ export function useLlmChat(
         setEnableNoteTools,
         setEnableExtendedThinking,
         setReasoningEffort,
+        setPermissionMode,
         setContextNoteId,
         setChatNoteId,
         addPendingAttachment,

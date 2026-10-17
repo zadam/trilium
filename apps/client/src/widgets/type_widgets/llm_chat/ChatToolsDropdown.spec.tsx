@@ -48,6 +48,8 @@ vi.mock("../../react/FormList.js", async (importOriginal) => ({
     )
 }));
 
+import type { LlmPermissionMode } from "@triliumnext/commons";
+
 import type { WebSearchState } from "../../../services/llm_providers.js";
 import ChatToolsDropdown, { useChatWebSearch } from "./ChatToolsDropdown.js";
 
@@ -66,15 +68,17 @@ afterEach(() => {
 
 const TAVILY = { id: "s1", name: "Tavily", provider: "tavily" };
 
-function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choice: "disabled", enableWebSearch: false }, allowedTools = [] }: {
+function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choice: "disabled", enableWebSearch: false }, allowedTools = [], permissionMode = "always_ask" }: {
     enableNoteTools?: boolean;
     allowedTools?: string[];
+    permissionMode?: LlmPermissionMode;
     modelProvider?: string;
     webSearch?: WebSearchState;
 } = {}) {
     const onNoteToolsChange = vi.fn();
     const onWebSearchChoose = vi.fn();
     const onRevokeAllowedTool = vi.fn();
+    const onPermissionModeChange = vi.fn();
     host = document.body.appendChild(document.createElement("div"));
     const target = host;
     act(() => render(
@@ -87,6 +91,8 @@ function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choi
             onWebSearchChoose={onWebSearchChoose}
             allowedTools={allowedTools}
             onRevokeAllowedTool={onRevokeAllowedTool}
+            permissionMode={permissionMode}
+            onPermissionModeChange={onPermissionModeChange}
         />, target));
 
     const rows = [ ...target.querySelectorAll<HTMLElement>(".menu .dropdown-item") ];
@@ -109,13 +115,25 @@ function renderMenu({ enableNoteTools = false, modelProvider, webSearch = { choi
             .map((candidate) => candidate.textContent),
         onNoteToolsChange,
         onWebSearchChoose,
-        onRevokeAllowedTool
+        onRevokeAllowedTool,
+        onPermissionModeChange
     };
 }
 
 const isOn = (row: HTMLElement | undefined) => row?.querySelector<HTMLInputElement>("input[type='checkbox']")?.checked;
 
 describe("ChatToolsDropdown", () => {
+    it("marks the chat's permission mode, and reports a pressed one", async () => {
+        const menu = renderMenu({ permissionMode: "ask_before_changes" });
+        const submenus = [ ...(menu.toggle?.parentElement?.querySelectorAll(".submenu-row") ?? []) ].map(row => row.textContent);
+        expect(submenus).toContain("llm_chat.permissionsllm_chat.permission_mode_ask_before_changes");
+        expect(menu.marked()).toEqual(expect.arrayContaining([ expect.stringContaining("llm_chat.permission_mode_ask_before_changes") ]));
+        expect(menu.marked().filter(text => text?.includes("permission_mode"))).toHaveLength(1);
+
+        await act(async () => menu.row("llm_chat.permission_mode_dont_ask")?.click());
+        expect(menu.onPermissionModeChange).toHaveBeenCalledExactlyOnceWith("dont_ask");
+    });
+
     it("lists the tools allowed for the chat, and makes the chat ask about a pressed one again", async () => {
         expect(renderMenu().toggle?.parentElement?.textContent).not.toContain("llm_chat.allowed_tools");
 
@@ -143,7 +161,7 @@ describe("ChatToolsDropdown", () => {
 
     it("marks the chosen web search source, and reports a pressed one or the note access switch", async () => {
         const menu = renderMenu({ enableNoteTools: true, webSearch: { choice: "s1", enableWebSearch: true, webSearchProviderId: "s1" } });
-        expect(menu.marked()).toEqual([ "Tavily" ]);
+        expect(menu.marked().filter(text => !text?.includes("permission_mode"))).toEqual([ "Tavily" ]);
 
         await act(async () => menu.row("llm_chat.web_search_builtin")?.click());
         expect(menu.onWebSearchChoose).toHaveBeenLastCalledWith("builtin");

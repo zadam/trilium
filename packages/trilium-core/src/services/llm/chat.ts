@@ -7,7 +7,7 @@
  * resolution, pricing lookup, error logging and title generation happen once.
  */
 
-import type { LlmMessage, LlmStreamChunk } from "@triliumnext/commons";
+import { LLM_PERMISSION_MODES, type LlmMessage, type LlmStreamChunk } from "@triliumnext/commons";
 
 import { getLog } from "../log.js";
 import { safeExtractMessageAndStackFromError } from "../utils/index.js";
@@ -15,7 +15,7 @@ import { generateChatTitle } from "./chat_title.js";
 import { getProvider, getProviderByType, getSearchProviderSetup, getSelectedModel, hasConfiguredProviders, type LlmProvider, type LlmProviderConfig } from "./index.js";
 import { formatStreamError, streamToChunks } from "./stream.js";
 import { closeToolApprovals, openToolApprovals, type ToolApprovals } from "./tool_approval.js";
-import { resolveToolRegistries } from "./tools/index.js";
+import { isReadOnlyTool, resolveToolRegistries } from "./tools/index.js";
 
 /**
  * Stream one assistant turn, yielding the chunks as the provider produces them.
@@ -25,9 +25,9 @@ import { resolveToolRegistries } from "./tools/index.js";
  * ends with a `done` chunk only when the turn completed — an errored one stops
  * after its `error` chunk, so a caller that needs a terminator must add its own.
  *
- * Every tool call waits for the user, unless the chat allowed its tool (`allowedTools`): it is
- * announced as a `tool_approval_request` chunk and answered through `answerToolApproval()`,
- * keyed by `streamId`.
+ * Every tool call waits for the user, unless the chat's `permissionMode` lets it through or the
+ * chat allowed its tool (`allowedTools`): it is announced as a `tool_approval_request` chunk and
+ * answered through `answerToolApproval()`, keyed by `streamId`.
  *
  * @param streamId the id the client gave the turn, unique among the turns running.
  * @param abortSignal stops the turn early: the provider aborts its completion and any tool
@@ -42,7 +42,12 @@ export async function* runChat(
     const allowedTools = Array.isArray(requestConfig.allowedTools)
         ? requestConfig.allowedTools.filter((name): name is string => typeof name === "string")
         : [];
-    const toolApprovals = openToolApprovals(streamId, abortSignal, allowedTools);
+    const mode = LLM_PERMISSION_MODES.find(candidate => candidate === requestConfig.permissionMode);
+    const toolApprovals = openToolApprovals(streamId, abortSignal, {
+        allowedTools,
+        mode,
+        isReadOnly: isReadOnlyTool
+    });
     if (!toolApprovals) {
         yield { type: "error", error: `Stream '${streamId}' is already running.` };
         return;

@@ -564,4 +564,36 @@ describe("useLlmChat", () => {
         });
         expect(api().allowedTools).toEqual([]);
     });
+    it("keeps the chat's permission mode, sends it with each turn and saves it", async () => {
+        await mountChat();
+        const sentOptions = async () => {
+            streamChatCompletionMock.mockClear();
+            await act(async () => {
+                api().setInput("hi");
+            });
+            await act(async () => {
+                await api().handleSubmit(new Event("submit"));
+            });
+            return streamChatCompletionMock.mock.calls[0][1];
+        };
+
+        expect(api().permissionMode).toBe("always_ask");
+        expect((await sentOptions()).permissionMode).toBe("always_ask");
+
+        await act(async () => {
+            api().setPermissionMode("ask_before_changes");
+        });
+        expect(api().getContent()).toMatchObject({ permissionMode: "ask_before_changes" });
+        expect((await sentOptions()).permissionMode).toBe("ask_before_changes");
+
+        await act(async () => {
+            api().loadFromContent({ version: 1, messages: [], permissionMode: "dont_ask" });
+        });
+        expect(api().permissionMode).toBe("dont_ask");
+        // A chat saved before the modes, or with a mode this version does not know.
+        await act(async () => {
+            api().loadFromContent({ version: 1, messages: [], permissionMode: "yolo" as "dont_ask" });
+        });
+        expect(api().permissionMode).toBe("always_ask");
+    });
 });

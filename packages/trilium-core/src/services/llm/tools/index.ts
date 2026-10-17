@@ -95,3 +95,24 @@ export function resolveToolRegistries(): Promise<void> {
     })();
     return inFlightResolve;
 }
+
+/** The web search tools that run in place of a model's built-in search, which only read. */
+const WEB_READ_TOOLS = new Set([ "web_search", "read_web_page" ]);
+
+/**
+ * Whether a tool only reads: a registered tool not marked `mutates`, or a web search tool. A tool
+ * none of them names, such as one a future integration adds, counts as a change.
+ */
+export function isReadOnlyTool(toolName: string): boolean {
+    if (WEB_READ_TOOLS.has(toolName)) {
+        return true;
+    }
+    for (const registry of allToolRegistries) {
+        for (const [ name, definition ] of registry) {
+            if (name === toolName) {
+                return !definition.mutates;
+            }
+        }
+    }
+    return false;
+}

@@ -9,33 +9,47 @@
  * client does not send back.
  */
 
-import type { LlmToolApprovalAnswer, LlmToolApprovalRequest } from "@triliumnext/commons";
+import type { LlmPermissionMode, LlmToolApprovalAnswer, LlmToolApprovalRequest } from "@triliumnext/commons";
 
 /** The reason the model is given for a call the user declined. */
 export const TOOL_CALL_DECLINED_REASON = "The user declined this tool call.";
+
+/** What decides which calls of a turn wait for the user. */
+export interface ToolApprovalPolicy {
+    /** The tools the chat allowed, whose calls run without asking. */
+    allowedTools?: Iterable<string>;
+    /** Absent means `"always_ask"`. */
+    mode?: LlmPermissionMode;
+    /** Whether a tool only reads, which `"ask_before_changes"` lets run. Absent, every tool changes. */
+    isReadOnly?: (toolName: string) => boolean;
+}
 
 /** The tool calls of one turn that wait for the user's answer. */
 export class ToolApprovals {
     private readonly pending = new Map<string, { toolName: string; settle: (approved: boolean) => void }>();
     /** The tools whose calls run without asking. */
     private readonly allowedTools: Set<string>;
+    private readonly mode: LlmPermissionMode;
+    private readonly isReadOnly: (toolName: string) => boolean;
     /** Called with every request, so the turn can pass it on to the client. */
     onRequest?: (request: LlmToolApprovalRequest) => void;
 
-    constructor(private readonly abortSignal?: AbortSignal, allowedTools: Iterable<string> = []) {
-        this.allowedTools = new Set(allowedTools);
+    constructor(private readonly abortSignal?: AbortSignal, policy: ToolApprovalPolicy = {}) {
+        this.allowedTools = new Set(policy.allowedTools);
+        this.mode = policy.mode ?? "always_ask";
+        this.isReadOnly = policy.isReadOnly ?? (() => false);
     }
 
     /**
      * Ask the user about a tool call. Resolves to whether it was approved; a turn that
-     * is stopped, or ends, before the user answers declines the call. A call of an allowed
-     * tool is approved without asking.
+     * is stopped, or ends, before the user answers declines the call. A call the permission
+     * mode lets through, or of a tool the chat allowed, is approved without asking.
      */
     request(request: LlmToolApprovalRequest): Promise<boolean> {
         if (this.abortSignal?.aborted) {
             return Promise.resolve(false);
         }
-        if (this.allowedTools.has(request.toolName)) {
+        if (this.runsUnasked(request.toolName)) {
             return Promise.resolve(true);
         }
 
@@ -74,6 +88,12 @@ export class ToolApprovals {
         return true;
     }
 
+    private runsUnasked(toolName: string): boolean {
+        return this.mode === "dont_ask"
+            || this.allowedTools.has(toolName)
+            || (this.mode === "ask_before_changes" && this.isReadOnly(toolName));
+    }
+
     /** Decline every call that still waits. */
     declineAll(): void {
         for (const { settle } of [ ...this.pending.values() ]) {
@@ -85,18 +105,18 @@ export class ToolApprovals {
 const openApprovals = new Map<string, ToolApprovals>();
 
 /**
- * Open the approvals of a turn under its stream id, with the tools the chat allowed. Returns
- * `undefined` when a turn with that id is already running.
+ * Open the approvals of a turn under its stream id. Returns `undefined` when a turn with that id
+ * is already running.
  */
 export function openToolApprovals(
     streamId: string,
     abortSignal?: AbortSignal,
-    allowedTools?: Iterable<string>
+    policy?: ToolApprovalPolicy
 ): ToolApprovals | undefined {
     if (openApprovals.has(streamId)) {
         return undefined;
     }
-    const approvals = new ToolApprovals(abortSignal, allowedTools);
+    const approvals = new ToolApprovals(abortSignal, policy);
     openApprovals.set(streamId, approvals);
     return approvals;
 }

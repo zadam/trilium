@@ -1,5 +1,6 @@
 import "./ChatToolsDropdown.css";
 
+import { LLM_PERMISSION_MODES, type LlmPermissionMode } from "@triliumnext/commons";
 import clsx from "clsx";
 import { useMemo } from "preact/hooks";
 
@@ -16,12 +17,12 @@ import type { UseLlmChatReturn } from "./useLlmChat.js";
 
 /**
  * The Tools menu of the chat input bar: what the model can reach this turn. Note access is a row of
- * its own; web search is a submenu of its sources, whose row shows the chosen one; the tools allowed
- * for the chat, once there are any, are a submenu that makes the chat ask about one again. Its rows leave
+ * its own; web search is a submenu of its sources, whose row shows the chosen one; which calls wait for the user is a submenu of the
+ * permission modes; the tools allowed for the chat, once there are any, are a submenu that makes the chat ask about one again. Its rows leave
  * the menu open, so several can be changed in one visit. Its toggle shares the compact combo box
  * styling of the model picker beside it.
  */
-export default function ChatToolsDropdown({ enableNoteTools, onNoteToolsChange, modelProvider, webSearch, searchProviders, onWebSearchChoose, allowedTools, onRevokeAllowedTool, disabled }: {
+export default function ChatToolsDropdown({ enableNoteTools, onNoteToolsChange, modelProvider, webSearch, searchProviders, onWebSearchChoose, allowedTools, onRevokeAllowedTool, permissionMode, onPermissionModeChange, disabled }: {
     enableNoteTools: boolean;
     /** The provider type of the current model, whose mark stands for its built-in search. */
     modelProvider: string | undefined;
@@ -33,6 +34,8 @@ export default function ChatToolsDropdown({ enableNoteTools, onNoteToolsChange, 
     /** The tools whose calls run without asking in this chat. */
     allowedTools: string[];
     onRevokeAllowedTool: (toolName: string) => void;
+    permissionMode: LlmPermissionMode;
+    onPermissionModeChange: (mode: LlmPermissionMode) => void;
     disabled?: boolean;
 }) {
     const anyActive = enableNoteTools || webSearch.enableWebSearch;
@@ -83,6 +86,25 @@ export default function ChatToolsDropdown({ enableNoteTools, onNoteToolsChange, 
                 >
                     {t("llm_chat.manage_search_providers")}
                 </FormListItem>
+            </FormDropdownSubmenu>
+
+            <FormDropdownSubmenu
+                icon="bx bxs-hand"
+                title={t("llm_chat.permissions")}
+                description={t(`llm_chat.permission_mode_${permissionMode}`)}
+            >
+                {LLM_PERMISSION_MODES.map((mode) => (
+                    <FormListItem
+                        key={mode}
+                        checkable
+                        checked={mode === permissionMode}
+                        description={t(`llm_chat.permission_mode_${mode}_description`)}
+                        closeOnSelect={false}
+                        onClick={() => onPermissionModeChange(mode)}
+                    >
+                        {t(`llm_chat.permission_mode_${mode}`)}
+                    </FormListItem>
+                ))}
             </FormDropdownSubmenu>
 
             {allowedTools.length > 0 && (

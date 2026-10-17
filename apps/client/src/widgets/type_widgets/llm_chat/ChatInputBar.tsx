@@ -1,7 +1,7 @@
 import "./ChatInputBar.css";
 
 import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, MentionHostedFeed } from "@triliumnext/ckeditor5";
-import type { DISPLAYABLE_LOCALE_IDS, LlmReasoningEffort } from "@triliumnext/commons";
+import type { DISPLAYABLE_LOCALE_IDS, LlmPermissionMode, LlmReasoningEffort } from "@triliumnext/commons";
 import { Fragment } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
@@ -68,8 +68,8 @@ interface ChatInputBarProps {
     onNoteToolsChange?: () => void;
     /** Callback when the extended thinking switch or the reasoning effort changes */
     onExtendedThinkingChange?: () => void;
-    /** Callback when a tool allowed for the chat is revoked */
-    onAllowedToolsChange?: () => void;
+    /** Callback when the permission mode changes or a tool allowed for the chat is revoked */
+    onPermissionsChange?: () => void;
     /** Callback when model changes */
     onModelChange?: (model: string) => void;
 }
@@ -82,7 +82,7 @@ export default function ChatInputBar({
     onWebSearchChange,
     onNoteToolsChange,
     onExtendedThinkingChange,
-    onAllowedToolsChange,
+    onPermissionsChange,
     onModelChange
 }: ChatInputBarProps) {
     // Provider add/edit modal. `modalProvider` undefined = adding; a config = editing.
@@ -175,7 +175,12 @@ export default function ChatInputBar({
 
     const handleRevokeAllowedTool = (toolName: string) => {
         chat.revokeAllowedTool(toolName);
-        onAllowedToolsChange?.();
+        onPermissionsChange?.();
+    };
+
+    const handlePermissionModeChange = (mode: LlmPermissionMode) => {
+        chat.setPermissionMode(mode);
+        onPermissionsChange?.();
     };
 
     const handleExtendedThinkingToggle = (newValue: boolean) => {
@@ -474,6 +479,8 @@ export default function ChatInputBar({
                             onWebSearchChoose={chooseWebSearch}
                             allowedTools={chat.allowedTools}
                             onRevokeAllowedTool={handleRevokeAllowedTool}
+                            permissionMode={chat.permissionMode}
+                            onPermissionModeChange={handlePermissionModeChange}
                             disabled={chat.isStreaming}
                         />
                         {!currentModel?.reasoningEfforts?.length && (

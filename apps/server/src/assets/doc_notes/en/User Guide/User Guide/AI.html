@@ -281,11 +281,21 @@
 <p>To make a chat ask about a tool again, open the <span class="tn-icon bx bx-shield-quarter"></span>  <em>Tools</em> menu
   at the bottom of the chat and, under <em>Allowed in this chat</em>, press
   the tool. The submenu is shown once the chat has allowed a tool.</p>
-<p>Every tool call asks, including the ones that only read: searching notes,
-  reading a note or an attachment, and reading a web page through a search
-  provider. A model's built-in web search runs on the provider's side and
-  does not ask.</p>
-<aside class="admonition important">
+<p>Which calls ask depends on the chat's permission mode, chosen in the <span
+  class="tn-icon bx bx-shield-quarter"></span>  <em>Tools</em> menu under <em>Permissions</em>:</p>
+<ul>
+  <li><em>Always ask</em>, the mode a new chat starts in: every call asks, including
+    the ones that only read (searching notes, reading a note or an attachment,
+    and reading a web page through a search provider).</li>
+  <li><em>Ask before changes</em>: the calls that only read run on their own,
+    and the ones that change your notes (creating, editing, renaming, moving
+    or deleting a note, and setting or deleting an attribute) ask.</li>
+  <li><em>Don't ask</em>: every call runs without asking, changes included.</li>
+</ul>
+<p>A tool allowed for the chat runs without asking in every mode. A model's
+  built-in web search runs on the provider's side and never asks.</p>
+<aside
+class="admonition important">
   <p>Among the <a class="reference-link" href="#root/_help_eFhxp9laTW1S">Subscription-based providers</a>,
     Claude Code asks like any other provider. GitHub Copilot, Google Antigravity
     and OpenAI Codex don't ask yet: their tool calls run without approval.</p>

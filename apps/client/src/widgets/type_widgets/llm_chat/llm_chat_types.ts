@@ -2,6 +2,7 @@ import {
     isToolErrorResult,
     type LlmCitation,
     type LlmErrorDetails,
+    type LlmPermissionMode,
     type LlmReasoningEffort,
     type LlmUsage
 } from "@triliumnext/commons";
@@ -208,4 +209,6 @@ export interface LlmChatContent {
     reasoningEffort?: LlmReasoningEffort;
     /** The tools the user allowed for this chat, whose calls run without asking. */
     allowedTools?: string[];
+    /** Which tool calls of the chat wait for the user; absent means `"always_ask"`. */
+    permissionMode?: LlmPermissionMode;
 }

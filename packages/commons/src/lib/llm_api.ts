@@ -120,7 +120,17 @@ export interface LlmChatConfig {
     chatNoteId?: string;
     /** The tools the user allowed for the whole chat, whose calls run without asking. */
     allowedTools?: string[];
+    /** Which tool calls wait for the user. Absent means `"always_ask"`. */
+    permissionMode?: LlmPermissionMode;
 }
+
+/**
+ * Which tool calls of a chat wait for the user: all of them, only those that change notes, or none.
+ * A tool the chat allowed (`allowedTools`) runs without asking in every mode.
+ */
+export const LLM_PERMISSION_MODES = [ "always_ask", "ask_before_changes", "dont_ask" ] as const;
+
+export type LlmPermissionMode = (typeof LLM_PERMISSION_MODES)[number];
 
 /**
  * Pricing per million tokens for a model.
