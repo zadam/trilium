@@ -1,14 +1,18 @@
 ---
 name: developing-mermaid-highlighting
-description: Use when changing how Mermaid diagram source is highlighted in Trilium's code editor — the Lezer grammars vendored in `packages/codemirror/src/languages/mermaid/` (`parsers/<diagram>/<diagram>.grammar`, `tokens.ts`, `highlight.ts`, `tags/`, the `mermaid` dispatcher grammar, `index.ts`), adding highlighting for a diagram type it does not know yet (radar, treemap, Venn, railroad, …), fixing a diagram that highlights wrongly, the `test/<diagram>.txt` fixtures, `scripts/build_mermaid_grammars.mts`, or the `text/vnd.mermaid` entry in `syntax_highlighting.ts`. Covers regenerating the committed parsers, the checklist for a new diagram type, the Lezer traps already hit (precedence beats length, external-tokenizer order, CRLF), and how to prove a grammar change (fixtures first, real Mermaid as the referee, tree comparison over a generated corpus). Includes tree.mts, fixtures.mts and compare.mts — don't write new parse-tree probes.
+description: Use when changing how Mermaid diagram source is highlighted in Trilium's code editor — the Lezer grammars vendored in `packages/codemirror/src/languages/mermaid/` (`parsers/<diagram>/<diagram>.grammar`, `tokens.ts`, `highlight.ts`, `tags/`, the `mermaid` dispatcher grammar, `index.ts`), adding highlighting for a diagram type it does not know yet (radar, treemap, Venn, railroad, …), fixing a diagram that highlights wrongly, the `test/<diagram>.txt` fixtures, `scripts/build_mermaid_grammars.mts`, or the `text/vnd.mermaid` entry and the Markdown code-block wiring (`buildMarkdown()`) in `syntax_highlighting.ts`. Covers regenerating the committed parsers, the checklist for a new diagram type, the Lezer traps already hit (precedence beats length, external-tokenizer order, CRLF), and how to prove a grammar change (fixtures first, real Mermaid as the referee, tree comparison over a generated corpus). Includes tree.mts, fixtures.mts and compare.mts — don't write new parse-tree probes.
 ---
 
 # Developing Mermaid syntax highlighting
 
 A Mermaid note is highlighted by a Lezer language in `packages/codemirror/src/languages/mermaid/`,
-loaded by `syntax_highlighting.ts` for the `text/vnd.mermaid` and `text/mermaid` MIME types. It was
-vendored from [Edge-Tools/codemirror-lang-mermaid](https://github.com/Edge-Tools/codemirror-lang-mermaid)
-at `03bcd7d`, itself a fork of inspirnathan's `codemirror-lang-mermaid`. Both upstreams are dormant:
+loaded by `syntax_highlighting.ts` for the `text/vnd.mermaid` and `text/mermaid` MIME types. In
+Markdown, `buildMarkdown()` there mounts it on ` ```mermaid ` code blocks through a
+`LanguageDescription` listed ahead of `@codemirror/language-data`'s languages, which have no
+Mermaid; `foldByIndent()` stays off there, since it folds by indentation across the whole document.
+
+The language was vendored from
+[Edge-Tools/codemirror-lang-mermaid](https://github.com/Edge-Tools/codemirror-lang-mermaid) at `03bcd7d`, itself a fork of inspirnathan's `codemirror-lang-mermaid`. Both upstreams are dormant:
 **the code is ours now**. Never re-vendor over it; `git log -- packages/codemirror/src/languages/mermaid`
 shows what changed after the verbatim copy and why.
 
