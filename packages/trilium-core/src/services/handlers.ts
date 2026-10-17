@@ -138,6 +138,8 @@ eventService.subscribe(eventService.ENTITY_CREATED, ({ entityName, entity }) => 
         if (entity.parentNote?.hasLabel("sorted")) {
             treeService.sortNotesIfNeeded(entity.parentNoteId);
         }
+
+        sortParentsGroupingFolders(entity.parentNoteId, 1);
     } else if (entityName === "notes") {
         runAttachedRelations(entity, "runOnNoteCreation", entity);
     }
@@ -213,6 +215,28 @@ function handleMaybeSortingLabel(entity: BAttribute) {
     }
 }
 
+/**
+ * Re-sorts the parents that group folders once the note `noteId` has `childCount` children, that
+ * is, once it has just become a folder or stopped being one.
+ */
+function sortParentsGroupingFolders(noteId: string, childCount: number) {
+    const note = becca.notes[noteId];
+    if (!note || note.children.length !== childCount) {
+        return;
+    }
+
+    for (const parentNote of note.getParentNotes()) {
+        const sorted = parentNote.getLabelValue("sorted");
+        const groupsFolders = sorted !== null && (
+            parentNote.isLabelTruthy("sortFoldersFirst")
+            || parseSortCriteria(sorted).some(({ key, isLabel }) => !isLabel && key === "folders")
+        );
+        if (groupsFolders) {
+            treeService.sortNotesIfNeeded(parentNote.noteId);
+        }
+    }
+}
+
 function sortsByLabel(sorted: string, labelName: string) {
     return labelName === "top"
         || labelName === "bottom"
@@ -254,6 +278,7 @@ eventService.subscribe(eventService.ENTITY_DELETED, ({ entityName, entity }) => 
 
     if (entityName === "branches") {
         runAttachedRelations(entity.getNote(), "runOnBranchDeletion", entity);
+        sortParentsGroupingFolders(entity.parentNoteId, 0);
     }
 
     if (entityName === "notes" && entity.noteId.startsWith("_")) {

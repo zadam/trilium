@@ -193,6 +193,49 @@ describe("handlers", () => {
         });
     });
 
+    describe("folder re-sorting", () => {
+        it("re-sorts the parents grouping folders when a note gains or loses its only child", () => {
+            // The becca loader removes a deleted branch from its parent's children only once loaded.
+            becca.loaded = true;
+            buildNote({
+                id: "fd-ff", "#sorted": "", "#sortFoldersFirst": "", children: [{ id: "fd-note" }]
+            });
+            buildNote({ id: "fd-key", "#sorted": "folders last, title" });
+            buildNote({ id: "fd-plain", "#sorted": "title" });
+            for (const parentNoteId of ["fd-key", "fd-plain"]) {
+                new BBranch({ noteId: "fd-note", parentNoteId, branchId: `${parentNoteId}_fd-note` });
+            }
+            buildNote({ id: "fd-c1" });
+            buildNote({ id: "fd-c2" });
+
+            const first = new BBranch({
+                noteId: "fd-c1", parentNoteId: "fd-note", branchId: "fd-note_fd-c1"
+            });
+            eventService.emit(eventService.ENTITY_CREATED, { entityName: "branches", entity: first });
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("fd-ff");
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("fd-key");
+            expect(sortNotesIfNeeded).not.toHaveBeenCalledWith("fd-plain");
+            sortNotesIfNeeded.mockClear();
+
+            // A second child leaves `fd-note` a folder, so its parents keep their order.
+            const second = new BBranch({
+                noteId: "fd-c2", parentNoteId: "fd-note", branchId: "fd-note_fd-c2"
+            });
+            eventService.emit(eventService.ENTITY_CREATED, { entityName: "branches", entity: second });
+            eventService.emit(eventService.ENTITY_DELETED, {
+                entityName: "branches", entityId: second.branchId, entity: second
+            });
+            expect(sortNotesIfNeeded).not.toHaveBeenCalledWith("fd-ff");
+
+            eventService.emit(eventService.ENTITY_DELETED, {
+                entityName: "branches", entityId: first.branchId, entity: first
+            });
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("fd-ff");
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("fd-key");
+            expect(sortNotesIfNeeded).not.toHaveBeenCalledWith("fd-plain");
+        });
+    });
+
     describe("ENTITY_DELETED", () => {
         it("reschedules a hidden-subtree check when a system ('_') note is deleted", () => {
             const sysNote = buildNote({ id: "_systemDeleted", title: "sys" });
