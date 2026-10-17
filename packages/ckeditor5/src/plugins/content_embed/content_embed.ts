@@ -27,6 +27,7 @@ import noteIcon from '../../icons/note.svg?raw';
 import { encodeBlockParameter, parseBlockRange } from '@triliumnext/commons';
 import { getAttachmentId, getNoteId } from '../referencelink.js';
 import ResizableWidgets, { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
+import { restoreRendererFocusOnInput } from '../widget_utils.js';
 import './nested_editor_events.js';
 
 export const COMMAND_NAME = 'insertContentEmbed';
@@ -376,6 +377,8 @@ class ContentEmbedEditing extends Plugin {
 			TOGGLE_EDITABLE_COMMAND_NAME, new ToggleContentEmbedEditableCommand( editor ) );
 
 		editor.model.document.registerPostFixer( writer => this.removeTinyCaptions( writer ) );
+
+		restoreRendererFocusOnInput( this );
 	}
 
 	/** Keeps a copy of `caption`, for `embed` to show again. */
