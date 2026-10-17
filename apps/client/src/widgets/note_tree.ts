@@ -528,7 +528,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                         return false;
                     } else if (node.data.noteId === "_lbRoot") {
                         return false;
-                    } else if (node.data.noteId.startsWith("_options")) {
+                    } else if (node.data.noteId.startsWith("_options") || node.data.noteId.startsWith("_help")) {
                         return false;
                     } else if (node.data.noteId === hoistedNoteService.getHoistedNoteId()) {
                         // The hoisted note is the tree root, so it has no visible siblings to drop before/after.
@@ -578,6 +578,12 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                             notes = JSON.parse(jsonStr);
                         } catch (e) {
                             logError(`Cannot parse JSON '${jsonStr}' into notes for drop`);
+                            return;
+                        }
+
+                        // Help pages are virtual notes, which the server never moves.
+                        if (notes.some((note) => note.noteId.startsWith("_help"))) {
+                            toastService.showError(t("note_tree.dropping-not-allowed"));
                             return;
                         }
 

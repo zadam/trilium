@@ -97,18 +97,30 @@ describe("buildTreeContextMenuItems on system notes", () => {
         const items = await buildTreeContextMenuItems({
             note: child, branch, notePath: `${parentId}/${childId}`, component: {} as Component
         });
-        const find = (command: TreeCommandNames) => items.find((item) => "command" in item && item.command === command);
+        // The clipboard rows sit in an `actions` group of their own.
+        const rows = items.flatMap((item) => ("kind" in item && item.kind === "actions" ? item.items : [ item ]));
         const enabled = (command: TreeCommandNames) => {
-            const item = find(command);
+            const item = rows.find((row) => "command" in row && row.command === command);
             if (!item || "kind" in item) throw new Error(`expected a ${command} row`);
             return item.enabled;
         };
-        return { exportNote: enabled("exportNote"), importIntoNote: enabled("importIntoNote") };
+        return {
+            exportNote: enabled("exportNote"),
+            importIntoNote: enabled("importIntoNote"),
+            branchCommands: (
+                [ "cutNotesToClipboard", "copyNotesToClipboard", "moveNotesTo", "cloneNotesTo" ] as const
+            ).map(enabled)
+        };
     }
 
     it("exports a help page, which cannot be imported into, and neither for an options page", async () => {
-        expect(await enabledState("_helpParent", "_helpPage")).toStrictEqual({ exportNote: true, importIntoNote: false });
-        expect(await enabledState("_optionsParent", "_optionsPage")).toStrictEqual({ exportNote: false, importIntoNote: false });
+        expect(await enabledState("_helpParent", "_helpPage")).toMatchObject({ exportNote: true, importIntoNote: false });
+        expect(await enabledState("_optionsParent", "_optionsPage")).toMatchObject({ exportNote: false, importIntoNote: false });
+    });
+
+    it("does not cut, clone or move a help page, which is virtual, but does an options page", async () => {
+        expect((await enabledState("_helpParent", "_helpPage")).branchCommands).toStrictEqual([ false, false, false, false ]);
+        expect((await enabledState("_optionsParent", "_optionsPage")).branchCommands).toStrictEqual([ true, true, true, true ]);
     });
 });
 
