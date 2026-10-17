@@ -1,15 +1,16 @@
 /**
  * The grammar of the `#sorted` label: comma-separated sort keys, each optionally followed by
  * `asc` or `desc`, the way a search's `orderBy` is written — `#priority desc, #dueDate, title`. A
- * key is a label on the child notes written with `#`, or a bare property: `title`, `dateCreated` or
- * `dateModified`. A key followed by `first` or `last` instead groups the children that have that
- * label before or after the rest — `#archived last, title`.
+ * key is a label on the child notes written with `#`, or a bare property: `title`, `dateCreated`,
+ * `dateModified` or `folders`, which a note with children has. A key followed by `first` or `last`
+ * instead groups the children that have it before or after the rest — `#archived last, title`.
  *
- * A value that is a single bare key keeps its original meaning: a property when it names one,
- * otherwise a label, so `#sorted=myOrder` sorts by `#myOrder`.
+ * A value that is a single bare key keeps its original meaning: a property when it is `title`,
+ * `dateCreated` or `dateModified`, otherwise a label, so `#sorted=myOrder` sorts by `#myOrder` and
+ * `#sorted=folders` by `#folders`.
  */
 
-export const SORT_PROPERTIES = ["title", "dateCreated", "dateModified"];
+const SINGLE_KEY_PROPERTIES = ["title", "dateCreated", "dateModified"];
 
 export interface SortCriterion {
     /** A label name where {@link isLabel} is set, a property name otherwise. */
@@ -17,7 +18,7 @@ export interface SortCriterion {
     isLabel: boolean;
     /** Set by an explicit `asc`/`desc` after the key; absent follows `#sortDirection`. */
     descending?: boolean;
-    /** Set by `first`/`last` after the key: groups by whether a child has the label. */
+    /** Set by `first`/`last` after the key: groups by whether a child has the key at all. */
     group?: "first" | "last";
 }
 
@@ -25,7 +26,7 @@ export interface SortCriterion {
 export function parseSortCriteria(value: string | null | undefined): SortCriterion[] {
     const trimmed = (value ?? "").trim();
     if (/^[^\s,#]+$/.test(trimmed)) {
-        return [{ key: trimmed, isLabel: !SORT_PROPERTIES.includes(trimmed) }];
+        return [{ key: trimmed, isLabel: !SINGLE_KEY_PROPERTIES.includes(trimmed) }];
     }
 
     const criteria: SortCriterion[] = [];

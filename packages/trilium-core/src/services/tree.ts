@@ -92,8 +92,8 @@ function wouldAddingBranchCreateCycle(parentNoteId: string, childNoteId: string)
 
 /**
  * Sorts the children of `parentNoteId` by the levels of `sortBy`; `reverse` is the direction of a
- * level without its own, of the folders grouping and of ties, never of a `first`/`last` grouping
- * level or of the `#top` and `#bottom` levels {@link withPinningLevels} adds.
+ * level without its own, of the `#sortFoldersFirst` grouping and of ties, never of a `first`/`last`
+ * grouping level or of the `#top` and `#bottom` levels {@link withPinningLevels} adds.
  */
 function sortNotes(
     parentNoteId: string,
@@ -103,7 +103,7 @@ function sortNotes(
     sortNatural = false,
     _sortLocale?: string | null
 ) {
-    const levels = withPinningLevels(parseSortCriteria(sortBy), foldersFirst);
+    const levels = withPinningLevels(parseSortCriteria(sortBy), foldersFirst, reverse);
 
     // sortLocale can not be empty string or null value, default value must be set to undefined.
     const sortLocale = _sortLocale || undefined;
@@ -129,6 +129,8 @@ function sortNotes(
                 rawValue = prefix ? `${prefix} - ${note.title}` : note.title;
             } else if (key === "dateCreated" || key === "dateModified") {
                 rawValue = note[key] ?? null;
+            } else if (key === "folders") {
+                rawValue = note.hasChildren() ? "" : null;
             }
 
             return typeof rawValue === "string" ? rawValue.toLowerCase() : rawValue;
@@ -166,25 +168,11 @@ function sortNotes(
             return (hasA ? -1 : 1) * (group === "last" ? -1 : 1);
         }
 
-        // Folders group first ascending and last descending.
-        function compareFolders(a: BNote, b: BNote) {
-            const aHasChildren = a.hasChildren();
-            if (aHasChildren === b.hasChildren()) {
-                return 0;
-            }
-            return (aHasChildren ? -1 : 1) * (reverse ? -1 : 1);
-        }
-
         notes.sort((a, b) => {
             for (const level of levels) {
-                let result: number;
-                if (level === FOLDERS_LEVEL) {
-                    result = compareFolders(a, b);
-                } else if (level.group) {
-                    result = compareGroup(a, b, level);
-                } else {
-                    result = compareLevel(a, b, level, level.descending ?? reverse);
-                }
+                const result = level.group
+                    ? compareGroup(a, b, level)
+                    : compareLevel(a, b, level, level.descending ?? reverse);
                 if (result !== 0) {
                     return result;
                 }
@@ -222,23 +210,20 @@ function sortNotes(
     });
 }
 
-const FOLDERS_LEVEL = "folders";
-
 /**
  * Puts `#top asc` before `criteria` unless they name `#top`, then `#bottom last, #bottom desc`
- * unless they name `#bottom`, and the folders grouping right after the last `#top` or `#bottom`
- * level.
+ * unless they name `#bottom`. Unless they name `folders`, `#sortFoldersFirst` adds `folders first`
+ * (`folders last` when `reverse`) right after the last `#top` or `#bottom` level.
  */
-function withPinningLevels(criteria: SortCriterion[], foldersFirst: boolean) {
-    const isPinning = (level: SortCriterion) =>
-        level.isLabel && (level.key === "top" || level.key === "bottom");
-    const names = (key: string) => criteria.some((level) => level.isLabel && level.key === key);
+function withPinningLevels(criteria: SortCriterion[], foldersFirst: boolean, reverse: boolean) {
+    const names = (key: string, isLabel: boolean) =>
+        criteria.some((level) => level.isLabel === isLabel && level.key === key);
 
-    const levels: (SortCriterion | typeof FOLDERS_LEVEL)[] = [];
-    if (!names("top")) {
+    const levels: SortCriterion[] = [];
+    if (!names("top", true)) {
         levels.push({ key: "top", isLabel: true, descending: false });
     }
-    if (!names("bottom")) {
+    if (!names("bottom", true)) {
         levels.push(
             { key: "bottom", isLabel: true, group: "last" },
             { key: "bottom", isLabel: true, descending: true }
@@ -246,11 +231,13 @@ function withPinningLevels(criteria: SortCriterion[], foldersFirst: boolean) {
     }
     levels.push(...criteria);
 
-    if (foldersFirst) {
+    if (foldersFirst && !names("folders", false)) {
         const lastPinning = levels.findLastIndex(
-            (level) => level !== FOLDERS_LEVEL && isPinning(level)
+            ({ key, isLabel }) => isLabel && (key === "top" || key === "bottom")
         );
-        levels.splice(lastPinning + 1, 0, FOLDERS_LEVEL);
+        levels.splice(lastPinning + 1, 0, {
+            key: "folders", isLabel: false, group: reverse ? "last" : "first"
+        });
     }
     return levels;
 }

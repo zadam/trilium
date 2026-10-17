@@ -9,6 +9,12 @@ describe("sort criteria", () => {
         expect(parseSortCriteria(" dateCreated ")).toStrictEqual([
             { key: "dateCreated", isLabel: false }
         ]);
+        // Only `title`, `dateCreated` and `dateModified` are properties on their own.
+        expect(parseSortCriteria("folders")).toStrictEqual([{ key: "folders", isLabel: true }]);
+        expect(parseSortCriteria("folders, title")).toStrictEqual([
+            { key: "folders", isLabel: false },
+            { key: "title", isLabel: false }
+        ]);
         expect(parseSortCriteria("myOrder")).toStrictEqual([{ key: "myOrder", isLabel: true }]);
         expect(parseSortCriteria("calendar:view")).toStrictEqual([
             { key: "calendar:view", isLabel: true }

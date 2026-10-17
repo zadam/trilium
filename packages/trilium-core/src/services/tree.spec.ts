@@ -407,6 +407,48 @@ describe("Tree", () => {
         ]);
     });
 
+    it("groups folders with `folders first` or `folders last`, overriding #sortFoldersFirst", () => {
+        const children: Parameters<typeof buildNote>[0]["children"] = [
+            {title: "b"},
+            {title: "p2", children: [{title: "2.1"}]},
+            {title: "a"},
+            {title: "p1", children: [{title: "1.1"}]}
+        ];
+        for (const [sorted, direction, expected] of [
+            ["folders first, title", "desc", ["p2", "p1", "b", "a"]],
+            ["folders last, title", "asc", ["a", "b", "p1", "p2"]]
+        ] as const) {
+            const note = buildNote({
+                children, "#sorted": sorted, "#sortDirection": direction, "#sortFoldersFirst": ""
+            });
+            getContext().init(() => {
+                tree.sortNotesIfNeeded(note.noteId);
+            });
+            expect(note.children.map((child) => child.title)).toStrictEqual([...expected]);
+        }
+    });
+
+    it("places a folders level where #sorted writes it", () => {
+        const note = buildNote({
+            children: [
+                {title: "archived folder", "#archived": "", children: [{title: "1.1"}]},
+                {title: "archived", "#archived": ""},
+                {title: "folder", children: [{title: "2.1"}]},
+                {title: "leaf"},
+                {title: "bottom folder", "#bottom": "", children: [{title: "3.1"}]},
+                {title: "top", "#top": ""}
+            ],
+            "#sorted": "#archived last, #top first, #bottom last, folders first, title"
+        });
+        getContext().init(() => {
+            tree.sortNotesIfNeeded(note.noteId);
+        });
+        const orderedTitles = note.children.map((child) => child.title);
+        expect(orderedTitles).toStrictEqual([
+            "top", "folder", "leaf", "bottom folder", "archived folder", "archived"
+        ]);
+    });
+
     it("orders the same children the same way whatever order they start in", () => {
         const titles = Array.from({length: 53}, (_, index) => `Week ${index + 1}`);
         const orders = [titles, [...titles].reverse()].map((startingOrder) => {
