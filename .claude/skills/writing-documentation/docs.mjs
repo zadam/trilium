@@ -13,7 +13,7 @@
  *   rename <page> <title>                  retitle a page (meta + H1); links follow on `sync`
  *   move <page> <parent> [--after s|--first]   reparent a page and its files
  *   delete <page>                          remove a page; refuses when the app links to it
- *   icons <query...> [--pack bx|cke]       search the icon fonts the docs can use
+ *   icons <query...> [--pack bx|cke|tn-brand]   search the icon fonts the docs can use
  *   impact [--diff [range]] [terms...]     which pages a code change or a term touches
  *   check [--tree t]                       consistency + style audit of the trees
  *   sync                                   regenerate everything (help HTML, meta) headless
@@ -53,11 +53,17 @@ const TREES = {
 
 const ICON_PACKS = {
     bx: "packages/trilium-core/src/services/icon_pack_boxicons-v2.json",
-    cke: "packages/trilium-core/src/services/icon_pack_text_editor.json"
+    cke: "packages/trilium-core/src/services/icon_pack_text_editor.json",
+    "tn-brand": "packages/trilium-core/src/services/icon_pack_brands.json"
 };
+const ICON_PACK_LABELS = { bx: "app UI, boxicons", cke: "text editor toolbar", "tn-brand": "AI providers and import sources" };
 const CKE_BUILDER = "apps/icon-pack-builder/src/providers/ckeditor.ts";
-const CKE_REBUILD = "run `pnpm --filter @triliumnext/icon-pack-builder start cke` and commit "
-    + "apps/client/src/fonts/text-editor-icons.woff2 with " + ICON_PACKS.cke;
+const BRAND_ICON_DIR = "apps/icon-pack-builder/brand-icons";
+/** The packs built from SVGs in the repository, which `staleIconFonts()` compares with their sources. */
+const BUILT_ICON_PACKS = {
+    cke: { font: "text-editor-icons.woff2", missing: () => staleCkeIcons() },
+    "tn-brand": { font: "brand-icons.woff2", missing: () => staleBrandIcons() }
+};
 
 /** `apps/client/src/services/doc_renderer.ts` refuses any other character in a help page path. */
 const DOC_NAME_CHARS = /^[a-zA-Z0-9_/\- ()&.,`]+$/;
@@ -370,15 +376,14 @@ function icons() {
         console.log(problems.length ? `${problems.length} unknown icon class(es)` : "every icon class in the docs exists in a built-in pack");
         return;
     }
-    const stale = packs.includes("cke") ? staleCkeIcons() : [];
-    if (stale.length) console.log(`! cke font is out of date, no glyph for ${stale.join(", ")}\n  ${CKE_REBUILD}\n`);
+    for (const problem of staleIconFonts(packs)) console.log(`! ${problem}\n`);
     const query = flags._.map((q) => q.toLowerCase());
-    if (!query.length) die("usage: icons <query...> [--pack bx|cke] | icons --check");
+    if (!query.length) die("usage: icons <query...> [--pack bx|cke|tn-brand] | icons --check");
     for (const pack of packs) {
         const manifest = loadIconPack(pack);
         const matches = Object.entries(manifest.icons).filter(([name, def]) => query.every((q) => name.includes(q) || (def.terms ?? []).some((t) => t.includes(q))));
         if (!matches.length) continue;
-        console.log(`${pack} (${pack === "cke" ? "text editor toolbar" : "app UI, boxicons"}) — ${matches.length} match(es)`);
+        console.log(`${pack} (${ICON_PACK_LABELS[pack]}) — ${matches.length} match(es)`);
         for (const [name] of matches.slice(0, 40)) console.log(`  <span class="tn-icon ${pack} ${name}"></span>`);
         if (matches.length > 40) console.log(`  … ${matches.length - 40} more`);
     }
@@ -453,8 +458,7 @@ function check() {
         checkContent(index, errors, warnings);
         if (treeName === "user") checkHtmlMirror(index, errors, warnings);
     }
-    const stale = staleCkeIcons();
-    if (stale.length) warnings.push(`cke font is out of date, no glyph for ${stale.join(", ")}: ${CKE_REBUILD}`);
+    warnings.push(...staleIconFonts(Object.keys(BUILT_ICON_PACKS)));
     if (trees.includes("user")) {
         checkCodeReferences(loadTree("user"), errors);
         checkUrlLiterals(errors);
@@ -882,6 +886,29 @@ function loadIconPack(pack) {
     return iconCache.get(pack);
 }
 
+/** A line per built pack among `packs` whose font lacks a glyph for one of its SVGs, with the rebuild command. */
+function staleIconFonts(packs) {
+    const problems = [];
+    for (const pack of packs.filter((p) => p in BUILT_ICON_PACKS)) {
+        const { font, missing } = BUILT_ICON_PACKS[pack];
+        const stale = missing();
+        if (!stale.length) continue;
+        problems.push(`${pack} font is out of date, no glyph for ${stale.join(", ")}: run `
+            + `\`pnpm --filter @triliumnext/icon-pack-builder start ${pack}\` and commit `
+            + `apps/client/src/fonts/${font} with ${ICON_PACKS[pack]}`);
+    }
+    return problems;
+}
+
+/** The `tn-brand-*` classes of the SVGs in `BRAND_ICON_DIR` that the font has no glyph for. */
+function staleBrandIcons() {
+    const known = loadIconPack("tn-brand").icons;
+    return fs.readdirSync(path.join(ROOT, BRAND_ICON_DIR))
+        .filter((f) => f.endsWith(".svg"))
+        .map((f) => `tn-brand-${f.slice(0, -".svg".length)}`)
+        .filter((id) => !(id in known));
+}
+
 /**
  * The `cke-trilium-*` classes of the SVGs in `packages/ckeditor5` that the font has no glyph for.
  * The folders come from `TRILIUM_ICON_DIRS` in the builder, so the two cannot drift.
@@ -903,7 +930,7 @@ function staleCkeIcons() {
     return stale;
 }
 
-/** `bx bx-star`, `bx bxs-grid`, `cke cke-quote`, with optional modifiers such as `bx-flip-horizontal`. */
+/** `bx bx-star`, `bx bxs-grid`, `cke cke-quote`, `tn-brand tn-brand-openai`, with optional modifiers such as `bx-flip-horizontal`. */
 function iconExists(cls) {
     const parts = cls.trim().split(/\s+/);
     const pack = parts[0];
@@ -913,8 +940,8 @@ function iconExists(cls) {
 }
 
 function normalizeIconClass(input) {
-    const name = input.trim().replace(/^(bx|cke)\s+/, "");
-    const pack = name.startsWith("cke-") ? "cke" : "bx";
+    const name = input.trim().replace(/^(bx|cke|tn-brand)\s+/, "");
+    const pack = name.startsWith("cke-") ? "cke" : name.startsWith("tn-brand-") ? "tn-brand" : "bx";
     return `${pack} ${name}`;
 }
 

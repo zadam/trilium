@@ -1,6 +1,6 @@
 ---
 name: writing-documentation
-description: Use whenever a change is user-facing — a new feature, a moved or removed button, a label, a shortcut, an option, a default, a note type, a collection view, a dialog, an import format — or when asked to write, fix, restructure or audit Trilium's documentation ("document this", "update the User Guide", "add a page for X", "is X documented?", "which page describes X?", "the docs still say…", "rename/move this page", "add a screenshot", "which icon do I use?"). Covers the three docs trees (`docs/User Guide`, `docs/Developer Guide`, `docs/Release Notes`) and the generated in-app help they feed, the `!!!meta.json` note metadata (noteId, shareAlias, iconClass, attachments), the house style of the User Guide (register, page templates, reference-link pills, `<kbd>`, admonitions, figures, the `bx`/`cke` icon spans), and `docs.mjs`, which finds and shows pages, scaffolds a page with correct metadata, registers images, renames/moves/deletes pages, maps a code diff to the pages it affects, audits the trees, and regenerates the help HTML headless — so `!!!meta.json` and `apps/server/src/assets/doc_notes` never have to be read or hand-edited. A user-facing change is not finished until the User Guide describes it, in the same commit.
+description: Use whenever a change is user-facing — a new feature, a moved or removed button, a label, a shortcut, an option, a default, a note type, a collection view, a dialog, an import format — or when asked to write, fix, restructure or audit Trilium's documentation ("document this", "update the User Guide", "add a page for X", "is X documented?", "which page describes X?", "the docs still say…", "rename/move this page", "add a screenshot", "which icon do I use?"). Covers the three docs trees (`docs/User Guide`, `docs/Developer Guide`, `docs/Release Notes`) and the generated in-app help they feed, the `!!!meta.json` note metadata (noteId, shareAlias, iconClass, attachments), the house style of the User Guide (register, page templates, reference-link pills, `<kbd>`, admonitions, figures, the `bx`/`cke`/`tn-brand` icon spans), and `docs.mjs`, which finds and shows pages, scaffolds a page with correct metadata, registers images, renames/moves/deletes pages, maps a code diff to the pages it affects, audits the trees, and regenerates the help HTML headless — so `!!!meta.json` and `apps/server/src/assets/doc_notes` never have to be read or hand-edited. A user-facing change is not finished until the User Guide describes it, in the same commit.
 ---
 
 # Writing Trilium's documentation
@@ -154,6 +154,10 @@ skeletons per page kind are [references/page-templates.md](references/page-templ
    `apps/client/src/fonts/text-editor-icons.woff2` and
    `packages/trilium-core/src/services/icon_pack_text_editor.json`. `icons` and `check` both flag
    a Trilium SVG the font lacks. A Trilium SVG `src/icons/foo.svg` becomes `cke-trilium-foo`.
+   An AI provider or an import source is shown by its mark,
+   `<span class="tn-icon tn-brand tn-brand-<name>"></span>`, before its name. The `tn-brand` pack
+   is built from `apps/icon-pack-builder/brand-icons/<name>.svg` the same way: a new SVG there
+   needs `start tn-brand`, committing `brand-icons.woff2` and `icon_pack_brands.json`.
 9. Callouts: `> [!NOTE]` context/history · `> [!TIP]` a better way · `> [!IMPORTANT]` beta status,
    requirement, third-party disclaimer · `> [!WARNING]` data/security risk or a version-gated break.
 10. Version facts: "Since v0.104.0, …", "Starting with v0.104.0, …", "Versions prior to v0.103.0 …".
