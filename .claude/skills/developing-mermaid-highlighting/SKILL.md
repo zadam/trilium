@@ -31,7 +31,8 @@ languages/mermaid/
   parsers/line_text.ts  lineText(): the "rest of the line after a keyword" tokenizer (titles, styles)
   test/<diagram>.txt    Lezer fixtures, one file per parsers/ directory, same name
   mermaid.spec.ts       runs every fixture file, checks generated parsers are current
-  LICENSE               upstream MIT licence — keep it
+  LICENSE               MIT notices of codemirror-lang-mermaid, @mermaid-js/parser and Mermaid
+                        — keep them
 ```
 
 How a document parses: `mermaid.grammar` first takes the front matter, the way Mermaid does: a `---`
@@ -125,7 +126,9 @@ extension (Mermaid-Chart/vscode-mermaid-chart, `syntaxes/`) only lists keywords.
    case per construct. Add a detection case to `test/mermaid.txt`.
 7. **Map Mermaid's id** to the node in `HIGHLIGHTED_AS` (`mermaid_highlighting.spec.ts`), and run
    it: `cd apps/client && pnpm exec vitest run src/widgets/type_widgets/mermaid`.
-8. Regenerate, run the suite, measure coverage.
+8. **Credit the source** in `LICENSE`: add the diagram to the section of the parser it follows
+   (`@mermaid-js/parser` for Langium, Mermaid for Jison and Chevrotain).
+9. Regenerate, run the suite, measure coverage.
 
 ## Lezer traps already hit
 

@@ -1,5 +1,6 @@
 // Mermaid language support, vendored from https://github.com/Edge-Tools/codemirror-lang-mermaid
-// (itself a fork of https://github.com/inspirnathan/codemirror-lang-mermaid); MIT, see LICENSE.
+// (itself a fork of https://github.com/inspirnathan/codemirror-lang-mermaid). Newer grammars follow
+// Mermaid's own parsers. MIT, see LICENSE.
 // After editing a `.grammar` file, regenerate its parser with
 // `pnpm --filter @triliumnext/codemirror build:mermaid-grammars`.
 import { yamlLanguage } from "@codemirror/lang-yaml";
