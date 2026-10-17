@@ -117,7 +117,9 @@ describe("accessibility lines", () => {
         "packet-beta\n  0-15: \"A\"", "architecture-beta\n  service a(server)[A]",
         "radar-beta\n  axis a", "treemap-beta\n  \"A\": 1",
         "treeView-beta\n  src", "wardley-beta\n  anchor A [0.5, 0.5]",
-        "cynefin-beta\n  complex"
+        "cynefin-beta\n  complex", "railroad-beta\n  a = terminal(\"x\");",
+        "railroad-ebnf-beta\n  a = \"x\";", "railroad-abnf-beta\n  a = \"x\";",
+        "railroad-peg-beta\n  a <- \"x\";"
     ];
     const lines = [
         "  accTitle: My title", "  accDescr: My description", "  accDescr {\n    Line one\n  }"

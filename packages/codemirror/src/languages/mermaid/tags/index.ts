@@ -291,3 +291,18 @@ export const eventModelingTags = {
     separator: Tag.define(t.separator),
     type: Tag.define(t.typeName)
 };
+
+export const railroadTags = {
+    bracket: Tag.define(t.bracket),
+    definitionOperator: Tag.define(t.definitionOperator),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    number: Tag.define(t.number),
+    operator: Tag.define(t.operator),
+    reference: Tag.define(t.variableName),
+    separator: Tag.define(t.separator),
+    special: Tag.define(t.atom),
+    string: Tag.define(t.string),
+    titleText: Tag.define(t.string)
+};

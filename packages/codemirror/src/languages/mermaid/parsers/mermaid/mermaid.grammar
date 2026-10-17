@@ -20,6 +20,10 @@
     WardleyDiagram |
     CynefinDiagram |
     EventModelingDiagram |
+    RailroadDiagram |
+    RailroadEbnfDiagram |
+    RailroadAbnfDiagram |
+    RailroadPegDiagram |
     SankeyDiagram |
     XYChartDiagram |
     PacketDiagram |
@@ -46,6 +50,10 @@ TreemapDiagram { treemapText accessible* }
 TreeViewDiagram { treeViewText accessible* }
 WardleyDiagram { wardleyText accessible* }
 CynefinDiagram { cynefinText accessible* }
+RailroadDiagram { railroadText accessible* }
+RailroadEbnfDiagram { railroadEbnfText accessible* }
+RailroadAbnfDiagram { railroadAbnfText accessible* }
+RailroadPegDiagram { railroadPegText accessible* }
 XYChartDiagram { xyChartText accessible* }
 PacketDiagram { packetText accessible* }
 ArchitectureDiagram { architectureText accessible* }
@@ -99,6 +107,10 @@ AccDescr { accDescrKeyword (":" AccText? | "{" accBlockText? "}") }
   wardleyText,
   cynefinText,
   EventModelingDiagram,
+  railroadText,
+  railroadEbnfText,
+  railroadAbnfText,
+  railroadPegText,
   SankeyDiagram,
   xyChartText,
   packetText,

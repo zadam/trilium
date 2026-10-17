@@ -25,6 +25,10 @@ import {
     wardleyText,
     cynefinText,
     EventModelingDiagram,
+    railroadText,
+    railroadEbnfText,
+    railroadAbnfText,
+    railroadPegText,
     SankeyDiagram,
     xyChartText,
     packetText,
@@ -62,6 +66,10 @@ const diagramMap: Record<string, number> = {
     "wardley-beta": wardleyText,
     "cynefin-beta": cynefinText,
     "eventmodeling": EventModelingDiagram,
+    "railroad-beta": railroadText,
+    "railroad-ebnf-beta": railroadEbnfText,
+    "railroad-abnf-beta": railroadAbnfText,
+    "railroad-peg-beta": railroadPegText,
     "sankey-beta": SankeyDiagram,
     "sankey": SankeyDiagram,
     "xychart-beta": xyChartText,
@@ -93,7 +101,8 @@ const diagrams = Object.keys(diagramMap);
 const accessibleDiagrams = new Set([
     pieText, flowchartText, sequenceText, journeyText, requirementText, ganttText, quadrantText,
     radarText, treemapText, treeViewText, xyChartText, packetText, architectureText, classText,
-    stateText, erText, gitText, c4Text, wardleyText, cynefinText
+    stateText, erText, gitText, c4Text, wardleyText, cynefinText, railroadText, railroadEbnfText,
+    railroadAbnfText, railroadPegText
 ]);
 
 /**

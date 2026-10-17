@@ -422,3 +422,39 @@ tf 01 ui A
 ==>
 
 MermaidDiagram(EventModelingDiagram(DiagramName,Frame(Keyword,FrameId,EntityType(Type),QualifiedName(Name))))
+
+# Railroad
+
+railroad-beta
+  a = terminal("x");
+
+==>
+
+MermaidDiagram(RailroadDiagram(DiagramName,Rule(RuleName,"=",Call(Function,"(",String,")"),";")))
+
+# EBNF railroad
+
+railroad-ebnf-beta
+  a = "x";
+
+==>
+
+MermaidDiagram(RailroadEbnfDiagram(DiagramName,Rule(RuleName,"=",String,";")))
+
+# ABNF railroad
+
+railroad-abnf-beta
+  a = "x";
+
+==>
+
+MermaidDiagram(RailroadAbnfDiagram(DiagramName,Rule(RuleName,"=",String,";")))
+
+# PEG railroad
+
+railroad-peg-beta
+  a <- "x";
+
+==>
+
+MermaidDiagram(RailroadPegDiagram(DiagramName,Rule(RuleName,"<-",String,";")))
