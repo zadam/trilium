@@ -81,7 +81,11 @@ reject them.
 
 ## Adding a diagram type
 
-Every type Mermaid 12.2.0 registers has a grammar. Swimlanes (`swimlane-beta`) is a flowchart to
+Every type Mermaid 12.2.0 registers has a grammar, and the client's `mermaid_highlighting.spec.ts`
+(next to `sample_diagrams.ts`) keeps it so: it fails when `mermaid.getRegisteredDiagramsMetadata()`
+lists an id missing from its `HIGHLIGHTED_AS` table, and when a sample of a listed type does not
+parse as that node with a parser in `DIAGRAM_PARSERS`. A Mermaid upgrade that adds a type therefore
+starts here; a type with no Trilium sample goes in `UNSAMPLED_CODE`. Swimlanes (`swimlane-beta`) is a flowchart to
 Mermaid and to us; agent flow (`agentflow-beta`) is the flowchart grammar in its `agentflow`
 dialect (`DIAGRAM_PARSERS` configures it), which adds its `flow`, `connector` and `global`
 keywords without taking those names away from flowchart node ids. Use case follows Mermaid's
@@ -114,7 +118,9 @@ extension (Mermaid-Chart/vscode-mermaid-chart, `syntaxes/`) only lists keywords.
 6. **Fixtures**: `test/<diagram>.txt`, named exactly like the directory. Start with Trilium's own
    sample for the type (`apps/client/src/widgets/type_widgets/mermaid/sample_diagrams.ts`), then one
    case per construct. Add a detection case to `test/mermaid.txt`.
-7. Regenerate, run the suite, measure coverage.
+7. **Map Mermaid's id** to the node in `HIGHLIGHTED_AS` (`mermaid_highlighting.spec.ts`), and run
+   it: `cd apps/client && pnpm exec vitest run src/widgets/type_widgets/mermaid`.
+8. Regenerate, run the suite, measure coverage.
 
 ## Lezer traps already hit
 
