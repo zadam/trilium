@@ -27,6 +27,7 @@ import noteIcon from '../../icons/note.svg?raw';
 import { encodeBlockParameter, parseBlockRange } from '@triliumnext/commons';
 import { getAttachmentId, getNoteId } from '../referencelink.js';
 import ResizableWidgets, { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
+import { restoreRendererFocusOnInput } from '../widget_utils.js';
 import './nested_editor_events.js';
 
 export const COMMAND_NAME = 'insertContentEmbed';
@@ -374,12 +375,7 @@ class ContentEmbedEditing extends Plugin {
 
 		editor.model.document.registerPostFixer( writer => this.removeTinyCaptions( writer ) );
 
-		// Widget UI sets `_renderer.isFocused` to false on a press. The view ignores its events
-		// (`data-cke-ignore-events`), so a press or key that the view sees is back in the text.
-		const viewDocument = editor.editing.view.document;
-		const restore = () => restoreRendererFocus( editor );
-		this.listenTo( viewDocument, 'mousedown', restore, { priority: 'highest' } );
-		this.listenTo( viewDocument, 'keydown', restore, { priority: 'highest' } );
+		restoreRendererFocusOnInput( this );
 	}
 
 	/** Keeps a copy of `caption`, for `embed` to show again. */
@@ -1300,13 +1296,6 @@ function preventCKEditorHandling( domElement: HTMLElement, editor: Editor ) {
         //@ts-expect-error: We are accessing a private field.
 		editor.editing.view._renderer.isFocused = false;
 	}
-}
-
-/** Sets `_renderer.isFocused` back to `view.document.isFocused`. */
-function restoreRendererFocus( editor: Editor ) {
-	const view = editor.editing.view;
-	//@ts-expect-error: We are accessing a private field.
-	view._renderer.isFocused = view.document.isFocused;
 }
 
 /** Whether `target` is in the content box of an embed, rather than in its title row. */
