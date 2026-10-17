@@ -23,8 +23,8 @@ export interface ToolApprovalPolicy {
     /** Absent means `"always_ask"`. */
     mode?: LlmPermissionMode;
     /**
-     * What a tool's calls touch. `"app_content"` never asks, and `"ask_before_changes"` lets
-     * `"read"` run too. Absent, every tool counts as a change.
+     * What a tool's calls touch. `"app_content"` and `"web"` never ask, and `"ask_before_changes"`
+     * lets `"read"` run too. Absent, every tool counts as a change.
      */
     kindOf?: (toolName: string) => ToolKind;
 }
@@ -98,7 +98,8 @@ export class ToolApprovals {
             return true;
         }
         const kind = this.kindOf(toolName);
-        return kind === "app_content" || (kind === "read" && this.mode === "ask_before_changes");
+        return kind === "app_content" || kind === "web"
+            || (kind === "read" && this.mode === "ask_before_changes");
     }
 
     /** Decline every call that still waits. */

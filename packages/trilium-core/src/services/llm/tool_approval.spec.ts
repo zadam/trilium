@@ -168,21 +168,23 @@ describe("ToolApprovals allowed for the chat", () => {
 describe("ToolApprovals permission modes", () => {
     const kindOf = (toolName: string): ToolKind => {
         if (toolName === "load_skill") return "app_content";
+        if (toolName === "read_web_page") return "web";
         return toolName === "get_note" ? "read" : "change";
     };
-    /** Which of a lookup in Trilium's own content, a read and a change ask in `mode`. */
+    /** Which of a lookup in Trilium's own content, a web page read, a read and a change ask in `mode`. */
     function asked(mode: "always_ask" | "ask_before_changes" | "dont_ask") {
         const approvals = new ToolApprovals(undefined, { mode, kindOf });
         const requests: string[] = [];
         approvals.onRequest = (request) => requests.push(request.toolName);
         void approvals.request({ toolCallId: "c0", toolName: "load_skill", toolInput: {} });
+        void approvals.request({ toolCallId: "c3", toolName: "read_web_page", toolInput: {} });
         void approvals.request({ toolCallId: "c1", toolName: "get_note", toolInput: {} });
         void approvals.request({ toolCallId: "c2", toolName: "delete_note", toolInput: {} });
         approvals.declineAll();
         return requests;
     }
 
-    it("asks about every call, only about changes, or about none, and never about Trilium's own content", async () => {
+    it("asks about every call, only about changes, or about none, and never about Trilium's own content or the web", async () => {
         expect(asked("always_ask")).toEqual([ "get_note", "delete_note" ]);
         expect(asked("ask_before_changes")).toEqual([ "delete_note" ]);
         expect(asked("dont_ask")).toEqual([]);
@@ -191,9 +193,10 @@ describe("ToolApprovals permission modes", () => {
         await expect(approvals.request({ toolCallId: "c1", toolName: "load_skill", toolInput: {} })).resolves.toBe(true);
     });
 
-    it("tells Trilium's own content, reads and changes apart, and counts anything unknown as a change", () => {
+    it("tells Trilium's own content, the web, reads and changes apart, and counts anything unknown as a change", () => {
         expect([ "load_skill", "search_icons" ].map(toolKind)).toEqual([ "app_content", "app_content" ]);
-        expect([ "get_note", "search_notes", "web_search", "read_web_page" ].map(toolKind)).toEqual([ "read", "read", "read", "read" ]);
+        expect([ "get_note", "search_notes" ].map(toolKind)).toEqual([ "read", "read" ]);
+        expect([ "web_search", "read_web_page" ].map(toolKind)).toEqual([ "web", "web" ]);
         expect([ "create_note", "delete_attribute", "some_mcp_tool" ].map(toolKind)).toEqual([ "change", "change", "change" ]);
     });
 });

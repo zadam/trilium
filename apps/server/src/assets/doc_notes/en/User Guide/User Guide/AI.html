@@ -285,8 +285,7 @@
   class="tn-icon bx bx-shield-quarter"></span>  <em>Tools</em> menu under <em>Permissions</em>:</p>
 <ul>
   <li><em>Always ask</em>: every call asks, including the ones that only read
-    (searching notes, reading a note or an attachment, and reading a web page
-    through a search provider).</li>
+    (searching notes, or reading a note or an attachment).</li>
   <li><em>Ask before changes</em>: the calls that only read run on their own,
     and the ones that change your notes (creating, editing, renaming, moving
     or deleting a note, and setting or deleting an attribute) ask.</li>
@@ -298,8 +297,10 @@
 <p>A tool allowed for the chat runs without asking in every mode. So does
   looking something up in what ships with Trilium (its User Guide, the skill
   sheets that teach the AI Trilium's search syntax and note types, and the
-  icons), since it reads none of your notes. A model's built-in web search
-  runs on the provider's side and never asks.</p>
+  icons), since it reads none of your notes. Searching the web and reading
+  a web page never ask either: turning on web search in the <em>Tools</em> menu
+  is what allows them, whether the model searches on its own or through a
+  search provider.</p>
 <aside class="admonition important">
   <p>Among the <a class="reference-link" href="#root/_help_eFhxp9laTW1S">Subscription-based providers</a>,
     Claude Code, Google Antigravity and OpenAI Codex ask like any other provider.
