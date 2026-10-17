@@ -15,6 +15,7 @@
     TimelineDiagram |
     QuadrantDiagram |
     RadarDiagram |
+    TreemapDiagram |
     SankeyDiagram |
     XYChartDiagram |
     PacketDiagram |
@@ -37,6 +38,7 @@ RequirementDiagram { requirementText accessible* }
 GanttDiagram { ganttText accessible* }
 QuadrantDiagram { quadrantText accessible* }
 RadarDiagram { radarText accessible* }
+TreemapDiagram { treemapText accessible* }
 XYChartDiagram { xyChartText accessible* }
 PacketDiagram { packetText accessible* }
 ArchitectureDiagram { architectureText accessible* }
@@ -85,6 +87,7 @@ AccDescr { accDescrKeyword (":" AccText? | "{" accBlockText? "}") }
   TimelineDiagram,
   quadrantText,
   radarText,
+  treemapText,
   SankeyDiagram,
   xyChartText,
   packetText,

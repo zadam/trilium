@@ -115,7 +115,7 @@ describe("accessibility lines", () => {
         "requirementDiagram\n  requirement r {\n    id: 1\n  }", "C4Context\n  Person(a, \"A\")",
         "quadrantChart\n  x-axis A --> B", "xychart-beta\n  bar [1, 2]",
         "packet-beta\n  0-15: \"A\"", "architecture-beta\n  service a(server)[A]",
-        "radar-beta\n  axis a"
+        "radar-beta\n  axis a", "treemap-beta\n  \"A\": 1"
     ];
     const lines = [
         "  accTitle: My title", "  accDescr: My description", "  accDescr {\n    Line one\n  }"
@@ -169,6 +169,18 @@ describe("radar grammar", () => {
             return text && doc.slice(text.from, text.to);
         });
         expect(titles).toEqual([ "Grades", null ]);
+    });
+});
+
+describe("treemap grammar", () => {
+    it("ends the styles of a classDef before its semicolon and the spaces around them", () => {
+        const doc = "treemap\nclassDef hot  fill:#f00 ;\nclassDef cold\n\"A\": 1";
+        const tree = parserOf("treemap").parse(doc);
+        const styles = tree.topNode.getChildren("ClassDef").map((classDef) => {
+            const text = classDef.getChild("Styles");
+            return text && doc.slice(text.from, text.to);
+        });
+        expect(styles).toEqual([ "fill:#f00", null ]);
     });
 });
 

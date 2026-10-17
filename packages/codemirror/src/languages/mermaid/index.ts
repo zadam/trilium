@@ -28,6 +28,7 @@ import { parser as sankeyParser } from "./parsers/sankey/parser.js";
 import { parser as sequenceParser } from "./parsers/sequence/parser.js";
 import { parser as stateParser } from "./parsers/state/parser.js";
 import { parser as timelineParser } from "./parsers/timeline/parser.js";
+import { parser as treemapParser } from "./parsers/treemap/parser.js";
 import { parser as xychartParser } from "./parsers/xychart/parser.js";
 
 export { foldByIndent } from "./extensions/index.js";
@@ -58,6 +59,7 @@ export const DIAGRAM_PARSERS: Record<string, LRParser> = {
     SequenceDiagram: sequenceParser,
     StateDiagram: stateParser,
     TimelineDiagram: timelineParser,
+    TreemapDiagram: treemapParser,
     XYChartDiagram: xychartParser
 };
 

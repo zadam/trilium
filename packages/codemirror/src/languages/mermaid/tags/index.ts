@@ -229,3 +229,15 @@ export const radarTags = {
     string: Tag.define(t.string),
     titleText: Tag.define(t.string)
 };
+
+export const treemapTags = {
+    className: Tag.define(t.className),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    number: Tag.define(t.number),
+    separator: Tag.define(t.separator),
+    string: Tag.define(t.string),
+    styles: Tag.define(t.attributeValue),
+    titleText: Tag.define(t.string)
+};

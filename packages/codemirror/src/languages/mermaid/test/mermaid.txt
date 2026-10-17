@@ -377,3 +377,12 @@ radar-beta
 ==>
 
 MermaidDiagram(RadarDiagram(DiagramName,Axes(Keyword,Axis(Name))))
+
+# Treemap
+
+treemap
+"A": 1
+
+==>
+
+MermaidDiagram(TreemapDiagram(DiagramName,Leaf(String,":",Number)))
