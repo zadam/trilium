@@ -73,3 +73,23 @@ body.mobile .mermaid-diagram.display-mode-split {
         border-block-end: 1px solid var(--main-border-color);
     }
 }
+
+.include-note {
+    /* The corners of the embed box that the diagram touches. */
+    --_mermaid-diagram-top-radius: 0;
+    --_mermaid-diagram-bottom-radius: var(--_include-note-bottom-border-radius, 8px);
+
+    &[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"]) {
+        --_mermaid-diagram-top-radius: var(--_include-note-top-border-radius, 8px);
+    }
+
+    &:has(> figcaption) {
+        --_mermaid-diagram-bottom-radius: 0;
+    }
+}
+
+.include-note-content:not(:fullscreen) .mermaid-diagram {
+    overflow: hidden;
+    border-radius: var(--_mermaid-diagram-top-radius) var(--_mermaid-diagram-top-radius)
+                   var(--_mermaid-diagram-bottom-radius) var(--_mermaid-diagram-bottom-radius);
+}
