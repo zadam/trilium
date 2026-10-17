@@ -32,6 +32,8 @@ interface ToolCallContext {
     move?: { toNoteId: string; fromNoteId: string | null };
     /** The title of a note `delete_note` deleted, shown in place of a link to a note that is gone. */
     deletedTitle?: string;
+    /** The title of the note `create_note` would create, in place of a link to a note not yet there. */
+    createdTitle?: string;
     /** Plain-text detail (e.g. skill name, search query) when no note ref is available. */
     detailText: string | null;
 }
@@ -74,6 +76,10 @@ function getToolCallContext(toolCall: ToolCall): ToolCallContext {
         const createdNoteId = parseResultField(toolCall, "noteId");
         if (createdNoteId) {
             return { noteId: createdNoteId, parentNoteId, detailText: null };
+        }
+        const { title } = input;
+        if (toolCall.toolName === "create_note" && !toolCall.result && typeof title === "string") {
+            return { noteId: parentNoteId, parentNoteId: null, createdTitle: title, detailText: null };
         }
     }
 
@@ -171,7 +177,9 @@ function getErrorMessage(result: string): string {
 /** Build the label content for a tool call section. */
 function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallView | null }) {
     const context = getToolCallContext(toolCall);
-    const { noteId: refNoteId, parentNoteId: refParentId, move, deletedTitle, detailText } = context;
+    const {
+        noteId: refNoteId, parentNoteId: refParentId, move, deletedTitle, createdTitle, detailText
+    } = context;
     const hasError = isFailedToolCall(toolCall);
 
     return (
@@ -188,7 +196,7 @@ function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallV
             {deletedTitle && <span className="llm-chat-tool-call-deleted-title">{deletedTitle}</span>}
             {refNoteId && (
                 <span className="llm-chat-tool-call-note-ref">
-                    <NoteRef noteId={refNoteId} parentNoteId={refParentId} move={move} />
+                    <NoteRef noteId={refNoteId} parentNoteId={refParentId} move={move} createdTitle={createdTitle} />
                 </span>
             )}
             {view?.trail}
@@ -203,14 +211,25 @@ function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallV
     );
 }
 
-/** The notes a call worked on: the note alone, the note in its parent, or where a move took it. */
-function NoteRef({ noteId, parentNoteId, move }: {
+/**
+ * The notes a call worked on: the note alone, the note in its parent (named by its title while
+ * `create_note` waits to create it), or where a move took it.
+ */
+function NoteRef({ noteId, parentNoteId, move, createdTitle }: {
     noteId: string;
     parentNoteId: string | null;
     move?: ToolCallContext["move"];
+    createdTitle?: string;
 }) {
     const link = (notePath: string) => <NewNoteLink notePath={notePath} showNoteIcon noPreview />;
 
+    if (createdTitle !== undefined) {
+        const components = {
+            Note: <span className="llm-chat-tool-call-created-title">{createdTitle}</span>,
+            Parent: link(noteId)
+        };
+        return <Trans i18nKey="llm.tools.note_in_parent" components={components as any} />;
+    }
     if (move) {
         const components = move.fromNoteId
             ? { Note: link(noteId), From: link(move.fromNoteId), To: link(move.toNoteId) }
@@ -231,7 +250,7 @@ function NoteRef({ noteId, parentNoteId, move }: {
  * `getToolCallView()` builds for the tools that have one. The raw input and
  * result are in the dialog the debug button opens.
  *
- * A call that waits for the user is open, showing what it would do (its view, or else its input),
+ * A call that waits for the user is open, showing what it would do when it has a view,
  * with the buttons that allow or deny it below.
  */
 function ToolCallSection({ toolCall }: { toolCall: ToolCall }) {

@@ -513,6 +513,13 @@ describe("ToolCallCard", () => {
         expect(older?.querySelector(".llm-chat-tool-call-old-title")).toBeNull();
     });
 
+    it("names the title of the note a create_note call would create in its parent, before the call runs", () => {
+        const target = renderCard([ { id: "1", toolName: "create_note", input: { parentNoteId: "p", title: "Draft", type: "text", content: "" } } ]);
+        const ref = target.querySelector(".llm-chat-tool-call-note-ref");
+        expect(ref?.textContent).toBe("llm.tools.note_in_parentDraftp");
+        expect(ref?.querySelector(".llm-chat-tool-call-created-title")?.textContent).toBe("Draft");
+    });
+
     it("names the title a rename would give, after the note link, before the call runs", () => {
         const target = renderCard([ { id: "1", toolName: "rename_note", input: { noteId: "n", newTitle: "New" } } ]);
         const newTitle = target.querySelector(".llm-chat-tool-call-new-title");
