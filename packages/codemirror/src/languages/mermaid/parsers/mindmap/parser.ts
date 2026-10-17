@@ -3,21 +3,21 @@
 import {LRParser} from "@lezer/lr"
 import {indentation, comments, lineTextType, newlines, trackIndent} from "./tokens.js"
 import {mindmapHighlighting} from "./highlight.js"
-const spec_word = {__proto__:null,mindmap:48, icon:54}
+const spec_word = {__proto__:null,mindmap:70, icon:74}
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "&fO`QjOOOOQb'#Ck'#CkQhQjOOQmQjOOOOQb'#Ce'#CeOOQb-E6i-E6iOrQkO'#CfOOQb'#Cl'#ClQmQjOOO!cQnO,59QOOQb-E6j-E6jOOQb'#Cu'#CuO!|QjO'#CgO#RQnO'#CiO#RQnO'#C{O#RQnO'#DOO#RQnO'#DPO#RQnO'#DSO#RQnO'#DTO#RQnO'#DUOOQb'#Cj'#CjO#dQjO1G.lOOQb1G.l1G.lO#nQjO,59ROOQb'#Ch'#ChOOQb,59T,59TO#sQjO,59gO#xQjO,59jO#}QjO,59kO$SQjO,59nO$XQjO,59oO$^QjO,59pOOQb7+$W7+$WO#RQnO1G.mOOQb1G/R1G/ROOQb1G/U1G/UOOQb1G/V1G/VOOQb1G/Y1G/YOOQb1G/Z1G/ZOOQb1G/[1G/[O$cQjO7+$XOOQb<<Gs<<Gs",
-  stateData: "$h~OfOSdOSPOSQOS~OcPOhSO~OcPO~OcUO~ObXOaYXcYX~Ol_OmbOp^Ot`OuaOycO~ORZOSZOTZOUZOVZOj[On]O~P}OkhO~ORZOSZOTZOUZOVZO~OaYicYi~P}OlqO~OqrO~OmsO~OutO~OtuO~OlvO~OzwO~OmyO~O",
-  goto: "#[yPPPPPPPPPz}!R!U!R!X!_!ePPPPPPPP!kPPPPP#WPP#W#WPP#W#W#WRROTVRWRfXRg[QfXRpeQQORTQQWRRYWQeXQi]Qj^Qk_Ql`QmaQnbQocRxqTdXe",
-  nodeNames: "⚠ LineComment Directive LineText1 LineText2 LineText3 LineText4 LineText5 MindmapDiagram DiagramName Line IconLine Icon ClassLine ShapedText",
-  maxTerm: 42,
+  states: "&lO`QjOOOOQb'#Cv'#CvQhQjOOQmQjOOOOQb'#Ce'#CeOOQb-E6t-E6tOrQkO'#CfOOQb'#Cw'#CwQmQjOOO!cQnO,59QOOQb-E6u-E6uOOQb'#DQ'#DQO!|QjO'#CgO#RQnO'#ClO#RQnO'#DSO#RQnO'#DTO#RQnO'#DUO#RQnO'#DVO#RQnO'#DWO#RQnO'#DXOOQb'#Cn'#CnO#dQjO1G.lOOQb1G.l1G.lO}QjO1G.lO$OQjO,59ROOQb'#Ci'#CiOOQb,59W,59WO$TQjO,59nO$YQjO,59oO$_QjO,59pO$dQjO,59qO$iQjO,59rO$nQjO,59sOOQb7+$W7+$WO#RQnO1G.mOOQb1G/Y1G/YOOQb1G/Z1G/ZOOQb1G/[1G/[OOQb1G/]1G/]OOQb1G/^1G/^OOQb1G/_1G/_O$sQjO7+$XOOQb<<Gs<<Gs",
+  stateData: "$x~OqOSoOSPOSQOS~OnPOsSO~OnPO~OnUO~OmXOlYXnYX~O^_O_bOc^Oe`OfaOgcO~ORZOSZOTZOUZOVZO[[Oa]O~P}OuiO~ORZOSZOTZOUZOVZO~O^iX_iXciXeiXfiXgiXlYinYi~O^rO~OdsO~O_tO~OfuO~OevO~O^wO~OhxO~O_zO~O",
+  goto: "#b|PPPPPPPPP}!Q!UP!XPP!UP![PPPPPP!b!e!kPPPPPPPP!qP#^#^#^#^#^#^RROTVRWRfXRh[QfXRqgRgXQQORTQQWRRYWQeXQj]Qk^Ql_Qm`QnaQobQpcRyrTdXg",
+  nodeNames: "⚠ LineComment Directive LineText1 LineText2 LineText3 LineText4 LineText5 MindmapDiagram DiagramName Line IconLine :: Icon ( ) ClassLine ::: ShapedText [ ] (( )) {{ }} NodeId",
+  maxTerm: 43,
   context: trackIndent,
   propSources: [mindmapHighlighting],
   skippedNodes: [0,1,2],
   repeatNodeCount: 2,
-  tokenData: "$b~R]XYz[]zpqzxy!fyz!s![!]#Q!c!}#e!}#O#p#O#P!]#P#Q#u#T#o#e#o#p#z#q#r$V~!PSf~XYz[]zpqz#O#P!]~!`QYZz]^z~!kPl~xy!n~!sOt~~!xPm~yz!{~#QOu~~#TP![!]#W~#]Pj~![!]#`~#eOn~~#jQg~!c!}#e#T#o#e~#uOp~~#zOq~~#}P#o#p$Q~$VOy~~$YP#q#r$]~$bOz~",
+  tokenData: "$b~R]XYz[]zpqzxy!fyz!s![!]#Q!c!}#e!}#O#p#O#P!]#P#Q#u#T#o#e#o#p#z#q#r$V~!PSq~XYz[]zpqz#O#P!]~!`QYZz]^z~!kP^~xy!n~!sOe~~!xP_~yz!{~#QOf~~#TP![!]#W~#]P[~![!]#`~#eOa~~#jQr~!c!}#e#T#o#e~#uOc~~#zOd~~#}P#o#p$Q~$VOg~~$YP#q#r$]~$bOh~",
   tokenizers: [indentation, comments, lineTextType, 0, newlines],
   topRules: {"MindmapDiagram":[0,8]},
-  specialized: [{term: 23, get: (value: keyof typeof spec_word) => spec_word[value] || -1}],
+  specialized: [{term: 34, get: (value: keyof typeof spec_word) => spec_word[value] || -1}],
   tokenPrec: 0
 })

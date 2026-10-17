@@ -61,9 +61,11 @@ Line {
     IconLine |
     ClassLine |
     ShapedText |
-    lineText ShapedText
+    NodeId ShapedText
   )
 }
+
+NodeId { lineText }
 
 DiagramName { kw<"mindmap"> }
 
@@ -86,6 +88,7 @@ kw<term> { @specialize<word, term> }
 @tokens {
   spaces { ($[ \t\f] | "\\" $[\n\r])+ }
   word { @asciiLetter+ }
+  "(" ")" "((" "))" "[" "]" "{{" "}}" "::" ":::"
 }
 
 @external tokens newlines from "./tokens.js" { newline, newlineEmpty }

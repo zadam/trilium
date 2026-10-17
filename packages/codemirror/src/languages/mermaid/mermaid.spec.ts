@@ -177,14 +177,27 @@ describe("shape metadata", () => {
         expect(styles("kanban\n  todo\n    A[Task]@{ priority: high")).toContain(`priority ${key}`);
         expect(styles("kanban\n  todo\n    A[Task]@{").at(-1)).toBe("@{ tok-meta");
     });
+});
 
-    function styles(doc: string) {
-        const result: string[] = [];
-        highlightTree(mermaidLanguage.parser.parse(doc), classHighlighter, (from, to, style) => {
-            result.push(`${doc.slice(from, to)} ${style}`);
-        });
-        return result;
-    }
+describe("mindmap highlighting", () => {
+    it("colours each node by its level, and ids, shapes, icons and classes apart", () => {
+        const doc = [
+            "mindmap", "  root((mindmap))", "    Origins", "      Long history",
+            "      ::icon(fa fa-book)", "      :::urgent", "        Buzan", "    Research",
+            "      Automatic creation", "        Uses", "            Argument mapping",
+            "              Pen and paper", "    id[Tools]"
+        ].join("\n");
+        expect(styles(doc)).toEqual([
+            "mindmap tok-typeName", "root tok-variableName", "(( tok-punctuation",
+            "mindmap tok-keyword", ")) tok-punctuation", "Origins tok-typeName",
+            "Long history tok-string", ":: tok-punctuation", "icon tok-keyword",
+            "( tok-punctuation", "fa fa-book tok-atom", ") tok-punctuation",
+            "::: tok-punctuation", "urgent tok-className", "Buzan tok-number",
+            "Research tok-typeName", "Automatic creation tok-string", "Uses tok-number",
+            "Argument mapping tok-propertyName", "Pen and paper tok-keyword",
+            "id tok-variableName", "[ tok-punctuation", "Tools tok-typeName", "] tok-punctuation"
+        ]);
+    });
 });
 
 describe("kanban grammar", () => {
@@ -252,3 +265,12 @@ describe("foldByIndent", () => {
         expect(foldAt("a", 1)).toBeNull();
     });
 });
+
+/** Each highlighted range of `doc` as its text and classes, in document order. */
+function styles(doc: string) {
+    const result: string[] = [];
+    highlightTree(mermaidLanguage.parser.parse(doc), classHighlighter, (from, to, style) => {
+        result.push(`${doc.slice(from, to)} ${style}`);
+    });
+    return result;
+}

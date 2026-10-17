@@ -2,7 +2,9 @@ import { ExternalTokenizer, ContextTracker } from "@lezer/lr";
 
 import { findDirectiveLength, lineLength } from "../mermaid/tokens.js";
 import {
+    ClassLine,
     Directive,
+    IconLine,
     LineComment,
     newline as newlineToken,
     newlineEmpty,
@@ -69,7 +71,7 @@ export const lineTextType = new ExternalTokenizer((input, stack) => {
             input.next === braceL
         ) {
             if (chars > 0) {
-                input.acceptToken(stack.context.lineType);
+                input.acceptToken(lineType(stack.context));
                 return;
             } else return;
         }
@@ -80,7 +82,7 @@ export const lineTextType = new ExternalTokenizer((input, stack) => {
                 input.next === braceR) &&
             chars > 0
         ) {
-            input.acceptToken(stack.context.lineType);
+            input.acceptToken(lineType(stack.context));
             return;
         }
 
@@ -88,7 +90,7 @@ export const lineTextType = new ExternalTokenizer((input, stack) => {
         chars++;
     }
 
-    input.acceptToken(stack.context.lineType);
+    input.acceptToken(lineType(stack.context));
 });
 
 const tabDepth = (depth: number) => {
@@ -137,9 +139,23 @@ function startsLine(input: InputStream) {
     }
 }
 
-const indentTracker = {
-    lineType: LineText1
-};
+/** A node line: its indentation and its depth in the tree, the root being 0. */
+interface Node {
+    indent: number;
+    level: number;
+    parent: Node | null;
+    hash: number;
+}
+
+/**
+ * The nodes a new line can nest under, each indented deeper than the one before, and the current
+ * line, which joins them at the next line unless it is a decoration: an icon or class line.
+ */
+interface Context {
+    nodes: Node | null;
+    line: Node;
+    decoration: boolean;
+}
 
 const countIndent = (space: string) => {
     let depth = 0;
@@ -148,17 +164,31 @@ const countIndent = (space: string) => {
     return depth;
 };
 
-const getLineType = (depth: number) => {
-    return LineTextTokens[depth % 5];
-};
+/** The token of the text on a line, one of five that cycle with the line's level. */
+function lineType(context: Context) {
+    return LineTextTokens[context.line.level % LineTextTokens.length];
+}
 
-export const trackIndent = new ContextTracker({
-    start: indentTracker,
+/**
+ * Tracks the level of each line as Mermaid nests nodes: under the last node indented less deeply.
+ * `::icon()` and `:::class` lines decorate the node before them, so nothing nests under them.
+ */
+export const trackIndent = new ContextTracker<Context>({
+    // No line has started yet; as a decoration, the placeholder never joins `nodes`.
+    start: { nodes: null, line: { indent: -1, level: 0, parent: null, hash: 0 }, decoration: true },
     shift(context, term, stack, input: InputStreamWithRead) {
-        if (term === indent) {
-            const depth = countIndent(input.read(input.pos, stack.pos));
-            context.lineType = getLineType(depth);
-        }
-        return context;
-    }
+        if (term !== indent) return context;
+        const nodes = context.decoration ? context.nodes : context.line;
+        const width = countIndent(input.read(input.pos, stack.pos));
+        let parent = nodes;
+        while (parent && parent.indent >= width) parent = parent.parent;
+        const level = parent ? parent.level + 1 : 0;
+        const hash = ((parent?.hash ?? 0) * 31 + width + 1) | 0;
+        return { nodes, line: { indent: width, level, parent, hash }, decoration: false };
+    },
+    reduce(context, term) {
+        return term === IconLine || term === ClassLine ? { ...context, decoration: true } : context;
+    },
+    hash: (context) => (((context.nodes?.hash ?? 0) * 31 + context.line.hash) * 2
+        + (context.decoration ? 1 : 0)) | 0
 });

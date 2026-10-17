@@ -10,14 +10,20 @@ export const mermaidTags = {
 };
 
 export const mindmapTags = {
+    className: Tag.define(t.className),
     diagramName: Tag.define(mermaidTags.diagramName),
     directive: Tag.define(mermaidTags.directive),
+    icon: Tag.define(t.atom),
+    keyword: Tag.define(t.keyword),
     lineComment: Tag.define(t.lineComment),
-    lineText1: Tag.define(),
-    lineText2: Tag.define(),
-    lineText3: Tag.define(),
-    lineText4: Tag.define(),
-    lineText5: Tag.define()
+    // The text of a node, by its level in the tree: the root, its children, and so on, then over
+    // again from the sixth level.
+    lineText1: Tag.define(t.keyword),
+    lineText2: Tag.define(t.typeName),
+    lineText3: Tag.define(t.string),
+    lineText4: Tag.define(t.number),
+    lineText5: Tag.define(t.propertyName),
+    nodeId: Tag.define(t.variableName)
 };
 
 export const pieTags = {

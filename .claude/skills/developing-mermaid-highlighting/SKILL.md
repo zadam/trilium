@@ -105,9 +105,12 @@ extension (Mermaid-Chart/vscode-mermaid-chart, `syntaxes/`) only lists keywords.
    indentation-based ones (mindmap, kanban) need a context tracker.
 2. **`highlight.ts`** maps node names to tags with `styleTags`, using `@external propSource … from
    "./highlight.js"` in the grammar. **`tokens.ts`** only if the grammar needs external tokenizers.
+   A literal (`"(("`) is a node, and so can be styled, only when the grammar's `@tokens` block
+   declares it; otherwise it stays anonymous and unstyled.
 3. **Tags** go in `tags/index.ts`. Give each one a standard parent
-   (`Tag.define(t.keyword)`): themes style standard tags only, so a parentless tag renders unstyled
-   (mindmap's `lineText1..5` are, deliberately or not).
+   (`Tag.define(t.keyword)`): themes style standard tags only, so a parentless tag renders unstyled.
+   Mindmap's five `lineText` tags, one per tree level, were parentless until they took `keyword`,
+   `typeName`, `string`, `number` and `propertyName`.
 4. **Teach the dispatcher.** In `parsers/mermaid/mermaid.grammar`, add the node to both the `@top`
    alternatives and the `@external tokens diagramText` list; in `parsers/mermaid/tokens.ts` add each
    keyword the diagram starts with to `diagramMap` (`radar-beta`, …). `diagramMap` matches with
