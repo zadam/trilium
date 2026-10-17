@@ -183,6 +183,33 @@ describe("NoteContextMenu", () => {
         expect(await isPrintEnabled(buildNote({ title: "Disabled", type: "render", "~disabled:renderNote": script.noteId }))).toBe(false);
     });
 
+    it("offers to export a help page, but not an options page", async () => {
+        const isExportEnabled = async (note: FNote) => {
+            const noteContext = new NoteContext("ntx-export");
+            noteContext.noteId = note.noteId;
+            noteContext.viewScope = { viewMode: "default" };
+            render((
+                <ParentComponent.Provider value={new Component()}>
+                    <NoteContextContext.Provider value={noteContext}>
+                        <NoteContextMenu note={note} noteContext={noteContext} />
+                    </NoteContextContext.Provider>
+                </ParentComponent.Provider>
+            ), host);
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            const exportItem = await vi.waitFor(() => {
+                const item = document.querySelector<HTMLElement>(".tn-popup li.dropdown-item:has(.bx-export)");
+                expect(item).toBeTruthy();
+                return item;
+            });
+            const enabled = !exportItem?.classList.contains("disabled");
+            render(null, host);
+            return enabled;
+        };
+
+        expect(await isExportEnabled(buildNote({ id: "_helpExportPage", title: "Help page" }))).toBe(true);
+        expect(await isExportEnabled(buildNote({ id: "_optionsExportPage", title: "Options page" }))).toBe(false);
+    });
+
     it("opens on the Basic Properties shortcut only for its own note context", async () => {
         const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
         const noteContext = new NoteContext("ntx-split-2");

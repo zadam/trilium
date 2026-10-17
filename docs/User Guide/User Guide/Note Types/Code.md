@@ -10,7 +10,7 @@ This can be useful for a few things:
 
 For shorter snippets of code that can be embedded in [Text](Text.md) notes, see [Code blocks](Text/Developer-specific%20formatting/Code%20blocks.md).
 
-![](Code_image.png)
+![](Code_image.jpg)
 
 ## Creating a code note
 

@@ -398,7 +398,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
 
     /** @returns {Promise<boolean>} */
     async isReadOnly() {
-        if (this?.viewScope?.readOnlyTemporarilyDisabled) {
+        if (this?.viewScope?.readOnlyTemporarilyDisabled && this.note?.isContentWritable !== false) {
             return false;
         }
 
@@ -416,7 +416,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             return false;
         }
 
-        if (options.is("databaseReadonly")) {
+        if (options.is("databaseReadonly") || !this.note.isContentWritable) {
             return true;
         }
 

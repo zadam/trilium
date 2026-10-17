@@ -2029,6 +2029,13 @@ body.electron:not(.platform-darwin) .tab-row-container {
     padding-inline-end: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw));
 }
 
+@media (display-mode: window-controls-overlay) {
+    body:not(.electron) .tab-row-container {
+        padding-inline-start: env(titlebar-area-x, 0px);
+        padding-inline-end: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw));
+    }
+}
+
 .tab-row-container .toggle-button {
     background: transparent;
     appearance: none;

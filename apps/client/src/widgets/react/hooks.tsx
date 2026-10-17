@@ -1928,21 +1928,23 @@ export function useGlobalShortcut(keyboardShortcut: string | null | undefined, h
 
 /**
  * Indicates that the current note is in read-only mode, while an editing mode is available,
- * and provides a way to switch to editing mode.
+ * and provides a way to switch to editing mode. `isLocked` marks a note that no editing mode can
+ * unlock, as its content cannot be saved; `enableEditing` does nothing for it.
  */
 export function useIsNoteReadOnly(note: FNote | null | undefined, noteContext: NoteContext | undefined) {
     const [ isReadOnly, setIsReadOnly ] = useState<boolean | undefined>(undefined);
     const [ readOnlyAttr ] = useNoteLabelBoolean(note, "readOnly");
     const [ autoReadOnlyDisabledAttr ] = useNoteLabelBoolean(note, "autoReadOnlyDisabled");
     const [ temporarilyEditable, setTemporarilyEditable ] = useState(false);
+    const isLocked = note?.isContentWritable === false;
 
     const enableEditing = useCallback((enabled = true) => {
-        if (noteContext?.viewScope) {
+        if (noteContext?.viewScope && !isLocked) {
             noteContext.viewScope.readOnlyTemporarilyDisabled = enabled;
             appContext.triggerEvent("readOnlyTemporarilyDisabled", {noteContext});
             setTemporarilyEditable(enabled);
         }
-    }, [noteContext]);
+    }, [noteContext, isLocked]);
 
     useEffect(() => {
         if (note && noteContext) {
@@ -1954,13 +1956,13 @@ export function useIsNoteReadOnly(note: FNote | null | undefined, noteContext: N
     }, [ note, noteContext, noteContext?.viewScope, readOnlyAttr, autoReadOnlyDisabledAttr ]);
 
     useTriliumEvent("readOnlyTemporarilyDisabled", ({noteContext: eventNoteContext}) => {
-        if (noteContext?.ntxId === eventNoteContext.ntxId) {
+        if (noteContext?.ntxId === eventNoteContext.ntxId && !isLocked) {
             setIsReadOnly(!noteContext.viewScope?.readOnlyTemporarilyDisabled);
             setTemporarilyEditable(true);
         }
     });
 
-    return { isReadOnly, enableEditing, temporarilyEditable };
+    return { isReadOnly, isLocked, enableEditing, temporarilyEditable };
 }
 
 /**

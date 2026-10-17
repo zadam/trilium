@@ -103,6 +103,14 @@ describe("StatusBar panels", () => {
         expect(isShown(".attribute-list")).toBe(false);
     });
 
+    it("offers no attributes panel for a note that cannot be edited, not even on the shortcut", () => {
+        renderBar(false);
+        expect(container.querySelector(".attributes-button")).toBeNull();
+
+        fire("addNewLabel");
+        expect(container.querySelector(".attribute-editor-stub")).toBeNull();
+    });
+
     it("closes the similar notes panel from its own title bar", () => {
         renderBar();
         fire("toggleRibbonTabSimilarNotes");
@@ -116,8 +124,9 @@ describe("StatusBar panels", () => {
         expect(container.querySelector(".similar-notes-pane")).toBeNull();
     });
 
-    function renderBar() {
+    function renderBar(isContentWritable = true) {
         shownNote.current = buildNote({ id: "note1", title: "A note" });
+        shownNote.current.isContentWritable = isContentWritable;
         eventHandlers = new Map();
         const parent = {
             componentId: "status-bar-cid",

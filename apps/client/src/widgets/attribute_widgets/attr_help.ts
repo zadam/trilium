@@ -59,6 +59,7 @@ export const ATTR_HELP: AttrHelpMap = {
         displayRelations: t("attribute_detail.display_relations"),
         hideRelations: t("attribute_detail.hide_relations"),
         titleTemplate: t("attribute_detail.title_template"),
+        "template:titleTemplate": t("attribute_detail.template_title_template"),
         template: t("attribute_detail.template"),
         color: t("attribute_detail.color"),
         keyboardShortcut: t("attribute_detail.keyboard_shortcut"),

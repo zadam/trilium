@@ -98,7 +98,7 @@ Notes deleted without erasing can be brought back, see <a class="reference-link
 ## Limitations
 
 *   The note menu is not available on launchers.
-*   On the notes of <a class="reference-link" href="Options.md">Options</a> and of the in-app help, most entries are grayed out, since these notes cannot be imported into, exported, deleted or have revisions.
+*   On the notes of <a class="reference-link" href="Options.md">Options</a> and of the in-app help, most entries are grayed out, since these notes cannot be imported into, deleted or have revisions. Of the two, only the in-app help can be exported, see <a class="reference-link" href="../Import%20%26%20Export.md">Import &amp; Export</a>.
 *   The [Note properties](#note-properties) section is only listed when the note itself is displayed, not its <a class="reference-link" href="../Notes/Attachments.md">Attachments</a> or its <a class="reference-link" href="../../Advanced%20Usage/Note%20source.md">Note source</a>.
 *   In <a class="reference-link" href="../Navigation/Quick%20edit.md">Quick edit</a>, _Search in note_, _Note map_, _Full width_ and _Convert into attachment_ are not listed.
 

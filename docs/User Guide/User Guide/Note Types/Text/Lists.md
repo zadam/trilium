@@ -27,32 +27,32 @@ It possible to add content-level blocks such as headings, code blocks, tables wi
     <tbody>
         <tr>
             <td>1</td>
-            <td><img src="2_Lists_image.png"></td>
+            <td><img src="2_Lists_image.jpg"></td>
             <td>First, create a list.</td>
         </tr>
         <tr>
             <td>2</td>
-            <td><img src="4_Lists_image.png"></td>
+            <td><img src="4_Lists_image.jpg"></td>
             <td>Press Enter to create a new list item.</td>
         </tr>
         <tr>
             <td>3</td>
-            <td><img src="1_Lists_image.png"></td>
+            <td><img src="1_Lists_image.jpg"></td>
             <td>Press Backspace to get rid of the bullet point. Notice the cursor position.</td>
         </tr>
         <tr>
             <td>4</td>
-            <td><img class="image_resized" style="aspect-ratio:676/112;width:98.29%;" src="5_Lists_image.png" width="676" height="112"></td>
+            <td><img class="image_resized" style="aspect-ratio:676/112;width:98.29%;" src="5_Lists_image.jpg" width="676" height="112"></td>
             <td>At this point, insert any desired block-level item such as a code block.</td>
         </tr>
         <tr>
             <td>5</td>
-            <td><img class="image_resized" style="aspect-ratio:675/129;width:94.22%;" src="3_Lists_image.png" width="675" height="129"></td>
+            <td><img class="image_resized" style="aspect-ratio:675/129;width:94.22%;" src="3_Lists_image.jpg" width="675" height="129"></td>
             <td>To continue with a new bullet point, press Enter until the cursor moves to a new blank position.</td>
         </tr>
         <tr>
             <td>6</td>
-            <td><img class="image_resized" style="aspect-ratio:675/129;width:100%;" src="Lists_image.png" width="675" height="129"></td>
+            <td><img class="image_resized" style="aspect-ratio:675/129;width:100%;" src="Lists_image.jpg" width="675" height="129"></td>
             <td>Press Enter once more to create the new bullet.</td>
         </tr>
     </tbody>

@@ -73,7 +73,7 @@ Here is a brief summary of all the notes within the hidden tree:
         </tr>
         <tr>
             <td><a class="reference-link" href="#root/_hidden/_help">User Guide</a></td>
-            <td>This is where the note structure for the User Guide is actually stored. Only the metadata is stored, as the help itself is present as actual files in the application directory.</td>
+            <td>This is where the User Guide appears in the note tree. Its notes are not stored in the database: Trilium builds them from files that ship with the application each time it starts, so they cannot be edited, moved or cloned, and they are not synchronized.</td>
         </tr>
     </tbody>
 </table>

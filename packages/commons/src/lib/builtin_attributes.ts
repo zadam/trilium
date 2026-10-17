@@ -192,6 +192,8 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "displayRelations", valueType: "text" },
     { type: "label", name: "hideRelations", valueType: "text" },
     { type: "label", name: "titleTemplate", valueType: "text", isDangerous: true },
+    // Set on a template: the default title of a note created from it, as `#titleTemplate` is for children.
+    { type: "label", name: "template:titleTemplate", valueType: "text", isDangerous: true },
     { type: "label", name: "template", valueType: "boolean" },
     { type: "label", name: "snippet", valueType: "boolean" },
     { type: "label", name: "snippetDescription", valueType: "text", hasUserValue: true },

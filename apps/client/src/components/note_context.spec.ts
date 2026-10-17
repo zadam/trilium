@@ -75,6 +75,19 @@ describe("NoteContext read-only capability", () => {
         if (noteContext.viewScope) noteContext.viewScope.readOnlyTemporarilyDisabled = true;
         expect(await noteContext.isReadOnly()).toBe(false);
     });
+
+    it("keeps a note whose content cannot be saved read-only, even once editing is enabled", async () => {
+        const note = buildNote({ title: "Help page", type: "text" });
+        note.isContentWritable = false;
+        noteContext.noteId = note.noteId;
+        expect(await noteContext.isReadOnly()).toBe(true);
+
+        noteContext.resetViewScope();
+        const viewScope = noteContext.viewScope;
+        expect(viewScope).toBeTruthy();
+        if (viewScope) viewScope.readOnlyTemporarilyDisabled = true;
+        expect(await noteContext.isReadOnly()).toBe(true);
+    });
 });
 
 describe("NoteContext view scope", () => {
