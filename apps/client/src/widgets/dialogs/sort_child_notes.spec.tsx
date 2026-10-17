@@ -12,13 +12,13 @@ vi.mock("../../services/i18n", () => ({
 }));
 
 describe("serializeSortLevels", () => {
-    it("writes each level as its key plus desc where descending, skipping a nameless label", () => {
+    it("writes each level as its key and direction, with `#` before a label, skipping a nameless label", () => {
         expect(serializeSortLevels([
             { kind: "label", labelName: " priority ", direction: "desc" },
             { kind: "label", labelName: "", direction: "asc" },
             { kind: "dateCreated", labelName: "", direction: "asc" },
             { kind: "title", labelName: "ignored", direction: "desc" }
-        ])).toBe("priority desc, dateCreated asc, title desc");
+        ])).toBe("#priority desc, dateCreated asc, title desc");
     });
 });
 
@@ -119,7 +119,7 @@ describe("SortChildNotesDialog", () => {
         await submit();
         // The first level's direction is the request's, which is what groups folders last.
         expect(put).toHaveBeenCalledWith("notes/parent/sort-children", expect.objectContaining({
-            sortBy: "priority desc, dateModified asc",
+            sortBy: "#priority desc, dateModified asc",
             sortDirection: "desc"
         }));
     });
