@@ -5,11 +5,15 @@ import {
     Essentials,
     Paragraph
 } from "ckeditor5";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createTestEditor, pressKey as press } from "../../../test/editor-kit.js";
+import { installGlobMock } from "../../../test/globals-test-kit.js";
+import ContentEmbed from "../content_embed/content_embed.js";
 import Multicolumn from "../multicolumn/multicolumn.js";
 import Tabs from "../tabs/tabs.js";
+
+const EMBED = "<contentEmbed boxSize=\"medium\" noteId=\"n1\"></contentEmbed>";
 
 describe("container keyboard shortcuts", () => {
 
@@ -41,6 +45,26 @@ describe("container keyboard shortcuts", () => {
         setModelData(editor.model, columns(`[${tabs}]`, p("C")));
         expect(press(editor, "ArrowRight", { ctrlKey: true })).toBe(true);
         expect(model(editor)).toBe(columns(p(""), `[${tabs}]${p("C")}`));
+    });
+
+    it("leave the keys pressed in an embed to the editor of the embed", async () => {
+        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote: vi.fn() }) });
+        const editor = await createTestEditor([Essentials, Paragraph, Multicolumn, ContentEmbed]);
+        const data = columns(p("a[]"), EMBED);
+        setModelData(editor.model, data);
+        const wrapper = editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper");
+        expect(wrapper).toBeInstanceOf(HTMLElement);
+        const nestedRoot = document.createElement("div");
+        nestedRoot.tabIndex = -1;
+        wrapper?.append(nestedRoot);
+
+        const event = new KeyboardEvent("keydown", {
+            key: "Enter", ctrlKey: true, bubbles: true, cancelable: true
+        });
+        nestedRoot.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+        expect(model(editor)).toBe(data);
+        expect(press(editor, "Enter", { ctrlKey: true })).toBe(true);
     });
 });
 

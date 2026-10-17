@@ -11,7 +11,7 @@ import {
 } from "ckeditor5";
 
 import TriliumMentionUI from "../mention/trilium_mention_ui.js";
-import { addEditingKeydownCapture } from "../move_block_updown.js";
+import { addEditingKeydownCapture, isFromEditable } from "../move_block_updown.js";
 import {
     getCaption, getContentEmbedAt, getContentEmbedDom, isContentEmbed
 } from "./content_embed.js";
@@ -32,11 +32,10 @@ export default class ContentEmbedCaret extends Plugin {
     }
 
     init() {
-        // The capture phase runs before the arrow keys of `Widget` and `WidgetTypeAround`. It also
-        // receives the keys pressed inside an embed, such as in its editor, which are skipped.
+        // The capture phase runs before the arrow keys of `Widget` and `WidgetTypeAround`.
         addEditingKeydownCapture(this, (event) => {
             const move = getArrowMove(event, this.isRtl());
-            if (!move || this.editor.isReadOnly || !isFromEditable(this.editor, event)) {
+            if (!move || this.editor.isReadOnly) {
                 return;
             }
 
@@ -248,19 +247,6 @@ function getArrowMove(event: KeyboardEvent, isRtl: boolean): ArrowMove | null {
         default:
             return null;
     }
-}
-
-/**
- * Whether `event` comes from an editable of `editor`, such as its root, a caption or a table cell,
- * rather than from the content of an embed, which the wrapper of the embed marks with
- * `data-cke-ignore-events`.
- */
-function isFromEditable(editor: Editor, event: Event) {
-    const root = editor.editing.view.getDomRoot();
-    const target = event.target instanceof Element ? event.target : null;
-    const embedWrapper = target?.closest("[data-cke-ignore-events]");
-    return !!root && !!target && root.contains(target)
-        && !(embedWrapper && root.contains(embedWrapper));
 }
 
 /**
