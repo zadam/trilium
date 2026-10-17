@@ -383,6 +383,14 @@ describe("ContentEmbedCaret as the editor of an embed", () => {
         expect(getEdge("ArrowLeft")).toBe("start");
     });
 
+    it("stays in a table whose last cell ends with an object", async () => {
+        const tableEditor = await createTestEditor([ ...TEXT_PLUGINS, Table ]);
+        setModelData(tableEditor.model, "<table>"
+            + "<tableRow><tableCell><paragraph>a[]</paragraph></tableCell></tableRow>"
+            + `<tableRow><tableCell>${HR}</tableCell></tableRow></table>`);
+        expect(getEdge("ArrowDown", {}, tableEditor)).toBe(null);
+    });
+
     it("leaves the arrow keys to an open mention list", async () => {
         const list = {
             element: null as HTMLElement | null,

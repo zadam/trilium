@@ -166,6 +166,53 @@ describe("applyStickyTableHeaders", () => {
         expect(thead.style.getPropertyValue(START_PROPERTY)).toBe(aligned);
     });
 
+    it("aligns the header rows once per scroll of their scroll container", async () => {
+        snapScrollOffsets();
+        const { scroller, content, spacer } = renderContent(tableFigure(1, 20));
+        onTestFinished(applyStickyTableHeaders(content));
+        await settle();
+        const { thead } = parts(content);
+        const start = () => thead.style.getPropertyValue(START_PROPERTY);
+
+        spacer.style.height = "100.4px";
+        scroller.dispatchEvent(new Event("scroll"));
+        await settle();
+        const aligned = start();
+        spacer.style.height = "100px";
+        scroller.dispatchEvent(new Event("scroll"));
+        await settle();
+        expect(start()).toBe(aligned);
+
+        scroller.dispatchEvent(new Event("scrollend"));
+        scroller.dispatchEvent(new Event("scroll"));
+        await settle();
+        expect(start()).not.toBe(aligned);
+    });
+
+    it("aligns the header rows of a table that scrolls with the page", async () => {
+        snapScrollOffsets();
+        const content = document.createElement("div");
+        content.className = "ck-content";
+        content.innerHTML = `<div style="height:100.4px"></div>${tableFigure(1, 20)}`
+            + "<div style=\"height:2000px\"></div>";
+        document.body.appendChild(content);
+        document.documentElement.style.scrollPaddingTop = "10.5px";
+        window.scrollTo(0, 31);
+        onTestFinished(() => {
+            content.remove();
+            document.documentElement.style.scrollPaddingTop = "";
+            window.scrollTo(0, 0);
+        });
+        onTestFinished(applyStickyTableHeaders(content));
+        await settle();
+
+        const { figure, thead } = parts(content);
+        expect(window.scrollY).toBe(31);
+        const offset = figure.getBoundingClientRect().top + window.scrollY - 10.5
+            + lengthOf(thead, START_PROPERTY);
+        expect(offset * SCALE % 1).toBeCloseTo(0.5, 1);
+    });
+
     it("keeps the header rows of a table that scrolls sideways in view", async () => {
         const html = tableFigure(1, 20, "Caption", "width:300%;");
         const { scroller, content } = renderContent(html);

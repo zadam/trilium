@@ -44,7 +44,7 @@ export class StickyTableHeaders {
     private readonly pending = new Set<Element>();
 
     /** The scroll containers between their first `scroll` event and their `scrollend` event. */
-    private readonly scrolling = new Set<EventTarget>();
+    private readonly scrolling = new Set<Node>();
 
     private frame: number | undefined;
 
@@ -99,18 +99,20 @@ export class StickyTableHeaders {
         this.observed.add(element);
     }
 
-    /** `measure()` aligns the steps to where the table sits, which can change without a resize. */
-    private readonly onScroll = ({ target }: Event) => {
-        if (target instanceof Node && !this.scrolling.has(target)) {
+    /**
+     * `measure()` aligns the steps to where the table sits, which can change without a resize. A
+     * listener on `document` receives the events of its nodes only.
+     */
+    private readonly onScroll = (event: Event) => {
+        const target = event.target as Node;
+        if (!this.scrolling.has(target)) {
             this.scrolling.add(target);
             this.schedule([ ...this.observed ].filter((element) => target.contains(element)));
         }
     };
 
-    private readonly onScrollEnd = ({ target }: Event) => {
-        if (target) {
-            this.scrolling.delete(target);
-        }
+    private readonly onScrollEnd = (event: Event) => {
+        this.scrolling.delete(event.target as Node);
     };
 
     /** Measures the figures of `elements` in the next animation frame. */
