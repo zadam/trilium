@@ -32,11 +32,11 @@ function manyTabsHtml(alignment: TabAlignment | null = null) {
     return `<div class="trilium-tabs"${attribute}>${tabs.join("")}</div>`;
 }
 
-/** Saved `html` that `applyTabs()` set up, in a 400px container. */
-function renderSaved(html: string) {
+/** Saved `html` that `applyTabs()` set up, in a container `width` pixels wide. */
+function renderSaved(html: string, width = 400) {
     const container = document.createElement("div");
     container.className = "ck-content";
-    container.style.width = "400px";
+    container.style.width = `${width}px`;
     container.innerHTML = html;
     document.body.appendChild(container);
     const dispose = applyTabs(container, OPTIONS);
@@ -287,6 +287,25 @@ describe("tabs layout styles", () => {
                 expect(cornersOf(panel), alignment).toBe("8px 8px 8px 8px");
             }
         }
+    });
+
+    it("keeps the buttons of titles that fit the bar only without them", async () => {
+        const tabs = Array.from({ length: 4 }, (_, index) =>
+            tab(`Step ${index + 1} of a long guide`, "<p>Body</p>"));
+        const { container } = renderSaved(`<div class="trilium-tabs">${tabs.join("")}</div>`, 300);
+        const { bar, titles } = barOf(container);
+        let toggles = 0;
+        const observer = new MutationObserver(() => toggles++);
+        observer.observe(bar, { attributeFilter: ["class"] });
+        onTestFinished(() => observer.disconnect());
+
+        for (let frame = 0; frame < 10; frame++) {
+            await new Promise(requestAnimationFrame);
+        }
+        expect(isOverflowing(bar)).toBe(true);
+        expect(toggles).toBeLessThanOrEqual(1);
+        expect(titles[0].getBoundingClientRect().width / bar.getBoundingClientRect().width)
+            .toBeCloseTo(0.3, 2);
     });
 
     it("scrolls the titles with the buttons, and reveals the title of the shown tab", async () => {

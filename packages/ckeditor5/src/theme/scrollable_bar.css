@@ -11,6 +11,7 @@
 
 .scrollable-bar {
     display: flex;
+    container-type: inline-size;
     min-width: 0;
 
     & > .scrollable-bar-viewport {

@@ -106,7 +106,8 @@ export interface EmbeddedCaretEditor {
     focusAt(edge: EmbedEdge): void;
     /**
      * The edge of the content that the arrow key of `event` moves the caret past, or `null` for
-     * any other key and while the caret stays in the content.
+     * any other key, while the caret stays in the content and while a list of the editor, such as
+     * its completions, takes the key.
      */
     getEdgeLeftBy(event: KeyboardEvent): EmbedEdge | null;
 }

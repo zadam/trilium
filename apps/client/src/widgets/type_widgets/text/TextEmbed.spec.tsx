@@ -80,7 +80,11 @@ describe("TextEmbed", () => {
         await vi.waitFor(() => expect(editorProps).toHaveBeenCalled(), { timeout: 5000 });
         const { parentComponent, ntxId } = editorProps.mock.calls[0][0] as TypeWidgetProps;
         const root = figure.querySelector<HTMLElement>(".ck-editor__editable");
-        const editor = { editing: { view: { getDomRoot: () => root } } } as unknown as CKTextEditor;
+        const modelDocument = { on: vi.fn(), off: vi.fn() };
+        const editor = {
+            editing: { view: { getDomRoot: () => root } },
+            model: { document: modelDocument }
+        } as unknown as CKTextEditor;
 
         act(() => {
             parentComponent?.handleEvent("textEditorRefreshed", { ntxId: "_other", editor });
@@ -92,6 +96,7 @@ describe("TextEmbed", () => {
         const target = getEmbedFindTarget(figure);
         expect(target instanceof MergedFind && target.host instanceof TextEditorFindTarget
             && target.host.editor).toBe(editor);
+        expect(modelDocument.on).toHaveBeenCalledWith("change:data", expect.any(Function));
     });
 
     it("uses the floating toolbar inside an editor that has one", async () => {

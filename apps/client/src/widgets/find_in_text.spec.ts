@@ -105,13 +105,16 @@ describe("TextEditorFindTarget", () => {
 });
 
 describe("FindInText", () => {
-    it("drives the find bar, and marks it stale as embeds change", async () => {
+    it("drives the find bar, and marks it stale as embeds or the content change", async () => {
         const parent = {
             noteContext: { getTextEditor: async () => editor },
             invalidateResults: vi.fn()
         };
         const handler = new FindInText(parent as unknown as FindWidget);
-        registerEmbedTarget(1, false);
+        const embedTarget = registerEmbedTarget(1, false);
+        const changeEmbed = () => {
+            for (const watcher of embedTarget.watchers) watcher();
+        };
 
         expect(await handler.performFind("needle", false, false))
             .toEqual({ totalFound: 4, currentFound: 1 });
@@ -119,15 +122,24 @@ describe("FindInText", () => {
         expect(handler.canReplace()).toBe(false);
         await handler.findNext(1, 1, 3);
         expect(handler.canReplace()).toBe(true);
+        expect(parent.invalidateResults).not.toHaveBeenCalled();
         expect(await handler.replace("pin")).toEqual({ totalFound: 3, currentFound: 1 });
         expect(editor.getData()).toContain("<p>pin two</p>");
         expect(await handler.replaceAll("pin")).toEqual({ totalFound: 1, currentFound: 1 });
 
+        parent.invalidateResults.mockClear();
         registerEmbedTarget(0);
-        expect(parent.invalidateResults).toHaveBeenCalledOnce();
+        changeEmbed();
+        typeText("needle");
+        expect(parent.invalidateResults).toHaveBeenCalledTimes(3);
         await handler.findBoxClosed(1, 1);
         registerEmbedTarget(0);
-        expect(parent.invalidateResults).toHaveBeenCalledOnce();
+        changeEmbed();
+        typeText("needle");
+        expect(parent.invalidateResults).toHaveBeenCalledTimes(3);
+
+        embedTarget.unregister();
+        expect(embedTarget.watchers.size).toBe(0);
     });
 });
 
@@ -147,6 +159,7 @@ function EmbedSchema(target: Editor) {
 function registerEmbedTarget(count: number, isEditable = true) {
     const embed = editor.editing.view.getDomRoot()?.querySelector<HTMLElement>(".include-note");
     if (!embed) throw new Error("The editor shows no embed.");
+    const watchers = new Set<() => void>();
     const target = {
         find: vi.fn(async () => count),
         highlight: vi.fn((_index: number | null) => {}),
@@ -154,10 +167,24 @@ function registerEmbedTarget(count: number, isEditable = true) {
         canReplace: () => isEditable,
         replace: async () => count,
         replaceAll: async () => count,
-        close: () => false
+        close: () => false,
+        watchContent: (callback: () => void) => {
+            watchers.add(callback);
+            return () => watchers.delete(callback);
+        }
     } satisfies FindTarget;
-    cleanups.push(registerEmbedFindTarget(embed, target));
-    return target;
+    const unregister = registerEmbedFindTarget(embed, target);
+    cleanups.push(unregister);
+    return Object.assign(target, { watchers, unregister });
+}
+
+/** Types `text` at the start of the first paragraph. */
+function typeText(text: string) {
+    editor.model.change((writer) => {
+        const paragraph = editor.model.document.getRoot()?.getChild(0);
+        if (!paragraph?.is("element")) throw new Error("Expected a first paragraph.");
+        writer.insertText(text, paragraph, 0);
+    });
 }
 
 /** The text of the block that holds the highlighted match, or `null` without one. */

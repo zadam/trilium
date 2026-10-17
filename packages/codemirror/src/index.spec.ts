@@ -1,3 +1,4 @@
+import { closeCompletion, completionStatus, startCompletion } from "@codemirror/autocomplete";
 import { indentUnit } from "@codemirror/language";
 import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
@@ -408,6 +409,23 @@ describe("CodeMirror", () => {
             const cursors = [ EditorSelection.cursor(0), EditorSelection.cursor(5) ];
             instance.dispatch({ selection: EditorSelection.create(cursors) });
             expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
+        });
+
+        it("leaves the arrow keys to an open completion list", async () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab");
+            instance.setCompletionSource("test", (context) => ({
+                from: context.pos, options: [ { label: "alpha" }, { label: "beta" } ]
+            }));
+            instance.dispatch({ selection: EditorSelection.cursor(2) });
+            startCompletion(instance);
+            await vi.waitFor(() => expect(completionStatus(instance.state)).toBe("active"));
+
+            const arrowDown = createKeydown("ArrowDown", instance.contentDOM);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe(null);
+            closeCompletion(instance);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
         });
     });
 

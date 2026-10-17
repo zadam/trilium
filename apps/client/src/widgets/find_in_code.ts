@@ -165,6 +165,14 @@ export class CodeMirrorFindTarget implements FindTarget {
         return true;
     }
 
+    watchContent(callback: () => void) {
+        return this.view.addUpdateListener((update) => {
+            if (update.docChanged) {
+                callback();
+            }
+        });
+    }
+
     /** Searches again after a replace, whose matches the editor does not follow. */
     private async searchAgain() {
         return this.search ? this.find(this.search.term, this.search.options) : 0;

@@ -143,7 +143,9 @@ export function enterContentEmbed(embed: HTMLElement, edge: EmbedEdge) {
 export function registerEmbedFindTarget(element: HTMLElement, target: FindTarget) {
     findTargets.set(element, target);
     notifyFindWatchers(element);
+    const stopWatching = target.watchContent?.(() => notifyFindWatchers(element));
     return () => {
+        stopWatching?.();
         findTargets.delete(element);
         notifyFindWatchers(element);
     };
@@ -163,7 +165,8 @@ export function getEmbedFindTarget(embed: HTMLElement) {
 
 /**
  * Calls `callback` when the targets that search the embeds inside `container` change, as when the
- * editor of an included note replaces its preview. Stops when the returned function is called.
+ * editor of an included note replaces its preview, or when the content they search changes.
+ * Stops when the returned function is called.
  */
 export function watchEmbedFindTargets(container: HTMLElement, callback: () => void) {
     const watcher = { container, callback };

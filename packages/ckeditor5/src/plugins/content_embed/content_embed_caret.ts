@@ -10,6 +10,7 @@ import {
     scrollViewportToShowTarget
 } from "ckeditor5";
 
+import TriliumMentionUI from "../mention/trilium_mention_ui.js";
 import { addEditingKeydownCapture } from "../move_block_updown.js";
 import {
     getCaption, getContentEmbedAt, getContentEmbedDom, isContentEmbed
@@ -110,12 +111,15 @@ export default class ContentEmbedCaret extends Plugin {
 
     /**
      * The edge of the content that the arrow key of `event`, pressed in this editor, moves the
-     * caret past, or `null` while the caret stays in the content.
+     * caret past, or `null` while the caret stays in the content or the mention list takes the key.
      */
     getEdgeLeftBy(event: KeyboardEvent): EmbedEdge | null {
         const editor = this.editor;
         const move = getArrowMove(event, this.isRtl());
-        if (!move || !isFromEditable(editor, event)) {
+        const mentions = editor.plugins.has(TriliumMentionUI)
+            ? editor.plugins.get(TriliumMentionUI)
+            : null;
+        if (!move || !isFromEditable(editor, event) || mentions?.isListShown) {
             return null;
         }
 

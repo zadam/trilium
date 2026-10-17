@@ -79,6 +79,8 @@ describe("CodeEmbed", () => {
         const view = await findView(figure);
         const target = getEmbedFindTarget(figure);
         if (!(target instanceof CodeMirrorFindTarget)) throw new Error("Expected a code target.");
+        const onContentChange = vi.fn();
+        const stopWatching = target.watchContent(onContentChange);
 
         expect(await target.find("print", { matchCase: false, wholeWord: false })).toBe(2);
         expect(figure.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
@@ -88,11 +90,16 @@ describe("CodeEmbed", () => {
         expect(figure.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
         expect(target.getFirstMatchBelow(-Infinity)).toBe(0);
         expect(target.getFirstMatchBelow(Infinity)).toBeNull();
+        expect(onContentChange).not.toHaveBeenCalled();
 
         expect(await target.replace(1, "log")).toBe(1);
         expect(view.state.doc.toString()).toBe("print(1)\nlog(2)");
+        expect(onContentChange).toHaveBeenCalledOnce();
         expect(target.close(0)).toBe(true);
         expect([ view.state.selection.main.from, view.state.selection.main.to ]).toEqual([ 0, 5 ]);
+        stopWatching();
+        act(() => view.dispatch({ changes: { from: 0, insert: "#" } }));
+        expect(onContentChange).toHaveBeenCalledOnce();
 
         await act(async () => {
             delete figure.dataset.editable;

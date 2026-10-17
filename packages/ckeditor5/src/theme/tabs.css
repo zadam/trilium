@@ -29,7 +29,7 @@
             flex: none;
             box-sizing: border-box;
             min-width: 4em;
-            max-width: 30%;
+            max-width: 30cqi;
             margin: 0 0 var(--_tabs-delimiter-width);
             padding: 6px 1rem;
             border-radius: var(--_tabs-border-radius) var(--_tabs-border-radius) 0 0;
@@ -53,7 +53,7 @@
             }
 
             body.mobile & {
-                max-width: 45%;
+                max-width: 45cqi;
             }
         }
 

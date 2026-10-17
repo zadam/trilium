@@ -95,7 +95,13 @@ export default class FindInText {
 
         const root = textEditor.editing.view.getDomRoot();
         if (!this.stopWatching && root) {
-            this.stopWatching = watchEmbedFindTargets(root, () => this.parent.invalidateResults());
+            const invalidate = () => this.parent.invalidateResults();
+            const stopWatchingEmbeds = watchEmbedFindTargets(root, invalidate);
+            const stopWatchingText = this.find.watchContent(invalidate);
+            this.stopWatching = () => {
+                stopWatchingEmbeds();
+                stopWatchingText();
+            };
         }
         return this.find;
     }
@@ -236,6 +242,12 @@ export class TextEditorFindTarget implements HostFindTarget {
             this.editor.plugins.get("FindReveal")
                 .show(element ? this.editor.model.createPositionAt(element, 0) : null);
         }
+    }
+
+    watchContent(callback: () => void) {
+        const modelDocument = this.editor.model.document;
+        modelDocument.on("change:data", callback);
+        return () => modelDocument.off("change:data", callback);
     }
 
     /** Takes the matches that the find commands left, as a replace removes the ones it replaced. */

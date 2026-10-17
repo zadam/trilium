@@ -32,6 +32,11 @@ export interface FindTarget {
      * and returns whether it did.
      */
     close(index: number | null): boolean;
+    /**
+     * Calls `callback` when the content changes, as typing in it does, until the returned function
+     * is called. A target over content that cannot change leaves it out.
+     */
+    watchContent?(callback: () => void): () => void;
 }
 
 /** Content with embeds, whose matches `MergedFind` places among the matches of the content. */
@@ -97,6 +102,10 @@ export default class MergedFind implements FindTarget {
         const next = match?.run ?? null;
         const previous = this.current;
 
+        // `FindReveal` shows a highlighted match of the host over `revealEmbed()`.
+        if (previous && previous.target !== next?.target) {
+            previous.target.highlight(null);
+        }
         // The content of an embed shows before its target scrolls to the match.
         if (next?.embed && next.embed !== previous?.embed) {
             this.host.revealEmbed(next.embed);
@@ -104,9 +113,6 @@ export default class MergedFind implements FindTarget {
         }
         if (match) {
             match.run.target.highlight(match.local);
-        }
-        if (previous && previous.target !== next?.target) {
-            previous.target.highlight(null);
         }
         if (previous?.embed && previous.embed !== next?.embed) {
             revealContentEmbed(previous.embed, false);
@@ -181,6 +187,11 @@ export default class MergedFind implements FindTarget {
         this.hostCount = 0;
         this.layOut();
         return isFocused;
+    }
+
+    /** Watches the content of the host. The embeds are targets of their own. */
+    watchContent(callback: () => void) {
+        return this.host.watchContent?.(callback) ?? (() => {});
     }
 
     /** Splits the matches of the host around each embed with matches. */

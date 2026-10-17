@@ -84,6 +84,8 @@ export function createScrollableBarEdge(
  * viewport's width; holding the button down scrolls continuously until it is released. A press on
  * the bar outside the viewport does not move the focus and does not reach the listeners of the
  * bar's ancestors, such as an editor's.
+ *
+ * Items size relative to the bar, in `cqi` units, not to the viewport, which the edges narrow.
  */
 export function attachScrollableBar(bar: HTMLElement, viewport: HTMLElement): ScrollableBar {
     const document = bar.ownerDocument;

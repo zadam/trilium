@@ -50,7 +50,7 @@ describe("MergedFind", () => {
         ]);
     });
 
-    it("reveals the embed of a match before highlighting it, and hides it once left", async () => {
+    it("clears the match it leaves before revealing and highlighting the next", async () => {
         const { find } = setUp();
         await find.find("needle", OPTIONS);
 
@@ -58,20 +58,20 @@ describe("MergedFind", () => {
         log = [];
         find.highlight(2);
         expect(log).toEqual([
-            "host.revealEmbed(a)", "a.box(true)", "a.highlight(0)", "host.highlight(null)"
+            "host.highlight(null)", "host.revealEmbed(a)", "a.box(true)", "a.highlight(0)"
         ]);
 
         log = [];
         find.highlight(4);
         expect(log).toEqual([
-            "host.revealEmbed(c)", "c.box(true)", "c.highlight(0)",
-            "a.highlight(null)", "a.box(false)"
+            "a.highlight(null)", "host.revealEmbed(c)", "c.box(true)", "c.highlight(0)",
+            "a.box(false)"
         ]);
 
         log = [];
         find.highlight(5);
         expect(log).toEqual([
-            "host.highlight(2)", "c.highlight(null)", "c.box(false)", "host.revealEmbed(null)"
+            "c.highlight(null)", "host.highlight(2)", "c.box(false)", "host.revealEmbed(null)"
         ]);
 
         log = [];
@@ -128,6 +128,18 @@ describe("MergedFind", () => {
         expect(host.close).toHaveBeenCalledWith(null);
         expect(log).toContain("a.box(false)");
         expect(find.canReplace(0)).toBe(false);
+    });
+
+    it("watches the content of its host, where the host can change", () => {
+        const { find, host } = setUp();
+        expect(() => find.watchContent(vi.fn())()).not.toThrow();
+
+        const stop = vi.fn();
+        const watchContent = vi.fn((_callback: () => void) => stop);
+        Object.assign(host, { watchContent });
+        const callback = vi.fn();
+        expect(find.watchContent(callback)).toBe(stop);
+        expect(watchContent).toHaveBeenCalledWith(callback);
     });
 
     it("closes the targets of embeds that left, and ignores an overtaken search", async () => {

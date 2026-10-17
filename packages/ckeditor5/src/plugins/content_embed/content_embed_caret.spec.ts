@@ -5,6 +5,7 @@ import {
     type ClassicEditor,
     Essentials,
     HorizontalLine,
+    MentionEditing,
     Paragraph,
     Table,
     Widget
@@ -13,6 +14,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor, destroyTrackedEditors, pressKey } from "../../../test/editor-kit.js";
 import { installGlobMock } from "../../../test/globals-test-kit.js";
+import TriliumMentionUI from "../mention/trilium_mention_ui.js";
+import type { MentionHostedList } from "../mention/types.js";
 import ContentEmbed from "./content_embed.js";
 import ContentEmbedCaret from "./content_embed_caret.js";
 
@@ -270,12 +273,12 @@ describe("ContentEmbedCaret as the editor of an embed", () => {
         plugin = editor.plugins.get(ContentEmbedCaret);
     });
 
-    /** The edge that `plugin` reports for `key` pressed in the editing root. */
-    function getEdge(key: string, init: KeyboardEventInit = {}) {
-        const root = getDomRoot(editor);
+    /** The edge that the plugin of `target` reports for `key` pressed in its editing root. */
+    function getEdge(key: string, init: KeyboardEventInit = {}, target = editor) {
+        const root = getDomRoot(target);
         let edge: string | null | undefined;
         root.addEventListener("keydown", (event) => {
-            edge = plugin.getEdgeLeftBy(event);
+            edge = target.plugins.get(ContentEmbedCaret).getEdgeLeftBy(event);
         }, { once: true });
         root.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, ...init }));
         return edge;
@@ -378,6 +381,29 @@ describe("ContentEmbedCaret as the editor of an embed", () => {
         setModelData(editor.model, "[<horizontalLine></horizontalLine>]<paragraph>ab</paragraph>");
         expect(getEdge("ArrowDown")).toBe(null);
         expect(getEdge("ArrowLeft")).toBe("start");
+    });
+
+    it("leaves the arrow keys to an open mention list", async () => {
+        const list = {
+            element: null as HTMLElement | null,
+            show: () => { list.element = document.body; },
+            hide: () => { list.element = null; },
+            handleKeyDown: () => true
+        } satisfies MentionHostedList;
+        const mentionEditor = await createTestEditor(
+            [ ...TEXT_PLUGINS, MentionEditing, TriliumMentionUI ],
+            { mention: { feeds: [], hostedFeeds: [ { marker: "/", list: () => list } ] } }
+        );
+        setModelData(mentionEditor.model, "<paragraph>[]</paragraph>");
+        mentionEditor.model.change((writer) => {
+            mentionEditor.model.insertContent(writer.createText("/"));
+        });
+
+        expect(list.element).not.toBeNull();
+        expect(getEdge("ArrowDown", {}, mentionEditor)).toBe(null);
+        expect(getEdge("ArrowRight", {}, mentionEditor)).toBe(null);
+        list.hide();
+        expect(getEdge("ArrowDown", {}, mentionEditor)).toBe("end");
     });
 
     it("ignores modified keys, a selection of text and keys from other elements", () => {

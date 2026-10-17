@@ -3,7 +3,7 @@ import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tool
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
 import { Compartment, EditorSelection, EditorState, StateEffect, type Extension } from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
-import { autocompletion, type CompletionSource } from "@codemirror/autocomplete";
+import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
 import { vim } from "@replit/codemirror-vim";
 import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
@@ -331,13 +331,14 @@ export default class CodeMirror extends EditorView {
 
     /**
      * The edge of the document that the arrow key of `event`, pressed without modifiers, moves
-     * the cursor past, or `null` for any other key and while the cursor stays in the document.
+     * the cursor past, or `null` for any other key, while the cursor stays in the document and
+     * while the completion list is open.
      */
     getEdgeLeftBy(event: KeyboardEvent): DocumentEdge | null {
         const { ranges, main } = this.state.selection;
         const hasModifier = event.shiftKey || event.ctrlKey || event.altKey || event.metaKey;
         if (event.target !== this.contentDOM || hasModifier || event.isComposing
-            || ranges.length > 1 || !main.empty) {
+            || ranges.length > 1 || !main.empty || completionStatus(this.state) === "active") {
             return null;
         }
 
