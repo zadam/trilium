@@ -92,7 +92,8 @@ function wouldAddingBranchCreateCycle(parentNoteId: string, childNoteId: string)
 
 /**
  * Sorts the children of `parentNoteId` by the levels of `sortBy`; `reverse` is the direction of a
- * level without its own, of the folders grouping and of ties, never of `#top` and `#bottom`.
+ * level without its own, of the folders grouping and of ties, never of `#top`, `#bottom` or a
+ * `first`/`last` grouping level.
  */
 function sortNotes(
     parentNoteId: string,
@@ -155,6 +156,15 @@ function sortNotes(
             );
         }
 
+        // Orders by whether each child has a truthy `key` label, ignoring its value and `reverse`.
+        function compareGroup(a: BNote, b: BNote, key: string, group: "first" | "last") {
+            const hasA = a.isLabelTruthy(key);
+            if (hasA === b.isLabelTruthy(key)) {
+                return 0;
+            }
+            return (hasA ? -1 : 1) * (group === "last" ? -1 : 1);
+        }
+
         notes.sort((a, b) => {
             const topA = fetchValue(a, "top");
             const topB = fetchValue(b, "top");
@@ -184,8 +194,10 @@ function sortNotes(
                 }
             }
 
-            for (const { key, descending } of criteria) {
-                const result = compareLevel(a, b, key, descending ?? reverse);
+            for (const { key, descending, group } of criteria) {
+                const result = group
+                    ? compareGroup(a, b, key, group)
+                    : compareLevel(a, b, key, descending ?? reverse);
                 if (result !== 0) {
                     return result;
                 }

@@ -297,6 +297,44 @@ describe("Tree", () => {
         expect(orderedTitles).toStrictEqual(["nine", "one", "two", "ten"]);
     });
 
+    it("groups the children that have a label last or first, whatever the direction", () => {
+        const children: Parameters<typeof buildNote>[0]["children"] = [
+            {title: "b", "#archived": ""},
+            {title: "c"},
+            {title: "d", "#archived": "false"},
+            {title: "a", "#archived": "", "#pinned": ""},
+            {title: "e", "#pinned": "yes"}
+        ];
+        for (const [sorted, direction, expected] of [
+            ["archived last", "asc", ["c", "d", "e", "a", "b"]],
+            ["archived last", "desc", ["e", "d", "c", "b", "a"]],
+            ["pinned first, archived last", "asc", ["e", "a", "c", "d", "b"]]
+        ] as const) {
+            const note = buildNote({children, "#sorted": sorted, "#sortDirection": direction});
+            getContext().init(() => {
+                tree.sortNotesIfNeeded(note.noteId);
+            });
+            expect(note.children.map((child) => child.title)).toStrictEqual([...expected]);
+        }
+    });
+
+    it("keeps #top and #bottom outside a grouping level", () => {
+        const note = buildNote({
+            children: [
+                {title: "archived top", "#top": "", "#archived": ""},
+                {title: "a", "#archived": ""},
+                {title: "bottom", "#bottom": ""},
+                {title: "b"}
+            ],
+            "#sorted": "archived last"
+        });
+        getContext().init(() => {
+            tree.sortNotesIfNeeded(note.noteId);
+        });
+        const orderedTitles = note.children.map((child) => child.title);
+        expect(orderedTitles).toStrictEqual(["archived top", "b", "a", "bottom"]);
+    });
+
     it("orders the same children the same way whatever order they start in", () => {
         const titles = Array.from({length: 53}, (_, index) => `Week ${index + 1}`);
         const orders = [titles, [...titles].reverse()].map((startingOrder) => {

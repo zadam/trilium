@@ -21,14 +21,25 @@ describe("sort criteria", () => {
         expect(parseSortCriteria("desc")).toEqual([{ key: "desc", descending: undefined }]);
     });
 
+    it("parses a grouping level written as a key followed by `first` or `last`", () => {
+        expect(parseSortCriteria("archived last, pinned FIRST, title")).toStrictEqual([
+            { key: "archived", group: "last" },
+            { key: "pinned", group: "first" },
+            { key: "title", descending: undefined }
+        ]);
+        // A grouping word on its own is a key, not a grouping.
+        expect(parseSortCriteria("last")).toStrictEqual([{ key: "last", descending: undefined }]);
+    });
+
     it("writes levels back so that they parse to the same thing", () => {
         const criteria = [
+            { key: "archived", group: "last" as const },
             { key: "priority", descending: true },
             { key: "dateCreated", descending: false },
             { key: "title", descending: undefined }
         ];
         const written = serializeSortCriteria(criteria);
-        expect(written).toBe("priority desc, dateCreated asc, title");
+        expect(written).toBe("archived last, priority desc, dateCreated asc, title");
         expect(parseSortCriteria(written)).toEqual(criteria);
     });
 });
