@@ -105,6 +105,17 @@
     margin-left: 0.3rem;
 }
 
+.llm-chat-tool-call-new-title {
+    font-size: 0.75rem;
+
+    &::before {
+        content: "→";
+        display: inline-block;
+        margin-right: 0.3rem;
+        opacity: 0.75;
+    }
+}
+
 
 /* Sized as the glyphs beside it in `.expandable-line` (0.9rem in a 1.4rem line). */
 .llm-chat-tool-call-provider {

@@ -26,6 +26,8 @@ const SVG_MIME = "image/svg+xml";
 export interface ToolCallView {
     /** Shown on the summary line before the note link, such as the title a rename replaced. */
     lead?: ComponentChildren;
+    /** Shown on the summary line after the note link, such as the title a rename would give. */
+    trail?: ComponentChildren;
     summary?: string;
     body?: ComponentChildren;
 }
@@ -61,6 +63,14 @@ export function getToolCallView(toolCall: ToolCall): ToolCallView | null {
         const saved = toolCall.result ? parseAttribute(parseJson(toolCall.result)) : null;
         const attribute = saved ?? parseAttribute(toolCall.input);
         return attribute ? { lead: <AttributePill {...attribute} /> } : null;
+    }
+
+    if (toolCall.toolName === "rename_note" && !toolCall.result) {
+        // Before the rename, the note link still shows the title the rename replaces.
+        const { newTitle } = toolCall.input;
+        return typeof newTitle === "string"
+            ? { trail: <span className="llm-chat-tool-call-new-title">{newTitle}</span> }
+            : null;
     }
 
     if (!toolCall.result) return null;

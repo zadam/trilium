@@ -191,6 +191,7 @@ function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallV
                     <NoteRef noteId={refNoteId} parentNoteId={refParentId} move={move} />
                 </span>
             )}
+            {view?.trail}
             {view?.summary && <span className="llm-chat-tool-call-result-count">{view.summary}</span>}
             {toolCall.approval === "declined" && (
                 <span className="llm-chat-tool-call-approval-badge">

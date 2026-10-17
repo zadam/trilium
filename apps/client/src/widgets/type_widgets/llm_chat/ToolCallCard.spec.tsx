@@ -513,6 +513,14 @@ describe("ToolCallCard", () => {
         expect(older?.querySelector(".llm-chat-tool-call-old-title")).toBeNull();
     });
 
+    it("names the title a rename would give, after the note link, before the call runs", () => {
+        const target = renderCard([ { id: "1", toolName: "rename_note", input: { noteId: "n", newTitle: "New" } } ]);
+        const newTitle = target.querySelector(".llm-chat-tool-call-new-title");
+        expect(newTitle?.textContent).toBe("New");
+        expect(newTitle?.previousElementSibling?.querySelector(".note-link-stub")?.textContent).toBe("n");
+        expect(target.querySelector(".llm-chat-tool-call-old-title")).toBeNull();
+    });
+
     it("says where a move took a note from and to", () => {
         const move = (id: string, result: object): ToolCall => ({
             id, toolName: "move_note", input: { noteId: "n", newParentNoteId: "to" }, result: JSON.stringify(result)
