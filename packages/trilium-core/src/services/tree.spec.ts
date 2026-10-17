@@ -416,6 +416,8 @@ describe("Tree", () => {
         ];
         for (const [sorted, direction, expected] of [
             ["folders first, title", "desc", ["p2", "p1", "b", "a"]],
+            // A bare `folders` puts the notes without children last, as any level does.
+            ["folders, title", "desc", ["p2", "p1", "b", "a"]],
             ["folders last, title", "asc", ["a", "b", "p1", "p2"]]
         ] as const) {
             const note = buildNote({
