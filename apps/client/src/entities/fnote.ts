@@ -34,6 +34,8 @@ export interface FNoteRow {
     type: NoteType;
     mime: string;
     blobId: string;
+    /** Sent only as `false`, for a virtual note whose provider cannot save content. */
+    isContentWritable?: boolean;
 }
 
 export interface NoteMetaData {
@@ -59,6 +61,8 @@ export default class FNote {
     mime!: string;
     // the main use case to keep this is to detect content change which should trigger refresh
     blobId!: string;
+    /** `false` for a note that no editing mode can unlock, such as a page of the in-app help. */
+    isContentWritable!: boolean;
 
     attributes: string[];
     targetRelations: string[];
@@ -104,6 +108,7 @@ export default class FNote {
         this.mime = row.mime ?? "";
 
         this.blobId = row.blobId;
+        this.isContentWritable = row.isContentWritable ?? true;
     }
 
     addParent(parentNoteId: string, branchId: string, sort = true) {

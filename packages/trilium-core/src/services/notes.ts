@@ -404,6 +404,13 @@ function createNewNoteWithTarget(target: "into" | "after" | "before", targetBran
 }
 
 function protectNoteRecursively(note: BNote, protect: boolean, includingSubTree: boolean, taskContext: TaskContext<"protectNotes">) {
+    if (note.isVirtual) {
+        // Virtual notes (e.g. the in-app help) are read-only, application-owned and never
+        // persisted — (un)protecting them is meaningless. Their children are virtual too,
+        // so the whole subtree is skipped.
+        return;
+    }
+
     protectNote(note, protect);
 
     taskContext.increaseProgressCount();
@@ -1187,6 +1194,13 @@ function updateNoteData(noteId: string, content: string, attachments: Attachment
 
     if (!note || !note.isContentAvailable()) {
         throw new Error(`Note '${noteId}' is not available for change!`);
+    }
+
+    // Revisions, attachments and link attributes are database rows, which a virtual note has none
+    // of; its provider stores the content alone.
+    if (note.isVirtual) {
+        note.setContent(content);
+        return;
     }
 
     saveRevisionIfNeeded(note);

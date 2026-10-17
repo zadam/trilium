@@ -11,7 +11,7 @@ The vertical layout is Trilium's original layout:
 *   The <a class="reference-link" href="Note%20Tree.md">Note Tree</a> can be collapsed by pressing the <span class="tn-icon bx bx-chevrons-left"></span> button at the bottom of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a>.
 *   The <a class="reference-link" href="Global%20menu.md">Global menu</a> can be accessed via the <span class="tn-icon cke cke-trilium"></span> icon at the top of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a>.
 
-![](1_Vertical%20and%20horizontal%20layout_image.png)
+![](1_Vertical%20and%20horizontal%20layout_image.jpg)
 
 ### Horizontal layout
 
@@ -23,7 +23,7 @@ The horizontal layout is a more traditional layout, since it bears similarity wi
 *   The <a class="reference-link" href="Note%20Tree.md">Note Tree</a> can be collapsed by pressing the small <span class="tn-icon bx bx-sidebar"></span> button to the left of the first tab.
 *   The <a class="reference-link" href="Global%20menu.md">Global menu</a> can be accessed via the <span class="tn-icon bx bx-menu"></span> button at the end of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a>.
 
-![](Vertical%20and%20horizontal%20layout_image.png)
+![](Vertical%20and%20horizontal%20layout_image.jpg)
 
 ## Changing the layout
 

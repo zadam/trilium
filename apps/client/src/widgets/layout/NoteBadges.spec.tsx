@@ -23,9 +23,22 @@ vi.mock("../../services/i18n", () => ({
 
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
-import { ClippedNoteBadge, ExecuteBadge, OfficePreviewBadge } from "./NoteBadges";
+import { ClippedNoteBadge, ExecuteBadge, OfficePreviewBadge, ReadOnlyBadge } from "./NoteBadges";
 
 const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+describe("ReadOnlyBadge", () => {
+    it("says a note that cannot be saved is read-only, without offering to edit it", () => {
+        const note = buildNote({ title: "Help page", type: "text" });
+        note.isContentWritable = false;
+        shownNote.current = note;
+        shownNote.viewScope = { viewMode: "default" };
+
+        const badge = renderInto(<ReadOnlyBadge />).querySelector(".read-only-badge");
+        expect(badge).toBeTruthy();
+        expect(badge?.textContent).toBe("breadcrumb_badges.read_only_locked");
+    });
+});
 
 describe("OfficePreviewBadge", () => {
     it("marks a file note that the office preview renders", () => {

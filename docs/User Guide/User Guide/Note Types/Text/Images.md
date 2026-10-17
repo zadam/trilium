@@ -28,7 +28,7 @@ The automatic download of images is enabled by default and can be toggled from 
 ## Configuring the images
 
 Clicking on an image will reveal a popup with multiple options:  
-![](4_Images_image.png)
+![](Images_image.png)
 
 ### Alignment
 
@@ -36,10 +36,10 @@ The first set of options configure the alignment are, in order:
 
 | Icon | Option | Preview | Description |
 | --- | --- | --- | --- |
-| <span class="tn-icon cke cke-object-inline"></span> | Inline | ![](Images_image.png) | As the name suggests, the name can be put inside a paragraph and moved around similarly as if it was a block of text. Use drag & drop or cut-paste to move it around. |
-| <span class="tn-icon cke cke-object-center"></span> | Centered image | ![](1_Images_image.png) | The image will be displayed as a block and centered, not allowing text in either the left or right of it. |
-| <span class="tn-icon cke cke-object-inline-right"></span> | Wrap text | ![](3_Images_image.png) | The image will be displayed to the left or the right of the text. |
-| <span class="tn-icon cke cke-object-left"></span> | Block align | ![](2_Images_image.png) | Similarly to _Centered image_, the image will be displayed as a block and aligned either to the left or to the right, but not allowing text to flow on either of its sides. |
+| <span class="tn-icon cke cke-object-inline"></span> | Inline | ![](Images_image.jpg) | As the name suggests, the name can be put inside a paragraph and moved around similarly as if it was a block of text. Use drag & drop or cut-paste to move it around. |
+| <span class="tn-icon cke cke-object-center"></span> | Centered image | ![](1_Images_image.jpg) | The image will be displayed as a block and centered, not allowing text in either the left or right of it. |
+| <span class="tn-icon cke cke-object-inline-right"></span> | Wrap text | ![](3_Images_image.jpg) | The image will be displayed to the left or the right of the text. |
+| <span class="tn-icon cke cke-object-left"></span> | Block align | ![](2_Images_image.jpg) | Similarly to _Centered image_, the image will be displayed as a block and aligned either to the left or to the right, but not allowing text to flow on either of its sides. |
 
 ### Drawing over an image
 

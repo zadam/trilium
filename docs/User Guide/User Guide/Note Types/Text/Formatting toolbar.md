@@ -10,19 +10,19 @@ The floating bar is a more minimalist option, in which the formatting is hidden 
 ### Block-level popup
 
 The first popup is the block-level popup. This will appear to the left of the current paragraph you are currently editing, as a sequence of dots:  
-![](1_Formatting%20toolbar_image.png)
+![](Formatting%20toolbar_image.jpg)
 
 Clicking this popup will reveal the formatting options that are specific to the entire paragraph, such as setting a heading, lists, tables, etc.
 
 The dots are also a drag handle: drag them to move the paragraph, all the selected paragraphs, or a selected element such as an image, a table or an included note to another place in the note. Right-clicking them copies a reference to the paragraph or to the selected paragraphs, see <a class="reference-link" href="Block%20references.md">Block references</a>.
 
-<figure class="image"><img style="aspect-ratio:1404/156;" src="3_Formatting toolbar_image.png" width="1404" height="156"></figure>
+<figure class="image"><img style="aspect-ratio:1404/156;" src="2_Formatting toolbar_image.png" width="1404" height="156"></figure>
 
 ### Inline popup
 
 The inline popup appears automatically when selecting a text:
 
-<figure class="image"><img style="aspect-ratio:1008/154;" src="2_Formatting toolbar_image.png" width="1008" height="154"></figure>
+<figure class="image"><img style="aspect-ratio:1008/154;" src="1_Formatting toolbar_image.png" width="1008" height="154"></figure>
 
 All the options here apply only to the selected portion of text, such as changing the font size, or making the text bold.
 
