@@ -14,6 +14,7 @@ import { t } from "../../../services/i18n";
 import { renderMermaidSvg } from "../../../services/mermaid";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
 import { isMobile, openInAppHelpFromUrl } from "../../../services/utils";
+import { OverlayFullscreenButton } from "../../react/OverlayControlGroup";
 import { useZoomPanWheel } from "../../react/zoom_pan";
 import { useZoomPanKeyboard } from "../../react/zoom_pan_keyboard";
 import { SplitLayout, useMountedPanes } from "../helpers/SplitEditor";
@@ -26,9 +27,11 @@ import {
     type ContentEmbedTool,
     type ContentEmbedToolbarItem,
     type ContentEmbedToolProvider,
+    needsFullscreenButton,
     showContentEmbedFullscreen,
     useContentEmbedDisplayMode,
-    useContentEmbedEvent
+    useContentEmbedEvent,
+    useNeedsFullscreenButton
 } from "../text/content_embed_tools";
 import { useEditableEmbed } from "../text/editable_embed";
 
@@ -59,6 +62,7 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     const mode = resolveDisplayMode(useContentEmbedDisplayMode(rootRef), !isEditing);
     const { editorMounted, previewMounted } = useMountedPanes(mode);
     const isFullscreen = useIsEmbedFullscreen(rootRef);
+    const hasFullscreenButton = useNeedsFullscreenButton(rootRef) && !isFullscreen;
     tools.setState(zoom, mode);
 
     // A source saved elsewhere, or undone, replaces the shown one unless it has unsaved edits.
@@ -101,7 +105,17 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
                 error={error}
                 previewStale={!!svg}
                 previewContent={<SvgPreview svg={svg} zoom={zoom} viewportRef={setPreviewEl} />}
-                previewButtons={(!canEdit || isFullscreen) && !!svg && <SvgZoomControls zoom={zoom} />}
+                previewButtons={(!canEdit || isFullscreen) && !!svg && (
+                    <SvgZoomControls
+                        zoom={zoom}
+                        after={!canEdit && hasFullscreenButton && (
+                            <OverlayFullscreenButton
+                                isFullscreen={false}
+                                onToggle={() => showContentEmbedFullscreen(rootRef.current)}
+                            />
+                        )}
+                    />
+                )}
             />
         </div>
     );
@@ -212,9 +226,7 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
 
     /** Fullscreen, while the title row of the embed, which has a button for it, is hidden. */
     private getFullscreenTools(): ContentEmbedTool[] {
-        const embed = this.rootRef.current?.closest<HTMLElement>(".include-note");
-        const { hideTitle, boxSize } = embed?.dataset ?? {};
-        if (hideTitle !== "true" || (boxSize !== "medium" && boxSize !== "full")) {
+        if (!needsFullscreenButton(this.rootRef.current?.closest<HTMLElement>(".include-note"))) {
             return [];
         }
 

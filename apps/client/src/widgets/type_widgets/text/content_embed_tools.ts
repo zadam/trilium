@@ -118,6 +118,28 @@ export function showContentEmbedFullscreen(element: Element | null) {
 }
 
 /**
+ * Whether `embed` can go fullscreen while it has no title row, which holds a button for it: a
+ * Medium or Full box with its title hidden. Its content then offers the button.
+ */
+export function needsFullscreenButton(embed: HTMLElement | null | undefined) {
+    const { hideTitle, boxSize } = embed?.dataset ?? {};
+    return hideTitle === "true" && (boxSize === "medium" || boxSize === "full");
+}
+
+/**
+ * {@link needsFullscreenButton} for the embed that contains `ref`. `false` until the content is
+ * in the page.
+ */
+export function useNeedsFullscreenButton(ref: RefObject<HTMLElement | null>) {
+    return useEmbedState(ref, {
+        initial: false,
+        outsideEmbed: false,
+        attributes: [ "data-hide-title", "data-box-size" ],
+        read: needsFullscreenButton
+    });
+}
+
+/**
  * Whether the Editable toggle of the embed that contains `ref` is on, for content whose provider
  * sets `hasEditableFlag`. Content outside an embed has no toggle, and is editable. `false` until
  * the content is in the page.

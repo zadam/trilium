@@ -139,6 +139,31 @@ describe("MermaidDiagram", () => {
         expect(getZoomButtons(figure)).toBeNull();
     });
 
+    it("offers fullscreen over a read-only diagram whose box has no title row", async () => {
+        const untitled = await mount({ editor: undefined, boxSize: "medium", hideTitle: true });
+        await waitForDiagram(untitled.figure);
+        const buttons = getZoomButtons(untitled.figure)?.querySelectorAll("button");
+        // Zoom out, the zoom level, zoom in, fullscreen.
+        expect(buttons).toHaveLength(4);
+        const box = untitled.figure.querySelector(".include-note-content");
+        if (!(box instanceof HTMLElement)) throw new Error("Expected the content box.");
+        const requestFullscreen = vi.fn(async () => {});
+        box.requestFullscreen = requestFullscreen;
+        await act(async () => buttons?.[3]?.click());
+        expect(requestFullscreen).toHaveBeenCalledOnce();
+
+        await act(async () => {
+            box.dispatchEvent(new Event("enterFullscreen", { bubbles: true }));
+        });
+        expect(getZoomButtons(untitled.figure)?.querySelectorAll("button")).toHaveLength(3);
+
+        for (const options of [ { boxSize: "small", hideTitle: true }, { boxSize: "full" } ]) {
+            const other = await mount({ editor: undefined, ...options });
+            await waitForDiagram(other.figure);
+            expect(getZoomButtons(other.figure)?.querySelectorAll("button")).toHaveLength(3);
+        }
+    });
+
     it("makes the source editable once Editable turns on", async () => {
         const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
         expect(await isSourceEditable(figure)).toBe(false);
@@ -155,13 +180,17 @@ interface MountOptions {
     editor: ContentEditor | undefined;
     isEditable?: boolean;
     displayMode?: string;
+    boxSize?: string;
+    hideTitle?: boolean;
 }
 
-async function mount({ editor, isEditable, displayMode }: MountOptions) {
+async function mount({ editor, isEditable, displayMode, boxSize, hideTitle }: MountOptions) {
     const figure = document.createElement("figure");
     figure.className = "include-note";
     if (isEditable) figure.dataset.editable = "true";
     if (displayMode) figure.dataset.displayMode = displayMode;
+    if (boxSize) figure.dataset.boxSize = boxSize;
+    if (hideTitle) figure.dataset.hideTitle = "true";
     const box = document.createElement("div");
     box.className = "include-note-content";
     figure.append(box);
@@ -170,6 +199,10 @@ async function mount({ editor, isEditable, displayMode }: MountOptions) {
 
     await act(async () => render(<MermaidDiagram content="graph TD;" editor={editor} />, box));
     return { figure };
+}
+
+async function waitForDiagram(figure: HTMLElement) {
+    await vi.waitFor(() => expect(figure.querySelector(".render-container svg")).not.toBeNull());
 }
 
 function getZoomButtons(figure: HTMLElement) {

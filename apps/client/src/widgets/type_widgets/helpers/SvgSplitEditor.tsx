@@ -206,8 +206,12 @@ export function SvgPreview({ svg, zoom, viewportRef }: {
     );
 }
 
-/** The zoom buttons over an {@link SvgPreview}, after `children`. */
-export function SvgZoomControls({ zoom, children }: { zoom: SvgZoom; children?: ComponentChildren }) {
+/** The zoom buttons over an {@link SvgPreview}, between `children` and `after`. */
+export function SvgZoomControls({ zoom, children, after }: {
+    zoom: SvgZoom;
+    children?: ComponentChildren;
+    after?: ComponentChildren;
+}) {
     return (
         <OverlayControlGroup className="svg-preview-controls" placement="bottom-end">
             {children}
@@ -219,6 +223,7 @@ export function SvgZoomControls({ zoom, children }: { zoom: SvgZoom; children?: 
                 onZoomOut={zoom.zoomOut}
                 onReset={zoom.reset}
             />
+            {after}
         </OverlayControlGroup>
     );
 }

@@ -110,6 +110,10 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
 - **Fullscreen hides the editor's toolbar** (only the content box goes fullscreen). Content whose
   controls live in the toolbar must show them over itself meanwhile — `MermaidDiagram` shows
   `SvgZoomControls` while `!canEdit || isFullscreen`. The box already has an exit button.
+- **Fullscreen without a title row.** The title row holds the box's fullscreen button, so an
+  untitled Medium or Full box (`needsFullscreenButton()` / `useNeedsFullscreenButton()`) needs
+  the content to offer one: a toolbar tool while it can be edited, an `OverlayFullscreenButton`
+  after the zoom buttons while read-only (no toolbar then). A read-only drawing still has none.
 
 ## Recipe: a new source embed (a diagram language)
 
