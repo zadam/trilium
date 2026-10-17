@@ -6,7 +6,8 @@ import {
     type ModelPosition,
     type ModelRange,
     Plugin,
-    Rect
+    Rect,
+    scrollViewportToShowTarget
 } from "ckeditor5";
 
 import { addEditingKeydownCapture } from "../move_block_updown.js";
@@ -78,7 +79,7 @@ export default class ContentEmbedCaret extends Plugin {
             writer.setSelection(embed, "on");
             writer.setSelectionAttribute(TYPE_AROUND_ATTRIBUTE, isForward ? "after" : "before");
         });
-        editor.editing.view.scrollToTheSelection();
+        scrollToTheCaret(editor);
         return true;
     }
 
@@ -104,7 +105,7 @@ export default class ContentEmbedCaret extends Plugin {
             });
         }
         editor.editing.view.focus();
-        editor.editing.view.scrollToTheSelection();
+        scrollToTheCaret(editor);
     }
 
     /**
@@ -256,6 +257,26 @@ function isFromEditable(editor: Editor, event: Event) {
     const embedWrapper = target?.closest("[data-cke-ignore-events]");
     return !!root && !!target && root.contains(target)
         && !(embedWrapper && root.contains(embedWrapper));
+}
+
+/**
+ * Scrolls to the caret of `editor`, or to the fake caret of `WidgetTypeAround` beside the selected
+ * widget. For a widget taller than the window, `scrollToTheSelection()` can show its top only.
+ */
+function scrollToTheCaret(editor: Editor) {
+    const selection = editor.model.document.selection;
+    const widget = selection.getAttribute(TYPE_AROUND_ATTRIBUTE)
+        ? getContentEmbedDom(editor, selection.getSelectedElement())
+        : null;
+    const fakeCaret = widget?.querySelector<HTMLElement>(
+        ":scope > .ck-widget__type-around > .ck-widget__type-around__fake-caret"
+    );
+
+    if (fakeCaret) {
+        scrollViewportToShowTarget({ target: fakeCaret, viewportOffset: 20, ancestorOffset: 20 });
+    } else {
+        editor.editing.view.scrollToTheSelection();
+    }
 }
 
 /** The embed right beside the collapsed selection, in the direction of the move, or `null`. */

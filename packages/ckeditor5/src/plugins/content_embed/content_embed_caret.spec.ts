@@ -218,6 +218,29 @@ describe("ContentEmbedCaret leaving an embed", () => {
         expect(editor.model.document.selection.getAttribute(TYPE_AROUND_ATTRIBUTE)).toBe("before");
     });
 
+    it("scrolls to the fake caret below an embed taller than the window", () => {
+        installGlobMock({
+            getComponentByEl: () => ({
+                loadEmbeddedNote: (_noteId: string, wrapper: HTMLElement) => {
+                    const content = document.createElement("div");
+                    content.style.height = `${window.innerHeight * 3}px`;
+                    wrapper.append(content);
+                }
+            })
+        });
+        setModelData(editor.model, AB + EMBED);
+        // As after reading down to the end of the embed, its top is above the window.
+        window.scrollTo(0, document.documentElement.scrollHeight);
+
+        expect(plugin.leaveEmbed(getEmbedContent(editor), "end")).toBe(true);
+        const fakeCaret = getEmbedDom(editor).querySelector(
+            ":scope > .ck-widget__type-around > .ck-widget__type-around__fake-caret"
+        );
+        const rect = fakeCaret?.getBoundingClientRect();
+        expect(rect?.top).toBeGreaterThanOrEqual(0);
+        expect(rect?.bottom).toBeLessThanOrEqual(window.innerHeight);
+    });
+
     it("puts the caret in the caption below the content", () => {
         setModelData(editor.model, AB + CAPTIONED_EMBED + CD);
         expect(plugin.leaveEmbed(getEmbedContent(editor), "end")).toBe(true);
