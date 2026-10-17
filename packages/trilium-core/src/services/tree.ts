@@ -92,8 +92,8 @@ function wouldAddingBranchCreateCycle(parentNoteId: string, childNoteId: string)
 
 /**
  * Sorts the children of `parentNoteId` by the levels of `sortBy`; `reverse` is the direction of a
- * level without its own, of the folders grouping and of ties, never of `#top`, `#bottom` or a
- * `first`/`last` grouping level.
+ * level without its own, of the folders grouping and of ties, never of a `first`/`last` grouping
+ * level or of the `#top` and `#bottom` levels {@link withPinningLevels} adds.
  */
 function sortNotes(
     parentNoteId: string,
@@ -103,7 +103,7 @@ function sortNotes(
     sortNatural = false,
     _sortLocale?: string | null
 ) {
-    const criteria = parseSortCriteria(sortBy);
+    const levels = withPinningLevels(parseSortCriteria(sortBy), foldersFirst);
 
     // sortLocale can not be empty string or null value, default value must be set to undefined.
     const sortLocale = _sortLocale || undefined;
@@ -156,53 +156,35 @@ function sortNotes(
             );
         }
 
-        // Orders by whether each child has a truthy label (or any value of a property), ignoring
-        // the value and `reverse`.
-        function compareGroup(a: BNote, b: BNote, level: SortCriterion) {
-            const hasA = isInGroup(a, level);
-            if (hasA === isInGroup(b, level)) {
+        // Orders by whether each child has the label (or a value of the property), ignoring the
+        // value and `reverse`.
+        function compareGroup(a: BNote, b: BNote, { key, isLabel, group }: SortCriterion) {
+            const hasA = fetchValue(a, key, isLabel) !== null;
+            if (hasA === (fetchValue(b, key, isLabel) !== null)) {
                 return 0;
             }
-            return (hasA ? -1 : 1) * (level.group === "last" ? -1 : 1);
+            return (hasA ? -1 : 1) * (group === "last" ? -1 : 1);
         }
 
-        function isInGroup(note: BNote, { key, isLabel }: SortCriterion) {
-            return isLabel ? note.isLabelTruthy(key) : fetchValue(note, key, false) !== null;
+        // Folders group first ascending and last descending.
+        function compareFolders(a: BNote, b: BNote) {
+            const aHasChildren = a.hasChildren();
+            if (aHasChildren === b.hasChildren()) {
+                return 0;
+            }
+            return (aHasChildren ? -1 : 1) * (reverse ? -1 : 1);
         }
 
         notes.sort((a, b) => {
-            const topA = fetchValue(a, "top");
-            const topB = fetchValue(b, "top");
-
-            if (topA !== topB) {
-                if (topA === null) return 1;
-                if (topB === null) return -1;
-                return compare(topA, topB);
-            }
-
-            const bottomA = fetchValue(a, "bottom");
-            const bottomB = fetchValue(b, "bottom");
-
-            if (bottomA !== bottomB) {
-                if (bottomA === null) return -1;
-                if (bottomB === null) return 1;
-                return compare(bottomB, bottomA);
-            }
-
-            if (foldersFirst) {
-                const aHasChildren = a.hasChildren();
-                const bHasChildren = b.hasChildren();
-
-                // Folders group first ascending and last descending.
-                if (aHasChildren !== bHasChildren) {
-                    return (aHasChildren ? -1 : 1) * (reverse ? -1 : 1);
+            for (const level of levels) {
+                let result: number;
+                if (level === FOLDERS_LEVEL) {
+                    result = compareFolders(a, b);
+                } else if (level.group) {
+                    result = compareGroup(a, b, level);
+                } else {
+                    result = compareLevel(a, b, level, level.descending ?? reverse);
                 }
-            }
-
-            for (const level of criteria) {
-                const result = level.group
-                    ? compareGroup(a, b, level)
-                    : compareLevel(a, b, level, level.descending ?? reverse);
                 if (result !== 0) {
                     return result;
                 }
@@ -238,6 +220,39 @@ function sortNotes(
             entityChangesService.putNoteReorderingEntityChange(parentNoteId);
         }
     });
+}
+
+const FOLDERS_LEVEL = "folders";
+
+/**
+ * Puts `#top asc` before `criteria` unless they name `#top`, then `#bottom last, #bottom desc`
+ * unless they name `#bottom`, and the folders grouping right after the last `#top` or `#bottom`
+ * level.
+ */
+function withPinningLevels(criteria: SortCriterion[], foldersFirst: boolean) {
+    const isPinning = (level: SortCriterion) =>
+        level.isLabel && (level.key === "top" || level.key === "bottom");
+    const names = (key: string) => criteria.some((level) => level.isLabel && level.key === key);
+
+    const levels: (SortCriterion | typeof FOLDERS_LEVEL)[] = [];
+    if (!names("top")) {
+        levels.push({ key: "top", isLabel: true, descending: false });
+    }
+    if (!names("bottom")) {
+        levels.push(
+            { key: "bottom", isLabel: true, group: "last" },
+            { key: "bottom", isLabel: true, descending: true }
+        );
+    }
+    levels.push(...criteria);
+
+    if (foldersFirst) {
+        const lastPinning = levels.findLastIndex(
+            (level) => level !== FOLDERS_LEVEL && isPinning(level)
+        );
+        levels.splice(lastPinning + 1, 0, FOLDERS_LEVEL);
+    }
+    return levels;
 }
 
 function sortNotesIfNeeded(parentNoteId: string) {
