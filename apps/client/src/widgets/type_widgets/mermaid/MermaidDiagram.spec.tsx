@@ -1,0 +1,131 @@
+import { type ComponentChildren, render } from "preact";
+import { act } from "preact/test-utils";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import type { ContentEditor } from "../../../services/content_renderer";
+import options from "../../../services/options";
+import { getContentEmbedTools } from "../text/content_embed_tools";
+import MermaidDiagram from "./MermaidDiagram";
+
+vi.mock("../../../services/mermaid", () => ({
+    renderMermaidSvg: vi.fn(async () => "<svg></svg>")
+}));
+// react-zoom-pan-pinch measures its boxes, which happy-dom cannot do.
+vi.mock("react-zoom-pan-pinch", () => ({
+    TransformWrapper: (props: { children?: ComponentChildren }) => <>{props.children}</>,
+    TransformComponent: (props: { children?: ComponentChildren }) => <div>{props.children}</div>
+}));
+
+// `CodeEditor` reads the theme as a string.
+options.set("codeNoteTheme", "");
+
+const figures: HTMLElement[] = [];
+
+afterEach(() => {
+    for (const figure of figures) {
+        const box = figure.querySelector(".include-note-content");
+        if (box) act(() => render(null, box));
+        figure.remove();
+    }
+    figures.length = 0;
+});
+
+describe("MermaidDiagram", () => {
+    it("offers both the Editable toggle and the display modes where it can edit", async () => {
+        const { figure } = await mount({ editor: buildEditor() });
+        expect(getContentEmbedTools(figure)).toMatchObject({
+            hasEditableFlag: true,
+            hasDisplayModes: true
+        });
+    });
+
+    it("shows the panes of the mode, the source editable only while Editable is on", async () => {
+        const editable = await mount({ editor: buildEditor(), isEditable: true });
+        expect(getPanes(editable.figure)).toEqual({ source: true, preview: true });
+        expect(await isSourceEditable(editable.figure)).toBe(true);
+
+        const fixed = await mount({ editor: buildEditor(), displayMode: "split" });
+        expect(getPanes(fixed.figure)).toEqual({ source: true, preview: true });
+        expect(await isSourceEditable(fixed.figure)).toBe(false);
+
+        const source = await mount({ editor: buildEditor(), displayMode: "source" });
+        expect(getPanes(source.figure)).toEqual({ source: true, preview: false });
+
+        const preview = await mount({
+            editor: buildEditor(), isEditable: true, displayMode: "preview"
+        });
+        expect(getPanes(preview.figure)).toEqual({ source: false, preview: true });
+    });
+
+    it("shows the diagram alone without a mode, unless Editable is on", async () => {
+        const diagram = await mount({ editor: buildEditor() });
+        expect(getPanes(diagram.figure)).toEqual({ source: false, preview: true });
+
+        const readOnly = await mount({ editor: undefined, isEditable: true });
+        expect(getPanes(readOnly.figure)).toEqual({ source: false, preview: true });
+
+        const picked = await mount({ editor: undefined, displayMode: "source" });
+        expect(getPanes(picked.figure)).toEqual({ source: true, preview: false });
+        expect(await isSourceEditable(picked.figure)).toBe(false);
+    });
+
+    it("makes the source editable once Editable turns on", async () => {
+        const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
+        expect(await isSourceEditable(figure)).toBe(false);
+
+        await act(async () => {
+            figure.dataset.editable = "true";
+            await Promise.resolve();
+        });
+        await vi.waitFor(async () => expect(await isSourceEditable(figure)).toBe(true));
+    });
+});
+
+interface MountOptions {
+    editor: ContentEditor | undefined;
+    isEditable?: boolean;
+    displayMode?: string;
+}
+
+async function mount({ editor, isEditable, displayMode }: MountOptions) {
+    const figure = document.createElement("figure");
+    figure.className = "include-note";
+    if (isEditable) figure.dataset.editable = "true";
+    if (displayMode) figure.dataset.displayMode = displayMode;
+    const box = document.createElement("div");
+    box.className = "include-note-content";
+    figure.append(box);
+    document.body.append(figure);
+    figures.push(figure);
+
+    await act(async () => render(<MermaidDiagram content="graph TD;" editor={editor} />, box));
+    return { figure };
+}
+
+function getPanes(figure: HTMLElement) {
+    return {
+        source: !!figure.querySelector(".mermaid-diagram-source"),
+        preview: !!figure.querySelector(".mermaid-diagram-preview")
+    };
+}
+
+/** Whether the CodeMirror of the source pane takes edits, once it has loaded. */
+async function isSourceEditable(figure: HTMLElement) {
+    const { EditorView } = await import("@codemirror/view");
+    let view: InstanceType<typeof EditorView> | null = null;
+    await vi.waitFor(() => {
+        const dom = figure.querySelector(".mermaid-diagram-source .cm-editor");
+        view = dom instanceof HTMLElement ? EditorView.findFromDOM(dom) : null;
+        expect(view).not.toBeNull();
+    }, { timeout: 5000 });
+    return !(view as InstanceType<typeof EditorView> | null)?.state.readOnly;
+}
+
+function buildEditor(): ContentEditor {
+    return {
+        canEdit: () => true,
+        getUnsavedContent: () => undefined,
+        scheduleSave: vi.fn(),
+        release: vi.fn()
+    };
+}

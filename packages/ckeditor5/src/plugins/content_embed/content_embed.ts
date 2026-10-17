@@ -889,8 +889,8 @@ export class ToggleContentEmbedEditableCommand extends Command {
 }
 
 /**
- * Sets what the content of the selected embed shows, for content that has display modes. The mode
- * replaces the Editable flag, which only tells the mode of an embed that has none.
+ * Sets what the content of the selected embed shows, for content that has display modes. The
+ * Editable flag stays as it is: it tells whether the source shown can be changed.
  */
 export class ContentEmbedDisplayModeCommand extends Command {
 	/** The mode of the selected embed, or `null`. */
@@ -915,10 +915,7 @@ export class ContentEmbedDisplayModeCommand extends Command {
 			return;
 		}
 
-		this.editor.model.change( writer => {
-			writer.setAttribute( 'displayMode', value, embed );
-			writer.removeAttribute( 'editable', embed );
-		} );
+		this.editor.model.change( writer => writer.setAttribute( 'displayMode', value, embed ) );
 	}
 }
 

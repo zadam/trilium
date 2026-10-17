@@ -10,7 +10,8 @@ import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
     note: FNote | null;
-    editor: ContentEditor;
+    /** Saves the edits, or `undefined` to show the content read-only. */
+    editor: ContentEditor | undefined;
     content: string;
     mime: string;
     /** Receives the edited content when the editor goes away. */
@@ -21,7 +22,10 @@ export interface CodeEmbedEditorProps {
     onReady?: (view: VanillaCodeMirror) => void;
 }
 
-/** CodeMirror over the content of a code embed, which `editor` saves as it changes. */
+/**
+ * CodeMirror over the content of a code embed, which `editor` saves as it changes. Without an
+ * `editor`, the content is read-only.
+ */
 export default function CodeEmbedEditor({
     note, editor, content, mime, onClose, onChange, onReady
 }: CodeEmbedEditorProps) {
@@ -52,6 +56,7 @@ export default function CodeEmbedEditor({
 
     // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
     useLayoutEffect(() => () => {
+        if (!editor) return;
         const text = viewRef.current?.getText();
         editor.release();
         if (text !== undefined) {
@@ -66,8 +71,9 @@ export default function CodeEmbedEditor({
             className="code-embed-editor"
             mime={mime}
             vimKeybindings={vimKeymapEnabled}
+            readOnly={!editor}
             onContentChanged={() => {
-                if (!isLoadingRef.current) {
+                if (editor && !isLoadingRef.current) {
                     editor.scheduleSave(() => viewRef.current?.getText() ?? "");
                     onChange?.(viewRef.current?.getText() ?? "");
                 }

@@ -1,8 +1,6 @@
 import type { RefObject } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { type DisplayMode, resolveDisplayMode } from "../helpers/split_editor_mode";
-
 /** A button that the content of an embed adds to the toolbar of the embed. */
 export interface ContentEmbedTool {
     id: string;
@@ -132,17 +130,16 @@ export function useIsContentEmbedEditable(ref: RefObject<HTMLElement | null>) {
 }
 
 /**
- * What the content in `ref` shows, for content whose provider sets `hasDisplayModes`: the mode of
- * its embed, or split while the Editable flag of an embed without a mode is on. Content outside an
- * embed shows both. `preview` until the content is in the page.
+ * The display mode picked for the embed that contains `ref`, for content whose provider sets
+ * `hasDisplayModes`. `null` while none is picked, outside an embed, and until the content is in the
+ * page: `resolveDisplayMode()` then tells what to show.
  */
 export function useContentEmbedDisplayMode(ref: RefObject<HTMLElement | null>) {
-    return useEmbedState<DisplayMode>(ref, {
-        initial: "preview",
-        outsideEmbed: "split",
-        attributes: [ "data-display-mode", "data-editable" ],
-        read: (embed) =>
-            resolveDisplayMode(embed.dataset.displayMode, embed.dataset.editable !== "true")
+    return useEmbedState<string | null>(ref, {
+        initial: null,
+        outsideEmbed: null,
+        attributes: [ "data-display-mode" ],
+        read: (embed) => embed.dataset.displayMode ?? null
     });
 }
 

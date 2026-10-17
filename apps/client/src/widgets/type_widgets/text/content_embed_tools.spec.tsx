@@ -3,7 +3,6 @@ import { useRef } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it } from "vitest";
 
-import type { DisplayMode } from "../helpers/split_editor_mode";
 import { useContentEmbedDisplayMode } from "./content_embed_tools";
 
 const containers: HTMLElement[] = [];
@@ -17,17 +16,12 @@ afterEach(() => {
 });
 
 describe("useContentEmbedDisplayMode", () => {
-    it("follows the mode of the embed, or its Editable flag while it has none", async () => {
+    it("follows the mode of the embed, and is null while it has none", async () => {
         const figure = document.createElement("figure");
         figure.className = "include-note";
+        figure.dataset.editable = "true";
         const probe = await mountProbe(figure);
-        expect(probe.mode).toBe("preview");
-
-        await act(async () => {
-            figure.dataset.editable = "true";
-            await Promise.resolve();
-        });
-        expect(probe.mode).toBe("split");
+        expect(probe.mode).toBeNull();
 
         await act(async () => {
             figure.dataset.displayMode = "source";
@@ -42,14 +36,14 @@ describe("useContentEmbedDisplayMode", () => {
         expect(probe.mode).toBe("preview");
     });
 
-    it("shows both outside an embed", async () => {
-        expect((await mountProbe(document.createElement("div"))).mode).toBe("split");
+    it("is null outside an embed", async () => {
+        expect((await mountProbe(document.createElement("div"))).mode).toBeNull();
     });
 
     it("finds the embed that content rendered apart joins later", async () => {
         const container = document.createElement("div");
         const probe = await mountProbe(container, false);
-        expect(probe.mode).toBe("preview");
+        expect(probe.mode).toBeNull();
 
         const figure = document.createElement("figure");
         figure.className = "include-note";
@@ -76,7 +70,7 @@ async function mountProbe(parent: HTMLElement, isConnected = true) {
     }
     containers.push(parent);
 
-    const probe = { mode: null as DisplayMode | null };
+    const probe = { mode: undefined as string | null | undefined };
     function Probe() {
         const ref = useRef<HTMLDivElement>(null);
         probe.mode = useContentEmbedDisplayMode(ref);

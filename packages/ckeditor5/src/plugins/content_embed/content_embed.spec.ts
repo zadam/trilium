@@ -1611,7 +1611,7 @@ describe("ContentEmbed display mode", () => {
         expect(command.value).toBe("split");
     });
 
-    it("switches the mode as one undo step, in place of the Editable flag", () => {
+    it("switches the mode as one undo step, keeping the Editable flag", () => {
         const embed = insertContentEmbed(editor, "n1", "medium");
         editor.model.change((writer) => writer.setAttribute("editable", true, embed));
         const wrapper = getRenderedEmbed().querySelector(".include-note-wrapper");
@@ -1620,7 +1620,7 @@ describe("ContentEmbed display mode", () => {
         expect(getCommand().value).toBe("source");
         expect(getRenderedEmbed().getAttribute("data-display-mode")).toBe("source");
         expect(editor.getData()).toContain("data-display-mode=\"source\"");
-        expect(editor.getData()).not.toContain("data-editable");
+        expect(editor.getData()).toContain("data-editable=\"true\"");
 
         editor.execute("undo");
         expect(getCommand().value).toBe("split");
