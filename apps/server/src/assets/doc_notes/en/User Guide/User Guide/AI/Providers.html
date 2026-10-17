@@ -5,11 +5,11 @@
 <h2>Cloud providers using API keys</h2>
 <p>Currently, the following cloud providers are supported:</p>
 <ul>
-  <li><a href="https://platform.claude.com/settings/workspaces/default/keys">Anthropic</a>
+  <li><span class="tn-icon tn-brand tn-brand-anthropic"></span>&nbsp;<a href="https://platform.claude.com/settings/workspaces/default/keys">Anthropic</a>
   </li>
-  <li>OpenAI</li>
-  <li>Gemini</li>
-  <li>DeepSeek</li>
+  <li><span class="tn-icon tn-brand tn-brand-openai"></span>&nbsp;OpenAI</li>
+  <li><span class="tn-icon tn-brand tn-brand-gemini"></span>&nbsp;Gemini</li>
+  <li><span class="tn-icon tn-brand tn-brand-deepseek"></span>&nbsp;DeepSeek</li>
 </ul>
 <p>For all the providers, an API key is needed. Note that this is charged
   separately from the subscription you might already have (e.g. Claude Pro).
@@ -32,32 +32,40 @@
 <h2>Subscription-based providers</h2>
 <p>Trilium integrates multiple&nbsp;<a class="reference-link" href="#root/_help_eFhxp9laTW1S">Subscription-based providers</a>:</p>
 <ul>
-  <li>Claude Code by reusing your CLI.</li>
-  <li>GitHub Copilot by reusing your CLI's ACP.</li>
-  <li>Google Antigravity by downloading and setting up an ACP for Trilium.</li>
-  <li>OpenAI Codex by reusing your CLI through an ACP adapter shipped with Trilium.</li>
+  <li><span class="tn-icon tn-brand tn-brand-claude"></span>&nbsp;Claude Code
+    by reusing your CLI.</li>
+  <li><span class="tn-icon tn-brand tn-brand-github-copilot"></span>&nbsp;GitHub
+    Copilot by reusing your CLI's ACP.</li>
+  <li><span class="tn-icon tn-brand tn-brand-antigravity"></span>&nbsp;Google
+    Antigravity by downloading and setting up an ACP for Trilium.</li>
+  <li><span class="tn-icon tn-brand tn-brand-codex"></span>&nbsp;OpenAI Codex
+    by reusing your CLI through an ACP adapter shipped with Trilium.</li>
 </ul>
 <h2>Local/self-hosted providers</h2>
 <p>Local or self-hosted providers are a free alternative which respects your
   privacy but requires specific hardware.</p>
 <p>Trilium directly supports the following local providers:</p>
-<ul>
-  <li>Ollama
-    <ul>
-      <li>Generally Ollama runs in the background so it should be directly usable
-        in Trilium as long as the models are downloaded (e.g. <code>ollama pull llama3.2</code>).</li>
-    </ul>
-  </li>
-  <li>LM Studio
-    <ul>
-      <li>The OpenAI-compatible server is <strong>disabled</strong> by default in
+<div class="trilium-tabs">
+  <section class="trilium-tab">
+    <p class="trilium-tab-title"><span class="tn-icon tn-brand tn-brand-ollama"></span>&nbsp;Ollama</p>
+    <div
+    class="trilium-tab-panel">
+      <p>Generally Ollama runs in the background so it should be directly usable
+        in Trilium as long as the models are downloaded (e.g. <code>ollama pull llama3.2</code>).</p>
+    </div>
+  </section>
+  <section class="trilium-tab">
+    <p class="trilium-tab-title"><span class="tn-icon tn-brand tn-brand-lmstudio"></span>&nbsp;LM Studio</p>
+    <div
+    class="trilium-tab-panel">
+      <p>The OpenAI-compatible server is <strong>disabled</strong> by default in
         LM Studio installations. First download your desired models through the
         graphical interface, then go to <em>Settings</em> → <em>Developer</em> and
         toggle <em>Developer mode</em>. On the left there will be a new <em>Developer</em> tab,
-        with a toggle to start it up.</li>
-    </ul>
-  </li>
-</ul>
+        with a toggle to start it up.</p>
+    </div>
+  </section>
+</div>
 <p>Even for local providers that are not directly supported by Trilium, you
   can still use a custom endpoint (see below).</p>
 <aside class="admonition warning">

@@ -54,7 +54,7 @@ The same applies to the <a class="reference-link" href="../Note%20Types/Text/In
 ## What you control
 
 *   **Which provider**: the single decision that determines whether anything leaves your machine at all.
-*   **Note access**: turn it off in the <span class="tn-icon bx bx-shield-quarter"></span> _Tools_ menu at the bottom of the chat, and the model can read nothing beyond what you type.
+*   **Note access**: turn it off in the <span class="tn-icon bx bx-shield-quarter"></span>_Tools_ menu at the bottom of the chat, and the model can read nothing beyond what you type.
 *   **The current note:** the file icon in the sidebar chat.
 *   **Web search:** also in the _Tools_ menu.
 *   **Which tool calls ask first:** the _Permissions_ submenu of the _Tools_ menu. _Always ask_ has every call wait for you, reads included. A new chat starts in the mode you picked last, so a chat after one set to _Don't ask_ asks about nothing either. Until you pick a mode, chats start in _Ask before changes_, where the AI reads and searches your notes without asking.

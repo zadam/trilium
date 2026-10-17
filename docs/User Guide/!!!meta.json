@@ -4379,7 +4379,7 @@
                                                 {
                                                     "type": "label",
                                                     "name": "iconClass",
-                                                    "value": "bx bx-window-open",
+                                                    "value": "tn-brand tn-brand-onenote",
                                                     "isInheritable": false,
                                                     "position": 20
                                                 }
@@ -4455,7 +4455,7 @@
                                                 {
                                                     "type": "label",
                                                     "name": "iconClass",
-                                                    "value": "bx bx-window-open",
+                                                    "value": "tn-brand tn-brand-notion",
                                                     "isInheritable": false,
                                                     "position": 20
                                                 }
@@ -4491,7 +4491,7 @@
                                                 {
                                                     "type": "label",
                                                     "name": "iconClass",
-                                                    "value": "bx bx-window-open",
+                                                    "value": "tn-brand tn-brand-google-keep",
                                                     "isInheritable": false,
                                                     "position": 20
                                                 }
@@ -4527,7 +4527,7 @@
                                                 {
                                                     "type": "label",
                                                     "name": "iconClass",
-                                                    "value": "bx bx-window-open",
+                                                    "value": "tn-brand tn-brand-evernote",
                                                     "isInheritable": false,
                                                     "position": 20
                                                 }
@@ -4588,7 +4588,7 @@
                                                 {
                                                     "type": "label",
                                                     "name": "iconClass",
-                                                    "value": "bx bx-window-open",
+                                                    "value": "tn-brand tn-brand-anytype",
                                                     "isInheritable": false,
                                                     "position": 30
                                                 },
@@ -4624,7 +4624,7 @@
                                                 {
                                                     "type": "label",
                                                     "name": "iconClass",
-                                                    "value": "bx bx-window-open",
+                                                    "value": "tn-brand tn-brand-obsidian",
                                                     "isInheritable": false,
                                                     "position": 30
                                                 },
@@ -10761,6 +10761,13 @@
                                             "value": "subscription-based",
                                             "isInheritable": false,
                                             "position": 30
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "iconClass",
+                                            "value": "bx bx-coin",
+                                            "isInheritable": false,
+                                            "position": 70
                                         }
                                     ],
                                     "format": "markdown",
