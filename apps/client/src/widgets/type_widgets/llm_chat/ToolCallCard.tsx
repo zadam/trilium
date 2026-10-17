@@ -122,7 +122,7 @@ function toolNameIcon(toolName: string): string {
 }
 
 function toolCallIcon(toolCall: ToolCall) {
-    if (toolCall.approval === "pending") return "bx bx-help-circle";
+    if (toolCall.approval === "pending") return "bx bxs-hand";
     if (toolCall.approval === "declined") return "bx bx-block";
     if (isFailedToolCall(toolCall)) return "bx bx-error-circle";
     if (!toolCall.result) return "bx bx-loader-alt bx-spin";
@@ -192,11 +192,9 @@ function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallV
                 </span>
             )}
             {view?.summary && <span className="llm-chat-tool-call-result-count">{view.summary}</span>}
-            {toolCall.approval && (
+            {toolCall.approval === "declined" && (
                 <span className="llm-chat-tool-call-approval-badge">
-                    {toolCall.approval === "pending"
-                        ? t("llm_chat.tool_approval_pending")
-                        : t("llm_chat.tool_approval_declined")}
+                    {t("llm_chat.tool_approval_declined")}
                 </span>
             )}
             {hasError && <span className="llm-chat-tool-call-error-badge">{t("llm_chat.tool_error")}</span>}
@@ -260,10 +258,6 @@ function ToolCallDisclosure({ toolCall }: { toolCall: ToolCall }) {
     const editedNoteId = typeof toolCall.input.noteId === "string" ? toolCall.input.noteId : undefined;
     const errorMessage = hasError && toolCall.result ? getErrorMessage(toolCall.result) : null;
     const view = isStreamingInput ? null : getToolCallView(toolCall);
-    // A waiting call with nothing else to show what it would do shows its input.
-    const pendingInput = isPending && !noteContentEdits && !view?.body
-        ? JSON.stringify(toolCall.input, null, 2)
-        : null;
 
     const className = `llm-chat-tool-call ${hasError ? "llm-chat-tool-call-error" : ""}`;
     const icon = toolCallIcon(toolCall);
@@ -272,7 +266,7 @@ function ToolCallDisclosure({ toolCall }: { toolCall: ToolCall }) {
     const open = isPending
         || (noteContentEdits ? isSmallEdit(noteContentEdits) : isStreamingInput || undefined);
 
-    if (!isStreamingInput && !noteContentEdits && !errorMessage && !view?.body && !pendingInput) {
+    if (!isStreamingInput && !noteContentEdits && !errorMessage && !view?.body) {
         return (
             <div className={`expandable-line ${className}`}>
                 <div className="expandable-line-header">
@@ -301,7 +295,6 @@ function ToolCallDisclosure({ toolCall }: { toolCall: ToolCall }) {
             )}
             {errorMessage && <p className="llm-chat-tool-call-error-message">{errorMessage}</p>}
             {view?.body}
-            {pendingInput && <pre className="llm-chat-tool-call-input">{pendingInput}</pre>}
         </ExpandableSection>
     );
 }
@@ -330,7 +323,7 @@ function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
     const anyError = toolCalls.some(isFailedToolCall);
 
     const searchProvider = readSearchProvider(first);
-    const icon = anyAwaitingApproval ? "bx bx-help-circle"
+    const icon = anyAwaitingApproval ? "bx bxs-hand"
         : anyPending ? "bx bx-loader-alt bx-spin"
         : searchProvider && toolCalls.every(tc => readSearchProvider(tc)?.type === searchProvider.type)
             ? <SearchProviderIcon {...searchProvider} />

@@ -781,14 +781,15 @@ describe("ToolCallCard", () => {
         const buttons = (target: HTMLElement) =>
             [ ...target.querySelectorAll<HTMLButtonElement>(".llm-chat-tool-approval button") ];
 
-        it("opens a waiting call on its input, and answers it from the buttons below", () => {
+        it("shows a waiting call with nothing to preview as its line, and answers it from the buttons below", () => {
             const answer = vi.fn();
             const target = renderCard([ PENDING ], answer);
 
-            const line = target.querySelector<HTMLDetailsElement>("details.llm-chat-tool-call");
-            expect(line?.open).toBe(true);
-            expect(JSON.parse(line?.querySelector(".llm-chat-tool-call-input")?.textContent ?? "null")).toEqual(PENDING.input);
-            expect(line?.querySelector(".llm-chat-tool-call-approval-badge")?.textContent).toBe("llm_chat.tool_approval_pending");
+            const line = target.querySelector(".llm-chat-tool-call-pending > .llm-chat-tool-call");
+            expect(line?.classList.contains("expandable-line")).toBe(true);
+            expect(line?.querySelector("pre")).toBeNull();
+            expect(line?.querySelector(".llm-chat-tool-call-approval-badge")).toBeNull();
+            expect(line?.querySelector(".bxs-hand")).not.toBeNull();
 
             const [ deny, allow ] = buttons(target);
             expect([ deny?.textContent?.trim(), allow?.textContent?.trim() ]).toEqual([ "llm_chat.tool_approval_deny", "llm_chat.tool_approval_allow" ]);
@@ -798,12 +799,12 @@ describe("ToolCallCard", () => {
             expect(answer).toHaveBeenLastCalledWith("c1", false);
         });
 
-        it("shows what a waiting writing call would write instead of its raw input", () => {
+        it("opens a waiting writing call on what it would write", () => {
             const target = renderCard([ {
                 id: "c1", toolName: "create_note", input: { parentNoteId: "p", title: "T", type: "code", mime: "text/plain", content: "hello" }, approval: "pending"
             } ], vi.fn());
             expect(target.querySelector(".code-block-stub")?.textContent).toBe("hello");
-            expect(target.querySelector(".llm-chat-tool-call-input")).toBeNull();
+            expect(target.querySelector<HTMLDetailsElement>("details.llm-chat-tool-call")?.open).toBe(true);
             expect(buttons(target)).toHaveLength(2);
         });
 

@@ -158,7 +158,7 @@ When the reply stops moving for a couple of seconds while the AI is still at wor
 
 #### Approving tool calls
 
-Before the AI runs a tool, the chat asks whether to allow it. The tool's line opens on what the call would do (the text it would write, the changes of an edit, or else the values it would send to the tool), with _Allow_ and _Deny_ buttons below it and _waiting for approval_ beside the tool's name. The reply waits until you answer.
+Before the AI runs a tool, the chat asks whether to allow it. The tool's line is marked with a <span class="tn-icon bx bxs-hand"></span> icon and has _Allow_ and _Deny_ buttons below it. When the call would write to a note, the line opens on the text it would write or the changes of an edit. The reply waits until you answer.
 
 *   To let the call run, press _Allow_.
 *   To refuse it, press _Deny_. The AI is told that you declined, and its reply carries on without the call, which is marked _denied_.

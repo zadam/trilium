@@ -67,8 +67,7 @@
     overflow-wrap: anywhere;
 }
 
-.llm-chat-tool-call-streaming,
-.llm-chat-tool-call-input {
+.llm-chat-tool-call-streaming {
     margin: 0;
     max-height: 300px;
     overflow: auto;

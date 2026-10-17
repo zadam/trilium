@@ -2695,7 +2695,6 @@
     "tool_approval_prompt": "Allow this tool call?",
     "tool_approval_allow": "Allow",
     "tool_approval_deny": "Deny",
-    "tool_approval_pending": "waiting for approval",
     "tool_approval_declined": "denied"
   },
   "sidebar_chat": {
