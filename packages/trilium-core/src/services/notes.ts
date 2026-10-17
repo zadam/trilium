@@ -1196,6 +1196,13 @@ function updateNoteData(noteId: string, content: string, attachments: Attachment
         throw new Error(`Note '${noteId}' is not available for change!`);
     }
 
+    // Revisions, attachments and link attributes are database rows, which a virtual note has none
+    // of; its provider stores the content alone.
+    if (note.isVirtual) {
+        note.setContent(content);
+        return;
+    }
+
     saveRevisionIfNeeded(note);
 
     // Saved before the links, so that `checkImageAttachments()` reads the drawings of this save.

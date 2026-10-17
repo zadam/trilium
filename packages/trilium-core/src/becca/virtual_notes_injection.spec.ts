@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ValidationError } from "../errors.js";
 import { getContext } from "../services/context.js";
 import noteService from "../services/notes.js";
+import optionService from "../services/options.js";
 import { getSql } from "../services/sql/index.js";
 import { registerVirtualNoteProvider, unregisterVirtualNoteProvider, type VirtualSubtreeItem } from "../services/virtual_notes.js";
 import becca from "./becca.js";
@@ -157,6 +158,21 @@ describe("virtual note injection", () => {
 
             getContext().init(() => note.setContent("<p>saved</p>"));
             expect(note.getContent()).toBe("<p>saved</p>");
+
+            // The editor's save route, with a link that would otherwise become an `internalLink`
+            // attribute and a revision that would otherwise be due.
+            const linked = `<p><a class="reference-link" href="#root/_hidden">Hidden</a></p>`;
+            getContext().init(() => {
+                optionService.setOption("revisionSnapshotTimeInterval", "0");
+                try {
+                    noteService.updateNoteData("_vtwFile", linked);
+                } finally {
+                    optionService.setOption("revisionSnapshotTimeInterval", "600");
+                }
+            });
+            expect(note.getContent()).toBe(linked);
+            expect(note.getRelations("internalLink")).toEqual([]);
+            expect(getSql().getValue("SELECT COUNT(*) FROM revisions WHERE noteId = '_vtwFile'")).toBe(0);
             expect(getSql().getValue("SELECT COUNT(*) FROM entity_changes WHERE entityId LIKE '\\_vtw%' ESCAPE '\\'")).toBe(0);
             expect(getSql().getValue("SELECT COUNT(*) FROM notes WHERE noteId LIKE '\\_vtw%' ESCAPE '\\'")).toBe(0);
         } finally {
