@@ -404,3 +404,12 @@ wardley-beta
 ==>
 
 MermaidDiagram(WardleyDiagram(DiagramName,Anchor(Keyword,Name,Coordinates("[",Number,",",Number,"]"))))
+
+# Cynefin
+
+cynefin-beta
+  complex
+
+==>
+
+MermaidDiagram(CynefinDiagram(DiagramName,Domain(DomainName)))

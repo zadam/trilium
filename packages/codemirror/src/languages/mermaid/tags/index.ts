@@ -267,3 +267,14 @@ export const wardleyTags = {
     string: Tag.define(t.string),
     titleText: Tag.define(t.string)
 };
+
+export const cynefinTags = {
+    arrow: Tag.define(t.operator),
+    diagramName: Tag.define(mermaidTags.diagramName),
+    domainName: Tag.define(t.className),
+    keyword: Tag.define(t.keyword),
+    lineComment: Tag.define(t.lineComment),
+    separator: Tag.define(t.separator),
+    string: Tag.define(t.string),
+    titleText: Tag.define(t.string)
+};

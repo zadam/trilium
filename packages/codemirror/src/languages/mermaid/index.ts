@@ -11,6 +11,7 @@ import { parser as architectureParser } from "./parsers/architecture/parser.js";
 import { parser as blockParser } from "./parsers/block/parser.js";
 import { parser as c4Parser } from "./parsers/c4/parser.js";
 import { parser as classParser } from "./parsers/class/parser.js";
+import { parser as cynefinParser } from "./parsers/cynefin/parser.js";
 import { parser as erParser } from "./parsers/er/parser.js";
 import { parser as flowchartParser } from "./parsers/flowchart/parser.js";
 import { parser as ganttParser } from "./parsers/gantt/parser.js";
@@ -45,6 +46,7 @@ export const DIAGRAM_PARSERS: Record<string, LRParser> = {
     BlockDiagram: blockParser,
     C4Diagram: c4Parser,
     ClassDiagram: classParser,
+    CynefinDiagram: cynefinParser,
     ERDiagram: erParser,
     FlowchartDiagram: flowchartParser,
     GanttDiagram: ganttParser,

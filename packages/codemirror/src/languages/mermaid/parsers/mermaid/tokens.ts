@@ -23,6 +23,7 @@ import {
     treemapText,
     treeViewText,
     wardleyText,
+    cynefinText,
     SankeyDiagram,
     xyChartText,
     packetText,
@@ -58,6 +59,7 @@ const diagramMap: Record<string, number> = {
     "treemap": treemapText,
     "treeView-beta": treeViewText,
     "wardley-beta": wardleyText,
+    "cynefin-beta": cynefinText,
     "sankey-beta": SankeyDiagram,
     "sankey": SankeyDiagram,
     "xychart-beta": xyChartText,
@@ -89,7 +91,7 @@ const diagrams = Object.keys(diagramMap);
 const accessibleDiagrams = new Set([
     pieText, flowchartText, sequenceText, journeyText, requirementText, ganttText, quadrantText,
     radarText, treemapText, treeViewText, xyChartText, packetText, architectureText, classText,
-    stateText, erText, gitText, c4Text, wardleyText
+    stateText, erText, gitText, c4Text, wardleyText, cynefinText
 ]);
 
 /**
