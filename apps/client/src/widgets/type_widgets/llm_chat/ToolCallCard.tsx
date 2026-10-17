@@ -34,6 +34,8 @@ interface ToolCallContext {
     deletedTitle?: string;
     /** The title of the note `create_note` would create, in place of a link to a note not yet there. */
     createdTitle?: string;
+    /** The subtree `search_notes` is confined to, unless it searches the whole tree. */
+    scopeNoteId?: string;
     /** Plain-text detail (e.g. skill name, search query) when no note ref is available. */
     detailText: string | null;
 }
@@ -95,7 +97,11 @@ function getToolCallContext(toolCall: ToolCall): ToolCallContext {
 
     const detailText = (input?.name ?? input?.query ?? input?.url) as string | undefined
         ?? readWebSearchAction(toolCall);
-    return { noteId: null, parentNoteId: null, detailText: detailText || null };
+    const { ancestorNoteId } = input;
+    // Searching under the root is the same as not narrowing the search at all.
+    const scopeNoteId = toolCall.toolName === "search_notes" && typeof ancestorNoteId === "string"
+        && ancestorNoteId !== "root" ? ancestorNoteId : undefined;
+    return { noteId: null, parentNoteId: null, scopeNoteId, detailText: detailText || null };
 }
 
 /**
@@ -178,20 +184,32 @@ function getErrorMessage(result: string): string {
 function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallView | null }) {
     const context = getToolCallContext(toolCall);
     const {
-        noteId: refNoteId, parentNoteId: refParentId, move, deletedTitle, createdTitle, detailText
+        noteId: refNoteId, parentNoteId: refParentId, move, deletedTitle, createdTitle, scopeNoteId,
+        detailText
     } = context;
     const hasError = isFailedToolCall(toolCall);
+    const detail = detailText && (
+        <span className="llm-chat-tool-call-detail">
+            {toolCall.toolName === "read_web_page" && /^https?:\/\//i.test(detailText)
+                ? <ExternalLink url={detailText}>{detailText}</ExternalLink>
+                : detailText}
+        </span>
+    );
 
     return (
         <>
             <span className="llm-chat-tool-call-name">{t(`llm.tools.${toolCall.toolName}`, { defaultValue: toolCall.toolName })}</span>
-            {detailText && (
-                <span className="llm-chat-tool-call-detail">
-                    {toolCall.toolName === "read_web_page" && /^https?:\/\//i.test(detailText)
-                        ? <ExternalLink url={detailText}>{detailText}</ExternalLink>
-                        : detailText}
+            {scopeNoteId && detail ? (
+                <span className="llm-chat-tool-call-scope">
+                    <Trans
+                        i18nKey="llm.tools.search_in_subtree"
+                        components={{
+                            Query: detail,
+                            Subtree: <NewNoteLink notePath={scopeNoteId} showNoteIcon noPreview />
+                        } as any}
+                    />
                 </span>
-            )}
+            ) : detail}
             {view?.lead}
             {deletedTitle && <span className="llm-chat-tool-call-deleted-title">{deletedTitle}</span>}
             {refNoteId && (

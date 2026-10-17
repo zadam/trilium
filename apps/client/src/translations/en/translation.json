@@ -2655,7 +2655,6 @@
     "search_notes_count_other": "({{count}} notes)",
     "search_notes_limited_one": "{{count}} total result, limited to {{limit}}",
     "search_notes_limited_other": "{{count}} total results, limited to {{limit}}",
-    "search_notes_scope": "Searched in <Note/>",
     "child_notes_count_one": "({{count}} child)",
     "child_notes_count_other": "({{count}} children)",
     "child_count_one": "{{count}} child",
@@ -4267,7 +4266,8 @@
       "read_web_page": "Read web page",
       "note_moved_from": "<Note/> from <From/> to <To/>",
       "note_moved": "<Note/> to <To/>",
-      "attachment_in_note": "<Title/> in <Note/>"
+      "attachment_in_note": "<Title/> in <Note/>",
+      "search_in_subtree": "<Query/> in <Subtree/>"
     },
     "search_providers": "Search Providers",
     "no_search_providers_configured": "No search providers configured yet.",

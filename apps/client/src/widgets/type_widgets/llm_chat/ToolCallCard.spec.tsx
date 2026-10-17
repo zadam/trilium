@@ -148,34 +148,37 @@ describe("ToolCallCard", () => {
             { note: "a", parent: "Space", preview: "Launch The Saturn V rocket" },
             { note: "b", parent: null, preview: null }
         ]);
-        expect(line?.querySelector(".llm-chat-note-results-scope")).toBeNull();
         expect(line?.querySelector(".llm-chat-note-results-more")?.textContent)
             .toBe("llm_chat.search_notes_limited{\"count\":42,\"limit\":2}");
     });
 
-    it("names the subtree a search was confined to, even when it found nothing there", () => {
+    it("names the subtree a search is confined to on its line, before and after it runs", () => {
+        const search = (id: string, ancestorNoteId: string, result?: object): ToolCall => ({
+            id, toolName: "search_notes", input: { query: id, ancestorNoteId }, result: result && JSON.stringify(result)
+        });
+        const other = (id: string): ToolCall => ({ id, toolName: "get_note", input: { noteId: "x" }, result: "{}" });
         const target = renderCard([
-            {
-                id: "1",
-                toolName: "search_notes",
-                input: { query: "a", ancestorNoteId: "scope" },
-                result: JSON.stringify({ totalResults: 12, results: [ { noteId: "a" } ] })
-            },
-            {
-                id: "2",
-                toolName: "search_notes",
-                input: { query: "b", ancestorNoteId: "scope" },
-                result: JSON.stringify({ totalResults: 0, results: [] })
-            }
+            search("a", "scope", { totalResults: 12, results: [ { noteId: "a" } ] }),
+            other("1"),
+            search("b", "scope", { totalResults: 0, results: [] }),
+            other("2"),
+            search("c", "scope"),
+            other("3"),
+            search("d", "root", { totalResults: 0, results: [] })
         ]);
-        const lines = [ ...(target.querySelector(".llm-chat-tool-calls")?.children ?? []) ];
-        expect(lines.map(line => line instanceof HTMLDetailsElement)).toEqual([ true ]);
-        const groupedLines = [ ...(lines[0]?.querySelectorAll(".expandable-section-body > .llm-chat-tool-call") ?? []) ];
-        expect(groupedLines.map(line => line instanceof HTMLDetailsElement)).toEqual([ true, true ]);
-        expect(groupedLines.map(line => line.querySelector(".llm-chat-note-results-scope .note-link-stub")?.textContent))
-            .toEqual([ "scope", "scope" ]);
-        expect(groupedLines[0]?.querySelector(".llm-chat-note-results-more")?.textContent)
+        const [ found, , empty, , waiting, , everywhere ] = [ ...(target.querySelector(".llm-chat-tool-calls")?.children ?? []) ];
+
+        for (const line of [ found, empty, waiting ]) {
+            const scope = line?.querySelector(".llm-chat-tool-call-scope");
+            expect(scope?.textContent?.startsWith("llm.tools.search_in_subtree")).toBe(true);
+            expect(scope?.querySelector(".note-link-stub")?.textContent).toBe("scope");
+        }
+        expect(found?.querySelector(".llm-chat-tool-call-scope .llm-chat-tool-call-detail")?.textContent).toBe("a");
+        expect(found?.querySelector(".llm-chat-note-results-more")?.textContent)
             .toBe("llm_chat.search_notes_limited{\"count\":12,\"limit\":1}");
+        expect(empty instanceof HTMLDetailsElement).toBe(false);
+        expect(everywhere?.querySelector(".llm-chat-tool-call-scope")).toBeNull();
+        expect(everywhere?.querySelector(".llm-chat-tool-call-detail")?.textContent).toBe("d");
     });
 
     it("keeps a search that found nothing, or returned something unexpected, to a plain line", () => {

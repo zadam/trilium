@@ -102,16 +102,14 @@ export function getToolCallView(toolCall: ToolCall): ToolCallView | null {
         case "search_notes": {
             const result = parseSearchNotesResult(toolCall.result);
             if (!result) return null;
-            const { ancestorNoteId, limit } = toolCall.input;
+            const { limit } = toolCall.input;
             const search: NoteSearch = {
                 ...result,
-                // Searching under the root is the same as not narrowing the search at all.
-                ancestorNoteId: typeof ancestorNoteId === "string" && ancestorNoteId !== "root" ? ancestorNoteId : undefined,
                 limit: typeof limit === "number" ? limit : result.results.length
             };
             return {
                 summary: t("llm_chat.search_notes_count", { count: result.totalResults }),
-                body: search.results.length > 0 || search.ancestorNoteId ? <NoteSearchResults {...search} /> : undefined
+                body: search.results.length > 0 ? <NoteSearchResults {...search} /> : undefined
             };
         }
         case "search_help": {
@@ -254,24 +252,14 @@ interface SearchNotesResult {
 
 /** A `search_notes` result with the input that shaped it. */
 interface NoteSearch extends SearchNotesResult {
-    ancestorNoteId?: string;
     limit: number;
     /** The results are User Guide pages, which open as contextual help. */
     isHelp?: boolean;
 }
 
-function NoteSearchResults({ totalResults, results, ancestorNoteId, limit, isHelp }: NoteSearch) {
+function NoteSearchResults({ totalResults, results, limit, isHelp }: NoteSearch) {
     return (
         <div className="llm-chat-note-results">
-            {ancestorNoteId && (
-                <div className="llm-chat-note-results-scope">
-                    <span className="bx bx-subdirectory-right" />
-                    <Trans
-                        i18nKey="llm_chat.search_notes_scope"
-                        components={{ Note: <NewNoteLink notePath={ancestorNoteId} showNoteIcon /> } as any}
-                    />
-                </div>
-            )}
             {results.length > 0 && (
                 <ul>
                     {results.map(({ noteId, parentTitle, contentPreview }) => (

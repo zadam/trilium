@@ -25,6 +25,11 @@
     margin-left: 0.25rem;
 }
 
+.llm-chat-tool-call-scope {
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
 /* Shown on hover, on focus, on an open line, and always where there is no hover. */
 .llm-chat-tool-call-debug.icon-action {
     --icon-button-size: 1.4rem;
