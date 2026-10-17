@@ -845,7 +845,7 @@ describe("ToolCallCard", () => {
                 if (!found) throw new Error("expected the menu to open");
                 return found;
             });
-            expect(row.textContent).toBe("llm_chat.tool_approval_allow_for_chat");
+            expect(row.textContent).toBe("llm_chat.tool_approval_allow_for_chat{\"tool\":\"rename_note\"}");
             act(() => row.click());
             expect(answer).toHaveBeenLastCalledWith("c1", true, "chat");
         });

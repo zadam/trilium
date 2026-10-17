@@ -160,5 +160,23 @@
         button.btn.btn-sm {
             min-width: unset;
         }
+
+        > .btn-group {
+            gap: 0;
+            padding: 0;
+            border-radius: 6px;
+            background: var(--cmd-button-background-color);
+            box-shadow: 1px 1px 1px var(--cmd-button-shadow-color);
+
+            button.btn {
+                border-radius: 6px 0 0 6px;
+            }
+
+            button.btn.dropdown-toggle-split {
+                padding-inline: 0.4rem;
+                border-inline-start: 1px solid var(--main-border-color);
+                border-radius: 0 6px 6px 0;
+            }
+        }
     }
 }

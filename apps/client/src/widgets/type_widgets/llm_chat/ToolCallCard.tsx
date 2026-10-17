@@ -283,7 +283,7 @@ function ToolCallSection({ toolCall }: { toolCall: ToolCall }) {
     return (
         <div className="llm-chat-tool-call-pending">
             {section}
-            <ToolApprovalBar toolCallId={toolCall.id} />
+            <ToolApprovalBar toolCall={toolCall} />
         </div>
     );
 }
@@ -427,11 +427,13 @@ export default function ToolCallCard({ toolCalls }: { toolCalls: ToolCall[] }) {
 }
 
 /** Asks the user whether a waiting tool call can run. */
-function ToolApprovalBar({ toolCallId }: { toolCallId: string }) {
+function ToolApprovalBar({ toolCall }: { toolCall: ToolCall }) {
     const answer = useContext(ToolApprovalContext);
     if (!answer) {
         return null;
     }
+    const { id: toolCallId, toolName } = toolCall;
+    const tool = t(`llm.tools.${toolName}`, { defaultValue: toolName });
 
     return (
         <div
@@ -452,7 +454,7 @@ function ToolApprovalBar({ toolCallId }: { toolCallId: string }) {
                 onClick={() => answer(toolCallId, true)}
             >
                 <FormListItem icon="bx bx-check-double" onClick={() => answer(toolCallId, true, "chat")}>
-                    {t("llm_chat.tool_approval_allow_for_chat")}
+                    {t("llm_chat.tool_approval_allow_for_chat", { tool })}
                 </FormListItem>
             </SplitButton>
         </div>
