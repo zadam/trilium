@@ -1,6 +1,7 @@
 import {
     _getModelData as getModelData,
     _setModelData as setModelData,
+    ButtonView,
     ClassicEditor,
     Essentials,
     type ModelElement,
@@ -14,6 +15,7 @@ import { createTestEditor } from "../../../test/editor-kit.js";
 import { installGlobMock } from "../../../test/globals-test-kit.js";
 import { SIZE_ATTRIBUTES } from "../resizable_widgets/resizable_widgets.js";
 import ContentEmbed, {
+    CONTENT_EMBED_MENU,
     CONVERT_EMBED_TO_LINK_COMMAND,
     TOGGLE_CAPTION_COMMAND_NAME,
     TOGGLE_TITLE_COMMAND_NAME
@@ -27,7 +29,9 @@ describe("ContentEmbedInlineSource", () => {
     beforeEach(async () => {
         loadInlineEmbed = vi.fn();
         installGlobMock({
-            getComponentByEl: () => ({ triggerCommand: vi.fn(), loadInlineEmbed })
+            getComponentByEl: () => ({
+                triggerCommand: vi.fn(), loadEmbeddedNote: vi.fn(), loadInlineEmbed
+            })
         });
 
         editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ], {
@@ -161,6 +165,23 @@ describe("ContentEmbedInlineSource", () => {
         expect(embed?.getAttribute("hideTitle")).toBe(true);
         expect(embed?.getAttribute("editable")).toBe(true);
         expect(loadInlineEmbed.mock.calls[0][3]).toEqual({ isFocused: true });
+    });
+
+    it("offers the menu button in the toolbar, and no caption button", () => {
+        const menu = editor.ui.componentFactory.create(CONTENT_EMBED_MENU);
+        const caption = editor.ui.componentFactory.create(TOGGLE_CAPTION_COMMAND_NAME);
+        if (!(menu instanceof ButtonView) || !(caption instanceof ButtonView)) {
+            throw new Error("Expected two buttons.");
+        }
+
+        editor.setData(`<pre><code class="language-mermaid">a</code></pre>`);
+        editor.model.change((writer) => writer.setSelection(getEmbed(), "on"));
+        expect([ menu.isVisible, caption.isVisible ]).toEqual([ true, false ]);
+
+        editor.setData(`<figure class="include-note" data-note-id="n1" data-box-size="medium">`
+            + `</figure>`);
+        editor.model.change((writer) => writer.setSelection(getEmbed(), "on"));
+        expect([ menu.isVisible, caption.isVisible ]).toEqual([ false, true ]);
     });
 
     it("offers no title, caption or link for an embed that shows no note", () => {

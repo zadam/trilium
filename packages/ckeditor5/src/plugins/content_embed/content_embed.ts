@@ -139,6 +139,8 @@ export function getDisplayModeLabel( t: ( message: string ) => string, mode: Dis
 export default class ContentEmbed extends Plugin {
 	/** The buttons that the content of the selected embed adds to its toolbar, or `null`. */
 	declare public selectedEmbedTools: ContentEmbedToolProvider | null;
+	/** Whether the selected embed keeps its source in the note, and so has no title or caption. */
+	declare public isSelectedEmbedInline: boolean;
 
 	static get requires() {
 		return [ ContentEmbedEditing, ContentEmbedUI, ContentEmbedInlineSource ];
@@ -152,12 +154,15 @@ export default class ContentEmbed extends Plugin {
 		super( editor );
 		// Set before `init()` of the plugins it requires, whose toolbar items bind to it.
 		this.set( 'selectedEmbedTools', null );
+		this.set( 'isSelectedEmbedInline', false );
 	}
 
 	init() {
 		// Runs before `WidgetToolbarRepository` positions the toolbar from its width.
 		this.listenTo( this.editor.ui, 'update', () => {
 			this.selectedEmbedTools = getSelectedEmbedTools( this.editor );
+			const embed = getSelectedContentEmbed( this.editor );
+			this.isSelectedEmbedInline = !!embed && isInlineSourceEmbed( embed );
 		}, { priority: 'high' } );
 	}
 
@@ -289,6 +294,8 @@ class ContentEmbedUI extends Plugin {
 				buttonView.bind( 'label' ).to( command, 'value', value =>
 					value ? t( 'Toggle caption off' ) : t( 'Toggle caption on' ) );
 			}
+			buttonView.bind( 'isVisible' ).to( editor.plugins.get( ContentEmbed ),
+				'isSelectedEmbedInline', isInline => !isInline );
 
 			this.listenTo( buttonView, 'execute', () => {
 				editor.execute( TOGGLE_CAPTION_COMMAND_NAME, { focusCaptionOnShow: true } );
@@ -385,11 +392,17 @@ class ContentEmbedUI extends Plugin {
 				tooltip: true
 			} );
 
-			// Replaces the menu button of the title row while the title is hidden.
+			// Replaces the menu button of the title row while the title is hidden, and stands in
+			// for it on an embed without one.
 			if ( command ) {
-				buttonView.bind( 'isEnabled' ).to( command );
+				const plugin = editor.plugins.get( ContentEmbed );
+				buttonView.bind( 'isEnabled' ).to(
+					command, 'isEnabled', plugin, 'isSelectedEmbedInline',
+					( isEnabled, isInline ) => isEnabled || isInline );
 				buttonView.bind( 'isVisible' ).to( command, 'isEnabled', command, 'value',
-					( isEnabled, isTitleShown ) => isEnabled && !isTitleShown );
+					plugin, 'isSelectedEmbedInline',
+					( isEnabled, isTitleShown, isInline ) =>
+						isInline || ( isEnabled && !isTitleShown ) );
 			}
 
 			this.listenTo( buttonView, 'execute', () => {
