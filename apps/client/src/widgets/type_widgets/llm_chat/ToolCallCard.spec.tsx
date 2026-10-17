@@ -842,9 +842,13 @@ describe("ToolCallCard", () => {
             expect(buttons(target)).toHaveLength(2);
         });
 
-        it("opens a group holding a waiting call, and offers no buttons outside the streaming reply", () => {
-            const target = renderCard([ { ...PENDING, id: "c0", approval: undefined, result: "{}" }, PENDING ]);
-            expect(target.querySelector<HTMLDetailsElement>("details.llm-chat-tool-call-group")?.open).toBe(true);
+        it("keeps a waiting call out of the group of its tool, and offers no buttons outside the streaming reply", () => {
+            const done = (id: string): ToolCall => ({ ...PENDING, id, approval: undefined, result: "{}" });
+            const target = renderCard([ done("c0"), done("c1"), PENDING, { ...PENDING, id: "c2", approval: undefined } ]);
+            const lines = [ ...(target.querySelector(".llm-chat-tool-calls")?.children ?? []) ];
+            expect(lines.map(line => line.classList.contains("llm-chat-tool-call-group"))).toEqual([ true, false, false ]);
+            expect(lines[1]?.classList.contains("llm-chat-tool-call-pending")).toBe(true);
+            expect(target.querySelector(".llm-chat-tool-call-group .llm-chat-tool-call-pending")).toBeNull();
             expect(target.querySelector(".llm-chat-tool-approval")).toBeNull();
         });
 

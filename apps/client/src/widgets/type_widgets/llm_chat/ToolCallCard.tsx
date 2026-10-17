@@ -339,12 +339,10 @@ function ToolCallDebugButton({ toolCall }: { toolCall: ToolCall }) {
 function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
     const first = toolCalls[0];
     const anyPending = toolCalls.some(tc => !tc.result);
-    const anyAwaitingApproval = toolCalls.some(tc => tc.approval === "pending");
     const anyError = toolCalls.some(isFailedToolCall);
 
     const searchProvider = readSearchProvider(first);
-    const icon = anyAwaitingApproval ? "bx bxs-hand"
-        : anyPending ? "bx bx-loader-alt bx-spin"
+    const icon = anyPending ? "bx bx-loader-alt bx-spin"
         : searchProvider && toolCalls.every(tc => readSearchProvider(tc)?.type === searchProvider.type)
             ? <SearchProviderIcon {...searchProvider} />
             : toolNameIcon(first.toolName);
@@ -363,7 +361,6 @@ function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
             icon={icon}
             label={label}
             className="llm-chat-tool-call llm-chat-tool-call-group"
-            open={anyAwaitingApproval || undefined}
         >
             {toolCalls.map((tc, idx) => (
                 <ToolCallSection key={tc.id ?? idx} toolCall={tc} />
@@ -372,12 +369,17 @@ function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
     );
 }
 
-/** Group consecutive tool calls that share the same tool name. Singletons pass through unchanged. */
+/**
+ * Group consecutive tool calls that share the same tool name. Singletons pass through unchanged, and
+ * a call that waits for approval stays out of any group.
+ */
 function groupByToolName(toolCalls: ToolCall[]): Array<ToolCall | ToolCall[]> {
     const groups: Array<ToolCall | ToolCall[]> = [];
     for (const tc of toolCalls) {
         const last = groups[groups.length - 1];
-        if (Array.isArray(last) && last[0].toolName === tc.toolName) {
+        if (tc.approval === "pending" || (last && !Array.isArray(last) && last.approval === "pending")) {
+            groups.push(tc);
+        } else if (Array.isArray(last) && last[0].toolName === tc.toolName) {
             last.push(tc);
         } else if (last && !Array.isArray(last) && last.toolName === tc.toolName) {
             groups[groups.length - 1] = [last, tc];
