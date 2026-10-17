@@ -14,7 +14,8 @@ All documentation is stored in the [Trilium](https://github.com/TriliumNext/Tril
 *   `docs/Release Notes` is also stored in Markdown format and can be freely edited.
 *   The _Script API_ is auto-generated and is **not** committed to the repository. It is built into the gitignored `site/` directory and published to [docs.triliumnotes.org](https://docs.triliumnotes.org/); see [Updating the Script API](#updating-the-script-api) below.
 *   `docs/User Guide` contains Markdown documentation as well, together with a `!!!meta.json` file that describes the note tree (note IDs, share aliases, icons, attachments).
-    *   From it, `apps/server/src/assets/doc_notes/en/User Guide` (the HTML rendered by the in-app help) and `apps/standalone/src/assets/help_meta.json` are generated. These generated files must never be edited by hand.
+    *   From it, `apps/server/src/assets/help/help_meta.json` (the note tree of the in-app help) and `apps/server/src/assets/help/help_content.json` (the HTML of each page) are generated. These generated files must never be edited by hand.
+    *   The in-app help is not stored in the database: at startup, Trilium builds the `_help` subtree from these two files as read-only virtual notes, which are never persisted or synchronized.
     *   The Markdown can be edited by hand, as long as the generated files are refreshed afterwards by running `pnpm edit-docs:sync-docs` (see below).
 
 The mappings between note trees and directories are listed in `edit-docs-config.yaml` at the root of the repository.
@@ -33,7 +34,7 @@ To edit the documentation using Trilium, set up a working development environmen
 How it works:
 
 *   At startup, the documentation from `docs/` is imported from Markdown into a in-memory session (the initialization of the database is already handled by the application).
-*   Each modification will trigger after 10s an export from the in-memory Trilium session back to Markdown, including the meta file, as well as the HTML and meta files used by the in-app help.
+*   Each modification will trigger after 10s an export from the in-memory Trilium session back to Markdown, including the meta file, as well as the two files used by the in-app help.
 
 ### Manual editing
 
