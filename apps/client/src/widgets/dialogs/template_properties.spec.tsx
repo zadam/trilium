@@ -28,6 +28,15 @@ vi.mock("../bulk_actions/TemplateField", async (importOriginal) => ({
     </>)
 }));
 
+vi.mock("../react/NoteAutocomplete", () => ({
+    default: ({ noteId, noteIdChanged }: { noteId?: string; noteIdChanged?(noteId: string | undefined): void }) => (
+        <input
+            className="default-parent-stub" value={noteId ?? ""}
+            onInput={(e) => noteIdChanged?.(e.currentTarget.value || undefined)}
+        />
+    )
+}));
+
 describe("TemplatePropertiesDialog", () => {
     it("saves the template's own #template:titleTemplate when the field loses focus", async () => {
         const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue();
@@ -86,6 +95,25 @@ describe("TemplatePropertiesDialog", () => {
         // A template the engine refuses has no preview.
         type(field, "${parentNote.constructor}");
         expect(preview()).toBeNull();
+    });
+
+    it("sets the template's own ~template:newNoteDefaultParent as a note is picked, and removes it when cleared", async () => {
+        const setAttribute = vi.spyOn(attributes, "setAttribute").mockResolvedValue();
+        const remove = vi.spyOn(attributes, "removeOwnedRelationByName").mockResolvedValue(true);
+        const note = buildNote({ title: "Person", "#template": "", "~template:newNoteDefaultParent": "people" });
+
+        const { container } = await open(note.noteId);
+        const picker = container.querySelector<HTMLInputElement>(".template-properties-dialog .tn-card .default-parent-stub");
+        expect(picker?.value).toBe("people");
+
+        if (picker) type(picker, "contacts");
+        await vi.waitFor(() => expect(setAttribute)
+            .toHaveBeenCalledWith(note, "relation", "template:newNoteDefaultParent", "contacts"));
+
+        if (picker) type(picker, "");
+        await vi.waitFor(() => expect(remove).toHaveBeenCalledWith(note, "template:newNoteDefaultParent"));
+        setAttribute.mockRestore();
+        remove.mockRestore();
     });
 
     it("leaves a value inherited from the template's ancestors out of the field", async () => {

@@ -4783,6 +4783,9 @@
     "title_template": "Default title of created notes",
     "title_template_description": "Can read the time of creation (now) and the note it is created under (parentNote).",
     "title_template_placeholder": "Meeting ${now.format('YYYY-MM-DD')}",
-    "new_notes": "New notes"
+    "new_notes": "New notes",
+    "default_parent": "Default location of created notes",
+    "default_parent_description": "Where they are placed when no other location is picked, such as when created through @-completion in a text note.",
+    "default_parent_placeholder": "Where they are created"
   }
 }

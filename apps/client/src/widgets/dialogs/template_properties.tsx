@@ -11,24 +11,27 @@ import TemplateField, { noteTemplateVariables } from "../bulk_actions/TemplateFi
 import { CollectionPropertiesDialog } from "../note_bars/CollectionProperties";
 import { Card, OptionCardSection } from "../react/Card";
 import { useTriliumEvent } from "../react/hooks";
+import NoteAutocomplete from "../react/NoteAutocomplete";
 
 /** What the server's `getNewNoteTitle()` passes to `evaluateTemplate()` for a title template. */
 const TITLE_TEMPLATE_VARIABLES = { now: "date", parentNote: "note" } as const;
 
 /**
- * Edits what a template note sets on the notes created from it, starting with their title, as a
- * column of cards like a collection's properties. Each setting is saved as it is changed.
+ * Edits what a template note sets on the notes created from it (their title and where they go), as
+ * a column of cards like a collection's properties. Each setting is saved as it is changed.
  */
 export default function TemplatePropertiesDialog() {
     const [ note, setNote ] = useState<FNote>();
     const [ shown, setShown ] = useState(false);
     const [ titleTemplate, setTitleTemplate ] = useState("");
+    const [ defaultParentId, setDefaultParentId ] = useState<string>();
     const preview = useTitlePreview(titleTemplate, note);
 
     useTriliumEvent("showTemplateProperties", async ({ noteId }) => {
         const templateNote = await froca.getNote(noteId);
         if (!templateNote) return;
         setTitleTemplate(templateNote.getOwnedLabelValue("template:titleTemplate") ?? "");
+        setDefaultParentId(templateNote.getOwnedRelationValue("template:newNoteDefaultParent") ?? undefined);
         setNote(templateNote);
         setShown(true);
     });
@@ -41,6 +44,16 @@ export default function TemplatePropertiesDialog() {
             await attributes.setLabel(note.noteId, "template:titleTemplate", value);
         } else {
             await attributes.removeOwnedLabelByName(note, "template:titleTemplate");
+        }
+    }
+
+    async function saveDefaultParent(noteId: string | undefined) {
+        if (!note) return;
+        setDefaultParentId(noteId);
+        if (noteId) {
+            await attributes.setAttribute(note, "relation", "template:newNoteDefaultParent", noteId);
+        } else {
+            await attributes.removeOwnedRelationByName(note, "template:newNoteDefaultParent");
         }
     }
 
@@ -69,6 +82,16 @@ export default function TemplatePropertiesDialog() {
                             currentValue={titleTemplate}
                             onChange={setTitleTemplate}
                             onBlur={() => void saveTitleTemplate()}
+                        />
+                    </OptionCardSection>
+                    <OptionCardSection
+                        label={t("template_properties.default_parent")}
+                        description={t("template_properties.default_parent_description")}
+                    >
+                        <NoteAutocomplete
+                            noteId={defaultParentId}
+                            placeholder={t("template_properties.default_parent_placeholder")}
+                            noteIdChanged={(noteId) => void saveDefaultParent(noteId || undefined)}
                         />
                     </OptionCardSection>
                 </Card>
