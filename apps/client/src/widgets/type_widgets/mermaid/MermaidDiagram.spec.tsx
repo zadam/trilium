@@ -10,6 +10,11 @@ import MermaidDiagram from "./MermaidDiagram";
 vi.mock("../../../services/mermaid", () => ({
     renderMermaidSvg: vi.fn(async () => "<svg></svg>")
 }));
+const openInAppHelpFromUrl = vi.hoisted(() => vi.fn());
+vi.mock("../../../services/utils", async (importOriginal) => ({
+    ...await importOriginal<typeof import("../../../services/utils")>(),
+    openInAppHelpFromUrl
+}));
 // react-zoom-pan-pinch measures its boxes, which happy-dom cannot do.
 vi.mock("react-zoom-pan-pinch", () => ({
     TransformWrapper: (props: { children?: ComponentChildren }) => <>{props.children}</>,
@@ -67,6 +72,22 @@ describe("MermaidDiagram", () => {
         const picked = await mount({ editor: undefined, displayMode: "source" });
         expect(getPanes(picked.figure)).toEqual({ source: true, preview: false });
         expect(await isSourceEditable(picked.figure)).toBe(false);
+    });
+
+    it("offers the syntax help while the source shows", async () => {
+        const split = await mount({ editor: buildEditor(), displayMode: "split" });
+        const tools = getContentEmbedTools(split.figure);
+        expect(tools?.getTools().at(-1)).toMatchObject({ id: "syntaxHelp", group: "help" });
+        tools?.execute("syntaxHelp");
+        expect(openInAppHelpFromUrl).toHaveBeenCalledExactlyOnceWith("s1aBHPd79XYj");
+
+        const source = await mount({ editor: buildEditor(), displayMode: "source" });
+        expect(getContentEmbedTools(source.figure)?.getTools().map(({ id }) => id))
+            .toContain("syntaxHelp");
+
+        const preview = await mount({ editor: buildEditor(), displayMode: "preview" });
+        expect(getContentEmbedTools(preview.figure)?.getTools().map(({ id }) => id))
+            .not.toContain("syntaxHelp");
     });
 
     it("makes the source editable once Editable turns on", async () => {

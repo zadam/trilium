@@ -4116,6 +4116,7 @@
   },
   "mermaid": {
     "placeholder": "Type the content of your Mermaid diagram or use one of the sample diagrams below.",
+    "syntax_help": "Mermaid syntax help",
     "sample_diagrams": "Sample diagrams:",
     "sample_flowchart": "Flowchart",
     "sample_class": "Class",

@@ -56,6 +56,7 @@ A diagram shows in a box like the one of an included note, so it can be resized,
 *   A new diagram starts editable, in _Split view_. The diagram updates a moment after you stop typing. If the source has an error, the last diagram that worked stays, dimmed, under the error.
 *   A diagram without a chosen view shows the source next to the diagram while it is editable, and the diagram alone otherwise. In a read-only note, the source can never be changed.
 *   To zoom, use the <span class="tn-icon bx bx-zoom-out"></span> and <span class="tn-icon bx bx-zoom-in"></span> buttons of the diagram's toolbar; the zoom level between them resets the zoom. Drag the diagram to move around it, and double-click it to reset the view. The mouse wheel scrolls the note until you click the diagram, and then zooms it.
+*   While the source shows, the <span class="tn-icon bx bx-help-circle"></span> _Mermaid syntax help_ button at the end of the toolbar opens the help on <a class="reference-link" href="../Mermaid%20Diagrams.md">Mermaid Diagrams</a>, which links to the Mermaid syntax.
 *   Undo in the text note also undoes the changes made to the source of a diagram.
 
 The source of the diagram stays in the note as a Mermaid code block, so the diagram is exported to Markdown as a `mermaid` code block that other applications can show.

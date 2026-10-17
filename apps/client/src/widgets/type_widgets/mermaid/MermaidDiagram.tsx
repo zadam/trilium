@@ -3,6 +3,7 @@ import "./MermaidDiagram.css";
 import type VanillaCodeMirror from "@triliumnext/codemirror";
 import { MERMAID_ATTACHMENT_MIME } from "@triliumnext/commons";
 import fullscreenIcon from "boxicons/svg/regular/bx-fullscreen.svg?raw";
+import helpIcon from "boxicons/svg/regular/bx-help-circle.svg?raw";
 import zoomInIcon from "boxicons/svg/regular/bx-zoom-in.svg?raw";
 import zoomOutIcon from "boxicons/svg/regular/bx-zoom-out.svg?raw";
 import clsx from "clsx";
@@ -14,6 +15,7 @@ import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { t } from "../../../services/i18n";
 import { renderMermaidSvg } from "../../../services/mermaid";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
+import { openInAppHelpFromUrl } from "../../../services/utils";
 import OverlayControlGroup, { ZoomControls } from "../../react/OverlayControlGroup";
 import { RawHtmlBlock } from "../../react/RawHtml";
 import { useZoomPanPinch, useZoomPanWheel } from "../../react/zoom_pan";
@@ -178,6 +180,7 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     readonly hasDisplayModes = true;
     private zoom: ZoomState | null = null;
     private isDiagramShown = true;
+    private isSourceShown = false;
     private listeners = new Set<() => void>();
     private shownTools = "";
 
@@ -187,6 +190,7 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     setState(zoom: ZoomState, mode: DisplayMode) {
         this.zoom = zoom;
         this.isDiagramShown = mode !== "source";
+        this.isSourceShown = mode !== "preview";
         // Notifies after the render, as a listener updates the toolbar of the editor.
         queueMicrotask(() => this.update());
     }
@@ -194,7 +198,7 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     getTools(): ContentEmbedTool[] {
         const zoom = this.zoom;
         if (!zoom) return [];
-        if (!this.isDiagramShown) return this.getFullscreenTools();
+        if (!this.isDiagramShown) return [ ...this.getFullscreenTools(), ...this.getHelpTools() ];
 
         return [
             {
@@ -217,7 +221,8 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
                 isEnabled: zoom.canZoomIn,
                 group: "zoom"
             },
-            ...this.getFullscreenTools()
+            ...this.getFullscreenTools(),
+            ...this.getHelpTools()
         ];
     }
 
@@ -225,6 +230,8 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
         const zoom = this.zoom;
         if (id === "fullscreen") {
             showContentEmbedFullscreen(this.rootRef.current);
+        } else if (id === "syntaxHelp") {
+            openInAppHelpFromUrl(MERMAID_HELP_PAGE);
         } else if (id === "zoomOut") {
             zoom?.zoomOut();
         } else if (id === "zoomIn") {
@@ -254,6 +261,15 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
         ];
     }
 
+    /** The help on the Mermaid syntax, while the source shows. */
+    private getHelpTools(): ContentEmbedTool[] {
+        if (!this.isSourceShown) return [];
+
+        return [
+            { id: "syntaxHelp", label: t("mermaid.syntax_help"), icon: helpIcon, group: "help" }
+        ];
+    }
+
     private update() {
         const shownTools = JSON.stringify(this.getTools());
         if (shownTools !== this.shownTools) {
@@ -265,6 +281,8 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     }
 }
 
+/** The in-app help page on Mermaid diagrams. */
+const MERMAID_HELP_PAGE = "s1aBHPd79XYj";
 /** Zoom bounds, as a multiple of the diagram fitted to the viewer. */
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 10;
