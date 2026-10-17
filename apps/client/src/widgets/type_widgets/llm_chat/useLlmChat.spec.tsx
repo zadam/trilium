@@ -572,6 +572,50 @@ describe("useLlmChat", () => {
         consoleError.mockRestore();
     });
 
+    it("keeps the answers on their way when the reply ends before they arrive", async () => {
+        type Answer = (approved: boolean, scope?: "chat") => Promise<void>;
+        let callbacks: {
+            onToolApprovalRequest: (request: { toolCallId: string; toolName: string; toolInput: Record<string, unknown> }, answer: Answer) => void;
+            onToolResult: (toolCallId: string, toolName: string, result: string, isError?: boolean) => void;
+        } | undefined;
+        let finish: () => void = () => undefined;
+        streamChatCompletionMock.mockImplementation(async (_messages, _options, cb) => {
+            callbacks = cb;
+            await new Promise<void>(resolve => { finish = resolve; });
+            cb.onDone();
+        });
+        const delivered: (() => void)[] = [];
+        const answer = vi.fn<Answer>(() => new Promise<void>(resolve => { delivered.push(resolve); }));
+        await mountChat();
+        await act(async () => {
+            api().setInput("tidy up");
+        });
+        await act(async () => {
+            void api().handleSubmit(new Event("submit"));
+        });
+        await act(async () => {
+            callbacks?.onToolApprovalRequest({ toolCallId: "c1", toolName: "delete_note", toolInput: {} }, answer);
+            callbacks?.onToolApprovalRequest({ toolCallId: "c2", toolName: "rename_note", toolInput: {} }, answer);
+        });
+
+        await act(async () => {
+            api().answerToolCall("c1", false);
+            api().answerToolCall("c2", true, "chat");
+            callbacks?.onToolResult("c1", "delete_note", JSON.stringify({ error: "declined" }), true);
+            callbacks?.onToolResult("c2", "rename_note", "renamed");
+            finish();
+        });
+        await act(async () => {
+            for (const resolve of delivered) resolve();
+        });
+
+        expect(api().allowedTools).toEqual([ "rename_note" ]);
+        expect(api().messages.at(-1)?.content).toMatchObject([
+            { toolCall: { id: "c1", approval: "declined" } },
+            { toolCall: { id: "c2", approval: undefined, result: "renamed" } }
+        ]);
+    });
+
     it("allows a tool for the chat: releases its waiting calls, sends and saves the list, and revokes it", async () => {
         type Answer = (approved: boolean, scope?: "chat") => Promise<void>;
         let callbacks: {

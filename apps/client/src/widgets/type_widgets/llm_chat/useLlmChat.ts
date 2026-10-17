@@ -93,8 +93,8 @@ interface WaitingToolCall {
     send: (approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => Promise<void>;
     /** Stop waiting on the call, showing it declined or not. */
     settle: (approved: boolean) => void;
-    /** Whether an answer is on its way, so a second click sends nothing. */
-    sending?: boolean;
+    /** The answer on its way to the turn, if any; while it is, a second click sends nothing. */
+    answering?: boolean;
 }
 
 export interface LlmChatOptions {
@@ -709,10 +709,18 @@ export function useLlmChat(
             // the finalized message.
             smoothDrain();
 
+            // The reply can end before the turn acknowledges an answer it already acted on.
+            for (const [toolCallId, waiting] of toolApprovalAnswersRef.current) {
+                if (waiting.answering !== undefined) {
+                    updateToolCall(toolCallId, { approval: waiting.answering ? undefined : "declined" });
+                }
+            }
+
             // Mark any in-progress tool calls as stopped so they don't show infinite spinners.
             // Also clear `inputStreaming` so a half-streamed JSON arg list doesn't render.
             for (const [i, block] of contentBlocks.entries()) {
-                if (block.type === "tool_call" && !block.toolCall.result) {
+                if (block.type !== "tool_call") continue;
+                if (!block.toolCall.result) {
                     contentBlocks[i] = {
                         type: "tool_call",
                         toolCall: {
@@ -723,6 +731,8 @@ export function useLlmChat(
                             approval: undefined
                         }
                     };
+                } else if (block.toolCall.approval === "pending") {
+                    contentBlocks[i] = { type: "tool_call", toolCall: { ...block.toolCall, approval: undefined } };
                 }
             }
 
@@ -1013,25 +1023,30 @@ export function useLlmChat(
      * Allow or deny a tool call of the running turn that waits for the user. The call keeps waiting
      * until the turn has received the answer, so an answer that fails to send can be given again.
      * Allowed for the chat, its tool is added to `allowedTools`, and the other calls of it that wait
-     * stop waiting, since the turn approves them itself.
+     * stop waiting, since the turn approves them itself. When the reply ended while the answer was on
+     * its way, `finalizeStream()` already saved the call with it, and only `allowedTools` changes.
      */
     const answerToolCall = useCallback(async (toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => {
         const waiting = toolApprovalAnswersRef.current.get(toolCallId);
-        if (!waiting || waiting.sending) return;
-        waiting.sending = true;
+        if (!waiting || waiting.answering !== undefined) return;
+        const chatNoteId = chatNoteIdRef.current;
+        waiting.answering = approved;
         try {
             await waiting.send(approved, scope);
         } catch (e) {
-            waiting.sending = false;
+            waiting.answering = undefined;
             console.error("Failed to answer the tool call:", e);
             return;
+        }
+
+        if (approved && scope === "chat" && chatNoteIdRef.current === chatNoteId) {
+            setAllowedTools(tools => (tools.includes(waiting.toolName) ? tools : [ ...tools, waiting.toolName ]));
         }
         if (toolApprovalAnswersRef.current.get(toolCallId) !== waiting) return;
 
         waiting.settle(approved);
         if (!approved || scope !== "chat") return;
 
-        setAllowedTools(tools => (tools.includes(waiting.toolName) ? tools : [ ...tools, waiting.toolName ]));
         for (const other of [ ...toolApprovalAnswersRef.current.values() ]) {
             if (other.toolName === waiting.toolName) {
                 other.settle(true);
