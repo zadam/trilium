@@ -366,6 +366,49 @@ describe("CodeMirror", () => {
             editor.insertBlankLineAtTop();
             expect(editor.getText()).toBe("");
         });
+
+        it("focuses the editor at either end of the document", () => {
+            editor = build();
+            editor.setText("line one\nline two");
+
+            editor.focusAt("end");
+            expect(editor.state.selection.main.head).toBe(editor.state.doc.length);
+            expect(document.activeElement).toBe(editor.contentDOM);
+            editor.focusAt("start");
+            expect(editor.state.selection.main.head).toBe(0);
+        });
+
+        it("tells the end of the document that an arrow key moves the cursor past", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab\ncd");
+            const getEdge = (head: number, key: string, init: KeyboardEventInit = {}) => {
+                instance.dispatch({ selection: EditorSelection.cursor(head) });
+                return instance.getEdgeLeftBy(createKeydown(key, instance.contentDOM, init));
+            };
+
+            expect(getEdge(0, "ArrowLeft")).toBe("start");
+            expect(getEdge(1, "ArrowLeft")).toBe(null);
+            expect(getEdge(5, "ArrowRight")).toBe("end");
+            expect(getEdge(4, "ArrowRight")).toBe(null);
+            expect(getEdge(1, "ArrowUp")).toBe("start");
+            expect(getEdge(4, "ArrowUp")).toBe(null);
+            expect(getEdge(4, "ArrowDown")).toBe("end");
+            expect(getEdge(1, "ArrowDown")).toBe(null);
+            expect(getEdge(0, "Enter")).toBe(null);
+            for (const modifier of [ "shiftKey", "ctrlKey", "altKey", "metaKey", "isComposing" ]) {
+                expect(getEdge(0, "ArrowLeft", { [modifier]: true })).toBe(null);
+            }
+            expect(instance.getEdgeLeftBy(createKeydown("ArrowLeft", document.body))).toBe(null);
+
+            const arrowLeft = createKeydown("ArrowLeft", instance.contentDOM);
+            instance.dispatch({ selection: EditorSelection.range(0, 1) });
+            expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
+            instance.setNamedExtension("multi", EditorState.allowMultipleSelections.of(true));
+            const cursors = [ EditorSelection.cursor(0), EditorSelection.cursor(5) ];
+            instance.dispatch({ selection: EditorSelection.create(cursors) });
+            expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
+        });
     });
 
     describe("find and replace", () => {
@@ -536,4 +579,11 @@ function build(config: Partial<EditorConfig> = {}): CodeMirror {
     const parent = document.createElement("div");
     document.body.appendChild(parent);
     return new CodeMirror({ parent, ...config });
+}
+
+/** A keydown of `key` from `target`, which the editor does not handle, as it is not dispatched. */
+function createKeydown(key: string, target: EventTarget, init: KeyboardEventInit = {}) {
+    const event = new KeyboardEvent("keydown", { key, ...init });
+    Object.defineProperty(event, "target", { value: target });
+    return event;
 }

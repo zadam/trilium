@@ -80,6 +80,9 @@ export interface EditorConfig {
     onContentChanged?: ContentChangedListener;
 }
 
+/** An end of the document, where the cursor enters or leaves the editor. */
+export type DocumentEdge = "start" | "end";
+
 function buildIndentUnit(indentSize: number, useTabs: boolean) {
     return useTabs ? "\t" : " ".repeat(indentSize);
 }
@@ -317,6 +320,41 @@ export default class CodeMirror extends EditorView {
         this.dispatch({
             selection: EditorSelection.cursor(endPos),
         });
+    }
+
+    /** Focuses the editor with the cursor at the start or the end of the document. */
+    focusAt(edge: DocumentEdge) {
+        const position = edge === "start" ? 0 : this.state.doc.length;
+        this.dispatch({ selection: EditorSelection.cursor(position), scrollIntoView: true });
+        this.focus();
+    }
+
+    /**
+     * The edge of the document that the arrow key of `event`, pressed without modifiers, moves
+     * the cursor past, or `null` for any other key and while the cursor stays in the document.
+     */
+    getEdgeLeftBy(event: KeyboardEvent): DocumentEdge | null {
+        const { ranges, main } = this.state.selection;
+        const hasModifier = event.shiftKey || event.ctrlKey || event.altKey || event.metaKey;
+        if (event.target !== this.contentDOM || hasModifier || event.isComposing
+            || ranges.length > 1 || !main.empty) {
+            return null;
+        }
+
+        const length = this.state.doc.length;
+        switch (event.key) {
+            case "ArrowLeft":
+                return main.head === 0 ? "start" : null;
+            case "ArrowRight":
+                return main.head === length ? "end" : null;
+            // The line boundary is the start or end of the visual line, wrapped lines included.
+            case "ArrowUp":
+                return this.moveToLineBoundary(main, false).head === 0 ? "start" : null;
+            case "ArrowDown":
+                return this.moveToLineBoundary(main, true).head === length ? "end" : null;
+            default:
+                return null;
+        }
     }
 
     /**

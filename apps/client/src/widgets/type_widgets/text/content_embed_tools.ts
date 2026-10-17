@@ -1,3 +1,4 @@
+import type { EmbedEdge } from "@triliumnext/ckeditor5";
 import type { RefObject } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
@@ -53,8 +54,15 @@ export interface ContentEmbedToolProvider {
  */
 export type ContentEmbedEvent = "fullscreenChangeStart" | "enterFullscreen" | "leaveFullscreen";
 
+/** The editor in an embed, as the caret of the text editor around the embed enters it. */
+export interface EmbedCaretTarget {
+    /** Focuses the editor with the caret at `edge` of its content, and returns whether it did. */
+    enter(edge: EmbedEdge): boolean;
+}
+
 const providers = new Map<HTMLElement, ContentEmbedToolProvider>();
 const watchers = new Set<{ container: HTMLElement; callback: () => void }>();
+const caretTargets = new Map<HTMLElement, EmbedCaretTarget>();
 
 /**
  * Adds the buttons of `provider` to the toolbar of the embed that contains `element`, until the
@@ -93,6 +101,30 @@ export function getContentEmbedTools(embed: HTMLElement) {
         }
     }
     return null;
+}
+
+/**
+ * Lets the caret of the text editor around the embed that contains `element` enter `target`, until
+ * the returned function is called.
+ */
+export function registerEmbedCaretTarget(element: HTMLElement, target: EmbedCaretTarget) {
+    caretTargets.set(element, target);
+    return () => {
+        caretTargets.delete(element);
+    };
+}
+
+/**
+ * Focuses the editor that `embed` shows, with the caret at `edge` of its content. Returns `false`
+ * when `embed` shows no editor that takes the caret.
+ */
+export function enterContentEmbed(embed: HTMLElement, edge: EmbedEdge) {
+    for (const [ element, target ] of caretTargets) {
+        if (embed.contains(element)) {
+            return target.enter(edge);
+        }
+    }
+    return false;
 }
 
 function notifyWatchers(element: HTMLElement) {

@@ -12,7 +12,9 @@ import {
 import { SaveStatusBadge } from "../../layout/NoteBadges";
 import { useLegacyComponentElement, useNoteContext } from "../../react/hooks";
 import EditableText, { getBlockData } from "./EditableText";
-import { findTextEditorIn, NestedEmbedContext, useEmbedBadgeSlot } from "./editable_embed";
+import {
+    findTextEditorIn, NestedEmbedContext, useEmbedBadgeSlot, useEmbedCaretNavigation
+} from "./editable_embed";
 import { getClosingSave, trackClosingSave } from "./TextEmbed";
 
 interface TextEmbedEditorProps {
@@ -50,6 +52,9 @@ export default function TextEmbedEditor({
         floatingToolbar: !hasFixedToolbar,
         skipRecentNotes: true
     });
+    useEmbedCaretNavigation(() => (
+        findTextEditorIn(rootRef.current)?.plugins.get("ContentEmbedCaret")
+    ));
 
     // A layout cleanup runs while the editor is still mounted, so it saves what is left.
     useLayoutEffect(() => () => {

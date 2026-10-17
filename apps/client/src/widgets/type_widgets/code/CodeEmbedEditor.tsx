@@ -6,6 +6,7 @@ import type { ContentEditor } from "../../../services/content_renderer";
 import {
     useNoteLabelInt, useNoteLabelOptionalBool, useTriliumOptionBool
 } from "../../react/hooks";
+import { useEmbedCaretNavigation } from "../text/editable_embed";
 import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
@@ -27,6 +28,7 @@ export default function CodeEmbedEditor({
     const [ noteTabWidth ] = useNoteLabelInt(note, "tabWidth");
     const [ noteUseTabs ] = useNoteLabelOptionalBool(note, "indentWithTabs");
     const [ noteWrapLines ] = useNoteLabelOptionalBool(note, "wrapLines");
+    useEmbedCaretNavigation(() => viewRef.current);
 
     // Runs after the effects of `CodeMirror`, which empties the document as it mounts.
     useEffect(() => {
