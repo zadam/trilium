@@ -102,9 +102,10 @@ Notes", с одной буквой `l`.
 * Рисование и скетчинг диаграм, при помощи [Excalidraw](https://excalidraw.com/)
   (тип заметки "холст")
 * [Карты
-  связей](https://docs.triliumnotes.org/user-guide/note-types/relation-map) and
-  [карты заметок](https://docs.triliumnotes.org/user-guide/note-types/note-map)
-  для визуализации заметок и их связей
+  отношений](https://docs.triliumnotes.org/user-guide/note-types/relation-map)
+  and [карты
+  заметок/ссылок](https://docs.triliumnotes.org/user-guide/note-types/note-map)
+  для визуализации заметок и их отношений
 * Интеллект-карты на основе [Mind Elixir](https://docs.mind-elixir.com/)
 * [Карты](https://docs.triliumnotes.org/user-guide/collections/geomap) с метками
   для мест и треками GPX
@@ -162,7 +163,7 @@ TriliumNext/Trilium](#-installation) как обычно, и он будет и�
 Приглашаем вас присоединиться к нашим официальным обсуждениям. Мы будем рады
 узнать о ваших предложениях по улучшению, идеях или проблемах!
 
-- [Матрица](https://matrix.to/#/#triliumnext:matrix.org) (Для оперативной
+- [Matrix](https://matrix.to/#/#triliumnext:matrix.org) (Для оперативной
   коммуникации.)
   - Комната `General` в Matrix также подключена к
     [XMPP](xmpp:discuss@trilium.thisgreat.party?join)
