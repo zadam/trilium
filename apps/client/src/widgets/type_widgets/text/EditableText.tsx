@@ -28,6 +28,7 @@ import note_create from "../../../services/note_create";
 import options from "../../../services/options";
 import { consumeSearchTerms } from "../../../services/search_jump";
 import { getNoteShareLink } from "../../../services/share_link";
+import type SpacedUpdate from "../../../services/spaced_update";
 import toast from "../../../services/toast";
 import utils, { isMobile } from "../../../services/utils";
 import type { IconPickerOpts } from "../../dialogs/icon_picker";
@@ -388,8 +389,8 @@ export default function EditableText({
             });
         },
         async saveNoteDetailNowCommand() {
-            // used by cutToNote in CKEditor build
-            spacedUpdate.updateNowIfNecessary();
+            // used by cutToNote in CKEditor build, and by a shared page leaving its editor
+            await saveNow(spacedUpdate);
         }
     });
 
@@ -682,6 +683,18 @@ export default function EditableText({
  * The content of an editor of the blocks of a note that `block` points at, and the blocks it holds
  * now. An empty editor still holds a block, whose id keeps the place of the blocks in the note.
  */
+/**
+ * Saves the pending change of `spacedUpdate` at once, and resolves once it is stored. It resolves
+ * on a failed save too: the spaced update logs it, reports the error state and tries again.
+ */
+export async function saveNow(spacedUpdate: Pick<SpacedUpdate<unknown>, "updateNowIfNecessary">) {
+    try {
+        await spacedUpdate.updateNowIfNecessary();
+    } catch {
+        // Logged and retried by the spaced update.
+    }
+}
+
 export function getBlockData(editor: CKTextEditor, block: string) {
     return {
         content: editor.getData({ trim: "none" }),

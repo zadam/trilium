@@ -1,4 +1,7 @@
-import { type EditorConfig, getCkLocale, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
+import {
+    BlockReferenceEditing, type EditorConfig, getCkLocale, InlineIconEditing, LinkEmbedEditing,
+    SnippetDefinition, type TextTransformationConfig
+} from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
@@ -13,7 +16,7 @@ import options from "../../../services/options.js";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
 import { ensureMimeTypesForHighlighting, isSyntaxHighlightEnabled } from "../../../services/syntax_highlight.js";
 import { getTaskStateDefinitions, openCustomTaskStateConfig } from "../../../services/task_states.js";
-import { isMac, isMobile, openInAppHelpFromUrl } from "../../../services/utils.js";
+import { isMac, isMobile, isShareEditing, openInAppHelpFromUrl } from "../../../services/utils.js";
 import { resolveContentLanguage } from "../../../utils/formatters.js";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams.js";
 import buildAiAssistantStream, { type AiNoteLocationProvider, buildAiAssistantQuickActions } from "./ai_assistant_stream.js";
@@ -172,9 +175,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         link: {
             defaultProtocol: "https://",
             allowedProtocols: ALLOWED_PROTOCOLS,
-            // linkEmbedDisplayDropdown is the same Display dropdown the link-preview widget toolbar
-            // shows: on a native link it reads "Plain link" and converts to a preview shape.
-            toolbar: ["linkPreview", "copyLinkUrl", "|", "editLink", "linkProperties", "unlink", "|", "linkEmbedDisplayDropdown"]
+            toolbar: buildLinkToolbar()
         },
         bookmark: {
             toolbar: [
@@ -186,9 +187,9 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             ]
         },
         emoji: {
-            definitionsUrl: window.glob.isDev
-                ? new URL(import.meta.url).origin + emojiDefinitionsUrl
-                : emojiDefinitionsUrl,
+            // `EmojiRepository` takes an absolute URL; the development server names the file by
+            // a root path, which resolves the same from the app and from a shared page.
+            definitionsUrl: new URL(emojiDefinitionsUrl, document.baseURI).href,
             list: createEmojiList
         },
         syntaxHighlighting: {
@@ -232,6 +233,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         },
         htmlSupport: buildHtmlSupportConfig(),
         removePlugins: getDisabledPlugins(),
+        extraPlugins: getExtraPlugins(),
         // The locale's CKEditor translations, plus the dictionary of Trilium-authored editor
         // strings resolved through the app's i18n (see `messages.ts` in the ckeditor5 package).
         ...await getCkLocale(opts.uiLanguage, { englishMessages: getEnglishEditorMessages(), translate: (key) => t(key) })
@@ -459,7 +461,44 @@ function buildHtmlSupportConfig(): EditorConfig["htmlSupport"] {
  */
 const EDITOR_ONLY_DISALLOWED_TAGS = new Set(["div"]);
 
-function getDisabledPlugins() {
+/**
+ * The link balloon's items. `linkEmbedDisplayDropdown` is the Display dropdown of the link preview
+ * widget's toolbar: on a plain link it reads "Plain link" and converts the link to a preview, which
+ * fetches its metadata through the host's server, so a guest's editor goes without it.
+ */
+function buildLinkToolbar() {
+    const items = [ "linkPreview", "copyLinkUrl", "|", "editLink", "linkProperties", "unlink" ];
+    return isShareEditing() ? items : [ ...items, "|", "linkEmbedDisplayDropdown" ];
+}
+
+/** The plugins a shared page's guest cannot use, as they reach the host's notes or services. */
+export const SHARE_EDIT_DISABLED_PLUGINS = [
+    // `TablePasteRows` requires `CutToNotePlugin`, and `LinkEmbedToolbar` requires `LinkEmbed`.
+    "CutToNotePlugin", "TablePasteRows", "ContentEmbed", "ContentEmbedBoxSizeDropdown",
+    "ContentEmbedToolbar", "InternalLinkPlugin", "MarkdownImportPlugin", "TriliumSnippets",
+    "TriliumAiAssistant", "BlockReference", "InlineIcon", "LinkEmbed", "LinkEmbedToolbar"
+];
+
+/**
+ * The plugins that upload into the note, which guests use only with `#shareAttachments`. The file
+ * upload plugin stays, as `EditableText` hooks its progress events.
+ */
+export const SHARE_EDIT_UPLOAD_PLUGINS = [
+    "UploadimagePlugin", "ClipboardBareImage", "ClipboardImageEmbed"
+];
+
+/**
+ * The plugins a shared page's guest gets beyond the editor's own; none elsewhere. Removing
+ * `LinkEmbed`, `BlockReference` and `InlineIcon` for guests would drop their editing parts: the
+ * schema and converters that carry the note's link previews, block ids and icons through a save.
+ */
+export function getExtraPlugins() {
+    return isShareEditing()
+        ? [ LinkEmbedEditing, BlockReferenceEditing, InlineIconEditing ]
+        : undefined;
+}
+
+export function getDisabledPlugins() {
     const disabledPlugins: string[] = [];
 
     if (options.get("textNoteEmojiCompletionEnabled") !== "true") {
@@ -473,6 +512,13 @@ function getDisabledPlugins() {
     // The mobile layout leaves no margin beside the blocks for the drag handle.
     if (isMobile()) {
         disabledPlugins.push("BlockDragHandle");
+    }
+
+    if (isShareEditing()) {
+        disabledPlugins.push(...SHARE_EDIT_DISABLED_PLUGINS);
+        if (!glob.shareEdit?.attachments) {
+            disabledPlugins.push(...SHARE_EDIT_UPLOAD_PLUGINS);
+        }
     }
 
     return disabledPlugins;

@@ -1,7 +1,19 @@
-import utils from "../../../services/utils.js";
+import utils, { isShareEditing } from "../../../services/utils.js";
 import options from "../../../services/options.js";
 import { t } from "../../../services/i18n.js";
 import { IconAlignCenter } from "@ckeditor/ckeditor5-icons";
+
+/**
+ * The toolbar items a shared page's guest does without: those of `SHARE_EDIT_DISABLED_PLUGINS`,
+ * the link preview, which fetches through the app, and the canvas, saved as an attachment.
+ */
+const SHARE_EDIT_HIDDEN_ITEMS = new Set([
+    "aiAssistant", "linkEmbed", "internallink", "contentEmbed", "insertIcon", "drawingCanvas",
+    "insertTemplate", "markdownImport", "cuttonote"
+]);
+
+/** The toolbar items that upload into the note, which a guest gets with `#shareAttachments`. */
+const SHARE_EDIT_UPLOAD_ITEMS = new Set([ "imageUpload", "fileUpload" ]);
 
 /**
  * Whether a text note is edited with the classic toolbar — a bar standing above the note — rather
@@ -32,6 +44,13 @@ export function usesClassicToolbar({ floatingToolbarRequested, isMobile, textNot
  *                    can never be pressed says nothing about why.
  */
 export function buildToolbarConfig(isClassicToolbar: boolean, aiAssistant: boolean) {
+    if (isShareEditing()) {
+        const hidden = glob.shareEdit?.attachments
+            ? SHARE_EDIT_HIDDEN_ITEMS
+            : new Set([ ...SHARE_EDIT_HIDDEN_ITEMS, ...SHARE_EDIT_UPLOAD_ITEMS ]);
+        return withoutItems(buildClassicToolbar(false, false), hidden);
+    }
+
     if (utils.isMobile()) {
         return buildMobileToolbar(aiAssistant);
     } else if (isClassicToolbar) {
@@ -40,6 +59,21 @@ export function buildToolbarConfig(isClassicToolbar: boolean, aiAssistant: boole
     } else {
         return buildFloatingToolbar(aiAssistant);
     }
+}
+
+type ToolbarItem = string | { items: string[]; [key: string]: unknown };
+
+/** The toolbar config without the items `hidden` names, at the top level and inside its groups. */
+export function withoutItems<T extends { toolbar: { items: ToolbarItem[] } }>(
+    config: T,
+    hidden: Set<string>
+): T {
+    const items = config.toolbar.items
+        .filter((item) => typeof item !== "string" || !hidden.has(item))
+        .map((item) => (typeof item === "string"
+            ? item
+            : { ...item, items: item.items.filter((subitem) => !hidden.has(subitem)) }));
+    return { ...config, toolbar: { ...config.toolbar, items } };
 }
 
 export function buildMobileToolbar(aiAssistant: boolean) {

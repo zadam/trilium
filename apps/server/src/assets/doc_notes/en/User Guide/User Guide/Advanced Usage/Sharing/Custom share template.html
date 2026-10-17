@@ -141,11 +141,26 @@
           Always <code>true</code>.</td>
       </tr>
       <tr>
+        <td><code>noteHeader</code>
+        </td>
+        <td>The dates the default template shows under the title at the top of the
+          content, as <code>created</code> and <code>modified</code>, each with <code>iso</code> for
+          a <code>&lt;time&gt;</code> element and <code>text</code> in the application's
+          language, or <code>null</code> for a date the note does not have. The whole
+          value is <code>null</code> for a note that takes the whole page, whose title
+          the title bar shows instead.</td>
+      </tr>
+      <tr>
         <td><code>titleIcon</code>
         </td>
         <td>The icon classes of the note, which the default template shows beside
-          the title in a row of its own for a note that takes the whole page; <code>null</code> for
-          any other note.</td>
+          the title in the title bar and at the top of the content.</td>
+      </tr>
+      <tr>
+        <td><code>siteHref</code>
+        </td>
+        <td>The link to the site's root page, which the tab bar's <em>New tab</em> button
+          opens.</td>
       </tr>
       <tr>
         <td><code>snippets</code>

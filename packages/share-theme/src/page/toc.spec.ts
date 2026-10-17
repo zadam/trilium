@@ -6,6 +6,7 @@ import setupToC from "./toc.js";
 describe("setupToC", () => {
     afterEach(() => {
         document.body.innerHTML = "";
+        document.documentElement.removeAttribute("style");
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
         vi.useRealTimers();
@@ -22,6 +23,15 @@ describe("setupToC", () => {
 
         scrollTo(900);
         expect(activeEntry()).toBe("more");
+    });
+
+    it("counts a heading as scrolled past once it is under the sticky top bar", () => {
+        const scrollTo = renderPage([ [ 2, "intro", 100 ], [ 2, "details", 500 ] ], 90);
+
+        scrollTo(340);
+        expect(activeEntry()).toBe("intro");
+        scrollTo(380);
+        expect(activeEntry()).toBe("details");
     });
 
     it("keeps the copy in the navigation pane in step, and closes the pane on a click", () => {
@@ -186,7 +196,10 @@ describe("setupToC", () => {
  * distance from the top of the page, sets the table of contents up and returns a function that
  * scrolls the page.
  */
-function renderPage(headings: [ level: number, slug: string, offsetTop: number ][]) {
+function renderPage(
+    headings: [ level: number, slug: string, offsetTop: number ][],
+    topBarHeight = 0
+) {
     const link = (slug: string) => `<a href="#${encodeURIComponent(slug)}">${slug}</a>`;
     document.body.innerHTML = `
         <div>
@@ -202,6 +215,10 @@ function renderPage(headings: [ level: number, slug: string, offsetTop: number ]
             </nav>
         </div>
     `;
+    if (topBarHeight) {
+        document.documentElement.style
+            .setProperty("--top-bar-scrolled-height", `${topBarHeight}px`);
+    }
     let scrolled = 0;
     for (const [ , slug, offsetTop ] of headings) {
         const heading = document.getElementById(slug);
@@ -213,7 +230,8 @@ function renderPage(headings: [ level: number, slug: string, offsetTop: number ]
     setupToC();
     return (y: number) => {
         scrolled = y;
-        window.dispatchEvent(new Event("scroll"));
+        // The note's own container scrolls, and its scroll does not bubble.
+        document.getElementById("content")?.dispatchEvent(new Event("scroll"));
     };
 }
 

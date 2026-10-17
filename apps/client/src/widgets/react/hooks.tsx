@@ -31,7 +31,7 @@ import SpacedUpdate, { type StateCallback } from "../../services/spaced_update";
 import { getEffectiveThemeStyle } from "../../services/theme";
 import toast, { ToastOptions } from "../../services/toast";
 import tree from "../../services/tree";
-import utils, { getErrorMessage, isShare, randomString, reloadFrontendApp } from "../../services/utils";
+import utils, { getErrorMessage, isShare, isShareEditing, randomString, reloadFrontendApp } from "../../services/utils";
 import ws from "../../services/ws";
 import BasicWidget, { ReactWrappedWidget } from "../basic_widget";
 import NoteContextAwareWidget from "../note_context_aware_widget";
@@ -150,8 +150,15 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
 
     const commit = useCallback(async (data: SavedData | undefined) => {
         // for read only notes, or if note is not yet available (e.g. lazy creation); a visitor of a
-        // shared page cannot save
-        if (data === undefined || !note || note.type !== noteType || isShare) return;
+        // shared page cannot save, unless the page is editing its note
+        if (data === undefined || !note || note.type !== noteType || (isShare && !isShareEditing())) return;
+
+        if (isShareEditing()) {
+            if (await saveOnShare(note.noteId, data, parentComponent?.componentId, () => spacedUpdateRef.current?.scheduleUpdate())) {
+                dataSaved?.(data);
+            }
+            return;
+        }
 
         protected_session_holder.touchProtectedSessionIfNecessary(note);
 
@@ -171,6 +178,7 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
         noteContext?.setContextData("saveState", {
             state
         });
+        glob.shareEdit?.onSaveState(state);
     }, [ noteContext ]);
     const stateCallbackRef = useRef(stateCallback);
     useEffect(() => {
@@ -240,6 +248,78 @@ export function useSaveBeforeLeaving<T>(
         appContext.addBeforeUnloadListener(listener);
         return () => appContext.removeBeforeUnloadListener(listener);
     }, [ spacedUpdate ]);
+}
+
+/**
+ * Saves the content through a shared page's guest API, over the version it was loaded from, and
+ * returns whether it did. A refused save stays unsaved until the page calls `retry`.
+ */
+export async function saveOnShare(
+    noteId: string,
+    data: SavedData,
+    componentId: string | undefined,
+    retry: () => void
+): Promise<boolean> {
+    const shareEdit = glob.shareEdit;
+    if (!shareEdit) {
+        return false;
+    }
+    if (shareEdit.stale) {
+        throw new Error(SHARE_EDIT_CONFLICT);
+    }
+    if (shareEdit.locked) {
+        throw new Error(SHARE_EDIT_LOCKED);
+    }
+
+    try {
+        const { blobId } = await server.putWithSilentRefusal<{ blobId: string }>(
+            `notes/${noteId}/data`, { content: data.content, baseBlobId: shareEdit.version }, componentId);
+        shareEdit.version = blobId;
+        return true;
+    } catch (e) {
+        const { stale, locked } = readRefusal(e);
+        if (stale) {
+            shareEdit.stale = stale;
+            shareEdit.onConflict(stale, () => {
+                shareEdit.version = stale.blobId;
+                delete shareEdit.stale;
+                retry();
+            });
+            throw new Error(SHARE_EDIT_CONFLICT);
+        }
+        if (locked) {
+            shareEdit.locked = true;
+            shareEdit.onLocked(() => {
+                delete shareEdit.locked;
+                retry();
+            });
+            throw new Error(SHARE_EDIT_LOCKED);
+        }
+        throw e;
+    }
+}
+
+const SHARE_EDIT_CONFLICT =
+    "The note changed since it was loaded; the page asks whether to keep this version.";
+const SHARE_EDIT_LOCKED = "The access to editing ended; the page asks for the password again.";
+
+/**
+ * What a refused guest save's response names: the newer version it was refused over, or whether
+ * the visitor's access ended. Neither for any other failure.
+ */
+function readRefusal(response: unknown): { stale?: { blobId: string }; locked?: boolean } {
+    try {
+        const { stale, locked } = JSON.parse(String(response)) as {
+            stale?: { blobId?: unknown };
+            locked?: unknown;
+        };
+        return {
+            stale: typeof stale?.blobId === "string" ? { blobId: stale.blobId } : undefined,
+            locked: locked === true
+        };
+    } catch {
+        return {};
+    }
 }
 
 /** The blocks of `note` that `block` points at, or `null` when they cannot be read. */
