@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { ValidationError } from "../errors.js";
 import { getContext } from "../services/context.js";
 import noteService from "../services/notes.js";
 import { getSql } from "../services/sql/index.js";
@@ -116,9 +117,16 @@ describe("virtual note injection", () => {
 
     it("virtual entities are read-only", () => {
         const note = becca.getNoteOrThrow("_vtestPage");
-        expect(() => getContext().init(() => note.save())).toThrow(/read-only/);
-        expect(() => getContext().init(() => note.setContent("<p>nope</p>"))).toThrow(/read-only/);
-        expect(() => getContext().init(() => note.markAsDeleted())).toThrow(/read-only/);
+        expect(note.isContentWritable()).toBe(false);
+        expect(() => getContext().init(() => note.save())).toThrow(ValidationError);
+        expect(() => getContext().init(() => note.setContent("<p>nope</p>"))).toThrow(ValidationError);
+        expect(() => getContext().init(() => note.markAsDeleted())).toThrow(ValidationError);
+        expect(() => getContext().init(() => note.saveRevision())).toThrow(ValidationError);
+        expect(() => getContext().init(() => note.saveAttachment({
+            role: "file", mime: "text/plain", title: "notes.txt", content: "nope"
+        }))).toThrow(ValidationError);
+        expect(countRows("revisions", "noteId")).toBe(0);
+        expect(countRows("attachments", "ownerId")).toBe(0);
 
         const branch = becca.getBranch("_hidden__vtest");
         expect(branch).toBeTruthy();
@@ -126,6 +134,31 @@ describe("virtual note injection", () => {
 
         const attribute = note.getOwnedAttributes()[0];
         expect(() => getContext().init(() => attribute.save())).toThrow(/read-only/);
+    });
+
+    it("hands content to a provider that can save it, keeping it out of the database", () => {
+        const saved = new Map<string, string | Uint8Array>();
+        registerVirtualNoteProvider({
+            namespace: "_vtw",
+            parentNoteId: "_hidden",
+            getSubtree: () => [{ id: "_vtwFile", title: "File", type: "text" }],
+            getContent: (noteId) => saved.get(noteId),
+            setContent: (noteId, content) => { saved.set(noteId, content); }
+        });
+
+        try {
+            reloadBecca();
+            const note = becca.getNoteOrThrow("_vtwFile");
+            expect(note.isContentWritable()).toBe(true);
+
+            getContext().init(() => note.setContent("<p>saved</p>"));
+            expect(note.getContent()).toBe("<p>saved</p>");
+            expect(getSql().getValue("SELECT COUNT(*) FROM entity_changes WHERE entityId LIKE '\\_vtw%' ESCAPE '\\'")).toBe(0);
+            expect(getSql().getValue("SELECT COUNT(*) FROM notes WHERE noteId LIKE '\\_vtw%' ESCAPE '\\'")).toBe(0);
+        } finally {
+            unregisterVirtualNoteProvider("_vtw");
+            reloadBecca();
+        }
     });
 
     it("rejects persisting branches or attributes that reference virtual notes", () => {

@@ -43,12 +43,19 @@ export default function NoteBadges() {
     );
 }
 
-function ReadOnlyBadge() {
+export function ReadOnlyBadge() {
     const { note, noteContext } = useNoteContext();
-    const { isReadOnly, enableEditing, temporarilyEditable } = useIsNoteReadOnly(note, noteContext);
+    const { isReadOnly, isLocked, enableEditing, temporarilyEditable } = useIsNoteReadOnly(note, noteContext);
     const isExplicitReadOnly = note?.isLabelTruthy("readOnly");
 
-    if (temporarilyEditable) {
+    if (isLocked) {
+        return <Badge
+            icon="bx bx-lock-alt"
+            text={t("breadcrumb_badges.read_only_locked")}
+            tooltip={t("breadcrumb_badges.read_only_locked_description")}
+            className="read-only-badge"
+        />;
+    } else if (temporarilyEditable) {
         return <Badge
             icon="bx bx-lock-open-alt"
             text={t("breadcrumb_badges.read_only_temporarily_disabled")}

@@ -21,7 +21,7 @@ import BRevision from "./brevision.js";
 import { getLog } from "../../services/log.js";
 import { getSql } from "../../services/sql/index.js";
 import { formatDownloadTitle, isStringNote, normalize, randomString, replaceAll } from "../../services/utils/index.js";
-import { getVirtualNoteContent } from "../../services/virtual_notes.js";
+import { getVirtualNoteContent, isVirtualNoteContentWritable, setVirtualNoteContent } from "../../services/virtual_notes.js";
 
 const LABEL = "label";
 const RELATION = "relation";
@@ -251,9 +251,19 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     setContent(content: Uint8Array | string, opts: ContentOpts = {}) {
+        if (this.isVirtual) {
+            setVirtualNoteContent(this.noteId, content);
+            return;
+        }
+
         this._setContent(content, opts);
 
         eventService.emit(eventService.NOTE_CONTENT_CHANGE, { entity: this });
+    }
+
+    /** Whether the content can be saved: always for a persisted note, per provider for a virtual one. */
+    isContentWritable() {
+        return !this.isVirtual || isVirtualNoteContentWritable(this.noteId);
     }
 
     setJsonContent(content: {}) {

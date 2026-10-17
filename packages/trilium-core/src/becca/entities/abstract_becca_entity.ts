@@ -1,3 +1,4 @@
+import { ValidationError } from "../../errors.js";
 import eventService from "../../services/events";
 
 import blobService from "../../services/blob.js";
@@ -36,18 +37,18 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
     /**
      * Virtual entities exist only in becca — they are injected by a virtual note provider
      * (see `services/virtual_notes.ts`), never persisted to the database and never synced.
-     * They are read-only: {@link save}, {@link markAsDeleted} and content updates throw.
+     * {@link save} and {@link markAsDeleted} throw; content goes through the note's provider.
      */
     isVirtual?: boolean;
 
-    /** @throws Error when this entity is virtual — virtual entities must never touch the database. */
+    /** @throws ValidationError when this entity is virtual, since virtual entities never touch the database. */
     protected ensureNotVirtual(action: string) {
         if (!this.isVirtual) {
             return;
         }
 
         const constructorData = this.constructor as unknown as ConstructorData<T>;
-        throw new Error(`Cannot ${action} ${constructorData.entityName} '${(this as any)[constructorData.primaryKeyName]}': it is a virtual entity (provided by a virtual note provider) and is read-only.`);
+        throw new ValidationError(`Cannot ${action} ${constructorData.entityName} '${(this as any)[constructorData.primaryKeyName]}': it is a virtual entity (provided by a virtual note provider) and is read-only.`);
     }
 
     protected beforeSaving(opts?: {}) {

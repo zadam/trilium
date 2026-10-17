@@ -91,7 +91,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
         && !note.hasLabel("calendarRoot") && !note.hasLabel("workspaceCalendarRoot");
     const isHelpPage = note.noteId.startsWith("_help");
     const [syncServerHost] = useTriliumOption("syncServerHost");
-    const { isReadOnly, enableEditing } = useIsNoteReadOnly(note, noteContext);
+    const { isReadOnly, isLocked, enableEditing } = useIsNoteReadOnly(note, noteContext);
     const isViewReadOnly = useEffectiveReadOnly(note, noteContext);
     // The views other than the board open their properties dialog only while they are editable.
     const hasCollectionProperties = isBoard
@@ -123,7 +123,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
 
                 {(note.type === "code" || note.noteId === "_backendLog") && <CodeProperties note={note} />}
 
-                {isReadOnly && <>
+                {isReadOnly && !isLocked && <>
                     <CommandItem icon="bx bx-pencil" text={t("read-only-info.edit-note")}
                         command={() => enableEditing()} />
                     <FormDropdownDivider />

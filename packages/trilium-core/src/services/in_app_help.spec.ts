@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { EMPTY_BLOB_ID, type HelpBundle, type HiddenSubtreeItem } from "@triliumnext/commons";
 import becca from "../becca/becca.js";
 import { load } from "../becca/becca_loader.js";
+import { ValidationError } from "../errors.js";
 import blobService from "./blob.js";
 import { getContext } from "./context.js";
 import { getHelpHiddenSubtreeData, HELP_ASSET_TOKEN, InAppHelpProvider, initInAppHelp } from "./in_app_help.js";
@@ -138,14 +139,15 @@ describe("in_app_help", () => {
         expect(provider.readAssets).toEqual([ "User Guide/My pic.png" ]);
     });
 
-    it("makes every help page read-only through an inheritable label on the root", () => {
+    it("makes every help page read-only, with no label the user could remove", () => {
         initInAppHelp(new TestHelpProvider([{ id: "_helpPage", title: "Page", type: "text" }]));
         reloadBecca();
 
-        // Owned by the root, inherited by the pages: the guide is never edited in place, and the
-        // application must not offer an editor for it.
-        expect(becca.getNoteOrThrow("_help").getOwnedAttribute("label", "readOnly")).toBeTruthy();
-        expect(becca.getNoteOrThrow("_helpPage").isLabelTruthy("readOnly")).toBe(true);
+        const page = becca.getNoteOrThrow("_helpPage");
+        expect(becca.getNoteOrThrow("_help").isContentWritable()).toBe(false);
+        expect(page.isContentWritable()).toBe(false);
+        expect(page.hasLabel("readOnly")).toBe(false);
+        expect(() => getContext().init(() => page.setContent("<p>edited</p>"))).toThrow(ValidationError);
     });
 
     it("unregisters the help provider when none is supplied", () => {

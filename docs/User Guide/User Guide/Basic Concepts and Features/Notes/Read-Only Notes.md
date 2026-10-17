@@ -34,3 +34,5 @@ Apart from using the <a class="reference-link" href="../UI%20Elements/Note%20me
 When accessing a read-only note, it's possible to temporarily edit it pressing the _Read-only_ badge.
 
 When pressed, the note will become editable but will become read-only again after navigating to a different note.
+
+The pages of the built-in user guide are an exception: they are part of Trilium itself and cannot be edited, not even temporarily. Their _Read-only_ badge cannot be pressed, and the note menu does not offer to edit them.

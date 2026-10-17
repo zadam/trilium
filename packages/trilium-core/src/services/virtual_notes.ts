@@ -1,5 +1,7 @@
 import type { NoteType } from "@triliumnext/commons";
 
+import { ValidationError } from "../errors.js";
+
 /**
  * Virtual notes are notes that exist only in becca (and, through it, in the client's froca) —
  * they are never persisted to the database and never produce entity changes, so they are
@@ -54,6 +56,12 @@ export interface VirtualNoteProvider {
      * them as attachments of the note, so the exported copy works without the provider.
      */
     getAssets?(noteId: string): VirtualNoteAsset[];
+
+    /**
+     * Saves new content of a virtual note. Without it, the provider's notes are read-only. The
+     * write stays on this instance, since virtual notes never sync.
+     */
+    setContent?(noteId: string, content: string | Uint8Array): void;
 }
 
 export interface VirtualNoteAsset {
@@ -138,6 +146,21 @@ export function getVirtualNoteProvider(noteId: string): VirtualNoteProvider | nu
 /** Content of a virtual note, delegated to its provider; `""` when the provider has none. */
 export function getVirtualNoteContent(noteId: string): string | Uint8Array {
     return getVirtualNoteProvider(noteId)?.getContent?.(noteId) ?? "";
+}
+
+/** Whether the provider of a virtual note can save its content. */
+export function isVirtualNoteContentWritable(noteId: string) {
+    return !!getVirtualNoteProvider(noteId)?.setContent;
+}
+
+/** @throws ValidationError when the note's provider cannot save content. */
+export function setVirtualNoteContent(noteId: string, content: string | Uint8Array) {
+    const provider = getVirtualNoteProvider(noteId);
+    if (!provider?.setContent) {
+        throw new ValidationError(`Note '${noteId}' is read-only.`);
+    }
+
+    provider.setContent(noteId, content);
 }
 
 /** Assets of a virtual note, delegated to its provider; empty when the provider has none. */

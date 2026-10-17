@@ -3920,6 +3920,8 @@
     "read_only_explicit_description": "This note has been manually set to read-only.\nClick to edit it temporarily.",
     "read_only_auto": "Auto read-only",
     "read_only_auto_description": "This note was set automatically to read-only mode for performance reasons. This automatic limit is adjustable from settings.\n\nClick to edit it temporarily.",
+    "read_only_locked": "Read-only",
+    "read_only_locked_description": "This note is provided by Trilium and cannot be edited.",
     "read_only_temporarily_disabled": "Temporarily editable",
     "read_only_temporarily_disabled_description": "This note is currently editable, but it is normally read-only. The note will go back to being read-only as soon as you navigate to another note.\n\nClick to re-enable read-only mode.",
     "office_preview": "Preview",

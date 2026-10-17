@@ -119,7 +119,7 @@ describe("in-app help (shipped artifacts)", () => {
 
     it("makes every page read-only", () => {
         for (const item of flatten(meta)) {
-            expect(becca.getNoteOrThrow(item.id).isLabelTruthy("readOnly")).toBe(true);
+            expect(becca.getNoteOrThrow(item.id).isContentWritable()).toBe(false);
         }
     });
 });

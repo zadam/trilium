@@ -74,12 +74,6 @@ export function initInAppHelp(p: InAppHelpProvider) {
                     type: "book",
                     icon: "bx-help-circle",
                     isExpanded: true,
-                    // Inherited by every page: the guide is application-owned, so it opens in the
-                    // reading view rather than an editor. Writes are refused by the entity layer
-                    // anyway; this keeps the application from offering them in the first place.
-                    attributes: [
-                        { type: "label", name: "readOnly", value: "", isInheritable: true }
-                    ],
                     // HiddenSubtreeItem is structurally a VirtualSubtreeItem (its enforce*
                     // fields are simply ignored here).
                     children: getHelpHiddenSubtreeData()
