@@ -89,27 +89,17 @@ const tabDepth = (depth: number) => {
     return 4 - (depth % 4);
 };
 
-export const indentation = new ExternalTokenizer((input, _stack) => {
-    let prev = input.peek(-1);
-    if (prev == newline || prev == carriageReturn) {
-        let depth = 0;
-        let chars = 0;
+// The indentation that starts a line; `trackIndent` measures its depth. A line that holds
+// nothing else, or starts with `#`, gets no `indent` token.
+export const indentation = new ExternalTokenizer((input) => {
+    const prev = input.peek(-1);
+    if (prev !== newline && prev !== carriageReturn) return;
 
-        while (true) {
-            if (input.next == space) depth++;
-            else if (input.next == tab) depth += tabDepth(depth);
-            else break;
-            input.advance();
-            chars++;
-        }
-
-        if (
-            input.next != newline &&
-            input.next != carriageReturn &&
-            input.next != hash
-        ) {
-            input.acceptToken(indent);
-        }
+    while (input.next === space || input.next === tab) {
+        input.advance();
+    }
+    if (input.next !== newline && input.next !== carriageReturn && input.next !== hash) {
+        input.acceptToken(indent);
     }
 });
 
