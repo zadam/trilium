@@ -129,6 +129,13 @@
     background: var(--card-background-color, var(--accented-background-color));
     box-shadow: var(--card-box-shadow, none);
 
+    > .llm-chat-tool-call > :is(.expandable-section-summary, .expandable-line-header) > .expandable-section-label {
+        flex-wrap: wrap;
+        row-gap: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
     > .llm-chat-tool-approval {
         display: flex;
         justify-content: flex-end;
