@@ -81,6 +81,9 @@ export function buildSystemPrompt(messages: LlmMessage[], config: LlmProviderCon
         parts.push(
             `When you need several independent pieces of information, issue the tool calls in parallel within the same turn instead of waiting for each result before requesting the next. Only chain calls sequentially when a later call genuinely depends on the output of an earlier one.`
         );
+        parts.push(
+            `When the user declines a tool call, that is their decision about what you may access or change, not an error: do not retry the call, and do not try to reach the same information or make the same change through another tool or the file system. Continue with what you already have, or ask the user how to proceed.`
+        );
     }
 
     // Markdown formatting hints
