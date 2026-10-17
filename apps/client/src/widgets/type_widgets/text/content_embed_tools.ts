@@ -70,8 +70,10 @@ export function registerContentEmbedTools(
     provider: ContentEmbedToolProvider
 ) {
     providers.set(element, provider);
-    notifyWatchers(element);
+    // Content rendered apart, such as inline source, reaches its watchers once in the page.
+    const stopWaiting = whenInPage(element, () => notifyWatchers(element));
     return () => {
+        stopWaiting();
         providers.delete(element);
         notifyWatchers(element);
     };
@@ -184,20 +186,9 @@ function useEmbedState<T>(
             update();
         };
 
-        let pageObserver: MutationObserver | undefined;
-        if (element.isConnected) {
-            watch();
-        } else {
-            pageObserver = new MutationObserver(() => {
-                if (!element.isConnected) return;
-                pageObserver?.disconnect();
-                watch();
-            });
-            pageObserver.observe(document, { childList: true, subtree: true });
-        }
-
+        const stopWaiting = whenInPage(element, watch);
         return () => {
-            pageObserver?.disconnect();
+            stopWaiting();
             attributeObserver?.disconnect();
         };
     }, [ ref ]);
@@ -228,4 +219,23 @@ export function useContentEmbedEvent(
         document.addEventListener(name, listener);
         return () => document.removeEventListener(name, listener);
     }, [ ref, name ]);
+}
+
+/**
+ * Calls `callback` once `element` is in the page: at once, or when it joins it. Stops waiting
+ * when the returned function is called.
+ */
+function whenInPage(element: HTMLElement, callback: () => void) {
+    if (element.isConnected) {
+        callback();
+        return () => {};
+    }
+
+    const observer = new MutationObserver(() => {
+        if (!element.isConnected) return;
+        observer.disconnect();
+        callback();
+    });
+    observer.observe(document, { childList: true, subtree: true });
+    return () => observer.disconnect();
 }

@@ -1,9 +1,12 @@
 import { render } from "preact";
 import { useRef } from "preact/hooks";
 import { act } from "preact/test-utils";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { useContentEmbedDisplayMode } from "./content_embed_tools";
+import {
+    type ContentEmbedToolProvider, registerContentEmbedTools, useContentEmbedDisplayMode,
+    watchContentEmbedTools
+} from "./content_embed_tools";
 
 const containers: HTMLElement[] = [];
 
@@ -13,6 +16,27 @@ afterEach(() => {
         container.remove();
     }
     containers.length = 0;
+});
+
+describe("watchContentEmbedTools", () => {
+    it("hears of content that adds its buttons apart, once it joins the container", async () => {
+        const container = document.createElement("div");
+        document.body.append(container);
+        containers.push(container);
+        const callback = vi.fn();
+        const stopWatching = watchContentEmbedTools(container, callback);
+
+        const content = document.createElement("div");
+        const unregister = registerContentEmbedTools(content, {} as ContentEmbedToolProvider);
+        expect(callback).not.toHaveBeenCalled();
+
+        container.append(content);
+        await vi.waitFor(() => expect(callback).toHaveBeenCalledOnce());
+
+        unregister();
+        expect(callback).toHaveBeenCalledTimes(2);
+        stopWatching();
+    });
 });
 
 describe("useContentEmbedDisplayMode", () => {
