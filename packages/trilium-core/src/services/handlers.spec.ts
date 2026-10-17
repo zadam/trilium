@@ -193,6 +193,31 @@ describe("handlers", () => {
         });
     });
 
+    describe("template re-sorting", () => {
+        it("re-sorts the parents of notes reached through inherited and chained templates", () => {
+            buildNote({ id: "tc-tpl" });
+            buildNote({ id: "tc-tpl2", "~template": "tc-tpl" });
+            buildNote({ id: "tc-folder", children: [{ id: "tc-chld" }] });
+            new BAttribute({
+                noteId: "tc-folder", attributeId: randomString(12), type: "relation",
+                name: "template", value: "tc-tpl", position: 0, isInheritable: true
+            });
+            buildNote({ id: "tc-par", "#sorted": "#archived last" });
+            new BBranch({ noteId: "tc-chld", parentNoteId: "tc-par", branchId: "tc-par_tc-chld" });
+            buildNote({
+                id: "tc-par2", "#sorted": "#archived last",
+                children: [{ id: "tc-user", "~template": "tc-tpl2" }]
+            });
+
+            const archived = addAttribute("tc-tpl", "label", "archived", "");
+            eventService.emit(eventService.ENTITY_CHANGED, {
+                entityName: "attributes", entity: archived
+            });
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("tc-par");
+            expect(sortNotesIfNeeded).toHaveBeenCalledWith("tc-par2");
+        });
+    });
+
     describe("folder re-sorting", () => {
         it("re-sorts the parents grouping folders when a note gains or loses its only child", () => {
             // The becca loader removes a deleted branch from its parent's children only once loaded.

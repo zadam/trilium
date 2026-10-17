@@ -193,13 +193,11 @@ function handleMaybeSortingLabel(entity: BAttribute) {
         return;
     }
 
-    // An inheritable or template label also applies to the notes that inherit it.
-    const affectedNotes = entity.isInheritable
-        ? note.getSubtreeNotesIncludingTemplated()
-        : note.getInheritingNotes();
+    // Covers inherited and chained templates as `invalidateSubTree()` does; for a non-inheritable
+    // label it also reaches the subtree, whose parents then keep the order they have.
     const parentNotes = new Set<BNote>();
 
-    for (const affectedNote of affectedNotes) {
+    for (const affectedNote of note.getSubtreeNotesIncludingTemplated()) {
         for (const parentNote of affectedNote.getParentNotes()) {
             parentNotes.add(parentNote);
         }
