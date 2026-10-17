@@ -1,0 +1,80 @@
+# Kanban
+
+kanban
+
+==>
+
+KanbanDiagram(DiagramName)
+
+# Column title
+
+kanban
+  Todo
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle))
+
+# Card without id
+
+kanban
+  Todo
+    [Create Documentation]
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(Node(CardText)))
+
+# Card with id
+
+kanban
+  Todo
+    docs[Create Blog about the new diagram]
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(NodeId,Node(CardText)))
+
+# Column with id
+
+kanban
+  id6[In progress]
+
+==>
+
+KanbanDiagram(DiagramName,Card(NodeId,Node(CardText)))
+
+# Card with metadata
+
+kanban
+  id6[In progress]
+    id8[Design grammar]@{ assigned: 'knsv' }
+
+==>
+
+KanbanDiagram(DiagramName,Card(NodeId,Node(CardText)),Card(NodeId,Node(CardText),Metadata))
+
+# Full board
+
+kanban
+  Todo
+    [Create Documentation]
+    docs[Create Blog about the new diagram]
+  id6[In progress]
+    id8[Design grammar]
+  id9[Ready for deploy]
+    id10[Test]
+
+==>
+
+KanbanDiagram(DiagramName,Column(ColumnTitle),Card(Node(CardText)),Card(NodeId,Node(CardText)),Card(NodeId,Node(CardText)),Card(NodeId,Node(CardText)),Card(NodeId,Node(CardText)),Card(NodeId,Node(CardText)))
+
+# Comment
+
+kanban
+  %% a comment
+  Todo
+
+==>
+
+KanbanDiagram(DiagramName,LineComment,Column(ColumnTitle))

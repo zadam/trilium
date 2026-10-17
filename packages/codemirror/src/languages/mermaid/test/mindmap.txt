@@ -1,0 +1,142 @@
+# Mindmap
+
+mindmap
+
+==>
+
+MindmapDiagram(DiagramName)
+
+# LineText1
+
+mindmap
+root
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1))
+
+# LineText2
+
+mindmap
+root
+ A
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1),Line(LineText2))
+
+# LineText3
+
+mindmap
+root
+ A
+  B
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1),Line(LineText2),Line(LineText3))
+
+# LineText4
+
+mindmap
+root
+ A
+  B
+   C
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1),Line(LineText2),Line(LineText3),Line(LineText4))
+
+# LineText5
+
+mindmap
+root
+ A
+  B
+   C
+    D
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1),Line(LineText2),Line(LineText3),Line(LineText4),Line(LineText5))
+
+# Square
+
+mindmap
+id[I am a square]
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1,ShapedText(LineText1)))
+
+# RoundedSquare
+
+mindmap
+id(I am a rounded square)
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1,ShapedText(LineText1)))
+
+# Circle
+
+mindmap
+id((I am a circle))
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1,ShapedText(LineText1)))
+
+# Bang
+
+mindmap
+id))I am a bang((
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1,ShapedText(LineText1)))
+
+# Cloud
+
+mindmap
+id)I am a cloud(
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1,ShapedText(LineText1)))
+
+# Hexagon
+
+mindmap
+id{{I am a hexagon}}
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1,ShapedText(LineText1)))
+
+# IconLine
+
+mindmap
+Root
+ A
+ ::icon(fa fa-book)
+ B(B)
+ ::icon(mdi mdi-skull-outline)
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1),Line(LineText2),Line(IconLine(Icon,LineText2)),Line(LineText2,ShapedText(LineText2)),Line(IconLine(Icon,LineText2)))
+
+# ClassLine
+
+mindmap
+Root
+ A[A]
+ :::urgent large
+ B(B)
+ C
+
+==>
+
+MindmapDiagram(DiagramName,Line(LineText1),Line(LineText2,ShapedText(LineText2)),Line(ClassLine(LineText2)),Line(LineText2,ShapedText(LineText2)),Line(LineText2))
