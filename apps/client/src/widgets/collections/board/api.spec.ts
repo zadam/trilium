@@ -101,7 +101,7 @@ function createApi(
         allByColumn,
         keepNote
     );
-    return { api, board, saved, editing, pendingRenames: pending.renames };
+    return { api, board, saved, editing, pending, pendingRenames: pending.renames };
 }
 
 /** Cards named by their note id, which is all the operations under test read them for. */
@@ -2163,6 +2163,81 @@ describe("the promoted attributes a card shows", () => {
 
         expect(saved.at(-1)?.promotedAttributes)
             .toEqual([ { name: "dueDate" }, { name: "owner", hidden: true } ]);
+    });
+});
+
+describe("deleting the attribute of a grouping", () => {
+    /**
+     * Left in `board.json`, the columns of a deleted grouping are written back into a new
+     * definition by `syncColumnsToDefinition` once the board groups by it again.
+     */
+    it("drops the stored columns of the grouping once deleted, leaving the rest", async () => {
+        const { api, saved } = createApi({
+            columns: [ { value: "To Do" }, { value: "Done" } ],
+            testViewColumns: [ { value: "A" } ],
+            filterQuery: "#urgent"
+        }, [ "A" ], undefined, "test");
+        const savedDuringDeletion: number[] = [];
+
+        await api.deleteGrouping("status", async () => { savedDuringDeletion.push(saved.length); });
+
+        expect(savedDuringDeletion).toEqual([ 0 ]);
+        expect(saved).toEqual([ { testViewColumns: [ { value: "A" } ], filterQuery: "#urgent" } ]);
+    });
+
+    /**
+     * A refresh that lands while the definition is being deleted still reads the stored columns,
+     * and would write them into a new definition; `pending.inFlight` holds its writes back.
+     */
+    it("counts as a write on the board while the definition is deleted", async () => {
+        const { api, pending, saved } = createApi(
+            { columns: [ { value: "To Do" } ] }, [ "To Do" ]);
+        let inFlightDuringDeletion = 0;
+
+        await api.deleteGrouping("status", async () => {
+            inFlightDuringDeletion = pending.inFlight;
+        });
+
+        expect(inFlightDuringDeletion).toBe(1);
+        expect(saved).toEqual([ {} ]);
+        expect(pending.inFlight).toBe(0);
+    });
+
+    /**
+     * A refresh that started during the deletion reads the old columns, and can resolve after
+     * `pending.inFlight` drops back to 0. `hasStoredSince()` tells the board not to write them.
+     */
+    it("reports the config read before the deletion as replaced, until the board draws the new one",
+        async () => {
+            const config = { columns: [ { value: "To Do" } ] };
+            const { api, board, saved } = createApi(config, [ "To Do" ]);
+            expect(api.hasStoredSince(config)).toBe(false);
+
+            await api.deleteGrouping("status", async () => {});
+            expect(api.hasStoredSince(config)).toBe(true);
+
+            const [ stored ] = saved;
+            api.update(new Map(), [], board, "status", stored, () => {}, () => {});
+            expect(api.hasStoredSince(stored)).toBe(false);
+        });
+
+    it("keeps the columns of a grouping whose deletion failed, and stops counting it", async () => {
+        const { api, pending, saved } = createApi(
+            { columns: [ { value: "To Do" } ] }, [ "To Do" ]);
+
+        await expect(api.deleteGrouping("status", async () => { throw new Error("offline"); }))
+            .rejects.toThrow("offline");
+
+        expect(saved).toEqual([]);
+        expect(pending.inFlight).toBe(0);
+    });
+
+    it("writes nothing for a grouping that stores no columns", async () => {
+        const { api, saved } = createApi({ columns: [ { value: "To Do" } ] }, [ "To Do" ]);
+
+        await api.deleteGrouping("priority", async () => {});
+
+        expect(saved).toEqual([]);
     });
 });
 

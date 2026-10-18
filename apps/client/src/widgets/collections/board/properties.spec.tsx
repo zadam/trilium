@@ -55,10 +55,12 @@ vi.mock("../../react/TemplateSelectionCard", () => ({
 // The card is tested in its own spec; what this dialog decides is the words it passes and where
 // onChange writes.
 vi.mock("../../react/PromotedAttributesCard", () => ({
-    default: ({ heading, instruction, note, settings, onChange }: {
+    default: ({ heading, instruction, note, settings, onChange, runDeletion }: {
         heading: string, instruction: string, note: FNote,
         settings: { name: string }[] | undefined,
-        onChange: (attributes: PromotedAttribute[]) => void
+        onChange: (attributes: PromotedAttribute[]) => void,
+        runDeletion?: (deletion: () => Promise<void>, type: "label" | "relation", name: string)
+            => Promise<void>
     }) => (
         <div
             className="attributes-stub"
@@ -67,9 +69,22 @@ vi.mock("../../react/PromotedAttributesCard", () => ({
             data-note={note.noteId}
             data-settings={settings?.map((setting) => setting.name).join(",")}
             onClick={() => onChange([ { name: "dueDate", hidden: true } as PromotedAttribute ])}
-        />
+        >
+            <button className="delete-label" onClick={(e) => {
+                e.stopPropagation();
+                runDeletion?.(async () => { deletions.push("label:status"); }, "label", "status");
+            }} />
+            <button className="delete-relation" onClick={(e) => {
+                e.stopPropagation();
+                runDeletion?.(
+                    async () => { deletions.push("relation:assignee"); }, "relation", "assignee");
+            }} />
+        </div>
     )
 }));
+
+/** The deletions the card stub handed to `runDeletion`, in the order the board ran them. */
+const deletions: string[] = [];
 
 describe("Board properties", () => {
     let container: HTMLElement;
@@ -82,6 +97,8 @@ describe("Board properties", () => {
     let sorting: string[];
     /** The widths the board was asked to draw its columns at. */
     let widths: string[];
+    /** The groupings whose attribute the board was asked to delete. */
+    let forgotten: string[];
     /** Draws the dialog again, for a test that changed what the board says. */
     let draw: () => void;
 
@@ -91,6 +108,8 @@ describe("Board properties", () => {
         toggled = [];
         sorting = [];
         widths = [];
+        forgotten = [];
+        deletions.length = 0;
         labels = { includeArchived: "true" };
         container = document.createElement("div");
         document.body.appendChild(container);
@@ -126,7 +145,11 @@ describe("Board properties", () => {
                 sorting.push(`descending:${isDescending}`);
             },
             resetColumnSortsToDefault: async () => { sorting.push("reset"); },
-            setColumnWidth: async (width: string) => { widths.push(width); }
+            setColumnWidth: async (width: string) => { widths.push(width); },
+            deleteGrouping: async (groupBy: string, deletion: () => Promise<void>) => {
+                forgotten.push(groupBy);
+                await deletion();
+            }
         } as unknown as BoardApi;
 
         draw = () => act(() => {
@@ -314,6 +337,16 @@ describe("Board properties", () => {
         act(() => { dialog()?.querySelector<HTMLElement>(".attributes-stub")?.click(); });
 
         expect(storedAttributes).toEqual([ [ { name: "dueDate", hidden: true } ] ]);
+    });
+
+    it("leaves deleting an attribute to the board, which drops its stored columns", async () => {
+        const card = dialog()?.querySelector<HTMLElement>(".attributes-stub");
+        await act(async () => { card?.querySelector<HTMLElement>(".delete-label")?.click(); });
+        await act(async () => { card?.querySelector<HTMLElement>(".delete-relation")?.click(); });
+
+        expect(forgotten).toEqual([ "status", "~assignee" ]);
+        expect(deletions).toEqual([ "label:status", "relation:assignee" ]);
+        expect(storedAttributes).toEqual([]);
     });
 
     it("writes what the card answers with back to the board", () => {

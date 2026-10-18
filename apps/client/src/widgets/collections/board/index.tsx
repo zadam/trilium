@@ -970,6 +970,12 @@ function Board({
                     return;
                 }
 
+                // The api stored a config after this refresh started, such as one without the
+                // columns of a deleted grouping. The columns read here can be the removed ones.
+                if (api.hasStoredSince(viewConfig)) {
+                    return;
+                }
+
                 // Only to give a board that keeps no column list one to begin with. Written on
                 // every refresh instead, this is what a client reads the board with while another
                 // is changing it: it resolves a name the change has already taken away from

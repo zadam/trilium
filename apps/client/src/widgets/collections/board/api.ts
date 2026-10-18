@@ -30,7 +30,7 @@ import {
     DEFAULT_CARD_TEMPLATES, DEFAULT_COLUMN_ICON, DEFAULT_COLUMN_WIDTH, DEFAULT_GROUP_BY, INBOX_COLUMN,
     INBOX_COLUMN_ICON, parseColumnWidth
 } from "./columns";
-import { readColumns, writeColumns } from "./column_storage";
+import { readColumns, removeColumns, writeColumns } from "./column_storage";
 import { cardNotes, ColumnItem, ColumnMap } from "./data";
 import {
     cardReference, ColumnReferenceLabel, columnReference, newColumnId, readColumnId
@@ -160,6 +160,8 @@ export default class BoardApi {
     /** The config as the board last handed it over, against which a fresh one is recognised. */
     private viewConfigSource: BoardViewData | undefined;
     private viewConfig: BoardViewData;
+    /** `viewConfig` as last taken from the board, before the api stored a config of its own. */
+    private drawnConfig: BoardViewData;
 
     constructor(
         private byColumn: ColumnMap | undefined,
@@ -182,6 +184,7 @@ export default class BoardApi {
     ) {
         this.viewConfigSource = viewConfig;
         this.viewConfig = viewConfig ?? {};
+        this.drawnConfig = this.viewConfig;
         this.groupBy = statusAttribute;
         this.isRelationMode = statusAttribute.startsWith("~");
 
@@ -226,6 +229,7 @@ export default class BoardApi {
         if (viewConfig !== this.viewConfigSource) {
             this.viewConfigSource = viewConfig;
             this.viewConfig = viewConfig ?? {};
+            this.drawnConfig = this.viewConfig;
         }
         this.saveConfig = saveConfig;
         this.setBranchIdToEdit = setBranchIdToEdit;
@@ -583,6 +587,7 @@ export default class BoardApi {
         if (renamed?.config) {
             this.viewConfig = renamed.config;
             this.viewConfigSource = renamed.config;
+            this.drawnConfig = renamed.config;
         }
     }
 
@@ -1021,6 +1026,40 @@ export default class BoardApi {
      */
     async setPromotedAttributes(attributes: PromotedAttribute[]) {
         this.storeConfig({ promotedAttributes: storedPromotedAttributes(attributes) });
+    }
+
+    /**
+     * Whether the api stored a config after the board drew `config`.
+     *
+     * A refresh resolves its columns from the config of the render that started it. Once this
+     * returns `true`, those columns can be ones the api has since removed, so the refresh must not
+     * write them.
+     */
+    hasStoredSince(config: BoardViewData | undefined) {
+        return config !== this.viewConfigSource || this.viewConfig !== this.drawnConfig;
+    }
+
+    /**
+     * Runs `deletion`, which deletes the attribute a grouping is made from, then drops the columns
+     * stored for that grouping so that `syncColumnsToDefinition()` cannot write them back into a
+     * new definition.
+     *
+     * Counted in `pending.inFlight` while `deletion` runs. A refresh that resolves later still
+     * holds the old config, and `hasStoredSince()` keeps it from writing.
+     */
+    async deleteGrouping(groupBy: string, deletion: () => Promise<void>) {
+        this.pending.inFlight++;
+
+        try {
+            await deletion();
+            const removed = removeColumns(this.viewConfig, groupBy);
+            if (removed) {
+                this.viewConfig = removed;
+                this.saveConfig(removed);
+            }
+        } finally {
+            this.pending.inFlight--;
+        }
     }
 
     /** Sets what the board offers. An empty set would leave nothing to make a card from. */

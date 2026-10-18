@@ -30,6 +30,10 @@ export default function BoardProperties({ api, note, shown, onClose }: {
         (templates: string[]) => api.setCardTemplateIds(templates), [ api ]);
     const storeAttributes = useCallback(
         (attributes: PromotedAttribute[]) => api.setPromotedAttributes(attributes), [ api ]);
+    const deleteGrouping = useCallback(
+        (deletion: () => Promise<void>, type: "label" | "relation", name: string) =>
+            api.deleteGrouping(type === "relation" ? `~${name}` : name, deletion),
+        [ api ]);
 
     return (
         <CollectionPropertiesDialog
@@ -50,6 +54,7 @@ export default function BoardProperties({ api, note, shown, onClose }: {
                 drawnByCollection={[ api.statusAttribute ]}
                 itemNotes={api.getCardNotes()}
                 onChange={storeAttributes}
+                runDeletion={deleteGrouping}
             />
 
             <TemplateSelectionCard
