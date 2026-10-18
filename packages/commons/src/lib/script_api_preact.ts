@@ -321,7 +321,7 @@ export declare const LinkButton: FunctionComponent<LinkButtonProps>;
 export declare const LoadingSpinner: FunctionComponent<{}>;
 
 interface ModalProps {
-    className: string;
+    className?: string;
     title?: ComponentChildren;
     customTitleBarButtons?: ({ title: string; iconClassName: string; onClick: (e: MouseEvent) => void } | null)[];
     size: "xl" | "lg" | "md" | "sm";
