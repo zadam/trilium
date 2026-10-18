@@ -23,6 +23,21 @@ function completionsAtMarker(mime: string, source: string, context?: ScriptApiCo
     return getScriptCompletions(mime, stripped, offset, context);
 }
 
+/**
+ * The labels `buildTypeCompletion()`'s `complete()` offers at the `|` marker in `source`, as the
+ * editor's completion list asks for them.
+ */
+async function completeAtMarker(mime: string, source: string, explicit = false) {
+    const offset = source.indexOf("|");
+    const code = source.slice(0, offset) + source.slice(offset + 1);
+    const { extensions, complete } = await buildTypeCompletion(mime);
+    // No editor view syncs the document here, so the test writes it into the environment.
+    const config = EditorState.create({ extensions }).facet(tsFacet);
+    expect(config).toBeTruthy();
+    if (config) createOrUpdateFile(config.env, config.path, code);
+    return (await complete?.(offset, explicit))?.map((entry) => entry.label) ?? [];
+}
+
 /** "Property 'x' does not exist on type 'y'." */
 const TS_UNKNOWN_PROPERTY = 2339;
 /** "Argument of type 'x' is not assignable to parameter of type 'y'." */
@@ -498,14 +513,22 @@ describe("buildTypeCompletion", () => {
     }, TIMEOUT);
 
     it("completes globals and keywords at the start of a word", async () => {
-        const { extensions, complete } = await buildTypeCompletion(SCRIPT_MIME_FRONTEND);
-        // No editor view syncs the document here, so the test writes it into the environment.
-        const config = EditorState.create({ extensions }).facet(tsFacet);
-        expect(config).toBeTruthy();
-        if (config) createOrUpdateFile(config.env, config.path, "x");
-
-        const labels = (await complete?.(1, false))?.map((entry) => entry.label);
+        const labels = await completeAtMarker(SCRIPT_MIME_FRONTEND, "x|");
         expect(labels).toEqual(expect.arrayContaining([ "api", "console", "glob", "const", "return" ]));
+    }, TIMEOUT);
+
+    it("completes globals and keywords where nothing is typed yet", async () => {
+        // The new list caches the answer for the position it opens at, and filters it as the
+        // word is typed, so the answer with nothing typed has to hold them already.
+        const labels = await completeAtMarker(SCRIPT_MIME_FRONTEND, "function run() {\n    |\n}", true);
+        expect(labels).toEqual(expect.arrayContaining([ "api", "console", "const", "return" ]));
+    }, TIMEOUT);
+
+    it("leaves deprecated names out", async () => {
+        const labels = await completeAtMarker(SCRIPT_MIME_FRONTEND, "e|");
+        expect(labels).toContain("encodeURI");
+        expect(labels).not.toContain("escape");
+        expect(labels).not.toContain("captureEvents");
     }, TIMEOUT);
 });
 

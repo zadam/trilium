@@ -52,8 +52,7 @@ export async function getAutocompletion({
     .filter(
       (entry) =>
         !TS_COMPLETE_BLOCKLIST.includes(entry.kind) &&
-        (entry.sortText < "15" ||
-          completionInfo.optionalReplacementSpan?.length),
+        !entry.kindModifiers?.split(",").includes(ts.ScriptElementKindModifier.deprecatedModifier),
     )
     .map((entry): Completion => {
       const boost = -Number(entry.sortText) || 0;
