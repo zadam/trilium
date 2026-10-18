@@ -206,14 +206,10 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
         ? (colorScheme === "dark" ? darkTheme : lightTheme)
         : codeNoteTheme;
 
-    // React to theme changes.
+    // React to theme changes. `onInitialized` applies it too, for an editor `CodeMirror` creates
+    // after this effect has run.
     useEffect(() => {
-        if (codeEditorRef.current && effectiveTheme?.startsWith(DEFAULT_PREFIX)) {
-            const theme = getThemeById(effectiveTheme.substring(DEFAULT_PREFIX.length));
-            if (theme) {
-                codeEditorRef.current.setTheme(theme);
-            }
-        }
+        if (codeEditorRef.current) applyTheme(codeEditorRef.current, effectiveTheme);
     }, [ codeEditorRef, effectiveTheme ]);
 
     useTriliumEvent("executeWithCodeEditor", async ({ resolve, ntxId: eventNtxId }) => {
@@ -265,6 +261,7 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
                 else if (externalContainerRef) externalContainerRef.current = containerRef.current;
             }
             if (codeEditorRef.current) {
+                applyTheme(codeEditorRef.current, effectiveTheme);
                 if (typeof externalEditorRef === "function") externalEditorRef(codeEditorRef.current);
                 else if (externalEditorRef) externalEditorRef.current = codeEditorRef.current;
             }
@@ -272,4 +269,13 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
             onInitialized?.();
         }}
     />;
+}
+
+/** Applies a `default:`-prefixed code note theme, the only kind the editor knows how to load. */
+function applyTheme(editor: VanillaCodeMirror, effectiveTheme: string | undefined) {
+    if (!effectiveTheme?.startsWith(DEFAULT_PREFIX)) return;
+    const theme = getThemeById(effectiveTheme.substring(DEFAULT_PREFIX.length));
+    if (theme) {
+        void editor.setTheme(theme);
+    }
 }
