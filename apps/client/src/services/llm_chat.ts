@@ -166,6 +166,9 @@ async function streamChatOverSse(
 
     const decoder = new TextDecoder();
     let buffer = "";
+    // Only a `done` or `error` chunk ends a turn: a proxy can close the body cleanly
+    // before the server sends either.
+    let completed = false;
 
     try {
         while (true) {
@@ -179,12 +182,23 @@ async function streamChatOverSse(
             for (const line of lines) {
                 if (line.startsWith("data: ")) {
                     try {
-                        await handleChunk(streamId, JSON.parse(line.slice(6)), callbacks);
+                        const chunk: LlmStreamChunk = JSON.parse(line.slice(6));
+                        if (chunk.type === "done" || chunk.type === "error") {
+                            completed = true;
+                        }
+                        await handleChunk(streamId, chunk, callbacks);
                     } catch (e) {
                         console.error("Failed to parse SSE data line:", line, e);
                     }
                 }
             }
+        }
+
+        if (!completed) {
+            callbacks.onError(
+                "LLM stream ended without completing — the connection closed before the response "
+                + "finished (network or proxy interruption)."
+            );
         }
     } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") {

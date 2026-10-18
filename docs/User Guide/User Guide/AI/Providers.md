@@ -58,4 +58,6 @@ This allows you to set the base URL to an OpenAI-compatible API, with an optiona
 
 Enter the base URL exactly as the service documents it, including its version path, such as `https://api.groq.com/openai/v1` or `https://open.bigmodel.cn/api/paas/v4`. Only a bare host such as `http://localhost:8080` is completed with `/v1`.
 
+The endpoint can run on the same machine as Trilium, elsewhere on your local network or on a Tailscale tailnet. Trilium refuses link-local addresses (`169.254.0.0/16`) and cloud metadata endpoints, which no model server is served on.
+
 For custom endpoints, the pricing of the models is not known so the cost of a conversation will not be displayed; this is especially relevant for hosted providers.
