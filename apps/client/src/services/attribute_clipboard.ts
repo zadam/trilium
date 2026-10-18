@@ -1,3 +1,5 @@
+import { promotedAttributeDefinitionParser } from "@triliumnext/commons";
+
 import attribute_parser, { Attribute } from "./attribute_parser.js";
 import { formatValue } from "./attribute_renderer.js";
 import froca from "./froca.js";
@@ -40,7 +42,7 @@ export function getHeldAttributes(): Attribute[] {
  * all — is settled at once, rather than after a round trip to the system clipboard.
  */
 export function holdAttributes(attributes: Attribute[]) {
-    held = [ ...attributes ];
+    held = attributes.map((attribute) => ({ ...attribute }));
 }
 
 /** Reads whichever flavour the clipboard offers. Throws what the parser throws over text that is not
@@ -196,6 +198,7 @@ export interface PasteResult {
  * already taken depends on what the name is defined as: a field holding a set takes another entry
  * (unless it already holds that very one — pasting the same thing twice is not two of it), while a
  * field holding one value has that value replaced, the attribute itself staying the one it was.
+ * A definition in the paste takes precedence over `isMultiValued`, which reads the note's own.
  *
  * Nothing is carried over from the attribute a paste came from beyond what is written down: the
  * parser builds its attributes out of text alone, so none of them arrives with an id, and pasting is
@@ -209,6 +212,12 @@ export function mergePastedAttributes(
     const attributes = [ ...existing ];
     let added = 0;
     let replaced = 0;
+    const pastedMultiplicity = new Map(pasted
+        .filter((attribute) => attribute.type === "label" && /^(label|relation):/.test(attribute.name))
+        .map((attribute) => [
+            attribute.name,
+            promotedAttributeDefinitionParser.parse(attribute.value ?? "").multiplicity === "multi"
+        ]));
 
     for (const incoming of pasted) {
         const candidate: Attribute = {
@@ -219,7 +228,7 @@ export function mergePastedAttributes(
         };
         const matches = (attribute: Attribute) => attribute.type === candidate.type && attribute.name === candidate.name;
 
-        if (isMultiValued(candidate)) {
+        if (pastedMultiplicity.get(`${candidate.type}:${candidate.name}`) ?? isMultiValued(candidate)) {
             if (!attributes.some((attribute) => matches(attribute) && (attribute.value ?? "") === candidate.value)) {
                 attributes.push(candidate);
                 added++;

@@ -58,15 +58,15 @@ describe("AttributeList on a phone", () => {
     it("draws a card per run", () => {
         renderPanel(noteWithRuns());
 
-        expect(sectionIds()).toEqual([ "attributes-owned", "attributes-inherited", "attributes-definitions" ]);
+        expect(sectionIds()).toEqual([ "attributes", "attributes-inherited", "attributes-definitions" ]);
 
         // Each card counts its rows in its title.
-        expect(section("attributes-owned").querySelector(".attribute-run-count")?.textContent).toBe("2");
+        expect(section("attributes").querySelector(".attribute-run-count")?.textContent).toBe("2");
         expect(section("attributes-definitions").querySelector(".attribute-run-count")?.textContent).toBe("2");
 
         // The rows themselves are unchanged — menu items, which is what a phone's lists are made of.
-        expect(namesIn(section("attributes-owned"))).toEqual([ "author", "template" ]);
-        expect(section("attributes-owned").querySelector(".attribute-row")?.className).toContain("dropdown-item");
+        expect(namesIn(section("attributes"))).toEqual([ "author", "template" ]);
+        expect(section("attributes").querySelector(".attribute-row")?.className).toContain("dropdown-item");
     });
 
     it("adds from the toolbar and the cards' own headers, there being no row to hover for one", () => {
@@ -75,7 +75,7 @@ describe("AttributeList on a phone", () => {
         // The toolbar's menu adds any kind; it is also the only way to a relation here, whose creation
         // editor is a pointer's.
         expect(iconsIn(toolbar())).toEqual([ "bx bx-plus" ]);
-        expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle" ]);
+        expect(iconsIn(header("attributes"))).toEqual([ "bx bx-help-circle" ]);
         // Each card has its own help. A run that can be added to also has an add button, definitions
         // included; the inherited run, whose attributes belong to another note, has none.
         expect(iconsIn(header("attributes-definitions"))).toEqual([ "bx bx-help-circle", "bx bx-plus" ]);
@@ -92,9 +92,9 @@ describe("AttributeList on a phone", () => {
         // in the card's header, so there is no add row inside it to imply the run is waiting to be
         // filled. AttributeList.spec asserts the other half — that a pointer gets no such notice.
         expect(container.querySelectorAll(".attribute-row")).toHaveLength(0);
-        expect(section("attributes-owned").querySelector(".no-items")).not.toBeNull();
+        expect(section("attributes").querySelector(".no-items")).not.toBeNull();
         // Only the note's own run is ever shown empty; the rest are left out when they hold nothing.
-        expect(sectionIds()).toEqual([ "attributes-owned" ]);
+        expect(sectionIds()).toEqual([ "attributes" ]);
     });
 
     it("offers pasting from the toolbar, which is a phone's only way to it", async () => {
@@ -136,7 +136,7 @@ describe("AttributeList on a phone", () => {
         vi.useFakeTimers();
         renderPanel(noteWithRuns());
 
-        const row = section("attributes-owned").querySelector(".attribute-row");
+        const row = section("attributes").querySelector(".attribute-row");
         act(() => {
             row?.dispatchEvent(new Event("touchstart", { bubbles: true }));
         });
@@ -151,7 +151,7 @@ describe("AttributeList on a phone", () => {
 
         // The toolbar above the cards turns over to the selection.
         expect(iconsIn(toolbar())).toEqual([ "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);
-        expect(toolbar()?.compareDocumentPosition(section("attributes-owned")))
+        expect(toolbar()?.compareDocumentPosition(section("attributes")))
             .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
 
@@ -162,7 +162,7 @@ describe("AttributeList on a phone", () => {
 
     function sectionIds() {
         return [ ...container.querySelectorAll(".options-section") ]
-            .map((el) => [ ...el.classList ].find((name) => name.startsWith("attributes-")));
+            .map((el) => [ ...el.classList ].find((name) => /^attributes(-|$)/.test(name)));
     }
 
     function toolbar() {

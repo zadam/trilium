@@ -50,6 +50,13 @@ describe("serializeAttributes", () => {
             { type: "relation", name: "parent", value: "abc123", isInheritable: false }
         ]);
     });
+
+    it("keeps backslashes, which the parser reads as escapes inside quotes as well", () => {
+        const values = [ "C:\\notes", "ends with\\", "\"a\" 'b' `c` \\d" ];
+
+        expect(attribute_parser.lexAndParse(serializeAttributes(values.map((value) => label("path", value))))
+            .map((attribute) => attribute.value)).toEqual(values);
+    });
 });
 
 describe("serializeAttributesAsHtml", () => {
@@ -114,8 +121,11 @@ describe("writeAttributes", () => {
         writeAttributes(null, copied);
 
         expect(getHeldAttributes()).toEqual(copied);
-        // A copy of the list, so that editing the rows it was taken from does not edit the clipboard.
+        // A copy of the list and of each attribute, so that editing the rows it was taken from does
+        // not edit the clipboard.
         expect(getHeldAttributes()).not.toBe(copied);
+        copied[0].value = "Someone else";
+        expect(getHeldAttributes()[0].value).toBe("Elian");
 
         writeAttributes(null, []);
         expect(getHeldAttributes()).toEqual([]);
@@ -165,6 +175,25 @@ describe("mergePastedAttributes", () => {
 
         expect(attributes.map((attribute) => attribute.value)).toEqual([ "book", "read" ]);
         expect(added).toBe(1);
+    });
+
+    it("reads whether a name holds a set from a definition pasted alongside it, over the note's own", () => {
+        const { attributes } = mergePastedAttributes(
+            [ label("tag", "book") ],
+            [ label("label:tag", "promoted,multi"), label("tag", "read"), label("status", "draft") ],
+            single
+        );
+        expect(attributes.filter((attribute) => attribute.name === "tag").map((attribute) => attribute.value))
+            .toEqual([ "book", "read" ]);
+
+        // A pasted single-valued definition replaces what the note defined as a set.
+        const { attributes: replaced } = mergePastedAttributes(
+            [ label("tag", "book") ],
+            [ label("tag", "read"), label("label:tag", "promoted,single") ],
+            () => true
+        );
+        expect(replaced.filter((attribute) => attribute.name === "tag").map((attribute) => attribute.value))
+            .toEqual([ "read" ]);
     });
 
     it("tells a label from a relation of the same name", () => {

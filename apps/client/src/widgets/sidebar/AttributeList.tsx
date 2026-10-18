@@ -362,7 +362,10 @@ export default function AttributeList() {
         setSelection(new Set(selectableIds));
     }
 
-    /** Drops from the selection whatever the note no longer holds, so what is copied is what is shown. */
+    /**
+     * Drops from the selection whatever the note no longer holds, so what is copied is what is shown.
+     * A dropped anchor moves to the row picked out last among those left.
+     */
     function pruneSelection() {
         setSelection((current) => {
             if (current.size === 0) {
@@ -371,6 +374,10 @@ export default function AttributeList() {
 
             const shown = new Set([ ...owned.current, ...inherited.current ].flatMap((attribute) => attribute.attributeId ?? []));
             const next = new Set([ ...current ].filter((attributeId) => shown.has(attributeId)));
+
+            if (selectionAnchor.current && !shown.has(selectionAnchor.current)) {
+                selectionAnchor.current = [ ...next ].at(-1) ?? null;
+            }
 
             return next.size === current.size ? current : next;
         });
@@ -445,7 +452,7 @@ export default function AttributeList() {
      * from either lands here whole, as does one written out by hand.
      */
     async function pasteAttributes(e: ClipboardEvent) {
-        if (!canEdit) {
+        if (!canEdit || isInEditor(e)) {
             return;
         }
         e.preventDefault();
@@ -498,6 +505,9 @@ export default function AttributeList() {
      * the source note's to delete.
      */
     function showRowMenu(attribute: Attribute, e: MouseEvent) {
+        if (isInEditor(e)) {
+            return;
+        }
         e.preventDefault();
         e.stopPropagation();
 
@@ -549,7 +559,7 @@ export default function AttributeList() {
      */
     function showPanelMenu(e: MouseEvent) {
         const items = pasteMenuItems();
-        if (items.length === 0) {
+        if (items.length === 0 || isInEditor(e)) {
             return;
         }
 
@@ -612,7 +622,7 @@ export default function AttributeList() {
             }
         },
         onMouseDownCapture: (e: MouseEvent) => {
-            if (e.target instanceof Element && e.target.closest(".attribute-editor-overlay")) {
+            if (isInEditor(e)) {
                 return;
             }
 
@@ -695,7 +705,7 @@ export default function AttributeList() {
     };
     // The runs of the panel, in display order; each is drawn as a card.
     const runs: AttributeRun[] = [ {
-        id: "attributes-owned",
+        id: "attributes",
         title: t("attribute_list_panel.section_owned"),
         count: sections.owned.length,
         help: "attributes",
@@ -1317,6 +1327,11 @@ export function isMultiValued(note: FNote | null | undefined, attribute: Attribu
         ?.getDefinition();
 
     return definition?.multiplicity === "multi";
+}
+
+/** Whether the event comes from an inline editor's field, whose own clipboard and menu it is left to. */
+function isInEditor(e: Event) {
+    return e.target instanceof Element && !!e.target.closest(".attribute-editor-overlay");
 }
 
 /**
