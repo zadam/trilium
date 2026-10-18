@@ -387,7 +387,9 @@
     "previous": "前へ",
     "next": "次へ",
     "page-navigation": "前後のページ",
-    "hidden-subpages_other": "ツリーから非表示になっているサブページ {{count}} 個"
+    "hidden-subpages_other": "ツリーから非表示になっているサブページ {{count}} 個",
+    "previous-tabs": "前のタブエリアへスクロール",
+    "next-tabs": "次のタブエリアへスクロール"
   },
   "hidden_subtree_templates": {
     "text-snippet": "テキストスニペット",
