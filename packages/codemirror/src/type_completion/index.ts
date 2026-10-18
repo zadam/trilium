@@ -1,4 +1,3 @@
-import type { CompletionSource } from "@codemirror/autocomplete";
 import type { Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 
@@ -198,28 +197,38 @@ async function createEnv(mime: string, context: ScriptApiContext = {}) {
 export interface TypeCompletion {
     /** Editor extensions wiring the TypeScript environment (sync, lint, hover). */
     extensions: Extension[];
-    /** Autocompletion source for the editor's shared `autocompletion()`, or null. */
-    source: CompletionSource | null;
+    /** Looks up the completions at a position, or null for a MIME type with no language service. */
+    complete: TypeCompleter | null;
+}
+
+/** The completions at `pos`, best first, or null where the language service offers none there. */
+export type TypeCompleter =
+    (pos: number, explicit: boolean) => Promise<TypeCompletionEntry[] | null>;
+
+/** A completion the TypeScript language service offers. */
+export interface TypeCompletionEntry {
+    label: string;
+    /** The kind of symbol, as CodeMirror names it (`function`, `property`, …). */
+    type?: string;
 }
 
 /**
  * Wires the TypeScript language service into the editor for the given script
- * MIME type. The completion `source` is returned separately (rather than as its
- * own `autocompletion()` extension) so it can be merged with other sources —
- * e.g. snippet slash-commands — into the editor's single autocompletion.
+ * MIME type. The completions are returned as a `complete` function rather than an
+ * extension, so the host can list them alongside its own entries, such as snippets.
  *
- * Returns empty extensions and a null source for non-script MIME types.
+ * Returns empty extensions and a null `complete` for non-script MIME types.
  *
  * `context` tunes the offered `api` surface per note (e.g. exposing
  * `req`/`res`/`pathParams` only for custom request handlers).
  */
 export async function buildTypeCompletion(mime: string, context: ScriptApiContext = {}): Promise<TypeCompletion> {
     if (!isScriptMime(mime)) {
-        return { extensions: [], source: null };
+        return { extensions: [], complete: null };
     }
 
     const env = await createEnv(mime, context);
-    const [ { tsFacet, tsSync }, { tsAutocomplete }, { tsLinter }, { tsHover } ] = await Promise.all([
+    const [ environment, { getAutocompletion }, { tsLinter }, { tsHover } ] = await Promise.all([
         import("./codemirror-ts/environment.js"),
         import("./codemirror-ts/autocomplete.js"),
         import("./codemirror-ts/lint.js"),
@@ -228,17 +237,25 @@ export async function buildTypeCompletion(mime: string, context: ScriptApiContex
     // `tsLinter` only underlines diagnostics inline; `lintGutter` adds the
     // error/warning markers in the gutter (as the old ESLint integration did).
     const { lintGutter } = await import("@codemirror/lint");
+    const path = scriptPath(mime);
 
     return {
         extensions: [
-            tsFacet.of({ env, path: scriptPath(mime) }),
-            tsSync(),
+            environment.tsFacet.of({ env, path }),
+            environment.tsSync(),
             tsLinter({ diagnosticCodesToIgnore: ignoredDiagnosticCodes(mime) }),
             tsHover({ renderTooltip: renderHoverTooltip }),
             lintGutter(),
             hoverTheme
         ],
-        source: tsAutocomplete()
+        async complete(pos, explicit) {
+            const result = await getAutocompletion({ env, path, context: { pos, explicit } });
+            if (!result) return null;
+
+            return [ ...result.options ]
+                .sort((a, b) => (b.boost ?? 0) - (a.boost ?? 0))
+                .map(({ label, type }) => ({ label, type }));
+        }
     };
 }
 

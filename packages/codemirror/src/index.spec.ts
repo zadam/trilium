@@ -9,7 +9,8 @@ vi.mock("./type_completion/index.js", async (importOriginal) => {
     return { ...original, buildTypeCompletion: vi.fn(original.buildTypeCompletion) };
 });
 
-import CodeMirror, { type EditorConfig, getThemeById } from "./index.js";
+import { hostedCompletion } from "./extensions/hosted_completion.js";
+import CodeMirror, { type EditorConfig, getThemeById, SCRIPT_MIME_BACKEND } from "./index.js";
 import { buildTypeCompletion } from "./type_completion/index.js";
 
 let editor: CodeMirror | undefined;
@@ -454,6 +455,30 @@ describe("CodeMirror", () => {
             closeCompletion(instance);
             expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
         });
+
+        it("leaves the arrow keys to a hosted list while it shows entries", async () => {
+            const instance = build();
+            editor = instance;
+            let element: HTMLElement | null = null;
+            instance.setNamedExtension("test", hostedCompletion({
+                match: () => ({ from: 0 }),
+                list: () => ({
+                    show() { element = document.createElement("div"); },
+                    hide() { element = null; },
+                    handleKeyDown: () => false,
+                    get element() { return element; }
+                })
+            }));
+            instance.focus();
+            instance.setText("ab");
+            instance.dispatch({ selection: EditorSelection.cursor(2) });
+            await vi.waitFor(() => expect(element).not.toBe(null));
+
+            const arrowDown = createKeydown("ArrowDown", instance.contentDOM);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe(null);
+            element = null;
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
+        });
     });
 
     describe("find and replace", () => {
@@ -591,6 +616,23 @@ describe("CodeMirror", () => {
         });
     });
 
+    describe("type completions", () => {
+        it("looks up the language service's completions at the caret of a script", async () => {
+            editor = build();
+            await editor.setMimeType("text/plain");
+            expect(editor.hasTypeCompletions()).toBe(false);
+            expect(await editor.getTypeCompletions(true)).toBe(null);
+
+            editor.setText("api.");
+            await editor.setMimeType(SCRIPT_MIME_BACKEND);
+            editor.dispatch({ selection: EditorSelection.cursor(4) });
+            expect(editor.hasTypeCompletions()).toBe(true);
+            const completions = await editor.getTypeCompletions(false) ?? [];
+            expect(completions).toContainEqual({ label: "getNote", type: "method" });
+            expect(completions.map(({ label }) => label)).not.toContain("Array");
+        }, 30_000);
+    });
+
     describe("script api context", () => {
         it("is safe to set before any MIME type is known", async () => {
             editor = build();
@@ -607,7 +649,7 @@ describe("CodeMirror", () => {
 
         it("builds the completion once while the MIME type and context stay the same", async () => {
             const buildMock = vi.mocked(buildTypeCompletion);
-            buildMock.mockResolvedValue({ extensions: [], source: null });
+            buildMock.mockResolvedValue({ extensions: [], complete: null });
             editor = build();
 
             // What a code note's effects request on mount.

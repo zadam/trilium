@@ -25,7 +25,8 @@ const renderCodePreview = vi.hoisted(() => vi.fn(async (content: string, _mime: 
     return pre;
 }));
 vi.mock("../../../services/content_renderer", () => ({ renderCodePreview }));
-vi.mock("../../../services/i18n", () => ({
+vi.mock("../../../services/i18n", async (importOriginal) => ({
+    ...(await importOriginal<object>()),
     t: (key: string, values?: Record<string, unknown>) =>
         values ? `${key} ${Object.values(values).join(" ")}` : key
 }));

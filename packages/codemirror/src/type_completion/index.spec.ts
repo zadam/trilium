@@ -475,25 +475,24 @@ describe("buildTypeCompletion", () => {
     it("returns nothing for a MIME type that is not a script note", async () => {
         // Ordinary code notes are highlighted only; the TypeScript service is not built for them.
         for (const mime of [ "text/plain", "text/css", "application/json", "text/javascript" ]) {
-            expect(await buildTypeCompletion(mime)).toEqual({ extensions: [], source: null });
+            expect(await buildTypeCompletion(mime)).toEqual({ extensions: [], complete: null });
         }
     });
 
-    it("builds the language-service extensions and a completion source for a script note", async () => {
-        const { extensions, source } = await buildTypeCompletion(SCRIPT_MIME_BACKEND);
+    it("builds the language-service extensions and a completion lookup for a script", async () => {
+        const { extensions, complete } = await buildTypeCompletion(SCRIPT_MIME_BACKEND);
 
         expect(Array.isArray(extensions)).toBe(true);
         expect(extensions.length).toBeGreaterThan(0);
-        // The source is handed to the editor's single autocompletion rather than adding its own.
-        expect(typeof source).toBe("function");
+        expect(typeof complete).toBe("function");
     }, TIMEOUT);
 
     it("builds for a frontend script note and honours the api context", async () => {
         const frontend = await buildTypeCompletion(SCRIPT_MIME_FRONTEND);
-        expect(frontend.source).toBeTruthy();
+        expect(frontend.complete).toBeTruthy();
 
         const handler = await buildTypeCompletion(SCRIPT_MIME_BACKEND, { customRequestHandler: true });
-        expect(handler.source).toBeTruthy();
+        expect(handler.complete).toBeTruthy();
     }, TIMEOUT);
 });
 

@@ -10,10 +10,16 @@ import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
 import smartIndentWithTab from "./extensions/custom_tab.js";
 import type { ThemeDefinition } from "./color_themes.js";
 import { createSearchHighlighter, SearchHighlighter, searchMatchHighlightTheme } from "./find_replace.js";
-import { buildTypeCompletion, type ScriptApiContext } from "./type_completion/index.js";
+import { isHostedCompletionShown } from "./extensions/hosted_completion.js";
+import {
+    buildTypeCompletion, type ScriptApiContext, type TypeCompleter
+} from "./type_completion/index.js";
 
 export { default as ColorThemes, type ThemeDefinition, type ThemeVariant, getThemeById } from "./color_themes.js";
-export { isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND } from "./type_completion/index.js";
+export {
+    isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND,
+    type TypeCompletionEntry
+} from "./type_completion/index.js";
 export { triliumLogHighlighter } from "./extensions/trilium_log_highlighter.js";
 
 // Custom keymap to prevent Ctrl+Enter from inserting a newline
@@ -103,6 +109,8 @@ export default class CodeMirror extends EditorView {
     private namedCompartments = new Map<string, Compartment>();
     /** Named completion sources aggregated into the editor's single autocompletion. */
     private completionSources = new Map<string, CompletionSource>();
+    /** The language service's completions for the current MIME type, or null where it has none. */
+    private typeCompleter: TypeCompleter | null = null;
     /** Monotonic token guarding against out-of-order async type-completion updates. */
     private typeCompletionToken = 0;
     /** The latest type-completion build, which a request for the same MIME type and context joins. */
@@ -340,7 +348,8 @@ export default class CodeMirror extends EditorView {
         const { ranges, main } = this.state.selection;
         const hasModifier = event.shiftKey || event.ctrlKey || event.altKey || event.metaKey;
         if (event.target !== this.contentDOM || hasModifier || event.isComposing
-            || ranges.length > 1 || !main.empty || completionStatus(this.state) === "active") {
+            || ranges.length > 1 || !main.empty || completionStatus(this.state) === "active"
+            || isHostedCompletionShown(this)) {
             return null;
         }
 
@@ -530,14 +539,27 @@ export default class CodeMirror extends EditorView {
     /** Guarded by a token so a slow build for a previous MIME type can't overwrite a newer one. */
     async #buildTypeCompletion(mime: string) {
         const token = ++this.typeCompletionToken;
-        const { extensions, source } = await buildTypeCompletion(mime, this.scriptApiContext);
+        const { extensions, complete } = await buildTypeCompletion(mime, this.scriptApiContext);
         if (token !== this.typeCompletionToken) {
             return; // a newer setMimeType call superseded this one
         }
         this.dispatch({
             effects: this.typeCompletionCompartment.reconfigure(extensions)
         });
-        this.setCompletionSource("typescript", source);
+        this.typeCompleter = complete;
+    }
+
+    /** Whether the MIME type has a TypeScript language service for `getTypeCompletions()`. */
+    hasTypeCompletions() {
+        return this.typeCompleter !== null;
+    }
+
+    /**
+     * The language service's completions at the caret, best first, or null where it offers none
+     * or the MIME type has no language service.
+     */
+    async getTypeCompletions(explicit: boolean) {
+        return await this.typeCompleter?.(this.state.selection.main.head, explicit) ?? null;
     }
 
     /**

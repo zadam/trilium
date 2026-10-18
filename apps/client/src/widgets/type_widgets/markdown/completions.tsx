@@ -26,7 +26,7 @@ import { t } from "../../../services/i18n";
 import mime_types from "../../../services/mime_types";
 import { getTaskStateDefinitions } from "../../../services/task_states";
 import { type CommandEntry, CommandMentionList, createHostedList, filterCommandEntries, NoteMentionList } from "../../react/NoteAutocomplete";
-import { type CodeSnippet, SLASH_COMMAND_REGEX, useCodeSnippets } from "../code/snippets";
+import { type CodeSnippet, SLASH_COMMAND_REGEX, snippetCommand, useCodeSnippets } from "../code/snippets";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams";
 import type { TypeWidgetProps } from "../type_widget";
 import { uploadImageAndInsert } from "./editor_utils";
@@ -361,17 +361,7 @@ export function buildSlashCommands({ parentComponent, getNote, editorView, taskS
                     view.dispatch({ changes: { from, to, insert } });
                 });
             }),
-        ...snippets.map((snippet) => command(`snippet:${snippet.title}`, {
-            title: snippet.title,
-            description: snippet.description,
-            aliases: [ "snippet", "template" ],
-            icon: "bx bx-code-curly"
-        }, (view, from, to) => {
-            view.dispatch({
-                changes: { from, to, insert: snippet.content },
-                selection: { anchor: from + snippet.content.length }
-            });
-        }))
+        ...snippets.map(snippetCommand)
     ];
 }
 

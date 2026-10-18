@@ -91,6 +91,9 @@ export function hostedCompletion<M extends HostedCompletionMatch>({ match, list 
 
         constructor(private readonly view: EditorView) {
             this.list = list(view);
+            const lists = hostedLists.get(view) ?? new Set();
+            lists.add(this.list);
+            hostedLists.set(view, lists);
         }
 
         update(update: ViewUpdate) {
@@ -148,6 +151,7 @@ export function hostedCompletion<M extends HostedCompletionMatch>({ match, list 
 
         destroy() {
             this.destroyed = true;
+            hostedLists.get(this.view)?.delete(this.list);
             this.setActiveDescendant(null);
             this.list.hide();
             this.list.destroy?.();
@@ -276,6 +280,13 @@ export function hostedCompletion<M extends HostedCompletionMatch>({ match, list 
     // Ahead of the field's keymap, so the list takes Enter and the arrows while it is open.
     return Prec.highest(plugin);
 }
+
+/** Whether a list of {@link hostedCompletion} shows entries in `view` and takes the arrow keys. */
+export function isHostedCompletionShown(view: EditorView) {
+    return [ ...(hostedLists.get(view) ?? []) ].some((list) => list.element !== null);
+}
+
+const hostedLists = new WeakMap<EditorView, Set<HostedCompletionList<never>>>();
 
 /** Ctrl-Space, or Alt-` as CodeMirror binds it on a Mac, where Ctrl-Space switches the input source. */
 function isExplicitRequest(event: KeyboardEvent) {

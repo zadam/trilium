@@ -2,30 +2,10 @@ import type {
   Completion,
   CompletionContext,
   CompletionResult,
-  CompletionSource,
 } from "@codemirror/autocomplete";
 import ts from "typescript";
 import { type VirtualTypeScriptEnvironment } from "@typescript/vfs";
-import { tsFacet } from "./environment.js";
 import { AUTOCOMPLETION_SYMBOLS } from "./symbols.js";
-
-/**
- * Create a `CompletionSource` that queries
- * the _on-thread_ TypeScript environments for autocompletions
- * at this character.
- */
-export function tsAutocomplete(): CompletionSource {
-  return async (
-    context: CompletionContext,
-  ): Promise<CompletionResult | null> => {
-    const config = context.state.facet(tsFacet);
-    if (!config) return null;
-    return getAutocompletion({
-      ...config,
-      context,
-    });
-  };
-}
 
 const TS_COMPLETE_BLOCKLIST: ts.ScriptElementKind[] = [
   ts.ScriptElementKind.warning,
