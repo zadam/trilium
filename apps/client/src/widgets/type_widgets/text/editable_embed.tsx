@@ -110,6 +110,8 @@ export interface EmbeddedCaretEditor {
      * its completions, takes the key.
      */
     getEdgeLeftBy(event: KeyboardEvent): EmbedEdge | null;
+    /** Runs before the caret leaves the editor past an edge, while the editor has the focus. */
+    prepareToLeave?(): void;
 }
 
 /**
@@ -130,8 +132,12 @@ export function useEmbedCaretNavigation(
 
         // The capture phase runs before the editor handles the key.
         const onKeyDown = (event: KeyboardEvent) => {
-            const edge = getEditorRef.current()?.getEdgeLeftBy(event);
-            if (edge && leaveContentEmbed(root, edge)) {
+            const editor = getEditorRef.current();
+            const edge = editor?.getEdgeLeftBy(event);
+            if (!editor || !edge) return;
+
+            editor.prepareToLeave?.();
+            if (leaveContentEmbed(root, edge)) {
                 event.preventDefault();
                 event.stopPropagation();
             }

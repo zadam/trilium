@@ -70,6 +70,7 @@ export default function MarkdownEmbed({
     useSyncedHighlight(shownView, previewElement, renderedContent);
     useNoteLinkChips(shownView);
     useMarkdownKeymap(isEditing ? shownView : null);
+    const caretNavigationRoot = isEditing && isSourceShown ? rootRef : null;
 
     return (
         <div
@@ -81,11 +82,11 @@ export default function MarkdownEmbed({
                 orientation={isDesktop() ? "horizontal" : "vertical"}
                 editor={(
                     <div className="note-detail-split-editor">
-                        {/* Split.js sizes this column, so it stays mounted. CodeMirror is mounted
-                            only while the source shows, so that "Search in note" and the arrow
-                            keys never act on a hidden editor. */}
-                        {isSourceShown && (
-                            <CaretNavigationContext.Provider value={isEditing ? rootRef : null}>
+                        {/* An edited source stays mounted while the preview shows alone, which
+                            keeps its undo history. "Search in note" and the arrow keys skip it
+                            then. */}
+                        {(isEditing || isSourceShown) && (
+                            <CaretNavigationContext.Provider value={caretNavigationRoot}>
                                 <CodeEmbedEditor
                                     key={isEditing ? "editing" : "read-only"}
                                     note={note}
@@ -95,6 +96,7 @@ export default function MarkdownEmbed({
                                     tabWidth={tabWidth}
                                     useTabs={useTabs}
                                     viewRef={viewRef}
+                                    isShown={isSourceShown}
                                     onClose={setContent}
                                     onChange={setContent}
                                     onReady={setView}

@@ -1,3 +1,4 @@
+import type VanillaCodeMirror from "@triliumnext/codemirror";
 import { render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -128,16 +129,45 @@ describe("MarkdownEmbed", () => {
         });
         expect(isEntered).toBe(true);
         expect(view.hasFocus).toBe(true);
+        await getEmbedFindTarget(figure)?.find("a", { matchCase: false, wholeWord: false });
+        expect(view.getSearchMatches()).toHaveLength(1);
 
-        await act(async () => {
-            figure.dataset.displayMode = "preview";
-            await Promise.resolve();
-        });
-        expect(figure.querySelector(".cm-editor")).toBeNull();
+        await showDisplayMode(figure, "preview");
         expect(getEmbedFindTarget(figure)).toBeNull();
         expect(enterContentEmbed(figure, "start")).toBe(false);
+        expect(view.getSearchMatches()).toHaveLength(0);
+
+        await showDisplayMode(figure, "split");
+        expect(getEmbedFindTarget(figure)).toBeInstanceOf(CodeMirrorFindTarget);
+        act(() => {
+            isEntered = enterContentEmbed(figure, "start");
+        });
+        expect(isEntered).toBe(true);
+    });
+
+    it("keeps the edited source, its undo history and cursor, behind the preview", async () => {
+        const { figure } = await mount(buildMarkdownNote("a"), buildEditor(), {
+            isEditable: true
+        });
+        const view = await findView(figure);
+        act(() => view.dispatch({ changes: { from: 1, insert: "b" }, selection: { anchor: 2 } }));
+
+        await showDisplayMode(figure, "preview");
+        await showDisplayMode(figure, "split");
+        expect(await findView(figure)).toBe(view);
+        expect(view.state.selection.main.head).toBe(2);
+        pressCtrl(view, "z");
+        expect(view.state.doc.toString()).toBe("a");
     });
 });
+
+/** Picks the display mode `mode` on the embed `figure`. */
+async function showDisplayMode(figure: HTMLElement, mode: string) {
+    await act(async () => {
+        figure.dataset.displayMode = mode;
+        await Promise.resolve();
+    });
+}
 
 interface MountOptions {
     isEditable?: boolean;
@@ -237,5 +267,5 @@ async function findView(figure: HTMLElement) {
         expect(view).not.toBeNull();
     }, { timeout: 5000 });
     if (!view) throw new Error("CodeMirror did not mount.");
-    return view as InstanceType<typeof EditorView>;
+    return view as VanillaCodeMirror;
 }

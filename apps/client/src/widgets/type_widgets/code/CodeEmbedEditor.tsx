@@ -22,6 +22,8 @@ export interface CodeEmbedEditorProps {
     useTabs: boolean | undefined;
     /** Holds the CodeMirror view while the editor is open, and `null` once it goes away. */
     viewRef: RefObject<VanillaCodeMirror | null>;
+    /** Whether the editor shows. "Search in note" skips a hidden one. Shown by default. */
+    isShown?: boolean;
     /** Receives the edited content when the editor goes away. */
     onClose: (content: string) => void;
     /** Receives the content as it is edited. */
@@ -35,7 +37,8 @@ export interface CodeEmbedEditorProps {
  * `editor`, the content is read-only.
  */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, tabWidth, useTabs, viewRef, onClose, onChange, onReady
+    note, editor, content, mime, tabWidth, useTabs, viewRef, isShown = true, onClose, onChange,
+    onReady
 }: CodeEmbedEditorProps) {
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
@@ -45,11 +48,24 @@ export default function CodeEmbedEditor({
     // Runs after the effects of `CodeMirror`, which creates the view.
     useEffect(() => {
         const view = viewRef.current;
-        if (!view) return;
-
-        onReady?.(view);
-        return registerEmbedFindTarget(view.dom, new CodeMirrorFindTarget(view));
+        if (view) {
+            onReady?.(view);
+        }
     }, []);
+
+    useEffect(() => {
+        const view = viewRef.current;
+        if (!view || !isShown) return;
+
+        const unregister = registerEmbedFindTarget(view.dom, new CodeMirrorFindTarget(view));
+        return () => {
+            unregister();
+            // Clears the search matches of an editor that is hidden rather than unmounted.
+            if (view.dom.isConnected) {
+                view.cleanSearch();
+            }
+        };
+    }, [ isShown ]);
 
     // Runs after the effects of `CodeMirror`, which empties the document as it mounts.
     useEffect(() => {
