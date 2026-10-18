@@ -248,7 +248,7 @@ body.setup {
             width: 100%;
             margin-inline: auto;
 
-            body.desktop & {
+            @media (min-width: 700px) {
                 width: 80%;
             }
 
