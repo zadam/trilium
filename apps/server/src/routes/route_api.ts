@@ -5,6 +5,7 @@ import { mkdirSync } from "fs";
 import { readFile, rm } from "fs/promises";
 import multer from "multer";
 import { join } from "path";
+import { Transform } from "stream";
 
 import { bindEmitter } from "../cls_provider.js";
 import auth from "../services/auth.js";
@@ -200,13 +201,53 @@ export const MAX_SHARED_FILES = 20;
 export function createShareTargetUploadMiddleware(): RequestHandler {
     // Disk storage: a share can carry several large files, so the handler reads them back from
     // `file.path` one at a time instead of holding all of them in memory.
-    const options = baseMulterOptions();
+    const options: multer.Options & { streamHandler?: (req: express.Request, busboy: NodeJS.WritableStream) => void } = {
+        ...baseMulterOptions(),
+        storage: tmpDirStorage(),
+        // `streamHandler` is not yet in @types/multer 2.3.0.
+        streamHandler: (req, busboy) => {
+            const boundary = /boundary=(?:"([^"]+)"|([^;\s]+))/i.exec(req.headers["content-type"] ?? "");
+            const delimiterBoundary = boundary?.[1] ?? boundary?.[2];
+            if (delimiterBoundary) {
+                req.pipe(stripNulBeforeDelimiters(delimiterBoundary)).pipe(busboy);
+            } else {
+                req.pipe(busboy);
+            }
+        }
+    };
+    options.limits = { ...options.limits, files: MAX_SHARED_FILES };
 
-    return multer({
-        ...options,
-        limits: { ...options.limits, files: MAX_SHARED_FILES },
-        storage: tmpDirStorage()
-    }).array("files");
+    return multer(options).array("files");
+}
+
+/**
+ * Removes the NUL byte that Samsung Internet writes between the CRLF and a boundary delimiter
+ * (`\r\n\0--boundary`) in a Web Share Target body; busboy rejects that body as "Unexpected end of
+ * form".
+ */
+export function stripNulBeforeDelimiters(boundary: string): Transform {
+    const needle = Buffer.from(`\r\n\0--${boundary}`, "latin1");
+    let pending = Buffer.alloc(0);
+
+    return new Transform({
+        transform(chunk: Buffer, _encoding, callback) {
+            const data = Buffer.concat([ pending, chunk ]);
+            const parts: Buffer[] = [];
+            let start = 0;
+            for (let index = data.indexOf(needle); index !== -1; index = data.indexOf(needle, start)) {
+                parts.push(data.subarray(start, index + 2));
+                start = index + 3;
+            }
+            // Holds back a tail that could be the start of a needle split across chunks.
+            const keepFrom = Math.max(start, data.length - (needle.length - 1));
+            parts.push(data.subarray(start, keepFrom));
+            pending = data.subarray(keepFrom);
+            callback(null, Buffer.concat(parts));
+        },
+        flush(callback) {
+            callback(null, pending);
+        }
+    });
 }
 
 /** Writes each uploaded file to `upload/` under `dataDirs.TMP_DIR`. */

@@ -87,6 +87,28 @@ describe("POST /share-target", () => {
         expect(note.getParentNotes().map((parent) => parent.noteId)).toEqual([ inbox.noteId ]);
     });
 
+    it("accepts Samsung Internet's NUL byte between a CRLF and a boundary delimiter", async () => {
+        const boundary = "----MultipartBoundary--eyLOlXbH76aoDXmj8rZPdIY8RnUN0YjNE3TJOXyUwe----";
+        const body = Buffer.concat([
+            Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="text"\r\n\r\nFrom the gallery\r\n\0`),
+            Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="files"; filename="IMG_1.png"\r\nContent-Type: image/png\r\n\r\n`),
+            PNG,
+            Buffer.from(`\r\n\0--${boundary}--\r\n`)
+        ]);
+
+        const res = await agent
+            .post("/share-target")
+            .set("Content-Type", `multipart/form-data; boundary=${boundary}`)
+            .send(body)
+            .expect(303);
+
+        const parent = redirectedNote(res.headers.location);
+        expect(parent.getContent()).toBe("<p>From the gallery</p>");
+        const [ image ] = parent.getChildNotes();
+        expect(image?.title).toBe("IMG_1.png");
+        expect(image?.mime).toBe("image/png");
+    });
+
     it("groups several files under a parent note, with their images already stored", async () => {
         const res = await agent
             .post("/share-target")

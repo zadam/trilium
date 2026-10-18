@@ -10,6 +10,7 @@ import {
     importMiddlewareWithErrorHandling,
     route,
     router,
+    stripNulBeforeDelimiters,
     uploadMiddlewareWithErrorHandling
 } from "./route_api.js";
 
@@ -138,6 +139,24 @@ describe("uploadMiddlewareWithErrorHandling (in-memory)", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.hasFile).toBe(false);
+    });
+});
+
+describe("stripNulBeforeDelimiters", () => {
+    it("drops the NUL before every delimiter, wherever the chunks split it", async () => {
+        const input = Buffer.from("--b\r\n\r\nx\0y\r\n\0--b\r\n\r\nz\r\n\0--b--\r\n", "latin1");
+        const expected = "--b\r\n\r\nx\0y\r\n--b\r\n\r\nz\r\n--b--\r\n";
+
+        for (let split = 0; split <= input.length; split++) {
+            const filter = stripNulBeforeDelimiters("b");
+            const output: Buffer[] = [];
+            filter.on("data", (chunk: Buffer) => output.push(chunk));
+            const ended = new Promise((resolve) => filter.on("end", resolve));
+            filter.write(input.subarray(0, split));
+            filter.end(input.subarray(split));
+            await ended;
+            expect(Buffer.concat(output).toString("latin1"), `split at ${split}`).toBe(expected);
+        }
     });
 });
 
