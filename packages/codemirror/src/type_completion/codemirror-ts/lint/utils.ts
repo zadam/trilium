@@ -49,11 +49,7 @@ export function isDiagnosticWithLocation(
 export function tsDiagnosticMessage(
   diagnostic: Pick<ts.Diagnostic, "messageText">,
 ): string {
-  if (typeof diagnostic.messageText === "string") {
-    return diagnostic.messageText;
-  }
-  // TODO: go through linked list
-  return diagnostic.messageText.messageText;
+  return ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n");
 }
 
 /**

@@ -360,6 +360,19 @@ export async function getScriptDiagnosticCodes(mime: string, code: string, conte
 }
 
 /**
+ * Returns the diagnostics the editor's `tsLinter` shows for `code` under the given
+ * script MIME type, as CodeMirror diagnostics. Intended for tests asserting how a
+ * diagnostic reads.
+ */
+export async function getScriptLints(mime: string, code: string, context: ScriptApiContext = {}) {
+    const env = await createEnv(mime, context);
+    const path = scriptPath(mime);
+    env.updateFile(path, code.length ? code : " ");
+    const { getLints } = await import("./codemirror-ts/lint/getLints.js");
+    return getLints({ env, path, diagnosticCodesToIgnore: ignoredDiagnosticCodes(mime) });
+}
+
+/**
  * Returns the completion entry names the language service offers at `offset` in
  * `code` for the given script MIME type — the same `getCompletionsAtPosition`
  * call that backs the editor's `tsAutocomplete()` source. Intended for tests

@@ -4,6 +4,7 @@ import {
     buildTypeCompletion,
     getScriptCompletions,
     getScriptDiagnosticCodes,
+    getScriptLints,
     renderHoverTooltip,
     SCRIPT_MIME_BACKEND,
     SCRIPT_MIME_FRONTEND,
@@ -457,6 +458,16 @@ describe("JSX component typing", () => {
             "import { Admonition } from \"trilium:preact\";\nexport default () => <Admonition>hi</Admonition>;"
         );
         expect(codes).toContain(TS_TYPE_NOT_ASSIGNABLE);
+    }, TIMEOUT);
+
+    it("names the missing props in the message, not only the unassignable type", async () => {
+        const [ lint ] = await getScriptLints(
+            SCRIPT_MIME_JSX,
+            "import { Modal } from \"trilium:preact\";\nexport default () => <Modal show={true}>hi</Modal>;"
+        );
+        expect(lint?.severity).toBe("error");
+        expect(lint?.message).toMatch(/^Type .* is not assignable to type /);
+        expect(lint?.message).toMatch(/\n\s+Type .* is missing the following properties from type 'ModalProps': .*\bsize\b/);
     }, TIMEOUT);
 });
 
