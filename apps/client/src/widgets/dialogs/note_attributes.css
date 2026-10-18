@@ -128,6 +128,31 @@ body.mobile .modal.note-attributes-modal {
         }
     }
 
+    /* A menu item wraps its contents in a span, so the row's flex `gap` does not reach them. */
+    .attribute-row :is(.attribute-owner, .attribute-value) {
+        margin-inline-start: 6px;
+    }
+
+    /* The help button beside the title in every card, whether or not an add button follows it. */
+    .options-section-header {
+        justify-content: flex-start;
+        gap: 4px;
+    }
+
+    .attribute-toolbar {
+        --icon-button-size: 36px;
+
+        height: 48px;
+        border-bottom: 0;
+        background-color: var(--modal-background-color);
+
+        .form-checkbox label,
+        .attribute-selection-count,
+        .attribute-toolbar-read-only {
+            font-size: 1em;
+        }
+    }
+
     /* What separates the note's own names from the ones Trilium reads for itself. Two segments of one
        card rather than a list with a line ruled across it: what divides them is the modal's own surface
        showing between them, edge to edge — the card being a wash over that surface rather than a colour

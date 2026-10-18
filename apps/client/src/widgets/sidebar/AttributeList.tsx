@@ -1245,7 +1245,6 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, selected
                 icon={kindIcon}
                 // The badge hangs off the icon's own corner here, there being no wrapper to hang it on.
                 iconClassName={clsx("attribute-kind", markerClass)}
-                title={kindTooltip}
                 // A picked-out row takes the mark a menu item is checked with, in the slot its kind
                 // icon holds — the same trade the checkbox makes for itself on a desktop below.
                 checked={selected}
