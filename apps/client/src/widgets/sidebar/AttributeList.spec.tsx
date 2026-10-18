@@ -59,7 +59,7 @@ vi.mock("../react/NoteAutocomplete", async () => {
 import appContext from "../../components/app_context";
 import type Component from "../../components/component";
 import FAttribute, { FAttributeRow } from "../../entities/fattribute";
-import { writeAttributes } from "../../services/attribute_clipboard";
+import { getHeldAttributes, holdAttributes, writeAttributes } from "../../services/attribute_clipboard";
 import type { Attribute } from "../../services/attribute_parser";
 import froca from "../../services/froca";
 import type LoadResults from "../../services/load_results";
@@ -1167,10 +1167,66 @@ describe("AttributeList", () => {
         expect(showContextMenu).not.toHaveBeenCalled();
         expect(event.defaultPrevented).toBe(false);
 
-        // The paste key saves nothing.
+        // The paste key saves nothing, and the header has no clipboard dropdown.
         await act(async () => pasteInto(firstPanel(), { "text/plain": "#tag=new" }));
         expect(put).not.toHaveBeenCalled();
+        expect(clipboardToggle()).toBeNull();
     });
+
+    it("shows the copied attributes in the header, to paste onto another note or clear", async () => {
+        holdAttributes([]);
+        renderPanel(buildNote({ id: "receiver", title: "Receiver" }));
+        expect(clipboardToggle()).toBeNull();
+
+        render(null, container);
+        buildNote({ id: "clip-target", title: "Target note" });
+        holdAttributes([
+            { type: "label", name: "author", value: "Elian", isInheritable: false },
+            { type: "relation", name: "template", value: "clip-target", isInheritable: false }
+        ]);
+        renderPanel(buildNote({ id: "receiver", title: "Receiver" }));
+
+        // The menu lists what is held as disabled rows: the kind icon, the name, and the value
+        // beneath it, a relation's target by its title.
+        act(() => clipboardToggle()?.click());
+        const heldRows = [ ...document.querySelectorAll(".tn-dropdown-portal [role=menuitem][aria-disabled=true]") ];
+        expect(heldRows.map((row) => {
+            const description = row.querySelector(".description")?.textContent ?? "";
+            return [
+                row.querySelector(".tn-icon")?.classList.contains("bx-transfer") ? "relation" : "label",
+                (row.textContent ?? "").replace(description, ""),
+                description
+            ];
+        })).toEqual([ [ "label", "author", "Elian" ], [ "relation", "template", "Target note" ] ]);
+
+        await act(async () => clipboardItem("bx bx-paste")?.click());
+        const [ url, saved ] = put.mock.calls[0] as [ string, Attribute[] ];
+        expect(url).toBe("notes/receiver/attributes");
+        expect(saved).toMatchObject([
+            { type: "label", name: "author", value: "Elian" },
+            { type: "relation", name: "template", value: "clip-target" }
+        ]);
+        // Pasting keeps what is held, so it can go onto another note too.
+        expect(clipboardToggle()).not.toBeNull();
+
+        // Clearing lets it go, and the dropdown with it.
+        act(() => clipboardToggle()?.click());
+        act(() => clipboardItem("bx bx-x")?.click());
+        expect(getHeldAttributes()).toEqual([]);
+        expect(clipboardToggle()).toBeNull();
+    });
+
+    function clipboardToggle() {
+        return container.querySelector<HTMLElement>(".attribute-clipboard > button");
+    }
+
+    /** A row of the open clipboard menu, named by its icon since translations stay unloaded. */
+    function clipboardItem(icon: string) {
+        const item = document.querySelector(`.tn-dropdown-portal .${icon.split(" ").join(".")}`)
+            ?.closest<HTMLElement>("[role=menuitem]");
+        expect(item).toBeTruthy();
+        return item;
+    }
 
     function rows() {
         return [ ...container.querySelectorAll<HTMLElement>(".attribute-row") ];

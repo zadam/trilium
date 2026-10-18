@@ -113,7 +113,12 @@ describe("AttributeList on a phone", () => {
         expect(container.querySelector(".attribute-selection-bar")).toBeNull();
         expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle", "bx bx-paste", "bx bx-plus" ]);
 
-        const paste = header("attributes-owned")?.querySelector<HTMLElement>(".bx-paste");
+        // The button opens the clipboard menu, whose Paste row pastes.
+        const toggle = header("attributes-owned")?.querySelector<HTMLElement>(".attribute-clipboard > button");
+        expect(toggle).not.toBeNull();
+        act(() => toggle?.click());
+        const paste = document.querySelector(".tn-dropdown-portal .bx-paste")?.closest<HTMLElement>("[role=menuitem]");
+        expect(paste).toBeTruthy();
         await act(async () => paste?.click());
 
         const [ url, saved ] = put.mock.calls[0] as [ string, { name: string; value: string }[] ];

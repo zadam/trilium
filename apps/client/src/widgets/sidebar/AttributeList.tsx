@@ -13,6 +13,7 @@ import { copyAttributesToClipboard, getHeldAttributes, holdAttributes, mergePast
 import type { Attribute } from "../../services/attribute_parser";
 import attributes, { isBuiltinAttribute } from "../../services/attributes";
 import dialog from "../../services/dialog";
+import froca from "../../services/froca";
 import { t } from "../../services/i18n";
 import type { SidebarSectionId } from "../../services/in_app_help";
 import server from "../../services/server";
@@ -23,7 +24,8 @@ import { attributeKindIcon, RELATION_DEFINITION_TYPE } from "../attribute_widget
 import { ColorChip, renderLabelValue } from "../attribute_widgets/label_value_display";
 import ActionButton from "../react/ActionButton";
 import SimpleBadge from "../react/Badge";
-import { FormListItem } from "../react/FormList";
+import Dropdown from "../react/Dropdown";
+import { FormDropdownDivider, FormListHeader, FormListItem } from "../react/FormList";
 import { useActiveNoteContext, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import { DetailPane, MasterPane, useMasterDetail, useMasterDetailPage } from "../react/master_detail";
@@ -770,15 +772,15 @@ export default function AttributeList() {
                         <>
                             {run.help && <SidebarHelp section={run.help} />}
 
-                            {/* The only paste control that works on a phone and on a note with no
-                                attributes, which has no rows to right-click. */}
+                            {/* The only paste control that is visible on every note, and the only
+                                one on a phone or a note with no rows to right-click. */}
                             {index === 0 && canEdit && heldAttributes.length > 0 && (
-                                <ActionButton
-                                    icon="bx bx-paste"
-                                    text={t("attribute_list_panel.paste", { count: heldAttributes.length })}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        void applyPaste(heldAttributes);
+                                <AttributeClipboardDropdown
+                                    held={heldAttributes}
+                                    onPaste={() => void applyPaste(heldAttributes)}
+                                    onClear={() => {
+                                        holdAttributes([]);
+                                        rerender();
                                     }}
                                 />
                             )}
@@ -1537,6 +1539,59 @@ function AddAttributeButton({ text, attrTypes, onSelect }: {
             }}
         />
     );
+}
+
+/**
+ * The attributes held for pasting, in the first card's header. The menu lists them, each with its kind
+ * icon and value, then pastes them onto the note or clears them.
+ */
+function AttributeClipboardDropdown({ held, onPaste, onClear }: {
+    held: Attribute[];
+    onPaste: () => void;
+    onClear: () => void;
+}) {
+    return (
+        <Dropdown
+            className="attribute-clipboard"
+            buttonClassName="bx bx-paste"
+            dropdownContainerClassName="attribute-clipboard-menu"
+            title={t("attribute_list_panel.to_copy", { count: held.length })}
+            iconAction
+            hideToggleArrow
+            noSelectButtonStyle
+            mobileBottomSheet={IS_MOBILE}
+        >
+            <FormListHeader text={t("attribute_list_panel.to_copy", { count: held.length })} />
+            {/* Disabled, so the menu's arrow keys pass over them to the actions. */}
+            {held.map((attribute, index) => (
+                <FormListItem
+                    key={index}
+                    disabled
+                    icon={attributeKindIcon(attribute.type, attribute.name, attribute.value ?? "")}
+                    description={getClipboardValue(attribute) || undefined}
+                >
+                    {getDisplayName(attribute, getAttributeKind(attribute))}
+                </FormListItem>
+            ))}
+            <FormDropdownDivider />
+            <FormListItem icon="bx bx-paste" onClick={onPaste}>
+                {t("attribute_list_panel.paste", { count: held.length })}
+            </FormListItem>
+            <FormListItem icon="bx bx-x" onClick={onClear}>
+                {t("attribute_list_panel.clear_clipboard")}
+            </FormListItem>
+        </Dropdown>
+    );
+}
+
+/** A held relation's target by its title where froca has the note, since its id means nothing to a reader. */
+function getClipboardValue(attribute: Attribute) {
+    const value = attribute.value ?? "";
+    if (attribute.type === "relation") {
+        return froca.getNoteFromCache(value)?.title ?? value;
+    }
+
+    return value;
 }
 
 /**
