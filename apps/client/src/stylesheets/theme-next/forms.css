@@ -118,6 +118,12 @@ input::selection,
     opacity: 0.8;
 }
 
+.form-text.text-danger {
+    /* Bootstrap's `.text-danger` sets its color with `!important`. */
+    color: var(--form-error-text-color) !important;
+    opacity: 1;
+}
+
 /* Input groups */
 
 .input-group {

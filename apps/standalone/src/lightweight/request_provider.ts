@@ -29,6 +29,9 @@ export default class FetchRequestProvider implements RequestProvider {
         if (opts.auth?.password) {
             headers["trilium-cred"] = btoa(`dummy:${opts.auth.password}`);
         }
+        if (opts.auth?.totpToken) {
+            headers["trilium-totp"] = opts.auth.totpToken;
+        }
 
         let body: string | undefined;
         if (opts.body) {
