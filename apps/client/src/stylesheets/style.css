@@ -488,6 +488,10 @@ button kbd {
     .cm-ts-hover-signature {
         font-family: var(--monospace-font-family);
     }
+
+    .cm-tooltip-section:not(:first-child) {
+        border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    }
 }
 
 #sql-console-query {
