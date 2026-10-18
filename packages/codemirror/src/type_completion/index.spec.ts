@@ -1,4 +1,5 @@
-import { EditorState } from "@codemirror/state";
+import { Compartment, EditorState } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
 import { describe, expect, it } from "vitest";
 
 import { createOrUpdateFile, tsFacet } from "./codemirror-ts/environment.js";
@@ -529,6 +530,31 @@ describe("buildTypeCompletion", () => {
         expect(labels).toContain("encodeURI");
         expect(labels).not.toContain("escape");
         expect(labels).not.toContain("captureEvents");
+    }, TIMEOUT);
+});
+
+describe("tsSync", () => {
+    /** The text the language service holds for the editor's script. */
+    function synced(view: EditorView) {
+        const config = view.state.facet(tsFacet);
+        return config?.env.getSourceFile(config.path)?.text;
+    }
+
+    it("syncs the document from the moment the editor has the extensions, then every change", async () => {
+        const { extensions } = await buildTypeCompletion(SCRIPT_MIME_BACKEND);
+
+        const created = new EditorView({ state: EditorState.create({ doc: "const a = 1;", extensions }) });
+        expect(synced(created)).toBe("const a = 1;");
+        created.dispatch({ changes: { from: 0, insert: "// note\n" } });
+        expect(synced(created)).toBe("// note\nconst a = 1;");
+        created.destroy();
+
+        // As the editor adds them: to a document it already holds, through a compartment.
+        const compartment = new Compartment();
+        const added = new EditorView({ state: EditorState.create({ doc: "let b;", extensions: compartment.of([]) }) });
+        added.dispatch({ effects: compartment.reconfigure(extensions) });
+        expect(synced(added)).toBe("let b;");
+        added.destroy();
     }, TIMEOUT);
 });
 

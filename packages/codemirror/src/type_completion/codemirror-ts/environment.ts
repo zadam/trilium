@@ -1,5 +1,5 @@
-import { combineConfig, Facet } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import { combineConfig, type EditorState, Facet } from "@codemirror/state";
+import { type EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
 import type ts from "@typescript/vfs";
 import { type VirtualTypeScriptEnvironment } from "@typescript/vfs";
 
@@ -32,20 +32,23 @@ export const tsFacet = Facet.define<
  * do get deleted or renamed.
  */
 export function tsSync() {
-  // TODO: this is a weak solution to the cold start problem.
-  // If you boot up a CodeMirror instance, we want the initial
-  // value to get loaded into CodeMirror. We do get a change event,
-  // but it surprisingly doesn't have `docChanged: true` on it,
-  // so this is a rough heuristic to just accept the first event
-  // regardless of whether it looks significant.
-  let first = true;
-  return EditorView.updateListener.of((update) => {
-    const config = update.view.state.facet(tsFacet);
-    if (!config) return;
-    if (!update.docChanged && !first) return;
-    first = false;
-    createOrUpdateFile(config.env, config.path, update.state.doc.toString() || ' ');
+  // The plugin is constructed whenever it joins an editor, at creation or through a
+  // reconfiguration, so the document the editor already holds is synced then.
+  return ViewPlugin.fromClass(class {
+    constructor(view: EditorView) {
+      syncDocument(view.state);
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged) syncDocument(update.state);
+    }
   });
+}
+
+function syncDocument(state: EditorState) {
+  const config = state.facet(tsFacet);
+  if (!config) return;
+  createOrUpdateFile(config.env, config.path, state.doc.toString() || ' ');
 }
 
 /**
