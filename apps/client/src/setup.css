@@ -138,11 +138,10 @@ body.setup {
         .page {
             --page-padding-inline: 2em;
             --page-padding-block: 2em;
-            --page-padding-top: var(--page-padding-block);
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding-top: calc(var(--page-padding-top) + var(--safe-area-inset-top, env(safe-area-inset-top)));
+            padding-top: calc(var(--page-padding-block) + env(titlebar-area-height, 0px) + var(--safe-area-inset-top, env(safe-area-inset-top)));
             padding-bottom: calc(var(--page-padding-block) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
             padding-left: calc(var(--page-padding-inline) + var(--safe-area-inset-left, env(safe-area-inset-left)));
             padding-right: calc(var(--page-padding-inline) + var(--safe-area-inset-right, env(safe-area-inset-right)));
@@ -150,11 +149,6 @@ body.setup {
 
             body.electron & {
                 --page-padding-block: 1em;
-            }
-
-            /* Clears the traffic lights, which overlay the page under the hidden title bar. */
-            body.electron.platform-darwin & {
-                --page-padding-top: 2em;
             }
 
             >.back-button {
@@ -229,7 +223,7 @@ body.setup {
                 margin: 0;
                 border-radius: 0;
                 box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-                padding-top: calc(1em + var(--safe-area-inset-top, env(safe-area-inset-top)));
+                padding-top: calc(1em + env(titlebar-area-height, 0px) + var(--safe-area-inset-top, env(safe-area-inset-top)));
                 padding-inline-end: 2.5em;
                 user-select: text;
 
@@ -241,7 +235,7 @@ body.setup {
 
                 button {
                     position: absolute;
-                    top: 0.5em;
+                    top: calc(0.5em + env(titlebar-area-height, 0px));
                     inset-inline-end: 0.5em;
                 }
             }
@@ -368,14 +362,14 @@ body.setup.background-effects .setup-container {
     background: transparent;
 }
 
-/* macOS: draggable title bar region and traffic light buttons */
-body.setup.platform-darwin {
+/* The band the window controls are drawn in, which drags the window in place of the title bar. */
+body.setup.electron {
     .drag-region {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        height: 40px;
+        height: env(titlebar-area-height, 40px);
         -webkit-app-region: drag;
         z-index: 10;
     }

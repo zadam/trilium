@@ -8,7 +8,9 @@ import { useTranslation } from "react-i18next";
 
 import logo from "./assets/icon-color.svg?url";
 import { getCurrentLanguage, initLocale, t } from "./services/i18n";
+import { syncNativeWindowWithTheme } from "./services/native_window";
 import server from "./services/server";
+import { onEffectiveThemeStyleChange } from "./services/theme";
 import { isElectron, isMobileApp } from "./services/utils";
 import SetupBackupDatabase from "./setup_backup";
 import ExistingData, {
@@ -47,6 +49,12 @@ async function main() {
     }
     render(<App />, bodyWrapper);
     document.body.replaceChildren(bodyWrapper);
+
+    // Colors the window controls drawn over the page, and positions them, from the theme.
+    if (isElectron()) {
+        syncNativeWindowWithTheme();
+        onEffectiveThemeStyleChange(() => syncNativeWindowWithTheme());
+    }
 }
 
 type State = "unlock" | "backupDatabase" | "existingData" | "selectLanguage" | "firstOptions" | "createNewDocumentOptions" | "createNewDocumentWithDemo" | "createNewDocumentEmpty" | "restoreFromBackup" | "syncFromDesktop" | "syncFromServer" | "syncFromServerInProgress" | "syncFromDesktopInProgress" | "syncFailed";
