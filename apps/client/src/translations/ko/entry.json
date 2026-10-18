@@ -2,7 +2,7 @@
     "login": {
         "heading": "Trilium 노트에 로그인하기",
         "password": "비밀번호",
-        "totp-token": "일회성 비밀번호 또는 복구 코드",
+        "totp-token": "일회용 비밀번호 또는 복구 코드",
         "button": "로그인",
         "remember-me": "로그인 상태 유지",
         "incorrect-password": "비밀번호가 올바르지 않습니다. 다시 시도해 주세요.",
@@ -148,7 +148,7 @@
         "restore-upload-reconnecting": "연결이 다시 설정되기를 기다리는 중...",
         "restore-error-upload-interrupted": "업로드가 중단되어 계속할 수 없습니다. 다시 시작하려면 백업을 다시 선택하세요.",
         "backup-downloading-percent": "{{percent}}%",
-        "backup-downloading-size": "({{total}}개 중 {{done}}개)",
+        "backup-downloading-size": "({{total}} 중 {{done}})",
         "restore-error-swap-failed-reload": "데이터베이스를 교체하지 못했습니다. 이전 데이터베이스는 원래 위치로 복원되었지만, Trilium에서 다시 열지 못했습니다. 계속하려면 이 페이지를 새로고침하세요.",
         "restore-error-check-failed": "백업을 확인하지 못했습니다. 백업 자체의 문제가 아니라 이 기기의 문제일 수 있으므로 다시 시도해 보세요.",
         "restore-error-failed": "복원을 완료하지 못했습니다. 아무것도 교체되지 않았으므로 지식 베이스는 이전 상태 그대로입니다.",
@@ -159,6 +159,10 @@
         "unlock-refused": "입력한 정보가 올바르지 않습니다. 다시 시도해 주세요.",
         "keep-existing": "앱으로 돌아가기",
         "keep-existing-description": "기존 지식 베이스를 계속 사용하고 앱으로 돌아갑니다.",
-        "backup-saved-to": "백업이 {{- location}}에 저장되었습니다. \"마침\"을 눌러 애플리케이션으로 돌아가세요."
+        "backup-saved-to": "백업이 {{- location}}에 저장되었습니다. \"완료\"를 눌러 애플리케이션으로 돌아가세요.",
+        "sync-from-server-failed": "동기화 실패",
+        "server-totp-token": "일회용 비밀번호 또는 복구 코드(선택 사항)",
+        "totp-required": "이 서버는 일회용 비밀번호 또는 복구 코드가 필요합니다.",
+        "wrong-totp": "일회용 비밀번호 또는 복구 코드가 올바르지 않습니다. 다시 시도해 주세요."
     }
 }
