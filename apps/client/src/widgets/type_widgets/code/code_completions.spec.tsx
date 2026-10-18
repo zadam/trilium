@@ -63,6 +63,20 @@ describe("codeCompletions", () => {
         await vi.waitFor(() => expect(view.getText()).toBe("x;\n// header\n"));
     });
 
+    it("opens as an identifier is typed, not as the caret moves onto one", async () => {
+        const view = build([]);
+        type("return x");
+        vi.spyOn(view, "hasTypeCompletions").mockReturnValue(true);
+        const lookUp = vi.spyOn(view, "getTypeCompletions").mockResolvedValue([ { label: "returns" } ]);
+
+        view.dispatch({ selection: EditorSelection.cursor(6) });
+        await press("Shift");
+        expect(lookUp).not.toHaveBeenCalled();
+
+        type("s");
+        await vi.waitFor(() => expect(lookUp).toHaveBeenCalledOnce());
+    });
+
     it("offers nothing in a read-only editor", async () => {
         const view = build([ { noteId: "s1", title: "Header", content: "// header\n" } ], true);
         vi.spyOn(view, "hasTypeCompletions").mockReturnValue(true);

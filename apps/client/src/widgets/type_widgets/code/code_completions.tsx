@@ -29,6 +29,7 @@ export function codeCompletions(editor: VanillaCodeMirror, getSnippets: () => Co
             snippets: getSnippets().length > 0,
             types: editor.hasTypeCompletions()
         })),
+        opensOnCaretMove: false,
         list: () => createCodeCompletionList(editor, getSnippets)
     });
 }
