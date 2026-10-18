@@ -124,7 +124,8 @@ describe("loadEmbeddedNote", () => {
         expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(note, {
             interactive: true,
             embedsAsReferenceLinks: true,
-            mediaEnvironment: "embedded"
+            mediaEnvironment: "embedded",
+            hasDisplayModes: true
         });
         const mount = lastMount();
         expect(mount.type).toBe(ContentEmbed);
@@ -134,7 +135,8 @@ describe("loadEmbeddedNote", () => {
             title,
             content,
             contentType: "pdf",
-            notePath: "noteY"
+            notePath: "noteY",
+            isExcerpt: false
         });
     });
 
@@ -175,6 +177,42 @@ describe("loadEmbeddedNote", () => {
     });
 });
 
+describe("loadEmbeddedNote of blocks", () => {
+    it("shows only the blocks, and opens the note at them", async () => {
+        const wrapper = createWrapper();
+        const figure = inPage(document.createElement("figure"));
+        figure.className = "include-note";
+        figure.dataset.boxSize = "tiny";
+
+        const onBlockChange = vi.fn();
+        await loadEmbeddedNote("noteY", $(wrapper), "medium", { block: "b1:b2", onBlockChange });
+
+        const viewScope = { block: "b1:b2" };
+        expect(link.createLink)
+            .toHaveBeenCalledWith("noteY", expect.objectContaining({ viewScope }));
+        expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(note,
+            expect.objectContaining({ block: "b1:b2", onBlockChange }));
+        expect(lastMount().props).toMatchObject({ viewScope, isExcerpt: true });
+
+        await loadEmbeddedNote("noteY", $(figure), undefined, { block: "b1" });
+
+        expect(lastMount().type).toBe(TinyContentEmbed);
+        expect(lastMount().props.viewScope).toEqual({ block: "b1" });
+        expect(lastMount().container.classList.contains("excerpt")).toBe(true);
+    });
+
+    it("marks the wrapper of an excerpt, and unmarks it for a whole note", async () => {
+        const wrapper = createWrapper();
+
+        await loadEmbeddedNote("noteY", $(wrapper), "medium", { block: "b1" });
+        expect(wrapper.className).toBe("include-note-wrapper excerpt");
+
+        await loadEmbeddedNote("noteY", $(wrapper), "medium");
+        expect(wrapper.className).toBe("include-note-wrapper");
+        expect(lastMount().props.isExcerpt).toBe(false);
+    });
+});
+
 describe("loadEmbeddedAttachment", () => {
     it("mounts a box with the attachment, opened in its note", async () => {
         const wrapper = createWrapper();
@@ -187,8 +225,9 @@ describe("loadEmbeddedAttachment", () => {
             showNoteIcon: true,
             viewScope: ATTACHMENT_SCOPE
         });
-        expect(content_renderer.getRenderedContent)
-            .toHaveBeenCalledWith(attachment, { interactive: true, mediaEnvironment: "embedded" });
+        expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(attachment, {
+            interactive: true, mediaEnvironment: "embedded", hasDisplayModes: true
+        });
         const mount = lastMount();
         expect(mount.type).toBe(ContentEmbed);
         expect(mount.container).toBe(wrapper);
@@ -213,9 +252,23 @@ describe("loadEmbeddedAttachment", () => {
         expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(attachment, {
             interactive: true,
             mediaEnvironment: "embedded",
+            hasDisplayModes: true,
             attachmentEditor
         });
         expect(lastMount().props).toMatchObject({ isFocusedOnMount: true });
+    });
+
+    it("renders a code file in the language that its embed sets", async () => {
+        const wrapper = createWrapper();
+        const embed = inPage(document.createElement("figure"));
+        embed.className = "include-note";
+        embed.setAttribute("data-code-language", "text/x-sh");
+        embed.append(wrapper);
+
+        await loadEmbeddedAttachment("att1", $(wrapper), "full");
+
+        expect(vi.mocked(content_renderer.getRenderedContent).mock.lastCall?.[1])
+            .toMatchObject({ codeLanguage: "text/x-sh" });
     });
 
     it("leaves the box alone for a deleted attachment", async () => {
@@ -337,7 +390,7 @@ describe("refreshEmbeddedNote", () => {
     it("reloads every embed of the note, of either element", async () => {
         const container = inPage(document.createElement("div"));
         container.innerHTML = `<figure class="include-note" data-note-id="noteY"></figure>`
-            + `<section class="include-note" data-note-id="noteY"></section>`
+            + `<section class="include-note" data-note-id="noteY" data-block="b1"></section>`
             + `<figure class="include-note" data-note-id="other"></figure>`;
         const [ figure, section ] = [ ...container.children ];
 
@@ -349,6 +402,8 @@ describe("refreshEmbeddedNote", () => {
         const mountedIn = vi.mocked(content_renderer.mountInteractiveWidget).mock.calls
             .map(([ , wrapper ]) => wrapper.parentElement);
         expect(mountedIn).toEqual([ figure, section ]);
+        expect(vi.mocked(content_renderer.getRenderedContent).mock.calls
+            .map(([ , options ]) => options?.block)).toEqual([ undefined, "b1" ]);
     });
 });
 
@@ -404,7 +459,7 @@ describe("watchContentEmbeds", () => {
         expect(disposed()).toHaveLength(2);
     });
 
-    it("updates the editor when content in an embed adds buttons to its toolbar", () => {
+    it("updates the editor when content in an embed adds or removes toolbar buttons", () => {
         const provider = { getTools: () => [], execute: vi.fn(), subscribe: () => () => {} };
         const [ inside, outside ] = [ container, document.body ].map((parent) => {
             const element = document.createElement("div");
@@ -414,16 +469,16 @@ describe("watchContentEmbeds", () => {
         update.mockClear();
         const stop = watchContentEmbeds(container, editor);
 
-        const unregister = [ registerContentEmbedTools(inside, provider) ];
+        const unregisterInside = registerContentEmbedTools(inside, provider);
         expect(update).toHaveBeenCalledTimes(1);
-        unregister.push(registerContentEmbedTools(outside, provider));
-        stop();
-        unregister.push(registerContentEmbedTools(inside, provider));
+        registerContentEmbedTools(outside, provider)();
         expect(update).toHaveBeenCalledTimes(1);
+        unregisterInside();
+        expect(update).toHaveBeenCalledTimes(2);
 
-        for (const stopRegistration of unregister) {
-            stopRegistration();
-        }
+        stop();
+        registerContentEmbedTools(inside, provider)();
+        expect(update).toHaveBeenCalledTimes(2);
         outside.remove();
     });
 });
@@ -433,14 +488,19 @@ describe("openContentEmbedMenu", () => {
         const anchor = document.createElement("button");
         const noteEmbed = inPage(document.createElement("figure"));
         noteEmbed.dataset.noteId = "noteY";
+        const blockEmbed = inPage(document.createElement("figure"));
+        blockEmbed.dataset.noteId = "noteY";
+        blockEmbed.dataset.block = "b1";
         const embed = inPage(document.createElement("figure"));
         embed.dataset.attachmentId = "att1";
 
         await openContentEmbedMenu(noteEmbed, anchor);
+        await openContentEmbedMenu(blockEmbed, anchor);
         await openContentEmbedMenu(embed, anchor);
 
         expect(vi.mocked(linkContextMenu.openContextMenu).mock.calls).toEqual([
             [ "noteY", { anchor, target: noteEmbed }, {} ],
+            [ "noteY", { anchor, target: blockEmbed }, { block: "b1" } ],
             [ "owner", { anchor, target: embed }, ATTACHMENT_SCOPE ]
         ]);
     });

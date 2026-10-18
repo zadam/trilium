@@ -76,6 +76,10 @@ describe("getNoteSuggestions", () => {
         // A limit is passed on for the server to stop at; left out, none is sent.
         await getNoteSuggestions("a", { limit: 10 });
         expect(server.get).toHaveBeenLastCalledWith("autocomplete?query=a&activeNoteId=activeNote&fastSearch=true&limit=10");
+        // So is a filter, encoded as the search query it is.
+        await getNoteSuggestions("a", { filter: "note.type = image" });
+        expect(server.get).toHaveBeenLastCalledWith("autocomplete?query=a&activeNoteId=activeNote"
+            + "&fastSearch=true&filter=note.type%20%3D%20image");
         expect(getInboxTarget).not.toHaveBeenCalled();
     });
 
@@ -310,11 +314,18 @@ describe("createNoteFromSuggestion", () => {
         expect(createNote).toHaveBeenLastCalledWith("root/inbox", expect.objectContaining({ title: "Inboxed" }));
     });
 
-    it("puts the note where the type chooser says, over the row's own parent", async () => {
-        chooseNoteType.mockResolvedValue({ success: true, noteType: "code", notePath: "chosen/path" });
+    it("puts the note where the type chooser says, over the row's own parent, as the type it says", async () => {
+        chooseNoteType.mockResolvedValue({ success: true, noteType: "code", mime: "text/x-python", notePath: "chosen/path" });
 
         await createNoteFromSuggestion({ action: "create-child-note", noteTitle: "X", parentNoteId: "p" });
-        expect(createNote).toHaveBeenCalledWith("chosen/path", expect.objectContaining({ type: "code" }));
+        expect(createNote).toHaveBeenCalledWith("chosen/path", expect.objectContaining({ type: "code", mime: "text/x-python" }));
+
+        // A preset adds its label to the type it names.
+        chooseNoteType.mockResolvedValue({ success: true, noteType: "code", mime: "text/css", notePreset: "appCss", notePath: "chosen/path" });
+        await createNoteFromSuggestion({ action: "create-child-note", noteTitle: "X", parentNoteId: "p" });
+        expect(createNote).toHaveBeenLastCalledWith("chosen/path", expect.objectContaining({
+            type: "code", mime: "text/css", attributes: [ { type: "label", name: "appCss", value: "" } ]
+        }));
     });
 
     it.each([

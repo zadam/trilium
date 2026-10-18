@@ -219,6 +219,26 @@ describe("FNote branches & children", () => {
         expect(subtreeNotes.map((n) => n.noteId).sort()).toEqual(["branchA", "leafA"]);
     });
 
+    it("getSubtreeNoteIds stops at maxDepth, a negative one meaning no limit", async () => {
+        const root = buildNote({
+            title: "root",
+            children: [{
+                id: "depth0",
+                title: "depth0",
+                children: [{
+                    id: "depth1",
+                    title: "depth1",
+                    children: [{ id: "depth2", title: "depth2" }]
+                }]
+            }]
+        });
+
+        expect(await root.getSubtreeNoteIds(false, 0)).toEqual(["depth0"]);
+        expect(await root.getSubtreeNoteIds(false, 1)).toEqual(["depth0", "depth1"]);
+        expect(await root.getSubtreeNoteIds(false, -1)).toEqual(["depth0", "depth1", "depth2"]);
+        expect(await root.getSubtreeNoteIds()).toEqual(["depth0", "depth1", "depth2"]);
+    });
+
     it("getChildNoteIdsWithArchiveFiltering returns children directly for hidden/search/includeArchived", async () => {
         const hidden = buildNote({ id: "_hiddenParent", title: "hidden", children: [{ id: "hc", title: "hc" }] });
         expect(await hidden.getChildNoteIdsWithArchiveFiltering()).toEqual(["hc"]);

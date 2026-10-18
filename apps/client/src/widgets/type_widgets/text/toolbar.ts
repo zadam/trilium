@@ -52,7 +52,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 items.push(subitem);
             }
         } else {
-            items.push(item);
+            // The size grid of `insertTable` needs a pointer that hovers over its cells.
+            items.push(item === "insertTable" ? "insertTableForm" : item);
         }
     }
 
@@ -105,7 +106,7 @@ export function buildClassicToolbar(multilineToolbar: boolean, aiAssistant: bool
                 "footnote",
                 {
                     ...buildInsertGroup(),
-                    items: ["link", "linkEmbed", "bookmark", "internallink", "contentEmbed", "|", "collapsible", "math", "drawingCanvas", "mermaid", "horizontalLine", "pageBreak", "|", "dateTime", "specialCharacters", "emoji", "insertIcon"]
+                    items: ["link", "linkEmbed", "bookmark", "internallink", "contentEmbed", "|", "collapsible", "tabs", "multicolumnLayout", "math", "drawingCanvas", "mermaid", "horizontalLine", "pageBreak", "|", "dateTime", "specialCharacters", "emoji", "insertIcon"]
                 },
                 "|",
                 buildAlignmentToolbar(),
@@ -176,7 +177,7 @@ export function buildFloatingToolbar(aiAssistant: boolean) {
             "footnote",
             {
                 ...buildInsertGroup(),
-                items: ["link", "linkEmbed", "bookmark", "internallink", "contentEmbed", "|", "collapsible", "math", "drawingCanvas", "mermaid", "horizontalLine", "pageBreak", "dateTime"]
+                items: ["link", "linkEmbed", "bookmark", "internallink", "contentEmbed", "|", "collapsible", "tabs", "multicolumnLayout", "math", "drawingCanvas", "mermaid", "horizontalLine", "pageBreak", "dateTime"]
             },
             "|",
             buildAlignmentToolbar(),
@@ -208,7 +209,7 @@ function buildInsertGroup() {
         label: t("text-editor.toolbar-groups.insert"),
         icon: "plus",
         // The group holds enough entries that a strip of icons reads as a puzzle; `asMenu` (see
-        // the `ToolbarGroupMenu` plugin) opens it as a menu of icon-and-label rows instead.
+        // the `ToolbarGroupMenu` plugin) opens it as the app's menu of icon-and-label rows instead.
         asMenu: true
     };
 }

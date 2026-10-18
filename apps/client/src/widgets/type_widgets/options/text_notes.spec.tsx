@@ -10,11 +10,6 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("../../../services/i18n", () => ({ t: (key: string) => key }));
 
-// The new layout drops the right pane's own settings; this file's page is the old-layout one.
-vi.mock("../../../services/experimental_features", () => ({
-    isExperimentalFeatureEnabled: () => false
-}));
-
 vi.mock("../../../services/syntax_highlight", () => ({
     ensureMimeTypesForHighlighting: async () => {},
     loadHighlightingTheme: vi.fn()
@@ -85,15 +80,6 @@ describe("the page's shape", () => {
         // A pair of pictures, given a card that stands back behind them.
         expect(host.querySelector(".thumbnail-selector-option-card .radio-with-illustration")).not.toBeNull();
     });
-
-    it("tells what the highlights list is made of apart from where it is shown", () => {
-        open();
-
-        expect(cardHeadings()).toEqual(expect.arrayContaining([
-            "highlights_list.title",
-            "highlights_list.visibility_title"
-        ]));
-    });
 });
 
 describe("the formatting toolbar", () => {
@@ -113,6 +99,20 @@ describe("the formatting toolbar", () => {
         act(() => floating.click());
 
         expect(mocks.saved).toContainEqual([ "textNoteEditorType", "ckeditor-balloon" ]);
+    });
+});
+
+describe("the editor features", () => {
+    it("offers sticky table header rows after link previews, and writes the switch back", () => {
+        open();
+        const labels = optionLabels();
+        expect(labels.indexOf("editorfeatures.sticky_table_headers_enabled"))
+            .toBe(labels.indexOf("editorfeatures.auto_link_previews_enabled") + 1);
+
+        const stickyHeaders = toggle("sticky-table-headers-enabled");
+        expect(stickyHeaders).not.toBeNull();
+        act(() => stickyHeaders?.click());
+        expect(mocks.saved).toContainEqual([ "textNoteStickyTableHeadersEnabled", true ]);
     });
 });
 

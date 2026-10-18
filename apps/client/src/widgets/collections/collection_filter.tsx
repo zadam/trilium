@@ -11,7 +11,7 @@ import type LoadResults from "../../services/load_results";
 import searchService from "../../services/search";
 import ActionButton from "../react/ActionButton";
 import { useNoteContext, useTriliumEvent } from "../react/hooks";
-import SearchStringEditor from "../ribbon/SearchStringEditor";
+import SearchStringEditor from "../search/SearchStringEditor";
 
 /** How long to wait after a change before re-running the active filter. */
 const RERUN_DEBOUNCE_MS = 300;
@@ -273,14 +273,19 @@ export function CollectionFilterInput({ filter, placeholder }: {
     );
 }
 
-/** Whether any changed note, attribute or branch belongs to the collection's subtree. */
+/**
+ * Whether any changed note, attribute or branch belongs to the collection's subtree. A content save
+ * does not count: an editor saves about once a second while the user types, and each re-run is a
+ * full search on the server.
+ */
 function touchesCollection(
     loadResults: LoadResults, collectionNoteIds: Set<string>, collectionNoteId: string
 ) {
     const inCollection = (noteId: string | null | undefined) =>
         !!noteId && (noteId === collectionNoteId || collectionNoteIds.has(noteId));
 
-    return loadResults.getNoteIds().some(inCollection)
+    return loadResults.getNoteIds().some(noteId =>
+        inCollection(noteId) && !loadResults.isNoteContentReloaded(noteId))
         || loadResults.getAttributeRows().some(attr => inCollection(attr.noteId))
         || loadResults.getBranchRows().some(branch =>
             inCollection(branch.noteId) || inCollection(branch.parentNoteId));

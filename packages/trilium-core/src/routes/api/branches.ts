@@ -4,6 +4,7 @@ import eventService from "../../services/events.js";
 import type { Request } from "../../http_interface";
 
 import becca from "../../becca/becca.js";
+import type BBranch from "../../becca/entities/bbranch.js";
 import entityChangesService from "../../services/entity_changes.js";
 import { getLog } from "../../services/log.js";
 import TaskContext from "../../services/task_context.js";
@@ -175,40 +176,41 @@ function setExpanded(req: Request<{ branchId: string, expanded: string }>) {
 
 function setExpandedForSubtree(req: Request<{ branchId: string, expanded: string }>) {
     const { branchId } = req.params;
-    const expanded = parseInt(req.params.expanded);
-    const sql = getSql();
+    const isExpanded = req.params.expanded === "1";
 
-    let branchIds = sql.getColumn<string>(
-        `
-        WITH RECURSIVE
-        tree(branchId, noteId) AS (
-            SELECT branchId, noteId FROM branches WHERE branchId = ?
-            UNION
-            SELECT branches.branchId, branches.noteId FROM branches
-                JOIN tree ON branches.parentNoteId = tree.noteId
-            WHERE branches.isDeleted = 0
-                AND branches.isExpanded = 1
-        )
-        SELECT branchId FROM tree`,
-        [branchId]
-    );
+    // Walks becca rather than the `branches` table, so that the virtual branches a provider
+    // injects are reached too; `none_root` is skipped because the root is always expanded.
+    const changedBranches: BBranch[] = [];
+    const visitedNoteIds = new Set<string>();
+    const startBranch = becca.branches[branchId];
+    const pending = startBranch ? [ startBranch ] : [];
 
-    // root is always expanded
-    branchIds = branchIds.filter((branchId) => branchId !== "none_root");
+    for (let branch = pending.pop(); branch; branch = pending.pop()) {
+        if (branch.branchId !== "none_root" && branch.isExpanded !== isExpanded) {
+            changedBranches.push(branch);
+        }
 
-    const expandedValue = expanded ? 1 : 0;
-    sql.executeMany(/*sql*/`UPDATE branches SET isExpanded = ${expandedValue} WHERE branchId IN (???)`, branchIds);
-
-    for (const branchId of branchIds) {
-        const branch = becca.branches[branchId];
-
-        if (branch) {
-            branch.isExpanded = !!expanded;
+        if (!visitedNoteIds.has(branch.noteId)) {
+            visitedNoteIds.add(branch.noteId);
+            for (const childBranch of branch.childNote.getChildBranches()) {
+                if (childBranch) {
+                    pending.push(childBranch);
+                }
+            }
         }
     }
 
+    getSql().executeMany(
+        /*sql*/`UPDATE branches SET isExpanded = ${isExpanded ? 1 : 0} WHERE branchId IN (???)`,
+        changedBranches.filter((branch) => !branch.isVirtual).map((branch) => branch.branchId)
+    );
+
+    for (const branch of changedBranches) {
+        branch.isExpanded = isExpanded;
+    }
+
     return {
-        branchIds
+        branchIds: changedBranches.map((branch) => branch.branchId)
     };
 }
 

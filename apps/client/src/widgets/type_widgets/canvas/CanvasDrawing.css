@@ -19,6 +19,7 @@
 
     /* Resets the typography inherited from the text note. */
     > .canvas-drawing-editor {
+        position: relative;
         height: 100%;
         font-size: var(--canvas-drawing-font-size);
         line-height: var(--bs-body-line-height);
@@ -26,6 +27,7 @@
         overflow-wrap: normal;
 
         > .canvas-render {
+            position: relative;
             height: 100%;
             transition: opacity 150ms ease-out;
         }
@@ -44,7 +46,7 @@
         background: none;
     }
 
-    /* The main menu offers the library and help. */
+    /* The menus offer the library and help. */
     .excalidraw :is(.sidebar-trigger, .help-icon) {
         display: none;
     }
@@ -114,11 +116,12 @@
     width: 100% !important;
 }
 
-/* While `CanvasEmbedTools` sets `data-embed-tools`, the tools, undo and redo, and zoom are buttons
-   of the embed's toolbar, which fullscreen hides. `CanvasTools` clicks the hidden undo and redo
-   buttons. */
+/* While `CanvasEmbedTools` sets `data-embed-tools`, the tools, the main menu, undo and redo, and
+   zoom are buttons of the embed's toolbar, which fullscreen hides. `CanvasTools` clicks the hidden
+   undo and redo buttons. */
 .include-note-content:not(:fullscreen) .canvas-drawing-editor[data-embed-tools] .excalidraw {
     .App-toolbar-container > .App-toolbar,
+    .main-menu-trigger,
     .mobile-misc-tools-container > label:has(
         [data-testid="toolbar-lock"], [data-testid="toolbar-hand"]
     ),
@@ -129,18 +132,6 @@
 }
 
 .include-note {
-    /* The corners of the embed box that the drawing touches. */
-    --_canvas-drawing-top-radius: 0;
-    --_canvas-drawing-bottom-radius: var(--_include-note-bottom-border-radius, 8px);
-
-    &[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"]) {
-        --_canvas-drawing-top-radius: var(--_include-note-top-border-radius, 8px);
-    }
-
-    &:has(> figcaption) {
-        --_canvas-drawing-bottom-radius: 0;
-    }
-
     &[data-box-size="small"] .canvas-drawing {
         height: var(--include-note-height, 10em);
     }
@@ -152,9 +143,11 @@
 
 /* Excalidraw hides its overflow, so its rounded container clips what it draws. */
 .include-note-content:not(:fullscreen) .canvas-drawing {
-    &, .excalidraw-container {
-        border-radius: var(--_canvas-drawing-top-radius) var(--_canvas-drawing-top-radius)
-                       var(--_canvas-drawing-bottom-radius) var(--_canvas-drawing-bottom-radius);
+    &, .excalidraw-container, .canvas-drawing-view {
+        border-radius: var(--_include-note-content-top-radius)
+                       var(--_include-note-content-top-radius)
+                       var(--_include-note-content-bottom-radius)
+                       var(--_include-note-content-bottom-radius);
     }
 }
 
@@ -164,6 +157,29 @@
     /* Below the toolbar, clear of the "Exit fullscreen" button of the embed. */
     .Island.App-menu__left {
         top: calc(var(--lg-button-size) + 1rem);
+    }
+}
+
+/* The picture of the drawing that `DrawingPicture` places, under Excalidraw while both show. */
+.canvas-drawing-view {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+
+    &::before {
+        position: absolute;
+        inset: 0;
+        background-color: var(--canvas-drawing-view-background, transparent);
+        content: "";
+    }
+
+    /* Excalidraw's `THEME_FILTER`, which its dark theme gives the whole canvas. */
+    &.theme-dark::before {
+        filter: invert(93%) hue-rotate(180deg);
+    }
+
+    > svg {
+        position: absolute;
     }
 }
 

@@ -1,5 +1,5 @@
 import {
-    dayjs, type QuickSearchResponse, type SearchLintRequest, type SearchLintResponse,
+    dayjs, type NoteMimeCount, type QuickSearchResponse, type SearchLintRequest, type SearchLintResponse,
     type SearchResultDetails, type SearchResultDetailsRequest, type SearchResultDetailsResponse,
     type SearchWithTokensResponse, type TemplatesResponse
 } from "@triliumnext/commons";
@@ -277,7 +277,26 @@ export function isNewTemplate(utcDateCreated: string | null, rootCreationDate: s
     return dayjs.utc().diff(creationDate, "day", true) <= NEW_TEMPLATE_MAX_AGE;
 }
 
+/**
+ * The MIME types the user's notes carry, with how many carry each, the most used first. System
+ * notes, whose IDs start with `_`, are left out so the built-in ones do not outnumber the user's.
+ */
+function getNoteMimes(): NoteMimeCount[] {
+    const counts = new Map<string, number>();
+    for (const note of Object.values(becca.notes)) {
+        if (!note.mime || note.noteId.startsWith("_")) {
+            continue;
+        }
+        counts.set(note.mime, (counts.get(note.mime) ?? 0) + 1);
+    }
+
+    return [ ...counts ]
+        .map(([ mime, count ]) => ({ mime, count }))
+        .sort((a, b) => b.count - a.count || a.mime.localeCompare(b.mime));
+}
+
 export default {
+    getNoteMimes,
     lintSearchString,
     searchFromNote,
     getSearchResultDetails,

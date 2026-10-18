@@ -94,6 +94,26 @@ describe("AttachmentList", () => {
         expect(drawingBlob).not.toHaveBeenCalled();
     });
 
+    it("shows a transcript as its conversation, not through the content renderer", async () => {
+        const content = JSON.stringify({
+            version: 1,
+            startedAt: "2026-10-13T14:30:00.000Z",
+            utterances: [ { source: "system", offsetMs: 3000, text: "Yes." } ]
+        });
+        const transcript = {
+            ...role("transcript"),
+            mime: "application/json",
+            getBlob: async () => ({ content })
+        };
+        getRenderedContent.mockClear();
+        const container = await mount([ transcript ] as FAttachment[]);
+
+        await vi.waitFor(() =>
+            expect(container.querySelector(".attachment-transcript .transcript-turn")).not.toBeNull());
+        expect(container.querySelector(".attachment-transcript")?.textContent).toContain("Yes.");
+        expect(getRenderedContent).not.toHaveBeenCalled();
+    });
+
     it("says plainly that there is nothing where a note carries nothing at all", async () => {
         const container = await mount([]);
 

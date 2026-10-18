@@ -28,9 +28,10 @@ This is the reason the provider list is grouped this way, and why Trilium pre-se
     *   Notes above a size threshold send a size hint instead of the text, and the model must call a tool to read further.
 *   **Any note the model asks for, when note access is enabled.**
     *   Tools let the model search your tree and read notes, attributes and attachments beyond the current one.
-    *   It decides what to fetch; there is no per-note permission system, so the reachable scope is your whole tree.
+    *   It decides what to fetch, and each call waits for you to allow it, unless the chat's permission mode lets reads or every call run on their own, or you allowed that tool for the chat. There is no per-note permission system, so the reachable scope is your whole tree.
 *   **Attachments and mentions**, when you add them: images, PDFs and text files are sent to the provider, and an `@` mention makes that note fetchable.
-*   **Your search query**, when web search is enabled, the model's search terms reach the provider's own search infrastructure.
+*   **Your search query**, when web search is enabled, the model's search terms reach the provider's own search infrastructure, or the search provider chosen in the _Tools_ menu (Brave Search, Tavily, Exa, Serper, Perplexity or your SearXNG instance).
+*   **The pages the model reads**, when web search goes through a search provider: Trilium fetches each page the model asks for from the site itself, so the site sees a request from the machine running Trilium. The page's text is then sent to the model's provider.
 
 ## The in-editor AI assistant
 
@@ -53,9 +54,10 @@ The same applies to the <a class="reference-link" href="../Note%20Types/Text/In
 ## What you control
 
 *   **Which provider**: the single decision that determines whether anything leaves your machine at all.
-*   **Note access**: turn tools off from the model selector at the bottom of the chat, and the model can read nothing beyond what you type.
+*   **Note access**: turn it off in the <span class="tn-icon bx bx-shield-quarter"></span>_Tools_ menu at the bottom of the chat, and the model can read nothing beyond what you type.
 *   **The current note:** the file icon in the sidebar chat.
-*   **Web search:** also in the model selector.
+*   **Web search:** also in the _Tools_ menu.
+*   **Which tool calls ask first:** the _Permissions_ submenu of the _Tools_ menu. _Always ask_ has every call wait for you, reads included. A new chat starts in the mode you picked last, so a chat after one set to _Don't ask_ asks about nothing either. Until you pick a mode, chats start in _Ask before changes_, where the AI reads and searches your notes without asking.
 *   **The editor assistant**: it has no per-run toggles. What you control is whether you run it, what you select before you do and which model answers.
 
 With note access and note context both off, the provider receives only the words you typed.

@@ -1,5 +1,5 @@
 import {
-    ClassicEditor, DropdownView, Essentials, LinkEditing, Paragraph, Widget,
+    ClassicEditor, DropdownButtonView, DropdownView, Essentials, LinkEditing, Paragraph, Widget,
     _setModelData as setModelData
 } from "ckeditor5";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -30,7 +30,9 @@ interface Tool {
     isOn?: boolean;
     isEnabled?: boolean;
     group?: string;
+    keystroke?: string;
     children?: Tool[];
+    opensMenu?: boolean;
     class?: string;
 }
 
@@ -191,6 +193,75 @@ describe("ContentEmbedTools", () => {
         expect(provider.execute).toHaveBeenCalledWith("eraser");
     });
 
+    it("separates the groups of a menu, and shows the keystrokes of its commands", () => {
+        const tools = createView();
+        selectEmbed();
+        const children: Tool[] = [
+            { id: "frame", label: "Frame", isOn: false },
+            { id: "export", label: "Export", group: "export", keystroke: "Ctrl+Shift+E" },
+            { id: "find", label: "Find", group: "canvas", keystroke: "Ctrl+F" },
+            { id: "library", label: "Library", group: "canvas" },
+            { id: "help", label: "Help", group: "canvas", keystroke: "?" }
+        ];
+        provider.change([ { ...MORE_TOOLS, children } ]);
+        const menu = tools.views[0];
+        if (!(menu instanceof DropdownView)) {
+            throw new Error("Expected a menu.");
+        }
+
+        menu.isOpen = true;
+        const items = [ ...menu.listView?.element?.children ?? [] ].map((item) => {
+            const button = item.querySelector(".ck-button");
+            if (!button) {
+                return "|";
+            }
+            const label = button.querySelector(".ck-button__label")?.textContent;
+            const keystroke = button.querySelector(".ck-button__keystroke")?.textContent;
+            return [ label, keystroke, button.getAttribute("role") ].filter(Boolean).join(" ");
+        });
+        expect(items).toEqual([
+            "Frame menuitemradio",
+            "|",
+            "Export Ctrl+Shift+E menuitem",
+            "|",
+            "Find Ctrl+F menuitem",
+            "Library menuitem",
+            "Help ? menuitem"
+        ]);
+
+        menu.isOpen = false;
+        menu.isOpen = true;
+        expect(menu.listView?.element?.querySelectorAll(".ck-button__keystroke")).toHaveLength(3);
+        menu.listView?.element?.querySelectorAll<HTMLElement>(".ck-button")[4]?.click();
+        expect(provider.execute).toHaveBeenCalledWith("help");
+    });
+
+    it("has the content open its own menu below a button with the arrow of a dropdown", () => {
+        const tools = createView();
+        selectEmbed();
+        provider.change([
+            { id: "language", label: "Language", text: "JavaScript", opensMenu: true, group: "a" },
+            { id: "width", label: "Width", text: "Spaces: 4", opensMenu: true, isOn: true, group: "a" }
+        ]);
+        const [ language, width ] = getButtons(tools);
+        expect(language).toBeInstanceOf(DropdownButtonView);
+        expect(getItems(tools)).toEqual([ "JavaScript", "Spaces: 4" ]);
+        expect(getButtonStates(tools)).toEqual([
+            [ "JavaScript", true, undefined, "Language", "Language", false, false, true ],
+            [ "Spaces: 4", true, undefined, "Width", "Width", false, true, true ]
+        ]);
+        expect(language?.element?.parentElement?.className).toBe("ck ck-dropdown");
+        expect(language?.element?.classList.contains("ck-dropdown__button")).toBe(true);
+        expect(width?.element?.getAttribute("aria-expanded")).toBe("true");
+
+        const mousedown = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
+        language?.element?.dispatchEvent(mousedown);
+        language?.element?.click();
+        expect(mousedown.defaultPrevented).toBe(true);
+        expect(provider.openMenu).toHaveBeenCalledExactlyOnceWith("language", language?.element);
+        expect(provider.execute).not.toHaveBeenCalled();
+    });
+
     it("shows no tools for content without any, or for a host that offers none", () => {
         const tools = createView();
         getContentEmbedTools.mockReturnValue(null);
@@ -311,6 +382,7 @@ function createProvider(initialTools: Tool[], hiddenToolbarItems?: string[]) {
         hiddenToolbarItems,
         getTools: () => tools,
         execute: vi.fn(),
+        openMenu: vi.fn(),
         subscribe: vi.fn((callback: () => void) => {
             listener = callback;
             return unsubscribe;

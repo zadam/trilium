@@ -5,15 +5,13 @@ import { type NoteChip, triliumNoteChips } from "@triliumnext/codemirror/src/ext
 import { triliumSearchHighlighter } from "@triliumnext/codemirror/src/extensions/trilium_search_highlighter";
 import { type SearchLintMessages, triliumSearchLinter } from "@triliumnext/codemirror/src/extensions/trilium_search_lint";
 import { createFieldEditor, type FieldEditor, type FieldEditorConfig } from "@triliumnext/codemirror/src/field_editor";
-import type { SearchLintResponse } from "@triliumnext/commons";
 
 import froca from "../services/froca";
 import { t } from "../services/i18n";
-import server from "../services/server";
 import { AttributeNameSuggestion, fetchAttributeNames } from "./attribute_widgets/attribute_detail";
 import { AutocompleteList } from "./react/FormAutocomplete";
 import { CommandMentionList, createHostedList, filterCommandEntries, NoteMentionList } from "./react/NoteAutocomplete";
-import { type SearchCompletion, searchCompletionAt, type SearchEntry } from "./ribbon/search_completions";
+import { type SearchCompletion, searchCompletionAt, type SearchEntry } from "./search/search_completions";
 
 /** The class the styles in `search_field_editor.css` are scoped under. */
 export const SEARCH_FIELD_EDITOR_CLASS = "search-string-editor";
@@ -23,7 +21,7 @@ export type SearchFieldEditorConfig = Omit<FieldEditorConfig, "extensions">;
 
 /**
  * Builds the editor a search string is written in: the query highlighter, the linter and the
- * completions over {@link createFieldEditor}. The quick search and the saved search's ribbon both
+ * completions over {@link createFieldEditor}. The quick search and the saved search's parameters both
  * use it, so a query reads and reports the same way in either field.
  *
  * The completions are the app's own lists: a note picked with `@` from the note autocomplete's, a
@@ -139,7 +137,7 @@ export function resolveNoteChip(noteId: string): NoteChip | Promise<NoteChip | n
  * no request.
  */
 async function validateOnServer(searchString: string) {
-    const { error } = await server.post<SearchLintResponse>("search/lint", { searchString });
+    const { error } = await froca.lintSearch(searchString);
 
     return error;
 }

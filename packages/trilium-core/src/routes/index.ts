@@ -103,6 +103,8 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     apiRoute(GET, "/api/notes/:noteId/metadata", notesApiRoute.getNoteMetadata);
     apiRoute(PST, "/api/notes/metadata", notesApiRoute.getNotesMetadata);
     apiRoute(PUT, "/api/notes/:noteId/data", notesApiRoute.updateNoteData);
+    apiRoute(GET, "/api/notes/:noteId/blocks", notesApiRoute.getNoteBlocks);
+    apiRoute(PUT, "/api/notes/:noteId/blocks", notesApiRoute.updateNoteBlocks);
     apiRoute(DEL, "/api/notes/:noteId", notesApiRoute.deleteNote);
     apiRoute(PUT, "/api/notes/:noteId/undelete", notesApiRoute.undeleteNote);
     apiRoute(PST, "/api/notes/:noteId/revision", notesApiRoute.forceSaveRevision);
@@ -244,6 +246,7 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     apiRoute(PST, "/api/search-and-execute-note/:noteId", searchRoute.searchAndExecute);
     apiRoute(PST, "/api/search-related", searchRoute.getRelatedNotes);
     apiRoute(PST, "/api/search/lint", searchRoute.lintSearchString);
+    apiRoute(GET, "/api/search/note-mimes", searchRoute.getNoteMimes);
     apiRoute(GET, "/api/search", searchRoute.search);
     apiRoute(GET, "/api/search-templates", searchRoute.searchTemplates);
 
@@ -251,7 +254,10 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     // The server and the desktop app answer `/api/llm-chat/stream` with Server-Sent
     // Events; standalone, whose bridge cannot hold a response open, registers
     // `llmRoute.startChatStream` itself. See `apps/standalone`'s browser_routes.ts.
+    // Answering a tool call is here: it reaches the turn by its stream id, whichever
+    // transport streams it.
     asyncApiRoute(PST, "/api/llm-chat/provider-models", llmRoute.getProviderModels);
+    apiRoute(PST, "/api/llm-chat/tool-approval", llmRoute.answerToolCall);
 
     apiRoute(GET, "/api/autocomplete", autocompleteApiRoute.getAutocomplete);
 

@@ -7,15 +7,18 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@excalidraw/excalidraw", () => ({ MainMenu: {}, useI18n: vi.fn() }));
 
 const {
-    EXTRA_TOOLS, HISTORY_ACTIONS, LOCK, MAIN_TOOLS, MAX_ZOOM, MIN_ZOOM, ZOOM_STEP, ZOOMS
+    DEFAULT_SIDEBAR, EXTRA_TOOLS, HISTORY_ACTIONS, LOCK, MAIN_TOOLS, MENU_COMMANDS, SEARCH_TAB,
+    ZOOM_STEP, ZOOMS
 } = await import("./CanvasEmbedTools");
-const { LIBRARY_SIDEBAR } = await import("./CanvasDrawingMenu");
+const { MAX_ZOOM, MIN_ZOOM } = await import("./drawing_view");
 const { FITTED_MENU_STYLES } = await import("./CanvasDrawing");
+const { DRAWING_DARK_FILTER, IMAGE_DARK_FILTER } = await import("./persistence");
 
 /** The classes of Trilium that `CanvasDrawing.css` selects. Every other class is Excalidraw's. */
 const TRILIUM_CLASSES = new Set([
     "note-detail", "canvas-drawing", "canvas-drawing-editor", "canvas-render",
-    "canvas-drawing-picture", "toolbar-over-panel", "recentering", "include-note",
+    "canvas-drawing-picture", "canvas-drawing-view", "theme-dark", "toolbar-over-panel",
+    "recentering", "include-note",
     "include-note-body",
     "include-note-content", "active", "tn-icon"
 ]);
@@ -28,8 +31,8 @@ const CODE_CLASSES = [
 
 /**
  * Checks what the canvas drawing relies on beyond Excalidraw's API: the classes and test ids it
- * selects, the translations of its toolbar, and the zoom it copies. A failure after an upgrade of
- * Excalidraw names the parts to review.
+ * selects, the translations of its toolbar, the zoom and the dark filters it copies. A failure
+ * after an upgrade of Excalidraw names the parts to review.
  */
 describe("Excalidraw contract of the canvas drawing", () => {
     // Vitest resolves the `development` export, so both folders come from `dist`.
@@ -65,7 +68,8 @@ describe("Excalidraw contract of the canvas drawing", () => {
         const source = readBundle(developmentDir, [ ".js" ]);
         const keys = [
             ...[ ...MAIN_TOOLS, ...EXTRA_TOOLS, LOCK, "extraTools" ].map((id) => `toolBar.${id}`),
-            ...[ ...HISTORY_ACTIONS, ...Object.keys(ZOOMS) ].map((id) => `buttons.${id}`)
+            ...[ ...HISTORY_ACTIONS, ...Object.keys(ZOOMS) ].map((id) => `buttons.${id}`),
+            ...MENU_COMMANDS.map((command) => command.label)
         ];
 
         const missing = keys.filter((key) => {
@@ -87,10 +91,48 @@ describe("Excalidraw contract of the canvas drawing", () => {
         expect(source).toContain("zoomOffsetScrollX=-(appLayerX-appLayerX/nextZoom)");
     });
 
-    it("opens the library in the sidebar that the main menu names", () => {
+    it("exports in dark colors with the filters that a saved picture applies", () => {
+        const compact = (text: string) => text.replace(/\s+/g, "");
+        const source = compact(readBundle(developmentDir, [ ".js" ]));
+
+        expect(source).toContain(compact(`var THEME_FILTER = "${DRAWING_DARK_FILTER}";`));
+        expect(source).toContain(compact(`var IMAGE_INVERT_FILTER = "${IMAGE_DARK_FILTER}";`));
+        expect(source).toContain(compact(
+            `if (exportWithDarkMode) { svgRoot.setAttribute("filter", THEME_FILTER); }`));
+        expect(source).toContain(compact(`
+            const use = svgRoot.ownerDocument.createElementNS(SVG_NS, "use");
+            use.setAttribute("href", \`#\${symbolId}\`);
+            if (renderConfig.exportWithDarkMode && fileData.mimeType !== MIME_TYPES.svg) {
+                use.setAttribute("filter", IMAGE_INVERT_FILTER);
+            }`));
+        // `saveDrawingPicture()` finds the image that each `<use>` places through its `<symbol>`.
+        expect(source).toContain(compact(`
+            symbol.id = symbolId;
+            const image = svgRoot.ownerDocument.createElementNS(SVG_NS, "image");
+            image.setAttribute("href", fileData.dataURL);`));
+        expect(source).toContain(compact("symbol.appendChild(image);"));
+    });
+
+    it("opens the library and the search in the sidebar that the menus name", () => {
         const source = readBundle(developmentDir, [ ".js" ]).replace(/\s+/g, "");
 
-        expect(source).toContain(`varDEFAULT_SIDEBAR={name:"${LIBRARY_SIDEBAR}"`);
+        expect(source).toContain(`varDEFAULT_SIDEBAR={name:"${DEFAULT_SIDEBAR}"`);
+        expect(source).toContain(`varCANVAS_SEARCH_TAB="${SEARCH_TAB}";`);
+    });
+
+    it("shows the keystrokes that Excalidraw binds to the commands of the menu", () => {
+        const source = readBundle(developmentDir, [ ".js" ]).replace(/\s+/g, "");
+        // Excalidraw's names of the shortcuts, which its own main menu shows.
+        const names: Record<string, string> = {
+            exportImage: "imageExport", searchMenu: "searchMenu", help: "toggleShortcuts"
+        };
+
+        const missing = MENU_COMMANDS
+            .filter((command) => command.keystroke !== undefined)
+            .map(({ id, keystroke }) =>
+                `${names[id]}:[getShortcutKey("${keystroke?.replace("Ctrl", "CtrlOrCmd")}")]`)
+            .filter((shortcut) => !source.includes(shortcut));
+        expect(missing).toEqual([]);
     });
 
     it("fits the context menu in its container with the styles that the top layer replaces", () => {
@@ -109,12 +151,31 @@ describe("Excalidraw contract of the canvas drawing", () => {
         ].join(""));
     });
 
-    it("takes the layout from `UIOptions.getFormFactor`, which the Trilium patch adds", () => {
-        const unpatched = [ productionDir, developmentDir ].filter((dir) => {
+    it("takes the layout and the view limits from the `UIOptions` of the Trilium patch", () => {
+        const hooks = [
+            "this.props.UIOptions.getFormFactor?.(", "this.props.UIOptions.constrainView"
+        ];
+        const unpatched = [ productionDir, developmentDir ].flatMap((dir) => {
             const source = readBundle(dir, [ ".js" ]).replace(/\s+/g, "");
-            return !source.includes("this.props.UIOptions.getFormFactor?.(");
+            return hooks.filter((hook) => !source.includes(hook)).map((hook) => `${dir}: ${hook}`);
         });
         expect(unpatched).toEqual([]);
+    });
+
+    it("pans and zooms with the wheel through `translateCanvas()`, which the patch limits", () => {
+        const source = readBundle(developmentDir, [ ".js" ]);
+        const handleWheel = source.split("__publicField(this, \"handleWheel\"")[1]
+            ?.split("__publicField(this, ")[0] ?? "";
+        expect(handleWheel.match(/this\.translateCanvas\(/g)).toHaveLength(3);
+        expect(handleWheel).not.toContain("this.setState(");
+    });
+
+    it("takes the wheel on its container, after `useNoteScrollingWheel()` on the drawing", () => {
+        const source = readBundle(developmentDir, [ ".js" ]).replace(/\s+/g, "");
+
+        expect(source).toContain("addEventListener(this.excalidrawContainerRef.current,"
+            + "\"wheel\"/*WHEEL*/,this.handleWheel,{passive:false})");
+        expect(source).not.toMatch(/addEventListener\((window|document),"wheel"/);
     });
 });
 

@@ -14,6 +14,7 @@ import { useColorScheme, useEditorSpacedUpdate, useKeyboardShortcuts, useLegacyI
 import { refToJQuerySelector } from "../../react/react_utils";
 import { CODE_THEME_DEFAULT_PREFIX as DEFAULT_PREFIX } from "../constants";
 import { TypeWidgetProps } from "../type_widget";
+import ApiLog from "./ApiLog";
 import CodeMirror, { CodeMirrorProps } from "./CodeMirror";
 import { useSnippetSlashCommands } from "./snippets";
 
@@ -60,17 +61,20 @@ export function ReadOnlyCode({ note, viewScope, ntxId, noteContext, editorRef }:
     useSearchTermsConsumer(note, noteContext, ntxId);
 
     return (
-        <CodeEditor
-            ntxId={ntxId}
-            editorRef={editorRef}
-            className="note-detail-readonly-code-content"
-            content={content}
-            mime={mime ?? "text/plain"}
-            readOnly
-            {...(noteTabWidth != null && { indentSize: noteTabWidth })}
-            {...(noteUseTabs != null && { useTabs: noteUseTabs })}
-            {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
-        />
+        <>
+            <CodeEditor
+                ntxId={ntxId}
+                editorRef={editorRef}
+                className="note-detail-readonly-code-content"
+                content={content}
+                mime={mime ?? "text/plain"}
+                readOnly
+                {...(noteTabWidth != null && { indentSize: noteTabWidth })}
+                {...(noteUseTabs != null && { useTabs: noteUseTabs })}
+                {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
+            />
+            <ApiLog note={note} />
+        </>
     );
 }
 
@@ -115,6 +119,10 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
             const codeEditor = editorRef.current;
             if (!codeEditor) return;
             codeEditor.setText(content ?? "");
+            // `setText()` loads a hidden editor without an update, so its listener reports nothing.
+            if (codeEditor.dom.offsetParent === null) {
+                onContentChanged?.(content ?? "");
+            }
             codeEditor.setMimeType(note.mime);
             codeEditor.clearHistory();
 
@@ -153,29 +161,32 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
     );
 
     return (
-        <CodeEditor
-            ntxId={ntxId}
-            editorRef={combinedEditorRef} containerRef={containerRef}
-            mime={mime ?? "text/plain"}
-            customRequestHandler={customRequestHandler != null}
-            className="note-detail-code-editor"
-            placeholder={placeholder ?? t("editable_code.placeholder")}
-            vimKeybindings={vimKeymapEnabled}
-            tabIndex={300}
-            onContentChanged={() => {
-                if (debounceUpdate) {
-                    spacedUpdate.resetUpdateTimer();
-                }
-                spacedUpdate.scheduleUpdate();
-                if (editorRef.current && onContentChanged) {
-                    onContentChanged(editorRef.current.getText());
-                }
-            }}
-            {...editorProps}
-            {...(noteTabWidth != null && { indentSize: noteTabWidth })}
-            {...(noteUseTabs != null && { useTabs: noteUseTabs })}
-            {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
-        />
+        <>
+            <CodeEditor
+                ntxId={ntxId}
+                editorRef={combinedEditorRef} containerRef={containerRef}
+                mime={mime ?? "text/plain"}
+                customRequestHandler={customRequestHandler != null}
+                className="note-detail-code-editor"
+                placeholder={placeholder ?? t("editable_code.placeholder")}
+                vimKeybindings={vimKeymapEnabled}
+                tabIndex={300}
+                onContentChanged={() => {
+                    if (debounceUpdate) {
+                        spacedUpdate.resetUpdateTimer();
+                    }
+                    spacedUpdate.scheduleUpdate();
+                    if (editorRef.current && onContentChanged) {
+                        onContentChanged(editorRef.current.getText());
+                    }
+                }}
+                {...editorProps}
+                {...(noteTabWidth != null && { indentSize: noteTabWidth })}
+                {...(noteUseTabs != null && { useTabs: noteUseTabs })}
+                {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
+            />
+            <ApiLog note={note} />
+        </>
     );
 }
 

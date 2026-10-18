@@ -52,4 +52,16 @@ describe("SplitButton", () => {
         expect(calls).toEqual([ "search", "execute" ]);
         await vi.waitFor(() => expect(document.querySelector(".tn-popup.tn-menu")).toBeNull());
     });
+
+    it("takes the look of a primary or small button on both halves", () => {
+        render((
+            <SplitButton text="Allow" kind="primary" size="small">
+                <FormListItem onClick={() => {}}>Allow always</FormListItem>
+            </SplitButton>
+        ), host);
+        const halves = [ ...host.querySelectorAll<HTMLButtonElement>(".btn-group button") ];
+        expect(halves.map(button => [ button.classList.contains("btn-primary"), button.classList.contains("btn-sm") ]))
+            .toEqual([ [ true, true ], [ true, true ] ]);
+        expect(halves[0]?.classList.contains("btn-secondary")).toBe(false);
+    });
 });

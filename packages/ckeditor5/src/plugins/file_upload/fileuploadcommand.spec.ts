@@ -146,18 +146,17 @@ describe("FileUploadCommand", () => {
         ));
     });
 
-    it("inserts an embed placeholder per file, in the size the host gives its type", () => {
-        installGlobMock({
-            getComponentByEl: () => ({
-                getEmbedBoxSize: (mime: string) => (mime === "image/png" ? "medium" : "tiny")
-            })
-        });
+    it("inserts an embed placeholder per file, in the size the host gives its type and size", () => {
+        const getEmbedBoxSize = vi.fn((mime: string, _size: number) =>
+            (mime === "image/png" || mime === "application/vnd.excalidraw+json" ? "medium" : "tiny"));
+        installGlobMock({ getComponentByEl: () => ({ getEmbedBoxSize }) });
         setModelData(editor.model, "<paragraph>foo[]bar</paragraph>");
 
         editor.execute("fileUpload", {
             file: [
                 new File(["a"], "a.txt", { type: "text/plain" }),
-                new File(["b"], "b.png", { type: "image/png" })
+                new File(["b"], "b.png", { type: "image/png" }),
+                new File(["c"], "c.excalidraw")
             ],
             asEmbed: true
         });
@@ -168,8 +167,14 @@ describe("FileUploadCommand", () => {
             "</contentEmbed>" +
             "<contentEmbed boxSize=\"medium\" uploadFileName=\"b.png\" uploadId=\"\\w+\">" +
             "</contentEmbed>" +
+            "<contentEmbed boxSize=\"medium\" uploadFileName=\"c.excalidraw\" uploadId=\"\\w+\">" +
+            "</contentEmbed>" +
             "<paragraph>\\[\\]bar</paragraph>$"
         ));
+        // A drawing picked from disk has no type, so the host gets the type it is saved with.
+        expect(getEmbedBoxSize.mock.calls).toEqual([
+            [ "text/plain", 1 ], [ "image/png", 1 ], [ "application/vnd.excalidraw+json", 1 ]
+        ]);
     });
 
     it("sizes the embeds medium for a host that names no size", () => {

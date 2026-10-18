@@ -1,4 +1,5 @@
 import type { SecurityToggleApi } from "./security_settings.js";
+import type { TranscriptSource } from "./transcript.js";
 
 /**
  * Parameters delivered by the main process to the renderer when the user opens
@@ -402,8 +403,11 @@ export interface ElectronPrintingApi {
      */
     onPrintProgress(callback: (data: { progress: number; action: string }) => void): void;
 
-    /** Subscribes to the "print finished" event, fired once the OS print job is dispatched. */
-    onPrintDone(callback: (printReport: unknown) => void): void;
+    /**
+     * Subscribes to the "print finished" event, fired once the OS print job is dispatched.
+     * `liveJobId` names the live print the job ended, for a job that printed the app window itself.
+     */
+    onPrintDone(callback: (printReport: unknown, liveJobId?: number) => void): void;
 
     /** Removes all listeners registered via {@link onPrintProgress} and {@link onPrintDone}. */
     removePrintListeners(): void;
@@ -710,6 +714,94 @@ export interface ElectronDialogApi {
     confirmStartOver(): Promise<boolean>;
 }
 
+/** Phase of the meeting transcription; at most one recording runs at a time. */
+export type TranscriptionStatus = "idle" | "starting" | "recording" | "stopping";
+
+/**
+ * Why a source's audio is not being transcribed: its capture did not start (`not_captured`), it
+ * has delivered no audio for 10 s (`no_audio`), as when its capture hangs, or it has delivered
+ * only digital silence for a while (`silent`), as from a muted device.
+ */
+export type TranscriptSourceIssue = "not_captured" | "no_audio" | "silent";
+
+/** What {@link ElectronTranscriptionApi} reports to every window. */
+export interface TranscriptionState {
+    status: TranscriptionStatus;
+    /** The meeting note the recording belongs to, or `null` when idle. */
+    noteId: string | null;
+    /** The sources heard speaking, or whose speech is still being transcribed. */
+    pendingSources: TranscriptSource[];
+    /**
+     * While recording, the sources whose audio is not being transcribed, and why; absent when
+     * every source delivers sound.
+     */
+    sourceIssues?: Partial<Record<TranscriptSource, TranscriptSourceIssue>>;
+    /**
+     * When the recording started, in milliseconds since the epoch: set once it records, kept while
+     * it stops, absent otherwise.
+     */
+    startedAt?: number;
+    /**
+     * A problem to tell the user about, sent once with the state it concerns: the recording ended
+     * without being stopped, or its transcript cannot be saved. `getState()` never returns it.
+     */
+    error?: string;
+}
+
+/**
+ * Meeting transcription, recorded and transcribed on this computer by the main process. The
+ * renderer only starts and stops it; the audio never passes through the renderer.
+ */
+export interface ElectronTranscriptionApi {
+    /**
+     * Whether this build can transcribe on this computer: `false` when it carries no speech
+     * recognition engine for the platform and processor it runs on.
+     */
+    isSupported(): Promise<boolean>;
+
+    /**
+     * Starts recording the microphone and the system audio for the meeting note `noteId`.
+     *
+     * @returns An empty string once recording runs, or an error message when it cannot start.
+     */
+    start(noteId: string): Promise<string>;
+
+    /** Stops the recording, once the speech already captured has been transcribed. */
+    stop(): Promise<void>;
+
+    getState(): Promise<TranscriptionState>;
+
+    /**
+     * Names a speaker of the transcript attachment `attachmentId`, or restores the default name
+     * when `name` is blank, if a running recording writes that transcript. The recording applies
+     * it, so no utterance it writes meanwhile is lost.
+     *
+     * @returns `false` when no recording writes `attachmentId`; it can then be saved whole.
+     */
+    renameSpeaker(attachmentId: string, key: string, name: string): Promise<boolean>;
+
+    /**
+     * Returns the directory that keeps the audio and the transcript as produced of each recording
+     * while `transcriptionKeepRecordings` is on, creating it if needed.
+     */
+    getRecordingsDirectory(): Promise<string>;
+
+    /**
+     * Calls `callback` every time the state changes, in any window.
+     *
+     * @returns A function that removes the listener.
+     */
+    onStateChanged(callback: (state: TranscriptionState) => void): () => void;
+
+    /**
+     * Calls `callback` with the RMS, from 0 to 1, of every chunk a source of the running recording
+     * delivers, about four times a second per source.
+     *
+     * @returns A function that stops the calls.
+     */
+    onLevel(callback: (source: TranscriptSource, level: number) => void): () => void;
+}
+
 /**
  * The complete surface exposed to the renderer as `window.electronApi` via
  * `contextBridge`. The renderer must access Electron-only functionality through
@@ -754,4 +846,6 @@ export interface ElectronApi {
     dialog: ElectronDialogApi;
     /** Choosing a backup to restore during setup, read where it lies rather than uploaded. */
     restore: ElectronRestoreApi;
+    /** Meeting transcription: starting and stopping a recording, and following its state. */
+    transcription: ElectronTranscriptionApi;
 }

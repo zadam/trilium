@@ -166,6 +166,7 @@ export const noteTools = defineTools({
             content: z.string().describe("The content to append (Markdown for text notes, plain text for code notes)")
         }),
         mutates: true,
+        additive: true,
         execute: ({ noteId, content }) => {
             const note = becca.getNote(noteId);
             if (!note) {
@@ -299,6 +300,7 @@ export const noteTools = defineTools({
             mime: z.string().optional().describe("MIME type, REQUIRED for code notes (e.g. 'application/javascript;env=backend', 'text/jsx'). Ignored for other types.")
         }),
         mutates: true,
+        additive: true,
         execute: ({ parentNoteId, title, content, type, mime }) => {
             if (type === "code" && !mime) {
                 return { error: "mime is required when creating code notes" };

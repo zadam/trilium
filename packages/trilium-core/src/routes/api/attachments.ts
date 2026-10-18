@@ -1,4 +1,6 @@
-import { ConvertAttachmentToNoteResponse, isAcceptedImageMime } from "@triliumnext/commons";
+import {
+    ConvertAttachmentToNoteResponse, getAttachedFileMime, isAcceptedImageMime
+} from "@triliumnext/commons";
 import { ValidationError } from "../../errors";
 import type { Request } from "../../http_interface";
 
@@ -88,7 +90,7 @@ async function uploadAttachment(req: Request<{ noteId: string }>) {
     } else {
         const attachment = note.saveAttachment({
             role: "file",
-            mime: file.mimetype,
+            mime: getAttachedFileMime(file.originalname, file.mimetype),
             title: file.originalname,
             content: file.buffer
         });

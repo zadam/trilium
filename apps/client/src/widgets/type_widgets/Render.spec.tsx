@@ -8,7 +8,8 @@ vi.mock("../../services/render", () => ({ default: { render: renderNote } }));
 vi.mock("../react/hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../react/hooks")>()),
     useNoteRelation: (_note: unknown, name: string) => name === "renderNote" ? [ {} ] : [],
-    useTriliumEvent: () => {}
+    useTriliumEvent: () => {},
+    useEffectiveReadOnly: () => false
 }));
 
 import type FNote from "../../entities/fnote";
@@ -35,7 +36,7 @@ describe("Render content", () => {
         expect(renderNote).toHaveBeenCalledTimes(1);
         expect(renderNote.mock.calls[0][0]).toBe(first);
         const firstContainer = container.querySelector(".note-detail-render-content");
-        const firstSignal = renderNote.mock.calls[0][3] as AbortSignal;
+        const firstSignal = (renderNote.mock.calls[0][3] as { signal: AbortSignal }).signal;
         expect(firstSignal.aborted).toBe(false);
 
         await act(async () => render(<Render {...props(second)} />, container));
@@ -43,7 +44,7 @@ describe("Render content", () => {
         expect(dispose).toHaveBeenCalledWith(firstContainer);
         expect(renderNote).toHaveBeenCalledTimes(2);
         const secondContainer = container.querySelector(".note-detail-render-content");
-        const secondSignal = renderNote.mock.calls[1][3] as AbortSignal;
+        const secondSignal = (renderNote.mock.calls[1][3] as { signal: AbortSignal }).signal;
         expect(secondSignal.aborted).toBe(false);
 
         await act(async () => render(null, container));

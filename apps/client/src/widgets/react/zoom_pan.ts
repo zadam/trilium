@@ -93,7 +93,7 @@ export function useZoomPanWheel(
                 scale, positionX, positionY, zoomed,
                 event.clientX - rect.left, event.clientY - rect.top
             );
-            const bounds = api.instance.bounds;
+            const bounds = panBounds(api);
             const { x, y } = bounds ? clampPan(anchored.x, anchored.y, bounds) : anchored;
             api.setTransform(x, y, zoomed, 0);
         };
@@ -104,7 +104,7 @@ export function useZoomPanWheel(
 }
 
 /** What one press of a zoom step multiplies the scale by. */
-const ZOOM_STEP = 1.2;
+export const ZOOM_STEP = 1.2;
 /** What one wheel notch multiplies the scale by. Below {@link ZOOM_STEP}: notches arrive in bursts. */
 const WHEEL_STEP = 1.1;
 /** The pixel `deltaY` of one mouse-wheel notch. A trackpad reports a fraction of this per event. */
@@ -162,6 +162,14 @@ export function wheelTargetScale(scale: number, deltaY: number, deltaMode = 0) {
 }
 
 interface PanBounds { minPositionX: number; maxPositionX: number; minPositionY: number; maxPositionY: number; }
+
+/**
+ * The bounds a pan is clamped to, or `null` when the instance has none to keep to. The library
+ * computes `bounds` even with `limitToBounds={false}`, as on the relation map's unbounded canvas.
+ */
+export function panBounds(api: ReactZoomPanPinchRef): PanBounds | null {
+    return api.instance.setup.limitToBounds ? api.instance.bounds : null;
+}
 
 /** Clamps a candidate content position to the library's computed pan bounds. */
 export function clampPan(x: number, y: number, bounds: PanBounds): { x: number; y: number } {

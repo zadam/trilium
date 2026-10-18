@@ -1,3 +1,5 @@
+import "./tooltip.css";
+
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { FilterLabelsByType, HighlightedTokenInfo, KeyboardActionNames, NoteType, OptionNames, RelationNames } from "@triliumnext/commons";
 import { Tooltip } from "bootstrap";
@@ -16,6 +18,7 @@ import { expandAncestorDetails } from "../../services/collapsible";
 import froca from "../../services/froca";
 import { t } from "../../services/i18n";
 import keyboard_actions from "../../services/keyboard_actions";
+import { formatShortcut, joinShortcut } from "../../services/keyboard_shortcut_display";
 import { parseNavigationStateFromUrl, ViewScope } from "../../services/link";
 import { getNoteTypeOptions, type NoteTypeOption } from "../../services/note_types";
 import options, { type OptionValue } from "../../services/options";
@@ -28,13 +31,12 @@ import SpacedUpdate, { type StateCallback } from "../../services/spaced_update";
 import { getEffectiveThemeStyle } from "../../services/theme";
 import toast, { ToastOptions } from "../../services/toast";
 import tree from "../../services/tree";
-import utils, { getErrorMessage, randomString, reloadFrontendApp } from "../../services/utils";
+import utils, { getErrorMessage, isShare, randomString, reloadFrontendApp } from "../../services/utils";
 import ws from "../../services/ws";
 import BasicWidget, { ReactWrappedWidget } from "../basic_widget";
 import NoteContextAwareWidget from "../note_context_aware_widget";
-import { DragData } from "../note_tree";
 import { noteSavedDataStore } from "./NoteStore";
-import { NoteContextContext, ParentComponent, refToJQuerySelector } from "./react_utils";
+import { findClosestNoteContext, NoteContextContext, ParentComponent, refToJQuerySelector } from "./react_utils";
 import type FAttachment from "../../entities/fattachment";
 
 export function useTriliumEvent<T extends EventNames>(eventName: T, handler: (data: EventData<T>) => void) {
@@ -98,6 +100,8 @@ export function useSpacedUpdate(callback: () => void | Promise<void>, interval =
 
 export interface SavedData {
     content: string;
+    /** The blocks that `content` holds, a `block` link parameter, for an editor of some blocks. */
+    block?: string;
     attachments?: {
         /** The attachment to update. Without it, the attachment is matched by its title. */
         attachmentId?: string;
@@ -110,7 +114,7 @@ export interface SavedData {
     }[];
 }
 
-export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval }: {
+export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, block }: {
     noteType: NoteType;
     note: FNote | null | undefined,
     noteContext: NoteContext | null | undefined,
@@ -118,9 +122,21 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     onContentChange: (newContent: string) => void,
     dataSaved?: (savedData: SavedData) => void,
     updateInterval?: number;
+    /**
+     * The blocks of the note to edit instead of the whole note, a `block` link parameter. Each
+     * save replaces them, and the blocks that `getData()` reports are the ones the next save
+     * replaces.
+     */
+    block?: string;
 }) {
     const parentComponent = useContext(ParentComponent);
-    const blob = useNoteBlob(note, parentComponent?.componentId, { reportLoadStateTo: noteContext });
+    const blockRef = useRef(block ?? "");
+    const blob = useNoteBlob(note, parentComponent?.componentId, {
+        reportLoadStateTo: noteContext,
+        load: block === undefined
+            ? undefined
+            : (loadedNote) => loadBlocks(loadedNote, blockRef.current)
+    });
 
     // The note whose content is currently loaded in the editor. Editor instances are reused
     // across note switches, so until the new note's blob arrives the editor still holds the
@@ -133,16 +149,23 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     }, [ note, getData ]);
 
     const commit = useCallback(async (data: SavedData | undefined) => {
-        // for read only notes, or if note is not yet available (e.g. lazy creation)
-        if (data === undefined || !note || note.type !== noteType) return;
+        // for read only notes, or if note is not yet available (e.g. lazy creation); a visitor of a
+        // shared page cannot save
+        if (data === undefined || !note || note.type !== noteType || isShare) return;
 
         protected_session_holder.touchProtectedSessionIfNecessary(note);
 
-        await server.put(`notes/${note.noteId}/data`, data, parentComponent?.componentId);
-
-        noteSavedDataStore.set(note.noteId, data.content);
+        if (block === undefined) {
+            await server.put(`notes/${note.noteId}/data`, data, parentComponent?.componentId);
+            noteSavedDataStore.set(note.noteId, data.content);
+        } else {
+            const { block: savedBlock, ...blocks } = data;
+            const url = `notes/${note.noteId}/blocks?block=${encodeURIComponent(blockRef.current)}`;
+            await server.put(url, blocks, parentComponent?.componentId);
+            blockRef.current = savedBlock ?? blockRef.current;
+        }
         dataSaved?.(data);
-    }, [ note, dataSaved, noteType, parentComponent ]);
+    }, [ note, dataSaved, noteType, parentComponent, block ]);
 
     const stateCallback = useCallback<StateCallback>((state) => {
         noteContext?.setContextData("saveState", {
@@ -174,7 +197,11 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
     // React to note/blob changes.
     useEffect(() => {
         if (!blob || !note) return;
-        noteSavedDataStore.set(note.noteId, blob.content);
+        // Changes not saved here yet stay when another editor saves the note, and replace it.
+        if (loadedNoteIdRef.current === note.noteId && spacedUpdate.hasUnsavedChanges()) return;
+        if (block === undefined) {
+            noteSavedDataStore.set(note.noteId, blob.content);
+        }
         spacedUpdate.allowUpdateWithoutChange(() => onContentChange(blob.content));
         loadedNoteIdRef.current = note.noteId;
     }, [ blob ]);
@@ -213,6 +240,17 @@ export function useSaveBeforeLeaving<T>(
         appContext.addBeforeUnloadListener(listener);
         return () => appContext.removeBeforeUnloadListener(listener);
     }, [ spacedUpdate ]);
+}
+
+/** The blocks of `note` that `block` points at, or `null` when they cannot be read. */
+async function loadBlocks(note: FNote, block: string) {
+    try {
+        return await server.getWithSilentNotFound<{ content: string }>(
+            `notes/${note.noteId}/blocks?block=${encodeURIComponent(block)}`
+        );
+    } catch {
+        return null;
+    }
 }
 
 export function useBlobEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, replaceWithoutRevision }: {
@@ -464,7 +502,7 @@ export function useNoteContext() {
         setNotePath(noteContext.notePath);
         setViewScope(noteContext.viewScope);
         // Navigating resets the view scope, so the temporary "enable editing" toggle must be reset too.
-        // Otherwise the stale value prevents consumers (e.g. the ribbon) from refreshing when the user
+        // Otherwise the stale value prevents consumers from refreshing when the user
         // re-enables editing on a note that was previously made temporarily editable.
         setIsReadOnlyTemporarilyDisabled(noteContext?.viewScope?.readOnlyTemporarilyDisabled);
     });
@@ -502,26 +540,6 @@ export function useNoteContext() {
         parentComponent,
         isReadOnlyTemporarilyDisabled
     };
-}
-
-/**
- * Finds the note context held by the closest legacy ancestor component (e.g. the note split's
- * `NoteWrapperWidget`). Used to initialize {@link useNoteContext} for components that mount after
- * the initial `setNoteContext` event has been dispatched (e.g. components rendered via
- * `LazyComponent`), which would otherwise not know their context until the next note switch.
- */
-function findClosestNoteContext(component: Component | null): NoteContext | undefined {
-    let current: Component | undefined = component ?? undefined;
-    while (current) {
-        if ("noteContext" in current) {
-            const { noteContext } = current as { noteContext?: NoteContext };
-            if (noteContext) {
-                return noteContext;
-            }
-        }
-        current = current.parent as Component | undefined;
-    }
-    return undefined;
 }
 
 /**
@@ -564,6 +582,17 @@ export function isContextInActiveTab(
     }
 
     return activeMainNtxId === noteContext.getMainContext().ntxId;
+}
+
+/**
+ * Registers `noteContext`, built outside the tab row, with `TabManager` for as long as the component
+ * uses it, so that commands naming its `ntxId` resolve to it.
+ */
+export function useDetachedNoteContext(noteContext: NoteContext) {
+    useEffect(() => {
+        appContext.tabManager.registerDetachedContext(noteContext);
+        return () => appContext.tabManager.unregisterDetachedContext(noteContext);
+    }, [ noteContext ]);
 }
 
 /**
@@ -732,7 +761,7 @@ export function useNoteLabel(note: FNote | undefined | null, labelName: FilterLa
  * themselves, e.g. a label a `#calendar:startDate` renaming points at. Prefer {@link useNoteLabel}
  * wherever the name is a builtin one, as it holds the name to the declared vocabulary.
  */
-export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => void] {
+export function useNoteLabelByName(note: FNote | undefined | null, labelName: string): [string | null | undefined, (newValue: string | null | undefined) => Promise<unknown>] {
     const [ , setLabelValue ] = useState<string | null | undefined>();
 
     useEffect(() => setLabelValue(note?.getLabelValue(labelName) ?? null), [ note, labelName ]);
@@ -749,12 +778,12 @@ export function useNoteLabelByName(note: FNote | undefined | null, labelName: st
         }
     });
 
-    const setter = useCallback((value: string | null | undefined) => {
+    const setter = useCallback(async (value: string | null | undefined) => {
         if (note) {
             if (value !== null) {
-                attributes.setLabel(note.noteId, labelName, value);
+                await attributes.setLabel(note.noteId, labelName, value);
             } else {
-                attributes.removeOwnedLabelByName(note, labelName);
+                await attributes.removeOwnedLabelByName(note, labelName);
             }
         }
     }, [note, labelName]);
@@ -832,7 +861,7 @@ export function useNoteLabelInt(note: FNote | undefined | null, labelName: Filte
     ];
 }
 
-export function useNoteBlob(note: FNote | null | undefined, componentId?: string, opts?: {
+export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote | null | undefined, componentId?: string, opts?: {
     /** Publish the fetch progress as `contentLoad` context data on the given note context, so
      * the note detail can show a loading state instead of the previous note's content. Should
      * only be set by widgets whose main content display is gated on this blob. (Passed
@@ -848,8 +877,10 @@ export function useNoteBlob(note: FNote | null | undefined, componentId?: string
      * produced by a sibling under the same parent component (e.g. the read-only text view behind
      * the editor), own-component changes are somebody else's edits that must eventually show. */
     refreshOnShow?: boolean;
-}): FBlob | null | undefined {
-    const [ blob, setBlob ] = useState<FBlob | null>();
+    /** Reads the content instead of the blob of the note, resolving to `null` when it fails. */
+    load?: (note: FNote) => Promise<T | null>;
+}): T | null | undefined {
+    const [ blob, setBlob ] = useState<T | null>();
     const requestIdRef = useRef(0);
     const missedContentChangeRef = useRef(false);
 
@@ -865,7 +896,9 @@ export function useNoteBlob(note: FNote | null | undefined, componentId?: string
         if (note) {
             reportLoadState("loading");
         }
-        const newBlob = await note?.getBlob();
+        const newBlob = note && opts?.load
+            ? await opts.load(note)
+            : await note?.getBlob() as T | null | undefined;
 
         // Only update if this is the latest request.
         if (requestId === requestIdRef.current) {
@@ -920,6 +953,22 @@ export function useSearchTermsConsumer(note: FNote | null | undefined, noteConte
         if (switchedContext.ntxId !== ntxId) return;
         if (switchedContext.note?.noteId !== note?.noteId) return;
         consumeSearchTerms(noteContext, ntxId);
+    });
+}
+
+/**
+ * Calls `callback` when the note context `ntxId` switches to `note`, the note the widget shows
+ * already, as when a link to a part of the open note is followed.
+ */
+export function useSameNoteSwitch(
+    note: FNote | null | undefined,
+    ntxId: string | null | undefined,
+    callback: () => void
+) {
+    useTriliumEvent("noteSwitched", ({ noteContext }) => {
+        if (noteContext.ntxId === ntxId && noteContext.note?.noteId === note?.noteId) {
+            callback();
+        }
     });
 }
 
@@ -1421,7 +1470,9 @@ export function useStaticTooltipWithKeyboardShortcut(
 ) {
     const [ keyboardShortcut, setKeyboardShortcut ] = useState<string[]>();
     useStaticTooltip(elRef, {
-        title: keyboardShortcut?.length ? `${title} (${keyboardShortcut?.join(",")})` : title,
+        title: keyboardShortcut?.length
+            ? `${title} (${keyboardShortcut.map((shortcut) => joinShortcut(formatShortcut(shortcut))).join(", ")})`
+            : title,
         ...opts
     });
 
@@ -1456,8 +1507,9 @@ export function useLegacyImperativeHandlers(handlers: Record<string, Function>) 
  * marks its own element (see `BasicWidget.render`), and a React tree mounted under one answers to
  * that same widget, so the two already agree everywhere else.
  */
-export function useLegacyComponentElement(elRef: RefObject<HTMLElement | null>) {
-    const parentComponent = useContext(ParentComponent);
+export function useLegacyComponentElement(elRef: RefObject<HTMLElement | null>, component?: Component) {
+    const contextComponent = useContext(ParentComponent);
+    const parentComponent = component ?? contextComponent;
 
     useEffect(() => {
         const el = elRef.current;
@@ -1641,9 +1693,21 @@ export function useImperativeSearchHighlighlighting(
 
         // Reveal matches that landed inside collapsed <details> blocks, which are highlighted in
         // the DOM but hidden until the block is expanded.
-        el.querySelectorAll<HTMLElement>(".ck-find-result").forEach(expandAncestorDetails);
+        for (const match of el.querySelectorAll<HTMLElement>(".ck-find-result")) {
+            expandAncestorDetails(match);
+        }
     };
 }
+
+/** A note the note tree's drag carries, as JSON under the `text` type. */
+export interface DragData {
+    noteId: string;
+    branchId: string;
+    title: string;
+}
+
+/** The type that marks a drag as holding notes from the note tree, as fancytree's `dnd5` sets. */
+export const TREE_CLIPBOARD_TYPE = "application/x-fancytree-node";
 
 export function useNoteTreeDrag(containerRef: RefObject<HTMLElement | null | undefined>, { dragEnabled, dragNotEnabledMessage, callback }: {
     dragEnabled: boolean,
@@ -1866,21 +1930,23 @@ export function useGlobalShortcut(keyboardShortcut: string | null | undefined, h
 
 /**
  * Indicates that the current note is in read-only mode, while an editing mode is available,
- * and provides a way to switch to editing mode.
+ * and provides a way to switch to editing mode. `isLocked` marks a note that no editing mode can
+ * unlock, as its content cannot be saved; `enableEditing` does nothing for it.
  */
 export function useIsNoteReadOnly(note: FNote | null | undefined, noteContext: NoteContext | undefined) {
     const [ isReadOnly, setIsReadOnly ] = useState<boolean | undefined>(undefined);
     const [ readOnlyAttr ] = useNoteLabelBoolean(note, "readOnly");
     const [ autoReadOnlyDisabledAttr ] = useNoteLabelBoolean(note, "autoReadOnlyDisabled");
     const [ temporarilyEditable, setTemporarilyEditable ] = useState(false);
+    const isLocked = note?.isContentWritable === false;
 
     const enableEditing = useCallback((enabled = true) => {
-        if (noteContext?.viewScope) {
+        if (noteContext?.viewScope && !isLocked) {
             noteContext.viewScope.readOnlyTemporarilyDisabled = enabled;
             appContext.triggerEvent("readOnlyTemporarilyDisabled", {noteContext});
             setTemporarilyEditable(enabled);
         }
-    }, [noteContext]);
+    }, [noteContext, isLocked]);
 
     useEffect(() => {
         if (note && noteContext) {
@@ -1892,13 +1958,13 @@ export function useIsNoteReadOnly(note: FNote | null | undefined, noteContext: N
     }, [ note, noteContext, noteContext?.viewScope, readOnlyAttr, autoReadOnlyDisabledAttr ]);
 
     useTriliumEvent("readOnlyTemporarilyDisabled", ({noteContext: eventNoteContext}) => {
-        if (noteContext?.ntxId === eventNoteContext.ntxId) {
+        if (noteContext?.ntxId === eventNoteContext.ntxId && !isLocked) {
             setIsReadOnly(!noteContext.viewScope?.readOnlyTemporarilyDisabled);
             setTemporarilyEditable(true);
         }
     });
 
-    return { isReadOnly, enableEditing, temporarilyEditable };
+    return { isReadOnly, isLocked, enableEditing, temporarilyEditable };
 }
 
 /**
@@ -2096,9 +2162,10 @@ export function useNoteColorClass(note: FNote | null | undefined) {
  * reader's own.
  *
  * Read when the caller mounts and again whenever a template is made, deleted, renamed or given
- * another icon, so what is offered is what exists now.
+ * another icon, so what is offered is what exists now. Not read at all while `enabled` is off,
+ * for a caller that has nothing to create, such as a read-only board.
  */
-export function useNoteTypeOptions() {
+export function useNoteTypeOptions(enabled = true) {
     const [ options, setOptions ] = useState<NoteTypeOption[]>([]);
     /** How many reads were asked for, and the newest one answered. */
     const asked = useRef(0);
@@ -2119,10 +2186,13 @@ export function useNoteTypeOptions() {
     }, []);
 
     useEffect(() => {
+        if (!enabled) {
+            return;
+        }
         read();
         // A read still in flight when the caller goes has nothing left to answer.
         return () => { answered.current = asked.current + 1; };
-    }, [ read ]);
+    }, [ read, enabled ]);
 
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const offered = new Set(options
@@ -2139,7 +2209,7 @@ export function useNoteTypeOptions() {
             option.options.templateNoteId
                 && loadResults.isNoteReloaded(option.options.templateNoteId));
 
-        if (templated || renamed) {
+        if (enabled && (templated || renamed)) {
             read();
         }
     });

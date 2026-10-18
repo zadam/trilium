@@ -15,9 +15,11 @@ export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
      * Gates the `api.req`/`api.res`/`api.pathParams` completions for backend scripts.
      */
     customRequestHandler?: boolean;
+    /** Whether the script is a bulk action's, which runs with the processed note as `note`. */
+    bulkActionNote?: boolean;
 }
 
-export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, customRequestHandler, allowKeyboardSuggestions, ...extraOpts }: CodeMirrorProps) {
+export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, ...extraOpts }: CodeMirrorProps) {
     const parentRef = useSyncedRef(externalContainerRef);
     const codeEditorRef = useRef<VanillaCodeMirror | undefined>(undefined);
 
@@ -53,8 +55,11 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
 
     // React to custom-request-handler status, which gates the backend api.req/res/pathParams completions.
     useEffect(() => {
-        codeEditorRef.current?.setScriptApiContext({ customRequestHandler: !!customRequestHandler });
-    }, [ customRequestHandler ]);
+        codeEditorRef.current?.setScriptApiContext({
+            customRequestHandler: !!customRequestHandler,
+            bulkActionNote: !!bulkActionNote
+        });
+    }, [ customRequestHandler, bulkActionNote ]);
 
     // React to the language switching between prose and code, which decides whether the
     // on-screen keyboard is allowed to suggest words.

@@ -1,6 +1,6 @@
 import { type AnthropicProvider as AnthropicSDKProvider,createAnthropic } from "@ai-sdk/anthropic";
 import type { LlmMessage } from "@triliumnext/commons";
-import { type ModelMessage, stepCountIs, streamText, type SystemModelMessage, type ToolSet } from "ai";
+import { type ModelMessage, streamText, type SystemModelMessage, type ToolSet } from "ai";
 
 import type { LlmProviderConfig, ModelInfo, StreamResult } from "../types.js";
 import { BaseProvider, buildModelMessage, type RemoteModel, TELEMETRY_OFF } from "./base_provider.js";
@@ -125,9 +125,9 @@ export class AnthropicProvider extends BaseProvider {
     /**
      * Override chat to add Anthropic-specific extended thinking support.
      */
-    override chat(messages: LlmMessage[], config: LlmProviderConfig): StreamResult {
+    override chat(messages: LlmMessage[], config: LlmProviderConfig, signal?: AbortSignal): StreamResult {
         if (!config.enableExtendedThinking) {
-            return super.chat(messages, config);
+            return super.chat(messages, config, signal);
         }
 
         const systemPrompt = this.buildSystemPrompt(messages, config);
@@ -152,17 +152,13 @@ export class AnthropicProvider extends BaseProvider {
             // Reject any system message smuggled into `messages` (prompt injection guard).
             allowSystemInMessages: false,
             telemetry: TELEMETRY_OFF,
+            abortSignal: signal,
             providerOptions: {
                 anthropic: { thinking }
             }
         };
 
-        const tools = this.buildTools(config);
-        if (Object.keys(tools).length > 0) {
-            streamOptions.tools = tools;
-            streamOptions.stopWhen = stepCountIs(5);
-            streamOptions.toolChoice = "auto";
-        }
+        this.addTools(streamOptions, config, 5);
 
         return streamText(streamOptions);
     }

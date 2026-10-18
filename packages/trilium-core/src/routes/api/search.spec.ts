@@ -1,6 +1,7 @@
-import { dayjs, type SearchResultDetailsResponse, type SearchWithTokensResponse, type TemplatesResponse } from "@triliumnext/commons";
+import { dayjs, type NoteMimeCount, type SearchResultDetailsResponse, type SearchWithTokensResponse, type TemplatesResponse } from "@triliumnext/commons";
 import { beforeAll, describe, expect, it } from "vitest";
 
+import becca from "../../becca/becca.js";
 import { createTextNote } from "../../test/api_fixtures";
 import { CoreApiTester } from "../../test/api_tester";
 import { isNewTemplate } from "./search";
@@ -343,6 +344,35 @@ describe("Search API (core)", () => {
             // Match-centered: the padding-heavy head is trimmed to an ellipsis, not shown from index 0.
             expect(detail?.contentSnippet?.startsWith("padding words padding")).toBe(false);
         });
+    });
+
+    it("counts the MIME types of the user's notes, the most used first", async () => {
+        const createCodeNote = (parentNoteId: string, mime: string) =>
+            api.post(`/api/notes/${parentNoteId}/children?target=into`, {
+                body: { title: "MIME", type: "code", mime, content: "" }
+            });
+        await createCodeNote("root", "text/x-zz-once");
+        await createCodeNote("root", "text/x-zz-twice");
+        await createCodeNote("root", "text/x-zz-twice");
+        // `_share` lies in the hidden subtree, but what the user puts there is still theirs.
+        expect((await createCodeNote("_share", "text/x-zz-shared")).status).toBe(200);
+
+        const res = await api.get<NoteMimeCount[]>("/api/search/note-mimes");
+
+        expect(res.status).toBe(200);
+        const mimes = res.body.map(({ mime }) => mime);
+        expect(res.body.find(({ mime }) => mime === "text/x-zz-twice")?.count).toBe(2);
+        expect(res.body.find(({ mime }) => mime === "text/x-zz-once")?.count).toBe(1);
+        expect(mimes.indexOf("text/x-zz-twice")).toBeLessThan(mimes.indexOf("text/x-zz-once"));
+        expect(mimes).toContain("text/x-zz-shared");
+        expect(mimes).not.toContain("");
+
+        // System notes carry MIME types too, but only the user's notes are counted.
+        const notes = Object.values(becca.notes);
+        expect(notes.some(({ noteId, mime }) => noteId.startsWith("_") && mime)).toBe(true);
+        for (const { mime, count } of res.body) {
+            expect(count).toBe(notes.filter((note) => !note.noteId.startsWith("_") && note.mime === mime).length);
+        }
     });
 });
 

@@ -500,6 +500,7 @@ describe("CK config - image actions", () => {
         const unsupportedToolbar = (unsupported.image as { toolbar: unknown[] }).toolbar;
         expect(unsupportedToolbar).not.toContain("copyImageToClipboard");
         expect(unsupportedToolbar).toContain("downloadImage");
+        expect(unsupportedToolbar).toContain("convertImageToDrawing");
 
         imageState.copySupported = true;
         const supported = await buildConfig(baseOpts());
@@ -616,5 +617,18 @@ describe("CK config - disabled plugins", () => {
         const enabled = await buildConfig(baseOpts());
         expect(enabled.removePlugins).not.toContain("TriliumEmojiMention");
         expect(enabled.removePlugins).not.toContain("TriliumSlashCommands");
+    });
+
+    it("removes the block drag handle in the mobile layout", async () => {
+        const originalDevice = window.glob.device;
+        try {
+            window.glob.device = "desktop";
+            expect((await buildConfig(baseOpts())).removePlugins).not.toContain("BlockDragHandle");
+
+            window.glob.device = "mobile";
+            expect((await buildConfig(baseOpts())).removePlugins).toContain("BlockDragHandle");
+        } finally {
+            window.glob.device = originalDevice;
+        }
     });
 });

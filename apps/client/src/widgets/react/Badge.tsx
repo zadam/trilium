@@ -7,7 +7,7 @@ import { useRef } from "preact/hooks";
 import { isDefinitionName } from "../../entities/fattribute";
 import { escapeHtml } from "../../services/utils";
 import { attributeKindIcon } from "../attribute_widgets/attribute_types";
-import Dropdown, { DropdownProps } from "./Dropdown";
+import Dropdown, { DropdownPanel, DropdownPanelProps } from "./Dropdown";
 import { useStaticTooltip } from "./hooks";
 import Icon from "./Icon";
 import RawHtml from "./RawHtml";
@@ -144,12 +144,18 @@ function htmlToText(html: string) {
     return template.content.textContent ?? "";
 }
 
-export function BadgeWithDropdown({ text, children, tooltip, className, dropdownProps, ...props }: BadgeProps & {
-    children: ComponentChildren,
-    dropdownProps?: Partial<DropdownProps>
+export function BadgeWithDropdown({ text, children, tooltip, className, dropdownProps, panel, ...props }: BadgeProps & {
+    children?: ComponentChildren,
+    dropdownProps?: Partial<DropdownPanelProps>,
+    /**
+     * Opens a {@link DropdownPanel} instead of a menu, for content other than menu rows. It closes
+     * only on a click outside, so its text can be selected.
+     */
+    panel?: boolean
 }) {
+    const Toggle = panel ? DropdownPanel : Dropdown;
     return (
-        <Dropdown
+        <Toggle
             className={`dropdown-badge dropdown-${className}`}
             text={<Badge
                 text={<>
@@ -163,8 +169,9 @@ export function BadgeWithDropdown({ text, children, tooltip, className, dropdown
             hideToggleArrow
             title={tooltip}
             titlePosition="bottom"
+            autoClose={panel ? "outside" : undefined}
             {...dropdownProps}
             placement="bottom"
-        >{children}</Dropdown>
+        >{children}</Toggle>
     );
 }

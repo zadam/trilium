@@ -26,6 +26,7 @@ import FormGroup from "./widgets/react/FormGroup";
 import { FormListItem } from "./widgets/react/FormList";
 import FormTextBox from "./widgets/react/FormTextBox";
 import Icon from "./widgets/react/Icon";
+import ProgressBar from "./widgets/react/ProgressBar";
 import SetupPage from "./widgets/react/SetupPage";
 import SlidePages from "./widgets/react/SlidePages";
 
@@ -448,7 +449,7 @@ export function SyncInProgress({ device, setState }: { device: "server" | "deskt
                         {s.label}
                         {s.key === "syncing" && (
                             <div class="sync-progress">
-                                <progress value={syncingDone ? 1 : pulled} max={syncingDone ? 1 : (stats.totalPullCount ?? 1)} />
+                                <ProgressBar value={syncingDone ? 1 : pulled} max={syncingDone ? 1 : (stats.totalPullCount ?? 1)} />
                                 <span>{progress}%</span>
                             </div>
                         )}

@@ -42,12 +42,12 @@ describe("TableInsertFormView", () => {
         form.destroy();
     });
 
-    it("renders the Rows and Columns fields and a submit button", () => {
+    it("renders the Columns and Rows fields and a submit button", () => {
         const element = getElement(form);
         expect(element.tagName).toBe("FORM");
         expect(element.getAttribute("aria-label")).toBe("Insert table");
 
-        const [rowsLabel, columnsLabel] = Array.from(element.querySelectorAll("label"));
+        const [columnsLabel, rowsLabel] = Array.from(element.querySelectorAll("label"));
         expect(rowsLabel.textContent).toBe("Rows");
         expect(columnsLabel.textContent).toBe("Columns");
         expect(rowsLabel.htmlFor).toBe(getInput(form.rowsField).id);
@@ -106,7 +106,7 @@ describe("TableInsertFormView", () => {
         expect(error.getAttribute("role")).toBe("alert");
         expectValid(form.rowsField);
         expectValid(form.columnsField);
-        expect(document.activeElement).toBe(getInput(form.rowsField));
+        expect(document.activeElement).toBe(getInput(form.columnsField));
     });
 
     it("clears the size error when either field is edited", async () => {
@@ -141,7 +141,7 @@ describe("TableInsertFormView", () => {
         expect(form.validate()).toBeNull();
         expectInvalid(form.rowsField);
         expectInvalid(form.columnsField);
-        expect(document.activeElement).toBe(getInput(form.rowsField));
+        expect(document.activeElement).toBe(getInput(form.columnsField));
     });
 
     it("clears the error of a field when its value is edited", async () => {
@@ -173,12 +173,12 @@ describe("TableInsertFormView", () => {
         expect(form.validate()).toEqual({ rows: DEFAULT_TABLE_SIZE, columns: DEFAULT_TABLE_SIZE });
     });
 
-    it("focus() focuses the Rows field and selects its value", () => {
-        const select = vi.spyOn(form.rowsField.inputView, "select");
+    it("focus() focuses the Columns field and selects its value", () => {
+        const select = vi.spyOn(form.columnsField.inputView, "select");
 
         form.focus();
 
-        expect(document.activeElement).toBe(getInput(form.rowsField));
+        expect(document.activeElement).toBe(getInput(form.columnsField));
         expect(select).toHaveBeenCalled();
     });
 
@@ -186,11 +186,11 @@ describe("TableInsertFormView", () => {
         form.focus();
 
         await userEvent.keyboard("{Tab}");
-        expect(document.activeElement).toBe(getInput(form.columnsField));
+        expect(document.activeElement).toBe(getInput(form.rowsField));
         await userEvent.keyboard("{Tab}");
         expect(document.activeElement).toBe(getElement(form.insertButtonView));
         await userEvent.keyboard("{Tab}");
-        expect(document.activeElement).toBe(getInput(form.rowsField));
+        expect(document.activeElement).toBe(getInput(form.columnsField));
         await userEvent.keyboard("{Shift>}{Tab}{/Shift}");
         expect(document.activeElement).toBe(getElement(form.insertButtonView));
     });

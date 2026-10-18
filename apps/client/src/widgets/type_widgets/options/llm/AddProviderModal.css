@@ -30,8 +30,8 @@
         color: var(--muted-text-color);
         opacity: 0.6;
 
-        .masked-icon {
-            --masked-icon-size: 80px;
+        .tn-icon {
+            font-size: 80px;
         }
     }
 

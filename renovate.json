@@ -17,7 +17,6 @@
     "ignorePaths": [
         "**/node_modules/**",
         "apps/edit-docs/demo/**",
-        "apps/server/src/assets/doc_notes/**",
         "docs/**",
         "apps/server/Dockerfile.legacy",
         "apps/mobile/android/**"
@@ -96,6 +95,16 @@
                 "@full-ui/**"
             ],
             "groupName": "fullcalendar monorepo"
+        },
+        {
+            "description": "Capacitor plugins peer-depend on @capacitor/core, and the native android and ios packages must match it, so the mobile app's Capacitor packages move in one PR",
+            "matchPackageNames": ["@capacitor/**"],
+            "groupName": "capacitor"
+        },
+        {
+            "description": "terra-draw and its MapLibre adapter are released together from one monorepo, and a feature in one usually needs the matching release of the other",
+            "matchPackageNames": ["terra-draw", "terra-draw-**"],
+            "groupName": "terra-draw monorepo"
         },
         {
             "matchPackageNames": "@univerjs/**",

@@ -4,6 +4,7 @@ import appContext from "../components/app_context.js";
 import FNote from "../entities/fnote.js";
 import { buildNote } from "../test/easy-froca";
 import froca from "./froca";
+import noteAttributeCache from "./note_attribute_cache.js";
 import server from "./server.js";
 
 // `logError` / `logInfo` are window globals referenced by froca; ensure they exist.
@@ -53,6 +54,36 @@ describe("loadInitialTree", () => {
         expect(server.get).toHaveBeenCalledWith("tree");
         expect(froca.notes[noteId]).toBeInstanceOf(FNote);
         (globalThis as any).glob.dbInitialized = false;
+    });
+});
+
+describe("reloadAll", () => {
+    it("reloads the initial tree, then every note froca held outside it", async () => {
+        const held = buildNote({ title: "Held outside the tree" });
+        const calls: string[] = [];
+        vi.spyOn(froca, "loadInitialTree").mockImplementation(async () => {
+            calls.push("loadInitialTree");
+        });
+        vi.spyOn(froca, "reloadNotes").mockImplementation(async (noteIds) => {
+            calls.push("reloadNotes");
+            expect(noteIds).toContain(held.noteId);
+        });
+
+        await froca.reloadAll();
+
+        expect(calls).toEqual([ "loadInitialTree", "reloadNotes" ]);
+    });
+
+    it("drops the attribute lists cached from the previous objects", async () => {
+        const note = buildNote({ title: "Cached", "#color": "red" });
+        expect(note.getAttributes()).toHaveLength(1);
+        expect(noteAttributeCache.attributes[note.noteId]).toHaveLength(1);
+        vi.spyOn(froca, "loadInitialTree").mockResolvedValue(undefined);
+        vi.spyOn(froca, "reloadNotes").mockResolvedValue(undefined);
+
+        await froca.reloadAll();
+
+        expect(note.noteId in noteAttributeCache.attributes).toBe(false);
     });
 });
 
@@ -405,6 +436,9 @@ describe("getNotes / getNote / noteExists / getNoteFromCache", () => {
 
         const note = buildNote({ id: "gn-real", title: "Real" });
         await expect(froca.getNote(note.noteId)).resolves.toBe(note);
+
+        server.post = vi.fn(async () => ({ notes: [], branches: [], attributes: [] })) as typeof server.post;
+        await expect(froca.getNote("gn-missing", true)).resolves.toBeNull();
     });
 
     it("getNoteFromCache throws on empty id and returns the cached note otherwise", () => {

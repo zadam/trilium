@@ -8,7 +8,8 @@ import type FNote from "../entities/fnote.js";
 import froca from "../services/froca.js";
 import { t } from "../services/i18n.js";
 import type { ViewScope } from "../services/link.js";
-import utils, { escapeHtml, isMobile } from "../services/utils.js";
+import utils, { escapeHtml, isMobile, isShare } from "../services/utils.js";
+import { DISPLAY_MODE_OPTIONS } from "../widgets/type_widgets/helpers/split_editor_mode.js";
 import { getClosestNtxId } from "../widgets/widget_utils.js";
 import contextMenu, { type ContextMenuOptions, type MenuItem } from "./context_menu.js";
 import { submenuItem } from "./context_menu_utils.js";
@@ -43,7 +44,7 @@ async function openContextMenu(
     const embed = editor && getMenuEmbed(e, editor);
     const ownItems = viewScope.viewMode === "attachments" && viewScope.attachmentId
         ? await getAttachmentItems(noteId, viewScope.attachmentId, e, editor, embed)
-        : await getNoteItems(noteId, e, editor, embed);
+        : await getNoteItems(noteId, e, editor, embed, !!viewScope.block);
     // A later right-click opened its own menu while this one waited for the editor or the
     // attachment.
     if (request !== lastMenuRequest) {
@@ -87,8 +88,24 @@ function getOriginBelow(anchor: Element, target: Element = anchor): LinkMenuOrig
     return { pageX: left + window.scrollX, pageY: bottom + window.scrollY, target };
 }
 
+/**
+ * The ways of opening a link. A shared page has no splits and no popup, so it offers only a new tab
+ * and a new window, which open the note's shared page in the browser.
+ */
 function getItems(e: LinkMenuOrigin | GeoMouseEvent): MenuItem<CommandNames>[] {
+    if (isShare) {
+        return getOpenItems(e).filter((item) => "command" in item && item.command !== "openNoteInNewSplit");
+    }
+
     return [ ...getOpenItems(e), getQuickEditItem() ];
+}
+
+/** On a shared page, the URL of a note's shared page, or `null` for a note that has none. */
+let resolveShareLink: ((noteId: string) => string | null) | undefined;
+
+/** Sets how a shared page finds the shared page of a note it opens, which only its host knows. */
+function setShareLinkResolver(resolver: ((noteId: string) => string | null) | undefined) {
+    resolveShareLink = resolver;
 }
 
 /** The places the note can be opened in, without the quick edit popup. */
@@ -125,6 +142,10 @@ function getOpenNoteItem(e: LinkMenuOrigin | GeoMouseEvent): MenuItem<CommandNam
 }
 
 function handleLinkContextMenuItem(command: string | undefined, e: LinkMenuOrigin | GeoMouseEvent, notePath: string, viewScope = {}, hoistedNoteId: string | null = null) {
+    if (isShare) {
+        return openSharedPage(command, notePath);
+    }
+
     if (!hoistedNoteId) {
         hoistedNoteId = appContext.tabManager.getActiveContext()?.hoistedNoteId ?? null;
     }
@@ -148,6 +169,17 @@ function handleLinkContextMenuItem(command: string | undefined, e: LinkMenuOrigi
     }
 
     return false;
+}
+
+/** Opens the shared page of the note at `notePath` in a new browser tab or window. */
+function openSharedPage(command: string | undefined, notePath: string) {
+    const link = resolveShareLink?.(notePath.split("/").at(-1) ?? notePath);
+    if (!link || (command !== "openNoteInNewTab" && command !== "openNoteInNewWindow")) {
+        return false;
+    }
+
+    window.open(link, "_blank", command === "openNoteInNewWindow" ? "noopener,popup" : "noopener");
+    return true;
 }
 
 /**
@@ -195,18 +227,23 @@ async function getAttachmentItems(
 
 /**
  * The commands of an embedded note that the menu is opened on, in a group of their own, and
- * converting it in another. A menu opened on a link to the note offers converting the link.
+ * converting it in another. A menu opened on a link to the note offers converting the link, to an
+ * excerpt for a link to blocks of the note.
  */
 async function getNoteItems(
     noteId: string,
     e: LinkMenuOrigin,
     editor: CKTextEditor | null,
-    embed: MenuEmbed | null
+    embed: MenuEmbed | null,
+    isBlockReference: boolean
 ): Promise<MenuItem<CommandNames>[]> {
     if (!embed) {
         const embedItem = await getConvertToEmbedItem(
-            e, editor, t("link_context_menu.convert_link_to_included_note"),
-            () => froca.getNote(noteId)
+            e, editor, isBlockReference
+                ? t("link_context_menu.convert_link_to_note_excerpt")
+                : t("link_context_menu.convert_link_to_included_note"),
+            () => froca.getNote(noteId),
+            isBlockReference
         );
         return embedItem ? [ { kind: "separator" }, embedItem ] : [];
     }
@@ -251,12 +288,22 @@ function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
     const editableItems: MenuItem<CommandNames>[] = state.isEditableToggleable ? [ {
         title: t("link_context_menu.editable"),
         uiIcon: "bx bx-edit-alt",
-        trailingIcon: state.isEditable ? CHECK_ICON : undefined,
+        checked: state.isEditable,
         handler: () => runEmbedCommand(embed, "toggleContentEmbedEditable")
     } ] : [];
+    const displayModeItems = state.displayMode
+        ? DISPLAY_MODE_OPTIONS.map(({ value, icon, titleKey }): MenuItem<CommandNames> => ({
+            title: t(titleKey),
+            uiIcon: icon,
+            checked: value === state.displayMode,
+            handler: () => runEmbedCommand(embed, "contentEmbedDisplayMode", { value })
+        }))
+        : [];
 
     return [
         ...editableItems,
+        ...displayModeItems,
+        ...(displayModeItems.length ? [ { kind: "separator" } as const ] : []),
         submenuItem({
             title: t("link_context_menu.include_size"),
             uiIcon: "bx bx-expand-vertical"
@@ -265,14 +312,14 @@ function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
             title: t("link_context_menu.show_title"),
             uiIcon: "bx bx-window-alt",
             enabled: state.isTitleToggleable,
-            trailingIcon: state.isTitleShown ? CHECK_ICON : undefined,
+            checked: state.isTitleShown,
             handler: () => runEmbedCommand(embed, "toggleContentEmbedTitle")
         },
         {
             title: t("link_context_menu.show_caption"),
             uiIcon: "bx bx-captions",
             enabled: state.isCaptionToggleable,
-            trailingIcon: state.hasCaption ? CHECK_ICON : undefined,
+            checked: state.hasCaption,
             handler: () => runEmbedCommand(embed, "toggleContentEmbedCaption", {
                 focusCaptionOnShow: true
             })
@@ -294,13 +341,15 @@ function runEmbedCommand(
 
 /**
  * The item titled `title` that converts a link to a note or an attachment into an embed, in a
- * text note open for editing, for a link that the editor can convert.
+ * text note open for editing, for a link that the editor can convert. `isExcerpt` is set for a
+ * link to blocks of a note.
  */
 async function getConvertToEmbedItem(
     e: LinkMenuOrigin,
     editor: CKTextEditor | null,
     title: string,
-    getLinkedEntity: () => Promise<FNote | FAttachment | null>
+    getLinkedEntity: () => Promise<FNote | FAttachment | null>,
+    isExcerpt = false
 ): Promise<MenuItem<CommandNames> | null> {
     const link = getTarget(e)?.closest<HTMLElement>("a.reference-link");
     if (!link || !editor?.commands.get("convertLinkToEmbed")?.isEnabled
@@ -309,7 +358,7 @@ async function getConvertToEmbedItem(
     }
 
     // Imported on demand: `content_renderer` imports `link`, which imports this module.
-    const [ entity, { getEmbedBoxSize } ] = await Promise.all([
+    const [ entity, { EXCERPT_BOX_SIZE, getEmbedBoxSize } ] = await Promise.all([
         getLinkedEntity(),
         import("../services/content_renderer.js")
     ]);
@@ -322,7 +371,7 @@ async function getConvertToEmbedItem(
         uiIcon: "bx bx-window-alt",
         handler: () => editor.execute("convertLinkToEmbed", {
             domElement: link,
-            boxSize: getEmbedBoxSize(entity)
+            boxSize: isExcerpt ? EXCERPT_BOX_SIZE : getEmbedBoxSize(entity)
         })
     };
 }
@@ -359,7 +408,7 @@ async function isInReadOnlyNote(element: Element | null) {
 
 /** The text editor containing `element`, or `null` when there is none or it is read-only. */
 async function getEditingTextEditor(element: Element | null) {
-    // Checked first: a note shown read-only has no editor, and asking for one waits for a timeout.
+    // An editor in read-only mode renders its editable with `contenteditable="false"`.
     if (!element?.closest(".ck-editor__editable[contenteditable='true']")) {
         return null;
     }
@@ -391,5 +440,7 @@ export default {
     getQuickEditItem,
     getOpenNoteItem,
     handleLinkContextMenuItem,
-    openContextMenu
+    keepEditorFocused,
+    openContextMenu,
+    setShareLinkResolver
 };

@@ -1,55 +1,68 @@
 import "./CanvasDrawing.css";
 
-import { exportToSvg } from "@excalidraw/excalidraw";
+import { exportToSvg, getCommonBounds } from "@excalidraw/excalidraw";
+import type { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type { AppState, ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import clsx from "clsx";
 import type { RefObject } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type NoteContext from "../../../components/note_context";
 import type FAttachment from "../../../entities/fattachment";
 import type FNote from "../../../entities/fnote";
-import type { AttachmentEditor } from "../../../services/content_renderer";
+import { bindAttachmentEditor, type ContentEditor } from "../../../services/content_renderer";
 import options from "../../../services/options";
 import { getEffectiveThemeStyle } from "../../../services/theme";
 import { isDesktop } from "../../../services/utils";
-import { useColorScheme, useEffectiveReadOnly } from "../../react/hooks";
+import {
+    useColorScheme, useEffectiveReadOnly, useElementSize, useTriliumEvent
+} from "../../react/hooks";
 import { useAttachmentEditor } from "../text/attachment_saves";
-import { useContentEmbedEvent, useIsContentEmbedEditable } from "../text/content_embed_tools";
+import { useContentEmbedEvent } from "../text/content_embed_tools";
+import { useEditableEmbed } from "../text/editable_embed";
 import { CanvasEditor } from "./Canvas";
 import CanvasDrawingMenu from "./CanvasDrawingMenu";
-import CanvasEmbedTools from "./CanvasEmbedTools";
-import { getInlineFiles, parseContent, useCanvasDrawingPersistence } from "./persistence";
+import CanvasEmbedTools, { CanvasTools } from "./CanvasEmbedTools";
+import { type DrawingView, getBoundedView, getCenteredView, getFittedView } from "./drawing_view";
+import {
+    exportDrawingPicture, loadDrawingFiles, parseContent, useCanvasDrawingPersistence
+} from "./persistence";
 
 interface CanvasDrawingProps {
     attachment: FAttachment;
     /** Saves the changes. Without it, or for an attachment of another note, it is read-only. */
-    editor?: AttachmentEditor;
+    editor?: ContentEditor;
 }
 
+/** What a drawing in an embed shows: Excalidraw while it is edited, otherwise a picture. */
+type DrawingMode = "editor" | "picture";
+
 /**
- * A canvas drawing saved in an attachment, edited in place inside the note that shows it while
- * the Editable toggle of its embed is on.
+ * A canvas drawing saved in an attachment. While the Editable toggle of its embed is on, Excalidraw
+ * edits it in place inside the note that shows it; otherwise it shows as a picture at the same
+ * view.
  */
 export default function CanvasDrawing({ attachment, editor }: CanvasDrawingProps) {
     const rootRef = useRef<HTMLDivElement>(null);
     const apiRef = useRef<ExcalidrawImperativeAPI>(null);
+    // The view shown last, which the picture and Excalidraw take over from each other.
+    const viewRef = useRef<DrawingView | null>(null);
     const colorScheme = useColorScheme();
-    const canEdit = !!editor?.canEdit(attachment) && !options.is("databaseReadonly");
-    const isEmbedEditable = useIsContentEmbedEditable(rootRef);
-    const isEditable = canEdit && isEmbedEditable;
-    // Follows `canEdit` rather than the toggle, so that turning editing off keeps a pending save.
-    const persistence = useCanvasDrawingPersistence(
-        attachment,
-        canEdit ? editor : undefined,
-        apiRef,
-        colorScheme
-    );
+    const [ tools ] = useState(() => new CanvasTools(rootRef));
+    const { isEditing } = useEditableEmbed(rootRef, {
+        editor,
+        note: null,
+        tools,
+        focusTarget: ".excalidraw"
+    });
+    const mode: DrawingMode = isEditing ? "editor" : "picture";
+    // Stays until the other mode draws, so that switching shows no empty box.
+    const [ drawnMode, setDrawnMode ] = useState<DrawingMode | null>(null);
     const isToolbarOverPanel = useIsToolbarOverPanel(rootRef);
-    useFocusFromEmbedBox(rootRef);
     const isRecentering = useRecenteringOnFullscreen(rootRef, apiRef);
-    useSidePanels(rootRef, isEditable);
+    useSidePanels(rootRef, isEditing);
     useTopLayerContextMenu(rootRef, apiRef);
+    useNoteScrollingWheel(rootRef);
 
     return (
         <div
@@ -60,44 +73,290 @@ export default function CanvasDrawing({ attachment, editor }: CanvasDrawingProps
                 isRecentering && "recentering"
             )}
         >
-            <CanvasEditor
-                apiRef={apiRef}
-                isReadOnly={!isEditable}
-                colorScheme={colorScheme}
-                persistence={persistence}
-                isEmbedded
-                isDesktopLayout={isDesktop()}
-            >
-                <CanvasDrawingMenu apiRef={apiRef} isEditable={isEditable} />
-                {canEdit && (
-                    <CanvasEmbedTools rootRef={rootRef} apiRef={apiRef} isEditable={isEditable} />
-                )}
-            </CanvasEditor>
+            {(mode === "picture" || drawnMode === "picture") && (
+                <DrawingPicture
+                    attachment={attachment}
+                    editor={editor}
+                    colorScheme={colorScheme}
+                    rootRef={rootRef}
+                    viewRef={viewRef}
+                    onDrawn={() => setDrawnMode("picture")}
+                />
+            )}
+            {(mode === "editor" || drawnMode === "editor") && (
+                <LiveDrawing
+                    attachment={attachment}
+                    editor={editor}
+                    colorScheme={colorScheme}
+                    rootRef={rootRef}
+                    apiRef={apiRef}
+                    viewRef={viewRef}
+                    tools={tools}
+                    isEditable={isEditing}
+                    onDrawn={() => setDrawnMode("editor")}
+                />
+            )}
         </div>
     );
+}
+
+interface LiveDrawingProps {
+    attachment: FAttachment;
+    /** Saves the changes. */
+    editor: ContentEditor | undefined;
+    colorScheme: AppState["theme"];
+    rootRef: RefObject<HTMLDivElement | null>;
+    apiRef: RefObject<ExcalidrawImperativeAPI | null>;
+    viewRef: RefObject<DrawingView | null>;
+    tools: CanvasTools;
+    isEditable: boolean;
+    /** Called on the frame after Excalidraw shows the drawing. */
+    onDrawn: () => void;
+}
+
+/**
+ * The drawing in Excalidraw, opened at the view of `viewRef`, which follows the view from then on.
+ * Its persistence saves what is left to save before Excalidraw unmounts.
+ */
+function LiveDrawing({
+    attachment, editor, colorScheme, rootRef, apiRef, viewRef, tools, isEditable, onDrawn
+}: LiveDrawingProps) {
+    const isShownRef = useRef(false);
+    const frameRef = useRef(0);
+    const persistence = useCanvasDrawingPersistence(attachment, editor, apiRef, colorScheme, {
+        initialView: viewRef.current,
+        onSceneShown: () => {
+            isShownRef.current = true;
+            frameRef.current = requestAnimationFrame(onDrawn);
+        }
+    });
+    useLayoutEffect(() => () => {
+        cancelAnimationFrame(frameRef.current);
+        apiRef.current = null;
+    }, [ apiRef ]);
+
+    return (
+        <CanvasEditor
+            apiRef={apiRef}
+            isReadOnly={!isEditable}
+            colorScheme={colorScheme}
+            persistence={{
+                ...persistence,
+                onChange: (elements, appState, files) => {
+                    persistence.onChange?.(elements, appState, files);
+                    if (isShownRef.current) {
+                        const { zoom, scrollX, scrollY } = appState;
+                        viewRef.current = { zoom, scrollX, scrollY };
+                    }
+                }
+            }}
+            constrainView={getBoundedView}
+            isEmbedded
+            isDesktopLayout={isDesktop()}
+        >
+            <CanvasDrawingMenu apiRef={apiRef} isEditable={isEditable} />
+            <CanvasEmbedTools
+                rootRef={rootRef}
+                apiRef={apiRef}
+                tools={tools}
+                isEditable={isEditable}
+            />
+        </CanvasEditor>
+    );
+}
+
+interface DrawingPictureProps {
+    attachment: FAttachment;
+    /** Holds the changes not saved yet, which the picture shows. */
+    editor: ContentEditor | undefined;
+    colorScheme: AppState["theme"];
+    rootRef: RefObject<HTMLElement | null>;
+    viewRef: RefObject<DrawingView | null>;
+    /** Called on the frame after the picture shows. */
+    onDrawn: () => void;
+}
+
+/**
+ * The drawing as a picture, at the view of `viewRef`, else at the saved view, else fit in the box.
+ * It renders again when the drawing saves, and centers the drawing once fullscreen changes its
+ * size, as Excalidraw does.
+ */
+function DrawingPicture({
+    attachment, editor, colorScheme, rootRef, viewRef, onDrawn
+}: DrawingPictureProps) {
+    const layerRef = useRef<HTMLDivElement>(null);
+    const [ scene, setScene ] = useState<PictureScene | null>(null);
+    const [ revision, setRevision ] = useState(0);
+    const [ recenterings, setRecenterings ] = useState(0);
+    const renderedKeyRef = useRef<string | null>(null);
+    const size = useElementSize(layerRef);
+
+    useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
+        const rows = loadResults.getAttachmentRows();
+        if (rows.some((row) => row.attachmentId === attachment.attachmentId)) {
+            setRevision((count) => count + 1);
+        }
+    });
+
+    useEffect(() => {
+        let isCurrent = true;
+        // Starts on the next frame, so that a drawing whose embed turns out editable renders none.
+        const frame = requestAnimationFrame(async () => {
+            const content = editor?.getUnsavedContent()
+                ?? (await attachment.getBlob())?.content ?? "";
+            const key = `${colorScheme}\n${content}`;
+            if (key === renderedKeyRef.current) return;
+
+            const rendered = await renderPictureScene(attachment, content, colorScheme === "dark");
+            if (isCurrent) {
+                renderedKeyRef.current = key;
+                setScene(rendered);
+            }
+        });
+        return () => {
+            isCurrent = false;
+            cancelAnimationFrame(frame);
+        };
+    }, [ attachment, editor, colorScheme, revision ]);
+
+    const recenter = () => {
+        const box = layerRef.current?.getBoundingClientRect();
+        const view = viewRef.current;
+        if (!scene || !box || !view) return;
+
+        viewRef.current = getCenteredView(scene.elements, view, box.width, box.height) ?? view;
+        setRecenterings((count) => count + 1);
+    };
+    useContentEmbedEvent(rootRef, "enterFullscreen", recenter);
+    useContentEmbedEvent(rootRef, "leaveFullscreen", recenter);
+
+    useLayoutEffect(() => {
+        const layer = layerRef.current;
+        if (!layer || !scene || !size?.width || !size.height) return;
+
+        const view = getPictureView(scene, size.width, size.height, viewRef.current);
+        viewRef.current = view;
+        if (scene.picture && view) {
+            placePicture(scene.picture, view);
+        }
+        layer.replaceChildren(...(scene.picture ? [ scene.picture.svg ] : []));
+        const frame = requestAnimationFrame(onDrawn);
+        return () => cancelAnimationFrame(frame);
+    }, [ scene, size, recenterings ]);
+
+    return (
+        <div
+            ref={layerRef}
+            className={clsx("canvas-drawing-view", colorScheme === "dark" && "theme-dark")}
+            style={scene?.background
+                ? { "--canvas-drawing-view-background": scene.background }
+                : undefined}
+        />
+    );
+}
+
+/** The picture of the content of a drawing, and where it sits in the scene. */
+interface ScenePicture {
+    svg: SVGSVGElement;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+interface PictureScene {
+    /** The picture of the content, or `null` for an empty drawing. */
+    picture: ScenePicture | null;
+    /** The shapes that are not deleted. */
+    elements: ExcalidrawElement[];
+    savedView: DrawingView | null;
+    /** The background picked for the drawing, or `null` while it shows the note's. */
+    background: string | null;
+}
+
+/** The picture of the drawing in `content`, the content of `attachment`. */
+async function renderPictureScene(
+    attachment: FAttachment,
+    content: string,
+    isDark: boolean
+): Promise<PictureScene> {
+    const scene = parseContent(content, attachment);
+    const elements = (scene.elements ?? []).filter((element) => !element.isDeleted);
+    const { zoom, scrollX, scrollY, viewBackgroundColor } = scene.appState ?? {};
+    const savedView = zoom && scrollX !== undefined && scrollY !== undefined
+        ? { zoom, scrollX, scrollY }
+        : null;
+    const background = viewBackgroundColor && viewBackgroundColor !== "transparent"
+        ? viewBackgroundColor
+        : null;
+    if (!elements.length) {
+        return { picture: null, elements, savedView, background };
+    }
+
+    const svg = await exportToSvg({
+        elements,
+        appState: { ...scene.appState, exportBackground: false, exportWithDarkMode: isDark },
+        files: (await loadDrawingFiles(attachment, scene)).files,
+        exportPadding: 0
+    });
+    const width = Number(svg.getAttribute("width"));
+    const height = Number(svg.getAttribute("height"));
+    // The picture starts at the top left of the shapes and of the names of the frames, which sit
+    // above the frames, so it is placed by the bottom right corner of the shapes.
+    const [ , , maxX, maxY ] = getCommonBounds(getRootElements(elements));
+    return {
+        picture: { svg, x: maxX - width, y: maxY - height, width, height },
+        elements,
+        savedView,
+        background
+    };
+}
+
+/**
+ * The shapes that Excalidraw's export takes the size of: those outside frames, and the frames,
+ * which clip what they hold.
+ */
+function getRootElements(elements: readonly ExcalidrawElement[]) {
+    const frameIds = new Set(elements
+        .filter((element) => element.type === "frame" || element.type === "magicframe")
+        .map((element) => element.id));
+    return elements.filter((element) => !element.frameId || !frameIds.has(element.frameId));
+}
+
+/**
+ * The view of the picture of a drawing `width` by `height`: `view`, else the saved one, else the
+ * content fit, kept inside the image of an image canvas. `null` without either.
+ */
+function getPictureView(
+    scene: PictureScene,
+    width: number,
+    height: number,
+    view: DrawingView | null
+): DrawingView | null {
+    const shown = view ?? scene.savedView ?? getFittedView(scene.elements, width, height);
+    if (!shown) return null;
+
+    return getBoundedView(scene.elements, { ...shown, width, height } as AppState) ?? shown;
+}
+
+/** Places `picture` where Excalidraw would draw its content at `view`. */
+function placePicture({ svg, x, y, width, height }: ScenePicture, view: DrawingView) {
+    const zoom = view.zoom.value;
+    svg.style.left = `${(x + view.scrollX) * zoom}px`;
+    svg.style.top = `${(y + view.scrollY) * zoom}px`;
+    svg.style.width = `${width * zoom}px`;
+    svg.style.height = `${height * zoom}px`;
 }
 
 /** A picture of the canvas drawing saved in `entity`, or `null` for an empty drawing. */
 export async function renderCanvasDrawingPicture(entity: FNote | FAttachment) {
     const blob = await entity.getBlob();
     const content = parseContent(blob?.content ?? "", entity);
-    const elements = (content.elements ?? []).filter((element) => !element.isDeleted);
-    if (!elements.length) {
-        return null;
-    }
-
-    const svg = await exportToSvg({
-        elements,
-        appState: {
-            ...content.appState,
-            exportBackground: true,
-            // Follows the theme as the editor does, except in print, which stays light.
-            exportWithDarkMode: glob.device !== "print" && getEffectiveThemeStyle() === "dark"
-        },
-        files: getInlineFiles(content),
-        exportPadding: 5
-    });
-    svg.classList.add("canvas-drawing-picture");
+    // Follows the theme as the editor does, except in print, which stays light.
+    const isDark = glob.device !== "print" && getEffectiveThemeStyle() === "dark";
+    const files = (await loadDrawingFiles(entity, content)).files;
+    const svg = await exportDrawingPicture(content, files, isDark);
+    svg?.classList.add("canvas-drawing-picture");
     return svg;
 }
 
@@ -118,7 +377,11 @@ export function CanvasDrawingDetail({
     attachment, note, noteContext, revision
 }: CanvasDrawingDetailProps) {
     // Outlives the drawing loaded again for each revision, which starts from its unsaved changes.
-    const editor = useAttachmentEditor(note, noteContext);
+    const attachmentEditor = useAttachmentEditor(note, noteContext);
+    const editor = useMemo(
+        () => bindAttachmentEditor(attachmentEditor, attachment),
+        [ attachmentEditor, attachment ]
+    );
 
     return (
         <DetailDrawing
@@ -132,7 +395,7 @@ export function CanvasDrawingDetail({
 }
 
 interface DetailDrawingProps extends Omit<CanvasDrawingDetailProps, "revision"> {
-    editor: AttachmentEditor;
+    editor: ContentEditor;
 }
 
 /** The drawing of `CanvasDrawingDetail`, saved by `editor`. */
@@ -140,7 +403,7 @@ function DetailDrawing({ attachment, note, noteContext, editor }: DetailDrawingP
     const apiRef = useRef<ExcalidrawImperativeAPI>(null);
     const colorScheme = useColorScheme();
     const isNoteReadOnly = useEffectiveReadOnly(note, noteContext);
-    const canEdit = editor.canEdit(attachment) && !isNoteReadOnly
+    const canEdit = editor.canEdit() && !isNoteReadOnly
         && !options.is("databaseReadonly");
     const persistence = useCanvasDrawingPersistence(
         attachment,
@@ -155,6 +418,7 @@ function DetailDrawing({ attachment, note, noteContext, editor }: DetailDrawingP
             isReadOnly={!canEdit}
             colorScheme={colorScheme}
             persistence={persistence}
+            constrainView={getBoundedView}
         >
             <CanvasDrawingMenu apiRef={apiRef} isEditable={canEdit} />
         </CanvasEditor>
@@ -192,31 +456,23 @@ function useRecenteringOnFullscreen(
 }
 
 /**
- * Moves the focus into Excalidraw when the embed box around the drawing holds it. Excalidraw
- * renders its container only once its language loads, which can be after the box took the focus.
+ * Gives the wheel over the drawing to the note, as over the text around it, so that the drawing
+ * zooms and pans with the buttons and the Hand tool of its toolbar only. In fullscreen, where
+ * Excalidraw shows its own controls, the wheel stays the drawing's.
  */
-function useFocusFromEmbedBox(rootRef: RefObject<HTMLElement | null>) {
+export function useNoteScrollingWheel(rootRef: RefObject<HTMLElement | null>) {
     useEffect(() => {
         const root = rootRef.current;
         if (!root) return;
 
-        // Returns whether the container exists, after which there is nothing left to wait for.
-        const forwardFocus = () => {
-            const container = root.querySelector<HTMLElement>(".excalidraw");
-            if (container && document.activeElement === container.closest(".include-note-content")) {
-                container.focus();
+        // Runs before Excalidraw's own listener on its container, which prevents the scroll.
+        const onWheel = (event: WheelEvent) => {
+            if (!document.fullscreenElement?.contains(root)) {
+                event.stopPropagation();
             }
-            return !!container;
         };
-        if (forwardFocus()) return;
-
-        const observer = new MutationObserver(() => {
-            if (forwardFocus()) {
-                observer.disconnect();
-            }
-        });
-        observer.observe(root, { childList: true, subtree: true });
-        return () => observer.disconnect();
+        root.addEventListener("wheel", onWheel, { capture: true });
+        return () => root.removeEventListener("wheel", onWheel, { capture: true });
     }, [ rootRef ]);
 }
 

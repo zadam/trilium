@@ -36,8 +36,7 @@ body.mobile .selectable-card-grid {
 }
 
 .selectable-card:disabled .selectable-card-name,
-.selectable-card:disabled .masked-icon,
-.selectable-card:disabled .selectable-card-bxicon {
+.selectable-card:disabled .selectable-card-icon {
     opacity: 0.5;
 }
 
@@ -47,8 +46,7 @@ body.mobile .selectable-card-grid {
     color: var(--active-item-text-color);
 }
 
-/* Boxicons-based card icon (used when `icon` is supplied instead of `iconUrl`). */
-.selectable-card-bxicon {
+.selectable-card-icon {
     flex-shrink: 0;
     font-size: 1.5em;
     line-height: 1;

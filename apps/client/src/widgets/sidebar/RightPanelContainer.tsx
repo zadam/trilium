@@ -1,4 +1,3 @@
-//! This is currently only used for the new layout.
 import "./RightPanelContainer.css";
 
 import Split from "@triliumnext/split.js";
@@ -243,7 +242,7 @@ function useItems(rightPaneVisible: boolean, widgetsByParent: WidgetsByParent): 
         },
         {
             el: <TableOfContents />,
-            enabled: (noteType === "text" || noteType === "doc" || isPdf || noteType === "llmChat" || !!note?.isMarkdown()),
+            enabled: (noteType === "text" || isPdf || noteType === "llmChat" || !!note?.isMarkdown()),
             tab: "outline"
         },
         {

@@ -27,6 +27,7 @@ import metricsRoute from "./api/metrics.js";
 import ocrRoute from "./api/ocr.js";
 import onenoteImportRoute from "./api/onenote_import.js";
 import recoveryCodes from './api/recovery_codes.js';
+import resourcesRoute from "./api/resources.js";
 import senderRoute from "./api/sender.js";
 import setupRestoreRoute from "./api/setup_restore.js";
 import systemInfoRoute from "./api/system_info.js";
@@ -135,6 +136,7 @@ function register(app: express.Application) {
     route(GET, "/api/clipper/handshake", clipperMiddleware, clipperRoute.handshake, apiResultHandler);
     asyncRoute(PST, "/api/clipper/clippings", clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
     asyncRoute(PST, "/api/clipper/notes", clipperMiddleware, clipperRoute.createNote, apiResultHandler);
+    asyncRoute(PST, "/api/clipper/files", clipperMiddleware, clipperRoute.createFile, apiResultHandler);
     route(PST, "/api/clipper/open/:noteId", clipperMiddleware, clipperRoute.openNote, apiResultHandler);
     asyncRoute(GET, "/api/clipper/notes-by-url/:noteUrl", clipperMiddleware, clipperRoute.findNotesByUrl, apiResultHandler);
 
@@ -195,6 +197,12 @@ function register(app: express.Application) {
     asyncApiRoute(PST, "/api/ocr/process-attachment/:attachmentId", ocrRoute.processAttachmentOCR);
     asyncApiRoute(PST, "/api/ocr/batch-process", ocrRoute.batchProcessOCR);
     asyncApiRoute(GET, "/api/ocr/batch-progress", ocrRoute.getBatchProgress);
+
+    asyncApiRoute(GET, "/api/resources", resourcesRoute.getStatus);
+    apiRoute(PST, "/api/resources/download", resourcesRoute.startDownload);
+    apiRoute(PST, "/api/resources/download/:downloadId/cancel", resourcesRoute.cancelDownload);
+    asyncApiRoute(DEL, "/api/resources/foreign/:name", resourcesRoute.deleteForeign);
+    asyncApiRoute(DEL, "/api/resources/:id", resourcesRoute.deleteResource);
 
     app.use("", router);
 }

@@ -26,7 +26,7 @@ There are also a few predefined columns:
 
 ### Creating a new table
 
-Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ and look for _Table_.
+Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ → _Collection_ → _Table_.
 
 ### Adding columns
 
@@ -82,9 +82,13 @@ Simply click on a cell within a row to change its value. The change will not onl
 
 ### Editing columns
 
-It is possible to edit a column by right clicking it and selecting _Edit column._ This will basically change the label/relation definition at the collection level.
+It is possible to edit a column by right clicking it and selecting _Edit column…_ This will basically change the label/relation definition at the collection level.
 
 If the _Name_ field of a column is changed, this will trigger a batch operation in which the corresponding label/relation will be renamed in all the children.
+
+### Read-only tables
+
+On a [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md) table, the cells can't be edited and the rows can't be dragged. The _New row_ and _New column_ buttons are hidden, and the context menus offer only what leaves the notes as they are: sorting and hiding columns, and opening the notes. Columns can still be resized and reordered, but the layout isn't saved. The _Table properties_ dialog isn't available.
 
 ## Working with the data
 
@@ -119,13 +123,11 @@ If the child notes of the collection also have their own child notes, then they 
 
 Next to the title of each element there will be a button to expand or collapse. By default, all items are expanded.
 
-Since nesting is not always desirable, it is possible to limit the nesting to a certain number of levels or even disable it completely. To do so, either:
+Since nesting is not always desirable, it is possible to limit the nesting to a certain number of levels or even disable it completely. To do so, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Table properties_ and set _Maximum nesting depth_ (under the _Included notes_ section), or set the `#maxNestingDepth` [label](../Advanced%20Usage/Attributes/Labels.md) of the collection:
 
-*   Go to <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> and look for the _Max nesting depth_ section.
-    *   To disable nesting, type 0 and press Enter.
-    *   To limit to a certain depth, type in the desired number (e.g. 2 to only display children and sub-children).
-    *   To re-enable unlimited nesting, remove the number and press Enter.
-*   Manually set `maxNestingDepth` to the desired value.
+*   `0` disables nesting, showing only the children of the collection.
+*   `1` also shows their children, `2` the level below that, and so on.
+*   Removing the label shows every level again.
 
 Limitations:
 

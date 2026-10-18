@@ -1,3 +1,4 @@
+import { closeCompletion, completionStatus, startCompletion } from "@codemirror/autocomplete";
 import { indentUnit } from "@codemirror/language";
 import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
@@ -366,6 +367,85 @@ describe("CodeMirror", () => {
             editor.insertBlankLineAtTop();
             expect(editor.getText()).toBe("");
         });
+
+        it("focuses the editor at either end of the document", () => {
+            editor = build();
+            editor.setText("line one\nline two");
+
+            editor.focusAt("end");
+            expect(editor.state.selection.main.head).toBe(editor.state.doc.length);
+            expect(document.activeElement).toBe(editor.contentDOM);
+            editor.focusAt("start");
+            expect(editor.state.selection.main.head).toBe(0);
+        });
+
+        it("tells the end of the document that an arrow key moves the cursor past", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab\ncd");
+            const getEdge = (head: number, key: string, init: KeyboardEventInit = {}) => {
+                instance.dispatch({ selection: EditorSelection.cursor(head) });
+                return instance.getEdgeLeftBy(createKeydown(key, instance.contentDOM, init));
+            };
+
+            expect(getEdge(0, "ArrowLeft")).toBe("start");
+            expect(getEdge(1, "ArrowLeft")).toBe(null);
+            expect(getEdge(5, "ArrowRight")).toBe("end");
+            expect(getEdge(4, "ArrowRight")).toBe(null);
+            expect(getEdge(1, "ArrowUp")).toBe("start");
+            expect(getEdge(4, "ArrowUp")).toBe(null);
+            expect(getEdge(4, "ArrowDown")).toBe("end");
+            expect(getEdge(1, "ArrowDown")).toBe(null);
+            expect(getEdge(0, "Enter")).toBe(null);
+            for (const modifier of [ "shiftKey", "ctrlKey", "altKey", "metaKey", "isComposing" ]) {
+                expect(getEdge(0, "ArrowLeft", { [modifier]: true })).toBe(null);
+            }
+            expect(instance.getEdgeLeftBy(createKeydown("ArrowLeft", document.body))).toBe(null);
+
+            const arrowLeft = createKeydown("ArrowLeft", instance.contentDOM);
+            instance.dispatch({ selection: EditorSelection.range(0, 1) });
+            expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
+            instance.setNamedExtension("multi", EditorState.allowMultipleSelections.of(true));
+            const cursors = [ EditorSelection.cursor(0), EditorSelection.cursor(5) ];
+            instance.dispatch({ selection: EditorSelection.create(cursors) });
+            expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
+        });
+
+        it("drops the line-wrap side of the cursor before the caret leaves", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab\ncd");
+            // A transaction keeps the `assoc` of an `EditorSelection`, not of a bare range.
+            const cursor = EditorSelection.cursor(4, -1);
+            instance.dispatch({ selection: EditorSelection.create([ cursor ]) });
+            expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: -1 });
+
+            instance.prepareToLeave();
+            expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: 0 });
+            for (const selection of [ EditorSelection.cursor(4), EditorSelection.range(0, 1) ]) {
+                instance.dispatch({ selection });
+                const { state } = instance;
+                instance.prepareToLeave();
+                expect(instance.state).toBe(state);
+            }
+        });
+
+        it("leaves the arrow keys to an open completion list", async () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab");
+            instance.setCompletionSource("test", (context) => ({
+                from: context.pos, options: [ { label: "alpha" }, { label: "beta" } ]
+            }));
+            instance.dispatch({ selection: EditorSelection.cursor(2) });
+            startCompletion(instance);
+            await vi.waitFor(() => expect(completionStatus(instance.state)).toBe("active"));
+
+            const arrowDown = createKeydown("ArrowDown", instance.contentDOM);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe(null);
+            closeCompletion(instance);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
+        });
     });
 
     describe("find and replace", () => {
@@ -375,6 +455,20 @@ describe("CodeMirror", () => {
 
             const result = await editor.performFind("foo", false, false);
             expect(result.totalFound).toBe(2);
+        });
+
+        it("wraps around to the first match when every match is before the cursor", async () => {
+            editor = build();
+            editor.setText("foo bar foo");
+            editor.dispatch({ selection: EditorSelection.cursor(11) });
+
+            const result = await editor.performFind("foo", false, false);
+            expect(result).toEqual({ totalFound: 2, currentFound: 1 });
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(1);
+
+            await editor.replace("baz");
+            expect(editor.getText()).toBe("baz bar foo");
         });
 
         it("replaces the active match and then all of them", async () => {
@@ -405,9 +499,29 @@ describe("CodeMirror", () => {
             expect(editor.getText()).toBe("foo bar foo");
         });
 
+        it("finds without activating a match, and clears the active match on request", async () => {
+            editor = build();
+            editor.setText("foo bar foo");
+
+            const result = await editor.performFind("foo", false, false, false);
+            expect(result).toEqual({ totalFound: 2, currentFound: 0 });
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
+            expect(editor.getSearchMatches()).toEqual([ { from: 0, to: 3 }, { from: 8, to: 11 } ]);
+
+            await editor.findNext(1, 0, 1);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(1);
+
+            editor.clearActiveMatch();
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+        });
+
         it("does nothing when cleaning a search that never ran", () => {
             editor = build();
             expect(() => editor?.cleanSearch()).not.toThrow();
+            expect(() => editor?.clearActiveMatch()).not.toThrow();
+            expect(editor.getSearchMatches()).toEqual([]);
         });
 
         it("does nothing when replace is called before a search", async () => {
@@ -522,4 +636,11 @@ function build(config: Partial<EditorConfig> = {}): CodeMirror {
     const parent = document.createElement("div");
     document.body.appendChild(parent);
     return new CodeMirror({ parent, ...config });
+}
+
+/** A keydown of `key` from `target`, which the editor does not handle, as it is not dispatched. */
+function createKeydown(key: string, target: EventTarget, init: KeyboardEventInit = {}) {
+    const event = new KeyboardEvent("keydown", { key, ...init });
+    Object.defineProperty(event, "target", { value: target });
+    return event;
 }

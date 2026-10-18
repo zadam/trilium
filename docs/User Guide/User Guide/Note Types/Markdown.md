@@ -17,7 +17,7 @@ Even if Markdown is now specially treated by having a preview mechanism, Trilium
 ### Source view pane
 
 *   Syntax highlighting for the Markdown syntax.
-*   Nested syntax highlighting for code inside code blocks.
+*   Nested syntax highlighting for code inside code blocks, including <a class="reference-link" href="Mermaid%20Diagrams.md">Mermaid Diagrams</a> in ` ```mermaid ` blocks.
 *   When editing larger documents, the preview scrolls along with the source editor.
 
 ### Preview pane
@@ -165,6 +165,7 @@ Just like <a class="reference-link" href="Text.md">Text</a> notes, Markdown no
 *   Inserting a [footnote](Text/Footnotes.md) (`/footnote`).
 *   Inserting a [Mermaid](Mermaid%20Diagrams.md) diagram (`/mermaid`), with one variant per sample template (e.g. `/mermaid:flowchart`).
 *   Inserting a collapsible block (`/collapsible`).
+*   Inserting [tabs](../Basic%20Concepts%20and%20Features/Import%20%26%20Export/Markdown/Supported%20syntax.md) (`/tabs`).
 *   Inserting a page break for printing (`/page-break`).
 *   Inserting a table (`/table`).
 *   Creating admonitions (e.g. `/tip`, `/note`, `/important`, `/caution`, `/warning`).
@@ -177,7 +178,7 @@ Note that slash commands only work outside of code blocks and inline code.
 
 #### Linking notes with `@` or `[[`
 
-As in <a class="reference-link" href="Text.md">Text</a> notes, typing `@` at the start of a line or after a space opens the note search. Picking a note replaces what was typed with a link to it in the Wikilinks-like format (`[[noteId]]`), which the preview shows as an <a class="reference-link" href="Text/Links/Internal%20(reference)%20links.md">internal link</a> with the note's title.
+As in <a class="reference-link" href="Text.md">Text</a> notes, typing `@` at the start of a line or after a space opens the note search. Picking a note replaces what was typed with a link to it in the Wikilinks-like format (`[[noteId]]`), which the preview shows as an <a class="reference-link" href="Text/Links/Internal%20(reference)%20links.md">Internal (reference) links</a> with the note's title.
 
 The search runs on everything typed after the `@`, spaces included, so a title such as `@My meeting notes` can be typed out; press <kbd>Esc</kbd> to close the list and go on writing. If no note fits, the list offers to create one, as a child of the Markdown note or in the inbox; the link is inserted once the note is created.
 
@@ -196,7 +197,7 @@ The list of languages matches the one for <a class="reference-link" href="Code.
 ### Other features
 
 *   The <a class="reference-link" href="Text/Table%20of%20contents.md">Table of contents</a> will be displayed in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Right%20Sidebar.md">Right Sidebar</a> based on the Markdown-level headings.
-    *   This feature is available only on the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/New%20Layout.md">New Layout</a>.
+*   A Markdown note included in a <a class="reference-link" href="Text.md">Text</a> note shows its source, its preview or both, and can be edited in place. See _Included Markdown_ in <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>.
 
 ### Shared notes
 

@@ -6,13 +6,14 @@ import i18next from "i18next";
 import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
 import { t } from "../../../services/i18n.js";
 import imageService from "../../../services/image.js";
+import { getNoteImageSourceToLoad } from "../../../services/image_urls.js";
 import { getMermaidConfig } from "../../../services/mermaid.js";
 import { default as mimeTypesService, getHighlightJsNameForMime } from "../../../services/mime_types.js";
 import options from "../../../services/options.js";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
 import { ensureMimeTypesForHighlighting, isSyntaxHighlightEnabled } from "../../../services/syntax_highlight.js";
 import { getTaskStateDefinitions, openCustomTaskStateConfig } from "../../../services/task_states.js";
-import { isMac, openInAppHelpFromUrl } from "../../../services/utils.js";
+import { isMac, isMobile, openInAppHelpFromUrl } from "../../../services/utils.js";
 import { resolveContentLanguage } from "../../../utils/formatters.js";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams.js";
 import buildAiAssistantStream, { type AiNoteLocationProvider, buildAiAssistantQuickActions } from "./ai_assistant_stream.js";
@@ -22,6 +23,7 @@ import { createEmojiList, createNoteMentionList, createSlashCommandList } from "
 import { buildQuoteTransformation, resolveQuoteSetting } from "./quotes.js";
 import { buildCustomTransformations, parseCustomReplacements } from "./replacements.js";
 import { buildToolbarConfig } from "./toolbar.js";
+import { createToolbarGroupMenuHost } from "./toolbar_group_menu.js";
 
 /**
  * The only license key Trilium ever passes to CKEditor. Every premium plugin the editor used has
@@ -127,7 +129,9 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
                 "imageResize:50",
                 "imageResize:original",
                 "|",
-                "toggleImageCaption"
+                "toggleImageCaption",
+                "|",
+                "convertImageToDrawing"
             ],
             upload: {
                 // Derived rather than listed, so what the editor inserts as a picture and what the
@@ -266,6 +270,10 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     const imageToolbar = (config.image as { toolbar: (string | object)[] }).toolbar;
     imageToolbar.push("|", ...(imageService.isImageCopySupported() ? ["copyImageToClipboard"] : []), "downloadImage");
 
+    // Loads a changed note image from a new URL, so the browser does not show the copy it loaded
+    // before.
+    config.imageEditingSource = { resolve: getNoteImageSourceToLoad };
+
     // Embed internal images as data: URIs when content is copied out to external apps, while
     // keeping internal Trilium paste reference-based (see the ClipboardImageEmbed plugin). The
     // resolver does the synchronous canvas encoding; the hidden option is a kill-switch.
@@ -319,6 +327,8 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             }
         ] : []
     };
+
+    config.toolbarGroupMenu = { host: () => createToolbarGroupMenuHost() };
 
     return {
         ...config,
@@ -458,6 +468,11 @@ function getDisabledPlugins() {
 
     if (options.get("textNoteSlashCommandsEnabled") !== "true") {
         disabledPlugins.push("TriliumSlashCommands");
+    }
+
+    // The mobile layout leaves no margin beside the blocks for the drag handle.
+    if (isMobile()) {
+        disabledPlugins.push("BlockDragHandle");
     }
 
     return disabledPlugins;

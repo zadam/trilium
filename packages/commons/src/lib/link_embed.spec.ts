@@ -25,6 +25,7 @@ describe("extractYouTubeVideoId", () => {
 
     it("extracts the id from an embed URL", () => {
         expect(extractYouTubeVideoId("https://www.youtube.com/embed/dQw4w9WgXcQ")).toBe("dQw4w9WgXcQ");
+        expect(extractYouTubeVideoId("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ")).toBe("dQw4w9WgXcQ");
     });
 
     it("extracts the id from a shorts URL", () => {

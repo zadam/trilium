@@ -92,6 +92,27 @@ describe("ValuesInput", () => {
         expect(input?.value).toBe("");
     });
 
+    it("takes a repeated value when duplicates are allowed, and drops only the chip pressed", async () => {
+        const onCommit = vi.fn();
+        const input = await mount({
+            labelType: "number", values: [ "5", "7" ], onCommit, allowDuplicates: true
+        });
+
+        await typeInto(input, "5");
+        await press(input, "Enter");
+        expect(onCommit).toHaveBeenCalledWith([ "5", "7", "5" ]);
+
+        // Removing one of two equal values leaves the other.
+        onCommit.mockClear();
+        await mount({
+            labelType: "number", values: [ "5", "7", "5" ], onCommit, allowDuplicates: true
+        });
+        const chips = [ ...container.querySelectorAll(".tn-chip") ];
+        expect(chips.map((chip) => chip.textContent?.trim())).toEqual([ "5", "7", "5" ]);
+        await act(async () => chips[2]?.querySelector<HTMLElement>(".tn-chip-remove")?.click());
+        expect(onCommit).toHaveBeenCalledWith([ "5", "7" ]);
+    });
+
     it("asks for a date rather than taking it as the field reports one", async () => {
         const onCommit = vi.fn();
         const input = await mount({ labelType: "date", values: [], onCommit });

@@ -5,6 +5,7 @@ import commandRegistry from "./command_registry.js";
 import dateNoteService from "./date_notes.js";
 import { t } from "./i18n.js";
 import noteCreateService from "./note_create.js";
+import { notePresetOptions } from "./note_presets.js";
 import server from "./server.js";
 import { escapeHtml } from "./utils.js";
 import { logError } from "./ws.js";
@@ -52,20 +53,25 @@ export interface NoteSuggestionOptions {
     fastSearch?: boolean;
     /** Lists at most this many notes, which the server then stops at. The action rows come on top. */
     limit?: number;
+    /**
+     * A search query the notes must also match, such as `note.type = image`. With a blank term, the
+     * notes it matches are listed instead of the recent ones.
+     */
+    filter?: string;
 }
 
 /**
  * Returns the notes matching `term`, or the recently visited notes when `term` is blank, with the
  * action rows the options ask for.
  */
-export async function getNoteSuggestions(term: string, { allowCreatingNotes, allowJumpToSearchNotes, allowExternalLinks, fastSearch = true, limit }: NoteSuggestionOptions = {}): Promise<Suggestion[]> {
+export async function getNoteSuggestions(term: string, { allowCreatingNotes, allowJumpToSearchNotes, allowExternalLinks, fastSearch = true, limit, filter }: NoteSuggestionOptions = {}): Promise<Suggestion[]> {
     const activeNoteId = appContext.tabManager.getActiveContextNoteId();
     const hasTerm = term.trim().length >= 1;
 
     // Runs concurrently with the search, so naming the destination costs a request but no wait.
     const pendingInboxTarget = hasTerm && allowCreatingNotes ? getInboxTarget() : null;
 
-    const results: Suggestion[] = await server.get<AutocompleteResult[]>(`autocomplete?query=${encodeURIComponent(term)}&activeNoteId=${activeNoteId}&fastSearch=${fastSearch}${limit ? `&limit=${limit}` : ""}`);
+    const results: Suggestion[] = await server.get<AutocompleteResult[]>(`autocomplete?query=${encodeURIComponent(term)}&activeNoteId=${activeNoteId}&fastSearch=${fastSearch}${limit ? `&limit=${limit}` : ""}${filter ? `&filter=${encodeURIComponent(filter)}` : ""}`);
     const before: Suggestion[] = [];
     const after: Suggestion[] = [];
 
@@ -112,7 +118,9 @@ export async function getNoteSuggestions(term: string, { allowCreatingNotes, all
  * need not be.
  */
 export async function createNoteFromSuggestion(suggestion: Suggestion, childParentNotePath?: string | null) {
-    const { success, noteType, templateNoteId, notePath, cloneToNoteIds } = await noteCreateService.chooseNoteType();
+    const {
+        success, noteType, mime, templateNoteId, notePreset, notePath, cloneToNoteIds
+    } = await noteCreateService.chooseNoteType();
     if (!success) {
         return;
     }
@@ -128,7 +136,9 @@ export async function createNoteFromSuggestion(suggestion: Suggestion, childPare
         title: suggestion.noteTitle,
         activate: false,
         type: noteType,
+        mime,
         templateNoteId,
+        ...notePresetOptions(notePreset),
         cloneToNoteIds
     });
 

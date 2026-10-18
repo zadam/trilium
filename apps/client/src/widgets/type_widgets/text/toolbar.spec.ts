@@ -133,6 +133,13 @@ describe("buildMobileToolbar", () => {
         // No nested group objects survive the flattening.
         expect(mobile.toolbar.items.some((item) => typeof item === "object")).toBe(false);
     });
+
+    it("opens the table form instead of the size grid", () => {
+        const items = buildMobileToolbar(true).toolbar.items;
+        expect(items).toContain("insertTableForm");
+        expect(items).not.toContain("insertTable");
+        expect(buildClassicToolbar(false, true).toolbar.items).toContain("insertTable");
+    });
 });
 
 describe("buildToolbarConfig dispatch", () => {

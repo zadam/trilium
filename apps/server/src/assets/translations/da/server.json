@@ -1,0 +1,25 @@
+{
+  "keyboard_actions": {
+    "copy-notes-to-clipboard": "Kopier de valgte noter til udklipsholderen",
+    "paste-notes-from-clipboard": "Indsæt noter fra udklipsholderen i den aktive note",
+    "cut-notes-to-clipboard": "Klip de markerede noter til udklipsholderen",
+    "select-all-notes-in-parent": "Markér alle noter på det aktuelle noteniveau",
+    "tabs-and-windows": "Tabs & Windows",
+    "reopen-last-tab": "Genåbn den senest lukkede fane",
+    "activate-next-tab": "Aktivér fanen til højre",
+    "activate-previous-tab": "Aktivér fanen til venstre",
+    "open-new-window": "Åbn et nyt, tomt vindue",
+    "toggle-tray": "Vis/skjul programmet fra proceslinjens meddelelsesområde",
+    "dialogs": "Dialoger",
+    "show-note-source": "Vis dialogboksen »Notekilde«",
+    "show-options": "Åbn siden »Indstillinger«",
+    "show-revisions": "Vis dialogboksen »Noteversioner«",
+    "show-recent-changes": "Vis dialogboksen »Seneste ændringer«",
+    "show-deleted-notes": "Vis dialogboksen »Slettede noter«",
+    "show-sql-console": "Åbn siden »SQL-konsol«",
+    "show-backend-log": "Åbn siden »Backend-log«",
+    "show-space-usage": "Åbn siden »Lagerpladsforbrug«",
+    "show-help": "Åbn den indbyggede brugervejledning",
+    "show-cheatsheet": "Vis en modal med almindelige tastaturhandlinger"
+  }
+}

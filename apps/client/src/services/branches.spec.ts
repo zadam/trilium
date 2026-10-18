@@ -262,7 +262,7 @@ describe("deleteNotes", () => {
         expect(setNote).toHaveBeenCalledWith("root");
     });
 
-    it("asks for all clones, erases & reloads, and tolerates navigation errors", async () => {
+    it("asks for all clones, erases without reloading, and tolerates navigation errors", async () => {
         const note = buildNote({ title: "Del3" });
         makeBranch("delBranch3", note.noteId, "root");
 
@@ -282,7 +282,7 @@ describe("deleteNotes", () => {
         const [, body, componentId] = (server.post as any).mock.calls[0];
         expect(body).toMatchObject({ deleteAllClones: true, eraseNotes: true });
         expect(componentId).toBe("comp-9");
-        expect(reloadSpy).toHaveBeenCalledTimes(1);
+        expect(reloadSpy).not.toHaveBeenCalled();
         expect(errSpy).toHaveBeenCalled();
         reloadSpy.mockRestore();
         errSpy.mockRestore();

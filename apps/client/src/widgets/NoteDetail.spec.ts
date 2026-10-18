@@ -1,7 +1,10 @@
 import { h, render } from "preact";
+import { useContext } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import appContext, { type EventData } from "../components/app_context";
+import Component from "../components/component";
 import NoteContext from "../components/note_context";
 import type FNote from "../entities/fnote";
 import froca from "../services/froca";
@@ -10,8 +13,14 @@ import froca from "../services/froca";
 // global the test env doesn't provide. The pure function under test never touches the tree, so stub it.
 vi.mock("./note_tree", () => ({ default: class {} }));
 
-import { getExtendedWidgetType, useDeferredDetailFocus } from "./NoteDetail";
-import { isContextInActiveTab } from "./react/hooks";
+import {
+    getExtendedWidgetType, NoteDetailWrapper, useDeferredDetailFocus, useNoteInfo
+} from "./NoteDetail";
+import { isContextInActiveTab, useLegacyImperativeHandlers, useTriliumEvent } from "./react/hooks";
+import {
+    ContainerVisibilityContext, NoteContextContext, ParentComponent
+} from "./react/react_utils";
+import type { TypeWidgetProps } from "./type_widgets/type_widget";
 
 const FAKE_NOTE_ID = "blob-stub-note";
 
@@ -141,5 +150,165 @@ describe("useDeferredDetailFocus", () => {
         renderHarness(false);
         renderHarness(true);
         expect(replay).not.toHaveBeenCalled();
+    });
+});
+
+describe("useNoteInfo", () => {
+    const host = document.createElement("div");
+
+    function Harness() {
+        useNoteInfo();
+        return null;
+    }
+
+    afterEach(() => {
+        render(null, host);
+    });
+
+    it("reloads on a type or MIME change of its own note only", async () => {
+        const note = {
+            noteId: "shown-note",
+            type: "text",
+            isProtected: false,
+            isTriliumSqlite: () => false,
+            isMarkdown: () => false,
+            isIconPack: () => false
+        } as unknown as FNote;
+        const setContextData = vi.fn();
+        const noteContext = {
+            note,
+            notePath: "root/shown-note",
+            hoistedNoteId: "root",
+            viewScope: {},
+            isReadOnly: async () => false,
+            setContextData
+        } as unknown as NoteContext;
+        const parentComponent = new Component();
+        await act(async () => render(
+            h(ParentComponent.Provider, { value: parentComponent },
+                h(NoteContextContext.Provider, { value: noteContext }, h(Harness, {}))),
+            host
+        ));
+        const loadStates = () => setContextData.mock.calls
+            .map(([ key, { state } ]) => `${key}:${state}`);
+        await vi.waitFor(() => expect(loadStates()).toEqual(
+            [ "contentLoad:loading", "contentLoad:loaded" ]));
+        setContextData.mockClear();
+
+        const changeNoteType = (noteId: string) => act(async () => {
+            await parentComponent.handleEventInChildren("noteTypeMimeChanged", { noteId });
+        });
+
+        // A `NoteDetail` that shows the changed note triggers the event for the whole app.
+        await changeNoteType("other-note");
+        expect(setContextData).not.toHaveBeenCalled();
+
+        await changeNoteType("shown-note");
+        await vi.waitFor(() => expect(loadStates()).toEqual(
+            [ "contentLoad:loading", "contentLoad:loaded" ]));
+    });
+});
+
+describe("NoteDetailWrapper", () => {
+    const host = document.createElement("div");
+    const received: string[] = [];
+    let typeWidgetParent: Component | null = null;
+    let typeWidgetProps: TypeWidgetProps | null = null;
+    let hostComponent = new Component();
+    const addLinkToText = vi.fn();
+    const imperativeHandlers = { addLinkToTextCommand: addLinkToText };
+
+    function TypeWidget(props: TypeWidgetProps) {
+        typeWidgetParent = useContext(ParentComponent);
+        typeWidgetProps = props;
+        useLegacyImperativeHandlers(imperativeHandlers);
+        useTriliumEvent("findInText", () => received.push("findInText"));
+        useTriliumEvent("executeWithCodeEditor", () => received.push("executeWithCodeEditor"));
+        useTriliumEvent("entitiesReloaded", () => received.push("entitiesReloaded"));
+        useTriliumEvent("noteSwitched", () => received.push("noteSwitched"));
+        useTriliumEvent("sqlQueryResults", () => received.push("sqlQueryResults"));
+        return h("div", {}, h("p", { className: "type-widget-content" }));
+    }
+
+    function renderWrapper(isVisible: boolean, containerVisible = true) {
+        const wrapper = h(NoteDetailWrapper, {
+            Element: TypeWidget, type: "editableText", isVisible, isFullHeight: false,
+            props: { parentComponent: hostComponent } as TypeWidgetProps
+        });
+        act(() => render(
+            h(ParentComponent.Provider, { value: hostComponent },
+                h(ContainerVisibilityContext.Provider, { value: containerVisible }, wrapper)),
+            host
+        ));
+    }
+
+    async function dispatchAll() {
+        await hostComponent.handleEventInChildren("findInText", {});
+        await hostComponent.handleEventInChildren("executeWithCodeEditor",
+            { ntxId: "ntx", resolve: () => {} } as unknown as EventData<"executeWithCodeEditor">);
+        await hostComponent.handleEventInChildren("entitiesReloaded",
+            {} as EventData<"entitiesReloaded">);
+        await hostComponent.handleEventInChildren("noteSwitched", {} as EventData<"noteSwitched">);
+        await hostComponent.handleEventInChildren("sqlQueryResults",
+            {} as EventData<"sqlQueryResults">);
+    }
+
+    afterEach(() => {
+        render(null, host);
+        received.length = 0;
+        typeWidgetParent = null;
+        typeWidgetProps = null;
+        hostComponent = new Component();
+        addLinkToText.mockReset();
+    });
+
+    it("sends requests only to the displayed type widget, and syncs a hidden one", async () => {
+        renderWrapper(false);
+        await dispatchAll();
+        expect(received).toEqual([ "entitiesReloaded", "noteSwitched", "sqlQueryResults" ]);
+
+        received.length = 0;
+        renderWrapper(true, false);
+        await dispatchAll();
+        expect(received).toEqual([ "entitiesReloaded", "noteSwitched", "sqlQueryResults" ]);
+
+        received.length = 0;
+        renderWrapper(true);
+        await dispatchAll();
+        expect(received).toEqual(
+            [ "findInText", "executeWithCodeEditor", "entitiesReloaded", "noteSwitched",
+                "sqlQueryResults" ]);
+    });
+
+    it("gives the type widget a parent that saves and commands as the host", () => {
+        const triggerCommand = vi.spyOn(hostComponent, "triggerCommand");
+        renderWrapper(true);
+
+        const parent = typeWidgetParent;
+        if (!parent) throw new Error("The type widget did not render.");
+        expect(parent).not.toBe(hostComponent);
+        expect(parent.componentId).toBe(hostComponent.componentId);
+        expect(hostComponent.children).toContain(parent);
+
+        parent.triggerCommand("hoistNote", { noteId: "root" });
+        expect(triggerCommand).toHaveBeenCalledWith("hoistNote", { noteId: "root" });
+
+        render(null, host);
+        expect(hostComponent.children).not.toContain(parent);
+    });
+
+    it("lets the DOM and the widget's props reach the handlers the type widget installs", () => {
+        renderWrapper(true);
+        const parent = typeWidgetParent;
+        const content = host.querySelector<HTMLElement>(".type-widget-content");
+        if (!parent || !content) throw new Error("The type widget did not render.");
+
+        // The text editor finds its host this way, e.g. for reference link titles.
+        expect(appContext.getComponentByEl(content)).toBe(parent);
+        expect(typeWidgetProps?.parentComponent).toBe(parent);
+
+        // Keyboard shortcuts trigger their command on `props.parentComponent`.
+        typeWidgetProps?.parentComponent?.triggerCommand("addLinkToText", {});
+        expect(addLinkToText).toHaveBeenCalledOnce();
     });
 });

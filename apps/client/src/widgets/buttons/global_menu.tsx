@@ -6,9 +6,8 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
 import Component from "../../components/component";
-import { ExperimentalFeature, ExperimentalFeatureId, getAvailableExperimentalFeatures, isExperimentalFeatureEnabled, toggleExperimentalFeature } from "../../services/experimental_features";
 import { t } from "../../services/i18n";
-import utils, { isElectron, isMobile, isStandalone, reloadFrontendApp } from "../../services/utils";
+import utils, { isElectron, isMobile, isStandalone } from "../../services/utils";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../react/FormList";
 import { useStaticTooltip, useStaticTooltipWithKeyboardShortcut, useTriliumOption, useTriliumOptionBool } from "../react/hooks";
@@ -79,7 +78,6 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
             </>}
 
             {!isElectron() && !isStandalone && <BrowserOnlyOptions />}
-            {glob.isDev && <DevelopmentOptions />}
         </Dropdown>
     );
 }
@@ -91,7 +89,7 @@ function AdvancedMenu() {
             <MenuItem command="showSearchHistory" icon="bx bx-search-alt" text={t("global_menu.open_search_history")} />
             <FormDropdownDivider />
 
-            <KeyboardActionMenuItem command="showBackendLog" icon="bx bx-detail" text={t("global_menu.show_backend_log")} />
+            <KeyboardActionMenuItem command="showBackendLog" icon="bx bx-receipt" text={t("global_menu.show_backend_log")} />
             <KeyboardActionMenuItem command="showSQLConsole" icon="bx bx-data" text={t("global_menu.open_sql_console")} />
             <MenuItem command="showSQLConsoleHistory" icon="bx bx-data" text={t("global_menu.open_sql_console_history")} />
             <FormDropdownDivider />
@@ -107,32 +105,6 @@ function BrowserOnlyOptions() {
         <FormDropdownDivider />
         <MenuItem command="logout" icon="bx bx-log-out" text={t("global_menu.logout")} />
     </>;
-}
-
-function DevelopmentOptions() {
-    return <>
-        <FormListHeader text="Development Options" />
-        <FormDropdownSubmenu icon="bx bx-test-tube" title="Experimental features">
-            {getAvailableExperimentalFeatures().map((feature) => (
-                <ExperimentalFeatureToggle key={feature.id} experimentalFeature={feature as ExperimentalFeature} />
-            ))}
-        </FormDropdownSubmenu>
-    </>;
-}
-
-function ExperimentalFeatureToggle({ experimentalFeature }: { experimentalFeature: ExperimentalFeature }) {
-    const featureEnabled = isExperimentalFeatureEnabled(experimentalFeature.id as ExperimentalFeatureId);
-
-    return (
-        <FormListItem
-            checked={featureEnabled}
-            title={experimentalFeature.description}
-            onClick={async () => {
-                await toggleExperimentalFeature(experimentalFeature.id as ExperimentalFeatureId, !featureEnabled);
-                reloadFrontendApp();
-            }}
-        >{experimentalFeature.name}</FormListItem>
-    );
 }
 
 function SwitchToOptions() {
@@ -161,7 +133,7 @@ function KeyboardActionMenuItem({ command, ...props }: MenuItemProps<KeyboardAct
     return <MenuItem {...props} command={command} keyboardShortcut={command} />;
 }
 
-export function VerticalLayoutIcon({ logoRef }: { logoRef?: RefObject<SVGSVGElement | null> }) {
+function VerticalLayoutIcon({ logoRef }: { logoRef?: RefObject<SVGSVGElement | null> }) {
     return (
         <svg ref={logoRef} viewBox="0 0 256 256" title={t("global_menu.menu")}>
             <g>

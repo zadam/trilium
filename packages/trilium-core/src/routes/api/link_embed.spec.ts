@@ -13,7 +13,7 @@ const safeFetch = vi.hoisted(() => vi.fn());
 const saveImageToAttachment = vi.hoisted(() => vi.fn());
 const awaitImageWrite = vi.hoisted(() => vi.fn(async () => {}));
 
-import linkEmbedRoute from "./link_embed.js";
+import linkEmbedRoute, { storeFavicon } from "./link_embed.js";
 
 let attachmentCounter = 0;
 
@@ -249,8 +249,8 @@ describe("link-embed getMetadata", () => {
         expect(result.siteName).toBe("Example");
         // Stored, not hotlinked; opaque, so re-encoded as JPEG. Named after the page it is a
         // picture of, which is what a second paste of the same URL reuses it by.
-        expect(stored("coverImage")?.fileName).toMatch(/^example\.com-page-[0-9a-f]{8}\.jpeg$/);
-        expect(result.image).toMatch(/^api\/attachments\/att\d+\/image\/example\.com-page-[0-9a-f]{8}\.jpeg$/);
+        expect(stored("coverImage")?.fileName).toMatch(/^example\.com-page-[0-9a-f]{8}\.jpg$/);
+        expect(result.image).toMatch(/^api\/attachments\/att\d+\/image\/example\.com-page-[0-9a-f]{8}\.jpg$/);
     });
 
     it("resolves a relative og:image against the page URL before downloading it", async () => {
@@ -306,7 +306,7 @@ describe("link-embed getMetadata", () => {
             serveImage({ payload: await makePng(1024, 512, 0x00ff00ff), contentType: "image/png" });
 
             const image = await imageOf();
-            expect(image?.fileName).toMatch(/\.jpeg$/);
+            expect(image?.fileName).toMatch(/\.jpg$/);
 
             const decoded = await Jimp.read(image?.buffer ?? Buffer.alloc(0));
             expect(decoded.bitmap.width).toBe(256);
@@ -831,7 +831,7 @@ describe("link-embed getMetadata", () => {
         // used either, and the thumbnail comes from the conventional hqdefault URL.
         expect(result.title).toBeUndefined();
         expect(result.description).toBeUndefined();
-        expect(stored("coverImage")?.fileName).toMatch(/\.jpeg$/);
+        expect(stored("coverImage")?.fileName).toMatch(/\.jpg$/);
     });
 
     it("ignores meta tags whose content is empty, falling back to the document title", async () => {
@@ -910,5 +910,47 @@ describe("link-embed getMetadata", () => {
         const result = await linkEmbedRoute.getMetadata(req("https://example.com/page"));
         expect(result.title).toBe("Plain");
         expect(result.favicon).toBeUndefined();
+    });
+});
+
+describe("storeFavicon", () => {
+    it("stores a favicon the caller holds, trimmed and named after the site", async () => {
+        const fat = makeMultiSizeIco([
+            { edge: 16, bytes: 1128 },
+            { edge: 48, bytes: 9640 },
+            { edge: 256, bytes: 70000 }
+        ]);
+
+        const url = await storeFavicon("note1", "https://www.example.com/page", fat);
+
+        expect(url).toMatch(/^api\/attachments\/att\d+\/image\/www\.example\.com\.ico$/);
+        expect(saveImageToAttachment.mock.calls[0]?.[0]).toBe("note1");
+        expect(stored("favicon")?.buffer.byteLength).toBe(22 + 9640);
+        expect(awaitImageWrite).toHaveBeenCalledWith("att1");
+    });
+
+    it("stores the PNG inside a one-picture icon as a PNG", async () => {
+        // Browsers re-encode a favicon into such a file, writing 0 (256) as its size whatever the
+        // PNG holds, and Chromium then draws nothing.
+        const png = Buffer.from(await new Jimp({ width: 48, height: 48, color: 0xff0000ff }).getBuffer("image/png"));
+        const directory = Buffer.alloc(22);
+        directory.writeUInt16LE(1, 2);
+        directory.writeUInt16LE(1, 4);
+        directory.writeUInt32LE(png.byteLength, 14);
+        directory.writeUInt32LE(directory.byteLength, 18);
+
+        const url = await storeFavicon("note1", "https://example.com/", Buffer.concat([ directory, png ]));
+
+        expect(url).toMatch(/\/image\/example\.com\.png$/);
+        expect(stored("favicon")?.buffer.equals(png)).toBe(true);
+    });
+
+    it("stores nothing for bytes that are not a picture or too large", async () => {
+        const huge = makeMultiSizeIco([ { edge: 256, bytes: 100 * 1024 } ]);
+
+        for (const bytes of [ Buffer.from("<html>Not found</html>"), huge ]) {
+            expect(await storeFavicon("note1", "https://example.com/", bytes)).toBeUndefined();
+        }
+        expect(saveImageToAttachment).not.toHaveBeenCalled();
     });
 });

@@ -45,12 +45,12 @@
         # Don't refresh these by hand — `pnpm chore:update-flake-electron` rewrites both
         # bindings from the release's SHASUMS256.txt, and the update-nix-flake workflow
         # opens a PR whenever apps/desktop/package.json moves ahead of the pin.
-        pinnedElectronVersion = "44.5.1";
+        pinnedElectronVersion = "44.7.2";
         pinnedElectronHashes = {
-          x86_64-linux = "5bcd217611d6843ececd6c9e9c1fcd1da3ab066c43d8b1a9e4b44689a1fba6f5";
-          aarch64-linux = "ee1790d743af1abd6a7e3971589dcd8635b58dab51ca1359123ba5216ce3a453";
-          aarch64-darwin = "1d75703019bb16461ae65f3081d7e6f5c0b11e901d0ccb5c343bcf7bcdd6435c";
-          headers = "07qjxn071d21rcadjsawdvq3dj8ypsbkkq0nhr8bj0k4vzxigya0";
+          x86_64-linux = "777b26a64aee3d185acb9f93c04782bb51eae7c2c61c793963ef24374e5a1539";
+          aarch64-linux = "f8ecb0702b6a0b10274d2c3043dddaa22da77addcab98e7e0b1e0d4f6c2d93e9";
+          aarch64-darwin = "07d73d3d6dd0b8679c2f1849e30df179ea50c1d6b17630fcc398ae05221f0bd2";
+          headers = "1qjfzgx602dpidlw8bwasi83nhq95dbyh664l5xrzikhvibc9jxx";
         };
         mkElectronBin = pkgs.callPackage (
           pkgs.path + "/pkgs/development/tools/electron/binary/generic.nix"
@@ -389,10 +389,6 @@
             # Copy client dist (needed for runtime)
             mkdir -p $out/opt/trilium-build-docs/client
             cp --archive apps/client/dist/* $out/opt/trilium-build-docs/client/
-
-            # Copy share-theme (needed for exports)
-            mkdir -p $out/opt/trilium-build-docs/packages/share-theme
-            cp --archive packages/share-theme/dist/* $out/opt/trilium-build-docs/packages/share-theme/
 
             # Create wrapper script
             makeWrapper ${lib.getExe nodejs} $out/bin/trilium-build-docs \

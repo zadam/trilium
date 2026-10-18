@@ -1,22 +1,28 @@
-import { useLegacyImperativeHandlers } from "../../react/hooks";
-import { Attribute } from "../../../services/attribute_parser";
-import { RefObject } from "preact";
-import { Tabulator } from "tabulator-tables";
-import { useRef } from "preact/hooks";
-import { CommandListenerData, EventData } from "../../../components/app_context";
-import AttributeDetailWidget from "../../attribute_widgets/attribute_detail";
-import attributes from "../../../services/attributes";
-import FNote from "../../../entities/fnote";
-import { getAttributeFromField } from "./utils";
-import dialog from "../../../services/dialog";
+import { extractAttributeDefinitionTypeAndName } from "@triliumnext/commons";
 import { t } from "i18next";
-import { executeBulkActions } from "../../../services/bulk_action";
+import { RefObject } from "preact";
+import { useRef } from "preact/hooks";
+import { Tabulator } from "tabulator-tables";
 
-export default function useColTableEditing(api: RefObject<Tabulator | null>, attributeDetailWidget: AttributeDetailWidget, parentNote: FNote) {
+import { CommandListenerData, EventData } from "../../../components/app_context";
+import FNote from "../../../entities/fnote";
+import { Attribute } from "../../../services/attribute_parser";
+import attributes from "../../../services/attributes";
+import { executeBulkActions } from "../../../services/bulk_action";
+import dialog from "../../../services/dialog";
+import AttributeDetailWidget from "../../attribute_widgets/attribute_detail";
+import { useLegacyImperativeHandlers } from "../../react/hooks";
+import { getAttributeFromField } from "./utils";
+
+export default function useColTableEditing(
+    api: RefObject<Tabulator | null>,
+    attributeDetailWidget: AttributeDetailWidget,
+    parentNote: FNote,
+    newAttributePosition: RefObject<number | undefined>
+) {
 
     const existingAttributeToEdit = useRef<Attribute | undefined>(undefined);
     const newAttribute = useRef<Attribute | undefined>(undefined);
-    const newAttributePosition = useRef<number | undefined>(undefined);
 
     useLegacyImperativeHandlers({
         addNewTableColumnCommand({ referenceColumn, columnToEdit, direction, type }: EventData<"addNewTableColumn">) {
@@ -55,7 +61,6 @@ export default function useColTableEditing(api: RefObject<Tabulator | null>, att
                 allAttributes: [ attr ],
                 isOwned: true,
                 x: 0,
-                y: 150,
                 focus: "name",
                 hideMultiplicity: true
             });
@@ -74,9 +79,9 @@ export default function useColTableEditing(api: RefObject<Tabulator | null>, att
             const isRename = (existingAttributeToEdit.current && existingAttributeToEdit.current.name !== name);
             try {
                 if (isRename) {
-                    const oldName = existingAttributeToEdit.current!.name.split(":")[1];
-                    const [ type, newName ] = name.split(":");
-                    await renameColumn(parentNote.noteId, type as "label" | "relation", oldName, newName);
+                    const [ , oldName ] = extractAttributeDefinitionTypeAndName(existingAttributeToEdit.current!.name);
+                    const [ type, newName ] = extractAttributeDefinitionTypeAndName(name);
+                    await renameColumn(parentNote.noteId, type, oldName, newName);
                 }
 
                 if (existingAttributeToEdit.current && (isRename || existingAttributeToEdit.current.isInheritable !== isInheritable)) {
@@ -114,7 +119,7 @@ export default function useColTableEditing(api: RefObject<Tabulator | null>, att
         existingAttributeToEdit.current = undefined;
     }
 
-    return { newAttributePosition, resetNewAttributePosition };
+    return { resetNewAttributePosition };
 }
 
 async function deleteColumn(parentNoteId: string, type: "label" | "relation", columnName: string) {

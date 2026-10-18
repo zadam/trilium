@@ -31,7 +31,7 @@ describe("useActiveHeading", () => {
     afterEach(() => vi.useRealTimers());
 
     it("re-subscribes when getHeadingElement changes, even though the container element does not", () => {
-        // The editor is swapped (watchdog recovery) while .scrolling-container, an ancestor of the
+        // The editor is swapped (a rebuild) while .scrolling-container, an ancestor of the
         // editor root, stays put — so the listener has to follow getHeadingElement, not the container.
         const container = scrollingContainer();
         const probe = mount(container, headingLookup({ first: 0, second: 500 }));

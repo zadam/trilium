@@ -221,6 +221,48 @@ const MIME_TYPES_DICT_RAW = [
 ] as const satisfies readonly MimeTypeDefinition[];
 export const MIME_TYPES_DICT = Object.freeze(MIME_TYPES_DICT_RAW as readonly MimeTypeDefinition[]);
 
+/**
+ * Returns a copy of every entry in {@link MIME_TYPES_DICT}, enabled when `enabledMimes` lists it.
+ * `enabledMimes` is the parsed `codeNotesMimeTypes` option; without it, the entries marked
+ * `default` are enabled. `text/plain` is always enabled.
+ */
+export function resolveEnabledMimeTypes(
+    enabledMimes: readonly (string | null)[] | null | undefined
+): MimeType[] {
+    const enabled = enabledMimes ?? MIME_TYPES_DICT.filter((mt) => mt.default).map((mt) => mt.mime);
+    return MIME_TYPES_DICT.map((mt) => ({
+        ...mt,
+        enabled: enabled.includes(mt.mime) || mt.mime === "text/plain"
+    }));
+}
+
+/** Code longer than this many lines is not syntax-highlighted. */
+const HIGHLIGHT_MAX_LINE_COUNT = 500;
+
+/** Code longer than this many characters is not syntax-highlighted, such as one minified line. */
+const HIGHLIGHT_MAX_CHAR_COUNT = 50_000;
+
+/**
+ * Whether code is small enough to syntax-highlight when it is rendered. Highlighting, and
+ * `highlightAuto()` most of all, grows with the size of the code and blocks the thread it runs
+ * on, so code beyond {@link HIGHLIGHT_MAX_LINE_COUNT} lines or {@link HIGHLIGHT_MAX_CHAR_COUNT}
+ * characters stays plain.
+ */
+export function shouldSyntaxHighlight(code: string) {
+    if (code.length > HIGHLIGHT_MAX_CHAR_COUNT) {
+        return false;
+    }
+
+    let lineCount = 1;
+    let index = -1;
+    while ((index = code.indexOf("\n", index + 1)) !== -1) {
+        if (++lineCount > HIGHLIGHT_MAX_LINE_COUNT) {
+            return false;
+        }
+    }
+    return true;
+}
+
 let byMarkdownNameMappings: Record<string, MimeTypeDefinition> | null = null;
 
 export type MermaidMimeType = "text/vnd.mermaid" | "text/mermaid";
@@ -251,3 +293,40 @@ export function getMimeTypeFromMarkdownName(mdLanguageCode: string) {
 
     return byMarkdownNameMappings[mdLanguageCode];
 }
+
+/**
+ * The code MIME type of a file, from its extension, such as `text/x-python` for `script.py`, or
+ * `undefined` for a file without a known language.
+ */
+export function getMimeTypeFromFileName(fileName: string) {
+    const lowerCaseName = fileName.toLowerCase();
+    const extension = lowerCaseName.includes(".")
+        ? lowerCaseName.slice(lowerCaseName.lastIndexOf(".") + 1)
+        : lowerCaseName;
+    return getMimeTypeFromMarkdownName(LANGUAGES_BY_EXTENSION[extension] ?? extension)?.mime;
+}
+
+/** The Markdown language names of the file extensions that are not language names themselves. */
+const LANGUAGES_BY_EXTENSION: Record<string, string> = {
+    cc: "cpp",
+    cjs: "javascript",
+    clj: "clojure",
+    cs: "csharp",
+    cxx: "cpp",
+    erl: "erlang",
+    ex: "elixir",
+    exs: "elixir",
+    h: "c",
+    hpp: "cpp",
+    hs: "haskell",
+    htm: "html",
+    kt: "kotlin",
+    kts: "kotlin",
+    m: "objectivec",
+    md: "markdown",
+    mjs: "javascript",
+    pl: "perl",
+    ps1: "powershell",
+    rb: "ruby",
+    rs: "rust"
+};

@@ -17,12 +17,12 @@ If there are too many items in the launch bar to fit the screen, it will become 
 
 There are two ways to configure the launch bar:
 
-*   Right click in the empty space between launchers on the launch bar and select _Configure Launchbar._
+*   Right click in the empty space between launchers on the launch bar and select _Configure Launchbar…_
 *   Click on the <a class="reference-link" href="Global%20menu.md">Global menu</a> and select _Configure Launchbar_.
 
 This will open a new tab with the <a class="reference-link" href="Note%20Tree.md">Note Tree</a> listing the launchers.
 
-![](Launch%20Bar_image.png)
+![](Launch%20Bar_image.jpg)
 
 Expanding _Available Launchers_ section will show the list of launchers that are not displayed on the launch bar. The _Visible Launchers_ will show the ones that are currently displayed.
 
@@ -44,7 +44,7 @@ Drag-and-drop the items in the tree in order to change their order. See <a cl
 
 ## Customizing the launcher
 
-*   The icon of a launcher can be changed just like a normal note. See <a class="reference-link" href="../Notes/Note%20Icons%20%26%20Colors.md">Note Icons</a> for more information.
+*   The icon of a launcher can be changed just like a normal note. See [note icons](../Notes/Note%20Icons%20%26%20Colors.md) for more information.
 *   The title of the launcher can also be changed.
 
 ### Resetting
