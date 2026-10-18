@@ -1039,6 +1039,19 @@ describe("AiAssistantUI toolbar entry", () => {
 
             await vi.waitFor(() => expect(openForm(editor).phase).toBe("review"));
             expect(previewHtml(editor)).toBe(DIAGRAM_HTML);
+
+            const mermaid = createMermaidStub();
+            const unlisted = await createTestEditor(
+                [Essentials, Paragraph, CodeBlockEditing, TriliumAiAssistant], {
+                    aiAssistant: { sanitizeHtml, quickActions: DIAGRAM_ACTION, stream: stub.stream },
+                    contentEmbed: { renderInlinePreview: mermaid.render }
+                });
+            setModelData(unlisted.model, "<paragraph>[foo]</paragraph>");
+            quickActionButtons(createComponent(unlisted))[0].fire("execute");
+
+            await vi.waitFor(() => expect(openForm(unlisted).phase).toBe("review"));
+            expect(previewHtml(unlisted)).toBe(DIAGRAM_HTML);
+            expect(mermaid.render).not.toHaveBeenCalled();
         });
 
         it("leaves the code block alone in the diff, whose text is two responses at once", async () => {
