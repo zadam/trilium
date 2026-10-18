@@ -104,13 +104,25 @@ vi.mock("../widgets/type_widgets/canvas/CanvasDrawing", () => ({
     renderCanvasDrawingPicture: (entity: unknown) => renderCanvasDrawingPicture(entity)
 }));
 
+const mermaidDiagramComponent = vi.fn((_props: any): VNode<any> =>
+    h("span", { class: "mock-mermaid-diagram-marker" }));
+vi.mock("../widgets/type_widgets/mermaid/MermaidDiagram", () => ({ default: mermaidDiagramComponent }));
+const renderMermaidSvg = vi.fn(async (_source: string) => "<svg class=\"mock-mermaid-svg\"></svg>");
+vi.mock("./mermaid", async (importOriginal) => ({
+    ...await importOriginal<object>(),
+    renderMermaidSvg: (source: string) => renderMermaidSvg(source)
+}));
+
 const chatPreviewComponent = vi.fn((props: any): VNode<any> =>
     h("span", { class: "mock-chat-marker" }, `messages:${props.messages.length}`));
 vi.mock("../widgets/type_widgets/llm_chat/ChatPreview", () => ({ default: chatPreviewComponent }));
 
 const codeEmbedComponent = vi.fn((_props: any): VNode<any> =>
     h("span", { class: "mock-code-embed-marker" }));
-vi.mock("../widgets/type_widgets/code/CodeEmbed", () => ({ default: codeEmbedComponent }));
+vi.mock("../widgets/type_widgets/code/CodeEmbed", () => ({
+    default: codeEmbedComponent,
+    useSavedContent: () => {}
+}));
 
 const textEmbedComponent = vi.fn((_props: any): VNode<any> =>
     h("span", { class: "mock-text-embed-marker" }));
@@ -1146,6 +1158,24 @@ describe("getRenderedContent canvas drawing rendering", () => {
         expect(renderCanvasDrawingPicture).toHaveBeenLastCalledWith(note);
         expect($empty.hasClass("no-preview")).toBe(true);
         expect($empty.find(".bx-pen").length).toBe(1);
+    });
+});
+
+describe("Mermaid diagram attachments", () => {
+    it("draws the diagram before returning where it is not interactive, and mounts it where it is", async () => {
+        const att = buildAttachment({ role: "file", mime: "text/vnd.mermaid" });
+        att.getBlob = async () => ({ content: "graph TD;" }) as never;
+
+        const { type, $renderedContent } = await getRenderedContent(att);
+        expect(type).toBe("mermaidDiagram");
+        expect(renderMermaidSvg).toHaveBeenCalledWith("graph TD;");
+        expect($renderedContent.find("svg.mock-mermaid-svg").length).toBe(1);
+        expect(mermaidDiagramComponent).not.toHaveBeenCalled();
+
+        const { $renderedContent: $live } = await getRenderedContent(att, { interactive: true });
+        expect($live.find(".mock-mermaid-diagram-marker").length).toBe(1);
+        expect(mermaidDiagramComponent.mock.calls[0][0].content).toBe("graph TD;");
+        disposeInteractiveContent($live);
     });
 });
 

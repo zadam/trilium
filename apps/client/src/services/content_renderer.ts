@@ -594,7 +594,7 @@ async function renderCanvasDrawing(
 /**
  * Renders the source of a {@link SourceEmbedType} kept in a file or an attachment, such as a Mermaid
  * diagram. Interactive content of an attachment can be edited while the Editable toggle of its
- * embed is on.
+ * embed is on; otherwise the content is drawn as a picture before this returns.
  */
 async function renderSourceEmbed(
     entity: FNote | FAttachment,
@@ -605,11 +605,20 @@ async function renderSourceEmbed(
     const sourceType = getSourceEmbedTypeByContentType(type);
     if (!sourceType) return;
 
+    // A presentation slide, for one, takes the HTML as soon as this returns.
+    if (!options.interactive) {
+        const container = document.createElement("div");
+        container.className = "source-embed";
+        await sourceType.renderPreview((await entity.getBlob())?.content ?? "", container);
+        $renderedContent.append(container);
+        return;
+    }
+
     const [ { default: AttachmentSourceEmbed }, component ] = await Promise.all([
         CONTENT_RENDERERS.file.sourceEmbed(),
         sourceType.load()
     ]);
-    const editor = options.interactive ? getContentEditor(entity, options) : undefined;
+    const editor = getContentEditor(entity, options);
     const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
 
     const $container = $('<div class="source-embed">');
