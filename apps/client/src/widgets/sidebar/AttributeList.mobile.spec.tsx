@@ -150,7 +150,7 @@ describe("AttributeList on a phone", () => {
         expect(container.querySelector(".attribute-list-panel")?.className).toContain("selecting");
 
         // The toolbar above the cards turns over to the selection.
-        expect(iconsIn(toolbar())).toEqual([ "bx bx-x", "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);
+        expect(iconsIn(toolbar())).toEqual([ "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);
         expect(toolbar()?.compareDocumentPosition(section("attributes-owned")))
             .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });

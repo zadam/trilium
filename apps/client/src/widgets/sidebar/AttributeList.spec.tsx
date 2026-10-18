@@ -919,7 +919,7 @@ describe("AttributeList", () => {
         expect(document.querySelector(".attr-detail")).toBeNull();
 
         // With none picked out it is the one attribute it landed on again.
-        act(() => toolbarButton("bx bx-x")?.click());
+        act(() => selectAllBox()?.click());
         act(() => rows()[1].click());
         expect(selectedNames()).toEqual([]);
         expect(document.querySelector(".attr-detail")).not.toBeNull();
@@ -1135,46 +1135,47 @@ describe("AttributeList", () => {
         // Only that the count has a slot: the wording is translated, and translations stay unloaded.
         expect(toolbar?.querySelector(".attribute-selection-count")).not.toBeNull();
         expect(container.querySelector(".attribute-add-row")).not.toBeNull();
-        // Clearing, copying and deleting go ahead of adding, which stays at the end.
-        expect(toolbarIcons()).toEqual([ "bx bx-x", "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);
+        // Copying and deleting go ahead of adding, which stays at the end.
+        expect(toolbarIcons()).toEqual([ "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);
 
         // Copying holds the attributes, which puts pasting on offer, also at the end.
         await act(async () => toolbarButton("bx bx-copy")?.click());
-        expect(toolbarIcons()).toEqual([ "bx bx-x", "bx bx-copy", "bx bx-trash", "bx bx-paste", "bx bx-plus" ]);
+        expect(toolbarIcons()).toEqual([ "bx bx-copy", "bx bx-trash", "bx bx-paste", "bx bx-plus" ]);
 
         // An inherited row is the source note's to delete, so the selection cannot be deleted.
         checkbox(3).click();
         expect(toolbarIcons()).not.toContain("bx bx-trash");
 
-        // Clearing the selection leaves pasting and adding where they were.
-        act(() => toolbarButton("bx bx-x")?.click());
+        // Clearing the selection from the checkbox leaves pasting and adding where they were.
+        act(() => selectAllBox()?.click());
         expect(selectedNames()).toEqual([]);
         expect(container.querySelector(".attribute-selection-count")).toBeNull();
         expect(toolbarIcons()).toEqual([ "bx bx-paste", "bx bx-plus" ]);
         expect(firstPanel().className).not.toContain("selecting");
     });
 
-    it("selects every row from the toolbar's checkbox, and clears the selection from it once all are", () => {
+    it("selects every row from the toolbar's checkbox with none selected, and clears any selection from it", () => {
         renderPanel(noteWithAttributes());
-        const box = container.querySelector<HTMLInputElement>(".attribute-toolbar .form-checkbox input");
-        expect(box).not.toBeNull();
+        const box = selectAllBox();
         expect(box?.checked).toBe(false);
         expect(box?.indeterminate).toBe(false);
-
-        // Some rows selected: the box shows the mixed state, and a click selects the rest.
-        checkbox(0).click();
-        expect(box?.indeterminate).toBe(true);
-        expect(box?.checked).toBe(false);
 
         act(() => box?.click());
         expect(selectedNames()).toEqual([ "author", "cssClass", "template", "inheritedLabel", "archived", "priority", "status" ]);
         expect(box?.checked).toBe(true);
-        expect(box?.indeterminate).toBe(false);
 
-        // All rows selected: a click clears the selection.
         act(() => box?.click());
         expect(selectedNames()).toEqual([]);
         expect(box?.checked).toBe(false);
+
+        // Some rows selected: the box shows the mixed state, and a click clears rather than selecting
+        // the rest, though the browser checks the box on that click.
+        checkbox(0).click();
+        expect(box?.indeterminate).toBe(true);
+        act(() => box?.click());
+        expect(selectedNames()).toEqual([]);
+        expect(box?.checked).toBe(false);
+        expect(box?.indeterminate).toBe(false);
     });
 
     it("lets a note that cannot be edited be copied from, but not deleted from or pasted onto", async () => {
@@ -1187,10 +1188,10 @@ describe("AttributeList", () => {
         expect(container.querySelector(".attribute-toolbar .attribute-toolbar-read-only")).not.toBeNull();
         expect(toolbarIcons()).toEqual([]);
 
-        // The toolbar offers clearing and copying only: no paste, delete or add.
+        // The toolbar offers copying only: no paste, delete or add.
         checkbox(0).click();
         checkbox(1).click();
-        expect(toolbarIcons()).toEqual([ "bx bx-x", "bx bx-copy" ]);
+        expect(toolbarIcons()).toEqual([ "bx bx-copy" ]);
         // The count takes the notice's place while rows are selected.
         expect(container.querySelector(".attribute-toolbar-read-only")).toBeNull();
 
@@ -1289,6 +1290,12 @@ describe("AttributeList", () => {
     function toolbarButton(icon: string) {
         return container.querySelector<HTMLElement>(
             `.attribute-toolbar .icon-action.${icon.split(" ").join(".")}`);
+    }
+
+    function selectAllBox() {
+        const box = container.querySelector<HTMLInputElement>(".attribute-toolbar .form-checkbox input");
+        expect(box).not.toBeNull();
+        return box;
     }
 
     function selectedNames() {

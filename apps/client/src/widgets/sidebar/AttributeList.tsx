@@ -1597,8 +1597,8 @@ function getClipboardValue(attribute: Attribute) {
  * rows are selected, it also holds the selection's count and actions. Its height stays the same
  * either way, so starting or ending a selection moves nothing.
  *
- * The checkbox's label is "Select all" with nothing selected and the count otherwise. It selects every
- * row unless all are selected already, in which case it clears the selection.
+ * The checkbox's label is "Select all" with nothing selected and the count otherwise. A click selects
+ * every row when none is selected, and clears the selection otherwise.
  *
  * Paste and add stay at the trailing end in both states, and the selection's actions go before them.
  * Deleting is offered only when every selected row is the note's own. On a note that cannot be edited, a
@@ -1635,16 +1635,8 @@ function AttributeToolbar({ selectionCount, selectableCount, readOnly, held, can
                         : t("attribute_list_panel.select_all")}
                     currentValue={allSelected}
                     indeterminate={isSelecting && !allSelected}
-                    // A click on a partly checked box checks it, so `checked` alone tells the two actions apart.
-                    onChange={(checked) => checked ? onSelectAll() : onClearSelection()}
-                />
-            )}
-
-            {isSelecting && (
-                <ActionButton
-                    icon="bx bx-x"
-                    text={t("attribute_list_panel.clear_selection")}
-                    onClick={onClearSelection}
+                    // Decided by the selection, not by `checked`: a click on a partly checked box checks it.
+                    onChange={() => isSelecting ? onClearSelection() : onSelectAll()}
                 />
             )}
 

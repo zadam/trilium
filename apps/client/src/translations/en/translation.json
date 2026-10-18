@@ -901,7 +901,6 @@
     "paste_other": "Paste {{count}} attributes",
     "selected_one": "{{count}} selected",
     "selected_other": "{{count}} selected",
-    "clear_selection": "Clear the selection",
     "copied_one": "{{count}} attribute copied",
     "copied_other": "{{count}} attributes copied",
     "pasted_one": "{{count}} attribute pasted",
