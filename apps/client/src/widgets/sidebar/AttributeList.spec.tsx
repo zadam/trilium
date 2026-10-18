@@ -184,47 +184,46 @@ describe("AttributeList", () => {
         }
     });
 
-    it("holds the note's own attributes, the inherited ones and the definitions of either in one list", () => {
+    it("holds the note's own attributes, the inherited ones and the definitions of either in a card each", () => {
         renderPanel(noteWithAttributes());
 
-        // One card for the lot, every run of it under a heading of its own — the card names the
-        // panel, so the note's own attributes need one as much as the rest do.
-        expect(container.querySelectorAll(".card")).toHaveLength(1);
-        expect(groupIds()).toEqual([ "attributes-owned", "attributes-inherited", "attributes-definitions" ]);
-        expect(namesIn(group("attributes-owned"))).toEqual([ "author", "cssClass", "template" ]);
-        expect(namesIn(group("attributes-inherited"))).toEqual([ "inheritedLabel", "archived" ]);
+        // Each card counts its rows in its title.
+        expect(card("attributes-inherited").querySelector(".attribute-run-count")?.textContent).toBe("2");
+        expect(cardIds()).toEqual([ "attributes-owned", "attributes-inherited", "attributes-definitions" ]);
+        expect(namesIn(card("attributes-owned"))).toEqual([ "author", "cssClass", "template" ]);
+        expect(namesIn(card("attributes-inherited"))).toEqual([ "inheritedLabel", "archived" ]);
         // The definitions of both notes share a group, the note's own first, and lose their prefix.
-        expect(namesIn(group("attributes-definitions"))).toEqual([ "priority", "status" ]);
+        expect(namesIn(card("attributes-definitions"))).toEqual([ "priority", "status" ]);
 
         // The kind is carried by the icon; a definition takes the icon of the field it sets up.
-        expect(iconsIn(group("attributes-owned"))).toEqual([ "bx bx-hash", "bx bx-hash", "bx bx-transfer" ]);
+        expect(iconsIn(card("attributes-owned"))).toEqual([ "bx bx-hash", "bx bx-hash", "bx bx-transfer" ]);
 
         // The icon also carries the row's one tooltip — the row itself has none to compete with it.
         // Only its presence: the wording is translated, and translations stay unloaded here.
         expect(container.querySelector(".attribute-row")?.hasAttribute("title")).toBe(false);
         expect(container.querySelector(".attribute-kind")?.hasAttribute("title")).toBe(true);
         // A definition that names no type sets up a text field, and takes that field's icon.
-        expect(iconsIn(group("attributes-definitions"))).toEqual([ "bx bx-calendar", "bx bx-text" ]);
+        expect(iconsIn(card("attributes-definitions"))).toEqual([ "bx bx-calendar", "bx bx-text" ]);
 
         // The names Trilium reads for itself come last, below a rule, and are marked as such.
-        expect(group("attributes-owned").querySelectorAll("hr.attribute-rows-divider")).toHaveLength(1);
-        expect([ ...group("attributes-owned").querySelectorAll(".attribute-kind") ]
+        expect(card("attributes-owned").querySelectorAll("hr.attribute-rows-divider")).toHaveLength(1);
+        expect([ ...card("attributes-owned").querySelectorAll(".attribute-kind") ]
             .map((kind) => kind.className.includes("marker-system")))
             .toEqual([ false, true, true ]);
 
         // A row of the note's own is deletable and unattributed; an inherited one names its note instead.
-        expect(group("attributes-owned").querySelectorAll(".attribute-delete-button")).toHaveLength(3);
-        expect(group("attributes-owned").querySelectorAll(".attribute-owner")).toHaveLength(0);
-        expect(group("attributes-inherited").querySelectorAll(".attribute-delete-button")).toHaveLength(0);
-        expect(group("attributes-inherited").querySelectorAll(".attribute-owner")).toHaveLength(2);
+        expect(card("attributes-owned").querySelectorAll(".attribute-delete-button")).toHaveLength(3);
+        expect(card("attributes-owned").querySelectorAll(".attribute-owner")).toHaveLength(0);
+        expect(card("attributes-inherited").querySelectorAll(".attribute-delete-button")).toHaveLength(0);
+        expect(card("attributes-inherited").querySelectorAll(".attribute-owner")).toHaveLength(2);
         // Only what the note may edit is deletable, whichever run it is in.
-        expect(group("attributes-definitions").querySelectorAll(".attribute-delete-button")).toHaveLength(1);
+        expect(card("attributes-definitions").querySelectorAll(".attribute-delete-button")).toHaveLength(1);
 
         // An inheritable attribute is marked, and every definition previews what it sets up — a
         // set-holding one (label:status, "multi") by a mark of its own rather than by words.
-        expect(group("attributes-inherited").querySelectorAll(".attribute-marker")).toHaveLength(2);
-        expect(group("attributes-definitions").querySelectorAll(".attribute-value.definition")).toHaveLength(2);
-        expect(group("attributes-definitions").querySelectorAll(".definition-marker")).toHaveLength(1);
+        expect(card("attributes-inherited").querySelectorAll(".attribute-marker")).toHaveLength(2);
+        expect(card("attributes-definitions").querySelectorAll(".attribute-value.definition")).toHaveLength(2);
+        expect(card("attributes-definitions").querySelectorAll(".definition-marker")).toHaveLength(1);
     });
 
     it("lists the attributes of a note that cannot be edited, offering no way to change them", () => {
@@ -232,34 +231,37 @@ describe("AttributeList", () => {
         note.isContentWritable = false;
         renderPanel(note);
 
-        expect(namesIn(group("attributes-owned"))).toEqual([ "author", "cssClass", "template" ]);
+        expect(namesIn(card("attributes-owned"))).toEqual([ "author", "cssClass", "template" ]);
         // Read as any other note's: Trilium's own names below the rule, inherited ones naming their note.
-        expect(group("attributes-owned").querySelectorAll("hr.attribute-rows-divider")).toHaveLength(1);
-        expect(group("attributes-inherited").querySelectorAll(".attribute-owner")).toHaveLength(2);
+        expect(card("attributes-owned").querySelectorAll("hr.attribute-rows-divider")).toHaveLength(1);
+        expect(card("attributes-inherited").querySelectorAll(".attribute-owner")).toHaveLength(2);
         expect(container.querySelectorAll(".attribute-delete-button")).toHaveLength(0);
         expect(container.querySelectorAll(".attribute-edit-button")).toHaveLength(0);
         expect(container.querySelector(".attribute-add-row")).toBeNull();
         expect(container.querySelector(".bx-plus")).toBeNull();
     });
 
-    it("folds a run of rows away by its heading, and remembers it folded", async () => {
+    it("collapses a card by its header, and remembers it collapsed", async () => {
         options.set("rightPaneCollapsedItems", JSON.stringify([ "attributes-inherited" ]));
         renderPanel(noteWithAttributes());
 
-        // Remembered from before, so the run arrives folded and its rows are not drawn at all.
-        expect(group("attributes-inherited").className).toContain("collapsed");
-        expect(namesIn(group("attributes-inherited"))).toEqual([]);
-        // The card is the only one its tab has, so it is not itself something to fold away.
-        expect(container.querySelector(".card")?.className).toContain("not-collapsible");
+        // A card remembered as collapsed renders without its rows.
+        expect(card("attributes-inherited").className).toContain("collapsed");
+        expect(namesIn(card("attributes-inherited"))).toEqual([]);
 
-        await act(async () => groupHeader("attributes-inherited").click());
-        expect(group("attributes-inherited").className).not.toContain("collapsed");
-        expect(namesIn(group("attributes-inherited"))).toEqual([ "inheritedLabel", "archived" ]);
+        await act(async () => cardHeader("attributes-inherited").click());
+        expect(card("attributes-inherited").className).not.toContain("collapsed");
+        expect(namesIn(card("attributes-inherited"))).toEqual([ "inheritedLabel", "archived" ]);
         expect(JSON.parse(options.get("rightPaneCollapsedItems") ?? "[]")).not.toContain("attributes-inherited");
 
-        // And folding one back up is remembered the same way.
-        await act(async () => groupHeader("attributes-definitions").click());
+        // Collapsing is remembered the same way.
+        await act(async () => cardHeader("attributes-definitions").click());
         expect(JSON.parse(options.get("rightPaneCollapsedItems") ?? "[]")).toContain("attributes-definitions");
+
+        // A note with one card has nothing to collapse it in favor of.
+        render(null, container);
+        renderPanel(buildNote({ id: "bare", title: "Bare", "#author": "Elian" }));
+        expect(card("attributes-owned").className).toContain("not-collapsible");
     });
 
     it("leaves a note carrying no attributes its heading and the way in, and says nothing besides", () => {
@@ -270,9 +272,9 @@ describe("AttributeList", () => {
         // would be a third telling of the one fact, and the loudest of the three at that.
         expect(container.querySelectorAll(".attribute-row")).toHaveLength(0);
         expect(container.querySelector(".no-items")).toBeNull();
-        expect(groupIds()).toEqual([ "attributes-owned" ]);
-        expect(group("attributes-owned").querySelector(".attribute-group-count")?.textContent).toBe("0");
-        expect(group("attributes-owned").querySelector(".attribute-add-row")).not.toBeNull();
+        expect(cardIds()).toEqual([ "attributes-owned" ]);
+        expect(card("attributes-owned").querySelector(".attribute-run-count")?.textContent).toBe("0");
+        expect(card("attributes-owned").querySelector(".attribute-add-row")).not.toBeNull();
 
         // Adding takes the placeholder's place: there is a row again, draft though it still is.
         act(() => container.querySelector<HTMLElement>(".attribute-add-row")?.click());
@@ -285,15 +287,15 @@ describe("AttributeList", () => {
         const note = buildNote({ id: "linking", title: "Linking", "#author": "Elian", "~internalLink": "target" });
 
         renderPanel(note);
-        expect(groupIds()).toEqual([ "attributes-owned" ]);
+        expect(cardIds()).toEqual([ "attributes-owned" ]);
 
         // Unmounted first, the panel collecting the attributes of the note it is handed as it mounts.
         setDevBuild(true);
         render(null, container);
         renderPanel(note);
 
-        expect(groupIds()).toEqual([ "attributes-owned", "attributes-internal" ]);
-        const internal = group("attributes-internal");
+        expect(cardIds()).toEqual([ "attributes-owned", "attributes-internal" ]);
+        const internal = card("attributes-internal");
         expect(namesIn(internal)).toEqual([ "internalLink" ]);
         // Nothing on such a row is the note's to change, and nothing marks it as Trilium's own: the
         // heading it is under says as much of every row it holds.
@@ -400,7 +402,7 @@ describe("AttributeList", () => {
         // a long way from the definitions once a template has filled the pane. It adds the one kind —
         // the form's own list of field types is where a relation definition is reached — so it opens
         // the same popup on the same thing the menu's third entry did, with no menu in between.
-        const definitionAddRow = group("attributes-definitions").querySelector<HTMLElement>(".attribute-add-row");
+        const definitionAddRow = card("attributes-definitions").querySelector<HTMLElement>(".attribute-add-row");
         expect(definitionAddRow).not.toBeNull();
         act(() => definitionAddRow?.click());
         expect(document.querySelector(".attr-detail")).not.toBeNull();
@@ -477,7 +479,7 @@ describe("AttributeList", () => {
 
         // ...in a row at the foot of the list, where the press that opened it was — and not where
         // the sort would file a name it does not have yet, above the ones Trilium reads for itself.
-        const ownedRun = group("attributes-owned");
+        const ownedRun = card("attributes-owned");
         expect(namesIn(ownedRun)).toEqual([ "author", "cssClass", "template", "" ]);
         expect([ ...ownedRun.querySelectorAll(".attribute-row") ].at(-1)?.contains(editor ?? null)).toBe(true);
 
@@ -682,7 +684,7 @@ describe("AttributeList", () => {
         // hold open — and an inherited flag with no value is not something the note lacks.
         render(null, container);
         renderPanel(noteWithAttributes());
-        const archived = [ ...group("attributes-inherited").querySelectorAll(".attribute-row") ]
+        const archived = [ ...card("attributes-inherited").querySelectorAll(".attribute-row") ]
             .find((row) => row.querySelector(".attribute-name")?.textContent === "archived");
         expect(archived?.querySelector(".attribute-value")?.className).not.toContain("value-placeholder");
         expect(archived?.querySelector(".attribute-value")?.textContent).toBe("");
@@ -1112,10 +1114,8 @@ describe("AttributeList", () => {
         const bar = container.querySelector(".attribute-selection-bar");
         expect(bar).not.toBeNull();
         expect(firstPanel().className).toContain("selecting");
-        // The bar belongs to the whole list rather than to a run of it, the rows it acts on being
-        // picked out anywhere: it stands at the list's own foot, outside every folding run.
-        expect(bar?.closest(".attribute-group")).toBeNull();
-        expect(bar?.closest(".attribute-list-panel")).not.toBeNull();
+        // The bar follows the cards rather than sitting in one, since a selection can span several.
+        expect(bar?.closest(".card")).toBeNull();
         // Adding an attribute stays on offer beside the note's own rows; the bar took nothing over.
         expect(container.querySelector(".attribute-add-row")).not.toBeNull();
         // Only that the count has a slot: the wording is translated, and translations stay unloaded.
@@ -1301,23 +1301,21 @@ describe("AttributeList", () => {
         });
     }
 
-    function groupIds() {
-        return [ ...container.querySelectorAll(".attribute-group") ]
-            .map((el) => [ ...el.classList ].find((name) => name.startsWith("attributes-")));
+    function cardIds() {
+        return [ ...container.querySelectorAll(".card") ].map((el) => el.id);
     }
 
-    function group(id: string) {
-        const el = container.querySelector<HTMLElement>(`.attribute-group.${id}`);
+    function card(id: string) {
+        const el = container.querySelector<HTMLElement>(`.card#${id}`);
         expect(el, id).not.toBeNull();
         return el as HTMLElement;
     }
 
-    function groupHeader(id: string) {
-        const header = group(id).querySelector<HTMLElement>(".attribute-group-header");
+    function cardHeader(id: string) {
+        const header = card(id).querySelector<HTMLElement>(".card-header");
         expect(header, id).not.toBeNull();
         return header as HTMLElement;
     }
-
 
     function firstRow() {
         const row = container.querySelector<HTMLElement>(".attribute-row");

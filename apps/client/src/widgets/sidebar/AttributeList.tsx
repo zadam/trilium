@@ -24,7 +24,7 @@ import { ColorChip, renderLabelValue } from "../attribute_widgets/label_value_di
 import ActionButton from "../react/ActionButton";
 import SimpleBadge from "../react/Badge";
 import { FormListItem } from "../react/FormList";
-import { useActiveNoteContext, useTriliumEvent, useTriliumOptionJson } from "../react/hooks";
+import { useActiveNoteContext, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import { DetailPane, MasterPane, useMasterDetail, useMasterDetailPage } from "../react/master_detail";
 import NoItems from "../react/NoItems";
@@ -681,15 +681,12 @@ export default function AttributeList() {
         onSaveAndClose: detail?.isOwned ? commit : undefined,
         onDelete: detail?.isOwned ? () => void deleteAttribute(detail.attribute) : undefined
     };
-    // The runs the panel is made of, in the order it draws them — the same runs either way it is
-    // drawn (see below), so what a run is and what it holds is settled in one place.
+    // The runs of the panel, in display order; each is drawn as a card.
     const runs: AttributeRun[] = [ {
         id: "attributes-owned",
         title: t("attribute_list_panel.section_owned"),
         count: sections.owned.length,
-        // The note's own values read from the trailing edge, as the inherited ones' do — the two
-        // runs of plain attributes reading as one ledger. Nothing stands in for the run holding
-        // nothing: its count says it is empty and its way in says what there is to do about it.
+        help: "attributes",
         // The draft under creation is listed last, outside the split between the note's own names and
         // Trilium's (see `creationRow`).
         rows: (
@@ -737,10 +734,7 @@ export default function AttributeList() {
     // here rather than at each use so that one render offers the same thing everywhere in itself.
     const heldAttributes = getHeldAttributes();
 
-    // At the foot of the runs, the rows it acts on being picked out anywhere among them. It holds
-    // there while they are scrolled (see the stylesheet), so it is the one thing both ways of
-    // drawing them share: a phone picks rows out by holding one down, a pointer by the checkbox or
-    // a modifier, and either way what can be done about it is said in the one place.
+    // After the cards rather than inside one, since a selection can span several cards.
     const selectionBar = note && isSelecting && (
         <AttributeSelectionBar
             count={selection.size}
@@ -762,38 +756,23 @@ export default function AttributeList() {
         ...clipboardProps
     };
 
-    const sectionList = IS_MOBILE ? (
-        // A card each, as the panel had before its runs became headings of one card. What made them
-        // headings was a pane a hand wide, where four card headers were a great deal of it to spend
-        // on saying which run is which — and the tree that gathered them was drawn for a pointer, in
-        // hairlines and hover. A phone has neither: the panel is a sheet the width of the screen,
-        // which has the room, and the card is already how everything else on it says that things
-        // belong together (see the settings pages). So the runs are cards again here, and the tree
-        // is left to the pane that needed it.
-        <>
+    // A card per run. With a single card, there is nothing to collapse it in favor of.
+    const sectionList = (
+        <CollapsibleWidgets.Provider value={runs.length > 1}>
             {runs.map((run, index) => (
                 <AttributeSection
                     key={run.id}
                     id={run.id}
                     title={run.title}
                     count={run.count}
-                    buttons={note && (index === 0 ? (
-                        // The panel's own two ride on the first card: there is no header above the
-                        // cards to put them in, and the note's own attributes are what the panel is
-                        // opened for. The menu is also the only way to a relation on a phone, whose
-                        // rows are pressed rather than typed into — hence every kind, not just this
-                        // run's.
+                    grow={index === 0}
+                    buttons={note && (
                         <>
-                            <SidebarHelp section="attributes" />
+                            {run.help && <SidebarHelp section={run.help} />}
 
-                            {/* The only way to paste a phone has. A pointer has three — the key,
-                                a right press on a row, a right press beside them — and all three
-                                are a pointer's: there is no paste key to press, a row that is held
-                                down is being picked out instead, and the list a press beside the
-                                rows would land on is nothing at all on the note that most wants
-                                pasting into, having no rows to give it a height. The header is the
-                                one part of a run that stands whatever the run holds. */}
-                            {canEdit && heldAttributes.length > 0 && (
+                            {/* The only paste control that works on a phone and on a note with no
+                                attributes, which has no rows to right-click. */}
+                            {index === 0 && canEdit && heldAttributes.length > 0 && (
                                 <ActionButton
                                     icon="bx bx-paste"
                                     text={t("attribute_list_panel.paste", { count: heldAttributes.length })}
@@ -804,19 +783,16 @@ export default function AttributeList() {
                                 />
                             )}
 
-                            {canEdit && <AddAttributeButton
-                                text={t("attribute_editor.add_a_new_attribute")}
-                                attrTypes={ALL_ATTRIBUTE_KINDS}
-                                onSelect={addAttribute}
-                            />}
-                        </>
-                    ) : (
-                        <>
-                            {run.help && <SidebarHelp section={run.help} />}
-                            {run.add && (
-                                // A run that can be added to says so in its own header, which is where a
-                                // card keeps what is done to it. The ghost row a pointer gets is a hover
-                                // affordance, so it stays on the desktop.
+                            {index === 0 && canEdit && (
+                                <AddAttributeButton
+                                    text={t("attribute_editor.add_a_new_attribute")}
+                                    attrTypes={ALL_ATTRIBUTE_KINDS}
+                                    onSelect={addAttribute}
+                                />
+                            )}
+
+                            {/* A phone has no hover, so it adds from the header instead of the add row. */}
+                            {index > 0 && IS_MOBILE && run.add && (
                                 <ActionButton
                                     icon="bx bx-plus"
                                     text={run.add.text}
@@ -827,25 +803,24 @@ export default function AttributeList() {
                                 />
                             )}
                         </>
-                    ))}
+                    )}
                 >
                     <div
                         class={clsx("attribute-list-panel", isSelecting && "selecting")}
-                        // The popup anchors to the panel, and the first card is the one it is
-                        // opened over: the note's own attributes are what it edits.
+                        // The detail popup anchors to the first card, which holds the note's own attributes.
                         ref={index === 0 ? containerRef : undefined}
                         {...panelProps}
                     >
                         {run.rows}
 
-                        {/* A run holding nothing says so here, where a pointer's does not: there,
-                            the count says the run is empty and the add row beneath it says what
-                            there is to do about it, so a third telling would be one too many. A
-                            phone has no add row — a card keeps what is done to it in its header —
-                            which leaves an empty run as an empty card, saying nothing at all. Only
-                            the note's own attributes can be shown empty; every other run is left
-                            out entirely when it holds nothing. */}
-                        {run.count === 0 && (
+                        {!IS_MOBILE && run.add && (
+                            <AddAttributeRow
+                                text={run.add.text}
+                                onAdd={(e) => addAttribute(run.add?.kind ?? "label", e)}
+                            />
+                        )}
+
+                        {run.count === 0 && (IS_MOBILE || !run.add) && (
                             <NoItems icon="bx bx-hash" text={t("attribute_list_panel.no_attributes")} />
                         )}
                     </div>
@@ -853,56 +828,6 @@ export default function AttributeList() {
             ))}
 
             {selectionBar}
-        </>
-    ) : (
-        // One card holding the lot, the runs being headings within it rather than cards of their
-        // own: they are one list to the eye and one list to a selection — a range runs from any row
-        // to any other — and four headers is a great deal of a hand-wide pane to spend on saying
-        // which run is which. It also leaves the selection's own bar somewhere to belong: a bar at
-        // the foot of one card among several belonged to a card the picked rows need not have been
-        // in at all.
-        //
-        // Collapsing moves to the headings with it. The card cannot be collapsed away, being all its
-        // tab has (see RightPanelWidget), which is what the context below says.
-        <CollapsibleWidgets.Provider value={false}>
-            <AttributeSection
-                id="attributes"
-                title={t("attributes_panel.title")}
-                grow
-                buttons={note && (
-                    <>
-                        <SidebarHelp section="attributes" />
-                        {canEdit && <AddAttributeButton
-                            text={t("attribute_editor.add_a_new_attribute")}
-                            attrTypes={ALL_ATTRIBUTE_KINDS}
-                            onSelect={addAttribute}
-                        />}
-                    </>
-                )}
-            >
-                <div
-                    class={clsx("attribute-list-panel", isSelecting && "selecting")}
-                    ref={containerRef}
-                    {...panelProps}
-                >
-                    {runs.map((run) => (
-                        <AttributeGroup key={run.id} id={run.id} title={run.title} count={run.count}>
-                            {run.rows}
-
-                            {/* Inside the run it adds to rather than at the foot of everything, and
-                                put away with it. */}
-                            {run.add && note && (
-                                <AddAttributeRow
-                                    text={run.add.text}
-                                    onAdd={(e) => addAttribute(run.add?.kind ?? "label", e)}
-                                />
-                            )}
-                        </AttributeGroup>
-                    ))}
-
-                    {selectionBar}
-                </div>
-            </AttributeSection>
         </CollapsibleWidgets.Provider>
     );
 
@@ -945,131 +870,55 @@ export default function AttributeList() {
     );
 }
 
-/**
- * One run of the panel — a heading with its rows on a desktop, a card of its own on a phone. Held
- * apart from either so that what the runs are, and which of them the note has at all, is settled
- * once rather than twice over.
- */
+/** One run of the panel. */
 interface AttributeRun {
-    /** What the run is known by: a class on it, and what a collapsed run is remembered under. */
+    /** The card's id, which is also the key its collapsed state is remembered under. */
     id: string;
     title: string;
     count: number;
     rows: ComponentChildren;
-    /** The `?` of the run, shown in its card header on a phone. */
     help?: SidebarSectionId;
-    /** How the run is added to, for the runs that can be — the kind, and what to call adding it. */
+    /** The kind of attribute the run's add control creates, and the control's label. */
     add?: { kind: AttributeKind; text: string };
 }
 
 interface AttributeSectionProps {
-    /** What the right pane remembers the section by, collapsed state and all. */
+    /** The id the right pane remembers the card's collapsed state under. */
     id: string;
     title: string;
-    /**
-     * How many rows the section holds, where it stands for one run. A phone puts it beside the name
-     * in the card's own heading, the runs being cards there; the right pane's card names the whole
-     * panel and leaves counting to the headings within it.
-     */
-    count?: number;
+    /** Shown as a badge after the title. */
+    count: number;
     children: ComponentChildren;
     buttons?: ComponentChildren;
-    /** Passed on to {@link RightPanelWidget}, which is the only host that has room to give. */
+    /** Passed to {@link RightPanelWidget}; a phone has no use for it. */
     grow?: boolean;
 }
 
 /**
- * One section, drawn as the layout it is in draws a titled group of things: a card of the right pane on
- * a desktop, foldable and remembered as folded; the same card the settings pages are built from on a
- * phone, where the panel is a page of its own and a title is read rather than pressed.
+ * One card: a collapsible {@link RightPanelWidget} on desktop, and an {@link OptionsSection} on a
+ * phone, which matches the settings pages.
  */
 function AttributeSection({ id, title, count, children, buttons, grow }: AttributeSectionProps) {
+    const heading = (
+        <>
+            {title}
+            <SimpleBadge className="attribute-run-count" title={count} />
+        </>
+    );
+
     if (IS_MOBILE) {
-        // The id names the section here too, as a class: it is what the right pane knows the section by,
-        // and there is no reason for a stylesheet (or a test) to know it by anything else.
+        // On a phone the id is a class, since `OptionsSection` has no id.
         return (
-            <OptionsSection
-                className={id}
-                title={
-                    <>
-                        {title}
-                        {/* The figure the desktop headings wear, in a heading that is uppercase and
-                            letter-spaced — which a number takes no part in (see the stylesheet). */}
-                        {count !== undefined && <SimpleBadge className="attribute-run-count" title={count} />}
-                    </>
-                }
-                actions={buttons}
-            >
+            <OptionsSection className={id} title={heading} actions={buttons}>
                 {children}
             </OptionsSection>
         );
     }
 
     return (
-        <RightPanelWidget id={id} title={title} buttons={buttons} grow={grow}>
+        <RightPanelWidget id={id} title={heading} buttons={buttons} grow={grow}>
             {children}
         </RightPanelWidget>
-    );
-}
-
-/**
- * One run of rows under a heading that folds it away: the note's own attributes, what reaches it
- * from elsewhere, the definitions behind either, and — in a development build — what Trilium wrote
- * for itself. The card names the panel rather than any one of them, so each says what it is itself.
- *
- * A card each is what they were before, which spent four headers' worth of a hand-wide pane on
- * saying which run was which. What is kept from those cards is the folding — a template's dozens of
- * inherited attributes can still be put away — and what it is remembered under, so a pane that had
- * them put away has them put away still.
- */
-function AttributeGroup({ id, title, count, children }: {
-    id: string;
-    title: string;
-    /** How many rows the run holds, shown beside its name rather than read ahead of it. */
-    count: number;
-    children: ComponentChildren;
-}) {
-    const [ collapsedItems, setCollapsedItems ] = useTriliumOptionJson<string[]>("rightPaneCollapsedItems");
-    const [ collapsed, setCollapsed ] = useState(collapsedItems.includes(id));
-
-    function toggle() {
-        const remembered = new Set(collapsedItems);
-        if (collapsed) {
-            remembered.delete(id);
-        } else {
-            remembered.add(id);
-        }
-
-        setCollapsed(!collapsed);
-        void setCollapsedItems([ ...remembered ]);
-    }
-
-    return (
-        // Named by its id as the card it stands in for was, which is what a stylesheet — or a test —
-        // knows the run by.
-        <div class={clsx("attribute-group", id, collapsed && "collapsed")}>
-            <div
-                class="attribute-group-header"
-                onClick={(e) => {
-                    // Kept from the list, whose handler would close a form this press is not about.
-                    e.stopPropagation();
-                    toggle();
-                }}
-            >
-                <Icon className="attribute-group-chevron" icon="bx bx-chevron-down" />
-                <span class="attribute-group-title">{title}</span>
-
-                {/* Beside the name rather than away at the trailing edge: it is read as part of what
-                    the run is called. The plain badge, as the note tree counts a node's hidden
-                    children with and as the checkbox tree counts its leaves — a bare figure, the
-                    heading beside it saying what is being counted. */}
-                <SimpleBadge className="attribute-group-count" title={count} />
-            </div>
-
-            {/* The rows hang together under the heading rather than each standing on its own, so that
-                the line drawn down from it (see the stylesheet) is one line and not one per row. */}
-            {!collapsed && <div class="attribute-group-body">{children}</div>}
-        </div>
     );
 }
 

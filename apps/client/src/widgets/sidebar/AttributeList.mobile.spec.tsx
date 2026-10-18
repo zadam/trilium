@@ -55,17 +55,12 @@ describe("AttributeList on a phone", () => {
         vi.useRealTimers();
     });
 
-    it("draws a card per run rather than the tree a pointer gets", () => {
+    it("draws a card per run", () => {
         renderPanel(noteWithRuns());
 
-        // A card each, as the panel had before its runs became headings of one card: the tree that
-        // gathers them is a pointer's affordance — hairlines, hover, a fold — drawn for a pane a hand
-        // wide, and a phone has neither the pointer nor the want of room.
-        expect(container.querySelectorAll(".attribute-group")).toHaveLength(0);
-        expect(container.querySelectorAll(".attribute-group-header")).toHaveLength(0);
         expect(sectionIds()).toEqual([ "attributes-owned", "attributes-inherited", "attributes-definitions" ]);
 
-        // Each card names its run and counts it beside the name, as the headings do on a desktop.
+        // Each card counts its rows in its title.
         expect(section("attributes-owned").querySelector(".attribute-run-count")?.textContent).toBe("2");
         expect(section("attributes-definitions").querySelector(".attribute-run-count")?.textContent).toBe("2");
 
