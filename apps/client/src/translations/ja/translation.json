@@ -1416,9 +1416,9 @@
     "run_on_instance": "どの Trilium インスタンスでこれを実行するかを定義します。デフォルトはすべてのインスタンスです。",
     "run_at_hour": "何時に実行するかを指定します。 <code>#run=hourly</code> と併用してください。1日に複数回実行したい場合は、複数回定義できます。",
     "disable_inclusion": "このラベルが付いたスクリプトは親スクリプトの実行には含まれません。",
-    "sorted": "子ノートをタイトルのアルファベット順に並べ替えます。値を指定すると、別の基準で並べ替えられます: その際、<code>title</code>、<code>dateCreated</code>、<code>dateModified</code>、またはラベル名をカンマで区切って指定し、必要に応じてそれぞれに <code>asc</code>（昇順）または <code>desc</code>（降順）を続けます（例: <code>priority desc, dueDate</code>）。",
-    "sort_direction": "<code>#sorted</code> ディレクティブ(指示)は子ノートの順序を指定します: <code>desc</code> なら降順、それ以外なら昇順となります。レベル(階層)指定の直後に <code>asc</code> や <code>desc</code> を記述しても無視されます。また、<code>#sorted</code> が設定されていない場合も無視されます。",
-    "sort_folders_first": "フォルダ（子を持つノート）を上にして並べる。",
+    "sorted": "子ノートをタイトルのアルファベット順で並べ替えます。値を指定すると、別の基準で並べ替えることも可能です: その場合、カンマ区切りのレベルで指定します。各レベルには、<code>#name</code> 形式のラベル、あるいは <code>title</code>,<code>dateCreated</code>,<code>dateModified</code> のいずれかを指定し、必要に応じて <code>asc</code>（昇順）または <code>desc</code>（降順）を付け加えます（例: <code>#priority desc, title</code>）。ラベルや <code>folders</code> の後に <code>first</code> または <code>last</code> を指定すると、それらに該当するノートをまとめて配置できます（例: <code>#archived last, folders first, title</code>）。<code>#</code> を付けずに名前だけを指定した場合は、そのプロパティ、あるいはその名前のラベルに基づいて並べ替えが行われます。",
+    "sort_direction": "ディレクション（方向指定）の <code>#sorted</code> は、子ノートを次の順序に並び替えます: <code>desc</code> を指定すると降順になり、それ以外の値を指定すると昇順になります。レベルの後に <code>asc</code>,<code>desc</code>,<code>first</code>,または <code>last</code> が指定された場合、それらは無視されます。なお、<code>#sorted</code> が設定されていない限り、これらの指定はすべて無視されます。",
+    "sort_folders_first": "フォルダ（子を持つノート）は最上部に並べ替えられます。ただし、<code>#sorted</code> で <code>folders</code> 自体の配置が指定されている場合（例: <code>folders last</code>）は、このルールは無視されます。",
     "top": "指定されたノートをその親ノートの一番上に表示します（並べ替えらた親ノートにのみ適用されます）。",
     "hide_promoted_attributes": "このノートのプロモート属性を非表示にする。",
     "read_only": "エディターは読み取り専用モードです。テキストとコードノートのみ機能します。",
@@ -1655,7 +1655,9 @@
     "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "calendar_title_template": "カレンダー上でのイベントの表示名（繰り返しイベントの場合は各回に適用されます）。<code>${title}</code>, <code>${years}</code>（開始日からの年数）、そして日付 <code>${date}</code> と <code>${startDate}</code> が表示されます。例: 毎年の誕生日であれば <code>${title} (${years})</code> と表示されます。",
     "board_hide_add_column": "ボードコレクションで、最後の列の後に表示される <em>列を追加</em> ボタンを非表示にします。ボードや列のコンテキストメニューから列を追加することは引き続き可能です。",
-    "meeting_recording": "ランチャーバーの \"ミーティングの文字起こし\" ボタンから作成されたノートを示します。このノートには、ミーティングの文字起こし内容が記録されます。"
+    "meeting_recording": "ランチャーバーの \"ミーティングの文字起こし\" ボタンから作成されたノートを示します。このノートには、ミーティングの文字起こし内容が記録されます。",
+    "template_title_template": "テンプレートノートに設定: このテンプレートから作成されるノートのデフォルトタイトルとして使用され、親ノート <code>#titleTemplate</code> の代わりに使用されます。<code>#titleTemplate</code> と同様に評価（変換）され、<code>now</code> と <code>parentNote</code> の変数が利用可能です。例: <code>Meeting ${now.format('YYYY-MM-DD')}</code>。",
+    "calendar_hide_routine_events": "週に {{days}} 日以上繰り返される予定を、月、年、リスト、の各表示から非表示にします。設定した値に応じて適用されます。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
@@ -2579,7 +2581,9 @@
     "board-inbox-column": "インボックス列を表示",
     "board-inbox-column-help": "インボックス列を表示します。この列には、どの列にも割り当てられていない子ノートが一覧表示されます。",
     "vector_auto": "Vector (自動)",
-    "max-nesting-depth-description": "コレクションの子要素から何階層下まで表示するかを指定: 0 は子要素のみを表示し、1 はその子要素のさらに下の階層まで表示され、空欄にすると、すべての階層が表示されます。"
+    "max-nesting-depth-description": "コレクションの子要素から何階層下まで表示するかを指定: 0 は子要素のみを表示し、1 はその子要素のさらに下の階層まで表示され、空欄にすると、すべての階層が表示されます。",
+    "hide-routine-events": "定期的な予定を非表示",
+    "hide-routine-events-help": "週に {{days}} 日以上繰り返される予定を、月、年、リスト、の各表示から非表示にします。日、および、週 の表示では、引き続きこれらの予定が表示されます。"
   },
   "call_to_action": {
     "next_theme_title": "新しいTriliumテーマをお試しください",
@@ -2842,7 +2846,16 @@
     "clipped_note_details": "このノートは Web ページから作成されました。クリックすると、ページの説明、作成者、日付を確認できます。",
     "clipped_note_author": "作成者",
     "clipped_note_published": "公開日",
-    "clipped_note_modified": "更新日"
+    "clipped_note_modified": "更新日",
+    "read_only_locked": "読み取り専用",
+    "read_only_locked_description": "このノートは Trilium によって提供されており、編集できません。",
+    "template": "テンプレート",
+    "template_description": "このノートはテンプレートです。このテンプレートから作成されたノートは、その属性を引き継ぎます。そのため、ここで属性を変更すると、それらのノートすべてにその変更が反映されます。",
+    "template_scope_global": "どこでも利用可能",
+    "template_scope_workspace": "ワークスペース内のみ",
+    "template_scope_workspace_unavailable": "このテンプレートはワークスペース内にありません。",
+    "workspace_template": "ワークスペース テンプレート",
+    "template_properties": "テンプレート プロパティ..."
   },
   "status_bar": {
     "language_title": "コンテンツの言語を変更",
@@ -3832,7 +3845,31 @@
       "type-the-content-of-the-third-column": "3 列目の内容を入力",
       "type-the-content-of-the-fourth-column": "4 列目の内容を入力",
       "table-columns": "表の列",
-      "column-0-width-1": "列 %0 幅: %1%"
+      "column-0-width-1": "列 %0 幅: %1%",
+      "keystrokes-that-can-be-used-in-a-multicolumn-layout": "マルチカラムレイアウトで使用できるキー操作",
+      "move-the-selected-content-to-the-column-on-the-left": "選択したコンテンツを左の列に移動",
+      "move-the-selected-content-to-the-column-on-the-right": "選択したコンテンツを右の列に移動",
+      "move-the-selected-content-to-the-first-column": "選択したコンテンツを最初の列に移動",
+      "move-the-selected-content-to-the-last-column": "選択したコンテンツを最後の列に移動",
+      "move-the-column-to-the-left": "列を左に移動",
+      "move-the-column-to-the-right": "列を右に移動",
+      "make-the-column-the-first-one": "列を最初の位置に",
+      "make-the-column-the-last-one": "列を最後の位置に",
+      "add-a-column-after-the-current-one": "現在の列の後に列を追加",
+      "add-a-column-before-the-current-one": "現在の列の前に列を追加",
+      "keystrokes-that-can-be-used-in-a-tabs-block": "タブブロックで使用できるキー操作",
+      "move-the-selected-content-to-the-tab-on-the-left": "選択したコンテンツを左のタブに移動",
+      "move-the-selected-content-to-the-tab-on-the-right": "選択したコンテンツを右のタブに移動",
+      "move-the-selected-content-to-the-first-tab": "選択したコンテンツを最初のタブに移動",
+      "move-the-selected-content-to-the-last-tab": "選択したコンテンツを最後のタブに移動",
+      "move-the-tab-to-the-left": "タブを左に移動",
+      "move-the-tab-to-the-right": "タブを右に移動",
+      "make-the-tab-the-first-one": "タブを最初の位置に",
+      "make-the-tab-the-last-one": "タブを最後の位置に",
+      "add-a-tab-after-the-current-one": "現在のタブの後にタブを追加",
+      "add-a-tab-before-the-current-one": "現在のタブの前にタブを追加",
+      "scroll-to-the-previous-tabs": "前のタブエリアへスクロール",
+      "scroll-to-the-next-tabs": "次のタブエリアへスクロール"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
@@ -4671,5 +4708,31 @@
     "member_get_label_value": "指定された名前のラベルの値",
     "member_get_relation_value": "指定された名前のリレーションが指すノートの ID",
     "member_format": "指定された形式の日付（YYYY-MM-DDなど）"
+  },
+  "doc_notes": {
+    "hidden": "<p>非表示ツリー（Hidden tree）は、通常、ユーザーの目には触れない状態でアプリケーションレベルのさまざまなデータを記録するために使用されます。</p><p>操作には十分ご注意ください。このサブツリーを誤って変更すると、アプリケーションがクラッシュする可能性があります。</p>",
+    "launchbar_command_launcher": "<p>このランチャー アクションのキーボードショートカットは、オプション &gt; ショートカット から設定できます。</p>",
+    "launchbar_history_navigation": "<p>戻る ボタンと 進む ボタンを使用すると、ナビゲーション履歴を移動できます。</p><p>これらのランチャーはデスクトップ版でのみ有効です。サーバー版では無視されますので、代わりにブラウザー標準のナビゲーションボタンを使用してください。</p>",
+    "launchbar_intro": "<p>ランチャーバーの設定へようこそ。</p><p>ここでは、以下の操作を行うことができます:</p><ul><li>利用可能なランチャーをドラッグして、表示リストへ移動させる（ランチャーバーに追加されます）</li><li>表示されているランチャーをドラッグして、利用可能なリストに移動させる（これにより、ランチャーバーから非表示になります）</li><li>リスト内の項目をドラッグして、順序を変更できます</li><li>\"可視化されたランチャー\" フォルダーを右クリックして、新しいランチャーを作成できます</li><li>デフォルトの設定に戻したい場合は、コンテキストメニューから \"リセット\" を選択してください</li></ul>",
+    "launchbar_note_launcher": "<p>以下の属性を定義できます:</p><ol><li><code>target</code> - ランチャーを起動した際に開くノートを指定します。</li><li><code>hoistedNote</code> - オプション。対象ノートを開く前に、ホイストされたノートを変更します。</li><li><code>keyboardShortcut</code> - オプション。キーボードショートカットを押すことで、そのノートを開くことができます。</li></ol><p>ランチャーバーにはランチャーのタイトルやアイコンが表示されますが、これらは対象となるノートのタイトルやアイコンと必ずしも一致するとは限りません。</p>",
+    "launchbar_quick_search": "<p><a href=\"#root/_help_Ms1nauBra7gq\" target=\"_blank\">クイック検索バー</a>は、水平レイアウトでのみ表示されます。垂直レイアウトでは、デフォルトで表示されているためです。</p><p>詳細については、「<a href=\"#root/_help_x0JgW8UqGXvq\" target=\"_blank\">垂直レイアウトと水平レイアウト</a>」を参照してください。</p>",
+    "launchbar_script_launcher": "<p>スクリプトランチャーは、<code>~script</code>リレーションで接続されたスクリプト（コードノート）を実行できます。</p><ol><li><code>script</code> - ランチャーの起動時に実行されるスクリプトノートへのリレーション</li><li><code>keyboardShortcut</code> - オプション。キーボードショートカットを押すことで、ランチャーを起動できます</li></ol><h4>スクリプトの例</h4><pre>{{sample}}</pre>",
+    "launchbar_spacer": "<p>スペーサーを使用すると、ランチャーを視覚的にグループ化できます。設定はプロモート属性から行えます:</p><ul><li><code>baseSize</code> - サイズをピクセル単位で指定します（十分なスペースがある場合）</li><li><code>growthFactor</code> - スペーサーのサイズを <code>baseSize</code> のままにしたい場合は 0 に設定します。正の値を指定すると、スペーサーは拡大するようになります。</li></ul>",
+    "launchbar_widget_launcher": "<p>プロモート属性で対象のウィジェットノートを指定してください。このウィジェットは、ランチャーバーアイコンを表示するために使用されます。</p><h4>ランチャーバーウィジェットの例</h4><pre>{{sample}}</pre>",
+    "share": "<p>こちらで共有されているすべてのノートをご覧いただけます。</p>",
+    "system_state": "<p>これは組み込みのタスク状態であり、編集や削除はできません。</p><p>変更できるのは位置のみで、この位置によって、チェックボックスツールバーと、キーボードサイクルによる切り替え順序が決まります。</p>",
+    "task_state": "<p>このノートは、to-do タスクの状態を定義します。この状態を示すアイコンがチェックボックス内に表示され、ノートのタイトルがその状態の表示名として使用されます。</p><p>状態の設定は、以下のプロモート属性を通じて行います:</p><ul><li><code>Identifier</code> — 必須。ノートのマークアップ内にメタデータとして保存される内部名称。使用できるのは英数字、<code>-</code>と<code>_</code>のみです。<p class=\"admonition warning\">Trilium の将来のバージョンで追加される可能性のあるタスク状態との競合を避けるため、カスタムタスク状態の識別子には、先頭にアンダースコア<code>_</code>またはハイフン<code>-</code>を付けてください。</p>例: <code>_postponed</code>, <code>_awaiting-feedback</code>, <code>_validated</code>。</li><li><code>Markdown symbol</code> — Markdown 形式でエクスポートする際に、その状態を表すために使用される 1 文字です。例えば、<code>/</code> は <code>- [/]</code> のように出力されます。</li><li><code>Counts as completed</code> — 有効にすると、この状態にあるタスクは「完了」したものとして扱われます。</li><li><code>Color</code> — この状態におけるチェックボックスの色です。</li><li><code>Hidden from toolbar</code> — 有効にすると、この状態は状態リストやキーボード操作による切り替え対象から除外されます。なお、すでにこの状態が適用されているノートについては、引き続き正しく表示されます。</li></ul><p class=\"admonition warning\">設定を変更した場合は、アプリケーションを再読み込みすると反映されます。</p>",
+    "task_states": "<p>このノートには、テキストエディタ内の ToDo チェックボックスで使用できるタスクの状態が記載されています。各子ノートが、それぞれ 1 つの状態に対応しています。</p><p>状態の追加、変更、並べ替え、削除が可能です。新しい状態を追加するには、子ノートを作成し、そのプロモート属性を設定してください。</p><p class=\"admonition warning\">変更を反映させるには、アプリケーションを再読み込みする必要があります。</p>",
+    "user_hidden": "<p>このノートは、ユーザー・スクリプトによって生成されるデータを格納するための専用サブツリーとして機能します。ユーザー・スクリプトは、本来、隠しサブツリー内に自由にデータを作成すべきではありません。</p>"
+  },
+  "template_properties": {
+    "title": "テンプレート プロパティ",
+    "title_template": "作成されるノートのデフォルトのタイトル",
+    "title_template_description": "作成時刻（now）や、ノートが作成される親ノート（parentNote）の情報を参照できます。",
+    "title_template_placeholder": "ミーティング ${now.format('YYYY-MM-DD')}",
+    "new_notes": "新しいノート",
+    "default_parent": "作成されるノートのデフォルトの保存場所",
+    "default_parent_description": "テキストノート内で @ による補完機能を使って作成された場合など、他の場所が選択されなかった場合に配置される場所です。",
+    "default_parent_placeholder": "作成される場所"
   }
 }
