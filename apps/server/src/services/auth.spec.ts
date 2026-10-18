@@ -480,6 +480,51 @@ describe("Auth", () => {
 
             expect(next).toHaveBeenCalled();
         });
+
+        it("checkCredentials requires a valid second factor when TOTP is enabled", async () => {
+            vi.spyOn(sqlInit, "isDbInitialized").mockReturnValue(true);
+            vi.spyOn(passwordService, "isPasswordSet").mockReturnValue(true);
+            vi.spyOn(totp, "isTotpEnabled").mockReturnValue(true);
+            const verifyPasswordSpy = vi.spyOn(passwordEncryptionService, "verifyPassword").mockResolvedValue(true as never);
+            vi.spyOn(totp, "verifyTOTP").mockImplementation((token) => token === "123456");
+            const recoverySpy = vi.spyOn(recoveryCodeService, "verifyRecoveryCode").mockReturnValue(false);
+            const cred = Buffer.from("user:correctpass").toString("base64");
+
+            async function call(headers: Record<string, unknown>) {
+                const res = makeRes();
+                const next = vi.fn();
+                await auth.checkCredentials(makeReq({ headers: { "trilium-cred": cred, ...headers } }), res as never, next);
+                return { res, next };
+            }
+
+            // Missing token -> 401 before the password is checked, so the answer reveals nothing about it.
+            const missing = await call({});
+            expect(missing.next).not.toHaveBeenCalled();
+            expect(missing.res.statusCode).toBe(401);
+            expect(missing.res.body).toBe("TOTP token is required");
+            expect(verifyPasswordSpy).not.toHaveBeenCalled();
+
+            const wrong = await call({ "trilium-totp": "000000" });
+            expect(wrong.next).not.toHaveBeenCalled();
+            expect(wrong.res.statusCode).toBe(401);
+            expect(wrong.res.body).toBe("Incorrect TOTP token");
+
+            // A wrong password is reported as such and never reaches the recovery codes.
+            verifyPasswordSpy.mockResolvedValueOnce(false as never);
+            recoverySpy.mockClear();
+            const wrongPassword = await call({ "trilium-totp": "000000" });
+            expect(wrongPassword.res.statusCode).toBe(401);
+            expect(wrongPassword.res.body).toBe("Incorrect password");
+            expect(recoverySpy).not.toHaveBeenCalled();
+
+            const valid = await call({ "trilium-totp": "123456" });
+            expect(valid.next).toHaveBeenCalled();
+
+            recoverySpy.mockReturnValue(true);
+            const recovery = await call({ "trilium-totp": "recovery-code" });
+            expect(recovery.next).toHaveBeenCalled();
+            expect(recoverySpy).toHaveBeenLastCalledWith("recovery-code");
+        });
     });
 
     describe("verifyLoginCredentials", () => {

@@ -267,9 +267,21 @@ async function checkCredentials(req: Request, res: Response, next: NextFunction)
     const password = colonIndex === -1 ? "" : auth.substr(colonIndex + 1);
     // username is ignored
 
-    if (!(await passwordEncryptionService.verifyPassword(password))) {
+    // Checked before the password so that the answer says nothing about the password.
+    const totpToken = req.headers["trilium-totp"];
+    if (totp.isTotpEnabled() && (typeof totpToken !== "string" || !totpToken)) {
+        res.setHeader("Content-Type", "text/plain").status(401).send("TOTP token is required");
+        getLog().info(`WARNING: Missing TOTP token from ${req.ip}, rejecting.`);
+        return;
+    }
+
+    const failedFactor = await verifyLoginCredentials(password, totpToken);
+    if (failedFactor === "password") {
         res.setHeader("Content-Type", "text/plain").status(401).send("Incorrect password");
         getLog().info(`WARNING: Wrong password from ${req.ip}, rejecting.`);
+    } else if (failedFactor === "totp") {
+        res.setHeader("Content-Type", "text/plain").status(401).send("Incorrect TOTP token");
+        getLog().info(`WARNING: Wrong TOTP token from ${req.ip}, rejecting.`);
     } else {
         next();
     }
