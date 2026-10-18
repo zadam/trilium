@@ -1160,10 +1160,16 @@ describe("AttributeList", () => {
         writeAttributes(null, [ plain("tag") ]);
         renderPanel(note);
 
+        // With nothing selected, the toolbar says the note is read-only and offers no paste or add.
+        expect(container.querySelector(".attribute-toolbar .attribute-toolbar-read-only")).not.toBeNull();
+        expect(toolbarIcons()).toEqual([]);
+
         // The toolbar offers clearing and copying only: no paste, delete or add.
         checkbox(0).click();
         checkbox(1).click();
         expect(toolbarIcons()).toEqual([ "bx bx-x", "bx bx-copy" ]);
+        // The count takes the notice's place while rows are selected.
+        expect(container.querySelector(".attribute-toolbar-read-only")).toBeNull();
 
         // So does the row menu, over rows the note owns.
         rightPress(0);

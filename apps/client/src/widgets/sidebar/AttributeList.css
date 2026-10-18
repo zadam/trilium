@@ -127,6 +127,16 @@
         white-space: nowrap;
     }
 
+    .attribute-toolbar-read-only {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-inline: 4px;
+        color: var(--muted-text-color);
+        font-size: 0.85em;
+        white-space: nowrap;
+    }
+
     .attribute-toolbar-actions {
         display: flex;
         align-items: center;

@@ -123,12 +123,13 @@ describe("AttributeList on a phone", () => {
         expect(url).toBe("notes/phone-bare/attributes");
         expect(saved).toEqual([ { type: "label", name: "author", value: "Elian", isInheritable: false } ]);
 
-        // A note that cannot be edited has nothing to paste or add, so it has no toolbar.
+        // A note that cannot be edited has nothing to paste or add, so the toolbar says it is read-only.
         render(null, container);
         const locked = buildNote({ id: "phone-locked", title: "Locked" });
         locked.isContentWritable = false;
         renderPanel(locked);
-        expect(toolbar()).toBeNull();
+        expect(iconsIn(toolbar())).toEqual([ "bx bx-lock-alt" ]);
+        expect(toolbar()?.querySelector(".attribute-toolbar-read-only")).not.toBeNull();
     });
 
     it("still picks rows out, by the press held down, and says what can be done with them", () => {
