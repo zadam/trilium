@@ -166,13 +166,9 @@ async function streamChatOverSse(
 
     const decoder = new TextDecoder();
     let buffer = "";
-    // Why (#10883): a proxy or flaky VPN can close the SSE body *cleanly*, which
-    // reads as end-of-stream here even though the server never sent its terminal
-    // chunk. Treating a bare body end as completion returns the chat to idle with
-    // no error anywhere — output silently dropped. Only an explicit done/error
-    // chunk completes the stream; anything else is an interruption.
-    let terminalChunk: "done" | "error" | null = null;
-    let aborted = false;
+    // Only a `done` or `error` chunk ends a turn: a proxy can close the body cleanly
+    // before the server sends either.
+    let completed = false;
 
     try {
         while (true) {
@@ -186,32 +182,30 @@ async function streamChatOverSse(
             for (const line of lines) {
                 if (line.startsWith("data: ")) {
                     try {
-                        const terminal = await handleChunk(streamId, JSON.parse(line.slice(6)), callbacks);
-                        if (terminal) {
-                            terminalChunk = terminal;
+                        const chunk: LlmStreamChunk = JSON.parse(line.slice(6));
+                        if (chunk.type === "done" || chunk.type === "error") {
+                            completed = true;
                         }
+                        await handleChunk(streamId, chunk, callbacks);
                     } catch (e) {
                         console.error("Failed to parse SSE data line:", line, e);
                     }
                 }
             }
         }
-    } catch (e) {
-        if (e instanceof DOMException && e.name === "AbortError") {
-            aborted = true;
-            throw e;
-        }
-        const message = e instanceof Error ? e.message : String(e);
-        callbacks.onError(`LLM stream interrupted: ${message}`);
-        // An interruption error was already reported; don't stack the
-        // missing-terminal message on top of it.
-        terminalChunk = "error";
-    } finally {
-        if (!aborted && terminalChunk === null) {
+
+        if (!completed) {
             callbacks.onError(
                 "LLM stream ended without completing — the connection closed before the response finished (network or proxy interruption)."
             );
         }
+    } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") {
+            throw e;
+        }
+        const message = e instanceof Error ? e.message : String(e);
+        callbacks.onError(`LLM stream interrupted: ${message}`);
+    } finally {
         reader.releaseLock();
     }
 }
@@ -300,12 +294,11 @@ function rejectWhenAborted(signal?: AbortSignal): Promise<never> {
  * Dispatch one chunk to the callbacks. Shared by both transports, so a chunk means
  * the same thing however it arrived.
  */
-/** Returns the stream's terminal chunk type when this chunk ends it, else null. */
 async function handleChunk(
     streamId: string,
     chunk: LlmStreamChunk,
     callbacks: StreamCallbacks
-): Promise<"done" | "error" | null> {
+): Promise<void> {
     switch (chunk.type) {
         case "status":
             callbacks.onStatus?.(chunk.status);
@@ -356,10 +349,9 @@ async function handleChunk(
             break;
         case "error":
             callbacks.onError(chunk.error, chunk.errorDetails);
-            return "error";
+            break;
         case "done":
             callbacks.onDone();
-            return "done";
+            break;
     }
-    return null;
 }

@@ -233,9 +233,7 @@ describe("streamChatCompletion", () => {
         expect(cb.onChunk).toHaveBeenCalledWith("hi");
     });
 
-    it("does not invoke onDone when the stream ends without an explicit done event", async () => {
-        // onDone() fires only for a `{type:"done"}` SSE event (source 126-128), NOT when the
-        // reader simply returns {done:true}. Lock in that a clean stream end leaves onDone uncalled.
+    it("reports an interruption when the body ends without a done or error event (#10883)", async () => {
         const chunks = [`data: ${JSON.stringify({ type: "text", content: "only" })}\n`];
         vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse(chunks)));
 
@@ -244,6 +242,9 @@ describe("streamChatCompletion", () => {
 
         expect(cb.onChunk).toHaveBeenCalledWith("only");
         expect(cb.onDone).not.toHaveBeenCalled();
+        expect(cb.onError.mock.calls).toEqual([[
+            "LLM stream ended without completing — the connection closed before the response finished (network or proxy interruption)."
+        ]]);
     });
 
     it("ignores citation/usage events that carry no payload", async () => {
@@ -273,34 +274,6 @@ describe("streamChatCompletion", () => {
             ["model failed", undefined],
             ["api failed", errorDetails]
         ]);
-    });
-
-
-    it("reports an interruption when the body ends without a terminal chunk (#10883)", async () => {
-        // A proxy can close an SSE body cleanly: end-of-stream without the
-        // server's done chunk is a dropped response, not a completion.
-        const chunks = [`data: ${JSON.stringify({ type: "text", content: "partial" })}
-`];
-        vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse(chunks)));
-
-        const cb = makeCallbacks();
-        await streamChatCompletion(messages, config, cb);
-        expect(cb.onChunk).toHaveBeenCalledWith("partial");
-        expect(cb.onDone).not.toHaveBeenCalled();
-        expect(cb.onError).toHaveBeenCalledWith(
-            "LLM stream ended without completing — the connection closed before the response finished (network or proxy interruption)."
-        );
-    });
-
-    it("does not stack the missing-terminal error on top of a stream error chunk", async () => {
-        const chunks = [`data: ${JSON.stringify({ type: "error", error: "model failed" })}
-`];
-        vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse(chunks)));
-
-        const cb = makeCallbacks();
-        await streamChatCompletion(messages, config, cb);
-        expect(cb.onError).toHaveBeenCalledTimes(1);
-        expect(cb.onError).toHaveBeenCalledWith("model failed", undefined);
     });
 
     it("skips optional callbacks that are not provided", async () => {
@@ -353,7 +326,7 @@ describe("streamChatCompletion", () => {
 
         const cb = makeCallbacks();
         await streamChatCompletion(messages, config, cb);
-        expect(cb.onError).toHaveBeenCalledWith("LLM stream interrupted: read failed");
+        expect(cb.onError.mock.calls).toEqual([["LLM stream interrupted: read failed"]]);
         expect(reader.releaseLock).toHaveBeenCalledTimes(1);
     });
 
@@ -364,7 +337,7 @@ describe("streamChatCompletion", () => {
 
         const cb = makeCallbacks();
         await streamChatCompletion(messages, config, cb);
-        expect(cb.onError).toHaveBeenCalledWith("LLM stream interrupted: kaput");
+        expect(cb.onError.mock.calls).toEqual([["LLM stream interrupted: kaput"]]);
     });
 
     it("passes the abort signal through to fetch", async () => {
