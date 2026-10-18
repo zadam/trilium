@@ -219,12 +219,11 @@ export async function buildTypeCompletion(mime: string, context: ScriptApiContex
     }
 
     const env = await createEnv(mime, context);
-    const [ { tsFacet }, { tsSync }, { tsAutocomplete }, { tsLinter }, { tsHover } ] = await Promise.all([
-        import("./codemirror-ts/facet/tsFacet.js"),
-        import("./codemirror-ts/sync/tsSync.js"),
-        import("./codemirror-ts/autocomplete/tsAutocomplete.js"),
-        import("./codemirror-ts/lint/tsLinter.js"),
-        import("./codemirror-ts/hover/tsHover.js")
+    const [ { tsFacet, tsSync }, { tsAutocomplete }, { tsLinter }, { tsHover } ] = await Promise.all([
+        import("./codemirror-ts/environment.js"),
+        import("./codemirror-ts/autocomplete.js"),
+        import("./codemirror-ts/lint.js"),
+        import("./codemirror-ts/hover.js")
     ]);
     // `tsLinter` only underlines diagnostics inline; `lintGutter` adds the
     // error/warning markers in the gutter (as the old ESLint integration did).
@@ -368,7 +367,7 @@ export async function getScriptLints(mime: string, code: string, context: Script
     const env = await createEnv(mime, context);
     const path = scriptPath(mime);
     env.updateFile(path, code.length ? code : " ");
-    const { getLints } = await import("./codemirror-ts/lint/getLints.js");
+    const { getLints } = await import("./codemirror-ts/lint.js");
     return getLints({ env, path, diagnosticCodesToIgnore: ignoredDiagnosticCodes(mime) });
 }
 
