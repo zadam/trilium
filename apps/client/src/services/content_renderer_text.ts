@@ -205,7 +205,9 @@ export async function rewriteMermaidDiagramsInContainer(container: HTMLDivElemen
         const div = document.createElement("div");
         div.classList.add("rendered-mermaid-diagram");
         div.textContent = code.textContent;
-        const blockId = code.getAttribute(BLOCK_ID_ATTRIBUTE);
+        // A code block keeps its block ID on `<code>`, a Mermaid embed on `<pre>`.
+        const blockId = mermaidBlock.getAttribute(BLOCK_ID_ATTRIBUTE)
+            ?? code.getAttribute(BLOCK_ID_ATTRIBUTE);
         if (blockId) {
             div.setAttribute(BLOCK_ID_ATTRIBUTE, blockId);
         }
