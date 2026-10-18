@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Το Trilium Notes είναι μια δωρεάν και ανοιχτού κώδικα, ιεραρχική εφαρμογή
 σημειώσεων πολλαπλών πλατφορμών με έμφαση στη δημιουργία μεγάλων προσωπικών
 βάσεων γνώσεων.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -120,7 +124,7 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 * Ενσωματωμένο [σκούρο
   θέμα](https://docs.triliumnotes.org/user-guide/concepts/themes), υποστήριξη
   για θέματα χρήστη
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   and [Markdown εισαγωγή &
   εξαγωγή](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) για
@@ -358,6 +362,12 @@ development](https://github.com/TriliumNext/Trilium/tree/main/docs/Developer%20G
 * [antoniotejada](https://github.com/nriver) για το αρχικό widget επισήμανσης
   σύνταξης.
 * [Tabler Icons](https://tabler.io/icons) για τα εικονίδια συστήματος.
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 Το Trilium δεν θα ήταν εφικτό χωρίς τις τεχνολογίες πίσω από αυτό:
 
@@ -375,11 +385,6 @@ development](https://github.com/TriliumNext/Trilium/tree/main/docs/Developer%20G
   πίνακα που χρησιμοποιείται στις συλλογές.
 * [FancyTree](https://github.com/mar10/fancytree) - πλούσια βιβλιοθήκη δέντρων
   χωρίς πραγματικό ανταγωνισμό.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - βιβλιοθήκη οπτικής σύνδεσης.
-  Χρησιμοποιείται σε [χάρτες
-  σχέσεων](https://docs.triliumnotes.org/user-guide/note-types/relation-map) και
-  [χάρτες
-  συνδέσμων](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Υποστήριξη
 

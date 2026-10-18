@@ -28,8 +28,8 @@ In Notion, there are two ways to export data:
 
 In Trilium Notes:
 
-1.  In the <a class="reference-link" href="../../UI%20Elements/Note%20Tree.md">Note Tree</a>, right click and select _Import into note_.
-2.  In the _Import from_ section, select _Notion_.
+1.  In the <a class="reference-link" href="../../UI%20Elements/Note%20Tree.md">Note Tree</a>, right click and select _Import into note_ (<span class="tn-icon bx bx-import"></span>).
+2.  In the _Import from_ section, select <span class="tn-icon tn-brand tn-brand-notion"></span> _Notion_.
 3.  Upload the ZIP obtained in the previous step.
 
 ## Supported features
@@ -45,6 +45,7 @@ The following features are preserved by Trilium during the import process:
     *   Toggle headings are stripped of their toggle button and become normal headings instead.
 *   <a class="reference-link" href="../../../Note%20Types/Text/Math%20Equations.md">Math Equations</a> (inline or block)
 *   <a class="reference-link" href="../../../Note%20Types/Text/Link%20Previews.md">Link Previews</a>
+    *   The icon and image of the links need to be retrieved online since the exports don't carry the images. This operation is done only if _Download images automatically_ is enabled in <a class="reference-link" href="../../UI%20Elements/Options.md">Options</a> → _Media_.
 *   <a class="reference-link" href="../../../Note%20Types/Text/Developer-specific%20formatting/Code%20blocks.md">Code blocks</a>, with a best-effort attempt to restore the language.
 *   <a class="reference-link" href="../../../Note%20Types/Mermaid%20Diagrams.md">Mermaid Diagrams</a>
 *   Links between other imported pages are converted to <a class="reference-link" href="../../../Note%20Types/Text/Links/Internal%20(reference)%20links.md">Internal (reference) links</a> if they are part of the same import.
@@ -69,15 +70,15 @@ The resulting collection will be <a class="reference-link" href="../../../Colle
     <tbody>
         <tr>
             <td>Text / Select / Status / Place</td>
-            <td>Single-valued <code spellcheck="false">text</code> label</td>
+            <td>Single-valued <code>text</code> label</td>
         </tr>
         <tr>
             <td>Number</td>
-            <td>Single-valued <code spellcheck="false">number</code> label for plain numbers. Formatted values (currency, percent, thousands separators) are normalized to a bare number, e.g. <code spellcheck="false">$1,200.50</code> → <code spellcheck="false">1200.50</code>.</td>
+            <td>Single-valued <code>number</code> label for plain numbers. Formatted values (currency, percent, thousands separators) are normalized to a bare number, e.g. <code>$1,200.50</code> → <code>1200.50</code>.</td>
         </tr>
         <tr>
             <td>ID</td>
-            <td>Single-valued <code spellcheck="false">number</code> or <code spellcheck="false">text</code> label (depending on whether a prefix is configured)</td>
+            <td>Single-valued <code>number</code> or <code>text</code> label (depending on whether a prefix is configured)</td>
         </tr>
         <tr>
             <td>Multi-select</td>
@@ -85,15 +86,15 @@ The resulting collection will be <a class="reference-link" href="../../../Colle
         </tr>
         <tr>
             <td>URL / Email / Phone</td>
-            <td><code spellcheck="false">url</code> label (<code spellcheck="false">mailto:</code>, <code spellcheck="false">tel:</code> prefix)</td>
+            <td><code>url</code> label (<code>mailto:</code>, <code>tel:</code> prefix)</td>
         </tr>
         <tr>
             <td>Date</td>
-            <td><ul><li><code spellcheck="false">datetime</code> if at least one has time.</li><li><code spellcheck="false">date</code> if only dates.</li><li>Two attributes if any of the dates have an end date.</li></ul></td>
+            <td><ul><li><code>datetime</code> if at least one has time.</li><li><code>date</code> if only dates.</li><li>Two attributes if any of the dates have an end date.</li></ul></td>
         </tr>
         <tr>
             <td>Checkbox</td>
-            <td><code spellcheck="false">boolean</code> label (<code spellcheck="false">true</code>/<code spellcheck="false">false</code>).</td>
+            <td><code>boolean</code> label (<code>true</code>/<code>false</code>).</td>
         </tr>
         <tr>
             <td>Person</td>
@@ -101,7 +102,7 @@ The resulting collection will be <a class="reference-link" href="../../../Colle
         </tr>
         <tr>
             <td>Created by / Edited by</td>
-            <td>Single-valued <code spellcheck="false">text</code> label</td>
+            <td>Single-valued <code>text</code> label</td>
         </tr>
         <tr>
             <td>Created time / Last edited time</td>
@@ -117,7 +118,7 @@ The resulting collection will be <a class="reference-link" href="../../../Colle
         </tr>
         <tr>
             <td>Formulas / Rollup</td>
-            <td><p>A <code spellcheck="false">text</code>, <code spellcheck="false">number</code> or <code spellcheck="false">boolean</code> label depending on the value. Dates are rendered as <code spellcheck="false">text</code> because the export doesn't offer any type information.</p><p>The Notion export does not preserve the formula/rollup configuration itself, instead it just exports the value.</p></td>
+            <td><p>A <code>text</code>, <code>number</code> or <code>boolean</code> label depending on the value. Dates are rendered as <code>text</code> because the export doesn't offer any type information.</p><p>The Notion export does not preserve the formula/rollup configuration itself, instead it just exports the value.</p></td>
         </tr>
         <tr>
             <td>Button / Verification / any other type</td>

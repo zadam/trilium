@@ -1,7 +1,11 @@
 import { getLog, PlatformProvider } from "@triliumnext/core";
+import path from "path";
+
+import dataDir from "./services/data_dir.js";
 
 export default class ServerPlatformProvider implements PlatformProvider {
     readonly isElectron = !!process.versions["electron"];
+    readonly isStandalone = false;
     readonly isMac = process.platform === "darwin";
     readonly isWindows = process.platform === "win32";
     readonly isLinux = process.platform === "linux";
@@ -13,5 +17,9 @@ export default class ServerPlatformProvider implements PlatformProvider {
 
     getEnv(key: string): string | undefined {
         return process.env[key];
+    }
+
+    getDatabasePath(): string {
+        return path.resolve(dataDir.DOCUMENT_PATH);
     }
 }

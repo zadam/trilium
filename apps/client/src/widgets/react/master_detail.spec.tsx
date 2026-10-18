@@ -24,7 +24,7 @@ vi.mock("./hooks", async (importOriginal) => ({
 interface ModalStubProps {
     header?: ComponentChildren;
     children?: ComponentChildren;
-    modalRef?: RefObject<HTMLDivElement>;
+    modalRef?: RefObject<HTMLDivElement | null>;
 }
 
 vi.mock("./Modal", () => ({
@@ -81,7 +81,7 @@ function renderHost() {
 function endSlide() {
     act(() => {
         host()?.dispatchEvent(Object.assign(new Event("animationend", { bubbles: true }), {
-            animationName: "tn-master-detail-slide-in"
+            animationName: "tn-slide-in-from-right"
         }));
     });
 }

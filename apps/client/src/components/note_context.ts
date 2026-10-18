@@ -13,6 +13,7 @@ import { shouldRedirectPinnedNavigation } from "../services/tab_pinning.js";
 import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import { ReactWrappedWidget } from "../widgets/basic_widget.js";
+import type { HighlightContext } from "../widgets/sidebar/HighlightsList.js";
 import type { HeadingContext } from "../widgets/sidebar/TableOfContents.js";
 import type { ChatHighlightsContext } from "../widgets/type_widgets/llm_chat/chat_highlights.js";
 import appContext, { type EventData, type EventListener } from "./app_context.js";
@@ -23,6 +24,8 @@ export interface SetNoteOpts {
     viewScope?: ViewScope;
     /** If true, skip closing the currently active dialog. Used when opening a note into a stackable popup (e.g. quick-edit) that must not dismiss the dialog it was launched from. */
     keepActiveDialog?: boolean;
+    /** If true, the note is not added to the recent notes, as for an included note being edited. */
+    skipRecentNotes?: boolean;
 }
 
 export type GetTextEditorCallback = (editor: CKTextEditor) => void;
@@ -35,17 +38,38 @@ const READ_ONLY_CAPABLE_TYPES: string[] = [
     "mermaid",
     "canvas",
     "mindMap",
-    "spreadsheet"
+    "spreadsheet",
+    "noteMap",
+    "relationMap",
+    "render"
+];
+
+/**
+ * Collection view types that honour `#readOnly`, making a `book` note read-only capable.
+ *
+ * Listed by view type rather than by note type because the other views ignore the label: reporting
+ * a list or a grid as read-only would put a badge over a collection that can still be edited.
+ */
+const READ_ONLY_CAPABLE_VIEW_TYPES: string[] = [
+    "board",
+    "calendar",
+    "dashboard",
+    "geoMap",
+    "presentation",
+    "table"
 ];
 
 export interface NoteContextDataMap {
     toc: HeadingContext;
+    highlights: HighlightContext;
     chatHighlights: ChatHighlightsContext;
     pdfPages: {
         totalPages: number;
         currentPage: number;
         scrollToPage(page: number): void;
         requestThumbnail(page: number): void;
+        /** Copies a reference that opens the PDF at `page`. */
+        copyReference(page: number): void;
     };
     pdfAttachments: {
         attachments: PdfAttachment[];
@@ -58,6 +82,21 @@ export interface NoteContextDataMap {
     pdfAnnotations: {
         annotations: PdfAnnotationInfo[];
         scrollToAnnotation(annotationId: string, pageNumber: number): void;
+        /** Copies a reference that opens the PDF at the annotation. */
+        copyReference(annotationId: string, pageNumber: number): void;
+    };
+    /** Published by a board, so the right pane can list its columns and scroll the board to one. */
+    boardColumns: {
+        /** The columns in the order the board draws them. */
+        columns: {
+            /** What identifies the column, which is the value its cards carry. */
+            value: string;
+            title: string;
+            icon: string;
+            /** How many cards it holds, counting what an active filter leaves in. */
+            count: number;
+        }[];
+        scrollToColumn(column: string): void;
     };
     saveState: {
         state: SaveState;
@@ -131,8 +170,11 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
     /** @returns the note context that ended up showing the note: usually `this`, or a new tab when a pinned tab redirected the navigation. `undefined` if nothing was navigated. */
     async setNote(inputNotePath: string | undefined, opts: SetNoteOpts = {}): Promise<NoteContext | undefined> {
         opts.triggerSwitchEvent = opts.triggerSwitchEvent !== undefined ? opts.triggerSwitchEvent : true;
-        opts.viewScope = opts.viewScope || {};
-        opts.viewScope.viewMode = opts.viewScope.viewMode || "default";
+        // Readers like `revealBlockReference()` change the scope, so the context keeps a copy.
+        const viewScope: ViewScope = {
+            ...opts.viewScope,
+            viewMode: opts.viewScope?.viewMode || "default"
+        };
 
         if (!inputNotePath) {
             return;
@@ -144,7 +186,8 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             return;
         }
 
-        if (this.notePath === resolvedNotePath && utils.areObjectsEqual(this.viewScope, opts.viewScope)) {
+        const isSameView = utils.areObjectsEqual(this.viewScope, viewScope);
+        if (this.notePath === resolvedNotePath && isSameView) {
             return this;
         }
 
@@ -153,7 +196,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
         if (shouldRedirectPinnedNavigation(this.pinned, this.noteId, targetNoteId)) {
             return appContext.tabManager.openContextWithNote(resolvedNotePath, {
                 activate: true,
-                viewScope: opts.viewScope,
+                viewScope,
                 hoistedNoteId: this.hoistedNoteId
             });
         }
@@ -167,7 +210,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
         const previousNoteId = this.noteId;
 
         this.notePath = resolvedNotePath;
-        this.viewScope = opts.viewScope;
+        this.viewScope = viewScope;
         ({ noteId: this.noteId, parentNoteId: this.parentNoteId } = treeService.getNoteIdAndParentIdFromUrl(resolvedNotePath));
 
         // Clear context data only when actually switching to a different note.
@@ -185,7 +228,9 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             }
         }
 
-        this.saveToRecentNotes(resolvedNotePath);
+        if (!opts.skipRecentNotes) {
+            this.saveToRecentNotes(resolvedNotePath);
+        }
 
         protectedSessionHolder.touchProtectedSessionIfNecessary(this.note);
 
@@ -304,6 +349,11 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
         return appContext.tabManager.activeNtxId === this.ntxId;
     }
 
+    /** Whether a command with the given `ntxId` targets this context: `ntxId` is this context's, or is empty while this context is active. */
+    isCommandTarget(ntxId: string | null | undefined) {
+        return ntxId ? ntxId === this.ntxId : this.isActive();
+    }
+
     getPojoState() {
         if (this.hoistedNoteId !== "root") {
             // keeping empty hoisted tab is esp. important for mobile (e.g. opened launcher config)
@@ -348,7 +398,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
 
     /** @returns {Promise<boolean>} */
     async isReadOnly() {
-        if (this?.viewScope?.readOnlyTemporarilyDisabled) {
+        if (this?.viewScope?.readOnlyTemporarilyDisabled && this.note?.isContentWritable !== false) {
             return false;
         }
 
@@ -356,13 +406,17 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             return false;
         }
 
-        // Note types that support a read-only state (via the #readOnly label, source view, or auto-readonly).
+        // What supports a read-only state at all, via the #readOnly label, the source view or
+        // auto-readonly.
         const isPdf = this.note.type === "file" && this.note.mime === "application/pdf";
-        if (!isPdf && !READ_ONLY_CAPABLE_TYPES.includes(this.note.type)) {
+        const isReadOnlyCapableCollection = this.note.type === "book"
+            && READ_ONLY_CAPABLE_VIEW_TYPES.includes(this.note.getLabelValue("viewType") ?? "");
+        if (!isPdf && !isReadOnlyCapableCollection
+                && !READ_ONLY_CAPABLE_TYPES.includes(this.note.type)) {
             return false;
         }
 
-        if (options.is("databaseReadonly")) {
+        if (options.is("databaseReadonly") || !this.note.isContentWritable) {
             return true;
         }
 
@@ -412,15 +466,25 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             const noteRow = loadResults.getEntityRow("notes", this.noteId);
 
             if (noteRow.isDeleted) {
-                this.noteId = null;
-                this.notePath = null;
-
-                this.triggerEvent("noteSwitched", {
-                    noteContext: this,
-                    notePath: this.notePath
-                });
+                this.clearRemovedNote();
             }
         }
+    }
+
+    frocaReloadedEvent() {
+        if (this.noteId && !(this.noteId in froca.notes)) {
+            this.clearRemovedNote();
+        }
+    }
+
+    private clearRemovedNote() {
+        this.noteId = null;
+        this.notePath = null;
+
+        this.triggerEvent("noteSwitched", {
+            noteContext: this,
+            notePath: this.notePath
+        });
     }
 
     hasNoteList() {

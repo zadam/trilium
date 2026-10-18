@@ -16,3 +16,7 @@
     flex-direction: column;
     min-height: 0;
 }
+
+.script-modal-host {
+    display: contents;
+}

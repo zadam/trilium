@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes adalah aplikasi pencatatan hierarkis lintas platform yang gratis
 dan open-source dengan fokus pada pembangunan basis pengetahuan pribadi berskala
 besar.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -118,7 +122,7 @@ Dokumentasi kami tersedia dalam beberapa format:
 * [Tema gelap](https://docs.triliumnotes.org/user-guide/concepts/themes) bawaan,
   dukungan untuk tema pengguna
 * Impor & ekspor
-  [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+  [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   dan
   [Markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper)
@@ -347,6 +351,12 @@ melalui tautan yang dijelaskan pada bagian "Diskusi bersama kami" di atas.
 * [antoniotejada](https://github.com/nriver) atas widget syntax highlighting
   asli.
 * [Tabler Icons](https://tabler.io/icons) untuk ikon system tray.
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 Trilium tidak akan mungkin ada tanpa teknologi yang mendukungnya:
 
@@ -363,11 +373,6 @@ Trilium tidak akan mungkin ada tanpa teknologi yang mendukungnya:
   yang digunakan dalam koleksi.
 * [FancyTree](https://github.com/mar10/fancytree) - library tree kaya fitur
   tanpa pesaing nyata.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - library konektivitas visual.
-  Digunakan dalam [relation
-  maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) dan
-  [link
-  maps](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Dukungan
 

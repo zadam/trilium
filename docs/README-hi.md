@@ -19,11 +19,15 @@
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 ट्रिलियम नोट्स (Trilium Notes) एक मुफ़्त और ओपन-सोर्स, क्रॉस-प्लेटफ़ॉर्म
 श्रेणीबद्ध (hierarchical) नोट लेने वाला एप्लिकेशन है, जिसका मुख्य ध्यान बड़े
 व्यक्तिगत ज्ञान आधार (knowledge bases) बनाने पर है।
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -116,7 +120,7 @@
 * Built-in [dark
   theme](https://docs.triliumnotes.org/user-guide/concepts/themes), support for
   user themes
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   and [Markdown import &
   export](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) for
@@ -343,6 +347,12 @@ described in the "Discuss with us" section above.
 * [antoniotejada](https://github.com/nriver) for the original syntax highlight
   widget.
 * [Tabler Icons](https://tabler.io/icons) for the system tray icons.
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 Trilium would not be possible without the technologies behind it:
 
@@ -360,11 +370,6 @@ Trilium would not be possible without the technologies behind it:
   table used in collections.
 * [FancyTree](https://github.com/mar10/fancytree) - feature-rich tree library
   without real competition.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - visual connectivity library.
-  Used in [relation
-  maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) and
-  [link
-  maps](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Support
 

@@ -1,3 +1,5 @@
+import type { HTMLAttributes } from "preact";
+
 declare module "htmldiff-js" {
     const HtmlDiff: {
         execute(oldHtml: string, newHtml: string): string;
@@ -28,37 +30,6 @@ declare module "draggabilly" {
     }
 }
 
-declare module "@mind-elixir/node-menu" {
-    export default mindmap;
-}
-
-declare module "katex/contrib/auto-render" {
-    var renderMathInElement: (element: HTMLElement, options: {
-        trust: boolean;
-    }) => void;
-    export default renderMathInElement;
-}
-
-import * as L from "leaflet";
-
-declare module "leaflet" {
-    interface GPXMarker {
-        startIcon?: DivIcon | Icon | string | undefined;
-        endIcon?: DivIcon | Icon | string | undefined;
-        wptIcons?: {
-            [key: string]: DivIcon | Icon | string;
-        };
-        wptTypeIcons?: {
-            [key: string]: DivIcon | Icon | string;
-        };
-        pointMatchers?: Array<{ regex: RegExp; icon: DivIcon | Icon | string}>;
-    }
-
-    interface GPXOptions {
-        markers?: GPXMarker | undefined;
-    }
-}
-
 declare global {
     /** Geometry of the title bar area left free by the native window controls, and changes to it. */
     interface WindowControlsOverlay extends EventTarget {
@@ -81,7 +52,7 @@ declare global {
 
 declare module "preact" {
     namespace JSX {
-        interface ElectronWebViewElement extends JSX.HTMLAttributes<HTMLElement> {
+        interface ElectronWebViewElement extends HTMLAttributes<HTMLElement> {
             src: string;
             class: string;
             key?: string | number;

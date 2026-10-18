@@ -1,7 +1,5 @@
 import { routes } from "@triliumnext/core";
-import { createPartialContentHandler } from "@triliumnext/express-partial-content";
 import express from "express";
-import rateLimit from "express-rate-limit";
 
 import etapiAppInfoRoutes from "../etapi/app_info.js";
 import etapiAttachmentRoutes from "../etapi/attachments.js";
@@ -22,29 +20,28 @@ import clipperRoute from "./api/clipper.js";
 import databaseRoute from "./api/database.js";
 import etapiTokensApiRoutes from "./api/etapi_tokens.js";
 import filesRoute from "./api/files.js";
-import fontsRoute from "./api/fonts.js";
 // API routes
-import linkEmbedRoute from "./api/link_embed.js";
 import llmChatRoute from "./api/llm_chat.js";
-import llmSpecialNotesRoute from "./api/llm_special_notes.js";
 import loginApiRoute from "./api/login.js";
 import metricsRoute from "./api/metrics.js";
 import ocrRoute from "./api/ocr.js";
 import onenoteImportRoute from "./api/onenote_import.js";
 import recoveryCodes from './api/recovery_codes.js';
+import resourcesRoute from "./api/resources.js";
 import senderRoute from "./api/sender.js";
+import setupRestoreRoute from "./api/setup_restore.js";
+import shareTargetRoute from "./api/share_target.js";
 import systemInfoRoute from "./api/system_info.js";
 import totp from './api/totp.js';
 import { doubleCsrfProtection as csrfMiddleware } from "./csrf_protection.js";
 import * as indexRoute from "./index.js";
-import loginRoute from "./login.js";
-import { apiResultHandler, apiRoute, asyncApiRoute, asyncRoute, importMiddlewareWithErrorHandling, route, router, uploadMiddlewareWithErrorHandling } from "./route_api.js";
+import loginRoute, { createLoginRateLimiter } from "./login.js";
+import { apiResultHandler, apiRoute, asyncApiRoute, asyncRoute, importMiddlewareWithErrorHandling, route, router, shareTargetMiddlewareWithErrorHandling, uploadMiddlewareWithErrorHandling } from "./route_api.js";
 // page routes
 import setupRoute from "./setup.js";
 
 const GET = "get",
     PST = "post",
-    PUT = "put",
     PATCH = "patch",
     DEL = "delete";
 
@@ -52,17 +49,30 @@ function register(app: express.Application) {
     route(GET, "/login", [auth.checkAppInitialized, auth.checkPasswordSet], loginRoute.loginPage);
     route(GET, "/set-password", [auth.checkAppInitialized, auth.checkPasswordNotSet], loginRoute.setPasswordPage);
 
-    const loginRateLimiter = rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 10, // limit each IP to 10 requests per windowMs
-        skipSuccessfulRequests: true // successful auth to rate-limited ETAPI routes isn't counted. However, successful auth to /login is still counted!
-    });
+    const loginRateLimiter = createLoginRateLimiter();
 
     route(GET, "/bootstrap", [ auth.checkAuth ], indexRoute.bootstrap);
     asyncRoute(PST, "/login", [loginRateLimiter], loginRoute.login, null);
     route(PST, "/logout", [csrfMiddleware, auth.checkAuth], loginRoute.logout);
     asyncRoute(PST, "/set-password", [auth.checkAppInitialized, auth.checkPasswordNotSet], loginRoute.setPassword, null);
     route(GET, "/setup", [], setupRoute.setupPage);
+
+    // Restoring a backup, which only the setup screen offers: `checkAppNotInitialized` is what keeps
+    // it from ever running against a live database, since before the database exists there is no
+    // session to authenticate against and the whole wizard stands unauthenticated. Where a knowledge
+    // base is sitting behind the wizard there IS something to authenticate against, and
+    // `checkSetupAuth` asks for it — a restore replaces that database. None of these may be
+    // transactional — the swap detaches the database, which a wrapping transaction would be in the
+    // middle of.
+    asyncRoute(PST, "/api/setup/restore/upload/begin", [auth.checkAppNotInitialized, auth.checkSetupAuth], setupRestoreRoute.beginUpload, apiResultHandler);
+    asyncRoute(PST, "/api/setup/restore/upload/:uploadId/chunk", [auth.checkAppNotInitialized, auth.checkSetupAuth], setupRestoreRoute.uploadChunk, apiResultHandler);
+    asyncRoute(GET, "/api/setup/restore/upload/:uploadId", [auth.checkAppNotInitialized, auth.checkSetupAuth], setupRestoreRoute.uploadStatus, apiResultHandler);
+    asyncRoute(PST, "/api/setup/restore/upload/:uploadId/finish", [auth.checkAppNotInitialized, auth.checkSetupAuth], setupRestoreRoute.finishUpload, apiResultHandler);
+    asyncRoute(DEL, "/api/setup/restore/upload/:uploadId", [auth.checkAppNotInitialized, auth.checkSetupAuth], setupRestoreRoute.abortUpload, apiResultHandler);
+    asyncRoute(PST, "/api/setup/restore/start", [auth.checkAppNotInitialized, auth.checkSetupAuth], setupRestoreRoute.start, apiResultHandler);
+    // Readable throughout, including once the restore has succeeded: that is how the screen learns it
+    // is over and the application can be opened.
+    asyncRoute(GET, "/api/setup/restore/status", [], setupRestoreRoute.status, apiResultHandler);
 
 
     apiRoute(GET, '/api/totp/generate', totp.generateSecret);
@@ -84,12 +94,15 @@ function register(app: express.Application) {
     routes.buildSharedApiRoutes({
         route,
         asyncRoute,
+        // The server's asyncRoute never opened a transaction to begin with.
+        asyncRouteWithoutTransaction: asyncRoute,
         apiRoute,
         asyncApiRoute,
         apiResultHandler,
         checkApiAuth: auth.checkApiAuth,
         checkApiAuthOrElectron: auth.checkApiAuthOrElectron,
         checkAppNotInitialized: auth.checkAppNotInitialized,
+        checkSetupAuth: auth.checkSetupAuth,
         checkCredentials: auth.checkCredentials,
         loginRateLimiter,
         uploadMiddlewareWithErrorHandling,
@@ -97,34 +110,11 @@ function register(app: express.Application) {
         csrfMiddleware
     });
 
-    route(PUT, "/api/notes/:noteId/file", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], filesRoute.updateFile, apiResultHandler);
-    asyncRoute(
-        GET,
-        "/api/notes/:noteId/open-partial",
-        [auth.checkApiAuthOrElectron],
-        createPartialContentHandler(filesRoute.fileContentProvider, {
-            debug: (string, extra) => {
-                console.log(string, extra);
-            }
-        })
-    );
     apiRoute(PST, "/api/notes/:noteId/save-to-tmp-dir", filesRoute.saveNoteToTmpDir);
     apiRoute(PST, "/api/notes/:noteId/upload-modified-file", filesRoute.uploadModifiedFileToNote);
 
-    asyncRoute(
-        GET,
-        "/api/attachments/:attachmentId/open-partial",
-        [auth.checkApiAuthOrElectron],
-        createPartialContentHandler(filesRoute.attachmentContentProvider, {
-            debug: (string, extra) => {
-                console.log(string, extra);
-            }
-        })
-    );
-
     apiRoute(PST, "/api/attachments/:attachmentId/save-to-tmp-dir", filesRoute.saveAttachmentToTmpDir);
     apiRoute(PST, "/api/attachments/:attachmentId/upload-modified-file", filesRoute.uploadModifiedFileToAttachment);
-    route(PUT, "/api/attachments/:attachmentId/file", [auth.checkApiAuthOrElectron, uploadMiddlewareWithErrorHandling, csrfMiddleware], filesRoute.updateAttachment, apiResultHandler);
 
     apiRoute(GET, "/api/metrics", metricsRoute.getMetrics);
     apiRoute(GET, "/api/system-checks", systemInfoRoute.systemChecks);
@@ -147,17 +137,14 @@ function register(app: express.Application) {
     route(GET, "/api/clipper/handshake", clipperMiddleware, clipperRoute.handshake, apiResultHandler);
     asyncRoute(PST, "/api/clipper/clippings", clipperMiddleware, clipperRoute.addClipping, apiResultHandler);
     asyncRoute(PST, "/api/clipper/notes", clipperMiddleware, clipperRoute.createNote, apiResultHandler);
+    asyncRoute(PST, "/api/clipper/files", clipperMiddleware, clipperRoute.createFile, apiResultHandler);
     route(PST, "/api/clipper/open/:noteId", clipperMiddleware, clipperRoute.openNote, apiResultHandler);
     asyncRoute(GET, "/api/clipper/notes-by-url/:noteUrl", clipperMiddleware, clipperRoute.findNotesByUrl, apiResultHandler);
 
-    apiRoute(PST, "/api/special-notes/llm-chat", llmSpecialNotesRoute.createLlmChat);
-    apiRoute(GET, "/api/special-notes/most-recent-llm-chat", llmSpecialNotesRoute.getMostRecentLlmChat);
-    apiRoute(GET, "/api/special-notes/get-or-create-llm-chat", llmSpecialNotesRoute.getOrCreateLlmChat);
-    apiRoute(GET, "/api/special-notes/recent-llm-chats", llmSpecialNotesRoute.getRecentLlmChats);
-    apiRoute(PST, "/api/special-notes/save-llm-chat", llmSpecialNotesRoute.saveLlmChat);
     asyncRoute(PST, "/api/database/anonymize/:type", [auth.checkApiAuthOrElectron, csrfMiddleware], databaseRoute.anonymize, apiResultHandler);
     apiRoute(GET, "/api/database/anonymized-databases", databaseRoute.getExistingAnonymizedDatabases);
     route(GET, "/api/database/anonymized/download", [auth.checkApiAuthOrElectron], databaseRoute.downloadAnonymizedDatabase);
+    apiRoute(DEL, "/api/database/anonymized", databaseRoute.deleteAnonymizedDatabase);
 
     if (process.env.TRILIUM_INTEGRATION_TEST === "memory") {
         asyncRoute(PST, "/api/database/rebuild/", [auth.checkApiAuthOrElectron], databaseRoute.rebuildIntegrationTestDatabase, apiResultHandler);
@@ -174,18 +161,19 @@ function register(app: express.Application) {
 
     // LLM chat endpoints
     asyncRoute(PST, "/api/llm-chat/stream", [auth.checkApiAuthOrElectron, csrfMiddleware], llmChatRoute.streamChat, null);
-    asyncApiRoute(PST, "/api/llm-chat/provider-models", llmChatRoute.getProviderModels);
 
     // no CSRF since this is called from android app
     asyncRoute(PST, "/api/sender/login", [loginRateLimiter], loginApiRoute.token, apiResultHandler);
     asyncRoute(PST, "/api/sender/image", [auth.checkEtapiToken, uploadMiddlewareWithErrorHandling], senderRoute.uploadImage, apiResultHandler);
     asyncRoute(PST, "/api/sender/note", [auth.checkEtapiToken], senderRoute.saveNote, apiResultHandler);
 
-    route(GET, "/api/fonts", [auth.checkApiAuthOrElectron], fontsRoute.getFontCss);
+    // The OS share sheet posts this form, so it carries no CSRF token; `rejectOtherPages` refuses
+    // the same form when another page posts it.
+    asyncRoute(PST, "/share-target", [auth.checkApiAuth, shareTargetRoute.rejectOtherPages, shareTargetMiddlewareWithErrorHandling], shareTargetRoute.handleShare, null);
+
     // POST rather than GET: the URL would otherwise sit in the query string of every access-log
     // line (Trilium's own, and any reverse proxy in front of it), and a pasted URL can carry a
     // one-time token or a signed signature. The body is not logged.
-    asyncApiRoute(PST, "/api/link-embed/metadata", linkEmbedRoute.getMetadata);
 
     asyncApiRoute(PST, "/api/onenote-import/device-login", onenoteImportRoute.deviceLogin);
     asyncApiRoute(PST, "/api/onenote-import/device-poll", onenoteImportRoute.devicePoll);
@@ -214,8 +202,12 @@ function register(app: express.Application) {
     asyncApiRoute(PST, "/api/ocr/process-attachment/:attachmentId", ocrRoute.processAttachmentOCR);
     asyncApiRoute(PST, "/api/ocr/batch-process", ocrRoute.batchProcessOCR);
     asyncApiRoute(GET, "/api/ocr/batch-progress", ocrRoute.getBatchProgress);
-    asyncApiRoute(GET, "/api/ocr/notes/:noteId/text", ocrRoute.getNoteOCRText);
-    asyncApiRoute(GET, "/api/ocr/attachments/:attachmentId/text", ocrRoute.getAttachmentOCRText);
+
+    asyncApiRoute(GET, "/api/resources", resourcesRoute.getStatus);
+    apiRoute(PST, "/api/resources/download", resourcesRoute.startDownload);
+    apiRoute(PST, "/api/resources/download/:downloadId/cancel", resourcesRoute.cancelDownload);
+    asyncApiRoute(DEL, "/api/resources/foreign/:name", resourcesRoute.deleteForeign);
+    asyncApiRoute(DEL, "/api/resources/:id", resourcesRoute.deleteResource);
 
     app.use("", router);
 }

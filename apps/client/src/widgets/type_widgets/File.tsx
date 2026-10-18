@@ -1,11 +1,14 @@
 import "./File.css";
 
-import { isOfficeMimeType } from "@triliumnext/commons";
+import { isFontMimeType, isOfficeMimeType } from "@triliumnext/commons";
 
+import { GPX_MIME } from "../../services/gpx";
 import { t } from "../../services/i18n";
 import Alert from "../react/Alert";
 import CodeBlock from "../react/CodeBlock";
 import { useNoteBlob } from "../react/hooks";
+import FontPreview from "./file/FontPreview";
+import GpxPreview from "./file/GpxPreview";
 import MediaPreview from "./file/MediaPreview";
 import OfficePreview from "./file/Office";
 import PdfPreview from "./file/Pdf";
@@ -23,12 +26,16 @@ export default function FileTypeWidget({ note, parentComponent, noteContext, isV
     // would otherwise be caught by the blob.content branch below and shown as raw markup.
     if (isOffice) {
         return <OfficePreview note={note} />;
+    } else if (note.mime === GPX_MIME) {
+        return <GpxPreview note={note} blob={blob} />;
     } else if (blob?.content) {
         return <TextPreview content={blob.content} mime={note.mime} />;
     } else if (note.mime === "application/pdf") {
-        return noteContext && <PdfPreview blob={blob} note={note} componentId={parentComponent?.componentId} noteContext={noteContext} />;
+        return noteContext && <PdfPreview blob={blob} note={note} componentId={parentComponent?.componentId} noteContext={noteContext} isVisible={isVisible} />;
     } else if (note.mime.startsWith("video/") || note.mime.startsWith("audio/")) {
         return <MediaPreview entity={note} environment="standalone" noteContext={noteContext} isVisible={isVisible} />;
+    } else if (isFontMimeType(note.mime)) {
+        return <FontPreview note={note} blob={blob} />;
     }
     return <NoPreview />;
 

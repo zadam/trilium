@@ -13,15 +13,6 @@
 
 .table-view-container {
     height: 100%;
-    margin-inline-start: var(--content-margin-inline);
-}
-
-.search-result-widget-content .table-view {
-    position: absolute;
-    top: 0;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
-    bottom: 0;
 }
 
 .tabulator-cell .autocomplete {

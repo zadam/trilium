@@ -104,8 +104,8 @@ it( 'editing-downcasts to <mark> in the editing view', () => {
 ```
 
 For widgets, assert the editing view contains the widget classes/attributes (`ck-widget`,
-`contenteditable`) while `getData()` stays clean. Widget rendering needs real layout — run such
-tests in a **browser-mode** package, not happy-dom.
+`contenteditable`) while `getData()` stays clean. Widget rendering needs real layout, which the
+browser-mode runner provides.
 
 ## Commands
 
@@ -203,10 +203,56 @@ it( 'throws on invalid config', () => {
 
 For `CKEditorError`, match the error id substring.
 
-## Reaching 100% coverage (browser-mode packages)
+### Errors that escape the editor (`onEditorError()`)
 
-Browser-mode packages (`footnotes`, `keyboard-marker`, `math`, `mermaid`) gate `src/**` at 100%
+CKEditor 49 reports an escaped error from `window`'s `error` and `unhandledrejection` events, and
+only a `CKEditorError` whose `context` resolves to a ready editor. Native errors arrive wrapped by
+`CKEditorError.rethrowUnexpectedError(error, context)` (`unexpected-error … Original error: …`).
+Test a listener by dispatching the event a thrown error would raise (`src/editor_errors.spec.ts`):
+
+```ts
+function escape( error: Error ) {
+	const listener = () => {};
+	window.addEventListener( 'error', listener );
+	window.dispatchEvent( new ErrorEvent( 'error', { error } ) );
+	window.removeEventListener( 'error', listener );
+}
+```
+
+The extra listener is the point: Vitest's browser runner reports an `error` event as an
+**unhandled error** (failing the run) whenever no user listener is registered on `window`, and
+`preventDefault()` does not change that. Once the code under test unregisters its own listener, an
+event dispatched without one fails the file even though every test passed.
+
+## Measuring real CSS
+
+Specs that assert layout load a stylesheet and read `getComputedStyle()` /
+`getBoundingClientRect()` (`tile_row_view.spec.ts`, `multicolumn_layout.spec.ts`):
+
+- `import url from "ckeditor5/ckeditor5.css?url"` plus a `<link>` loads CKEditor's sheet as the app
+  does. `?inline` returns the CSS text with `@import`s resolved — use it to load a client
+  stylesheet chain (`apps/client/src/stylesheets/style.css?inline`) into a `<style>`. `?raw` keeps
+  `@import` lines as text, which the browser then cannot resolve.
+- Disable transitions (`* { transition: none !important; }`) before reading `box-shadow` or
+  colors of a state you just entered; otherwise you read the transition's first frame.
+- `element.focus()` from a test counts as `:focus-visible`.
+- To compare a stylesheet between two CKEditor versions, don't write a spec: use `ck_css.mjs` from
+  the `ckeditor5-plugin-development` skill (`references/upgrading-ckeditor.md`).
+
+## Reaching 100% coverage
+
+`ckeditor5` gates `src/**` at 100%
 (lines/functions/branches/statements, provider `v8`). Every branch needs a test: both states of
 each boolean, each schema-allowed/disallowed path, collapsed vs. ranged selection, and error/guard
-branches. happy-dom packages (`admonition`, `collapsible`) have **no** threshold. Run the package's
-`test` script and read the coverage text report to find uncovered lines before pushing.
+branches. Run the package's `test` script and read the coverage text report to find uncovered
+lines before pushing.
+
+When a branch resists covering, first ask whether it is reachable at all — Trilium's plugins have
+repeatedly turned out to carry guards that nothing can trigger (an `if` over a non-empty array
+literal, a selection fallback on an `isObject` element, a post-fixer branch the model writer
+normalises away). The fix is to delete or simplify the dead code, not to invent a test for it. If
+the guard genuinely earns its keep, keep it and mark it `/* v8 ignore next N -- why */` with the
+reason spelled out. Two traps worth knowing: a disabled CKEditor `Command` silently skips
+`execute()`, so a guard inside it needs `command.isEnabled = true` first; and CKEditor's own
+plugins may call `preventDefault()` on an event, so use a spy on `editor.execute` (or assert the
+model) rather than `preventDefault` to prove your handler ran.

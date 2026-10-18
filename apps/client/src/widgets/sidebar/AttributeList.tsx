@@ -1,9 +1,9 @@
+import "../attribute_widgets/attribute_kind.css";
 import "./AttributeList.css";
 
 import { promotedAttributeDefinitionParser } from "@triliumnext/commons";
 import clsx from "clsx";
-import { ComponentChildren } from "preact";
-import { createPortal } from "preact/compat";
+import { ComponentChildren, createPortal } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import FAttribute from "../../entities/fattribute";
@@ -14,26 +14,27 @@ import type { Attribute } from "../../services/attribute_parser";
 import attributes, { isBuiltinAttribute } from "../../services/attributes";
 import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
+import type { SidebarSectionId } from "../../services/in_app_help";
 import server from "../../services/server";
 import toast from "../../services/toast";
 import { getErrorMessage, isMobile } from "../../services/utils";
-import { AttributeDetail, AttributeDetailOpts, AttributeForm, AttrType, DEFINITION_TYPES, getAttrType, RELATION_DEFINITION_TYPE } from "../attribute_widgets/attribute_detail";
+import { AttributeDetail, AttributeDetailOpts, AttributeForm, AttrType, DEFINITION_TYPES, getAttrType } from "../attribute_widgets/attribute_detail";
+import { attributeKindIcon, RELATION_DEFINITION_TYPE } from "../attribute_widgets/attribute_types";
 import { ColorChip, renderLabelValue } from "../attribute_widgets/label_value_display";
 import ActionButton from "../react/ActionButton";
 import SimpleBadge from "../react/Badge";
 import { FormListItem } from "../react/FormList";
-import HelpButton from "../react/HelpButton";
 import { useActiveNoteContext, useTriliumEvent, useTriliumOptionJson } from "../react/hooks";
 import Icon from "../react/Icon";
 import { DetailPane, MasterPane, useMasterDetail, useMasterDetailPage } from "../react/master_detail";
 import NoItems from "../react/NoItems";
 import NoteLink from "../react/NoteLink";
 import { ParentComponent } from "../react/react_utils";
-import { ATTRIBUTE_HELP_PAGE } from "../ribbon/components/AttributeHelp";
 import OptionsSection from "../type_widgets/options/components/OptionsSection";
 import AttributeCreationEditor from "./AttributeCreationEditor";
 import AttributeValueEditor, { resolveValueField } from "./AttributeValueEditor";
 import RightPanelWidget, { CollapsibleWidgets } from "./RightPanelWidget";
+import SidebarHelp from "./SidebarHelp";
 
 /**
  * The note's attributes as a list, one row per attribute: the kind (label, relation, or either's
@@ -81,7 +82,7 @@ export default function AttributeList() {
 
     // Collected while rendering rather than in an effect, which would leave one frame listing the
     // attributes of the note navigated away from. The initial `undefined` is what collects the first.
-    const shownNoteId = useRef<string | null>();
+    const shownNoteId = useRef<string | null | undefined>(undefined);
     if (shownNoteId.current !== (note?.noteId ?? null)) {
         // An attribute left open for editing — in the popup or in its own row — is closed by the
         // change of note, and closing keeps what was typed into it — as a press outside does — rather
@@ -168,7 +169,6 @@ export default function AttributeList() {
             attribute,
             isOwned,
             x: e.pageX,
-            y: e.pageY,
             anchor: anchor ?? undefined,
             // Presses on another row swap the shown attribute instead of dismissing the popup first.
             parent: spawningArea()
@@ -210,7 +210,6 @@ export default function AttributeList() {
             attribute,
             isOwned: true,
             x: e.pageX,
-            y: e.pageY,
             focus: "name",
             // There is no row to anchor to yet: the attribute only joins the list once it is saved.
             anchor: containerRef.current ?? undefined,
@@ -315,6 +314,7 @@ export default function AttributeList() {
     }
 
     const sections = splitIntoSections(owned.current, inherited.current);
+    const canEdit = !!note && note.isContentWritable;
     const internalRows = internal.current.map((attribute) => toEntry(attribute, true));
 
     //#region Selection and the clipboard
@@ -643,12 +643,19 @@ export default function AttributeList() {
             />
         )
     } : undefined;
+    // A draft still being created keeps the place it was added in — the foot of the list, next to the
+    // row that opened it — instead of the one its name will file it under: nameless, it is not a name
+    // Trilium reads for itself, so the sort has nothing to go on and would hoist the editor above the
+    // system rows, away from the press that opened it. It settles into place once the name is saved.
+    const creationRow = activeCreation && sections.owned.find((entry) => entry.attribute === activeCreation);
+    const ownedRows = creationRow ? sections.owned.filter((entry) => entry !== creationRow) : sections.owned;
     const rowProps = {
         note,
         activeAttribute: detail?.attribute,
         valueEditor,
         selection,
         selecting: isSelecting,
+        locked: !canEdit,
         onOpen: openDetail,
         onSelect: selectRow,
         onShowMenu: showRowMenu,
@@ -683,8 +690,15 @@ export default function AttributeList() {
         // The note's own values read from the trailing edge, as the inherited ones' do — the two
         // runs of plain attributes reading as one ledger. Nothing stands in for the run holding
         // nothing: its count says it is empty and its way in says what there is to do about it.
-        rows: <AttributeRowList rows={sections.owned} alignValuesEnd {...rowProps} />,
-        add: { kind: "label", text: t("attribute_list_panel.add_attribute") }
+        // The draft under creation is listed last, outside the split between the note's own names and
+        // Trilium's (see `creationRow`).
+        rows: (
+            <>
+                <AttributeRowList rows={ownedRows} alignValuesEnd {...rowProps} />
+                {creationRow && <AttributeRowList rows={[ creationRow ]} alignValuesEnd {...rowProps} />}
+            </>
+        ),
+        add: canEdit ? { kind: "label", text: t("attribute_list_panel.add_attribute") } : undefined
     } ];
 
     if (sections.inherited.length > 0) {
@@ -692,6 +706,7 @@ export default function AttributeList() {
             id: "attributes-inherited",
             title: t("attribute_list_panel.section_inherited"),
             count: sections.inherited.length,
+            help: "attributes-inherited",
             rows: <AttributeRowList rows={sections.inherited} alignValuesEnd {...rowProps} />
         });
     }
@@ -701,10 +716,11 @@ export default function AttributeList() {
             id: "attributes-definitions",
             title: t("attribute_list_panel.section_definitions"),
             count: sections.definitions.length,
+            help: "attributes-definitions",
             // The definitions keep prose order: their "value" is a summary of settings rather than a
             // value, so there is no column of values for it to line up in.
             rows: <AttributeRowList rows={sections.definitions} {...rowProps} />,
-            add: { kind: "label-definition", text: t("attribute_list_panel.add_definition") }
+            add: canEdit ? { kind: "label-definition", text: t("attribute_list_panel.add_definition") } : undefined
         });
     }
 
@@ -768,7 +784,7 @@ export default function AttributeList() {
                         // rows are pressed rather than typed into — hence every kind, not just this
                         // run's.
                         <>
-                            <HelpButton helpPage={ATTRIBUTE_HELP_PAGE} />
+                            <SidebarHelp section="attributes" />
 
                             {/* The only way to paste a phone has. A pointer has three — the key,
                                 a right press on a row, a right press beside them — and all three
@@ -788,24 +804,29 @@ export default function AttributeList() {
                                 />
                             )}
 
-                            <AddAttributeButton
+                            {canEdit && <AddAttributeButton
                                 text={t("attribute_editor.add_a_new_attribute")}
                                 attrTypes={ALL_ATTRIBUTE_KINDS}
                                 onSelect={addAttribute}
-                            />
+                            />}
                         </>
-                    ) : run.add && (
-                        // A run that can be added to says so in its own header, which is where a
-                        // card keeps what is done to it. The ghost row a pointer gets is a hover
-                        // affordance, so it stays on the desktop.
-                        <ActionButton
-                            icon="bx bx-plus"
-                            text={run.add.text}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                addAttribute(run.add?.kind ?? "label", e);
-                            }}
-                        />
+                    ) : (
+                        <>
+                            {run.help && <SidebarHelp section={run.help} />}
+                            {run.add && (
+                                // A run that can be added to says so in its own header, which is where a
+                                // card keeps what is done to it. The ghost row a pointer gets is a hover
+                                // affordance, so it stays on the desktop.
+                                <ActionButton
+                                    icon="bx bx-plus"
+                                    text={run.add.text}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        addAttribute(run.add?.kind ?? "label", e);
+                                    }}
+                                />
+                            )}
+                        </>
                     ))}
                 >
                     <div
@@ -850,12 +871,12 @@ export default function AttributeList() {
                 grow
                 buttons={note && (
                     <>
-                        <HelpButton helpPage={ATTRIBUTE_HELP_PAGE} />
-                        <AddAttributeButton
+                        <SidebarHelp section="attributes" />
+                        {canEdit && <AddAttributeButton
                             text={t("attribute_editor.add_a_new_attribute")}
                             attrTypes={ALL_ATTRIBUTE_KINDS}
                             onSelect={addAttribute}
-                        />
+                        />}
                     </>
                 )}
             >
@@ -935,6 +956,8 @@ interface AttributeRun {
     title: string;
     count: number;
     rows: ComponentChildren;
+    /** The `?` of the run, shown in its card header on a phone. */
+    help?: SidebarSectionId;
     /** How the run is added to, for the runs that can be — the kind, and what to call adding it. */
     add?: { kind: AttributeKind; text: string };
 }
@@ -1077,6 +1100,8 @@ interface AttributeRowListProps {
      * out for, being rewritten from the note's content rather than carried anywhere.
      */
     readOnly?: boolean;
+    /** Shows the rows as usual, but with no way to change them, for a note that cannot be edited. */
+    locked?: boolean;
     onOpen: (attribute: Attribute, isOwned: boolean, anchor: HTMLElement | null, e: MouseEvent) => void;
     /** Picks the row out, or takes it back out of the selection; `range` is what shift asks for. */
     onSelect: (attributeId: string, range?: boolean) => void;
@@ -1091,7 +1116,9 @@ interface AttributeRowListProps {
  * Trilium reads for itself. What a row offers follows from whether the note owns its attribute rather
  * than from the card it is in: the definitions card holds the note's own alongside a template's.
  */
-function AttributeRowList({ rows, note, activeAttribute, valueEditor, selection, selecting, readOnly, alignValuesEnd, onOpen, onSelect, onShowMenu, onEditValue, onDelete }: AttributeRowListProps) {
+function AttributeRowList({ rows, note, activeAttribute, valueEditor, selection, selecting, readOnly, locked, alignValuesEnd, onOpen, onSelect, onShowMenu, onEditValue, onDelete }: AttributeRowListProps) {
+    const canChange = !readOnly && !locked;
+
     function renderRows(group: AttributeEntry[]) {
         return (
             // The rows are menu items on a phone (see AttributeRow), and the theme dresses a menu item
@@ -1122,15 +1149,15 @@ function AttributeRowList({ rows, note, activeAttribute, valueEditor, selection,
                         // An attribute of another note names it; the current note's own would name itself.
                         showOwner={!isOwned && !readOnly}
                         // A read-only row opens the popup as an inherited one does: to be read, not edited.
-                        onOpen={(anchor, e) => onOpen(attribute, isOwned && !readOnly, anchor, e)}
+                        onOpen={(anchor, e) => onOpen(attribute, isOwned && canChange, anchor, e)}
                         // A label's value is typed straight into its row, and a relation's target is
                         // repicked in it (from the pencil — the value itself is a link, and stays
                         // one). Definitions, whose value is a summary of settings, keep the popup. On
                         // a phone the row is a menu item and opens its page whole.
-                        onEditValue={isOwned && !readOnly && !IS_MOBILE && !isDefinition(getAttributeKind(attribute))
+                        onEditValue={isOwned && canChange && !IS_MOBILE && !isDefinition(getAttributeKind(attribute))
                             ? () => onEditValue(attribute)
                             : undefined}
-                        onDelete={isOwned && !readOnly ? () => onDelete(attribute) : undefined}
+                        onDelete={isOwned && canChange ? () => onDelete(attribute) : undefined}
                     />
                 ))}
             </ul>
@@ -1183,7 +1210,7 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, selected
     const heldDown = useRef(false);
     const attrType = getAttributeKind(attribute);
     const markerClass = getKindMarkerClass(attribute, attrType, isSystem);
-    const kindIcon = getKindIcon(attribute, attrType);
+    const kindIcon = attributeKindIcon(attribute.type, attribute.name, attribute.value ?? "");
     const kindTooltip = getKindTooltip(attribute, attrType, isSystem);
     const rowClass = clsx("attribute-row", active && "active", valueEditor && "editing", selected && "selected");
     /** Whether the whole row picks, which is what it does once rows are being picked out. */
@@ -1438,24 +1465,9 @@ export function isMultiValued(note: FNote | null | undefined, attribute: Attribu
 }
 
 /**
- * What the attribute is, as an icon. A definition takes the icon of the field it sets up, the same one
- * the popup offers that field under — it needs no marker of its own, being only ever listed in a card
- * of definitions. Everything else is the icon of a label or of a relation.
- */
-function getKindIcon(attribute: Attribute, attrType: AttributeKind) {
-    if (isDefinition(attrType)) {
-        // A definition written by hand can name a field the popup knows nothing of, leaving the icon of
-        // the label it defines to stand for it.
-        return getDefinitionType(attribute, attrType)?.icon ?? "bx bx-hash";
-    }
-
-    return attrType === "relation" ? "bx bx-transfer" : "bx bx-hash";
-}
-
-/**
  * The badge the kind icon carries on its corner, where there is one to carry: a cog for the names
  * Trilium reads for itself, and a chevron for a definition whose field is promoted — lifted, that is,
- * out of the attributes and into the note's own ribbon. At most one of the two, which no attribute is
+ * out of the attributes and into the note's promoted attributes section. At most one of the two, which no attribute is
  * ever both of: no built-in name is a definition. The class alone: what either badge means is a line
  * of the icon's own tooltip (see {@link getKindTooltip}), the two being read as one mark.
  */

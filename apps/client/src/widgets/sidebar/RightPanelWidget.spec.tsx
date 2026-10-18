@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import options from "../../services/options";
 import server from "../../services/server";
-import RightPanelWidget, { CollapsibleWidgets } from "./RightPanelWidget";
+import RightPanelWidget, { CollapsibleWidgets, ExpandWidgetRequest, ExpandWidgetRequests } from "./RightPanelWidget";
 
 describe("RightPanelWidget", () => {
     let container: HTMLElement;
@@ -56,4 +56,50 @@ describe("RightPanelWidget", () => {
         await act(async () => container.querySelector<HTMLElement>(".card-header")?.click());
         expect(container.querySelector(".card-body")).toBeNull();
     });
+
+    it("expands on a request for it by name, and remembers it, but leaves the other widgets alone", async () => {
+        const renderWith = async (request: ExpandWidgetRequest | null) => act(async () => render(
+            <ExpandWidgetRequests.Provider value={request}>
+                <RightPanelWidget id="shared" title="Note Paths">the body</RightPanelWidget>
+                <RightPanelWidget id="solitary" title="Backlinks">the other body</RightPanelWidget>
+            </ExpandWidgetRequests.Provider>, container));
+        const card = (id: string) => container.querySelector(`#${id}`);
+
+        // Asked for on the very first render, i.e. mounted along with the tab it was asked from.
+        await renderWith({ id: "shared", counter: 1 });
+        expect(card("shared")?.className).not.toContain("collapsed");
+        expect(card("solitary")?.className).toContain("collapsed");
+        // Remembered, so the widget is open again the next time its tab is built.
+        expect(server.put).toHaveBeenCalledWith("options", { rightPaneCollapsedItems: JSON.stringify([ "solitary" ]) });
+
+        // Collapsed again by the user, then asked for a second time: the fresh request opens it again.
+        await act(async () => container.querySelector<HTMLElement>("#shared .card-header")?.click());
+        expect(card("shared")?.className).toContain("collapsed");
+        await renderWith({ id: "shared", counter: 2 });
+        expect(card("shared")?.className).not.toContain("collapsed");
+
+        // A widget the request opens is scrolled to and flashed once the body it opened is laid out;
+        // one that was open all along gets both on the spot, which is all such a press amounts to.
+        const scrollIntoView = vi.fn();
+        const solitary = card("solitary");
+        if (solitary) solitary.scrollIntoView = scrollIntoView;
+        await renderWith({ id: "solitary", counter: 3 });
+        expect(card("solitary")?.className).not.toContain("collapsed");
+        expect(scrollIntoView).toHaveBeenCalledTimes(1);
+        expect(card("solitary")?.className).toContain("highlighted");
+
+        // The flash lasts as long as its animation, and the card's own — not one from within it.
+        await act(async () => { card("solitary")?.querySelector(".card-body")?.dispatchEvent(animationEnd()); });
+        expect(card("solitary")?.className).toContain("highlighted");
+        await act(async () => { card("solitary")?.dispatchEvent(animationEnd()); });
+        expect(card("solitary")?.className).not.toContain("highlighted");
+
+        await renderWith({ id: "solitary", counter: 4 });
+        expect(scrollIntoView).toHaveBeenCalledTimes(2);
+        expect(card("solitary")?.className).toContain("highlighted");
+    });
 });
+
+function animationEnd() {
+    return new Event("animationend", { bubbles: true });
+}

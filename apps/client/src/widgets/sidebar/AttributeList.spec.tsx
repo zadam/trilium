@@ -227,6 +227,21 @@ describe("AttributeList", () => {
         expect(group("attributes-definitions").querySelectorAll(".definition-marker")).toHaveLength(1);
     });
 
+    it("lists the attributes of a note that cannot be edited, offering no way to change them", () => {
+        const note = noteWithAttributes();
+        note.isContentWritable = false;
+        renderPanel(note);
+
+        expect(namesIn(group("attributes-owned"))).toEqual([ "author", "cssClass", "template" ]);
+        // Read as any other note's: Trilium's own names below the rule, inherited ones naming their note.
+        expect(group("attributes-owned").querySelectorAll("hr.attribute-rows-divider")).toHaveLength(1);
+        expect(group("attributes-inherited").querySelectorAll(".attribute-owner")).toHaveLength(2);
+        expect(container.querySelectorAll(".attribute-delete-button")).toHaveLength(0);
+        expect(container.querySelectorAll(".attribute-edit-button")).toHaveLength(0);
+        expect(container.querySelector(".attribute-add-row")).toBeNull();
+        expect(container.querySelector(".bx-plus")).toBeNull();
+    });
+
     it("folds a run of rows away by its heading, and remembers it folded", async () => {
         options.set("rightPaneCollapsedItems", JSON.stringify([ "attributes-inherited" ]));
         renderPanel(noteWithAttributes());
@@ -258,6 +273,11 @@ describe("AttributeList", () => {
         expect(groupIds()).toEqual([ "attributes-owned" ]);
         expect(group("attributes-owned").querySelector(".attribute-group-count")?.textContent).toBe("0");
         expect(group("attributes-owned").querySelector(".attribute-add-row")).not.toBeNull();
+
+        // Adding takes the placeholder's place: there is a row again, draft though it still is.
+        act(() => container.querySelector<HTMLElement>(".attribute-add-row")?.click());
+        expect(container.querySelectorAll(".attribute-row")).toHaveLength(1);
+        expect(container.querySelector(".no-items")).toBeNull();
     });
 
     it("leaves what Trilium wrote for itself out of a release build, and gives it its own run in a development one", () => {
@@ -454,6 +474,12 @@ describe("AttributeList", () => {
         const editor = container.querySelector<HTMLElement>(".attribute-creation-editor");
         expect(editor?.querySelector(".attribute-creation-value input")).not.toBeNull();
         expect(editor?.querySelector(".note-autocomplete-stub")).toBeNull();
+
+        // ...in a row at the foot of the list, where the press that opened it was — and not where
+        // the sort would file a name it does not have yet, above the ones Trilium reads for itself.
+        const ownedRun = group("attributes-owned");
+        expect(namesIn(ownedRun)).toEqual([ "author", "cssClass", "template", "" ]);
+        expect([ ...ownedRun.querySelectorAll(".attribute-row") ].at(-1)?.contains(editor ?? null)).toBe(true);
 
         // ...until the `~` the attributes editor spells relations with is typed at the name's head:
         // the prefix is spent on the switch, the name keeping only what follows it.

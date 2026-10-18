@@ -2,7 +2,7 @@ import "./PromotedAttributes.css";
 
 import { DefinitionObject, extractAttributeDefinitionTypeAndName, UpdateAttributeResponse } from "@triliumnext/commons";
 import clsx from "clsx";
-import { ComponentChild, TargetedEvent } from "preact";
+import { ComponentChild } from "preact";
 import { Dispatch, StateUpdater, useCallback, useEffect, useState } from "preact/hooks";
 
 import NoteContext from "../components/note_context";
@@ -14,9 +14,11 @@ import { t } from "../services/i18n";
 import server from "../services/server";
 import { randomString } from "../services/utils";
 import ws from "../services/ws";
-import LabelValueInput from "./attribute_widgets/label_value_input";
+import LabelValueInput, { useLabelValueSuggestions } from "./attribute_widgets/label_value_input";
 import MultiValueInput from "./attribute_widgets/multi_value_input";
 import RelationValuesInput from "./attribute_widgets/relation_values_input";
+import ColorPicker from "./react/ColorPicker";
+import FormAutocomplete from "./react/FormAutocomplete";
 import { useNoteContext, useNoteLabel, useTriliumEvent, useUniqueName } from "./react/hooks";
 import NoteAutocomplete from "./react/NoteAutocomplete";
 
@@ -43,13 +45,20 @@ interface CellProps {
     setCells: Dispatch<StateUpdater<Cell[] | undefined>>;
 }
 
-type OnChangeEventData = TargetedEvent<HTMLInputElement | HTMLTextAreaElement, Event> | InputEvent | JQuery.TriggeredEvent<HTMLInputElement, undefined, HTMLInputElement, HTMLInputElement>;
-type OnChangeListener = (e: OnChangeEventData) => void | Promise<void>;
-
-export default function PromotedAttributes() {
+export default function PromotedAttributes({ omit }: {
+    /**
+     * Names of definitions to leave out, for a host that shows what they hold better than a field
+     * would — the geo map's marker pane leaves out the location it is already standing on.
+     *
+     * Left out of the grid only: the note keeps the attribute and every other view of it still
+     * offers the field, this being about where a value is best edited rather than whether it counts.
+     */
+    omit?: readonly string[];
+} = {}) {
     const { note, componentId, noteContext } = useNoteContext();
     const [ cells, setCells ] = usePromotedAttributeData(note, componentId, noteContext);
-    return <PromotedAttributesContent note={note} componentId={componentId} cells={cells} setCells={setCells} />;
+    const shown = omit?.length ? cells?.filter((cell) => !omit.includes(cell.valueName)) : cells;
+    return <PromotedAttributesContent note={note} componentId={componentId} cells={shown} setCells={setCells} />;
 }
 
 export function PromotedAttributesContent({ note, componentId, cells, setCells }: {
@@ -216,39 +225,44 @@ function LabelInput(props: CellProps & { inputId: string }) {
         [ cell, componentId, note, setCells ]);
 
     const createOption = useCreateSelectOption(definitionAttr, componentId, setCells);
-
-    useTextLabelAutocomplete(inputId, valueAttr, definition, (e) => {
-        if (e.currentTarget instanceof HTMLInputElement) {
-            setDraft(e.currentTarget.value);
-        }
-    });
+    const suggestValues = useLabelValueSuggestions(valueName);
 
     // React to model changes.
     useEffect(() => {
         setDraft(valueAttr.value);
     }, [ valueAttr.value ]);
 
-    const input = (
-        <LabelValueInput
+    const inputProps = {
+        className: "form-control promoted-attribute-input",
+        tabIndex: 200 + definitionAttr.position,
+        id: inputId,
+        placeholder: t("promoted_attributes.unset-field-placeholder"),
+        "data-attribute-id": valueAttr.attributeId,
+        "data-attribute-type": valueAttr.type,
+        "data-attribute-name": valueAttr.name
+    };
+
+    // A text value commits on blur like the other types, so a picked suggestion only fills in the
+    // draft.
+    const input = labelType === "text"
+        ? <FormAutocomplete
+            {...inputProps}
+            currentValue={valueDraft ?? ""}
+            source={suggestValues}
+            openOnFocus
+            onChange={setDraft}
+            onBlur={commit}
+        />
+        : <LabelValueInput
             labelType={labelType}
-            // The draft is what the field shows: the autocomplete writes into it as the user picks.
-            value={(labelType === "boolean" ? valueAttr.value : valueDraft) ?? ""}
+            value={valueAttr.value ?? ""}
             onCommit={commit}
             commitOn="blur"
             numberPrecision={definition.numberPrecision}
             selectOptions={definition.selectOptions}
             onCreateOption={labelType === "select" ? createOption : undefined}
-            inputProps={{
-                className: "form-control promoted-attribute-input",
-                tabIndex: 200 + definitionAttr.position,
-                id: inputId,
-                placeholder: t("promoted_attributes.unset-field-placeholder"),
-                "data-attribute-id": valueAttr.attributeId,
-                "data-attribute-type": valueAttr.type,
-                "data-attribute-name": valueAttr.name
-            }}
-        />
-    );
+            inputProps={inputProps}
+        />;
 
     if (labelType === "boolean") {
         return <>
@@ -258,8 +272,17 @@ function LabelInput(props: CellProps & { inputId: string }) {
             <label for={inputId}>{definition.promotedAlias ?? valueName}</label>
         </>;
     }
-
-    return <div className="input-group">{input}</div>;
+    return (
+        <div className="input-group">
+            {input}
+            { definition.labelType === "color" && (
+                <ColorPicker
+                    currentValue={valueAttr.value || null}
+                    onChange={(color) => updateAttribute(note, cell, componentId, color ?? "", setCells)}
+                />
+            )}
+        </div>
+    );
 }
 
 /**
@@ -274,6 +297,7 @@ function MultiLabelInput({ inputId, note, cell, componentId, setCells }: CellPro
     const { valueName, definition, definitionAttr, values, uniqueId } = cell;
     const labelType = definition.labelType ?? "text";
     const createOption = useCreateSelectOption(definitionAttr, componentId, setCells);
+    const suggestValues = useLabelValueSuggestions(valueName);
 
     const commit = useCallback(async (edited: string[]) => {
         await attributes.setLabelValues(note, valueName, edited, componentId);
@@ -288,6 +312,8 @@ function MultiLabelInput({ inputId, note, cell, componentId, setCells }: CellPro
             <MultiValueInput
                 labelType={labelType}
                 values={values ?? []}
+                // Matches the single-value field, which offers suggestions for `text` alone.
+                source={labelType === "text" ? suggestValues : undefined}
                 options={definition.selectOptions}
                 onCreateOption={labelType === "select" ? createOption : undefined}
                 inputId={inputId}
@@ -321,6 +347,7 @@ function RelationInput({ inputId, ...props }: CellProps & { inputId: string }) {
     return (
         <NoteAutocomplete
             id={inputId}
+            tabIndex={200 + props.cell.definitionAttr.position}
             noteId={props.cell.valueAttr.value}
             opts={{ allowCreatingNotes: true }}
             noteIdChanged={async (value) => {
@@ -356,59 +383,6 @@ function MultiRelationInput({ inputId, note, cell, componentId, setCells }: Cell
             />
         </div>
     );
-}
-
-function useTextLabelAutocomplete(inputId: string, valueAttr: Attribute, definition: DefinitionObject, onChangeListener: OnChangeListener) {
-    const [ attributeValues, setAttributeValues ] = useState<{ value: string }[] | null>(null);
-
-    // Obtain data.
-    useEffect(() => {
-        // A nameless attribute has no values to suggest, and would request `attribute-values/`, which
-        // matches no route.
-        if (definition.labelType !== "text" || !valueAttr.name) {
-            return;
-        }
-
-        server.get<string[]>(`attribute-values/${encodeURIComponent(valueAttr.name)}`).then((_attributesValues) => {
-            setAttributeValues(_attributesValues.map((attribute) => ({ value: attribute })));
-        });
-    }, [ definition.labelType, valueAttr.name ]);
-
-    // Initialize autocomplete.
-    useEffect(() => {
-        if (attributeValues?.length === 0) return;
-        const el = document.getElementById(inputId) as HTMLInputElement | null;
-        if (!el) return;
-
-        const $input = $(el);
-        $input.autocomplete(
-            {
-                appendTo: document.querySelector("body"),
-                hint: false,
-                autoselect: false,
-                openOnFocus: true,
-                minLength: 0,
-                tabAutocomplete: false
-            },
-            [
-                {
-                    displayKey: "value",
-                    source (term, cb) {
-                        term = term.toLowerCase();
-
-                        const filtered = (attributeValues ?? []).filter((attr) => attr.value.toLowerCase().includes(term));
-
-                        cb(filtered);
-                    }
-                }
-            ]
-        );
-
-        $input.off("autocomplete:selected");
-        $input.on("autocomplete:selected", onChangeListener);
-
-        return () => $input.autocomplete("destroy");
-    }, [ inputId, attributeValues, onChangeListener ]);
 }
 
 async function updateAttribute(note: FNote, cell: Cell, componentId: string, value: string | undefined, setCells: Dispatch<StateUpdater<Cell[] | undefined>>) {

@@ -1,5 +1,5 @@
 import { dayjs } from "@triliumnext/commons";
-import type { Application } from "express";
+import express, { type Application } from "express";
 import { SessionData } from "express-session";
 import supertest, { type Response } from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -7,11 +7,40 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { cls, options } from "@triliumnext/core";
 import { refreshAuth } from "../services/auth.js";
 import config from "../services/config.js";
+import totp from "../services/totp.js";
+import { createLoginRateLimiter } from "./login.js";
 import { type SQLiteSessionStore } from "./session_parser.js";
 
 let app: Application;
 let sessionStore: SQLiteSessionStore;
 let CLEAN_UP_INTERVAL: number;
+
+describe("createLoginRateLimiter", () => {
+    it("counts failed attempts and stops answering past the limit", async () => {
+        const { app, handled } = buildRateLimitedApp((_req, res) => {
+            res.status(401).json({ success: false });
+        });
+
+        const statuses = await sendRepeatedly(app, 12);
+
+        expect(handled()).toBe(10); // the configured max
+        expect(statuses).toEqual([ ...Array(10).fill(401), 429, 429 ]);
+    });
+
+    it("refunds every response below 400, which is why a refusal must not be one", async () => {
+        // A route answering a refused credential with 200 has its hit handed straight back by
+        // `skipSuccessfulRequests`, and the limit is never reached. Guards the contract
+        // `createLoginRateLimiter` documents.
+        const { app, handled } = buildRateLimitedApp((_req, res) => {
+            res.status(200).json({ authenticated: false });
+        });
+
+        const statuses = await sendRepeatedly(app, 12);
+
+        expect(handled()).toBe(12);
+        expect(statuses).toEqual(Array(12).fill(200));
+    });
+});
 
 describe("Login Route test", () => {
 
@@ -41,6 +70,32 @@ describe("Login Route test", () => {
             .send({ password: "fakePassword" })
             .expect(401);
 
+    });
+
+    it("returns a 401 status, when the password field is missing or not a string", async () => {
+        for (const body of [{}, { password: ["a"] }]) {
+            await supertest(app)
+                .post("/login")
+                .send(body)
+                .expect(401);
+        }
+    });
+
+    it("rejects a TOTP token that is not a string without verifying it", async () => {
+        vi.spyOn(totp, "isTotpEnabled").mockReturnValue(true);
+        const verifyTOTP = vi.spyOn(totp, "verifyTOTP");
+
+        try {
+            const res = await supertest(app)
+                .post("/login")
+                .send({ password: "demo1234", totpToken: ["123456"] })
+                .expect(401);
+
+            expect(res.body).toEqual({ success: false, factor: "totp" });
+            expect(verifyTOTP).not.toHaveBeenCalled();
+        } finally {
+            vi.restoreAllMocks();
+        }
     });
 
     describe("login stays reachable with redirectBareDomain enabled (#10552)", () => {
@@ -287,4 +342,28 @@ function getSessionFromStore(sessionId: string) {
             }
         });
     });
+}
+
+/** An app whose only route counts how many requests made it past the limiter. */
+function buildRateLimitedApp(handler: express.RequestHandler) {
+    let handled = 0;
+
+    const app = express();
+    app.post("/login", createLoginRateLimiter(), (req, res, next) => {
+        handled++;
+        handler(req, res, next);
+    });
+
+    return { app, handled: () => handled };
+}
+
+async function sendRepeatedly(app: Application, count: number) {
+    const statuses: number[] = [];
+
+    // Sequentially: the limiter's budget is spent in request order, which is what's asserted.
+    for (let i = 0; i < count; i++) {
+        statuses.push((await supertest(app).post("/login")).status);
+    }
+
+    return statuses;
 }

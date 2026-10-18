@@ -23,10 +23,12 @@ import Component from "../../components/component";
 import NoteContext from "../../components/note_context";
 import FBlob from "../../entities/fblob";
 import type FNote from "../../entities/fnote";
+import LoadResults from "../../services/load_results";
 import server from "../../services/server";
 import type SpacedUpdate from "../../services/spaced_update";
 import { buildNote } from "../../test/easy-froca";
 import { type SavedData, useEditorSpacedUpdate } from "./hooks";
+import { noteSavedDataStore } from "./NoteStore";
 import { ParentComponent } from "./react_utils";
 
 vi.stubGlobal("logError", vi.fn());
@@ -183,6 +185,56 @@ describe("note switch save race (#9614)", () => {
 
         // Note B must not be overwritten with note A's content + the new keystrokes.
         expect(putsTo(noteB)).toEqual([]);
+
+    });
+
+    it("loads the next note even when keystrokes typed over the previous one wait for a save", async () => {
+        const harness = setupEditorHarness({ withParent: true });
+        cleanupContainer = harness.container;
+        const { noteA, noteB, editor, pendingBlobB, blobB, show } = harness;
+
+        await show(noteA);
+        await show(noteB);
+        editor.content = "AAA plus keystrokes meant for B";
+        getSpacedUpdate().scheduleUpdate();
+
+        // Note B's content arrives within the debounce of the save.
+        await act(async () => {
+            pendingBlobB.resolve(blobB);
+        });
+        await vi.advanceTimersByTimeAsync(20);
+        expect(editor.content).toBe("BBB");
+    });
+
+    it("keeps unsaved changes when another editor saves the note, and reloads an editor without any", async () => {
+        const harness = setupEditorHarness({ withParent: true });
+        cleanupContainer = harness.container;
+        const { noteA, editor, parent, show } = harness;
+        await show(noteA);
+        const savedElsewhere = async (content: string) => {
+            noteA.getBlob = async () => new FBlob({
+                blobId: `blob-${content}`,
+                content,
+                contentLength: content.length,
+                dateModified: "",
+                utcDateModified: ""
+            });
+            const loadResults = new LoadResults([]);
+            loadResults.addNoteContent(noteA.noteId, "another-editor");
+            await act(async () => {
+                await parent?.handleEvent("entitiesReloaded", { loadResults });
+            });
+            await vi.advanceTimersByTimeAsync(20);
+        };
+
+        editor.content = "AAA typed here";
+        getSpacedUpdate().scheduleUpdate();
+        await savedElsewhere("AAA typed elsewhere");
+        expect(editor.content).toBe("AAA typed here");
+
+        await vi.advanceTimersByTimeAsync(1500);
+        await savedElsewhere("AAA typed elsewhere again");
+        expect(editor.content).toBe("AAA typed elsewhere again");
     });
 
     it("awaits async event handlers registered by React components (the contract NoteContext.setNote relies on)", async () => {
@@ -204,3 +256,103 @@ describe("note switch save race (#9614)", () => {
         expect(flushed).toBe(true);
     });
 });
+
+describe("editing some blocks of a note", () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+        currentSpacedUpdate = undefined;
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.useRealTimers();
+    });
+
+    it("reads and replaces the blocks, then the blocks that the last save held", async () => {
+        const note = buildNote({ title: "Blocks", type: "text", content: "<p>Whole</p>" });
+        const read = vi.spyOn(server, "getWithSilentNotFound")
+            .mockImplementation(async (url: string) => ({ content: `<p>${url}</p>` }));
+        const put = vi.spyOn(server, "put").mockResolvedValue({});
+        const { editor, parent, cleanup } = await showBlockEditor(note, "a:b");
+        const url = `notes/${note.noteId}/blocks`;
+
+        expect(editor.content).toBe(`<p>${url}?block=a%3Ab</p>`);
+        expect(noteSavedDataStore.get(note.noteId)).toBeUndefined();
+
+        editor.content = "<p>Edited</p>";
+        editor.block = "a:n";
+        getSpacedUpdate().scheduleUpdate();
+        await vi.advanceTimersByTimeAsync(1500);
+        expect(put).toHaveBeenLastCalledWith(
+            `${url}?block=a%3Ab`, { content: "<p>Edited</p>" }, parent.componentId
+        );
+        expect(noteSavedDataStore.get(note.noteId)).toBeUndefined();
+
+        const loadResults = new LoadResults([]);
+        loadResults.addNoteContent(note.noteId, "another-editor");
+        await act(async () => {
+            await parent.handleEvent("entitiesReloaded", { loadResults });
+        });
+        await vi.advanceTimersByTimeAsync(20);
+        expect(read).toHaveBeenLastCalledWith(`${url}?block=a%3An`);
+        expect(editor.content).toBe(`<p>${url}?block=a%3An</p>`);
+
+        editor.content = "<p>Edited again</p>";
+        editor.block = undefined;
+        getSpacedUpdate().scheduleUpdate();
+        await vi.advanceTimersByTimeAsync(1500);
+        expect(put).toHaveBeenLastCalledWith(
+            `${url}?block=a%3An`, { content: "<p>Edited again</p>" }, parent.componentId
+        );
+        cleanup();
+    });
+
+    it("saves nothing when the blocks cannot be read", async () => {
+        const note = buildNote({ title: "Missing blocks", type: "text", content: "<p>Whole</p>" });
+        vi.spyOn(server, "getWithSilentNotFound").mockRejectedValue(new Error("Not found"));
+        const put = vi.spyOn(server, "put").mockResolvedValue({});
+        const { editor, cleanup } = await showBlockEditor(note, "a:b");
+
+        editor.content = "<p>Typed</p>";
+        getSpacedUpdate().scheduleUpdate();
+        await vi.advanceTimersByTimeAsync(1500);
+        expect(put).not.toHaveBeenCalled();
+        cleanup();
+    });
+});
+
+/** Renders an editor of the blocks of `note` that `block` points at. */
+async function showBlockEditor(note: FNote, block: string) {
+    const editor: { content: string; block: string | undefined } = { content: "", block };
+    const parent = new Component();
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+
+    function BlockEditor() {
+        currentSpacedUpdate = useEditorSpacedUpdate({
+            note,
+            noteContext: null,
+            noteType: "text",
+            block,
+            getData: () => ({ content: editor.content, block: editor.block }),
+            onContentChange(newContent) {
+                editor.content = newContent;
+            }
+        });
+        return null;
+    }
+
+    await act(async () => {
+        render(
+            <ParentComponent.Provider value={parent}><BlockEditor /></ParentComponent.Provider>,
+            container
+        );
+    });
+    await vi.advanceTimersByTimeAsync(20);
+
+    const cleanup = () => {
+        render(null, container);
+        container.remove();
+    };
+    return { editor, parent, cleanup };
+}

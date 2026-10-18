@@ -10,9 +10,9 @@ import "./theme/snippets.css";
  * `menuBar:insertTemplate` menu entry. Both render from {@link SnippetsEditing}'s live definition
  * collection, so snippet changes appear without recreating the editor.
  *
- * The user-facing strings deliberately reuse the same English source keys as the premium plugin this
- * replaces (`"Insert template"`, `"Search template"`, …) so the existing `translation_overrides.ts`
- * relabelling ("Insert text snippet" / "Search text snippet") keeps applying.
+ * The user-facing strings say "text snippet" rather than the "template" wording of the premium
+ * plugin this replaces. They used to reuse premium's English ids verbatim and be relabelled by a
+ * global override; with the message ids being Trilium's own now, they simply say what they mean.
  */
 export default class SnippetsUI extends Plugin {
 
@@ -45,17 +45,17 @@ export default class SnippetsUI extends Plugin {
             const searchView = new SearchTextView(locale, {
                 filteredView: listView,
                 queryView: {
-                    label: t("Search template")
+                    label: t("Search text snippet")
                 },
                 class: "ck-template-form",
                 infoView: {
                     text: {
                         notFound: {
-                            primary: (query) => t("No templates were found matching \"%0\".", query as string),
+                            primary: (query) => t("No text snippets were found matching \"%0\".", query as string),
                             secondary: t("Please try a different phrase or check the spelling.")
                         },
                         noSearchableItems: {
-                            primary: t("No templates available.")
+                            primary: t("No text snippets available.")
                         }
                     }
                 }
@@ -63,14 +63,17 @@ export default class SnippetsUI extends Plugin {
 
             searchView.on("search", (evt, data: { query: string; resultsCount: number }) => {
                 if (data.query.length) {
-                    editor.ui.ariaLiveAnnouncer.announce(t("%0 templates found", data.resultsCount));
+                    // Phrased with the count last rather than as "%0 text snippets found", which
+                    // would need a plural form: this is announced for every result count, one
+                    // included, and the message dictionary has no plural handling.
+                    editor.ui.ariaLiveAnnouncer.announce(t("Text snippets found: %0", data.resultsCount));
                 }
             });
 
             dropdownView.bind("isEnabled").to(command);
             dropdownView.panelView.children.add(searchView);
             dropdownView.buttonView.set({
-                label: t("Insert template"),
+                label: t("Insert text snippet"),
                 icon: templateIcon,
                 tooltip: true
             });
@@ -89,7 +92,7 @@ export default class SnippetsUI extends Plugin {
             const command = editor.commands.get("insertTemplate") as Command;
             const menuView = new MenuBarMenuView(locale);
             menuView.buttonView.set({
-                label: t("Template"),
+                label: t("Text snippet"),
                 icon: templateIcon
             });
 
@@ -124,7 +127,7 @@ export default class SnippetsUI extends Plugin {
         if (!definitions.length) {
             const emptyItem = new MenuBarMenuListItemView(locale, menuView);
             const emptyButton = new MenuBarMenuListItemButtonView(locale);
-            emptyButton.set({ label: t("No templates available."), isEnabled: false });
+            emptyButton.set({ label: t("No text snippets available."), isEnabled: false });
             emptyItem.children.add(emptyButton);
             listView.items.add(emptyItem);
             return;

@@ -1,7 +1,10 @@
-import { useEffect, useRef } from "preact/hooks";
 import { EditorConfig, default as VanillaCodeMirror } from "@triliumnext/codemirror";
-import { useSyncedRef } from "../../react/hooks";
 import { Ref } from "preact";
+import { useEffect, useRef } from "preact/hooks";
+
+import { useSyncedRef } from "../../react/hooks";
+import { codeCompletions } from "./code_completions";
+import type { CodeSnippet } from "./snippets";
 
 export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
     content?: string;
@@ -15,11 +18,17 @@ export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
      * Gates the `api.req`/`api.res`/`api.pathParams` completions for backend scripts.
      */
     customRequestHandler?: boolean;
+    /** Whether the script is a bulk action's, which runs with the processed note as `note`. */
+    bulkActionNote?: boolean;
+    /** The snippets the completion list offers after a `/`, read each time the list opens. */
+    getSnippets?: () => CodeSnippet[];
 }
 
-export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, customRequestHandler, ...extraOpts }: CodeMirrorProps) {
+export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, getSnippets, ...extraOpts }: CodeMirrorProps) {
     const parentRef = useSyncedRef(externalContainerRef);
-    const codeEditorRef = useRef<VanillaCodeMirror>();
+    const codeEditorRef = useRef<VanillaCodeMirror | undefined>(undefined);
+    const getSnippetsRef = useRef(getSnippets);
+    getSnippetsRef.current = getSnippets;
 
     // Create CodeMirror instance.
     useEffect(() => {
@@ -27,9 +36,11 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
 
         const codeEditor = new VanillaCodeMirror({
             parent: parentRef.current,
+            allowKeyboardSuggestions,
             ...extraOpts
         });
         codeEditorRef.current = codeEditor;
+        codeEditor.setNamedExtension("codeCompletions", codeCompletions(codeEditor, () => getSnippetsRef.current?.() ?? []));
         if (typeof externalEditorRef === "function") externalEditorRef(codeEditor);
         else if (externalEditorRef) externalEditorRef.current = codeEditor;
         onInitialized?.();
@@ -52,8 +63,15 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
 
     // React to custom-request-handler status, which gates the backend api.req/res/pathParams completions.
     useEffect(() => {
-        codeEditorRef.current?.setScriptApiContext({ customRequestHandler: !!customRequestHandler });
-    }, [ customRequestHandler ]);
+        codeEditorRef.current?.setScriptApiContext({
+            customRequestHandler: !!customRequestHandler,
+            bulkActionNote: !!bulkActionNote
+        });
+    }, [ customRequestHandler, bulkActionNote ]);
+
+    // React to the language switching between prose and code, which decides whether the
+    // on-screen keyboard is allowed to suggest words.
+    useEffect(() => codeEditorRef.current?.setAllowKeyboardSuggestions(!!allowKeyboardSuggestions), [ allowKeyboardSuggestions ]);
 
     // React to line wrapping.
     useEffect(() => codeEditorRef.current?.setLineWrapping(!!lineWrapping), [ lineWrapping ]);

@@ -33,9 +33,35 @@ describe("ValuesInput", () => {
 
     async function press(input: HTMLInputElement | null, key: string) {
         await act(async () => {
-            input?.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+            // Cancelable, so FormAutocomplete consuming a key sets defaultPrevented, as it does
+            // in a browser.
+            input?.dispatchEvent(
+                new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
         });
     }
+
+    /** Lets the debounced fetch run; the list is portaled to the body. */
+    async function settleDropdown() {
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 200));
+        });
+        return [ ...document.querySelectorAll<HTMLElement>(".form-autocomplete-dropdown li") ];
+    }
+
+    it("commits nothing while disabled, whatever reaches it", async () => {
+        // The box and the buttons are out of reach on the page, but a host may disable the field
+        // while something is typed into it, and leaving the box hands over what it holds.
+        const onCommit = vi.fn();
+        const input = await mount({ labelType: "text", values: [ "one" ], onCommit, disabled: true });
+
+        await typeInto(input, "two");
+        await press(input, "Enter");
+        await act(async () => { input?.dispatchEvent(new FocusEvent("blur", { bubbles: true })); });
+        await act(async () => container.querySelector<HTMLElement>(".tn-chip-remove")?.click());
+        await press(input, "Backspace");
+
+        expect(onCommit).not.toHaveBeenCalled();
+    });
 
     it("shows the values held as chips, and drops the one pressed", async () => {
         const onCommit = vi.fn();
@@ -64,6 +90,27 @@ describe("ValuesInput", () => {
         await press(input, "Enter");
         expect(onCommit).not.toHaveBeenCalled();
         expect(input?.value).toBe("");
+    });
+
+    it("takes a repeated value when duplicates are allowed, and drops only the chip pressed", async () => {
+        const onCommit = vi.fn();
+        const input = await mount({
+            labelType: "number", values: [ "5", "7" ], onCommit, allowDuplicates: true
+        });
+
+        await typeInto(input, "5");
+        await press(input, "Enter");
+        expect(onCommit).toHaveBeenCalledWith([ "5", "7", "5" ]);
+
+        // Removing one of two equal values leaves the other.
+        onCommit.mockClear();
+        await mount({
+            labelType: "number", values: [ "5", "7", "5" ], onCommit, allowDuplicates: true
+        });
+        const chips = [ ...container.querySelectorAll(".tn-chip") ];
+        expect(chips.map((chip) => chip.textContent?.trim())).toEqual([ "5", "7", "5" ]);
+        await act(async () => chips[2]?.querySelector<HTMLElement>(".tn-chip-remove")?.click());
+        expect(onCommit).toHaveBeenCalledWith([ "5", "7" ]);
     });
 
     it("asks for a date rather than taking it as the field reports one", async () => {
@@ -176,6 +223,57 @@ describe("ValuesInput", () => {
             }
         };
     }
+
+    it("offers the values the name already holds, and takes the one picked as a chip", async () => {
+        const onCommit = vi.fn();
+        const source = vi.fn(async () => [ "alpha", "beta", "one" ]);
+        const input = await mount({ labelType: "text", values: [ "one" ], onCommit, source });
+
+        await act(async () => input?.focus());
+        // "one" is already a chip, so the list offers only the remaining values.
+        const items = await settleDropdown();
+        expect(items.map((item) => item.textContent)).toEqual([ "alpha", "beta" ]);
+        // The chips render inside the field, before the input, so the dropdown spans the field.
+        const chip = container.querySelector(".tn-chip");
+        expect(chip?.closest(".form-autocomplete-field")).not.toBeNull();
+
+        await act(async () => items[1]?.click());
+        expect(onCommit).toHaveBeenCalledWith([ "one", "beta" ]);
+    });
+
+    it("keeps Enter for what was typed, the list taking only what was arrowed to", async () => {
+        // The typed text is the value, so Enter commits it. Without autoActivate the list
+        // highlights nothing until the user arrows to an entry.
+        const onCommit = vi.fn();
+        const source = vi.fn(async () => [ "alpha", "beta" ]);
+        const input = await mount({ labelType: "text", values: [], onCommit, source });
+
+        await typeInto(input, "al");
+        await settleDropdown();
+        await press(input, "Enter");
+        expect(onCommit.mock.calls).toEqual([ [ [ "al" ] ] ]);
+
+        // With an entry highlighted the list commits that entry, and only that entry: the key it
+        // consumed no longer reaches handleKeyDown.
+        onCommit.mockClear();
+        await typeInto(input, "al");
+        await settleDropdown();
+        await press(input, "ArrowDown");
+        await press(input, "Enter");
+        expect(onCommit.mock.calls).toEqual([ [ [ "alpha" ] ] ]);
+    });
+
+    it("offers nothing where the value comes from a widget of the browser's own", async () => {
+        // A colour and a date come from a browser widget rather than from typing, so there is
+        // nothing to complete.
+        const source = vi.fn(async () => [ "#ff0000" ]);
+        const input = await mount({ labelType: "color", values: [], onCommit: vi.fn(), source });
+
+        await act(async () => input?.focus());
+        expect(await settleDropdown()).toEqual([]);
+        expect(source).not.toHaveBeenCalled();
+        expect(container.querySelector(".values-input")).not.toBeNull();
+    });
 
     it("drops the last chip on backspace in an empty box, and leaves a filled one alone", async () => {
         const onCommit = vi.fn();

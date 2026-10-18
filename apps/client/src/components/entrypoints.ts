@@ -1,6 +1,6 @@
 import { CreateChildrenResponse, SqlExecuteResponse } from "@triliumnext/commons";
 
-import { showBackendScriptingDisabledToast } from "../services/backend_scripting.js";
+import { runBackendScript, showBackendScriptingDisabledToast } from "../services/backend_scripting.js";
 import bundleService from "../services/bundle.js";
 import dialog from "../services/dialog.js";
 import dateNoteService from "../services/date_notes.js";
@@ -13,7 +13,7 @@ import server from "../services/server.js";
 import toastService from "../services/toast.js";
 import utils from "../services/utils.js";
 import ws from "../services/ws.js";
-import appContext, { type NoteCommandData } from "./app_context.js";
+import appContext, { type CommandListenerData, type NoteCommandData } from "./app_context.js";
 import Component from "./component.js";
 
 export default class Entrypoints extends Component {
@@ -99,9 +99,22 @@ export default class Entrypoints extends Component {
         utils.reloadFrontendApp();
     }
 
-    async logoutCommand() {
-        await server.post("../logout");
-        window.location.replace(`/login`);
+    logoutCommand() {
+        // A form submission keeps the OIDC provider's redirect a top-level navigation; an XHR
+        // follows it cross-origin and fails the provider's CORS preflight.
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `${window.glob.baseApiUrl}../logout`;
+        form.hidden = true;
+
+        const csrfToken = document.createElement("input");
+        csrfToken.type = "hidden";
+        csrfToken.name = "x-csrf-token";
+        csrfToken.value = window.glob.csrfToken ?? "";
+        form.append(csrfToken);
+
+        document.body.append(form);
+        form.submit();
     }
 
     backInNoteHistoryCommand() {
@@ -136,16 +149,12 @@ export default class Entrypoints extends Component {
         utils.reloadFrontendApp("Switching to mobile version");
     }
 
-    async openInWindowCommand({ notePath, hoistedNoteId, viewScope }: NoteCommandData) {
-        const extraWindowHash = linkService.calculateHash({ notePath, hoistedNoteId, viewScope });
+    async openInWindowCommand({ notePath, hoistedNoteId, viewScope, splits, activeSplit }: NoteCommandData) {
+        const target = { notePath, hoistedNoteId, viewScope, splits, activeSplit };
 
-        if (window.electronApi) {
-            window.electronApi.window.createExtraWindow(extraWindowHash);
-        } else {
-            const url = `${window.location.protocol}//${window.location.host}${window.location.pathname}?extraWindow=1${extraWindowHash}`;
-
-            window.open(url, "", "width=1000,height=800");
-        }
+        // On desktop the main process turns this into an extra window that shares
+        // this renderer's process (`installWindowOpenPolicy`).
+        window.open(linkService.calculateExtraWindowUrl(target), "", "width=1000,height=800");
     }
 
     async openNewWindowCommand() {
@@ -162,8 +171,8 @@ export default class Entrypoints extends Component {
         await appContext.tabManager.openInSameTab(todayNote.noteId);
     }
 
-    async runActiveNoteCommand() {
-        const noteContext = appContext.tabManager.getActiveContext();
+    async runActiveNoteCommand({ ntxId: requestedNtxId }: CommandListenerData<"runActiveNote"> = {}) {
+        const noteContext = appContext.tabManager.getCommandContext(requestedNtxId);
         if (!noteContext) {
             return;
         }
@@ -191,9 +200,9 @@ export default class Entrypoints extends Component {
                 return;
             }
             try {
-                await server.post(`script/run/${note.noteId}`);
+                await runBackendScript(note.noteId);
             } catch {
-                // server.js already reported the error; don't fall through to "Note executed".
+                // Already reported as a scripting error; don't fall through to "Note executed".
                 return;
             }
         } else if (note.mime === "text/x-sqlite;schema=trilium") {
@@ -204,30 +213,16 @@ export default class Entrypoints extends Component {
         toastService.showMessage(t("entrypoints.note-executed"));
     }
 
-    hideAllPopups() {
-        if (utils.isDesktop()) {
-            $(".aa-input").autocomplete("close");
-        }
-    }
-
-    noteSwitchedEvent() {
-        this.hideAllPopups();
-    }
-
-    activeContextChangedEvent() {
-        this.hideAllPopups();
-    }
-
-    async forceSaveRevisionCommand() {
-        const noteId = appContext.tabManager.getActiveContextNoteId();
+    async forceSaveRevisionCommand({ ntxId }: CommandListenerData<"forceSaveRevision"> = {}) {
+        const noteId = appContext.tabManager.getCommandContext(ntxId)?.noteId;
 
         await server.post(`notes/${noteId}/revision`);
 
         toastService.showMessage(t("entrypoints.note-revision-created"));
     }
 
-    async saveNamedRevisionCommand() {
-        const noteId = appContext.tabManager.getActiveContextNoteId();
+    async saveNamedRevisionCommand({ ntxId }: CommandListenerData<"saveNamedRevision"> = {}) {
+        const noteId = appContext.tabManager.getCommandContext(ntxId)?.noteId;
         if (!noteId) return;
 
         const name = await dialog.prompt({

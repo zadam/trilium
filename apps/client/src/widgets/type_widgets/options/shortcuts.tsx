@@ -1,7 +1,6 @@
 import "./shortcuts.css";
 
 import { ActionKeyboardShortcut, KeyboardShortcut, OptionNames } from "@triliumnext/commons";
-import { Dropdown as BootstrapDropdown } from "bootstrap";
 import { ComponentChildren, RefObject } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
@@ -16,21 +15,20 @@ import { arrayEqual, isElectron, isMobile, reloadFrontendApp } from "../../../se
 import ActionButton from "../../react/ActionButton";
 import { Badge } from "../../react/Badge";
 import Button from "../../react/Button";
-import Dropdown from "../../react/Dropdown";
+import { Card, OptionCardSection } from "../../react/Card";
+import Dropdown, { type DropdownHandle } from "../../react/Dropdown";
 import { FormDropdownDivider, FormListItem } from "../../react/FormList";
 import FormTextBox from "../../react/FormTextBox";
 import { useStaticTooltip, useTriliumEvent } from "../../react/hooks";
 import { TooltipIcon } from "../../react/Icon";
 import NoItems from "../../react/NoItems";
 import OptionsPageHeader from "./components/OptionsPageHeader";
-import OptionsRow from "./components/OptionsRow";
-import OptionsSection from "./components/OptionsSection";
 
 export default function ShortcutSettings() {
     const [ keyboardShortcuts, setKeyboardShortcuts ] = useState<KeyboardShortcut[]>([]);
     const [ filter, setFilter ] = useState<string>();
     const [ activeFilter, setActiveFilter ] = useState<ShortcutFilter>(null);
-    const filterDropdownRef = useRef<BootstrapDropdown>(null);
+    const filterDropdownRef = useRef<DropdownHandle>(null);
 
     const selectFilter = useCallback((value: ShortcutFilter) => {
         setActiveFilter(value);
@@ -116,29 +114,16 @@ export default function ShortcutSettings() {
     return (
         <>
             <OptionsPageHeader
-                actions={
-                    <div className="shortcut-header-buttons">
-                        {conflictCount > 0 &&
-                        <Badge
-                            className={`shortcut-conflicts-badge ${activeFilter === "conflicts" ? "active" : ""}`}
-                            icon="bx bx-error-circle"
-                            text={t("shortcuts.conflicts_badge", { count: conflictCount })}
-                            tooltip={t("shortcuts.conflicts_badge_tooltip")}
-                            outline
-                            onClick={() => setActiveFilter(activeFilter === "conflicts" ? null : "conflicts")}
-                        />}
-                        <Button
-                            text={t("shortcuts.reload_app")}
-                            onClick={reloadFrontendApp}
-                            size="micro"
-                        />
-                        <Button
-                            text={t("shortcuts.set_all_to_default")}
-                            onClick={resetShortcuts}
-                            size="micro"
-                        />
-                    </div>
-                }
+                actions={conflictCount > 0 && (
+                    <Badge
+                        className={`shortcut-conflicts-badge ${activeFilter === "conflicts" ? "active" : ""}`}
+                        icon="bx bx-error-circle"
+                        text={t("shortcuts.conflicts_badge", { count: conflictCount })}
+                        tooltip={t("shortcuts.conflicts_badge_tooltip")}
+                        outline
+                        onClick={() => setActiveFilter(activeFilter === "conflicts" ? null : "conflicts")}
+                    />
+                )}
                 below={
                     <div className="shortcut-header-filter">
                         <FormTextBox
@@ -149,11 +134,10 @@ export default function ShortcutSettings() {
                             buttonClassName={`bx bx-filter-alt ${activeFilter ? "active" : ""}`}
                             hideToggleArrow
                             noSelectButtonStyle
-                            noDropdownListStyle
                             iconAction
                             title={t("shortcuts.filter")}
                             dropdownRef={filterDropdownRef}
-                            dropdownContainerClassName={isMobile() ? "mobile-bottom-menu" : undefined}
+                            mobileBottomSheet
                         >
                             <FilterContent
                                 activeFilter={activeFilter}
@@ -163,6 +147,24 @@ export default function ShortcutSettings() {
                                 modifiedCount={modifiedCount}
                             />
                         </Dropdown>
+
+                        {/* Held together, so that a narrow page can put the pair on a line of
+                            their own under the filter rather than breaking them apart. */}
+                        <div className="shortcut-header-actions">
+                            <Button
+                                text={t("shortcuts.reload_app")}
+                                // Called rather than handed over: its one argument is the reason to
+                                // be logged for the reload, and passed straight to the button that
+                                // would have been the click event.
+                                onClick={() => reloadFrontendApp()}
+                                size="micro"
+                            />
+                            <Button
+                                text={t("shortcuts.set_all_to_default")}
+                                onClick={resetShortcuts}
+                                size="micro"
+                            />
+                        </div>
                     </div>
                 }
             />
@@ -170,11 +172,11 @@ export default function ShortcutSettings() {
             <div className="shortcuts-options-section">
                 {filteredGroups.length > 0
                     ? filteredGroups.map((group) => (
-                        <OptionsSection key={group.title} title={group.title}>
+                        <Card heading={group.title}>
                             {group.actions.map((action) => (
                                 <ShortcutRow key={action.actionName} action={action} conflicts={conflicts.get(action.actionName)} />
                             ))}
-                        </OptionsSection>
+                        </Card>
                     ))
                     : filter
                         ? (
@@ -197,6 +199,16 @@ export default function ShortcutSettings() {
                                 />
                             )}
             </div>
+
+            {/* "Reset all" says little once it is read away from the page it belongs to, so the
+                words it is found by come from what the action asks before it runs. */}
+            <Card filterOnly
+                  heading={t("settings.related_actions")}
+                  filterExtraKeywords={t("shortcuts.confirm_reset")}>
+                <OptionCardSection label={t("shortcuts.set_all_to_default")}>
+                    <Button text={t("shortcuts.set_all_to_default")} onClick={resetShortcuts} />
+                </OptionCardSection>
+            </Card>
         </>
     );
 }
@@ -426,10 +438,13 @@ export function filterKeyboardAction(action: ActionKeyboardShortcut, filter: str
         (action.description && action.description.toLowerCase().includes(filter));
 }
 
+/**
+ * Deliberately unnamed, so the label is not tied to a control: what stands on the trailing edge is a
+ * set of chips and buttons rather than one input, and a `for` naming any of them would be wrong.
+ */
 function ShortcutRow({ action, conflicts }: { action: ActionKeyboardShortcut; conflicts?: ShortcutConflicts }) {
     return (
-        <OptionsRow
-            name={action.actionName}
+        <OptionCardSection
             label={
                 <>
                     {isShortcutModified(action) &&
@@ -440,7 +455,7 @@ function ShortcutRow({ action, conflicts }: { action: ActionKeyboardShortcut; co
             description={action.description}
         >
             <ShortcutEditor keyboardShortcut={action} conflicts={conflicts} />
-        </OptionsRow>
+        </OptionCardSection>
     );
 }
 
@@ -580,7 +595,7 @@ export function ShortcutRecorder({ onCapture }: { onCapture: (shortcut: string) 
  * class so the tooltip renders above the options modal, and a focus trigger on mobile where hover
  * is unavailable.
  */
-function useShortcutTooltip(elRef: RefObject<Element>, title: string) {
+function useShortcutTooltip(elRef: RefObject<Element | null>, title: string) {
     useStaticTooltip(elRef, {
         title,
         placement: "top",

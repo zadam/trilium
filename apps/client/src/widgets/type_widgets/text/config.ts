@@ -1,18 +1,29 @@
-import { buildExtraCommands, type EditorConfig, getCkLocale, SnippetDefinition } from "@triliumnext/ckeditor5";
+import { type EditorConfig, getCkLocale, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
-import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
+import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
+import i18next from "i18next";
 
-import { copyTextWithToast } from "../../../services/clipboard_ext.js";
+import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
 import { t } from "../../../services/i18n.js";
 import imageService from "../../../services/image.js";
-import { getMermaidConfig } from "../../../services/mermaid.js";
+import { getNoteImageSourceToLoad } from "../../../services/image_urls.js";
 import { default as mimeTypesService, getHighlightJsNameForMime } from "../../../services/mime_types.js";
-import noteAutocompleteService, { type Suggestion } from "../../../services/note_autocomplete.js";
 import options from "../../../services/options.js";
+import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
+import { getSourceEmbedTypeByLanguage, SOURCE_EMBED_TYPES } from "../../../services/source_embeds.js";
 import { ensureMimeTypesForHighlighting, isSyntaxHighlightEnabled } from "../../../services/syntax_highlight.js";
 import { getTaskStateDefinitions, openCustomTaskStateConfig } from "../../../services/task_states.js";
+import { isMac, isMobile } from "../../../services/utils.js";
+import { resolveContentLanguage } from "../../../utils/formatters.js";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams.js";
+import buildAiAssistantStream, { type AiNoteLocationProvider, buildAiAssistantQuickActions } from "./ai_assistant_stream.js";
+import diffAiResponse from "./ai_diff.js";
+import { buildFontColorConfig, buildTableColorConfig } from "./color_palette.js";
+import { createEmojiList, createNoteMentionList, createSlashCommandList } from "./mention_list_view.js";
+import { buildQuoteTransformation, resolveQuoteSetting } from "./quotes.js";
+import { buildCustomTransformations, parseCustomReplacements } from "./replacements.js";
 import { buildToolbarConfig } from "./toolbar.js";
+import { createToolbarGroupMenuHost } from "./toolbar_group_menu.js";
 
 /**
  * The only license key Trilium ever passes to CKEditor. Every premium plugin the editor used has
@@ -25,9 +36,19 @@ export interface BuildEditorOptions {
     uiLanguage: DISPLAYABLE_LOCALE_IDS;
     contentLanguage: string | null;
     templates: SnippetDefinition[];
+    /**
+     * Names the note the editor is open on, for the AI assistant to say where a run is writing and
+     * for the `@` list to create a child note under.
+     * A getter rather than the note itself: switching notes reuses the editor, so anything captured
+     * here would name the note that happened to be open when it was built.
+     */
+    getNoteLocation?: AiNoteLocationProvider;
 }
 
 export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfig> {
+    // `undefined` when the AI features are off or no LLM provider is configured. Decided once:
+    // it both disables the assistant's command and keeps its entries off the toolbar.
+    const aiAssistantStream = buildAiAssistantStream(opts.getNoteLocation);
     const config: EditorConfig = {
         licenseKey: OPEN_SOURCE_LICENSE_KEY,
         placeholder: t("editable_text.placeholder"),
@@ -44,12 +65,17 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             enablePreview: true, // Enable preview view
             // Map MathLive-only commands (e.g. \differentialD) onto KaTeX equivalents so
             // formulas produced by the visual editor render instead of erroring out (#9523).
-            katexRenderOptions: { macros: KATEX_MACROS }
+            katexRenderOptions: { macros: KATEX_MACROS },
+            enableMathField: options.get("mathFieldEnabled") !== "false"
         },
         mermaid: {
-            lazyLoad: async () => (await import("mermaid")).default, // FIXME
-            config: getMermaidConfig(),
             samples: SAMPLE_DIAGRAMS
+        },
+        contentEmbed: {
+            inlineLanguages: SOURCE_EMBED_TYPES.map((type) => type.language),
+            renderInlinePreview: (language, source, container) => {
+                void getSourceEmbedTypeByLanguage(language)?.renderPreview(source, container);
+            }
         },
         image: {
             styles: {
@@ -106,10 +132,15 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
                 "imageResize:50",
                 "imageResize:original",
                 "|",
-                "toggleImageCaption"
+                "toggleImageCaption",
+                "|",
+                "convertImageToDrawing"
             ],
             upload: {
-                types: ["jpeg", "png", "gif", "bmp", "webp", "tiff", "svg", "svg+xml", "avif"]
+                // Derived rather than listed, so what the editor inserts as a picture and what the
+                // upload endpoint stores as one cannot drift apart — either direction of a mismatch
+                // is a broken element. See IMAGE_MIMES.
+                types: [ ...IMAGE_UPLOAD_SUBTYPES ]
             }
         },
         heading: {
@@ -124,7 +155,11 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             ]
         },
         table: {
-            contentToolbar: ["tableColumn", "tableRow", "mergeTableCells", "tableProperties", "tableCellProperties", "toggleTableCaption"]
+            contentToolbar: [
+                "tableColumn", "tableRow", "mergeTableCells", "tableSort", "tableProperties",
+                "tableCellProperties", "toggleTableCaption"
+            ],
+            ...buildTableColorConfig()
         },
         list: {
             properties: {
@@ -136,6 +171,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         alignment: {
             options: [ "left", "right", "center", "justify"]
         },
+        ...buildFontColorConfig(),
         link: {
             defaultProtocol: "https://",
             allowedProtocols: ALLOWED_PROTOCOLS,
@@ -155,7 +191,8 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         emoji: {
             definitionsUrl: window.glob.isDev
                 ? new URL(import.meta.url).origin + emojiDefinitionsUrl
-                : emojiDefinitionsUrl
+                : emojiDefinitionsUrl,
+            list: createEmojiList
         },
         syntaxHighlighting: {
             loadHighlightJs: async () => {
@@ -167,32 +204,51 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             enabled: isSyntaxHighlightEnabled()
         },
         clipboard: {
-            copy: copyTextWithToast
+            copy: copyTextWithToast,
+            copyHtml: copyHtmlWithToast
         },
         slashCommand: {
-            // Drop CKEditor's built-in slash commands whose title/icon we re-define in
-            // buildExtraCommands: the Mermaid one (generic icon) and the list ones
-            // (Title Case titles, normalized to sentence case).
-            removeCommands: ["insertMermaidCommand", "bulletedList", "numberedList", "todoList"],
-            dropdownLimit: Number.MAX_SAFE_INTEGER,
-            extraCommands: buildExtraCommands((key, params) => t(key, params), SAMPLE_DIAGRAMS)
+            // Drop CKEditor's built-in list slash commands, whose Title Case titles the palette
+            // re-defines in sentence case.
+            removeCommands: ["bulletedList", "numberedList"],
+            list: createSlashCommandList
         },
         snippets: {
             definitions: opts.templates
         },
-        htmlSupport: {
-            allow: JSON.parse(options.get("allowedHtmlTags"))
+        aiAssistant: {
+            stream: aiAssistantStream,
+            // The "Changes" review view: a block-aware inline diff, so that a response which
+            // rewrote a paragraph rather than editing it reads as a replacement instead of as
+            // shredded `<ins>`/`<del>` pairs.
+            diff: diffAiResponse,
+            quickActions: buildAiAssistantQuickActions(),
+            // The glyph the context menu gives the same row, so the two ways into a typed prompt
+            // look alike.
+            askIconClass: "bx bx-message-square-dots",
+            // The model's HTML reaches the preview through `innerHTML`, so it gets the same
+            // DOMPurify pass as any other untrusted content rendered outside the editor's
+            // data pipeline. CKEditor ships no sanitizer of its own — like `htmlEmbed`, the
+            // feature takes one from the integrator.
+            sanitizeHtml: sanitizeNoteContentHtml
         },
+        htmlSupport: buildHtmlSupportConfig(),
         removePlugins: getDisabledPlugins(),
-        ...await getCkLocale(opts.uiLanguage)
+        // The locale's CKEditor translations, plus the dictionary of Trilium-authored editor
+        // strings resolved through the app's i18n (see `messages.ts` in the ckeditor5 package).
+        ...await getCkLocale(opts.uiLanguage, { englishMessages: getEnglishEditorMessages(), translate: (key) => t(key) })
     };
 
     // User-configurable todo task states (from the `_taskStates` hidden subtree).
     (config as Record<string, unknown>).taskStates = await getTaskStateDefinitions();
     (config as Record<string, unknown>).editTaskStates = openCustomTaskStateConfig;
 
-    // The app's i18n translate function, so plugins can resolve Trilium translation keys.
-    (config as Record<string, unknown>).translate = (key: string, params?: Record<string, unknown>) => t(key, params);
+    // Renders a keystroke a plugin mentions in a hint. The editor's own strings translate through
+    // its dictionary (see `messages.ts` in the ckeditor5 package), but the key names inside a
+    // shortcut come from `keyboard_shortcut_keys`, which the command palette and the help dialog
+    // read too — so the app renders them and hands the markup over.
+    (config as Record<string, unknown>).renderShortcut = (shortcut: string) =>
+        joinShortcut(formatShortcut(shortcut, t, isMac()).map((token) => `<kbd>${token}</kbd>`), isMac());
 
     // Global on/off switch for content-area hints (bottom-corner popups on task
     // checkboxes, collapsible summaries, drag handles). Plugins consult this via
@@ -216,8 +272,39 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     const imageToolbar = (config.image as { toolbar: (string | object)[] }).toolbar;
     imageToolbar.push("|", ...(imageService.isImageCopySupported() ? ["copyImageToClipboard"] : []), "downloadImage");
 
-    // Set up content language.
-    const { contentLanguage } = opts;
+    // Loads a changed note image from a new URL, so the browser does not show the copy it loaded
+    // before.
+    config.imageEditingSource = { resolve: getNoteImageSourceToLoad };
+
+    // Embed internal images as data: URIs when content is copied out to external apps, while
+    // keeping internal Trilium paste reference-based (see the ClipboardImageEmbed plugin). The
+    // resolver does the synchronous canvas encoding; the hidden option is a kill-switch.
+    // `enabled` is a getter for the same reason as `autoLinkPreviewsEnabled` above, and because the
+    // application-level handler covering read-only surfaces reads the option per copy — a baked-in
+    // boolean would leave an open editor still embedding after the switch was flipped.
+    config.clipboardImageEmbed = {
+        enabled: () => options.get("clipboardImageEmbedEnabled") === "true",
+        embedImage: (src: string) => imageService.embedReferenceImageAsDataUrl(src)
+    };
+
+    // Table sorting reads dates inserted in the user's own format.
+    const customDateTimeFormat = options.get("customDateTimeFormat");
+    config.autoSort = { dateFormats: customDateTimeFormat ? [customDateTimeFormat] : [] };
+
+    // The language this note is written in, which governs both its text direction and which
+    // typographic quotes typing produces.
+    //
+    // The note's own `#language` label wins, being the only per-note signal and the one a
+    // multilingual writer sets deliberately. Almost no note carries one though — the label is
+    // opt-in, and the picker that sets it is empty until content languages are enabled — so the
+    // `defaultContentLanguage` option is what answers in practice. It defaults to English, which is
+    // what every note was implicitly treated as before the option existed; setting it to the empty
+    // "auto" entry follows the application's language instead.
+    //
+    // Deliberately not `formattingLocale`: that one is presented as "Date & number format", so
+    // someone who sets it for unambiguous dates would not expect it to restyle their prose.
+    const contentLanguage = resolveContentLanguage(opts.contentLanguage);
+
     if (contentLanguage) {
         config.language = {
             ui: (typeof config.language === "string" ? config.language : "en"),
@@ -225,48 +312,88 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         };
     }
 
-    // Mention customisation.
-    if (options.get("textNoteCompletionEnabled") === "true") {
-        config.mention = {
-            feeds: [
-                {
-                    marker: "@",
-                    feed: (queryText: string) => noteAutocompleteService.autocompleteSourceForCKEditor(queryText),
-                    itemRenderer: (item) => {
-                        const suggestion = item as Suggestion;
-                        const itemElement = document.createElement("button");
-                        itemElement.className = "note-mention-suggestion";
+    config.typing = { transformations: buildTransformationsConfig(contentLanguage) };
 
-                        const iconElement = document.createElement("span");
-                        // Choose appropriate icon based on action
-                        let iconClass = suggestion.icon ?? "bx bx-note";
-                        if (suggestion.action === "create-note") {
-                            iconClass = "bx bx-plus";
-                        }
-                        iconElement.className = iconClass;
+    config.mention = {
+        feeds: [],
+        hostedFeeds: options.get("textNoteCompletionEnabled") === "true" ? [
+            {
+                marker: "@",
+                minimumCharacters: 0,
+                // Note titles contain spaces, so the query must be allowed to as well.
+                allowSpaces: true,
+                list: () => createNoteMentionList({
+                    allowCreatingNotes: true,
+                    getParentNotePath: () => opts.getNoteLocation?.()?.notePath
+                })
+            }
+        ] : []
+    };
 
-                        // The title keeps a wrapper of its own rather than being spread into the
-                        // button: the row lays the icon out against the title as a whole (see the
-                        // `note-mention-suggestion` rule), which it cannot do over loose text nodes.
-                        const titleContainer = document.createElement("span");
-                        titleContainer.className = "note-mention-suggestion-title";
-                        titleContainer.innerHTML = suggestion.highlightedNotePathTitle ?? "";
-                        itemElement.append(iconElement, titleContainer);
-
-                        return itemElement;
-                    },
-                    minimumCharacters: 0,
-                    // Note titles contain spaces, so the query must be allowed to as well.
-                    allowSpaces: true
-                }
-            ],
-        };
-    }
+    config.toolbarGroupMenu = { host: () => createToolbarGroupMenuHost() };
 
     return {
         ...config,
-        ...buildToolbarConfig(opts.isClassicEditor)
+        ...buildToolbarConfig(opts.isClassicEditor, !!aiAssistantStream)
     };
+}
+
+/**
+ * Which as-you-type replacements the editor runs, expressed as deltas against CKEditor's own default
+ * set rather than by restating it.
+ *
+ * That is deliberate: the dashes and the fractions are boundary-sensitive regexes upstream — ` -- `
+ * needs its surrounding spaces, and `1/2` needs the guards that stop `11/2` becoming `1½` — and
+ * those are exactly the definitions that break subtly when copied by hand. Naming a group in
+ * `remove` disables it without us ever holding its pattern.
+ *
+ * Quotes are the one exception we do own, because which marks they produce depends on the note's
+ * language and upstream has data for three locales. They are removed and re-supplied — but only when
+ * we actually have a pair for the language, so an unmapped locale keeps falling through to
+ * CKEditor's default rather than losing quote replacement altogether.
+ */
+function buildTransformationsConfig(contentLanguage: string | null): TextTransformationConfig {
+    const remove: string[] = [];
+    if (options.get("textNotePunctuationReplacementsEnabled") !== "true") remove.push("typography");
+    if (options.get("textNoteMathReplacementsEnabled") !== "true") remove.push("mathematical");
+    if (options.get("textNoteSymbolReplacementsEnabled") !== "true") remove.push("symbols");
+
+    // The two keys are settled apart, so each is taken over from upstream only when we have
+    // something to put in its place — naming the individual transformations rather than the `quotes`
+    // group, which would take both away together.
+    const double = resolveQuoteSetting(options.get("textNoteDoubleQuoteStyle"), "primary", contentLanguage);
+    const single = resolveQuoteSetting(options.get("textNoteSingleQuoteStyle"), "secondary", contentLanguage);
+    if (double.overridesUpstream) remove.push("quotesPrimary");
+    if (single.overridesUpstream) remove.push("quotesSecondary");
+
+    const extra = [
+        ...(double.marks ? [buildQuoteTransformation("\"", double.marks)] : []),
+        ...(single.marks ? [buildQuoteTransformation("'", single.marks)] : []),
+        ...buildCustomTransformations(parseCustomReplacements(options.get("textNoteCustomReplacements")))
+    ];
+
+    // `include` is typed as required even though upstream's own documented examples pass `remove`
+    // alone, and the plugin defines the default set in its constructor. Narrowed here rather than
+    // restating the default groups, so that a group upstream adds later keeps working.
+    return { remove, extra } as TextTransformationConfig;
+}
+
+/**
+ * The English editor messages, i.e. the `text-editor.ck` section of the English catalog, mapping
+ * each derived key to the English text that plugins pass to `editor.t()`. This section is the
+ * registry of Trilium-authored editor strings — there is no list of them in code — so reading it
+ * back is what lets the message dictionary be built.
+ *
+ * English is always loaded, being i18next's `fallbackLng`; an empty section only means every editor
+ * string renders its English message id, which is what an unconfigured editor does anyway.
+ *
+ * `getResourceBundle` is bound onto the i18next instance by `init()`, so it is missing until
+ * `initLocale()` has run — the case for a test that builds a config without booting i18n.
+ */
+function getEnglishEditorMessages(): Record<string, string> {
+    const bundle = i18next.getResourceBundle?.("en", "translation") as
+        { "text-editor"?: { ck?: Record<string, string> } } | undefined;
+    return bundle?.["text-editor"]?.ck ?? {};
 }
 
 function buildListOfLanguages() {
@@ -291,6 +418,49 @@ function buildListOfLanguages() {
     ];
 }
 
+/**
+ * Turns the `allowedHtmlTags` option — a flat list of tag names, shared with the server-side
+ * sanitizer — into the General HTML Support allow-list.
+ *
+ * Gated on `textNoteHtmlSupportEnabled`, which ships off, so the default install runs with GHS
+ * allowing nothing and the editor keeps only what its own features model. Everything below applies
+ * once the user turns it on.
+ *
+ * The wrapping is not cosmetic. `DataFilter#loadAllowedConfig` reads each entry's `name` and falls
+ * back to a match-everything pattern without one, so bare strings allowed *every* element, including
+ * GHS's `$customElement` catch-all: unknown tags round-tripped as opaque blobs that the editing view
+ * drew as an empty `<span data-ck-unsafe-element>` — visible in read mode and search, invisible and
+ * un-navigable while editing (#10989). `attributes`/`classes`/`styles` are the per-element rules
+ * `splitRules` looks for; without them GHS strips every attribute off what it does preserve.
+ */
+function buildHtmlSupportConfig(): EditorConfig["htmlSupport"] {
+    // GHS decides per element, so switching it off is an empty allow-list rather than a narrower
+    // one — there is no subset of the option that stays meaningful here.
+    if (options.get("textNoteHtmlSupportEnabled") !== "true") {
+        return { allow: [] };
+    }
+
+    const allowedTags: string[] = JSON.parse(options.get("allowedHtmlTags"));
+
+    return {
+        allow: allowedTags
+            .filter((name) => !EDITOR_ONLY_DISALLOWED_TAGS.has(name))
+            .map((name) => ({ name, attributes: true, classes: true, styles: true }))
+    };
+}
+
+/**
+ * Withheld from the editor even when the option lists them, and only from the editor — the
+ * sanitizer reads the same option and still accepts them on import.
+ *
+ * `div` earns its place through GHS's dual content model: with inline content it becomes an
+ * `htmlDivParagraph` that every paragraph-keyed feature mistreats, and around a block it becomes a
+ * bare `htmlDiv` with no type-around, so a wrapped code block has nothing after it to escape into.
+ * Unwrapping loses nothing — no in-tree feature needs GHS to handle a div, footnotes claim their own
+ * by attribute — and it flattens the nested-div cruft that pasting from a web page drags in.
+ */
+const EDITOR_ONLY_DISALLOWED_TAGS = new Set(["div"]);
+
 function getDisabledPlugins() {
     const disabledPlugins: string[] = [];
 
@@ -300,6 +470,11 @@ function getDisabledPlugins() {
 
     if (options.get("textNoteSlashCommandsEnabled") !== "true") {
         disabledPlugins.push("TriliumSlashCommands");
+    }
+
+    // The mobile layout leaves no margin beside the blocks for the drag handle.
+    if (isMobile()) {
+        disabledPlugins.push("BlockDragHandle");
     }
 
     return disabledPlugins;

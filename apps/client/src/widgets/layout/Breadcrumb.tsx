@@ -10,7 +10,7 @@ import NoteContext from "../../components/note_context";
 import contextMenu, { MenuItem } from "../../menus/context_menu";
 import NoteColorPicker from "../../menus/custom-items/NoteColorPicker";
 import link_context_menu from "../../menus/link_context_menu";
-import { TreeCommandNames } from "../../menus/tree_context_menu";
+import { getDuplicateItems, TreeCommandNames } from "../../menus/tree_context_menu";
 import attributes from "../../services/attributes";
 import branches from "../../services/branches";
 import { copyTextWithToast } from "../../services/clipboard_ext";
@@ -202,8 +202,8 @@ function BreadcrumbSeparator(props: BreadcrumbSeparatorProps) {
             noSelectButtonStyle
             buttonClassName="icon-action breadcrumb-separator"
             hideToggleArrow
-            dropdownContainerClassName="tn-dropdown-menu-scrollable breadcrumb-child-list"
-            dropdownOptions={{  popperConfig: { strategy: "fixed", placement: "top" } }}
+            dropdownContainerClassName="breadcrumb-child-list"
+            placement="top"
         >
             <BreadcrumbSeparatorDropdownContent {...props} />
         </Dropdown>
@@ -255,7 +255,6 @@ function BreadcrumbCollapsed({ items, noteContext }: {
             buttonClassName="icon-action"
             dropdownContainerClassName="breadcrumb-child-list"
             hideToggleArrow
-            dropdownOptions={{ popperConfig: { strategy: "fixed" } }}
         >
             {items.map((notePath) => {
                 const notePathComponents = notePath.split("/");
@@ -357,7 +356,7 @@ function buildContextMenu(notePath: string, parentComponent: Component | null) {
                 command: "duplicateSubtree",
                 uiIcon: "bx bx-outline",
                 enabled: parentNotSearch && isNotRoot && !isHoisted && notOptionsOrHelp && note.isContentAvailable(),
-                handler: () => note_create.duplicateSubtree(noteId, branch.parentNoteId)
+                items: getDuplicateItems([ note ])
             },
 
             {

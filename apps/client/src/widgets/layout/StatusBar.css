@@ -30,10 +30,6 @@
                 align-items: center;
                 border: 0;
 
-                span:first-of-type {
-                    font-size: 1rem;
-                }
-
                 &.active,
                 &.dropdown-toggle.show,
                 &:focus,
@@ -57,27 +53,6 @@
             .dropdown-toggle {
                 padding: 0.1em 0.25em;
             }
-
-            .dropdown-menu {
-                width: max-content;
-            }
-        }
-
-        .dropdown-note-info {
-            padding: 1em !important;
-        }
-
-        .dropdown-note-paths {
-            .note-paths-widget {
-                padding: 0.5em;
-            }
-        }
-
-        .backlinks-widget > .dropdown-menu {
-            --menu-padding-size: .9em;
-
-            max-height: 60vh;
-            overflow-y: scroll;
         }
     }
 
@@ -130,7 +105,28 @@
 
 }
 
-body.experimental-feature-new-layout .note-info-content {
+/* The status bar's popups, which open on the page's body. */
+.dropdown-menu.status-bar-dropdown-menu {
+    width: max-content;
+
+    &.dropdown-note-info {
+        padding: 1em !important;
+    }
+
+    &.dropdown-note-paths {
+        max-width: min(720px, calc(100vw - 20px));
+
+        .note-paths-widget {
+            padding: 0.5em;
+        }
+
+        .note-path-list li {
+            overflow-wrap: anywhere;
+        }
+    }
+}
+
+.note-info-content {
     ul {
                 --row-block-margin: .2em;
 
@@ -159,15 +155,6 @@ body.experimental-feature-new-layout .note-info-content {
             }
 }
 
-body.experimental-feature-new-layout div.similar-notes-widget div.similar-notes-wrapper {
-    max-height: unset;
-}
-
-body.experimental-feature-new-layout.mobile div.similar-notes-widget div.similar-notes-wrapper {
-    max-height: unset;
-    padding: 0;
-}
-
 .bottom-panel {
     margin: 0 !important;
     padding: 0;
@@ -192,6 +179,25 @@ body.experimental-feature-new-layout.mobile div.similar-notes-widget div.similar
             font-size: .85em;
         }
 
+        .status-bar-sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: .85em;
+
+            &:hover {
+                text-decoration: none;
+
+                .status-bar-sidebar-link-text {
+                    text-decoration: underline;
+                }
+            }
+
+            .tn-icon {
+                font-size: 1.2em;
+            }
+        }
+
         .icon-action {
             --icon-button-size: 24px;
             --icon-button-icon-ratio: 0.8;
@@ -210,3 +216,26 @@ body.experimental-feature-new-layout.mobile div.similar-notes-widget div.similar
     }
 }
 
+.similar-notes-widget > .similar-notes-wrapper {
+    /* The font size of the links with the highest similarity score */
+    font-size: 17px;
+}
+
+.similar-notes-wrapper {
+    max-height: 200px;
+    overflow: auto;
+    padding: 12px;
+}
+
+.similar-notes-wrapper a {
+    display: inline-block;
+    border: 1px dotted var(--main-border-color);
+    border-radius: 20px;
+    background-color: var(--accented-background-color);
+    padding: 0 10px 0 10px;
+    margin: 0 3px 0 3px;
+    max-width: 10em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}

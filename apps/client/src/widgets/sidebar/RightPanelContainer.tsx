@@ -1,17 +1,15 @@
-//! This is currently only used for the new layout.
 import "./RightPanelContainer.css";
 
 import Split from "@triliumnext/split.js";
 import clsx from "clsx";
 import { VNode } from "preact";
-import { useCallback, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context";
 import { WidgetsByParent } from "../../services/bundle";
 import { t } from "../../services/i18n";
 import options from "../../services/options";
 import { DEFAULT_GUTTER_SIZE } from "../../services/resizer";
-import { isStandalone } from "../../services/utils";
 import ActionButton from "../react/ActionButton";
 import Button from "../react/Button";
 import { useActiveNoteContext, useGetContextData, useLegacyWidget, useNoteProperty, useTriliumEvent, useTriliumOptionBool, useTriliumOptionJson } from "../react/hooks";
@@ -20,13 +18,17 @@ import NoItems from "../react/NoItems";
 import { PaneMode, usePaneMode, usePeekDismiss } from "../react/peek_pane";
 import LegacyRightPanelWidget from "../right_panel_widget";
 import AttributeList from "./AttributeList";
+import Backlinks from "./Backlinks";
+import BoardColumns from "./BoardColumns";
 import ChatHighlightsList from "./ChatHighlightsList";
 import HighlightsList from "./HighlightsList";
+import NoteMap from "./NoteMap";
+import NotePaths from "./NotePaths";
 import PdfAnnotations from "./pdf/PdfAnnotations";
 import PdfAttachments from "./pdf/PdfAttachments";
 import PdfLayers from "./pdf/PdfLayers";
 import PdfPages from "./pdf/PdfPages";
-import RightPanelWidget, { CollapsibleWidgets } from "./RightPanelWidget";
+import RightPanelWidget, { CollapsibleWidgets, ExpandWidgetRequest, ExpandWidgetRequests } from "./RightPanelWidget";
 import RightPanePeekButton from "./RightPanePeekButton";
 import RightPaneTabs, { RIGHT_PANE_TABS, RightPaneTabDefinition, RightPaneTabId } from "./RightPaneTabs";
 import TableOfContents from "./TableOfContents";
@@ -58,6 +60,7 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
         setSelectedTabIdState(tabId);
         void options.save("rightPaneSelectedTab", tabId);
     }, []);
+    const [ expandRequest, setExpandRequest ] = useState<ExpandWidgetRequest | null>(null);
     useSplit(mode);
 
     // The chosen tab may have nothing to show for this note (or may have gone away entirely, e.g. the
@@ -78,20 +81,41 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
     useTriliumEvent("toggleRightPane", toggleDocked);
     useTriliumEvent("peekRightPane", togglePeek);
 
-    // An entry point aimed at one tab (the chat launcher): it opens the pane on that tab, brings it to
-    // the front if the pane is already open on another one, and closes it if it is the tab on show —
-    // so the button it comes from keeps behaving like a toggle for its own tab.
-    useTriliumEvent("selectRightPaneTab", ({ tabId }) => {
-        if (visible && activeTab?.id === tabId) {
+    // An entry point aimed at one tab (the chat launcher, the note map's keyboard action): it opens
+    // the pane on that tab, brings it to the front if the pane is already open on another one, and puts
+    // it away again when it is the tab on show — see reduceTabSelection for what that amounts to.
+    // `peek` opens it as a glance instead of a dock; `expandWidgetId` opens the one widget the entry
+    // point is really about, in case the user has it collapsed.
+    useTriliumEvent("selectRightPaneTab", ({ tabId, peek, expandWidgetId }) => {
+        const action = reduceTabSelection(mode, activeTab?.id, { tabId, peek });
+        if (action === "dismiss") {
+            dismiss();
+            return;
+        }
+        if (action === "close") {
             close();
             return;
         }
 
         setSelectedTabId(tabId);
-        if (!visible) {
-            toggleDocked();
+        // Raised before the pane opens, so a widget mounted for the first time already reads it.
+        if (expandWidgetId) {
+            setExpandRequest((prev) => ({ id: expandWidgetId, counter: (prev?.counter ?? 0) + 1 }));
+        }
+        if (action === "open") {
+            if (peek) {
+                togglePeek();
+            } else {
+                toggleDocked();
+            }
         }
     });
+
+    // A request doesn't outlive the pane's content: it would otherwise be honoured all over again by
+    // the widget that remounts on the next opening, long after the press that asked for it.
+    useEffect(() => {
+        if (!mounted) setExpandRequest(null);
+    }, [ mounted ]);
 
     // Outside-press / Esc *soft*-dismisses the peek: it hides but stays mounted, so re-peeking is
     // instant and preserves widget state. The × button and the docked toggle hard-close (unmount).
@@ -117,23 +141,27 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
                 <div class="right-pane-peek-spacer" />
                 {/* Mode class (right-pane-mode-docked / -peek) as a styling hook; none when closed. */}
                 <div id="right-pane" class={visible ? `right-pane-mode-${mode}` : undefined}>
-                    {visible && (
-                        <div class="right-pane-actions">
-                            {/* Pin only applies while peeking (it docks the pane); close shows in both modes. */}
-                            {mode === "peek" && <ActionButton icon="bx bx-pin" text={t("right_pane.dock")} onClick={dock} />}
-                            <ActionButton icon="bx bx-x" text={t("right_pane.close")} onClick={close} />
-                        </div>
-                    )}
                     {mounted && (
-                        tabs.length > 0 ? (
-                            <>
-                                <RightPaneTabs
-                                    tabs={tabs}
-                                    activeTabId={activeTab?.id}
-                                    onSelect={setSelectedTabId}
-                                />
-
-                                {tabs.filter((tab) => openedTabs.current.has(tab.id)).map((tab) => (
+                        <>
+                            {/* One flex row holding the tab strip and the pane's own actions, so a
+                                narrow pane shrinks the strip instead of sliding it under the buttons
+                                (see RightPanelContainer.css). */}
+                            <div class="right-pane-header">
+                                {tabs.length > 0 && (
+                                    <RightPaneTabs
+                                        tabs={tabs}
+                                        activeTabId={activeTab?.id}
+                                        onSelect={setSelectedTabId}
+                                    />
+                                )}
+                                <div class="right-pane-actions">
+                                    {/* Pin only applies while peeking (it docks the pane); close shows in both modes. */}
+                                    {mode === "peek" && <ActionButton icon="bx bx-pin" text={t("right_pane.dock")} onClick={dock} />}
+                                    <ActionButton icon="bx bx-x" text={t("right_pane.close")} onClick={close} />
+                                </div>
+                            </div>
+                            {tabs.length > 0 ? (
+                                tabs.filter((tab) => openedTabs.current.has(tab.id)).map((tab) => (
                                     <div
                                         key={tab.id}
                                         role="tabpanel"
@@ -142,29 +170,31 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
                                         {/* Collapsing the only widget of a tab would leave the tab empty,
                                             so a tab of one offers no collapsing at all. */}
                                         <CollapsibleWidgets.Provider value={tab.items.length > 1}>
-                                            {tab.items.length > 0 ? tab.items : (
-                                                // A tab that stays for a note it has nothing to show
-                                                // (see RightPaneTabDefinition.alwaysShown) says so.
-                                                <NoItems icon={tab.icon} text={t("right_pane.empty_message")} />
-                                            )}
+                                            <ExpandWidgetRequests.Provider value={expandRequest}>
+                                                {tab.items.length > 0 ? tab.items : (
+                                                    // A tab that stays for a note it has nothing to show
+                                                    // (see RightPaneTabDefinition.alwaysShown) says so.
+                                                    <NoItems icon={tab.icon} text={t("right_pane.empty_message")} />
+                                                )}
+                                            </ExpandWidgetRequests.Provider>
                                         </CollapsibleWidgets.Provider>
                                     </div>
-                                ))}
-                            </>
-                        ) : (
-                            <NoItems
-                                icon="bx bx-sidebar"
-                                text={t("right_pane.empty_message")}
-                            >
-                                {/* The peek auto-closes (outside click / focus loss / Esc), so a manual hide button is redundant there. */}
-                                {mode !== "peek" && (
-                                    <Button
-                                        text={t("right_pane.empty_button")}
-                                        triggerCommand="toggleRightPane"
-                                    />
-                                )}
-                            </NoItems>
-                        )
+                                ))
+                            ) : (
+                                <NoItems
+                                    icon="bx bx-sidebar"
+                                    text={t("right_pane.empty_message")}
+                                >
+                                    {/* The peek auto-closes (outside click / focus loss / Esc), so a manual hide button is redundant there. */}
+                                    {mode !== "peek" && (
+                                        <Button
+                                            text={t("right_pane.empty_button")}
+                                            triggerCommand="toggleRightPane"
+                                        />
+                                    )}
+                                </NoItems>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
@@ -180,6 +210,8 @@ function useItems(rightPaneVisible: boolean, widgetsByParent: WidgetsByParent): 
     // Published by the LLM chat; drives the chat highlights widget's visibility (only shown once
     // the chat has at least one highlight).
     const chatHighlights = useGetContextData("chatHighlights");
+    // Published by a board, which is what says the note is being shown as one.
+    const boardColumns = useGetContextData("boardColumns");
     // Subscribe to the AI toggle so the LLM chat is added/removed reactively without a page reload.
     const [ aiEnabled ] = useTriliumOptionBool("aiEnabled");
     const isPdf = noteType === "file" && noteMime === "application/pdf";
@@ -192,8 +224,32 @@ function useItems(rightPaneVisible: boolean, widgetsByParent: WidgetsByParent): 
             tab: "attributes"
         },
         {
+            // The map goes above the lists rather than under them: it is the one card of the tab
+            // that is a picture of the whole rather than a list of a part of it, which reads as a
+            // heading over them rather than as a block wedged below.
+            //
+            // The card is rendered here and only the map within it loaded on demand (force-graph is
+            // kept out of the boot bundle), so that the card stays a child of the tab body — see
+            // NoteMap.tsx.
+            el: <NoteMap />,
+            enabled: !!note,
+            tab: "connections"
+        },
+        {
+            // Where the note sits in the tree, above what points at it: placements first, then the
+            // backlinks below.
+            el: <NotePaths />,
+            enabled: !!note,
+            tab: "connections"
+        },
+        {
+            el: <Backlinks />,
+            enabled: !!note,
+            tab: "connections"
+        },
+        {
             el: <TableOfContents />,
-            enabled: (noteType === "text" || noteType === "doc" || isPdf || noteType === "llmChat" || !!note?.isMarkdown()),
+            enabled: (noteType === "text" || isPdf || noteType === "llmChat" || !!note?.isMarkdown()),
             tab: "outline"
         },
         {
@@ -218,7 +274,14 @@ function useItems(rightPaneVisible: boolean, widgetsByParent: WidgetsByParent): 
         },
         {
             el: <HighlightsList />,
-            enabled: noteType === "text" && highlightsList.length > 0,
+            enabled: (noteType === "text" || !!note?.isMarkdown()) && highlightsList.length > 0,
+            tab: "outline"
+        },
+        {
+            el: <BoardColumns />,
+            // Gated on being a board rather than on having columns, so that a board with none of
+            // them shows the card's own empty state.
+            enabled: boardColumns !== undefined,
             tab: "outline"
         },
         {
@@ -230,7 +293,7 @@ function useItems(rightPaneVisible: boolean, widgetsByParent: WidgetsByParent): 
             // Loaded lazily because the chat pulls in the whole LLM + CKEditor graph,
             // which users without the LLM experimental feature should never download.
             el: <LazyComponent loader={() => import("./SidebarChat.jsx")} />,
-            enabled: noteType !== "llmChat" && !isStandalone && aiEnabled,
+            enabled: noteType !== "llmChat" && aiEnabled,
             position: 1000,
             tab: "chat"
         },
@@ -254,6 +317,28 @@ function useItems(rightPaneVisible: boolean, widgetsByParent: WidgetsByParent): 
     // A note-less pane (an empty tab) keeps its own empty state rather than an outline with nothing in
     // it: there is no navigating between notes to keep the strip still for.
     return groupIntoTabs(definitions, !!note);
+}
+
+export type TabSelection = "open" | "select" | "dismiss" | "close";
+
+/**
+ * What a `selectRightPaneTab` press amounts to, given how the pane stands (pure):
+ *
+ * - `open`: the pane is closed, so open it — peeked or docked, as the entry point asks.
+ * - `select`: bring the tab to the front of an open pane.
+ * - `dismiss`: put away the peek the press is toggling, softly so that the next one is instant.
+ * - `close`: an entry point that opens the pane docked closes it again, so its button stays a toggle
+ *   for its own tab.
+ *
+ * A `peek` entry point is only a glance, so pressing it for the tab already on show in a *docked* pane
+ * selects rather than closes: the dock is the user's layout, not the badge's to undo — the press is
+ * left to expand the widget it is about.
+ */
+export function reduceTabSelection(mode: PaneMode, activeTabId: RightPaneTabId | undefined, { tabId, peek }: { tabId: RightPaneTabId; peek?: boolean }): TabSelection {
+    if (mode === "closed") return "open";
+    if (activeTabId !== tabId) return "select";
+    if (mode === "peek") return "dismiss";
+    return peek ? "select" : "close";
 }
 
 /**
@@ -312,7 +397,7 @@ function useSplit(mode: PaneMode) {
         const selectors = mode === "docked"
             ? [ "#center-pane", "#right-pane-host" ]
             : [ ".right-pane-peek-spacer", "#right-pane" ];
-        const minSize = mode === "docked" ? [ 300, 180 ] : [ 0, 180 ];
+        const minSize = mode === "docked" ? [ 300, 230 ] : [ 0, 230 ];
 
         const createSplit = () => Split(selectors, {
             sizes: [100 - rightPaneWidth, rightPaneWidth],

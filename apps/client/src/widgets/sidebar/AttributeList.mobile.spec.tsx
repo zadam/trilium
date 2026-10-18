@@ -80,10 +80,10 @@ describe("AttributeList on a phone", () => {
         // The panel's own two ride on the first card, there being no header above the cards; the
         // menu is also the only way to a relation here, whose creation editor is a pointer's.
         expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle", "bx bx-plus" ]);
-        // A run that can be added to says so in its own header, definitions included; one that
-        // cannot — the inherited, which are another note's — says nothing.
-        expect(iconsIn(header("attributes-definitions"))).toEqual([ "bx bx-plus" ]);
-        expect(iconsIn(header("attributes-inherited"))).toEqual([]);
+        // Each card has its own help. A run that can be added to also has an add button, definitions
+        // included; the inherited run, whose attributes belong to another note, has none.
+        expect(iconsIn(header("attributes-definitions"))).toEqual([ "bx bx-help-circle", "bx bx-plus" ]);
+        expect(iconsIn(header("attributes-inherited"))).toEqual([ "bx bx-help-circle" ]);
 
         // The ghost row at the foot of a run is a hover affordance, so it stays on the desktop.
         expect(container.querySelector(".attribute-add-row")).toBeNull();

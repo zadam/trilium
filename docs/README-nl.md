@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trillium Notes is een gratis en open-source, platformonafhankelijke,
 hiërarchische notitie-applicatie die zich richt op het opbouwen van grote
 persoonlijke kennisbanken.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -117,7 +121,7 @@ Onze documentatie is beschikbaar in meerdere formaten:
 * Ingebouwd [donker
   thema](https://docs.triliumnotes.org/user-guide/concepts/themes),
   ondersteuning voor gebruikera thema's
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   en [Markdown importeren &
   exporteren](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) om
@@ -344,6 +348,12 @@ described in the "Discuss with us" section above.
 * [antoniotejada](https://github.com/nriver) for the original syntax highlight
   widget.
 * [Tabler Icons](https://tabler.io/icons) for the system tray icons.
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 Trilium would not be possible without the technologies behind it:
 
@@ -361,11 +371,6 @@ Trilium would not be possible without the technologies behind it:
   table used in collections.
 * [FancyTree](https://github.com/mar10/fancytree) - feature-rich tree library
   without real competition.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - visual connectivity library.
-  Used in [relation
-  maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) and
-  [link
-  maps](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Support
 

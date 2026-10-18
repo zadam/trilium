@@ -19,9 +19,13 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes 是一款免費且開源、跨平台的階層式筆記應用程式，專注於建立大型個人知識庫。
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -80,7 +84,7 @@ Trilium Notes 是一款免費且開源、跨平台的階層式筆記應用程式
 * 為手機與平板最佳化的[行動前端](https://docs.triliumnotes.org/user-guide/setup/mobile-frontend)
 * 內建[深色主題](https://docs.triliumnotes.org/user-guide/concepts/themes)，並支援自訂主題
 * [Evernote
-  匯入](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)與
+  匯入](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)與
   [Markdown
   匯入與匯出](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * 用於快速保存網頁內容的 [Web
@@ -275,6 +279,12 @@ pnpm run --filter desktop electron-forge:make --arch=x64 --platform=win32
 * [Thomas Frei](https://github.com/thfrei) 對 Canvas 原始作品的貢獻。
 * [antoniotejada](https://github.com/nriver) 為原始語法高亮小工具的貢獻。
 * [Tabler Icons](https://tabler.io/icons) 用於系統匣圖示。
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 若無其背後的技術支撐，Trilium 便無法開發完成：
 
@@ -285,8 +295,6 @@ pnpm run --filter desktop electron-forge:make --arch=x64 --platform=win32
 * [Leaflet](https://github.com/Leaflet/Leaflet) —— 用於渲染地理地圖。
 * [Tabulator](https://github.com/olifolkerd/tabulator) —— 用於集合中的互動式表格。
 * [FancyTree](https://github.com/mar10/fancytree) —— 功能非常豐富的樹狀元件，無可匹敵。
-* [jsPlumb](https://github.com/jsplumb/jsplumb) ——
-  視覺連線函式庫。用於[關聯圖](https://docs.triliumnotes.org/user-guide/note-types/relation-map)與[連結圖](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 支援我們
 

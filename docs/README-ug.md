@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes بولسا ھەقسىز، ئوچۇق كودلۇق، سىستېما ھالقىغان، قاتلاملىق خاتىرە
 قالدۇرۇش ئەپى بولۇپ، ئۇ ئاساسلىقى چوڭ تىپتىكى شەخسىي بىلىم ئامبىرى قۇرۇشقا
 ئەھمىيەت بېرىدۇ.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -121,7 +125,7 @@ docs.triliumnotes.org](https://docs.triliumnotes.org/)**
 * ئىچىگە ئورۇنلاشتۇرۇلغان [قېنىق رەڭلىك
   تېما](https://docs.triliumnotes.org/user-guide/concepts/themes)
 * [Evernote دىن
-  ئەكىرىش](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+  ئەكىرىش](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   ۋە [Markdown نى ئەكىرىش ھەم
   چىقىرىش](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * توردىكى مەزمۇنلارنى تېز ساقلاشقا ئىشلىتىلىدىغان [Web
@@ -355,6 +359,12 @@ pnpm run --filter desktop electron-forge:make --arch=x64 --platform=win32
   [antoniotejada](https://github.com/nriver).
 * سىستېما تەخسىسى سىنبەلگىسى ئۈچۈن [Tabler Icons](https://tabler.io/icons)
   ئىشلىتىلدى.
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 ئارقا سەپتىكى تېخنىكىلارنىڭ قوللىشى بولمىسا، Trilium تۈرىنى ئەمەلگە ئاشۇرغىلى
 بولمايتتى:
@@ -373,12 +383,6 @@ pnpm run --filter desktop electron-forge:make --arch=x64 --platform=win32
   تەسىرلىشىدىغان جەدۋەللەر ئۈچۈن ئىشلىتىلىدۇ.
 * [FancyTree](https://github.com/mar10/fancytree) —— ئىقتىدارى مول بولغان
   دەرەخسىمان كونترول كۇتۇپخانىسى، ئۇنىڭغا تەڭ كېلىدىغان باشقا بىر كۇتۇپخانا يوق.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) —— كۆرۈنۈشچان ئۇلىنىش
-  كۇتۇپخانىسى. مۇناسىۋەت خەرىتىسى
-  (https://docs.triliumnotes.org/user-guide/note-types/relation-map) ۋە ئۇلىنىش
-  خەرىتىسى
-  (https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
-  ئۈچۈن ئىشلىتىلىدۇ
 
 ## 🤝 بىزنى قوللاش
 

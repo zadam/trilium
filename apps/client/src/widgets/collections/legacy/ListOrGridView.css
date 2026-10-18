@@ -4,6 +4,7 @@
     height: 100%;
 
     .note-list-wrapper {
+        margin-block: var(--content-margin-inline);
         height: 100%;
         overflow: auto;
     }
@@ -452,7 +453,6 @@
 
     &.type-code pre {
         height: 100%;
-        padding: 1em;
         margin-bottom: 0;
     }
 }

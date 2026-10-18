@@ -2,11 +2,6 @@
  * CKEDITOR
  */
 
- :root {
-    --ck-font-face: var(--main-font-family);
-    --ck-input-label-height: 1.5em;
- }
-
 /*
  * Toolbar
  */
@@ -26,11 +21,13 @@
     --ck-color-split-button-hover-background: var(--ck-editor-toolbar-dropdown-button-open-background);
 
     --ck-focus-ring: 1px solid transparent;
+    --ck-button-focus-border-color: transparent;
     --ck-color-focus-border: var(--input-focus-outline-color);
     --ck-focus-outer-shadow: none;
     --ck-focus-disabled-outer-shadow: none;
 
     --ck-border-radius: 6px;
+    --ck-toolbar-text-font-size: 13px;
 }
 
 /* Toolbar button in on state */
@@ -46,20 +43,28 @@
     --ck-color-button-on-color: currentColor;
 }
 
-/* The toolbar show / hide button for the current text block */
+/* The toolbar show / hide button for the current text block. Unlike the buttons above it, this one
+   floats free and needs a surface of its own; the hover tint is flattened onto it. */
 :root .ck.ck-block-toolbar-button {
+    --block-toolbar-button-hover-surface:
+        linear-gradient(var(--hover-item-background-color), var(--hover-item-background-color)),
+        var(--main-background-color);
+
     --ck-color-block-toolbar-button: var(--muted-text-color);
-    --ck-color-button-on-background: transparent;
+    --ck-color-button-default-background: var(--main-background-color);
+    --ck-color-button-on-background: var(--main-background-color);
+    --ck-color-button-default-hover-background: var(--block-toolbar-button-hover-surface);
+    --ck-color-button-on-hover-background: var(--block-toolbar-button-hover-surface);
     --ck-color-button-on-color: var(--ck-editor-toolbar-button-on-color);
-    translate: -40% 0;
-    min-width: 0;
-    padding: 0;
     z-index: 1600;
 }
 
-:root .ck.ck-toolbar .ck-button:not(.ck-disabled):active,
-.ck.ck-block-toolbar-button:active {
+:root .ck.ck-toolbar .ck-button:not(.ck-disabled):active {
     background-color: var(--hover-item-background-color);
+}
+
+:root .ck.ck-block-toolbar-button:active {
+    background: var(--block-toolbar-button-hover-surface);
 }
 
 .ck.ck-toolbar .ck-button:active:not(.ck-list-item-button):not(.ck-button_with-text):not(.ck-disabled) svg:not(.ck-dropdown__arrow),
@@ -75,6 +80,7 @@
 /* Focus visible */
 .ck.ck-toolbar .ck-button:focus-visible {
     --ck-focus-ring: 1px solid var(--input-focus-outline-color);
+    --ck-button-focus-border-color: var(--input-focus-outline-color);
 }
 
 /* Remove the border from hovered split arrow button */
@@ -135,14 +141,44 @@
     --ck-editor-popup-padding: var(--menu-padding-size);
 }
 
+/* Submenu panel */
+:root .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
+    --ck-editor-popup-padding: var(--menu-padding-size);
+
+    backdrop-filter: var(--dropdown-backdrop-filter);
+}
+
+body.background-effects .ck.ck-balloon-panel.ck-dropdown-menu__nested-menu__panel {
+    --menu-background-color: var(--menu-background-color-no-backdrop);
+
+    backdrop-filter: none;
+}
+
+/* Inline icon picker: the icon grid scrolls, so it runs to the balloon's edges. */
+:root .ck.ck-balloon-panel:has(.icon-picker-balloon) {
+    --ck-editor-popup-padding: 0px;
+}
+
+.ck.ck-balloon-panel .icon-picker-balloon {
+    border-radius: calc(var(--dropdown-border-radius) - 1px);
+    overflow: clip;
+}
+
+/* Submenu arrow */
+:root .ck.ck-button.ck-dropdown-menu-list__nested-menu__button > .ck-dropdown-menu-list__nested-menu__button__arrow {
+    color: var(--menu-item-arrow-color);
+}
+
 /* Dropdown panel containing a toolbar */
 :root .ck.ck-dropdown__panel:has(>.ck-toolbar) {
-    --ck-editor-popup-padding: calc(var(--menu-padding-size) - var(--ck-spacing-small));
+    --ck-editor-popup-padding: calc(
+        var(--menu-padding-size) - var(--ck-spacing-small, var(--ck-spacing-sm))
+    );
 }
 
 /* Bulleted / number list toolbar */
 .ck-list-styles-list {
-    --ck-spacing-large: var(--ck-spacing-small);
+    --ck-list-styles-list-padding: var(--ck-spacing-small, var(--ck-spacing-sm));
 }
 
 :root ul.ck.ck-list,
@@ -181,8 +217,18 @@
     min-width: 10em;
 }
 
+/* Menu list item, in a menu with submenus */
+:root .ck.ck-dropdown-menu-list {
+    --ck-color-button-default-hover-background: var(--hover-item-background-color);
+    --ck-color-list-button-hover-background: var(--hover-item-background-color);
+    --ck-color-list-button-on-background: var(--hover-item-background-color);
+    --ck-color-list-button-on-background-focus: var(--hover-item-background-color);
+    --ck-color-list-button-on-text: var(--hover-item-text-color);
+}
+
 /* Item with icon */
-:root .ck.ck-button_with-text svg:first-child {
+:root .ck.ck-button_with-text svg:first-child,
+:root .ck.ck-button_with-text > .ck-ai-action-icon {
     color: var(--menu-item-icon-color);
 }
 
@@ -199,7 +245,7 @@
 /* List item checkmark container */
 
 :root .ck.ck-list-item-button .ck.ck-list-item-button__check-holder {
-    margin-inline-start: var(--ck-spacing-small);
+    margin-inline-start: var(--ck-spacing-small, var(--ck-spacing-sm));
     margin-inline-end: var(--menu-padding-size);
 }
 
@@ -208,13 +254,9 @@
     color: var(--menu-item-icon-color);
 }
 
-/* Slash commands */
-.ck.ck-slash-command-button__text-part .ck.ck-button__label {
-    font-weight: bold;
-}
-
 /* Separator */
 :root .ck .ck-list__separator {
+    flex-shrink: 0;
     margin: .5em 0;
     margin-inline-start: calc(0px - var(--ck-editor-popup-padding));
     width: calc(100% + (var(--ck-editor-popup-padding) * 2));
@@ -287,9 +329,32 @@ div.ck.ck-collapsible {
 
 /* Color picker dropdown */
 
+:root .ck.ck-color-selector {
+    --ck-color-selector-padding: 0;
+    --ck-color-selector-grids-fragment-padding: 0;
+    --ck-button-border-radius: var(--ck-border-radius);
+    --ck-color-grid-padding: 8px;
+}
+
+/* Remove color and color picker buttons */
+:root .ck.ck-color-selector .ck-color-grids-fragment .ck-button:is(
+    .ck-color-selector__remove-color, .ck-color-selector__color-picker
+) {
+    padding-inline-start: calc(
+        var(--ck-color-grid-padding)
+        + (var(--ck-color-grid-tile-size) - var(--ck-icon-size)) / 2
+        - 1px
+    );
+}
+
 /* Color palette */
 :root .ck.ck-color-selector .ck-color-grid {
     --ck-editor-toolbar-button-on-shadow: none; /* Remove the shadow of the selected color button */
+    --ck-color-grid-gap: 5px;
+    --ck-color-grid-tile-border-radius: var(--ck-border-radius);
+    --ck-color-interactive-focus-border: var(--ck-color-focus-border);
+
+    width: auto;
 }
 
 /* Color picker button */
@@ -320,7 +385,9 @@ div.ck.ck-collapsible {
     min-width: 200px;
     grid-template-columns: repeat(3, auto);
     justify-content: space-between;
-    padding-bottom: calc(var(--ck-spacing-medium) + var(--menu-padding-size));
+    padding-bottom: calc(
+        var(--ck-spacing-medium, var(--ck-spacing-base)) + var(--menu-padding-size)
+    );
 }
 
 /* Table dropdown */
@@ -339,7 +406,7 @@ div.ck.ck-collapsible {
 
 /* Selected rows / column counter */
 .ck.ck-insert-table-dropdown__label {
-    margin-top: var(--ck-spacing-medium);
+    margin-top: var(--ck-spacing-medium, var(--ck-spacing-base));
 }
 
 /* Admonitions dropdown */
@@ -356,6 +423,7 @@ div.ck.ck-collapsible {
     width: 100%;
     margin: 4px;
     background: color-mix(in srgb, var(--accent) 15%, var(--main-background-color));
+    padding-block: 4px;
     padding-inline-end: 2em;
     border: 1px solid var(--accent);
     border-radius: 6px;
@@ -382,13 +450,16 @@ div.ck.ck-collapsible {
 
     overflow: hidden;
     max-height: var(--_panel-height);
+    padding: 0;
 }
 
 .ck-tn-dropdown .ck-dropdown__panel .ck-list,
 .ck-code-block-dropdown .ck-dropdown__panel .ck-list,
 .ck.ck-toolbar-container.codeblock-language-list .ck.ck-dropdown__panel .ck-list {
+    box-sizing: border-box;
     overflow: auto;
-    max-height: calc(var(--_panel-height) - var(--ck-editor-popup-padding) * 2 - 2px);
+    max-height: calc(var(--_panel-height) - 2px);
+    padding: var(--ck-editor-popup-padding);
 }
 
 /* Text snippet dropdown */
@@ -460,7 +531,7 @@ div.ck-template-form .ck-template-form__text-part {
 
 div.ck-template-form .ck-template-form__text-part mark {
     --ck-color-highlight-background: transparent;
-    
+
     color: var(--quick-search-result-highlight-color);
     text-decoration: underline;
     font-weight: bold;
@@ -516,20 +587,6 @@ div.ck-template-form .ck-search__info span:nth-child(2) {
     margin-top: var(--ck-input-label-height);
 }
 
-/* Mention list (the autocompletion list for emojis, labels and relations)  */
-
-:root .ck-mentions {
-    --ck-color-list-button-on-background: var(--hover-item-background-color);
-    --ck-color-list-button-on-text: var(--hover-item-text-color);
-    --ck-color-list-button-hover-background: var(--ck-editor-toolbar-dropdown-button-open-background);
-    --ck-focus-ring: 1px solid transparent;
-}
-
-/* "Keep on typing to see the emoji" placeholder */
-#mention-list-item-id\:__EMOJI_HINT {
-    background: transparent;
-}
-
 /*
  * FORMS
  */
@@ -566,6 +623,15 @@ button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel).ck
 :root input.ck.ck-input-text[readonly="true"] {
     cursor: not-allowed;
     background: var(--input-background-color);
+}
+
+/* AI assistant composer */
+
+:root .ck-ai-assistant-form__prompt-row input.ck.ck-input-text,
+:root .ck-ai-assistant-form__prompt-row input.ck.ck-input-text:not([readonly="true"]):hover,
+:root .ck-ai-assistant-form__prompt-row input.ck.ck-input-text:not([readonly="true"]):focus {
+    outline: none;
+    background: transparent;
 }
 
 /* Forms */
@@ -640,8 +706,7 @@ button.ck.ck-button:is(.ck-button-action, .ck-button-save, .ck-button-cancel).ck
  */
 
 .attachment-content-wrapper pre,
-:root .ck-content pre,
-.ck-mermaid__editing-view {
+:root .ck-content pre {
     border: 0;
     border-radius: 6px;
     box-shadow: var(--code-block-box-shadow);
@@ -686,10 +751,15 @@ html .note-detail-editable-text > :not(figure, .include-note, hr):first-child {
     margin-top: 1px !important;
 }
 
-/* Round the player, not the card: clipping the card would crop the insert-paragraph buttons. 7px = 8px radius - 1px border. */
-.include-note-content.type-video .video-preview-wrapper {
-    border-radius: 0 0 7px 7px;
+/* Round the player, not the card: clipping the card would crop the insert-paragraph buttons. */
+.include-note-content.type-video .video-preview-wrapper:not(:fullscreen) {
+    border-radius: 0 0 var(--_include-note-bottom-border-radius, 8px)
+                   var(--_include-note-bottom-border-radius, 8px);
     overflow: hidden;
+}
+
+.include-note:has(> figcaption) .include-note-content.type-video .video-preview-wrapper {
+    border-radius: 0;
 }
 
 .ck.ck-editor__editable pre[data-language]::after {
@@ -702,8 +772,7 @@ html .note-detail-editable-text > :not(figure, .include-note, hr):first-child {
 }
 
 .attachment-content-wrapper pre code,
-:root .ck-content pre code,
-.ck-mermaid__editing-view {
+:root .ck-content pre code {
     display: block;
     padding: var(--padding-size, 1em);
     overflow: auto;
@@ -751,12 +820,8 @@ html .note-detail-editable-text > :not(figure, .include-note, hr):first-child {
     inset-inline-end: 0.35em;
 }
 
-.ck-content h1,
-.ck-content h2,
-.ck-content h3,
-.ck-content h4,
-.ck-content h5,
-.ck-content h6 {
+/* `:where(:not(.excalidraw *))` leaves out the UI of an embedded canvas drawing. */
+.ck-content :is(h1, h2, h3, h4, h5, h6):where(:not(.excalidraw *)) {
     font-weight: 300;
 }
 
@@ -764,20 +829,12 @@ html .note-detail-editable-text > :not(figure, .include-note, hr):first-child {
     font-weight: 600;
 }
 
-:root .ck-content hr {
+/* `:where(:not(.excalidraw *))` leaves out the menus of an embedded canvas drawing. */
+:root .ck-content hr:where(:not(.excalidraw *)) {
     margin-block: 5px;
     height: 0;
     border: thin solid var(--main-border-color);
     opacity: 1;
-}
-
-@media (screen) {
-    .ck-content p code {
-        border: 1px solid var(--card-border-color);
-        box-shadow: var(--card-box-shadow);
-        border-radius: 6px;
-        background-color: var(--card-background-color);
-    }
 }
 
 .ck-content:not(.word-wrap) pre code {

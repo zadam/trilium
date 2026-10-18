@@ -4,6 +4,15 @@ coverage:
       default:
         target: auto
         threshold: 1%
+      # The share code is held at full coverage by the share-theme, server and standalone suites;
+      # this status checks the merged result.
+      share:
+        target: 100%
+        paths:
+          - packages/share-theme/src/
+          - packages/trilium-core/src/share/
+          - apps/server/src/share/
+          - apps/standalone/src/lightweight/share_provider.ts
     patch:
       default:
         target: 80%
@@ -41,17 +50,9 @@ flags:
     paths:
       - packages/ckeditor5/src/
     carryforward: true
-  ckeditor5-utils:
-    paths:
-      - packages/ckeditor5-utils/src/
-    carryforward: true
   codemirror:
     paths:
       - packages/codemirror/src/
-    carryforward: true
-  express-partial-content:
-    paths:
-      - packages/express-partial-content/src/
     carryforward: true
   highlightjs:
     paths:
@@ -60,6 +61,15 @@ flags:
   pdfjs-viewer:
     paths:
       - packages/pdfjs-viewer/src/
+    carryforward: true
+  share-theme:
+    paths:
+      - packages/share-theme/src/
+    carryforward: true
+  web-clipper:
+    paths:
+      - apps/web-clipper/entrypoints/
+      - apps/web-clipper/utils.ts
     carryforward: true
 
 comment:

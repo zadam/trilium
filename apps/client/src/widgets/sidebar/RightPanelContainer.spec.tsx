@@ -19,6 +19,10 @@ vi.mock("../react/hooks", async (importOriginal) => ({
 vi.mock("./AttributeList", () => stubWidget("attribute-list-stub"));
 vi.mock("./TableOfContents", () => stubWidget("toc-stub"));
 vi.mock("./HighlightsList", () => stubWidget("highlights-stub"));
+vi.mock("./NoteMap", () => stubWidget("note-map-stub"));
+vi.mock("./NotePaths", () => stubWidget("note-paths-stub"));
+vi.mock("./Backlinks", () => stubWidget("backlinks-stub"));
+vi.mock("./BoardColumns", () => stubWidget("board-columns-stub"));
 vi.mock("./ChatHighlightsList", () => stubWidget("chat-highlights-stub"));
 vi.mock("./pdf/PdfPages", () => stubWidget("pdf-pages-stub"));
 vi.mock("./pdf/PdfAttachments", () => stubWidget("pdf-attachments-stub"));
@@ -40,8 +44,28 @@ import type LoadResults from "../../services/load_results";
 import options from "../../services/options";
 import { buildNote } from "../../test/easy-froca";
 import { ParentComponent } from "../react/react_utils";
-import RightPanelContainer, { groupIntoTabs, RightPanelWidgetDefinition } from "./RightPanelContainer";
+import RightPanelContainer, { groupIntoTabs, reduceTabSelection, RightPanelWidgetDefinition } from "./RightPanelContainer";
 import { RIGHT_PANE_TABS } from "./RightPaneTabs";
+
+describe("reduceTabSelection", () => {
+    it("opens a closed pane, and brings a tab that is not the one on show to the front", () => {
+        expect(reduceTabSelection("closed", undefined, { tabId: "chat" })).toBe("open");
+        expect(reduceTabSelection("closed", "outline", { tabId: "connections", peek: true })).toBe("open");
+        expect(reduceTabSelection("docked", "outline", { tabId: "chat" })).toBe("select");
+        expect(reduceTabSelection("peek", "outline", { tabId: "connections", peek: true })).toBe("select");
+    });
+
+    it("puts away what the press itself opened: its peek, or the pane an entry point docks", () => {
+        expect(reduceTabSelection("peek", "connections", { tabId: "connections", peek: true })).toBe("dismiss");
+        expect(reduceTabSelection("peek", "chat", { tabId: "chat" })).toBe("dismiss");
+        expect(reduceTabSelection("docked", "chat", { tabId: "chat" })).toBe("close");
+    });
+
+    it("leaves a docked pane docked for a glance at the tab it is already showing", () => {
+        // The dock is the user's layout; the press is left to expand the widget it is about.
+        expect(reduceTabSelection("docked", "connections", { tabId: "connections", peek: true })).toBe("select");
+    });
+});
 
 describe("groupIntoTabs", () => {
     it("keeps the enabled widgets only, in position order, and drops the tabs left empty", () => {
@@ -74,10 +98,11 @@ describe("groupIntoTabs", () => {
         const attributes = widget("attributes");
         const tabs = groupIntoTabs([ attributes, widget("outline", { enabled: false }) ], true);
 
-        // The outline is the tab that asks; the chat and the widgets go as they did.
-        expect(tabs.map((tab) => tab.id)).toEqual([ "outline", "attributes" ]);
+        // The outline and the connections are the tabs that ask; the chat and the widgets go as they did.
+        expect(tabs.map((tab) => tab.id)).toEqual([ "outline", "attributes", "connections" ]);
         expect(tabs[0].items).toEqual([]);
         expect(tabs[1].items).toEqual([ attributes.el ]);
+        expect(tabs[2].items).toEqual([]);
     });
 });
 
@@ -107,8 +132,9 @@ describe("RightPanelContainer", () => {
         shownNote.current = buildNote({ title: "Read" });
         renderContainer();
 
-        // A text note offers the outline and the attributes; the pane is on the tab last chosen here.
-        expect(shownTabIcons()).toEqual([ icon("outline"), icon("attributes") ]);
+        // A text note offers the outline, the attributes and the connections; the pane is on the tab
+        // last chosen here.
+        expect(shownTabIcons()).toEqual([ icon("outline"), icon("attributes"), icon("connections") ]);
         expect(activeTabIcon()).toBe(icon("attributes"));
 
         // A press of this window's own switches the pane and writes the choice back, which is what
@@ -182,13 +208,13 @@ describe("RightPanelContainer", () => {
 
     function shownTabIcons() {
         return [ ...container.querySelectorAll("[role=tab] span") ]
-            .map((span) => span.className.replace("right-pane-tab-icon tn-icon ", ""));
+            .map((span) => span.className.replace("tab-strip-tab-icon tn-icon ", ""));
     }
 
     function activeTabIcon() {
         const active = container.querySelector("[role=tab][aria-selected=true] span");
         expect(active).not.toBeNull();
-        return (active?.className ?? "").replace("right-pane-tab-icon tn-icon ", "");
+        return (active?.className ?? "").replace("tab-strip-tab-icon tn-icon ", "");
     }
 });
 

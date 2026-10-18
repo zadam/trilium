@@ -1,6 +1,6 @@
 import "./llm.css";
 
-import type { NetworkAddressesResponse } from "@triliumnext/commons";
+import { isProviderOfKind, type LlmProviderKind, type NetworkAddressesResponse } from "@triliumnext/commons";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import dialog from "../../../services/dialog";
@@ -9,73 +9,71 @@ import server from "../../../services/server";
 import { isStandalone } from "../../../services/utils";
 import ActionButton from "../../react/ActionButton";
 import Button from "../../react/Button";
+import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import CodeBlock from "../../react/CodeBlock";
 import Collapsible from "../../react/Collapsible";
 import FormTextBox from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
-import MaskedIcon from "../../react/MaskedIcon";
+import Icon from "../../react/Icon";
 import NoItems from "../../react/NoItems";
+import { shortModelName } from "../llm_chat/model_name";
 import OptionsPageHeader from "./components/OptionsPageHeader";
-import OptionsRow, { OptionsRowWithToggle } from "./components/OptionsRow";
-import OptionsSection from "./components/OptionsSection";
-import AddProviderModal, { type LlmProviderConfig, PROVIDER_TYPES } from "./llm/AddProviderModal";
+import AddProviderModal, { findProviderType, type LlmProviderConfig } from "./llm/AddProviderModal";
 
 export default function LlmSettings() {
     const [aiEnabled, setAiEnabled] = useTriliumOptionBool("aiEnabled");
-
-    if (isStandalone) {
-        return (
-            <>
-                <OptionsPageHeader helpUrl="GBBMSlVSOIGP" />
-                <OptionsSection>
-                    <NoItems icon="bx bx-bot" text={t("llm.not_available_in_standalone")} />
-                </OptionsSection>
-            </>
-        );
-    }
-
-    return (
-        <>
-            <OptionsPageHeader
-                helpUrl="GBBMSlVSOIGP"
-                actions={
-                    <FormToggle
-                        switchOnName="" switchOffName=""
-                        switchOnTooltip={t("experimental_features.llm_name")}
-                        switchOffTooltip={t("experimental_features.llm_name")}
-                        currentValue={aiEnabled}
-                        onChange={setAiEnabled}
-                    />
-                }
-            />
-
-            {aiEnabled ? (
-                <>
-                    <ProviderSettings />
-                    <McpSettings />
-                </>
-            ) : (
-                <OptionsSection>
-                    <NoItems icon="bx bx-bot" text={t("llm.disabled_placeholder")} />
-                </OptionsSection>
-            )}
-        </>
-    );
-}
-
-function ProviderSettings() {
+    // Read once for both cards: each saves the whole list, so a card holding its own copy would
+    // write back the other card's providers as they were before its last edit.
     const [providersJson, setProvidersJson] = useTriliumOption("llmProviders");
-    const providers = useMemo<LlmProviderConfig[]>(() => {
+    const allProviders = useMemo<LlmProviderConfig[]>(() => {
         try {
             return providersJson ? JSON.parse(providersJson) : [];
         } catch {
             return [];
         }
     }, [providersJson]);
-    const setProviders = useCallback((newProviders: LlmProviderConfig[]) => {
+    const setAllProviders = useCallback((newProviders: LlmProviderConfig[]) => {
         setProvidersJson(JSON.stringify(newProviders));
     }, [setProvidersJson]);
+
+    return (
+        <>
+            {/* The switch governs the whole page rather than anything on it, so it belongs to the
+                header — on the row below the title, clear of the dialog's own close button. */}
+            <OptionsPageHeader
+                helpUrl="GBBMSlVSOIGP"
+                below={
+                    <OptionCardSection
+                        className="options-header-switch"
+                        name="ai-enabled"
+                        label={t("llm.enabled")}
+                        description={t("llm.enabled_description")}
+                    >
+                        <FormToggle currentValue={aiEnabled} onChange={setAiEnabled} />
+                    </OptionCardSection>
+                }
+            />
+
+            {aiEnabled && (
+                <>
+                    <ProviderSettings kind="llm" allProviders={allProviders} setAllProviders={setAllProviders} />
+                    <ProviderSettings kind="search" allProviders={allProviders} setAllProviders={setAllProviders} />
+                    <McpSettings />
+                </>
+            )}
+        </>
+    );
+}
+
+/** The configured providers of one kind. Both kinds are stored in the `llmProviders` option. */
+function ProviderSettings({ kind, allProviders, setAllProviders }: {
+    kind: LlmProviderKind;
+    /** Every configured provider, of both kinds. */
+    allProviders: LlmProviderConfig[];
+    setAllProviders: (providers: LlmProviderConfig[]) => void;
+}) {
+    const providers = useMemo(() => allProviders.filter(p => isProviderOfKind(p, kind)), [allProviders, kind]);
     // `undefined` while closed; the edited provider (or a fresh marker) while open.
     // The bumping token keys the modal so it re-initializes its wizard on every open.
     const [modalProvider, setModalProvider] = useState<LlmProviderConfig | undefined>();
@@ -90,44 +88,49 @@ function ProviderSettings() {
 
     // Upsert: editing replaces the config with the matching id, adding appends.
     const handleSaveProvider = useCallback((saved: LlmProviderConfig) => {
-        setProviders(providers.some(p => p.id === saved.id)
-            ? providers.map(p => (p.id === saved.id ? saved : p))
-            : [...providers, saved]);
-    }, [providers, setProviders]);
+        setAllProviders(allProviders.some(p => p.id === saved.id)
+            ? allProviders.map(p => (p.id === saved.id ? saved : p))
+            : [...allProviders, saved]);
+    }, [allProviders, setAllProviders]);
 
     const handleDeleteProvider = useCallback(async (providerId: string, providerName: string) => {
         if (!(await dialog.confirm(t("llm.delete_provider_confirmation", { name: providerName })))) {
             return;
         }
-        setProviders(providers.filter(p => p.id !== providerId));
-    }, [providers, setProviders]);
+        setAllProviders(allProviders.filter(p => p.id !== providerId));
+    }, [allProviders, setAllProviders]);
 
-    return (
-        <OptionsSection title={t("llm.configured_providers")}>
+    const isSearch = kind === "search";
+
+    return (<>
+        <Card heading={isSearch ? t("llm.search_providers") : t("llm.model_providers")}>
             <ProviderList
                 providers={providers}
+                emptyIcon={isSearch ? "bx bx-search" : "bx bx-bot"}
+                emptyText={isSearch ? t("llm.no_search_providers_configured") : t("llm.no_model_providers_configured")}
                 onEdit={openModal}
                 onDelete={handleDeleteProvider}
             />
 
-            <OptionsRow name="add-llm-provider" centered>
+            <CardSection className="llm-add-provider">
                 <Button
-                    name="add-llm-provider-button"
-                    size="micro" icon="bx bx-plus"
-                    text={t("llm.add_provider")}
+                    name={isSearch ? "add-search-provider-button" : "add-llm-provider-button"}
+                    size="micro" icon="bx-plus"
+                    text={isSearch ? t("llm.add_search_provider") : t("llm.add_model_provider")}
                     onClick={() => openModal()}
                 />
-            </OptionsRow>
+            </CardSection>
+        </Card>
 
-            <AddProviderModal
-                key={openToken}
-                show={modalOpen}
-                existingProvider={modalProvider}
-                onHidden={() => setModalOpen(false)}
-                onSave={handleSaveProvider}
-            />
-        </OptionsSection>
-    );
+        <AddProviderModal
+            key={openToken}
+            show={modalOpen}
+            existingProvider={modalProvider}
+            kind={kind}
+            onHidden={() => setModalOpen(false)}
+            onSave={handleSaveProvider}
+        />
+    </>);
 }
 
 function McpSettings() {
@@ -136,16 +139,29 @@ function McpSettings() {
     const localUrl = useMemo(() => getMcpEndpointUrl(), []);
     const tokenPlaceholder = t("llm.mcp_config_token_placeholder");
 
+    // MCP is the one inbound part of the feature: everything else here dials out to
+    // a provider, while MCP publishes Trilium's tools to programs that dial in. The
+    // standalone build binds no socket — its server is a worker inside this page, and
+    // /mcp is mounted on an Express app it never runs — so there is no address to
+    // hand out and no ETAPI token to reach it with. Shown disabled rather than
+    // hidden, so the section reads as "not in this build" instead of "not a feature".
+    //
+    // Forced off rather than merely left untoggleable: mcpEnabled is unsynced, but a
+    // database restored from a desktop instance carries the option inside it, so the
+    // stored value can be true even here.
+    const mcpUnavailable = isStandalone;
+    const mcpServing = mcpEnabled && !mcpUnavailable;
+
     // The renderer can't enumerate network interfaces itself (Node integration is
     // disabled on desktop), so reuse the endpoint the sync-from-desktop setup screen
     // already uses — it resolves the real protocol and port server-side too.
     useEffect(() => {
-        if (!mcpEnabled) return;
+        if (!mcpServing) return;
         let cancelled = false;
         void server.get<NetworkAddressesResponse>("network-addresses")
             .then((info) => { if (!cancelled) setNetworkInfo(info); });
         return () => { cancelled = true; };
-    }, [mcpEnabled]);
+    }, [mcpServing]);
 
     // Only advertise LAN addresses when Trilium is actually bound to a reachable
     // interface; on a loopback-only binding they would all refuse the connection.
@@ -157,18 +173,27 @@ function McpSettings() {
     }, [networkInfo, localUrl]);
 
     return (
-        <OptionsSection title={t("llm.mcp_title")}>
-            <OptionsRowWithToggle
+        <Card heading={t("llm.mcp_title")}>
+            <OptionCardSection
                 name="mcp-enabled"
                 label={t("llm.mcp_enabled")}
-                description={t("llm.mcp_enabled_description")}
-                currentValue={mcpEnabled}
-                onChange={setMcpEnabled}
-            />
+                description={mcpUnavailable ? t("llm.mcp_unavailable_standalone") : t("llm.mcp_enabled_description")}
+            >
+                <FormToggle
+                    currentValue={mcpServing}
+                    onChange={setMcpEnabled}
+                    disabled={mcpUnavailable}
+                />
+            </OptionCardSection>
 
-            {mcpEnabled && (
+            {mcpServing && (
                 <>
-                    <OptionsRow name="mcp-endpoint" label={t("llm.mcp_endpoint_title")} description={t("llm.mcp_endpoint_description")} stacked>
+                    <OptionCardSection
+                        name="mcp-endpoint"
+                        label={t("llm.mcp_endpoint_title")}
+                        description={t("llm.mcp_endpoint_description")}
+                        stacked
+                    >
                         <div class="mcp-endpoint-list">
                             <McpEndpointGroup label={t("llm.mcp_endpoint_this_device")} urls={[localUrl]} />
                             {networkUrls.length > 0 && (
@@ -178,27 +203,29 @@ function McpSettings() {
                                 <p class="mcp-endpoint-note">{t("llm.mcp_endpoint_loopback_only")}</p>
                             )}
                         </div>
-                    </OptionsRow>
+                    </OptionCardSection>
 
-                    <Collapsible title={t("llm.mcp_config_title")} initiallyExpanded>
-                        <p>{t("llm.mcp_config_description")}</p>
-                        <CodeBlock
-                            mimeType="application/json"
-                            code={buildMcpClientConfig(localUrl, tokenPlaceholder)}
-                            placeholder={tokenPlaceholder}
-                        />
-                        <p>{t("llm.mcp_config_cli_description")}</p>
-                        <CodeBlock
-                            mimeType="text/x-sh"
-                            code={buildMcpClientCommand(localUrl, tokenPlaceholder)}
-                            placeholder={tokenPlaceholder}
-                            wrap
-                        />
-                        <p class="mcp-config-warning">{t("llm.mcp_config_warning")}</p>
-                    </Collapsible>
+                    <CardSection>
+                        <Collapsible title={t("llm.mcp_config_title")} initiallyExpanded>
+                            <p>{t("llm.mcp_config_description")}</p>
+                            <CodeBlock
+                                mimeType="application/json"
+                                code={buildMcpClientConfig(localUrl, tokenPlaceholder)}
+                                placeholder={tokenPlaceholder}
+                            />
+                            <p>{t("llm.mcp_config_cli_description")}</p>
+                            <CodeBlock
+                                mimeType="text/x-sh"
+                                code={buildMcpClientCommand(localUrl, tokenPlaceholder)}
+                                placeholder={tokenPlaceholder}
+                                wrap
+                            />
+                            <p class="mcp-config-warning">{t("llm.mcp_config_warning")}</p>
+                        </Collapsible>
+                    </CardSection>
                 </>
             )}
-        </OptionsSection>
+        </Card>
     );
 }
 
@@ -249,47 +276,60 @@ function getMcpEndpointUrl() {
 
 interface ProviderListProps {
     providers: LlmProviderConfig[];
+    emptyIcon: string;
+    emptyText: string;
     onEdit: (provider: LlmProviderConfig) => void;
     onDelete: (providerId: string, providerName: string) => Promise<void>;
 }
 
-function ProviderList({ providers, onEdit, onDelete }: ProviderListProps) {
+function ProviderList({ providers, emptyIcon, emptyText, onEdit, onDelete }: ProviderListProps) {
     if (!providers.length) {
-        return <NoItems icon="bx bx-bot" text={t("llm.no_providers_configured")} />;
+        return (
+            <CardSection>
+                <NoItems icon={emptyIcon} text={emptyText} />
+            </CardSection>
+        );
     }
 
     return <>
         {providers.map((provider) => {
-            const providerType = PROVIDER_TYPES.find(p => p.id === provider.provider);
-            const modelCount = provider.selectedModels?.length ?? 0;
+            const providerType = findProviderType(provider.provider);
             return (
-                <OptionsRow
+                <OptionCardSection
                     key={provider.id}
-                    name="llm-provider"
                     label={
                         <span className="llm-provider-name">
-                            {providerType?.iconUrl && <MaskedIcon url={providerType.iconUrl} />}
+                            {providerType && <Icon icon={providerType.icon} />}
                             {provider.name}
                         </span>
                     }
-                    description={modelCount > 0
-                        ? t("llm.provider_model_count", { count: modelCount })
-                        : providerType?.name || provider.provider}
+                    description={isProviderOfKind(provider, "llm") ? <ModelList provider={provider} /> : provider.baseURL}
                 >
-                    <>
+                    <span className="tn-card-option-actions">
                         <ActionButton
                             icon="bx bx-edit"
                             text={t("llm.edit_provider")}
                             onClick={() => onEdit(provider)}
                         />
                         <ActionButton
+                            className="destructive-action-icon"
                             icon="bx bx-trash"
                             text={t("llm.delete_provider")}
                             onClick={() => onDelete(provider.id, provider.name)}
                         />
-                    </>
-                </OptionsRow>
+                    </span>
+                </OptionCardSection>
             );
         })}
     </>;
+}
+
+/** The short names of a model provider's selected models, as the chat's picker shows them. */
+function ModelList({ provider }: { provider: LlmProviderConfig }) {
+    const models = provider.selectedModels ?? [];
+    if (!models.length) {
+        return <>{t("llm.provider_no_models")}</>;
+    }
+    const names = models.map((model) => shortModelName(model.name, provider.provider)).join(", ");
+    return <span className="llm-provider-models" title={names}>{names}</span>;
 }

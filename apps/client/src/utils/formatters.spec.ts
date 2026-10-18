@@ -3,14 +3,20 @@ import { describe, expect, it, vi } from "vitest";
 // i18next is not initialised here, so have t() echo the key and the interpolated count. That lets the
 // tests assert exactly which unit was chosen and what count was computed — the real logic — while
 // leaving the plural rendering itself to i18next.
-vi.mock("../services/i18n", () => ({
-    t: (key: string, opts?: { count?: number }) => `${key}|${opts?.count}`
-}));
+// `getLocaleById` is the real lookup rather than a stub — it is a find over the shared catalog, so
+// mocking it would only risk disagreeing with the locales the assertions name.
+vi.mock("../services/i18n", async () => {
+    const { LOCALES } = await import("@triliumnext/commons");
+    return {
+        t: (key: string, opts?: { count?: number }) => `${key}|${opts?.count}`,
+        getLocaleById: (id: string | null | undefined) => LOCALES.find((l) => l.id === id) ?? null
+    };
+});
 
 import { LOCALES } from "@triliumnext/commons";
 
 import options from "../services/options";
-import { formatDateNumeric, formatDateTime, formatDuration, normalizeLocale } from "./formatters";
+import { formatDateNumeric, formatDateTime, formatDuration, getMeasurementSystem, isContentRightToLeft, resolveContentLanguage } from "./formatters";
 
 describe("formatters", () => {
     it("tolerates incorrect locale", () => {
@@ -29,14 +35,6 @@ describe("formatters", () => {
         expect(formatDateTime(new Date())).toBeTruthy();
         expect(formatDateTime(new Date(), "full", "none")).toBeTruthy();
         expect(formatDateTime(new Date(), "none", "full")).toBeTruthy();
-    });
-
-    it("normalizes locale", () => {
-        expect(normalizeLocale("zh_CN")).toBe("zh-CN");
-        expect(normalizeLocale("cn")).toBe("zh-CN");
-        expect(normalizeLocale("tw")).toBe("zh-TW");
-        // The default branch returns the (underscore-normalized) locale unchanged.
-        expect(normalizeLocale("en_US")).toBe("en-US");
     });
 
     it("returns an empty string for falsy dates", () => {
@@ -96,6 +94,29 @@ describe("formatters", () => {
         expect(() => formatDateTime(new Date(), "none", "none")).toThrow("Incorrect state.");
     });
 
+    it("follows a locale change rather than reusing the formatter memoized for the previous one", () => {
+        // Formatters are cached to keep collection views from rebuilding one per row. The cache is
+        // keyed on locale as well as style precisely so this keeps working: keyed on style alone, it
+        // would go on rendering the first locale's pattern after the setting changed.
+        const date = new Date(Date.UTC(2026, 0, 25, 13, 30));
+
+        options.set("formattingLocale", "en-US");
+        const american = formatDateTime(date, "short", "none");
+
+        options.set("formattingLocale", "de");
+        const german = formatDateTime(date, "short", "none");
+
+        // Compared against a formatter built on the spot, so the assertion tracks whatever patterns
+        // the environment's ICU actually carries.
+        expect(american).toBe(new Intl.DateTimeFormat("en-US", { dateStyle: "short" }).format(date));
+        expect(german).toBe(new Intl.DateTimeFormat("de", { dateStyle: "short" }).format(date));
+        expect(german).not.toBe(american);
+
+        // Back again: the first entry has to still be right, not overwritten by the second locale.
+        options.set("formattingLocale", "en-US");
+        expect(formatDateTime(date, "short", "none")).toBe(american);
+    });
+
     describe("formatDateNumeric", () => {
         // Every locale the user can actually pick as a formatting locale, which is the set that
         // declares an electronLocale (see the options page).
@@ -153,6 +174,65 @@ describe("formatters", () => {
         });
     });
 
+    describe("getMeasurementSystem", () => {
+        it("picks miles only for the regions that state road distances in them", () => {
+            // Trilium lists plain "en" as "English (United States)", so maximizing it yields US;
+            // "en-GB" is a separate, equally imperial entry.
+            for (const locale of [ "en", "en-GB", "en_US" ]) {
+                options.set("formattingLocale", locale);
+                expect(getMeasurementSystem(), locale).toBe("imperial");
+            }
+
+            // Including the region-less and the underscore/alias forms the options page offers.
+            for (const locale of [ "de", "fr", "ro", "es", "cn", "tw", "pt_br", "ja" ]) {
+                options.set("formattingLocale", locale);
+                expect(getMeasurementSystem(), locale).toBe("metric");
+            }
+        });
+
+        it("prefers the browser locale over the UI language when set to auto-detect", () => {
+            // "Auto" formatting locale plus an English UI: an Australian reads kilometres, so the
+            // UI language must not be what decides it.
+            options.set("formattingLocale", "");
+            options.set("locale", "en");
+
+            withBrowserLocale("en-AU", () => expect(getMeasurementSystem()).toBe("metric"));
+            withBrowserLocale("en-US", () => expect(getMeasurementSystem()).toBe("imperial"));
+
+            // An explicitly chosen formatting locale still wins over the browser.
+            options.set("formattingLocale", "de");
+            withBrowserLocale("en-US", () => expect(getMeasurementSystem()).toBe("metric"));
+        });
+
+        it("falls back to the browser locale when the configured one is unusable", () => {
+            // The dev-only "en_rtl" normalizes to "en-rtl", which Intl rejects outright.
+            options.set("formattingLocale", "en_rtl");
+
+            withBrowserLocale("en-US", () => expect(getMeasurementSystem()).toBe("imperial"));
+            withBrowserLocale("fr-FR", () => expect(getMeasurementSystem()).toBe("metric"));
+            // No usable locale anywhere, so nothing suggests miles.
+            options.set("locale", "!!!invalid!!!");
+            withBrowserLocale("!!!invalid!!!", () => expect(getMeasurementSystem()).toBe("metric"));
+            options.set("locale", "en");
+        });
+
+        function withBrowserLocale(language: string, assert: () => void) {
+            const original = Object.getOwnPropertyDescriptor(navigator, "language");
+            try {
+                Object.defineProperty(navigator, "language", { value: language, configurable: true });
+                assert();
+            } finally {
+                // Absent descriptor means the getter lives on the prototype, so drop the own
+                // property added above and let it shine through again.
+                if (original) {
+                    Object.defineProperty(navigator, "language", original);
+                } else {
+                    Reflect.deleteProperty(navigator, "language");
+                }
+            }
+        }
+    });
+
     describe("formatDuration", () => {
         it("reports the value in the unit the user picked, for every time scale", () => {
             expect(formatDuration(30, 1)).toBe("time_interval.seconds|30");
@@ -195,5 +275,49 @@ describe("formatters", () => {
             // 7 is not one of the offered scales, so the unit cannot be named from it.
             expect(formatDuration(604800, 7)).toBe("time_interval.days|7");
         });
+    });
+});
+
+describe("resolveContentLanguage", () => {
+    it("prefers the note's own language over the configured default", () => {
+        options.set("defaultContentLanguage", "fr");
+        options.set("locale", "ru");
+
+        expect(resolveContentLanguage("de")).toBe("de");
+    });
+
+    it("falls back to the default content language, then to the application's language", () => {
+        options.set("defaultContentLanguage", "fr");
+        options.set("locale", "ru");
+
+        expect(resolveContentLanguage(null)).toBe("fr");
+        expect(resolveContentLanguage(undefined)).toBe("fr");
+        expect(resolveContentLanguage("")).toBe("fr");
+
+        // An empty default is the "auto" entry, meaning follow the application's language rather
+        // than meaning no language at all.
+        options.set("defaultContentLanguage", "");
+        expect(resolveContentLanguage(null)).toBe("ru");
+    });
+});
+
+describe("isContentRightToLeft", () => {
+    it("follows the note's own language", () => {
+        expect(isContentRightToLeft("he")).toBe(true);
+        expect(isContentRightToLeft("de")).toBe(false);
+    });
+
+    it("applies the default to a note that has no language of its own", () => {
+        options.set("defaultContentLanguage", "ar");
+        expect(isContentRightToLeft(null)).toBe(true);
+
+        // ...and a note that does have one is not dragged along by it.
+        expect(isContentRightToLeft("de")).toBe(false);
+    });
+
+    it("treats an unrecognized language as left-to-right", () => {
+        options.set("defaultContentLanguage", "not-a-locale");
+        expect(isContentRightToLeft(null)).toBe(false);
+        expect(isContentRightToLeft("also-not-a-locale")).toBe(false);
     });
 });

@@ -68,6 +68,20 @@ npm run test
 
 Note that some integration tests rely on an in-memory database in order to function. 
 
+### Browser-mode tests for the text editor
+
+`packages/ckeditor5` runs its tests in a real headless Chromium, through `@vitest/browser-playwright`, because the editor needs a real DOM and real selection handling. Playwright downloads the browser itself; install it once with `pnpm exec playwright install chromium` from the repository root.
+
+Where that downloaded browser cannot run — NixOS being the case in point, since it is dynamically linked against libraries no store path provides and dies on a missing `libxcb.so.1` — point the suite at a system browser instead:
+
+```
+CHROME_BIN=/path/to/chromium pnpm --filter @triliumnext/ckeditor5 test
+```
+
+`CHROME_BIN` is read by the package's `vitest.config.ts` and passed to the provider as `launchOptions.executablePath`, so Playwright launches that binary rather than its own download. There is no separate driver to supply — Playwright speaks CDP to the browser directly.
+
+The Nix dev shell (`nix develop`) sets it from `pkgs.chromium`, so inside it the tests run unchanged.
+
 ### REST API testing for the server
 
 API tests are handled via `vitest` and `supertest` to initialize the Express server and run assertions without having to make actual requests to the server.

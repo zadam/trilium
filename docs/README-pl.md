@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes to darmowa i otwartoźródłowa, wieloplatformowa aplikacja do
 tworzenia notatek hierarchicznych, skupiona na budowaniu dużych osobistych baz
 wiedzy.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -118,7 +122,7 @@ Nasza dokumentacja jest dostępna w wielu formatach:
 * Wbudowany [ciemny
   motyw](https://docs.triliumnotes.org/user-guide/concepts/themes) i wsparcie
   dla motywów użytkownika
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   oraz [import i eksport
   Markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Web Clipper](https://docs.triliumnotes.org/user-guide/setup/web-clipper) do
@@ -352,6 +356,12 @@ W razie dodatkowych pytań możesz skorzystać z linków podanych w sekcji
 * [antoniotejada](https://github.com/nriver) za pierwotny widżet podświetlania
   składni.
 * [Tabler Icons](https://tabler.io/icons) za ikony zasobnika systemowego.
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 Trilium nie byłoby możliwe bez technologii, które za nim stoją:
 
@@ -369,11 +379,6 @@ Trilium nie byłoby możliwe bez technologii, które za nim stoją:
   wykorzystywanych w kolekcjach.
 * [FancyTree](https://github.com/mar10/fancytree) — bogata w funkcje biblioteka
   drzew, praktycznie bez konkurencji.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) — biblioteka do wizualnego
-  łączenia elementów. Wykorzystywana w [mapach
-  relacji](https://docs.triliumnotes.org/user-guide/note-types/relation-map)
-  oraz [mapach
-  linków](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Wsparcie
 

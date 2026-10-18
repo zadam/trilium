@@ -8,11 +8,15 @@ export declare module "express-serve-static-core" {
 
             authorization?: string;
             "trilium-cred"?: string;
+            "trilium-totp"?: string;
             "x-csrf-token"?: string;
 
             "trilium-component-id"?: string;
             "trilium-local-now-datetime"?: string;
             "trilium-hoisted-note-id"?: string;
+
+            /** Byte range a media player seeks with, read by the open-partial routes. */
+            range?: string;
 
             "user-agent"?: string;
         };

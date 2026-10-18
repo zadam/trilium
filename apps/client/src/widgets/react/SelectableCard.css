@@ -22,8 +22,22 @@ body.mobile .selectable-card-grid {
     cursor: pointer;
 }
 
-.selectable-card:hover {
+.selectable-card:hover:not(:disabled) {
     border-color: var(--main-text-color);
+}
+
+/* A choice that exists but can't be taken here. The icon and name fade so the tile
+   reads as out of reach at a glance, while the description — which carries the
+   reason — stays at its normal weight, since that is the one part still worth
+   reading. */
+.selectable-card:disabled {
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.selectable-card:disabled .selectable-card-name,
+.selectable-card:disabled .selectable-card-icon {
+    opacity: 0.5;
 }
 
 .selectable-card.selected {
@@ -32,8 +46,7 @@ body.mobile .selectable-card-grid {
     color: var(--active-item-text-color);
 }
 
-/* Boxicons-based card icon (used when `icon` is supplied instead of `iconUrl`). */
-.selectable-card-bxicon {
+.selectable-card-icon {
     flex-shrink: 0;
     font-size: 1.5em;
     line-height: 1;

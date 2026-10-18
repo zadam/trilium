@@ -19,10 +19,14 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes je open-source, cross-platform aplikace pro hierarchiální psaní
 poznámek.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -115,7 +119,7 @@ Naše dokumenatce je dostupná ve vícero formátech:
 * Vestavěný [tmavý
   motiv](https://docs.triliumnotes.org/user-guide/concepts/themes), podpora
   uživatelských motivů
-* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/evernote)
+* [Evernote](https://docs.triliumnotes.org/user-guide/concepts/import-export/import-from-apps/evernote.html)
   a [import & export
   Markdown](https://docs.triliumnotes.org/user-guide/concepts/import-export/markdown)
 * [Webový výstřižek](https://docs.triliumnotes.org/user-guide/setup/web-clipper)
@@ -344,6 +348,12 @@ uvedených v sekci „Diskuse s námi“ výše.
 * [antoniotejada](https://github.com/nriver) za původní widget pro zvýrazňování
   syntaxe.
 * [Tabler Icons](https://tabler.io/icons) za ikony v systémové oblasti.
+*   The application icons in the import dialog are from:
+    *   [Material Design Icons](https://pictogrammers.com/library/mdi/) for
+        OneNote, Google Keep, Evernote.
+    *   [Font Awesome](https://fontawesome.com/) for Notion, Obsidian.
+    *   [SVGicons.com](https://svgicons.com/icon/187676/anytype) for Anytype.
+*  The LLM provider icons are from [Lobe Icons](https://lobehub.com/icons).
 
 Trilium by nebyl možný bez technologií, které za ním stojí:
 
@@ -361,11 +371,6 @@ Trilium by nebyl možný bez technologií, které za ním stojí:
   tabulku používanou v kolekcích.
 * [FancyTree](https://github.com/mar10/fancytree) - bohatá knihovna pro stromové
   struktury bez skutečné konkurence.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - knihovna pro vizuální
-  propojení. Používá se v [mapách
-  vazeb](https://docs.triliumnotes.org/user-guide/note-types/relation-map) a
-  [mapách
-  odkazů](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Podpora
 

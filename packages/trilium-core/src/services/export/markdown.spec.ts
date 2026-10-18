@@ -1,4 +1,4 @@
-import { trimIndentation } from "@triliumnext/commons";
+import { HIGHLIGHT_BACKGROUND, HIGHLIGHT_STYLE, trimIndentation } from "@triliumnext/commons";
 import { describe, expect,it } from "vitest";
 
 import markdownExportService, { DEFAULT_ADMONITION_TYPE } from "./markdown.js";
@@ -199,6 +199,25 @@ describe("Markdown export", () => {
     it("supports keyboard shortcuts", () => {
         const html = "<kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Delete</kbd>";
         expect(markdownExportService.toMarkdown(html)).toBe(html);
+    });
+
+    it("keeps an icon, the space beside it and the colour around it", () => {
+        // Turndown drops an element holding nothing before it consults a single rule, and
+        // collapses the space beside it away with it, so the icon is given something to hold.
+        const cog = `<span class="tn-icon bx bx-cog"></span>`;
+        const star = `<span class="tn-icon bx bx-star"></span>`;
+        const red = `<span style="color:rgb(255,0,0);">`;
+
+        expect(markdownExportService.toMarkdown(`<p>Press ${cog} to open it.</p>`))
+            .toBe(`Press ${cog} to open it.`);
+        expect(markdownExportService.toMarkdown(`<p>Two ${cog}${star} in a row.</p>`))
+            .toBe(`Two ${cog}${star} in a row.`);
+        expect(markdownExportService.toMarkdown(`<p>a${red}${cog}</span>b</p>`))
+            .toBe(`a${red}${cog}</span>b`);
+
+        // A note that only talks about the class is returned as it came, not re-serialized.
+        expect(markdownExportService.toMarkdown(`<p>The <code>tn-icon</code> class.</p>`))
+            .toBe("The `tn-icon` class.");
     });
 
     it("exports admonitions properly", () => {
@@ -480,6 +499,17 @@ describe("Markdown export", () => {
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
     });
 
+    it("indents a nested list to the content column of its item, however wide the number", () => {
+        const html = /*html*/`<ol start="9"><li>Ninth<ol><li>A</li></ol></li><li>Tenth<ol><li>B</li><li>C</li></ol></li></ol>`;
+        const expected = trimIndentation`\
+            9.  Ninth
+                1.  A
+            10.  Tenth
+                 1.  B
+                 2.  C`;
+        expect(markdownExportService.toMarkdown(html)).toBe(expected);
+    });
+
     it("converts inline math expressions into proper Markdown syntax", () => {
         const html = /*html*/String.raw`<span class="math-tex">\(H(X, Y) = \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 \frac{1}{p(x_i, y_j)} = - \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 p(x_i, y_j) \frac{\text{bits}}{\text{symbol}}\)</span></span>`;
         const expected = String.raw`$H(X, Y) = \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 \frac{1}{p(x_i, y_j)} = - \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 p(x_i, y_j) \frac{\text{bits}}{\text{symbol}}$`;
@@ -490,6 +520,11 @@ describe("Markdown export", () => {
         const html = /*html*/String.raw`<span class="math-tex">\[H(X, Y) = \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 \frac{1}{p(x_i, y_j)} = - \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 p(x_i, y_j) \frac{\text{bits}}{\text{symbol}}\]</span></span>`;
         const expected = String.raw`$$H(X, Y) = \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 \frac{1}{p(x_i, y_j)} = - \sum_{i=1}^{M} \sum_{j=1}^{L} p(x_i, y_j) \log_2 p(x_i, y_j) \frac{\text{bits}}{\text{symbol}}$$`;
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
+    });
+
+    it("trims the spaces inside inline math delimiters, so the import reads it back as math", () => {
+        const html = /*html*/String.raw`<p>Area: <span class="math-tex">\( \pi r^2 \)</span></p>`;
+        expect(markdownExportService.toMarkdown(html)).toBe(String.raw`Area: $\pi r^2$`);
     });
 
     it("keeps a math expression without delimiters verbatim", () => {
@@ -529,6 +564,17 @@ describe("Markdown export", () => {
         const html = /*html*/`<section class="include-note" data-note-id="i4A5g9iOg9I0" data-box-size="full"> </section>`;
         const expected = /*markdown*/`<section class="include-note" data-note-id="i4A5g9iOg9I0" data-box-size="full">&nbsp;</section>`;
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
+    });
+
+    it("preserves an include note figure, with or without its caption", () => {
+        const start = `<figure class="include-note" data-note-id="i4A5g9iOg9I0"`
+            + ` data-box-size="full">`;
+        const blank = `${start}&nbsp;</figure>`;
+        const captioned = `${start}<figcaption>A <strong>caption</strong></figcaption></figure>`;
+
+        expect(markdownExportService.toMarkdown(blank)).toBe(blank);
+        expect(markdownExportService.toMarkdown(`<p>Before</p>${captioned}<p>After</p>`))
+            .toBe(`Before\n\n${captioned}\n\nAfter`);
     });
 
     it("exports todo lists properly", () => {
@@ -628,6 +674,36 @@ describe("Markdown export", () => {
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
     });
 
+    // The clipboard's "copy as markdown" never reimports, so it accepts the phantom header the
+    // note export refuses: a copied subset of body cells still comes out as a markdown table.
+    it("renders a headerless table under a blank header with headerlessTables: emptyHeader", () => {
+        const html = trimIndentation/*html*/`\
+            <figure class="table">
+                <table>
+                    <tbody>
+                        <tr><td>a1</td><td>b1</td></tr>
+                        <tr><td>a2</td><td>b2</td></tr>
+                    </tbody>
+                </table>
+            </figure>
+        `;
+        const expected = "|  |  |\n| --- | --- |\n| a1 | b1 |\n| a2 | b2 |";
+
+        expect(markdownExportService.toMarkdown(html, { headerlessTables: "emptyHeader" }))
+            .toBe(expected);
+        // The mode is per call, not sticky converter state.
+        expect(markdownExportService.toMarkdown(html)).toContain("<table>");
+    });
+
+    it("keeps a real heading row as the header under headerlessTables: emptyHeader", () => {
+        const html = "<table><thead><tr><th>h1</th><th>h2</th></tr></thead>"
+            + "<tbody><tr><td>a1</td><td>b1</td></tr></tbody></table>";
+        const expected = "| h1 | h2 |\n| --- | --- |\n| a1 | b1 |";
+
+        expect(markdownExportService.toMarkdown(html, { headerlessTables: "emptyHeader" }))
+            .toBe(expected);
+    });
+
     // Admonitions are block content, and GFM table cells can only hold inline
     // content. Flattening the admonition into a cell produces unrenderable
     // `> [!NOTE]<br>...` noise, so a table containing one is kept as raw HTML to
@@ -701,6 +777,13 @@ describe("Markdown export", () => {
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
     });
 
+    it("drops the block ids of a text note, which Markdown has no syntax for", () => {
+        const html = `<h2 data-trilium-block-id="h1">Title</h2>`
+            + `<p data-trilium-block-id="p1">Text</p>`;
+
+        expect(markdownExportService.toMarkdown(html)).toBe("## Title\n\nText");
+    });
+
     it("drops data-trilium-collapsed but keeps the collapsed item's children as bullets", () => {
         // Collapsing is editor-only UI state (the nested items live in the content, hidden via
         // CSS), and Markdown has no syntax for it — so the attribute is dropped on export while
@@ -772,4 +855,250 @@ describe("Markdown export", () => {
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
     });
 
+    describe("highlights and coloured text", () => {
+        it("renders a default-yellow highlight and a bare <mark> as ==text==", () => {
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p>A <span style="background-color:hsl(60, 75%, 60%);">highlight</span> here.</p>`
+            )).toBe("A ==highlight== here.");
+
+            // The same colour however the sanitizer or the editor spaced it out.
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span style="BACKGROUND-COLOR: hsl(60,75%,60%)">highlight</span></p>`
+            )).toBe("==highlight==");
+
+            expect(markdownExportService.toMarkdown(/*html*/`<p>A <mark>highlight</mark> here.</p>`))
+                .toBe("A ==highlight== here.");
+        });
+
+        it("renders the palette yellow as ==text==, ignoring its theme-adaptive variable", () => {
+            const yellow = `<span style="background-color:${HIGHLIGHT_BACKGROUND};">a</span>`;
+            expect(markdownExportService.toMarkdown(`<p>${yellow}</p>`)).toBe("==a==");
+            const withVariable = `<span style="${HIGHLIGHT_STYLE}">b</span>`;
+            expect(markdownExportService.toMarkdown(`<p>${withVariable}</p>`)).toBe("==b==");
+
+            // Another colour keeps its colour and its variable.
+            const red = `<span style="background-color:#e64d4d;--tn-background:#e64d4d;">c</span>`;
+            expect(markdownExportService.toMarkdown(`<p>${red}</p>`)).toBe(red);
+        });
+
+        it("keeps any other colour as inline HTML rather than repainting it yellow", () => {
+            // A different background colour...
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p>A <span style="background-color:rgb(0, 255, 0)">green</span> one.</p>`
+            )).toBe(`A <span style="background-color:rgb(0, 255, 0)">green</span> one.`);
+
+            // ...a foreground colour, which used to be dropped entirely...
+            expect(markdownExportService.toMarkdown(/*html*/`<p><span style="color:#ff0000">red</span></p>`))
+                .toBe(`<span style="color:#ff0000">red</span>`);
+
+            // ...and both at once.
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span style="color:#ffffff;background-color:#000000">both</span></p>`
+            )).toBe(`<span style="color:#ffffff;background-color:#000000">both</span>`);
+
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<mark style="background-color:rgb(0, 255, 0)">green</mark>`
+            )).toBe(`<mark style="background-color:rgb(0, 255, 0)">green</mark>`);
+        });
+
+        it("keeps a default-yellow highlight whole when it carries anything ==…== cannot", () => {
+            // A second declaration would be lost by `==…==`, so the element is kept as-is.
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span style="background-color:hsl(60, 75%, 60%);font-family:serif">y</span></p>`
+            )).toBe(`<span style="background-color:hsl(60, 75%, 60%);font-family:serif">y</span>`);
+
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span class="tag" style="background-color:hsl(60, 75%, 60%)">y</span></p>`
+            )).toBe(`<span class="tag" style="background-color:hsl(60, 75%, 60%)">y</span>`);
+        });
+
+        it("converts the content to Markdown inside a preserved colour", () => {
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span style="color:#ff0000"><strong>bold</strong> and <em>italic</em></span></p>`
+            )).toBe(`<span style="color:#ff0000">**bold** and _italic_</span>`);
+        });
+
+        it("keeps inline formatting inside and around a highlight", () => {
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span style="background-color:hsl(60, 75%, 60%)"><strong>bold</strong></span></p>`
+            )).toBe("==**bold**==");
+
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><strong><span style="background-color:hsl(60, 75%, 60%)">bold</span></strong></p>`
+            )).toBe("**==bold==**");
+        });
+
+        it("hoists whitespace out of the delimiters so the result parses back", () => {
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p>a<span style="background-color:hsl(60, 75%, 60%)"> hi </span>b</p>`
+            )).toBe("a ==hi== b");
+        });
+
+        it("leaves a coloured block and a highlighted formula alone", () => {
+            // Only inline colours are handled; a coloured block would wrap its whole text.
+            expect(markdownExportService.toMarkdown(/*html*/`<p style="background-color:yellow">para</p>`))
+                .toBe("para");
+
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span class="math-tex" style="background-color:yellow">\\(x^2\\)</span></p>`
+            )).toBe("$x^2$");
+        });
+
+        it("ignores a border colour, which is not a text colour", () => {
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p><span style="border-color:#ff0000">plain</span></p>`
+            )).toBe("plain");
+        });
+
+        it("emits no delimiters for a highlight with no text of its own", () => {
+            expect(markdownExportService.toMarkdown(
+                /*html*/`<p>a<span style="background-color:hsl(60, 75%, 60%)"><br></span>b</p>`
+            )).not.toContain("==");
+        });
+
+        it("does not touch == inside a code block", () => {
+            const html = /*html*/`<pre><code class="language-text-x-trilium-auto">a ==b== c</code></pre>`;
+            expect(markdownExportService.toMarkdown(html)).toBe("```\na ==b== c\n```");
+        });
+    });
+
+    describe("tabs blocks", () => {
+        const tab = (title: string, panel: string) =>
+            `<section class="trilium-tab"><p class="trilium-tab-title">${title}</p><div class="trilium-tab-panel">${panel}</div></section>`;
+        const tabs = (...items: string[]) => `<div class="trilium-tabs">${items.join("")}</div>`;
+
+        it("exports each tab as a MkDocs tabbed section with its panel indented four spaces", () => {
+            const html = tabs(
+                tab("Windows", "<p>Run the <strong>installer</strong>.</p><pre><code class=\"language-text-x-sh\">setup.exe</code></pre>"),
+                tab("Say \"hi\"", "<ul><li>One</li><li>Two</li></ul>")
+            );
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                === "Windows"
+
+                    Run the **installer**.
+
+                    \`\`\`sh
+                    setup.exe
+                    \`\`\`
+
+                === "Say "hi""
+
+                    *   One
+                    *   Two`);
+        });
+
+        it("indents nested tabs once more and starts a block that follows another one with ===!", () => {
+            const html = tabs(tab("Outer", tabs(tab("Inner", "<p>x</p>")))) + tabs(tab("Next", "<p>y</p>"));
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                === "Outer"
+
+                    === "Inner"
+
+                        x
+
+                ===! "Next"
+
+                    y`);
+        });
+
+        it("drops the tab alignment, which MkDocs content tabs cannot express", () => {
+            const html = "<div class=\"trilium-tabs\" data-trilium-tab-alignment=\"bottom\">" +
+                `${tab("Windows", "<p>a</p>")}</div>`;
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                === "Windows"
+
+                    a`);
+        });
+
+        it("exports the icons and formatting of a tab title as inline Markdown", () => {
+            const html = tabs(
+                tab(`<span class="tn-icon bx bxl-chrome"></span>&nbsp;Chrome`, "<p>a</p>"),
+                tab("<strong>Bold</strong> and <code>code</code>", "<p>b</p>")
+            );
+            const markdown = markdownExportService.toMarkdown(html);
+
+            expect(markdown).not.toContain("");
+            expect(markdown).toBe(trimIndentation`\
+                === "<span class="tn-icon bx bxl-chrome"></span>${"\u00A0"}Chrome"
+
+                    a
+
+                === "**Bold** and \`code\`"
+
+                    b`);
+        });
+    });
+
+    describe("multicolumn layouts", () => {
+        const column = (content: string) =>
+            `<div class="trilium-multicolumn-column">${content}</div>`;
+        const layout = (ratios: string, ...columns: string[]) =>
+            `<div class="trilium-multicolumn-layout" data-trilium-column-ratios="${ratios}">` +
+            `${columns.map(column).join("")}</div>`;
+
+        it("writes each column as Markdown between the HTML tags of the layout", () => {
+            const html = `<p>Before</p>${layout("1-3",
+                "<p>First <strong>column</strong></p><ul><li>One</li></ul>",
+                "<h2>Second</h2><p>Text</p>"
+            )}<p>After</p>`;
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                Before
+
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-3">
+                <div class="trilium-multicolumn-column">
+
+                First **column**
+
+                *   One
+
+                </div>
+                <div class="trilium-multicolumn-column">
+
+                ## Second
+
+                Text
+
+                </div>
+                </div>
+
+                After`);
+        });
+
+        it("keeps a nested layout and the empty columns that Turndown would drop", () => {
+            const html = layout("1-1",
+                layout("1-2-1", "<p>Inner</p>", "<p>&nbsp;</p>", "<p>&nbsp;</p>"),
+                "<p>Outer</p>"
+            ) + layout("3-1", "<p>&nbsp;</p>", "<p>&nbsp;</p>");
+            expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+                <div class="trilium-multicolumn-column">
+
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-2-1">
+                <div class="trilium-multicolumn-column">
+
+                Inner
+
+                </div>
+                <div class="trilium-multicolumn-column">
+                </div>
+                <div class="trilium-multicolumn-column">
+                </div>
+                </div>
+
+                </div>
+                <div class="trilium-multicolumn-column">
+
+                Outer
+
+                </div>
+                </div>
+
+                <div class="trilium-multicolumn-layout" data-trilium-column-ratios="3-1">
+                <div class="trilium-multicolumn-column">
+                </div>
+                <div class="trilium-multicolumn-column">
+                </div>
+                </div>`);
+        });
+    });
 });

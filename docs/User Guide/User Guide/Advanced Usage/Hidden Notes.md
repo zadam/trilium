@@ -61,7 +61,7 @@ Here is a brief summary of all the notes within the hidden tree:
         </tr>
         <tr>
             <td><a class="reference-link" href="#root/_hidden/_lbRoot">Launch Bar</a></td>
-            <td><p>The tree contains both available and displayed items of the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>.</p><p>This section can be accessed without going to the hidden tree by:</p><ul><li>Going to the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>&nbsp;and selecting <em>Configure Launchbar</em>.</li><li>Right-clicking an empty space on the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>&nbsp;and selecting <em>Configure Launchbar</em>.</li></ul><p>Sub-notes cannot be created here.</p></td>
+            <td><p>The tree contains both available and displayed items of the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>.</p><p>This section can be accessed without going to the hidden tree by:</p><ul><li>Going to the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>&nbsp;and selecting <em>Configure Launchbar…</em>.</li><li>Right-clicking an empty space on the&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>&nbsp;and selecting <em>Configure Launchbar…</em>.</li></ul><p>Sub-notes cannot be created here.</p></td>
         </tr>
         <tr>
             <td><a class="reference-link" href="#root/_hidden/_options">Options</a></td>
@@ -73,7 +73,7 @@ Here is a brief summary of all the notes within the hidden tree:
         </tr>
         <tr>
             <td><a class="reference-link" href="#root/_hidden/_help">User Guide</a></td>
-            <td>This is where the note structure for the User Guide is actually stored. Only the metadata is stored, as the help itself is present as actual files in the application directory.</td>
+            <td>This is where the User Guide appears in the note tree. Its notes are not stored in the database: Trilium builds them from files that ship with the application each time it starts, so they cannot be edited, moved or cloned, and they are not synchronized.</td>
         </tr>
     </tbody>
 </table>

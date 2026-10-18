@@ -2,15 +2,16 @@ import server from "./server.js";
 import appContext from "../components/app_context.js";
 import { formatShortcut, joinShortcut } from "./keyboard_shortcut_display.js";
 import shortcutService, { ShortcutBinding } from "./shortcuts.js";
-import { isPreAuthScreen } from "./utils.js";
+import { isPreAuthScreen, isShare } from "./utils.js";
 import type Component from "../components/component.js";
 import type { ActionKeyboardShortcut } from "@triliumnext/commons";
 
 const keyboardActionRepo: Record<string, ActionKeyboardShortcut> = {};
 
 // Skip on the login / set-password pre-auth screens, where an unauthenticated
-// GET /api/keyboard-actions would 401 (#10589); those screens bind no shortcuts.
-const keyboardActionsLoaded: Promise<ActionKeyboardShortcut[]> = isPreAuthScreen()
+// GET /api/keyboard-actions would 401 (#10589), and on shared pages, which have no API; neither
+// binds shortcuts.
+const keyboardActionsLoaded: Promise<ActionKeyboardShortcut[]> = isPreAuthScreen() || isShare
     ? Promise.resolve([])
     : server.get<ActionKeyboardShortcut[]>("keyboard-actions").then((actions) => {
         actions = actions.filter((a) => !!a.actionName); // filter out separators
@@ -54,14 +55,47 @@ async function setupActionsForElement(scope: string, $el: JQuery<HTMLElement>, c
     return bindings;
 }
 
-getActionsForScope("window").then((actions) => {
+/**
+ * Binds every window-scoped action (jump to note, reload, tab switching, …) as a global shortcut
+ * routed through `appContext.triggerCommand`. `AppContext.initComponents()` calls this once
+ * `appContext.tabManager` exists; binding at module load instead left a window during startup in
+ * which a matching keypress (F5 held across a reload, for instance) threw on the missing tab manager.
+ */
+async function setupWindowShortcuts() {
+    const actions = await getActionsForScope("window");
+
     for (const action of actions) {
         /* v8 ignore next -- effectiveShortcuts is always normalized to an array by the loader (line 13) before this resolves, so the ?? [] fallback is unreachable */
         for (const shortcut of action.effectiveShortcuts ?? []) {
-            shortcutService.bindGlobalShortcut(shortcut, () => appContext.triggerCommand(action.actionName, { ntxId: appContext.tabManager.activeNtxId }));
+            shortcutService.bindGlobalShortcut(shortcut, () => runWindowAction(action.actionName));
         }
     }
-});
+}
+
+/**
+ * Binds the window-scoped actions on `$el` as well, for content that keeps its keys from the
+ * document, such as the content of an embed in a text note.
+ */
+async function setupWindowShortcutsForElement($el: JQuery<HTMLElement>) {
+    const bindings: ShortcutBinding[] = [];
+
+    for (const action of await getActionsForScope("window")) {
+        for (const shortcut of action.effectiveShortcuts ?? []) {
+            const binding = shortcutService.bindElShortcut($el, shortcut, () => {
+                runWindowAction(action.actionName);
+            });
+            if (binding) {
+                bindings.push(binding);
+            }
+        }
+    }
+
+    return bindings;
+}
+
+function runWindowAction(actionName: ActionKeyboardShortcut["actionName"]) {
+    return appContext.triggerCommand(actionName, { ntxId: appContext.tabManager.activeNtxId });
+}
 
 async function getAction(actionName: string, silent = false) {
     await keyboardActionsLoaded;
@@ -129,6 +163,8 @@ function updateDisplayedShortcuts($container: JQuery<HTMLElement>) {
 
 export default {
     updateDisplayedShortcuts,
+    setupWindowShortcuts,
+    setupWindowShortcutsForElement,
     setupActionsForElement,
     getAction,
     getActions,

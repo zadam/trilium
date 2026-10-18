@@ -8,8 +8,8 @@ import { EventCallBackMethods, Module, Options, Tabulator as VanillaTabulator } 
 
 import { ParentComponent, renderReactWidget } from "../../react/react_utils";
 
-interface TableProps<T extends {}> extends Omit<Options, "data" | "footerElement" | "index"> {
-    tabulatorRef?: RefObject<VanillaTabulator>;
+export interface TableProps<T extends {}> extends Omit<Options, "data" | "footerElement" | "index"> {
+    tabulatorRef?: RefObject<VanillaTabulator | null>;
     className?: string;
     data?: T[];
     modules?: (new (table: VanillaTabulator) => Module)[];

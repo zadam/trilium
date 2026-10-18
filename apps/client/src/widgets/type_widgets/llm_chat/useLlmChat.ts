@@ -1,16 +1,25 @@
-import type { LlmCitation, LlmMessage, LlmMessagePart, LlmModelInfo, LlmUsage } from "@triliumnext/commons";
+import { LLM_PERMISSION_MODES, LLM_REASONING_EFFORTS, type LlmCitation, type LlmMessage, type LlmMessagePart, type LlmModelInfo, type LlmPermissionMode, type LlmReasoningEffort, type LlmStreamStatus, type LlmToolApprovalAnswer, type LlmUsage } from "@triliumnext/commons";
 import { RefObject } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { streamChatCompletion } from "../../../services/llm_chat.js";
-import { formatModelCost } from "../../../services/llm_model_cost.js";
-import options from "../../../services/options.js";
+import { type ModelOption, type ModelProviderGroup, readSearchProviders, readSelectedModels, resolveSelectedModel, resolveWebSearch, unreadableAttachments } from "../../../services/llm_providers.js";
+import optionService from "../../../services/options.js";
 import { randomString } from "../../../services/utils.js";
 import { useTriliumEvent } from "../../react/hooks.js";
 import { estimateTokens, quantizeDraftTokens } from "./chat_context_usage.js";
 import { stripQuoteSources } from "./chat_quote.js";
 import { conversationForRegenerate } from "./chat_regenerate.js";
-import { type ContentBlock, type FileBlock, type ImageBlock, type LlmChatContent, type StoredMessage, type TextFileBlock, trimToFirstUserMessage } from "./llm_chat_types.js";
+import {
+    type ContentBlock,
+    type FileBlock,
+    type ImageBlock,
+    type LlmChatContent,
+    type StoredMessage,
+    type TextFileBlock,
+    type ToolCall,
+    trimToFirstUserMessage
+} from "./llm_chat_types.js";
 import { useSmoothStreaming } from "./useSmoothStreaming.js";
 
 /** A user-supplied attachment waiting to be sent with the next message. */
@@ -19,6 +28,7 @@ export type AttachmentBlock = ImageBlock | FileBlock | TextFileBlock;
 /** The subset of the reply-input editor API the chat needs to write into it imperatively. */
 export interface InputEditorApi {
     appendBlockQuote(markdown: string): void;
+    focus(): void;
 }
 
 /** Distance (px) past the content bottom edge within which the timeline counts as "at bottom". */
@@ -41,7 +51,7 @@ function getLastUserMessageEl(container: HTMLElement): HTMLElement | null {
 /**
  * Flatten a stored message's content into the wire format the server expects.
  * Plain string content stays as-is; block-shaped content (with images) becomes
- * an ordered array of text/image parts, with tool-call blocks stripped.
+ * an ordered array of text/image parts, with tool-call and thinking blocks stripped.
  */
 function flattenToApiContent(content: string | ContentBlock[]): string | LlmMessagePart[] {
     if (typeof content === "string") {
@@ -60,7 +70,8 @@ function flattenToApiContent(content: string | ContentBlock[]): string | LlmMess
         }
         // tool_call blocks belong to assistant history rendering only — they
         // are reconstructed from the model's own tool-use turns and must not
-        // be re-sent as user/assistant content.
+        // be re-sent as user/assistant content. thinking blocks are the model's
+        // reasoning, which it must not read back as something it said.
     }
     // Collapse to a string if there is no multimodal content — keeps backwards
     // compatibility with providers/paths that haven't been touched.
@@ -75,41 +86,15 @@ function stripQuoteSourcesFromApiContent(content: string | LlmMessagePart[]): st
     return content.map(part => (part.type === "text" ? { ...part, text: stripQuoteSources(part.text) } : part));
 }
 
-export interface ModelOption extends LlmModelInfo {
-    costDescription?: string;
-}
-
-/**
- * Resolve the active model from the available list. Several providers can expose
- * the same model ID (e.g. an Anthropic API key and a Claude subscription, or two
- * OpenAI-compatible endpoints), so the recorded provider type/config id narrow
- * the match; when they're absent (chats saved before they existed) we fall back
- * to the first ID match. Returns undefined when nothing matches — e.g. a saved
- * model ID that has since been deselected — which callers treat as "no model".
- */
-export function resolveSelectedModel(
-    availableModels: ModelOption[],
-    selectedModel: string,
-    selectedProvider: string | undefined,
-    selectedProviderId: string | undefined
-): ModelOption | undefined {
-    if (!selectedModel) return undefined;
-    return availableModels.find(m =>
-        m.id === selectedModel
-        && (!selectedProvider || m.provider === selectedProvider)
-        && (!selectedProviderId || m.providerId === selectedProviderId));
-}
-
-/** A configured provider and the models the user selected for it (possibly none). */
-export interface ModelProviderGroup {
-    /** Provider config id — stable group key. */
-    id: string;
-    /** User-given provider name, shown as the group header. */
-    name: string;
-    /** Provider type (e.g. "openai"). */
-    provider: string;
-    /** Selected models for this provider; empty for configs migrated from before selection existed. */
-    models: ModelOption[];
+/** A tool call of the running turn that waits for the user. */
+interface WaitingToolCall {
+    toolName: string;
+    /** Send the user's answer to the turn; resolves once the turn has received it. */
+    send: (approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => Promise<void>;
+    /** Stop waiting on the call, showing it declined or not. */
+    settle: (approved: boolean) => void;
+    /** The answer on its way to the turn, if any; while it is, a second click sends nothing. */
+    answering?: boolean;
 }
 
 export interface LlmChatOptions {
@@ -132,7 +117,8 @@ export interface UseLlmChatReturn {
     hasInputText: boolean;
     isStreaming: boolean;
     streamingBlocks: ContentBlock[];
-    streamingThinking: string;
+    /** What the streaming turn waits on before its reply starts, if the server said. */
+    streamingStatus: LlmStreamStatus | null;
     pendingCitations: LlmCitation[];
     /** Images or files the user has attached but not yet sent. */
     pendingAttachments: AttachmentBlock[];
@@ -147,6 +133,12 @@ export interface UseLlmChatReturn {
     enableWebSearch: boolean;
     enableNoteTools: boolean;
     enableExtendedThinking: boolean;
+    /** The effort chosen for a model with levels; undefined means the model's default. */
+    reasoningEffort: LlmReasoningEffort | undefined;
+    /** The tools allowed for this chat, whose calls run without asking. */
+    allowedTools: string[];
+    /** Which tool calls of the chat wait for the user. */
+    permissionMode: LlmPermissionMode;
     contextNoteId: string | undefined;
     /** The chat note's ID — used as the upload target for attachments. */
     chatNoteId: string | undefined;
@@ -155,10 +147,10 @@ export interface UseLlmChatReturn {
     lastCompletionTokens: number;
     /** Coarse estimate of the unsent draft, quantized so typing rarely re-renders. */
     draftTokens: number;
-    messagesEndRef: RefObject<HTMLDivElement>;
-    scrollContainerRef: RefObject<HTMLDivElement>;
+    messagesEndRef: RefObject<HTMLDivElement | null>;
+    scrollContainerRef: RefObject<HTMLDivElement | null>;
     /** Trailing spacer below the last message; sized so the active turn can park near the top. */
-    bottomSpacerRef: RefObject<HTMLDivElement>;
+    bottomSpacerRef: RefObject<HTMLDivElement | null>;
     /** Whether the timeline is scrolled away from the bottom (drives the jump-to-bottom button). */
     showScrollToBottom: boolean;
     /** Jump the timeline to the latest content. */
@@ -172,6 +164,8 @@ export interface UseLlmChatReturn {
     registerInputEditor: (api: InputEditorApi | undefined) => void;
     /** Append a preformatted block (e.g. a Markdown quote) to the reply input and focus it. */
     appendToInput: (text: string) => void;
+    /** Focus the reply input, or, while its editor is still loading, as soon as it registers. */
+    focusInput: () => void;
 
     /** Read the current reply-input draft text (kept in a ref, not state — see {@link hasInputText}). */
     getInput: () => string;
@@ -183,6 +177,9 @@ export interface UseLlmChatReturn {
     setEnableWebSearch: (value: boolean) => void;
     setEnableNoteTools: (value: boolean) => void;
     setEnableExtendedThinking: (value: boolean) => void;
+    setReasoningEffort: (value: LlmReasoningEffort | undefined) => void;
+    /** Set the chat's permission mode, which new chats then start in. */
+    setPermissionMode: (value: LlmPermissionMode) => void;
     setContextNoteId: (noteId: string | undefined) => void;
     setChatNoteId: (noteId: string | undefined) => void;
     /** Append a freshly uploaded image or file to the pending-attachments list. */
@@ -200,6 +197,11 @@ export interface UseLlmChatReturn {
     refreshModels: () => void;
     /** Stop the current generation */
     stopStreaming: () => void;
+    /** Allow or deny a tool call of the running turn that waits for the user. With the
+     * `"chat"` scope, its tool is allowed for the rest of the chat. */
+    answerToolCall: (toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => void;
+    /** Make the chat ask about a tool it allowed again. */
+    revokeAllowedTool: (toolName: string) => void;
     /** Re-run the last turn after a failed response (drops the trailing error message) */
     retryLast: () => void;
     /** Regenerate the last reply: re-run from the last user message, dropping the reply that followed */
@@ -234,7 +236,7 @@ export function useLlmChat(
     // displayed `streamingBlocks` is derived from this with the trailing text
     // block smoothed via useSmoothStreaming for a steady reveal cadence.
     const [targetBlocks, setTargetBlocks] = useState<ContentBlock[]>([]);
-    const [streamingThinking, setStreamingThinking] = useState("");
+    const [streamingStatus, setStreamingStatus] = useState<LlmStreamStatus | null>(null);
     const { displayedText: smoothedTailText, append: smoothAppend, drain: smoothDrain, reset: smoothReset } = useSmoothStreaming();
     const [pendingCitations, setPendingCitations] = useState<LlmCitation[]>([]);
     const [pendingAttachments, setPendingAttachments] = useState<AttachmentBlock[]>([]);
@@ -246,6 +248,9 @@ export function useLlmChat(
     const [enableWebSearch, setEnableWebSearch] = useState(true);
     const [enableNoteTools, setEnableNoteTools] = useState(defaultEnableNoteTools);
     const [enableExtendedThinking, setEnableExtendedThinking] = useState(false);
+    const [reasoningEffort, setReasoningEffort] = useState<LlmReasoningEffort | undefined>(undefined);
+    const [allowedTools, setAllowedTools] = useState<string[]>([]);
+    const [permissionMode, setPermissionMode] = useState<LlmPermissionMode>(rememberedPermissionMode);
     const [contextNoteId, setContextNoteId] = useState<string | undefined>(initialContextNoteId);
     const [chatNoteId, setChatNoteIdState] = useState<string | undefined>(initialChatNoteId);
     const [lastPromptTokens, setLastPromptTokens] = useState<number>(0);
@@ -259,6 +264,9 @@ export function useLlmChat(
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const bottomSpacerRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    // The tool calls of the running turn that wait for the user, by call id: how to answer one,
+    // and how to stop waiting on one the turn approved itself.
+    const toolApprovalAnswersRef = useRef(new Map<string, WaitingToolCall>());
     const anchorRafRef = useRef<number | null>(null);
     // A one-shot scroll to run after the next messages render: "anchor" parks a fresh
     // reply near the top (sending/retrying), "bottom" jumps to the latest content
@@ -285,8 +293,14 @@ export function useLlmChat(
     enableWebSearchRef.current = enableWebSearch;
     const enableNoteToolsRef = useRef(enableNoteTools);
     enableNoteToolsRef.current = enableNoteTools;
+    const allowedToolsRef = useRef(allowedTools);
+    allowedToolsRef.current = allowedTools;
+    const permissionModeRef = useRef(permissionMode);
+    permissionModeRef.current = permissionMode;
     const enableExtendedThinkingRef = useRef(enableExtendedThinking);
     enableExtendedThinkingRef.current = enableExtendedThinking;
+    const reasoningEffortRef = useRef(reasoningEffort);
+    reasoningEffortRef.current = reasoningEffort;
     const chatNoteIdRef = useRef(chatNoteId);
     chatNoteIdRef.current = chatNoteId;
     const setChatNoteId = useCallback((noteId: string | undefined) => {
@@ -298,11 +312,24 @@ export function useLlmChat(
     const pendingAttachmentsRef = useRef(pendingAttachments);
     pendingAttachmentsRef.current = pendingAttachments;
 
-    // The reply-input editor, registered by ChatInputBar once mounted. Held in a ref so timeline
-    // actions (e.g. quoting a selection) can write into it without a render-order dependency.
-    const inputEditorRef = useRef<InputEditorApi | undefined>();
+    // The reply-input editor, registered by ChatInputBar once its CKEditor has initialized. Held in a
+    // ref so timeline actions (e.g. quoting a selection) can write into it without a render-order
+    // dependency.
+    const inputEditorRef = useRef<InputEditorApi | undefined>(undefined);
+    const isInputFocusPendingRef = useRef(false);
     const registerInputEditor = useCallback((api: InputEditorApi | undefined) => {
         inputEditorRef.current = api;
+        if (api && isInputFocusPendingRef.current) {
+            isInputFocusPendingRef.current = false;
+            api.focus();
+        }
+    }, []);
+    const focusInput = useCallback(() => {
+        if (inputEditorRef.current) {
+            inputEditorRef.current.focus();
+        } else {
+            isInputFocusPendingRef.current = true;
+        }
     }, []);
     const appendToInput = useCallback((text: string) => {
         inputEditorRef.current?.appendBlockQuote(text);
@@ -544,6 +571,11 @@ export function useLlmChat(
         if (supportsExtendedThinking && typeof content.enableExtendedThinking === "boolean") {
             setEnableExtendedThinking(content.enableExtendedThinking);
         }
+        setReasoningEffort(LLM_REASONING_EFFORTS.find(level => level === content.reasoningEffort));
+        setPermissionMode(LLM_PERMISSION_MODES.find(mode => mode === content.permissionMode) ?? rememberedPermissionMode());
+        setAllowedTools(Array.isArray(content.allowedTools)
+            ? content.allowedTools.filter((name): name is string => typeof name === "string")
+            : []);
         // Restore last prompt tokens from the most recent message with usage
         const lastUsage = [...(content.messages || [])].reverse().find(m => m.usage)?.usage;
         setLastPromptTokens(lastUsage?.promptTokens ?? 0);
@@ -559,10 +591,17 @@ export function useLlmChat(
             selectedProvider: selectedProviderRef.current || undefined,
             selectedProviderId: selectedProviderIdRef.current || undefined,
             enableWebSearch: enableWebSearchRef.current,
-            enableNoteTools: enableNoteToolsRef.current
+            enableNoteTools: enableNoteToolsRef.current,
+            permissionMode: permissionModeRef.current
         };
         if (supportsExtendedThinking) {
             content.enableExtendedThinking = enableExtendedThinkingRef.current;
+        }
+        if (reasoningEffortRef.current) {
+            content.reasoningEffort = reasoningEffortRef.current;
+        }
+        if (allowedToolsRef.current.length) {
+            content.allowedTools = allowedToolsRef.current;
         }
         return content;
     }, [supportsExtendedThinking]);
@@ -571,6 +610,8 @@ export function useLlmChat(
         setMessages([]);
         setLastPromptTokens(0);
         setLastCompletionTokens(0);
+        setAllowedTools([]);
+        setPermissionMode(rememberedPermissionMode());
     }, [setMessages]);
 
     /**
@@ -582,13 +623,29 @@ export function useLlmChat(
         setMessagesInternal(conversation);
         setIsStreaming(true);
         setTargetBlocks([]);
-        setStreamingThinking("");
+        setStreamingStatus(null);
         smoothReset();
 
-        let thinkingContent = "";
         const contentBlocks: ContentBlock[] = [];
         const citations: LlmCitation[] = [];
         let usage: LlmUsage | undefined;
+
+        toolApprovalAnswersRef.current.clear();
+
+        /** Apply `change` to the tool call `toolCallId`. Returns `false` if the reply has none. */
+        function updateToolCall(toolCallId: string, change: Partial<ToolCall>): boolean {
+            for (let i = contentBlocks.length - 1; i >= 0; i--) {
+                const block = contentBlocks[i];
+                if (block.type === "tool_call" && block.toolCall.id === toolCallId) {
+                    contentBlocks[i] = {
+                        type: "tool_call",
+                        toolCall: { ...block.toolCall, ...change }
+                    };
+                    return true;
+                }
+            }
+            return false;
+        }
 
         /** Get or create the last text block to append streaming text to. */
         function lastTextBlock(): ContentBlock & { type: "text" } {
@@ -601,7 +658,7 @@ export function useLlmChat(
             return block as ContentBlock & { type: "text" };
         }
 
-        const apiMessages: LlmMessage[] = trimToFirstUserMessage(conversation).map(m => ({
+        const apiMessages: LlmMessage[] = trimToFirstUserMessage(conversation.filter(m => m.type !== "thinking")).map(m => ({
             role: m.role,
             content: stripQuoteSourcesFromApiContent(flattenToApiContent(m.content))
         }));
@@ -614,19 +671,34 @@ export function useLlmChat(
         const matchedModel = availableModels.find(m =>
             m.id === selectedModel && (!selectedProvider || m.provider === selectedProvider));
         const selectedModelProvider = selectedProvider ?? matchedModel?.provider;
+        const webSearch = resolveWebSearch({
+            modelProvider: selectedModelProvider,
+            enableWebSearch,
+            enableNoteTools,
+            searchProviderId: optionService.get("llmWebSearchProvider") ?? "",
+            searchProviders: readSearchProviders()
+        });
         const streamOptions: Parameters<typeof streamChatCompletion>[1] = {
             model: selectedModel || undefined,
             provider: selectedModelProvider,
             // The config id pins the exact provider instance when several of the
             // same type are configured (e.g. OpenAI + self-hosted Ollama).
             providerId: selectedProviderId ?? matchedModel?.providerId,
-            enableWebSearch,
+            enableWebSearch: webSearch.enableWebSearch,
+            webSearchProviderId: webSearch.webSearchProviderId,
             enableNoteTools,
             contextNoteId,
-            chatNoteId: chatNoteIdRef.current
+            chatNoteId: chatNoteIdRef.current,
+            permissionMode
         };
         if (supportsExtendedThinking) {
             streamOptions.enableExtendedThinking = enableExtendedThinking;
+        }
+        if (reasoningEffort && matchedModel?.reasoningEfforts?.length) {
+            streamOptions.reasoningEffort = reasoningEffort;
+        }
+        if (allowedTools.length) {
+            streamOptions.allowedTools = allowedTools;
         }
 
         const abortController = new AbortController();
@@ -639,52 +711,48 @@ export function useLlmChat(
             // the finalized message.
             smoothDrain();
 
+            // The reply can end before the turn acknowledges an answer it already acted on.
+            for (const [toolCallId, waiting] of toolApprovalAnswersRef.current) {
+                if (waiting.answering !== undefined) {
+                    updateToolCall(toolCallId, { approval: waiting.answering ? undefined : "declined" });
+                }
+            }
+
             // Mark any in-progress tool calls as stopped so they don't show infinite spinners.
             // Also clear `inputStreaming` so a half-streamed JSON arg list doesn't render.
             for (const [i, block] of contentBlocks.entries()) {
-                if (block.type === "tool_call" && !block.toolCall.result) {
+                if (block.type !== "tool_call") continue;
+                if (!block.toolCall.result) {
                     contentBlocks[i] = {
                         type: "tool_call",
                         toolCall: {
                             ...block.toolCall,
                             inputStreaming: undefined,
                             result: "[Stopped]",
-                            isError: true
+                            isError: true,
+                            approval: undefined
                         }
                     };
+                } else if (block.toolCall.approval === "pending") {
+                    contentBlocks[i] = { type: "tool_call", toolCall: { ...block.toolCall, approval: undefined } };
                 }
             }
 
-            const finalNewMessages: StoredMessage[] = [];
-
-            if (thinkingContent) {
-                finalNewMessages.push({
-                    id: randomString(),
-                    role: "assistant",
-                    content: thinkingContent,
-                    createdAt: new Date().toISOString(),
-                    type: "thinking"
-                });
-            }
-
             if (contentBlocks.length > 0) {
-                finalNewMessages.push({
+                setMessages([...conversation, {
                     id: randomString(),
                     role: "assistant",
                     content: contentBlocks,
                     createdAt: new Date().toISOString(),
                     citations: citations.length > 0 ? citations : undefined,
                     usage
-                });
-            }
-
-            if (finalNewMessages.length > 0) {
-                setMessages([...conversation, ...finalNewMessages]);
+                }]);
             }
 
             setTargetBlocks([]);
-            setStreamingThinking("");
             setPendingCitations([]);
+            setStreamingStatus(null);
+            toolApprovalAnswersRef.current.clear();
             setIsStreaming(false);
             abortControllerRef.current = null;
         }
@@ -693,6 +761,7 @@ export function useLlmChat(
             apiMessages,
             streamOptions,
             {
+                onStatus: setStreamingStatus,
                 onChunk: (text) => {
                     // A new text block begins whenever the previous tail is
                     // anything other than text (or there's nothing yet). In
@@ -708,8 +777,16 @@ export function useLlmChat(
                     setTargetBlocks([...contentBlocks]);
                 },
                 onThinking: (text) => {
-                    thinkingContent += text;
-                    setStreamingThinking(thinkingContent);
+                    const last = contentBlocks[contentBlocks.length - 1];
+                    if (last?.type === "thinking") {
+                        contentBlocks[contentBlocks.length - 1] = { type: "thinking", content: last.content + text };
+                    } else {
+                        // The smoother animates only a trailing text block, so reveal the
+                        // text before this thought in full.
+                        smoothDrain();
+                        contentBlocks.push({ type: "thinking", content: text });
+                    }
+                    setTargetBlocks([...contentBlocks]);
                 },
                 onToolInputStart: (toolCallId, toolName) => {
                     // Snap any pending smoothed text to its full value before
@@ -772,6 +849,31 @@ export function useLlmChat(
                     });
                     setTargetBlocks([...contentBlocks]);
                 },
+                onToolApprovalRequest: ({ toolCallId, toolName, toolInput }, answer) => {
+                    // The request can arrive before the `tool_use` chunk of its call.
+                    const waiting: Partial<ToolCall> = {
+                        input: toolInput,
+                        inputStreaming: undefined,
+                        approval: "pending"
+                    };
+                    if (!updateToolCall(toolCallId, waiting)) {
+                        smoothDrain();
+                        const toolCall: ToolCall = {
+                            id: toolCallId, toolName, input: toolInput, approval: "pending"
+                        };
+                        contentBlocks.push({ type: "tool_call", toolCall });
+                    }
+                    toolApprovalAnswersRef.current.set(toolCallId, {
+                        toolName,
+                        send: answer,
+                        settle: (approved) => {
+                            toolApprovalAnswersRef.current.delete(toolCallId);
+                            updateToolCall(toolCallId, { approval: approved ? undefined : "declined" });
+                            setTargetBlocks([...contentBlocks]);
+                        }
+                    });
+                    setTargetBlocks([...contentBlocks]);
+                },
                 onToolResult: (toolCallId, _toolName, result, isError) => {
                     // Replace the matching block with a new object so Preact sees the change.
                     for (let i = contentBlocks.length - 1; i >= 0; i--) {
@@ -795,8 +897,8 @@ export function useLlmChat(
                 },
                 onUsage: (u) => {
                     usage = u;
-                    setLastPromptTokens(u.promptTokens);
-                    setLastCompletionTokens(u.completionTokens);
+                    setLastPromptTokens(u.promptTokens ?? 0);
+                    setLastCompletionTokens(u.completionTokens ?? 0);
                 },
                 onError: (errorMsg, errorDetails) => {
                     console.error("Chat error:", errorMsg, errorDetails);
@@ -812,7 +914,7 @@ export function useLlmChat(
                     setMessages(finalMessages);
                     smoothReset();
                     setTargetBlocks([]);
-                    setStreamingThinking("");
+                    setStreamingStatus(null);
                     setIsStreaming(false);
                 },
                 onDone: () => {
@@ -840,11 +942,11 @@ export function useLlmChat(
             }]);
             smoothReset();
             setTargetBlocks([]);
-            setStreamingThinking("");
+            setStreamingStatus(null);
             setIsStreaming(false);
             abortControllerRef.current = null;
         });
-    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, enableExtendedThinking, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
+    }, [selectedModel, selectedProvider, selectedProviderId, availableModels, enableWebSearch, enableNoteTools, enableExtendedThinking, reasoningEffort, allowedTools, permissionMode, contextNoteId, supportsExtendedThinking, setMessages, smoothAppend, smoothDrain, smoothReset]);
 
     const handleSubmit = useCallback(async (e: Event) => {
         e.preventDefault();
@@ -854,12 +956,15 @@ export function useLlmChat(
         // restore a model ID that has since been deselected (so it's absent from
         // availableModels). Sending it anyway would let the server silently fall
         // back to some default, so block until an available model is chosen.
-        if (!resolveSelectedModel(availableModelsRef.current, selectedModelRef.current, selectedProviderRef.current, selectedProviderIdRef.current)) {
+        const model = resolveSelectedModel(availableModelsRef.current, selectedModelRef.current, selectedProviderRef.current, selectedProviderIdRef.current);
+        if (!model) {
             return;
         }
         const trimmedInput = inputRef.current.trim();
         const attachments = pendingAttachmentsRef.current;
         if (!trimmedInput && attachments.length === 0) return;
+        // An attachment the model can't read would reach it as a placeholder only; the input bar says why Send is blocked.
+        if (unreadableAttachments(model, attachments).length > 0) return;
 
         // If there are attachments, build a block-shaped content array so the
         // images travel alongside the text. Otherwise stay with the simple
@@ -916,6 +1021,52 @@ export function useLlmChat(
         }
     }, [handleSubmit]);
 
+    /**
+     * Allow or deny a tool call of the running turn that waits for the user. The call keeps waiting
+     * until the turn has received the answer, so an answer that fails to send can be given again.
+     * Allowed for the chat, its tool is added to `allowedTools`, and the other calls of it that wait
+     * stop waiting, since the turn approves them itself. When the reply ended while the answer was on
+     * its way, `finalizeStream()` already saved the call with it, and only `allowedTools` changes.
+     */
+    const answerToolCall = useCallback(async (toolCallId: string, approved: boolean, scope?: LlmToolApprovalAnswer["scope"]) => {
+        const waiting = toolApprovalAnswersRef.current.get(toolCallId);
+        if (!waiting || waiting.answering !== undefined) return;
+        const chatNoteId = chatNoteIdRef.current;
+        waiting.answering = approved;
+        try {
+            await waiting.send(approved, scope);
+        } catch (e) {
+            waiting.answering = undefined;
+            console.error("Failed to answer the tool call:", e);
+            return;
+        }
+
+        if (approved && scope === "chat" && chatNoteIdRef.current === chatNoteId) {
+            setAllowedTools(tools => (tools.includes(waiting.toolName) ? tools : [ ...tools, waiting.toolName ]));
+        }
+        if (toolApprovalAnswersRef.current.get(toolCallId) !== waiting) return;
+
+        waiting.settle(approved);
+        if (!approved || scope !== "chat") return;
+
+        for (const other of [ ...toolApprovalAnswersRef.current.values() ]) {
+            if (other.toolName === waiting.toolName) {
+                other.settle(true);
+            }
+        }
+    }, []);
+
+    const revokeAllowedTool = useCallback((toolName: string) => {
+        setAllowedTools(tools => tools.filter(tool => tool !== toolName));
+    }, []);
+
+    const choosePermissionMode = useCallback((mode: LlmPermissionMode) => {
+        setPermissionMode(mode);
+        optionService.save("llmPermissionMode", mode).catch((e: unknown) => {
+            console.error("Failed to remember the permission mode:", e);
+        });
+    }, []);
+
     /** Stop the current generation by aborting the SSE connection. */
     const stopStreaming = useCallback(() => {
         if (abortControllerRef.current) {
@@ -945,7 +1096,7 @@ export function useLlmChat(
         hasInputText,
         isStreaming,
         streamingBlocks,
-        streamingThinking,
+        streamingStatus,
         pendingCitations,
         pendingAttachments,
         availableModels,
@@ -956,6 +1107,9 @@ export function useLlmChat(
         enableWebSearch,
         enableNoteTools,
         enableExtendedThinking,
+        reasoningEffort,
+        allowedTools,
+        permissionMode,
         contextNoteId,
         chatNoteId,
         lastPromptTokens,
@@ -971,6 +1125,7 @@ export function useLlmChat(
 
         registerInputEditor,
         appendToInput,
+        focusInput,
         getInput,
 
         // Setters
@@ -980,6 +1135,8 @@ export function useLlmChat(
         setEnableWebSearch,
         setEnableNoteTools,
         setEnableExtendedThinking,
+        setReasoningEffort,
+        setPermissionMode: choosePermissionMode,
         setContextNoteId,
         setChatNoteId,
         addPendingAttachment,
@@ -993,42 +1150,15 @@ export function useLlmChat(
         clearMessages,
         refreshModels,
         stopStreaming,
+        answerToolCall,
+        revokeAllowedTool,
         retryLast,
         regenerateLastReply
     };
 }
 
-/** Minimal shape of a provider config as stored in the `llmProviders` option. */
-interface StoredProviderConfig {
-    id: string;
-    name: string;
-    provider: string;
-    selectedModels?: LlmModelInfo[];
-}
-
-/**
- * Read the user's selected models per configured provider. Returns:
- * - `groups`: one entry per configured provider (in config order), each with its
- *   selected models — the group is kept even when it has none, so a provider
- *   migrated from before selection existed still shows up with an empty group.
- * - `models`: the flattened list across all groups (for default selection and
- *   the active-model lookup).
- * - `hasProvider`: whether any provider is configured at all.
- */
-function readSelectedModels(): { models: ModelOption[]; groups: ModelProviderGroup[]; hasProvider: boolean } {
-    const configs = (options.getJson("llmProviders") as StoredProviderConfig[] | null) ?? [];
-    const groups: ModelProviderGroup[] = configs.map(config => ({
-        id: config.id,
-        name: config.name,
-        provider: config.provider,
-        models: (config.selectedModels ?? []).map(model => ({
-            ...model,
-            provider: config.provider,
-            providerId: config.id,
-            providerName: config.name,
-            costDescription: formatModelCost(model)
-        }))
-    }));
-    const models = groups.flatMap(g => g.models);
-    return { models, groups, hasProvider: configs.length > 0 };
+/** The permission mode picked last in any chat, which a new chat starts in. */
+function rememberedPermissionMode(): LlmPermissionMode {
+    const remembered = optionService.get("llmPermissionMode");
+    return LLM_PERMISSION_MODES.find(mode => mode === remembered) ?? "ask_before_changes";
 }

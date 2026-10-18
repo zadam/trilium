@@ -40,8 +40,16 @@ export function bootstrap(req: Request, res: Response) {
     // global flag told every such browser it was already logged in, so it skipped
     // login and then had every API call rejected with "Logged in session not found".
     const isElectronRenderer = isInternalElectronRequest(req);
+    const sharedItems = getSharedBootstrapItems(assetPath, isDbInitialized);
     const commonItems = {
-        ...getSharedBootstrapItems(assetPath, isDbInitialized),
+        ...sharedItems,
+        // The setup wizard's password gate is exempted for exactly what `checkSetupAuth` exempts:
+        // the trusted renderer, which is the application itself, and an instance already configured
+        // to trust whoever can reach it. Asked for anywhere else, the screen would be holding out
+        // for an answer the routes behind it were never going to want. The second factor rides on
+        // the same exemption, since it is only ever asked for alongside the password.
+        setupAuthRequired: sharedItems.setupAuthRequired && !isElectronRenderer && !noAuthentication,
+        setupSecondFactorRequired: sharedItems.setupSecondFactorRequired && !isElectronRenderer && !noAuthentication,
         baseApiUrl: "api/",
         appPath,
         isStandalone: false,
@@ -52,6 +60,7 @@ export function bootstrap(req: Request, res: Response) {
         isElectron: isElectronRenderer,
         isDev,
         platform: process.platform,
+        arch: process.arch,
         triliumVersion: packageJson.version,
         device: view,
         TRILIUM_SAFE_MODE: !!process.env.TRILIUM_SAFE_MODE,
@@ -179,7 +188,7 @@ export function bootstrap(req: Request, res: Response) {
                 .map((p: iconPackService.ProcessedIconPack) => iconPackService.generateCss(p, p.builtin
                     ? `${assetPath}/fonts/${p.fontAttachmentId}.${iconPackService.MIME_TO_EXTENSION_MAPPINGS[p.fontMime]}`
                     : `api/attachments/download/${p.fontAttachmentId}`)),
-            task_states.generateTaskStateCss()
+            task_states.generateTaskStateCss(iconPacks)
         ]
             .filter(Boolean)
             .join("\n\n"),

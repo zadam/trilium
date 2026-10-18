@@ -592,8 +592,25 @@ describe("BNote content / misc getters", () => {
             const [ , , , , newest ] = createRevisions(note,
                 [ undefined, "release", undefined, "before the refactor", undefined ]);
 
-            expect(eraseExcess(note, { snapshotsToKeep: 1 })).toBe(4);
+            expect(eraseExcess(note, { snapshotsToKeep: 1, keepNamedSnapshots: false })).toBe(4);
             expect(revisionIdsOf(note)).toEqual([ newest ]);
+        });
+
+        it("follows the configured option when the caller says nothing either way", () => {
+            const note = createNote();
+            const [ , named, newest ] = createRevisions(note, [ undefined, "release", undefined ]);
+
+            // Named snapshots are spared out of the box.
+            expect(eraseExcess(note, { snapshotsToKeep: 1 })).toBe(1);
+            expect(revisionIdsOf(note)).toEqual([ named, newest ]);
+
+            getContext().init(() => optionService.setOption("revisionIgnoreNamedSnapshots", "false"));
+            try {
+                expect(eraseExcess(note, { snapshotsToKeep: 1 })).toBe(1);
+                expect(revisionIdsOf(note)).toEqual([ newest ]);
+            } finally {
+                getContext().init(() => optionService.setOption("revisionIgnoreNamedSnapshots", "true"));
+            }
         });
     });
 

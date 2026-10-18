@@ -1,4 +1,5 @@
 import "./master_detail.css";
+import "./slide_animations.css";
 
 import clsx from "clsx";
 import { ComponentChildren, createContext, RefObject } from "preact";
@@ -8,6 +9,7 @@ import utils from "../../services/utils";
 import ActionButton from "./ActionButton";
 import { useWindowSize } from "./hooks";
 import Modal, { ModalProps } from "./Modal";
+import { useSlide } from "./SlidePages";
 
 /**
  * The flow a dialog that pairs a list with a detail takes on a screen too narrow to hold both: one at a
@@ -20,9 +22,6 @@ import Modal, { ModalProps } from "./Modal";
 /** Mobile viewports at least this wide (tablets) keep a side-by-side layout; narrower ones get the
  *  master-detail flow. */
 export const MASTER_DETAIL_TABLET_MIN_WIDTH = 768;
-
-/** What every slide of the flow is named with, which is how a finished one is recognised. */
-const SLIDE_ANIMATION_PREFIX = "tn-master-detail-";
 
 export interface MobileMasterDetail {
     /** True on narrow mobile viewports where the list and detail collapse into a master-detail flow. */
@@ -41,29 +40,29 @@ export interface MobileMasterDetail {
  * `mobile-view-{list,page}`, `mobile-transition-to-{list,page}`), which master_detail.css lays out and
  * slides. The dialog's own stylesheet is left with whatever is particular to its panes.
  */
-export function useMobileMasterDetail(modalRef: RefObject<HTMLElement>): MobileMasterDetail {
+export function useMobileMasterDetail(modalRef: RefObject<HTMLElement | null>): MobileMasterDetail {
     const [ mobileView, setMobileView ] = useState<"list" | "page">("list");
-    // Direction of the in-flight slide between the two views, or null when at rest. While set, both
-    // panes stay rendered so the outgoing one can slide away as the incoming one slides in.
-    const [ mobileTransition, setMobileTransition ] = useState<"to-list" | "to-page" | null>(null);
     const isMobile = utils.isMobile();
     const { windowWidth } = useWindowSize();
     const isMasterDetail = isMobile && windowWidth < MASTER_DETAIL_TABLET_MIN_WIDTH;
+    /** Whether the next change of view slides: a switch does, a reset does not. */
+    const slideNext = useRef(false);
+    // Outside the master-detail flow both panes are on show, and there is nothing to slide between.
+    const slide = useSlide(mobileView, isMasterDetail && slideNext.current);
+    // While set, both panes stay rendered so the outgoing one can slide away as the incoming one slides in.
+    const mobileTransition = slide.from === undefined ? null : mobileView === "page" ? "to-page" : "to-list";
 
     const switchMobileView = useCallback((view: "list" | "page") => {
-        if (view === mobileView) return;
+        slideNext.current = true;
         setMobileView(view);
-        // With animations globally disabled there is no animationend to clear the transition, so
-        // switch directly. Outside the master-detail flow there is nothing to animate.
-        if (isMasterDetail && !document.body.classList.contains("motion-disabled")) {
-            setMobileTransition(view === "page" ? "to-page" : "to-list");
-        }
-    }, [ mobileView, isMasterDetail ]);
-
-    const resetMobileView = useCallback((view: "list" | "page") => {
-        setMobileView(view);
-        setMobileTransition(null);
     }, []);
+
+    const { settle } = slide;
+    const resetMobileView = useCallback((view: "list" | "page") => {
+        slideNext.current = false;
+        setMobileView(view);
+        settle();
+    }, [ settle ]);
 
     // Bootstrap adds its own classes (e.g. `show`) to the modal element at runtime, so the className
     // prop must stay static; toggle the mobile view classes directly on the element instead.
@@ -75,18 +74,14 @@ export function useMobileMasterDetail(modalRef: RefObject<HTMLElement>): MobileM
         modalRef.current?.classList.toggle("mobile-transition-to-page", mobileTransition === "to-page");
     }, [ isMasterDetail, mobileView, mobileTransition ]);
 
-    // End the view transition once the slide finishes (animationend bubbles up from the panes).
+    // The slide's end bubbles up from the panes.
+    const { onAnimationEnd } = slide;
     useEffect(() => {
         const modalElement = modalRef.current;
         if (!modalElement) return;
-        function onAnimationEnd(e: AnimationEvent) {
-            if (e.animationName.startsWith(SLIDE_ANIMATION_PREFIX)) {
-                setMobileTransition(null);
-            }
-        }
         modalElement.addEventListener("animationend", onAnimationEnd);
         return () => modalElement.removeEventListener("animationend", onAnimationEnd);
-    }, []);
+    }, [ onAnimationEnd ]);
 
     return { isMasterDetail, mobileView, switchMobileView, resetMobileView };
 }
@@ -121,13 +116,20 @@ interface MasterDetailHeaderProps {
     listIcon?: string;
     /** The dialog's own actions, which belong to the list rather than to one page of it. */
     listActions?: ComponentChildren;
+    /**
+     * Actions belonging to the page on show. The header carries the page's name here, so a control
+     * that explains or acts on the page as a whole reads beside it rather than inside the page.
+     */
+    pageActions?: ComponentChildren;
 }
 
 /**
  * The header of a master-detail modal, in place of its static title (which master_detail.css hides):
  * the way back and the name of what is on show, or the dialog's own name while the list is.
  */
-export function MasterDetailHeader({ inPage, onBack, backTitle, pageTitle, listTitle, listIcon, listActions }: MasterDetailHeaderProps) {
+export function MasterDetailHeader({
+    inPage, onBack, backTitle, pageTitle, listTitle, listIcon, listActions, pageActions
+}: MasterDetailHeaderProps) {
     return (
         <div class="tn-master-detail-header">
             {inPage ? (
@@ -137,12 +139,13 @@ export function MasterDetailHeader({ inPage, onBack, backTitle, pageTitle, listT
                 // does not shift as the views change.
                 listIcon && <span class={clsx("tn-master-detail-icon icon-action", listIcon)} aria-hidden="true" />
             )}
-            {/* A page that names itself (the settings pages do) passes no title, and gets no room
-                taken for one. */}
+            {/* A page that names itself passes no title, and gets no room taken for one. */}
             {(inPage ? pageTitle : listTitle) && (
                 <h5 class="tn-master-detail-title">{inPage ? pageTitle : listTitle}</h5>
             )}
-            {!inPage && listActions}
+            {inPage
+                ? pageActions && <div class="tn-master-detail-page-actions">{pageActions}</div>
+                : listActions}
         </div>
     );
 }

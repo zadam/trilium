@@ -1,0 +1,125 @@
+import type { RefObject } from "preact";
+import { useEffect, useState } from "preact/hooks";
+
+import contextMenu, { type ContextMenuOptions, type MenuItem } from "../../../menus/context_menu";
+import linkContextMenu from "../../../menus/link_context_menu";
+import {
+    type ContentEmbedTool, type ContentEmbedToolProvider, registerContentEmbedTools
+} from "./content_embed_tools";
+import { findTextEditorAround } from "./editable_embed";
+
+/** A menu that a button of the embed toolbar opens below it. */
+export interface ContentEmbedMenu {
+    id: string;
+    /** The name of the menu, shown as the tooltip of its button. */
+    title: string;
+    /** The text of the button, such as the current setting. */
+    text: string;
+    items: MenuItem<unknown>[];
+    /** Offers an input at the top of the menu that filters its items. */
+    filterable?: boolean;
+}
+
+/**
+ * Adds a button for each of `menus` to the toolbar of the embed around `rootRef`, besides the
+ * Editable toggle. The buttons follow `menus` as they change.
+ */
+export function useContentEmbedMenus(
+    rootRef: RefObject<HTMLElement | null>,
+    menus: ContentEmbedMenu[]
+) {
+    const [ provider ] = useState(() => new ContentEmbedMenus(rootRef));
+
+    useEffect(() => provider.setMenus(menus));
+
+    useEffect(() => {
+        const root = rootRef.current;
+        if (!root) return;
+
+        return registerContentEmbedTools(root, provider);
+    }, [ rootRef, provider ]);
+}
+
+/** The buttons of the embed toolbar that open menus with `contextMenu`. */
+export class ContentEmbedMenus implements ContentEmbedToolProvider {
+    readonly hasEditableFlag = true;
+    private menus: ContentEmbedMenu[] = [];
+    /** The menu that is open, whose button shows as on. */
+    private openMenuId: string | null = null;
+    /** The menu that closed last. */
+    private closedMenuId: string | null = null;
+    private listeners = new Set<() => void>();
+    /** The tools as last notified, to notify the listeners only when they change. */
+    private shownTools = "";
+
+    constructor(private readonly rootRef: RefObject<HTMLElement | null>) {}
+
+    setMenus(menus: ContentEmbedMenu[]) {
+        this.menus = menus;
+        this.update();
+    }
+
+    getTools(): ContentEmbedTool[] {
+        return this.menus.map(({ id, title, text }) => ({
+            id,
+            label: title,
+            text,
+            opensMenu: true,
+            isOn: id === this.openMenuId,
+            group: "menus"
+        }));
+    }
+
+    /** Every button opens a menu, with `openMenu()`. */
+    execute() {}
+
+    openMenu(id: string, anchor: HTMLElement) {
+        const menu = this.menus.find((candidate) => candidate.id === id);
+        // A press on the button of the open menu only closes the menu.
+        if (!menu || (contextMenu.dismissedByLastPress && this.closedMenuId === id)) return;
+
+        const editor = findTextEditorAround(this.rootRef.current);
+        const editorFocus: Pick<ContextMenuOptions<unknown>, "onShow" | "onHide"> = editor
+            ? linkContextMenu.keepEditorFocused(editor)
+            : {};
+        const { pageX, pageY } = linkContextMenu.getOriginBelow(anchor);
+        void contextMenu.show({
+            x: pageX,
+            y: pageY,
+            items: menu.items,
+            filterable: menu.filterable,
+            selectMenuItemHandler: () => {},
+            onShow: (container) => {
+                editorFocus.onShow?.(container);
+                this.setOpenMenu(id);
+            },
+            onHide: () => {
+                editorFocus.onHide?.();
+                this.closedMenuId = id;
+                this.setOpenMenu(null);
+            }
+        });
+    }
+
+    subscribe(callback: () => void) {
+        this.listeners.add(callback);
+        return () => {
+            this.listeners.delete(callback);
+        };
+    }
+
+    private setOpenMenu(id: string | null) {
+        this.openMenuId = id;
+        this.update();
+    }
+
+    private update() {
+        const shownTools = JSON.stringify(this.getTools());
+        if (shownTools !== this.shownTools) {
+            this.shownTools = shownTools;
+            for (const listener of this.listeners) {
+                listener();
+            }
+        }
+    }
+}
