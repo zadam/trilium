@@ -38,7 +38,7 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "ai": "7.0.140",
     "better-sqlite3": "13.0.3",
-    "i18next": "26.4.4",
+    "i18next": "26.4.5",
     "ipaddr.js": "^2.4.0",
     "js-yaml": "5.4.3",
     "unpdf": "1.8.1"
