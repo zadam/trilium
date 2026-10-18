@@ -66,11 +66,10 @@ export default function CodeEmbedEditor({
     // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
     useLayoutEffect(() => () => {
         const text = viewRef.current?.getText();
+        // `release()` reads the pending content through `viewRef`, so the ref clears after it.
+        editor?.release();
         viewRef.current = null;
-        if (!editor) return;
-
-        editor.release();
-        if (text !== undefined) {
+        if (editor && text !== undefined) {
             onClose(text);
         }
     }, [ editor, onClose ]);

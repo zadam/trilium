@@ -15,6 +15,7 @@ import options from "../../../services/options";
 import { buildNote } from "../../../test/easy-froca";
 import { ParentComponent } from "../../react/react_utils";
 import { CodeMirrorFindTarget } from "../../find_in_code";
+import { NoteSaves } from "../text/attachment_saves";
 import { getContentEmbedTools, getEmbedFindTarget } from "../text/content_embed_tools";
 import CodeEmbed from "./CodeEmbed";
 
@@ -115,9 +116,10 @@ describe("CodeEmbed", () => {
         expect(await target.find("print", { matchCase: false, wholeWord: false })).toBe(0);
     });
 
-    it("releases the editor and previews the edited content once the toggle goes off", async () => {
-        const editor = buildEditor();
-        const { figure } = await mount(buildCodeNote("a"), editor, { isEditable: true });
+    it("releases the edited content and previews it once the toggle goes off", async () => {
+        const note = buildCodeNote("a");
+        const editor = buildSavingEditor(note);
+        const { figure } = await mount(note, editor, { isEditable: true });
         const view = await findView(figure);
         act(() => view.dispatch({ changes: { from: 1, insert: "b" } }));
 
@@ -126,7 +128,7 @@ describe("CodeEmbed", () => {
             await Promise.resolve();
         });
 
-        expect(editor.release).toHaveBeenCalledOnce();
+        expect(editor.getUnsavedContent()).toBe("ab");
         await vi.waitFor(() => {
             expect(figure.querySelector(".editable-embed-preview")?.textContent).toBe("ab");
         });
@@ -137,7 +139,7 @@ describe("CodeEmbed", () => {
         options.set("codeNoteTabWidth", "4");
         options.set("codeNoteIndentWithTabs", "false");
         options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python" ]));
-        const show = vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
+        vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
         let unsavedContent: string | undefined;
         const editor = buildEditor({
             getUnsavedContent: () => unsavedContent,
@@ -161,14 +163,7 @@ describe("CodeEmbed", () => {
             }
         ]);
 
-        /** Runs the item `title` of the "Re-indent" part of the tab width menu. */
-        const reindentTo = async (title: string) => {
-            tools?.openMenu?.("tabWidth", document.createElement("button"));
-            const items = show.mock.lastCall?.[0].items.slice(-7) ?? [];
-            const item = items.find((candidate) => "title" in candidate && candidate.title === title);
-            if (!item || "kind" in item) throw new Error(`No item titled ${title}.`);
-            await act(async () => item.handler?.(item, new MouseEvent("click")));
-        };
+        const reindentTo = (title: string) => selectMenuItem(figure, "tabWidth", title, true);
         const getLastSave = () => vi.mocked(editor.scheduleSave).mock.lastCall?.[0]();
 
         // The preview, which is saved.
@@ -199,11 +194,27 @@ describe("CodeEmbed", () => {
         });
     });
 
+    it("re-indents the unsaved changes that another embed of the same note made", async () => {
+        options.set("codeNoteTabWidth", "4");
+        options.set("codeNoteIndentWithTabs", "false");
+        options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python" ]));
+        vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
+        const note = buildCodeNote("if a:\n    b");
+        const editor = buildSavingEditor(note);
+        const { figure: editing } = await mount(note, editor, { isEditable: true });
+        const { figure: previewing } = await mount(note, editor);
+        const view = await findView(editing);
+        act(() => view.dispatch({ changes: { from: 0, insert: "# " } }));
+
+        await selectMenuItem(previewing, "tabWidth", "status_bar.tab_width_style_tabs", true);
+        expect(editor.getUnsavedContent()).toBe("# if a:\n\tb");
+    });
+
     it("keeps the language and indentation of a file in its embed, set from its toolbar", async () => {
         options.set("codeNoteTabWidth", "4");
         options.set("codeNoteIndentWithTabs", "false");
         options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python", "text/x-sh" ]));
-        const show = vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
+        vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
         const editor = buildEditor();
         const { textEditor, editable } = buildTextEditor();
         const { figure } = await mount(buildAttachment("script.py"), editor, {
@@ -219,15 +230,8 @@ describe("CodeEmbed", () => {
             .toEqual([ "Shell (bash)", "status_bar.tab_width_spaces_short 2" ]);
         expect(renderCodePreview).not.toHaveBeenCalled();
 
-        /** Runs the item `title` of the menu `id`, of the "Re-indent" part when `isReindent`. */
-        const select = async (id: string, title: string, isReindent = false) => {
-            tools?.openMenu?.(id, document.createElement("button"));
-            const items = show.mock.lastCall?.[0].items ?? [];
-            const item = (isReindent ? items.slice(-7) : items)
-                .find((candidate) => "title" in candidate && candidate.title === title);
-            if (!item || "kind" in item) throw new Error(`No item titled ${title}.`);
-            await act(async () => item.handler?.(item, new MouseEvent("click")));
-        };
+        const select = (id: string, title: string, isReindent = false) =>
+            selectMenuItem(figure, id, title, isReindent);
 
         // The language of the file's name is its default, which the embed then leaves out.
         await select("codeLanguage", "Python");
@@ -482,6 +486,30 @@ function buildEditor(overrides: Partial<ContentEditor> = {}): ContentEditor {
         release: vi.fn(),
         ...overrides
     };
+}
+
+/** An editor of `note` over real `NoteSaves`, which the embeds given it share as a host's do. */
+function buildSavingEditor(note: FNote): ContentEditor {
+    const saves = new NoteSaves(() => {}, undefined);
+    return {
+        canEdit: () => true,
+        getUnsavedContent: () => saves.getUnsavedContent(note.noteId),
+        scheduleSave: (getContent, onSaved) => saves.scheduleSave(note, getContent, onSaved),
+        release: () => saves.release(note.noteId)
+    };
+}
+
+/**
+ * Runs the item `title` of the toolbar menu `id` of `figure`, from the "Re-indent" part of the
+ * menu when `isReindent`. `contextMenu.show` must be mocked.
+ */
+async function selectMenuItem(figure: HTMLElement, id: string, title: string, isReindent = false) {
+    getContentEmbedTools(figure)?.openMenu?.(id, document.createElement("button"));
+    const items = vi.mocked(contextMenu.show).mock.lastCall?.[0].items ?? [];
+    const item = (isReindent ? items.slice(-7) : items)
+        .find((candidate) => "title" in candidate && candidate.title === title);
+    if (!item || "kind" in item) throw new Error(`No item titled ${title}.`);
+    await act(async () => item.handler?.(item, new MouseEvent("click")));
 }
 
 /**

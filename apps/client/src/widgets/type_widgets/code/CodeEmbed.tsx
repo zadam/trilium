@@ -66,9 +66,10 @@ export default function CodeEmbed({
         () => renderCodePreview(content, mime),
         isEditing
     );
-    // The editor while it is open, otherwise the content, which a change saves.
+    // The editor while it is open, otherwise the content with the unsaved changes of any embed of
+    // it, which a change saves.
     const getCodeText = (): CodeText => viewRef.current ?? {
-        getText: () => content,
+        getText: () => editor.getUnsavedContent() ?? content,
         setText: (text) => {
             editor.scheduleSave(() => text);
             setContent(text);
