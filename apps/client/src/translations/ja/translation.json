@@ -4156,9 +4156,6 @@
   "show-help": "ヘルプを表示",
   "attribute_list_panel": {
     "no_attributes": "属性なし",
-    "owned_other": "所有する属性 {{count}}",
-    "inherited_other": "継承された属性 {{count}}",
-    "definitions_other": "定義 {{count}}",
     "inheritable": "継承可能: このノートとそのサブツリー全体に適用されます",
     "delete": "この属性を削除",
     "delete_confirm": "属性 \"{{name}}\" を削除しますか？",
@@ -4168,7 +4165,6 @@
     "type_relation": "リレーション",
     "type_label_definition": "ラベルの定義",
     "type_relation_definition": "リレーションの定義",
-    "internal_other": "{{count}} 件の内部システム属性",
     "back": "属性一覧に戻る",
     "no_value": "値なし",
     "change_target": "対象のノートを変更",

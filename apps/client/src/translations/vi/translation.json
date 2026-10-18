@@ -905,10 +905,6 @@
   },
   "attribute_list_panel": {
     "no_attributes": "Không có thuộc tính nào",
-    "owned_other": "{{count}} Thuộc tính của ghi chú",
-    "inherited_other": "{{count}} Thuộc tính kế thừa",
-    "definitions_other": "{{count}} Định nghĩa",
-    "internal_other": "{{count}} Thuộc tính hệ thống nội bộ",
     "back": "Quay lại các thuộc tính",
     "inheritable": "Có thể kế thừa: áp dụng cho ghi chú này và toàn bộ cây con của nó",
     "delete": "Xóa thuộc tính này",

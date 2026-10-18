@@ -873,10 +873,6 @@
   },
   "attribute_list_panel": {
     "no_attributes": "속성 없음",
-    "owned_other": "직접 속성 {{count}}개",
-    "inherited_other": "상속된 속성 {{count}}개",
-    "definitions_other": "정의 {{count}}개",
-    "internal_other": "내부 시스템 속성 {{count}}개",
     "back": "속성으로 돌아가기",
     "inheritable": "상속: 이 노트와 그 전체 하위 트리에 적용됩니다",
     "delete": "이 속성 삭제",

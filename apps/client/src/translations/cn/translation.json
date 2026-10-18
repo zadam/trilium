@@ -4172,9 +4172,6 @@
   },
   "attribute_list_panel": {
     "no_attributes": "无属性",
-    "owned_other": "{{count}} 个自有属性",
-    "inherited_other": "{{count}} 个继承属性",
-    "definitions_other": "{{count}} 个升级属性定义",
     "inheritable": "可继承：适用于此笔记及其整个子树",
     "delete": "删除此属性",
     "delete_confirm": "删除属性 \"{{name}}\"?",
@@ -4184,7 +4181,6 @@
     "type_relation": "关系",
     "type_label_definition": "标签定义",
     "type_relation_definition": "关系定义",
-    "internal_other": "{{count}} 个内部系统属性",
     "back": "返回属性",
     "no_value": "无值",
     "change_target": "更改目标笔记",
