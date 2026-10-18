@@ -400,6 +400,19 @@ body.setup.electron {
             transform: translateY(-50%);
             -webkit-app-region: no-drag;
         }
+
+        /* Without a header, the content starts below the band and the banner stays under
+           `.drag-region`, so the band still drags the window. */
+        &.no-title {
+            z-index: 1;
+            padding-top: calc(env(titlebar-area-height, 40px) + 1em);
+
+            button {
+                top: calc(env(titlebar-area-height, 40px) + 0.5em);
+                right: 0.5em;
+                transform: none;
+            }
+        }
     }
 }
 
