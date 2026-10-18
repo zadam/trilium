@@ -5,7 +5,7 @@ import {
     getAttachedFileMime, getContentRendererGroup, getDrawingPictureTitle,
     getImageAttachmentTitle, getMimeIcon, getNoteContentType, getNoteIcon, isFullWidthNoteType,
     MAP_POSITION_ATTRIBUTE, MAP_SHAPE_ATTRIBUTE, MEETING_RECORDING_ICON, MEETING_RECORDING_LABEL,
-    NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS, parseMindMapNoteLink
+    MERMAID_ATTACHMENT_MIME, NOTE_TYPE_ICONS, NOTE_TYPE_IMAGE_ATTACHMENTS, parseMindMapNoteLink
 } from "./notes.js";
 import { NoteType } from "./rows.js";
 
@@ -316,6 +316,7 @@ describe("getMimeIcon", () => {
         expect(getMimeIcon("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).toBe("bx bx-spreadsheet");
         expect(getMimeIcon("text/csv")).toBe("bx bx-spreadsheet");
         expect(getMimeIcon(CANVAS_ATTACHMENT_MIME)).toBe(NOTE_TYPE_ICONS.canvas);
+        expect(getMimeIcon(MERMAID_ATTACHMENT_MIME)).toBe(NOTE_TYPE_ICONS.mermaid);
         expect(getMimeIcon("text/plain")).toBe("bx bx-file");
     });
 
@@ -358,6 +359,7 @@ describe("getNoteContentType", () => {
             [ "file", "application/json", false ],
             [ "file", "application/pdf", false ],
             [ "file", CANVAS_ATTACHMENT_MIME, false ],
+            [ "file", MERMAID_ATTACHMENT_MIME, false ],
             [ "file", "audio/mpeg", false ],
             [ "file", "video/mp4", false ],
             [ "file", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", false ],
@@ -376,6 +378,7 @@ describe("getNoteContentType", () => {
             [ "code", undefined ],
             [ "pdf", "file" ],
             [ "canvasDrawing", "file" ],
+            [ "mermaidDiagram", "file" ],
             [ "audio", "file" ],
             [ "video", "file" ],
             [ "office", undefined ],
