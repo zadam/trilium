@@ -9,7 +9,6 @@ import {
     isAcceptedImageMime,
     isImageAttachmentRole,
     isMarkdownMime,
-    normalizeMimeTypeForCKEditor,
     type TextRepresentationResponse
 } from "@triliumnext/commons";
 import DOMPurify from "dompurify";
@@ -36,7 +35,6 @@ import protectedSessionService from "./protected_session.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import { getSourceEmbedTypeByContentType } from "./source_embeds.js";
-import { applySingleBlockSyntaxHighlight } from "./syntax_highlight.js";
 import { getErrorMessage } from "./utils.js";
 
 let idCounter = 1;
@@ -492,7 +490,8 @@ async function renderCode(
     const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
     const mime = getCodeMime(entity);
     const { codeLanguage } = options;
-    const preview = await renderCodePreview(content, codeLanguage ?? mime);
+    const note = entity instanceof FNote ? entity : null;
+    const preview = await renderCodePreview(content, codeLanguage ?? mime, note);
 
     if (!editor) {
         $renderedContent.append(preview);
@@ -511,8 +510,12 @@ async function renderCode(
     $renderedContent.append($container);
 }
 
-/** The highlighted content of a code note or file, with JSON indented. */
-export async function renderCodePreview(content: string, mime: string) {
+/**
+ * The highlighted content of a code note or file, with JSON indented.
+ *
+ * @param note the note whose `#wrapLines` label sets the line wrapping.
+ */
+export async function renderCodePreview(content: string, mime: string, note?: FNote | null) {
     if (mime === "application/json") {
         try {
             content = JSON.stringify(JSON.parse(content), null, 4);
@@ -521,11 +524,8 @@ export async function renderCodePreview(content: string, mime: string) {
         }
     }
 
-    const $codeBlock = $("<code>");
-    $codeBlock.text(content);
-    const $pre = $("<pre>").append($codeBlock);
-    await applySingleBlockSyntaxHighlight($codeBlock, normalizeMimeTypeForCKEditor(mime));
-    return $pre[0];
+    const { renderCodeNotePreview } = await import("./code_note_preview.js");
+    return renderCodeNotePreview(content, mime, note);
 }
 
 /**

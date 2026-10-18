@@ -11,7 +11,9 @@ import {
     type CodeSettings, type CodeText, useCodeLanguageMenu, useNoteCodeSettings, useTabWidthMenu
 } from "../../layout/code_menus";
 import { SaveStateBadge } from "../../layout/NoteBadges";
-import { useNoteBlob, useTriliumEvent } from "../../react/hooks";
+import {
+    useNoteBlob, useNoteLabelOptionalBool, useTriliumEvent, useTriliumOption
+} from "../../react/hooks";
 import { useContentEmbedMenus } from "../text/content_embed_menus";
 import { useContentEmbedAttribute } from "../text/content_embed_tools";
 import {
@@ -58,10 +60,11 @@ export default function CodeEmbed({
     const [ content, setContent ] = useState(initialContent);
     const mime = settings.mime ?? initialMime;
     useSavedContent(entity, editor, setContent);
+    const appearance = useCodePreviewAppearance(note);
     const shownPreview = useEmbedPreview(
         preview,
-        `${mime}\n${content}`,
-        () => renderCodePreview(content, mime),
+        `${mime}\n${appearance}\n${content}`,
+        () => renderCodePreview(content, mime, note),
         isEditing
     );
     // The editor while it is open, otherwise the content with the unsaved changes of any embed of
@@ -100,6 +103,21 @@ export default function CodeEmbed({
             )}
         </>
     );
+}
+
+/**
+ * The options and the `#wrapLines` label of `note` that `renderCodePreview()` draws with, as a key
+ * that changes with any of them.
+ */
+function useCodePreviewAppearance(note: FNote | null) {
+    const [ theme ] = useTriliumOption("codeNoteTheme");
+    const [ matchesApp ] = useTriliumOption("codeNoteThemeMatchesApp");
+    const [ lightTheme ] = useTriliumOption("codeNoteThemeLight");
+    const [ darkTheme ] = useTriliumOption("codeNoteThemeDark");
+    const [ isWrapped ] = useTriliumOption("codeLineWrapEnabled");
+    const [ isNoteWrapped ] = useNoteLabelOptionalBool(note, "wrapLines");
+
+    return [ theme, matchesApp, lightTheme, darkTheme, isWrapped, isNoteWrapped ].join("\n");
 }
 
 /**

@@ -688,10 +688,13 @@ describe("content_renderer", () => {
             expect(auto.innerHTML).toContain("hljs-tag");
         });
 
-        it("highlights an embedded code note in its own language", async () => {
+        it("renders an embedded code note with CodeMirror, in its own language", async () => {
             await ensureShareHighlighting();
             buildShareNotes([
-                { id: "pycode", type: "code", mime: "text/x-python", content: `<t t-name="x"></t>` }
+                {
+                    id: "pycode", type: "code", mime: "text/x-python",
+                    content: `x = "<t t-name='x'>"`
+                }
             ]);
             const note = buildShareNote({
                 content: '<section class="include-note" data-note-id="pycode" '
@@ -700,10 +703,13 @@ describe("content_renderer", () => {
 
             const result = getContent(note);
             if (typeof result.content !== "string") throw new Error("expected string content");
-            const code = parse(result.content, { blockTextElements: {} }).querySelector("code");
-            expect(code?.classList.contains("language-text-x-python")).toBe(true);
-            expect(code?.innerHTML).toContain("hljs-string");
-            expect(code?.innerHTML).not.toContain("hljs-tag");
+            const code = parse(result.content, { blockTextElements: {} })
+                .querySelector("pre.code-preview > code.code-preview-content");
+            expect(code?.text).toBe(`x = "<t t-name='x'>"`);
+            expect(code?.querySelectorAll("span:not(.code-preview-line)")
+                .map((token) => token.getAttribute("class")))
+                .toEqual(expect.arrayContaining([ expect.stringMatching(/^l\d+ d\d+$/) ]));
+            expect(result.content).not.toContain("hljs");
         });
 
         it("renders a picture or drawing embed as an image, any other embed as a download", () => {
@@ -1174,23 +1180,75 @@ describe("content_renderer", () => {
             expect(emptyResult.isEmpty).toBeTruthy();
         });
 
-        it("wraps code in <pre><code>", () => {
-            const result: Result = {
-                header: "",
-                content: "\tHello\nworld"
-            };
-            renderCode(result);
+        it("escapes the code until ensureShareHighlighting() loads CodeMirror", async () => {
+            // A fresh copy of the module, which no test has loaded CodeMirror into.
+            vi.resetModules();
+            const { renderCode: renderUnloaded } = await import("./content_renderer.js");
+
+            const result: Result = { header: "", content: "\tHello\nworld" };
+            renderUnloaded(result);
             expect(result.isEmpty).toBeFalsy();
             expect(result.content).toBe("<pre><code>\tHello\nworld</code></pre>");
-        });
 
-        it("escapes HTML-significant characters so the content cannot be re-parsed as markup", () => {
-            const result: Result = {
+            const markup: Result = {
                 header: "",
                 content: `const x: Array<Map<string, number>> = a < b && c > d; // <div>`
             };
-            renderCode(result);
-            expect(result.content).toBe(`<pre><code>const x: Array&lt;Map&lt;string, number&gt;&gt; = a &lt; b &amp;&amp; c &gt; d; // &lt;div&gt;</code></pre>`);
+            renderUnloaded(markup, "application/typescript");
+            expect(markup.content).toBe(`<pre><code class="language-application-typescript">`
+                + "const x: Array&lt;Map&lt;string, number&gt;&gt; = a &lt; b &amp;&amp; c &gt; d; "
+                + "// &lt;div&gt;</code></pre>");
+        });
+
+        it("renders a code note as CodeMirror shows it, with line numbers", async () => {
+            await ensureShareHighlighting();
+            const render = (content: string, mime?: string) => {
+                const result: Result = { header: "", content };
+                renderCode(result, mime);
+                return parse(String(result.content), { blockTextElements: {} })
+                    .querySelector("pre");
+            };
+
+            const python = render("def x():\n    return \"<a>\"", "text/x-python");
+            expect(python?.getAttribute("class")).toBe("code-preview code-preview-wrap");
+            expect([ "l", "d" ].map((key) => python?.getAttribute(`data-code-theme-${key}`)))
+                .toEqual([ "vs-code-light", "vs-code-dark" ]);
+            expect(python?.querySelectorAll(".code-preview-line").map((line) => line.text))
+                .toEqual([ "def x():", "    return \"<a>\"" ]);
+            expect(python?.querySelector(".code-preview-line span")?.getAttribute("class"))
+                .toMatch(/^l\d+ d\d+$/);
+            expect(python?.innerHTML).toContain("&lt;a&gt;");
+
+            // No MIME type, a language that is not enabled, and code too long to highlight.
+            const long = Array.from({ length: 600 }, () => "x = 1").join("\n");
+            const plain = [
+                render("x = 1"), render("x = 1", "text/x-cobol"), render(long, "text/x-python")
+            ];
+            expect(plain.map((pre) => pre?.querySelectorAll(".code-preview-line span").length))
+                .toEqual([ 0, 0, 0 ]);
+            expect(plain[2]?.querySelectorAll(".code-preview-line").length).toBe(600);
+        });
+
+        it("wraps the lines by the `#wrapLines` label of the note, else by the option", async () => {
+            await ensureShareHighlighting();
+            const isWrapped = (note?: SNote) => {
+                const result: Result = { header: "", content: "x" };
+                renderCode(result, "text/plain", note);
+                return String(result.content)
+                    .startsWith(`<pre class="code-preview code-preview-wrap"`);
+            };
+            const labeled = (value: string) => buildShareNote({ type: "code", "#wrapLines": value });
+
+            expect(isWrapped()).toBe(true);
+            expect(isWrapped(labeled("false"))).toBe(false);
+            expect(isWrapped(labeled(""))).toBe(true);
+            mockOptions({ codeLineWrapEnabled: "false" });
+            try {
+                expect(isWrapped()).toBe(false);
+                expect(isWrapped(labeled("true"))).toBe(true);
+            } finally {
+                vi.restoreAllMocks();
+            }
         });
     });
 
@@ -1200,18 +1258,27 @@ describe("content_renderer", () => {
             const pythonBlock = () => buildShareNote({
                 content: `<pre><code class="language-text-x-python">def x(): pass</code></pre>`
             });
+            const pythonNote = () => {
+                const result: Result = { header: "", content: "def x(): pass" };
+                renderCode(result, "text/x-python");
+                return String(result.content);
+            };
+            const highlightedToken = /<span class="l\d+ d\d+">/;
 
             getOption.mockReturnValue(JSON.stringify([ "text/x-python" ]));
             const first = ensureShareHighlighting();
             expect(ensureShareHighlighting()).toBe(first);
             await first;
             expect(getContent(pythonBlock()).content).toContain("hljs-keyword");
+            expect(pythonNote()).toMatch(highlightedToken);
 
             getOption.mockReturnValue(JSON.stringify([ "text/x-go" ]));
             const second = ensureShareHighlighting();
             expect(second).not.toBe(first);
             await second;
             expect(getContent(pythonBlock()).content).not.toContain("hljs");
+            expect(pythonNote()).toContain("code-preview-line");
+            expect(pythonNote()).not.toMatch(highlightedToken);
 
             getOption.mockRestore();
             await ensureShareHighlighting();

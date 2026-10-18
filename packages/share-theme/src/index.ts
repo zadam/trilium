@@ -22,6 +22,7 @@ import setupMath from "./content/math.js";
 import setupAppView from "./content/app_view.js";
 import setupMermaid from "./content/mermaid.js";
 import "virtual:code-themes.css";
+import "@triliumnext/codemirror/src/code_preview.css";
 import "@triliumnext/ckeditor5/src/theme/ck-content.css";
 import "@triliumnext/ckeditor5/src/theme/scrollable_bar.css";
 import "@triliumnext/ckeditor5/src/theme/tabs.css";

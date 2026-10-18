@@ -400,6 +400,11 @@ button kbd {
     font-family: var(--monospace-font-family) !important;
 }
 
+:root pre.code-preview > .code-preview-content {
+    font-family: var(--monospace-font-family);
+    font-size: var(--monospace-font-size);
+}
+
 .cm-editor .cm-placeholder {
     color: inherit;
     opacity: 0.5;

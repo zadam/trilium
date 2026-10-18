@@ -1,9 +1,10 @@
+import type { PreviewThemeSlot } from "@triliumnext/codemirror/src/code_preview.js";
 import {
     CANVAS_ATTACHMENT_MIME, getAttachmentEmbedHref, getDrawingPictureTitle, getEmbedKey,
     getNestedEmbedOptions, getNoteEmbedHref, isHttpUrl, isImageAttachmentRole, MIME_TYPE_AUTO,
-    normalizeMimeTypeForCKEditor, readLinkPreviewData, renderLinkEmbedHtml, renderLinkMentionHtml,
-    resolveContentEmbed, resolveEnabledMimeTypes, SHARE_HOSTED_NOTE_TYPES, SHARE_HOSTED_VIEW_TYPES,
-    shouldSyntaxHighlight, sliceToBlockReference
+    type MimeType, normalizeMimeTypeForCKEditor, readLinkPreviewData, renderLinkEmbedHtml,
+    renderLinkMentionHtml, resolveContentEmbed, resolveEnabledMimeTypes, SHARE_CODE_PREVIEW_THEMES,
+    SHARE_HOSTED_NOTE_TYPES, SHARE_HOSTED_VIEW_TYPES, shouldSyntaxHighlight, sliceToBlockReference
 } from "@triliumnext/commons";
 import { renderToHtml as renderMarkdownToHtml } from "@triliumnext/commons/src/lib/markdown_renderer.js";
 import { renderSpreadsheetToHtml } from "@triliumnext/commons/src/lib/spreadsheet/render_to_html.js";
@@ -521,7 +522,7 @@ export function getContent(note: SNote | BNote, options: ShareRenderOptions = {}
     } else if (note.type === "code" && note.mime === "text/x-markdown") {
         renderMarkdown(result, note);
     } else if (note.type === "code") {
-        renderCode(result, note.mime);
+        renderCode(result, note.mime, note);
     } else if (note.type === "mermaid") {
         renderMermaid(result, note);
         hostNoteView(result, note, options);
@@ -685,6 +686,10 @@ function renderText(result: Result, note: SNote | BNote, options: ShareRenderOpt
         for (const codeEl of document.querySelectorAll("pre code")) {
             if (codeEl.classList.contains("language-mermaid")) {
                 // Mermaid is handled on client-side, we don't want to break it by adding syntax highlighting.
+                continue;
+            }
+            // An embedded code note is already highlighted by `renderCode()`.
+            if (codeEl.classList.contains("code-preview-content")) {
                 continue;
             }
 
@@ -864,13 +869,25 @@ function highlightCodeBlock(codeEl: HTMLElement) {
     }
 }
 
+type CodePreviewModule = typeof import("@triliumnext/codemirror/src/code_preview.js");
+
 let registeredMimeTypesOption: string | null = null;
 let pendingRegistration: Promise<void> | null = null;
+/**
+ * The renderer of code notes, the share themes and the enabled MIME types, once
+ * `ensureShareHighlighting()` loads them.
+ */
+let codePreviews: {
+    module: CodePreviewModule;
+    themes: PreviewThemeSlot[];
+    enabledMimes: Set<string>;
+} | null = null;
 
 /**
  * Registers the highlight.js languages enabled in the `codeNotesMimeTypes` option and unregisters
- * the disabled ones, so `highlightAuto` considers only the enabled ones. The renderer is
- * synchronous, so callers await this before rendering a share page or a share-theme export.
+ * the disabled ones, so `highlightAuto` considers only the enabled ones. Loads the CodeMirror
+ * languages of the same MIME types for the code notes. The renderer is synchronous, so callers
+ * await this before rendering a share page or a share-theme export.
  */
 export function ensureShareHighlighting(): Promise<void> {
     const optionValue = options.getOptionOrNull("codeNotesMimeTypes");
@@ -880,9 +897,10 @@ export function ensureShareHighlighting(): Promise<void> {
 
     registeredMimeTypesOption = optionValue;
     pendingRegistration = Promise.resolve()
-        .then(() => {
+        .then(async () => {
             const enabledMimes = optionValue ? JSON.parse(optionValue) : null;
-            return syncMimeTypes(resolveEnabledMimeTypes(enabledMimes));
+            const mimeTypes = resolveEnabledMimeTypes(enabledMimes);
+            await Promise.all([ syncMimeTypes(mimeTypes), loadCodePreviews(mimeTypes) ]);
         })
         .catch((e: unknown) => {
             getLog().error(`Unable to register the languages for syntax highlighting: ${e}`);
@@ -891,12 +909,36 @@ export function ensureShareHighlighting(): Promise<void> {
     return pendingRegistration;
 }
 
+/** Loads the renderer of code notes, its themes and its languages for the enabled `mimeTypes`. */
+async function loadCodePreviews(mimeTypes: MimeType[]) {
+    const module = await import("@triliumnext/codemirror/src/code_preview.js");
+    const enabledMimes = mimeTypes.filter(({ enabled }) => enabled).map(({ mime }) => mime);
+    const [ themes ] = await Promise.all([
+        Promise.all(SHARE_CODE_PREVIEW_THEMES.map(async ({ id, key }) => ({
+            theme: await module.loadPreviewTheme(id), key
+        }))),
+        Promise.all(enabledMimes.map((mime) => module.loadPreviewLanguage(mime)))
+    ]);
+    codePreviews = { module, themes, enabledMimes: new Set(enabledMimes) };
+}
+
 /**
- * Renders a code note.
+ * Renders a code note as CodeMirror shows it, with line numbers, once `ensureShareHighlighting()`
+ * has loaded the renderer. Until then the code is escaped in a `<pre><code>`.
+ *
+ * @param note the note whose `#wrapLines` label sets the line wrapping, over the option.
  */
-export function renderCode(result: Result, mime?: string) {
+export function renderCode(result: Result, mime?: string, note?: SNote | BNote) {
     if (typeof result.content !== "string" || !result.content?.trim()) {
         result.isEmpty = true;
+    } else if (codePreviews) {
+        const { module, themes, enabledMimes } = codePreviews;
+        const language = mime && enabledMimes.has(mime) && shouldSyntaxHighlight(result.content)
+            ? module.getLoadedPreviewLanguage(mime) ?? null
+            : null;
+        result.content = module.renderCodePreview(result.content, {
+            themes, language, isWrapped: isLineWrapped(note)
+        });
     } else {
         // Escape the raw code so that any `<`/`>` it contains are not later re-parsed as HTML.
         // When such a code note is embedded into a shared text note, renderText re-parses the
@@ -909,6 +951,13 @@ export function renderCode(result: Result, mime?: string) {
             : "";
         result.content = `<pre><code${languageClass}>${escapeHtml(result.content)}</code></pre>`;
     }
+}
+
+function isLineWrapped(note: SNote | BNote | undefined) {
+    const label = note?.getLabelValue("wrapLines");
+    return label == null
+        ? options.getOptionOrNull("codeLineWrapEnabled") !== "false"
+        : label !== "false";
 }
 
 /**

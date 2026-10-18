@@ -28,9 +28,11 @@ const renderServiceRender = vi.fn(async (...args: any[]) => {
 });
 vi.mock("./render.js", () => ({ default: { render: (...args: any[]) => renderServiceRender(...args) } }));
 
-const applySingleBlockSyntaxHighlight = vi.fn(async (..._args: any[]) => {});
-vi.mock("./syntax_highlight.js", () => ({
-    applySingleBlockSyntaxHighlight: (...args: any[]) => applySingleBlockSyntaxHighlight(...args)
+const renderCodeNotePreview = vi.fn(async (content: string, _mime: string, _note?: unknown) => (
+    $("<pre>").append($("<code>").text(content))[0]
+));
+vi.mock("./code_note_preview.js", () => ({
+    renderCodeNotePreview: (...args: [ string, string, unknown ]) => renderCodeNotePreview(...args)
 }));
 
 const setupContextMenu = vi.fn((..._args: any[]) => {});
@@ -369,7 +371,8 @@ describe("getRenderedContent code rendering", () => {
         const { type, $renderedContent } = await getRenderedContent(note);
         expect(type).toBe("code");
         expect($renderedContent.find("pre > code").text()).toBe('{\n    "a": 1\n}');
-        expect(applySingleBlockSyntaxHighlight).toHaveBeenCalledOnce();
+        expect(renderCodeNotePreview.mock.calls)
+            .toEqual([ [ '{\n    "a": 1\n}', "application/json", note ] ]);
     });
 
     it("leaves invalid JSON untouched", async () => {
@@ -410,7 +413,7 @@ describe("getRenderedContent editable code", () => {
         });
         expect((await getRenderedContent(largeSource)).type).toBe("file");
         expect(large.getBlob).not.toHaveBeenCalled();
-        expect(applySingleBlockSyntaxHighlight).not.toHaveBeenCalled();
+        expect(renderCodeNotePreview).not.toHaveBeenCalled();
     });
 
     it("renders an attached code file as code, highlighted by the language of its name", async () => {
@@ -430,8 +433,8 @@ describe("getRenderedContent editable code", () => {
             attachment.getBlob = (async () => ({ content: "" })) as any;
             await getRenderedContent(attachment);
         }
-        expect(applySingleBlockSyntaxHighlight.mock.calls.map(([ , mime ]) => mime)).toEqual([
-            "text-x-python", "text-javascript", "application-typescript", "text-plain"
+        expect(renderCodeNotePreview.mock.calls.map(([ , mime ]) => mime)).toEqual([
+            "text/x-python", "text/javascript", "application/typescript", "text/plain"
         ]);
     });
 
@@ -546,14 +549,14 @@ describe("getRenderedContent editable code", () => {
         att.getBlob = (async () => ({ content: "echo 1" })) as any;
 
         await getRenderedContent(att, { codeLanguage: "text/x-sh" });
-        expect(applySingleBlockSyntaxHighlight.mock.lastCall?.[1]).toBe("text-x-sh");
+        expect(renderCodeNotePreview.mock.lastCall?.[1]).toBe("text/x-sh");
 
         await getRenderedContent(att, {
             codeLanguage: "text/x-sh", interactive: true, attachmentEditor: buildEditor()
         });
         const props = codeEmbedComponent.mock.lastCall?.[0];
         expect([ props.mime, props.codeLanguage ]).toEqual([ "text/x-python", "text/x-sh" ]);
-        expect(applySingleBlockSyntaxHighlight.mock.lastCall?.[1]).toBe("text-x-sh");
+        expect(renderCodeNotePreview.mock.lastCall?.[1]).toBe("text/x-sh");
     });
 
     it("mounts TextEmbed for an interactive text note, with a preview to render again", async () => {
