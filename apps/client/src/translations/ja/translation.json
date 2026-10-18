@@ -3054,7 +3054,11 @@
     "sample_wardley": "ウォードリーマップ",
     "sample_cynefin": "クネビン（Cynefin）",
     "sample_swimlane": "スイムレーン",
-    "sample_railroad": "レイルロード図"
+    "sample_railroad": "レイルロード図",
+    "syntax_help": "マーメイド構文に関するヘルプ",
+    "sample_event_modeling": "イベントモデリング",
+    "sample_use_case": "ユースケース",
+    "sample_agentflow": "エージェントフロー"
   },
   "llm_chat": {
     "placeholder": "メッセージを入力してください…",
