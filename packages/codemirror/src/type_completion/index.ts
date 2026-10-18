@@ -4,11 +4,11 @@ import { EditorView } from "@codemirror/view";
 /**
  * Full IntelliSense for backend/frontend script notes.
  *
- * Runs the real TypeScript language service (via `@typescript/vfs` +
- * `@valtown/codemirror-ts`) over the script source, fed with a curated
- * declaration of Trilium's `api` global. This replaces the ESLint-based
- * linting for these two MIME types with type-aware completion, hover docs
- * and diagnostics from a single source.
+ * Runs the real TypeScript language service (via `@typescript/vfs` and the
+ * extensions in `./codemirror-ts`, vendored from `@valtown/codemirror-ts`)
+ * over the script source, fed with a curated declaration of Trilium's `api`
+ * global. This replaces the ESLint-based linting for these two MIME types with
+ * type-aware completion, hover docs and diagnostics from a single source.
  *
  * Everything here is dynamically imported so the TypeScript compiler (a large
  * dependency) is only pulled into a lazy chunk when a script note is opened —
@@ -86,7 +86,7 @@ const COMPILER_OPTIONS = {
     // missing type annotations.
     noImplicitAny: false,
     // Surface dead code (e.g. statements after a `return`) as a TS7027 "Unreachable
-    // code detected." diagnostic, which `@valtown/codemirror-ts` renders as a
+    // code detected." diagnostic, which `tsCategoryToSeverity()` renders as a
     // *warning* marker rather than an error — the one warning-severity diagnostic
     // the script linter emits.
     allowUnreachableCode: false,
@@ -283,7 +283,7 @@ interface DisplayPart {
 }
 
 /**
- * Hover tooltip renderer that — unlike `@valtown/codemirror-ts`'s default, which
+ * Hover tooltip renderer that — unlike `defaultRenderer` in `./codemirror-ts/hover`, which
  * shows only the signature — also renders the JSDoc body and tags (`@param`,
  * `@returns`, `@example`, …). The doc text comes straight from the shared API
  * surface's `/** … *​/` comments.
@@ -355,8 +355,8 @@ function ignoredDiagnosticCodes(mime: string): number[] {
 /**
  * Returns the TypeScript diagnostic codes the script-note language service
  * surfaces for `code` under the given script MIME type, using the exact compiler
- * options and ignore list the editor uses. Mirrors `@valtown/codemirror-ts`'s
- * `getLints` (syntactic + semantic, minus the ignored codes), so tests reflect
+ * options and ignore list the editor uses. Mirrors `getLints()` in
+ * `./codemirror-ts/lint` (syntactic + semantic, minus the ignored codes), so tests reflect
  * what the user actually sees. Intended for tests asserting which diagnostics
  * are (and aren't) surfaced.
  */
@@ -390,7 +390,7 @@ export async function getScriptLints(mime: string, code: string, context: Script
 /**
  * Returns the completion entry names the language service offers at `offset` in
  * `code` for the given script MIME type — the same `getCompletionsAtPosition`
- * call that backs the editor's `tsAutocomplete()` source. Intended for tests
+ * call that `getAutocompletion()` makes for the editor's completion list. Intended for tests
  * asserting which completions (api members, JSX elements/attributes, …) are
  * surfaced.
  */

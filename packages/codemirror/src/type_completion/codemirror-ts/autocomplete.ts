@@ -28,8 +28,6 @@ export async function getAutocompletion({
     {},
   );
 
-  // TODO: build ATA support for a 'loading' state
-  // while types are being fetched
   if (!completionInfo) return null;
 
   const options = completionInfo.entries

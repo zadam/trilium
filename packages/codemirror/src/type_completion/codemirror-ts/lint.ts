@@ -28,8 +28,8 @@ export function tsLinter({
  * Lower-level interface to get semantic and syntactic
  * diagnostics from the TypeScript environment.
  *
- * This is used by tsLinter and tsLinterWorker,
- * but you can use it directly to power other UI.
+ * This is used by tsLinter, and by getScriptLints()
+ * for tests.
  */
 export function getLints({
   env,
@@ -115,8 +115,6 @@ export function tsDiagnosticMessage(
 export function convertTSDiagnosticToCM(
   d: ts.DiagnosticWithLocation,
 ): Diagnostic {
-  // We add some code at the end of the document, but we can't have a
-  // diagnostic in an invalid range
   const start = d.start;
   const message = tsDiagnosticMessage(d);
 
