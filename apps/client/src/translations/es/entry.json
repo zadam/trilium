@@ -66,7 +66,6 @@
         "sync-from-desktop-unreachable-description": "Para sincronizar, la otra aplicación de escritorio debe conectarse a esta a través de la red. Por seguridad, esta aplicación de escritorio solo acepta conexiones de este equipo, por lo que la otra aplicación aún no puede conectarse a ella. Permita el acceso de red a continuación: Trilium se reiniciará para aplicar el cambio.",
         "sync-from-desktop-allow-access": "Permitir acceso de red y reiniciar",
         "advanced-options": "Opciones avanzadas",
-        "sync-failed": "Error al sincronizar: {{- message}}",
         "sync-failed-title": "Error de sincronización",
         "sync-failed-description": "No se pudo completar la sincronización inicial. Puede reintentarlo o volver atrás para comprobar la dirección del servidor y las credenciales.",
         "sync-failed-admonition-title": "El último intento de sincronización falló",

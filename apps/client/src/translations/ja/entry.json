@@ -37,7 +37,6 @@
         "sync-from-desktop-warning": "両方のデバイスが同じネットワークに接続されていることを確認してください。",
         "sync-from-desktop-waiting": "接続を待機中...",
         "advanced-options": "詳細オプション",
-        "sync-failed": "同期に失敗しました: {{- message}}",
         "server-host": "Trilium サーバーアドレス",
         "server-host-placeholder": "https://<hostname>:<port>",
         "server-password": "パスワード",

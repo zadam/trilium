@@ -38,7 +38,6 @@
         "sync-from-desktop-warning": "请确保两台设备处于同一网络。",
         "sync-from-desktop-waiting": "正在等待连接…",
         "advanced-options": "高级选项",
-        "sync-failed": "同步失败： {{- message}}",
         "server-host": "Trilium 服务器地址",
         "server-host-placeholder": "https://<hostname>:<port>",
         "server-password": "密码",
