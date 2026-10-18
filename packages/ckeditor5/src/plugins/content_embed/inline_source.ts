@@ -15,6 +15,8 @@ import {
 import { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
 import {
 	type BoxSizeValue,
+	getCodeViewAttributes,
+	getCodeViewOfView,
 	getDisplayModeAttributes,
 	getDisplayModeOfView,
 	INLINE_BOX_SIZES,
@@ -155,7 +157,8 @@ export default class ContentEmbedInlineSource extends Plugin {
 			hideTitle: true,
 			...getModeOfSavedView( pre, code ),
 			...getFlagsOfView( pre ),
-			...getSizesOfView( pre )
+			...getSizesOfView( pre ),
+			...getCodeViewOfView( pre )
 		} );
 		if ( !api.safeInsert( embed, data.modelCursor ) ) {
 			return;
@@ -217,7 +220,10 @@ function downcastData( model: Model, embed: ModelElement, api: DowncastConversio
 		}
 	}
 
-	const pre = writer.createContainerElement( 'pre', preAttributes );
+	const pre = writer.createContainerElement( 'pre', {
+		...preAttributes,
+		...getCodeViewAttributes( embed )
+	} );
 	const code = writer.createContainerElement( 'code', {
 		class: `language-${ embed.getAttribute( 'language' ) as string }`
 	} );

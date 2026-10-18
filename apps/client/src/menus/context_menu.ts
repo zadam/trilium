@@ -49,6 +49,8 @@ export interface MenuItemBadge {
 
 export interface MenuCommandItem<T> {
     title: string;
+    /** A second line below the title, in smaller text. */
+    description?: string;
     command?: T;
     type?: string;
     mime?: string;

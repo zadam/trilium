@@ -1,17 +1,20 @@
 import "./MarkdownEmbed.css";
 
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import moveVerticalIcon from "boxicons/svg/regular/bx-move-vertical.svg?raw";
 import clsx from "clsx";
 import type { RefObject } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import type { CommandNames } from "../../../components/app_context";
 import type FAttachment from "../../../entities/fattachment";
 import FNote from "../../../entities/fnote";
+import type { MenuItem } from "../../../menus/context_menu";
 import type { ContentEditor } from "../../../services/content_renderer";
 import { isDesktop } from "../../../services/utils";
 import { useNoteCodeSettings } from "../../layout/code_menus";
 import { useDebouncedValue } from "../../react/hooks";
-import { SaveStatus, useSavedContent } from "../code/CodeEmbed";
+import { SaveStatus, useEmbedLines, useSavedContent } from "../code/CodeEmbed";
 import { EmbedSourcePane } from "../code/CodeEmbedEditor";
 import { resolveDisplayMode } from "../helpers/split_editor_mode";
 import { SplitLayout, useMountedPanes } from "../helpers/SplitEditor";
@@ -49,7 +52,8 @@ export default function MarkdownEmbed({
     const { canEdit, isEditing } = useEditableEmbed(rootRef, {
         editor, note, tools: null, focusTarget: ".cm-content"
     });
-    useDisplayModeTools(rootRef, canEdit);
+    const lines = useEmbedLines(rootRef, note);
+    useDisplayModeTools(rootRef, canEdit, lines.menuItems);
     const mode = resolveDisplayMode(useContentEmbedDisplayMode(rootRef), !isEditing);
     const isSourceShown = mode !== "preview";
     const { editorMounted, previewMounted } = useMountedPanes(mode);
@@ -85,11 +89,14 @@ export default function MarkdownEmbed({
                         isEditing={isEditing}
                         isSourceShown={isSourceShown}
                         note={note}
+                        ownerNote={entity instanceof FNote ? entity : entity.getNote()}
                         editor={editor}
                         content={content}
                         mime={MARKDOWN_MIME}
                         tabWidth={tabWidth}
                         useTabs={useTabs}
+                        wrapLines={lines.wrapLines}
+                        hasLineNumbers={lines.hasLineNumbers}
                         viewRef={viewRef}
                         onContentChange={setContent}
                         onReady={setView}
@@ -110,10 +117,17 @@ export function renderMarkdownHtml(source: string) {
 }
 
 /**
- * Offers the display modes of the content in `rootRef` on its embed, and the Editable toggle while
- * `canEdit`.
+ * Offers the display modes of the content in `rootRef` on its embed and its box size as an icon,
+ * and the Editable toggle and `menuItems` while `canEdit`.
  */
-function useDisplayModeTools(rootRef: RefObject<HTMLElement | null>, canEdit: boolean) {
+function useDisplayModeTools(
+    rootRef: RefObject<HTMLElement | null>,
+    canEdit: boolean,
+    menuItems: MenuItem<CommandNames>[]
+) {
+    const menuItemsRef = useRef(menuItems);
+    menuItemsRef.current = menuItems;
+
     useEffect(() => {
         const root = rootRef.current;
         if (!root) return;
@@ -121,9 +135,11 @@ function useDisplayModeTools(rootRef: RefObject<HTMLElement | null>, canEdit: bo
         return registerContentEmbedTools(root, {
             hasEditableFlag: canEdit,
             hasDisplayModes: true,
+            boxSizeIcon: moveVerticalIcon,
             getTools: () => [],
             execute: () => {},
-            subscribe: () => () => {}
+            subscribe: () => () => {},
+            getMenuItems: () => (canEdit ? menuItemsRef.current : [])
         });
     }, [ rootRef, canEdit ]);
 }

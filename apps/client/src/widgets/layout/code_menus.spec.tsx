@@ -9,8 +9,8 @@ import options from "../../services/options";
 import server from "../../services/server";
 import { buildNote } from "../../test/easy-froca";
 import {
-    type CodeMenu, type CodeSettings, type CodeText, useCodeLanguageMenu, useNoteCodeSettings,
-    useTabWidthMenu
+    type CodeMenu, type CodeSettings, type CodeText, getLineNumbersMenu, getWordWrapMenu,
+    useCodeLanguageMenu, useNoteCodeSettings, useTabWidthMenu
 } from "./code_menus";
 
 vi.mock("../../services/i18n", () => ({
@@ -172,6 +172,37 @@ describe("useCodeLanguageMenu", () => {
         expect(document.querySelector(".code-mime-types-modal .modal-dialog")).toBeNull();
         await act(async () => select(menu().items, "basic_properties.configure_code_notes"));
         expect(document.querySelector(".code-mime-types-modal .modal-dialog")).not.toBeNull();
+    });
+});
+
+describe("getWordWrapMenu and getLineNumbersMenu", () => {
+    it("check the current setting, and set it or follow the default again", async () => {
+        const setValue = vi.fn();
+        const wordWrap = getWordWrapMenu(undefined, setValue);
+        expect([ wordWrap.title, wordWrap.uiIcon ])
+            .toEqual([ "note_actions.word_wrap", "bx bx-align-justify" ]);
+        expect(describeItems(wordWrap.items ?? [])).toEqual([
+            "note_actions.word_wrap_auto ✓",
+            "note_actions.word_wrap_on ☐",
+            "note_actions.word_wrap_off ☐"
+        ]);
+        expect(wordWrap.items?.[0])
+            .toMatchObject({ description: "note_actions.word_wrap_auto_description" });
+
+        const lineNumbers = getLineNumbersMenu(false, setValue);
+        expect([ lineNumbers.title, lineNumbers.uiIcon ])
+            .toEqual([ "link_context_menu.line_numbers", "bx bx-list-ol" ]);
+        expect(describeItems(lineNumbers.items ?? [])).toEqual([
+            "link_context_menu.line_numbers_auto ☐",
+            "link_context_menu.line_numbers_on ☐",
+            "link_context_menu.line_numbers_off ✓"
+        ]);
+
+        for (const title of [ "link_context_menu.line_numbers_auto",
+            "link_context_menu.line_numbers_on", "link_context_menu.line_numbers_off" ]) {
+            await select(lineNumbers.items ?? [], title);
+        }
+        expect(setValue.mock.calls).toEqual([ [ null ], [ true ], [ false ] ]);
     });
 });
 

@@ -28,6 +28,9 @@ vi.mock("./CodeMirror", async (importOriginal) => {
     };
 });
 
+// The `/` list of a Markdown editor loads the task states from the `_taskStates` subtree.
+vi.mock("../../../services/task_states", () => ({ getTaskStateDefinitions: async () => [] }));
+
 describe("EditableCode", () => {
     const parent = { registerHandler() {}, removeHandler() {}, componentId: "c" } as any;
     const markdown = { type: "code", mime: "text/x-markdown" } as const;

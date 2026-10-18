@@ -1,7 +1,9 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tooltips, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
-import { Compartment, EditorSelection, EditorState, StateEffect, type Extension } from "@codemirror/state";
+import {
+    Compartment, EditorSelection, EditorState, Prec, StateEffect, type Extension
+} from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
 import { vim } from "@replit/codemirror-vim";
@@ -68,6 +70,8 @@ export interface EditorConfig {
     parent: HTMLElement;
     placeholder?: string;
     lineWrapping?: boolean;
+    /** Whether to show the line numbers in the gutter. Defaults to true. */
+    lineNumbers?: boolean;
     vimKeybindings?: boolean;
     readOnly?: boolean;
     /** Disables some of the nice-to-have features (bracket matching, syntax highlighting, indentation markers) in order to improve performance. */
@@ -100,6 +104,8 @@ export default class CodeMirror extends EditorView {
     private historyCompartment: Compartment;
     private themeCompartment: Compartment;
     private lineWrappingCompartment: Compartment;
+    private lineNumbersCompartment: Compartment;
+    private hasLineNumbers: boolean;
     private keyboardSuggestionsCompartment: Compartment;
     private indentUnitCompartment: Compartment;
     private searchHighlightCompartment: Compartment;
@@ -125,6 +131,7 @@ export default class CodeMirror extends EditorView {
         const historyCompartment = new Compartment();
         const themeCompartment = new Compartment();
         const lineWrappingCompartment = new Compartment();
+        const lineNumbersCompartment = new Compartment();
         const keyboardSuggestionsCompartment = new Compartment();
         const indentUnitCompartment = new Compartment();
         const searchHighlightCompartment = new Compartment();
@@ -149,7 +156,9 @@ export default class CodeMirror extends EditorView {
             typeCompletionCompartment.of([]),
             completionSourceCompartment.of([]),
             highlightActiveLine(),
-            lineNumbers(),
+            lineNumbersCompartment.of(
+                config.lineNumbers === false ? hiddenLineNumbersTheme : lineNumbers()
+            ),
             themeCompartment.of([
                 syntaxHighlighting(defaultHighlightStyle, { fallback: true })
             ]),
@@ -204,6 +213,8 @@ export default class CodeMirror extends EditorView {
         this.historyCompartment = historyCompartment;
         this.themeCompartment = themeCompartment;
         this.lineWrappingCompartment = lineWrappingCompartment;
+        this.lineNumbersCompartment = lineNumbersCompartment;
+        this.hasLineNumbers = config.lineNumbers !== false;
         this.keyboardSuggestionsCompartment = keyboardSuggestionsCompartment;
         this.indentUnitCompartment = indentUnitCompartment;
         this.searchHighlightCompartment = searchHighlightCompartment;
@@ -279,6 +290,19 @@ export default class CodeMirror extends EditorView {
     setLineWrapping(wrapping: boolean) {
         this.dispatch({
             effects: [ this.lineWrappingCompartment.reconfigure(wrapping ? EditorView.lineWrapping : []) ]
+        });
+    }
+
+    setLineNumbers(isShown: boolean) {
+        if (isShown === this.hasLineNumbers) return;
+
+        this.hasLineNumbers = isShown;
+        this.dispatch({
+            effects: [
+                this.lineNumbersCompartment.reconfigure(
+                    isShown ? lineNumbers() : hiddenLineNumbersTheme
+                )
+            ]
         });
     }
 
@@ -610,3 +634,14 @@ function getTooltipHost() {
     document.body.appendChild(host);
     return host;
 }
+
+/**
+ * Merges the gutter, which still holds the fold markers, into the code area while the line
+ * numbers are off. `Prec.highest` outranks the `.cm-gutters` rule of the color theme.
+ */
+const hiddenLineNumbersTheme = Prec.highest(EditorView.theme({
+    ".cm-gutters": {
+        border: "none",
+        backgroundColor: "transparent"
+    }
+}));

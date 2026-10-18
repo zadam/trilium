@@ -75,6 +75,7 @@ vi.mock("../components/app_context", () => ({
     }
 }));
 
+import { registerContentEmbedTools } from "../widgets/type_widgets/text/content_embed_tools";
 import linkContextMenu from "./link_context_menu";
 
 const VIEW_SCOPE = { viewMode: "attachments" as const, attachmentId: "att-1" };
@@ -626,6 +627,45 @@ describe("openContextMenu", () => {
                 { title: "display_mode.preview" },
                 { kind: "separator" }
             ]);
+        });
+
+        it("offers the items of its content after Editable, in a group of their own", async () => {
+            state = { ...state, isEditable: true, isEditableToggleable: true };
+            const content = embed().querySelector<HTMLElement>(".include-note-content");
+            if (!content) throw new Error("Expected the content box.");
+            const wrap = { title: "Word wrap", items: [] };
+            const lineNumbers = { title: "Show line numbers", checked: true };
+            const unregister = registerContentEmbedTools(content, {
+                getTools: () => [],
+                execute: () => {},
+                subscribe: () => () => {},
+                getMenuItems: () => [ wrap, lineNumbers ]
+            });
+
+            try {
+                expect((await openOn(editable.querySelector("a"))).slice(6, 12)).toMatchObject([
+                    { kind: "separator" },
+                    { title: "link_context_menu.editable" },
+                    wrap,
+                    lineNumbers,
+                    { kind: "separator" },
+                    { title: "link_context_menu.include_size" }
+                ]);
+
+                // Before the display modes, which follow in a group of their own.
+                state = { ...state, displayMode: "split" };
+                expect((await openOn(editable.querySelector("a"))).slice(9, 16)).toMatchObject([
+                    lineNumbers,
+                    { kind: "separator" },
+                    { title: "display_mode.source" },
+                    { title: "display_mode.split" },
+                    { title: "display_mode.preview" },
+                    { kind: "separator" },
+                    { title: "link_context_menu.include_size" }
+                ]);
+            } finally {
+                unregister();
+            }
         });
 
         it("appends the commands of an embedded note, its conversion in a group of its own", async () => {

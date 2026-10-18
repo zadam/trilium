@@ -96,13 +96,16 @@ type EmbedFlag = typeof FLAG_ATTRIBUTES[number][0];
 const DISPLAY_MODE_ATTRIBUTE = [ 'displayMode', 'data-display-mode' ] as const;
 
 /**
- * How an embed of an attachment shows its code: the language, as a MIME type, the tab width, and
- * whether it indents with tabs. Each is saved in a `data-*` attribute while it is set.
+ * How an embed shows its code: the language, as a MIME type, the tab width, whether it indents with
+ * tabs, whether it wraps the lines, and whether it shows line numbers. Each is saved in a `data-*`
+ * attribute while it is set.
  */
 const CODE_VIEW_ATTRIBUTES = [
 	[ 'codeLanguage', 'data-code-language' ],
 	[ 'codeTabWidth', 'data-code-tab-width' ],
-	[ 'codeIndentWithTabs', 'data-code-indent-with-tabs' ]
+	[ 'codeIndentWithTabs', 'data-code-indent-with-tabs' ],
+	[ 'codeWrapLines', 'data-code-wrap-lines' ],
+	[ 'codeLineNumbers', 'data-code-line-numbers' ]
 ] as const;
 
 /** The settings of `SetContentEmbedCodeViewCommand`. `null` removes a setting. */
@@ -110,6 +113,8 @@ export interface ContentEmbedCodeView {
 	language?: string | null;
 	tabWidth?: number | null;
 	indentWithTabs?: boolean | null;
+	wrapLines?: boolean | null;
+	lineNumbers?: boolean | null;
 }
 
 /** What the toolbar of an embed shows of it, for a menu offering the same commands. */
@@ -946,26 +951,32 @@ export class ToggleContentEmbedEditableCommand extends Command {
 }
 
 /**
- * Sets how the selected embed of an attachment shows its code. An embed of a note follows the
- * settings of the note instead.
+ * Sets how the selected embed shows its code. An embed of a note sets only the line numbers, and
+ * follows the other settings of the note.
  */
 export class SetContentEmbedCodeViewCommand extends Command {
 	override refresh() {
-		this.isEnabled = !!getSelectedContentEmbed( this.editor )?.getAttribute( 'attachmentId' );
+		this.isEnabled = !!getSelectedContentEmbed( this.editor );
 	}
 
 	/** Sets each setting given, and removes each given as `null`, as one undo step. */
-	override execute( { language, tabWidth, indentWithTabs }: ContentEmbedCodeView ) {
+	override execute( {
+		language, tabWidth, indentWithTabs, wrapLines, lineNumbers
+	}: ContentEmbedCodeView ) {
 		const embed = getSelectedContentEmbed( this.editor );
 		/* v8 ignore next 3 -- the command is enabled only while an embed is selected */
 		if ( !embed ) {
 			return;
 		}
 
-		const values = {
+		const values = embed.getAttribute( 'noteId' ) ? {
+			codeLineNumbers: lineNumbers
+		} : {
 			codeLanguage: language,
 			codeTabWidth: tabWidth,
-			codeIndentWithTabs: indentWithTabs
+			codeIndentWithTabs: indentWithTabs,
+			codeWrapLines: wrapLines,
+			codeLineNumbers: lineNumbers
 		};
 		this.editor.model.change( writer => {
 			for ( const [ attribute, value ] of Object.entries( values ) ) {
@@ -1277,7 +1288,7 @@ function getFlagAttributes( element: ModelElement ): Record<string, string> {
 }
 
 /** The `data-*` attributes of the code view settings of `element`. */
-function getCodeViewAttributes( element: ModelElement ): Record<string, string> {
+export function getCodeViewAttributes( element: ModelElement ): Record<string, string> {
 	return Object.fromEntries( CODE_VIEW_ATTRIBUTES
 		.filter( ( [ setting ] ) => element.hasAttribute( setting ) )
 		.map( ( [ setting, dataAttribute ] ) => [
@@ -1286,7 +1297,7 @@ function getCodeViewAttributes( element: ModelElement ): Record<string, string> 
 }
 
 /** The code view settings that the `data-*` attributes of a saved embed set. */
-function getCodeViewOfView( viewElement: ViewElement ): Record<string, string> {
+export function getCodeViewOfView( viewElement: ViewElement ): Record<string, string> {
 	return Object.fromEntries( CODE_VIEW_ATTRIBUTES
 		.filter( ( [ , dataAttribute ] ) => viewElement.hasAttribute( dataAttribute ) )
 		.map( ( [ setting, dataAttribute ] ) => [

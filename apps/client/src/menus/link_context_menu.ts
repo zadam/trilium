@@ -10,6 +10,7 @@ import { t } from "../services/i18n.js";
 import type { ViewScope } from "../services/link.js";
 import utils, { escapeHtml, isMobile, isShare } from "../services/utils.js";
 import { DISPLAY_MODE_OPTIONS } from "../widgets/type_widgets/helpers/split_editor_mode.js";
+import { getContentEmbedTools } from "../widgets/type_widgets/text/content_embed_tools.js";
 import { getClosestNtxId } from "../widgets/widget_utils.js";
 import contextMenu, { type ContextMenuOptions, type MenuItem } from "./context_menu.js";
 import { submenuItem } from "./context_menu_utils.js";
@@ -295,8 +296,9 @@ function getMenuEmbed(e: LinkMenuOrigin, editor: CKTextEditor): MenuEmbed | null
 }
 
 /**
- * The commands that the toolbar of an embed offers, with what each shows checked. Editable is
- * offered only for content that has an editable mode.
+ * The commands that the toolbar of an embed offers, with what each shows checked, and the items
+ * that its content adds after Editable. Editable is offered only for content that has an editable
+ * mode.
  */
 function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
     const { editor, state } = embed;
@@ -312,6 +314,7 @@ function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
         checked: state.isEditable,
         handler: () => runEmbedCommand(embed, "toggleContentEmbedEditable")
     } ] : [];
+    const contentItems = getContentEmbedTools(embed.element)?.getMenuItems?.() ?? [];
     const displayModeItems = state.displayMode
         ? DISPLAY_MODE_OPTIONS.map(({ value, icon, titleKey }): MenuItem<CommandNames> => ({
             title: t(titleKey),
@@ -323,6 +326,8 @@ function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
 
     return [
         ...editableItems,
+        ...contentItems,
+        ...(contentItems.length ? [ { kind: "separator" } as const ] : []),
         ...displayModeItems,
         ...(displayModeItems.length ? [ { kind: "separator" } as const ] : []),
         submenuItem({

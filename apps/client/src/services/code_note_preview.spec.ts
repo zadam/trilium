@@ -67,6 +67,17 @@ describe("renderCodeNotePreview", () => {
         expect(await isWrapped(buildNote({ title: "On", "#wrapLines": "" }))).toBe(true);
     });
 
+    it("wraps and numbers the lines as an embed sets, over the note and the option", async () => {
+        const { renderCodeNotePreview } = await freshModule({ codeLineWrapEnabled: "true" });
+        const note = buildNote({ title: "On", "#wrapLines": "" });
+        const render = (lines: Parameters<PreviewModule["renderCodeNotePreview"]>[3]) =>
+            renderCodeNotePreview(CODE, "text/javascript", note, lines);
+
+        expect((await render({})).className).toBe("code-preview code-preview-wrap");
+        expect((await render({ isWrapped: false, hasLineNumbers: false })).className)
+            .toBe("code-preview code-preview-no-line-numbers");
+    });
+
     it("shows code too long to highlight plain, still numbered", async () => {
         const { renderCodeNotePreview } = await freshModule({});
         const long = Array.from({ length: 600 }, () => "let a = 1;").join("\n");

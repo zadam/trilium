@@ -20,6 +20,8 @@ export interface CodePreviewOptions {
     /** The language that highlights the code, or `null` to show it plain. */
     language: Language | null;
     isWrapped: boolean;
+    /** Whether to number the lines. Defaults to true. */
+    hasLineNumbers?: boolean;
 }
 
 const DEFAULT_THEME_ID = "default";
@@ -41,12 +43,16 @@ const loadedLanguages = new Map<string, Language | null>();
  */
 export function renderCodePreview(
     code: string,
-    { themes, language, isWrapped }: CodePreviewOptions
+    { themes, language, isWrapped, hasLineNumbers = true }: CodePreviewOptions
 ) {
     const text = code.replace(/\r\n?/g, "\n");
     const lines = (language && highlightLines(text, language, themes))
         ?? text.split("\n").map(escapeHtml);
-    const className = isWrapped ? "code-preview code-preview-wrap" : "code-preview";
+    const className = [
+        "code-preview",
+        ...(isWrapped ? [ "code-preview-wrap" ] : []),
+        ...(hasLineNumbers ? [] : [ "code-preview-no-line-numbers" ])
+    ].join(" ");
     const attributes = themes
         .map(({ theme, key }) => ` data-code-theme-${key}="${escapeHtml(theme.id)}"`)
         .join("");

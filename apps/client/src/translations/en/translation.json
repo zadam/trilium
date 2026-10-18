@@ -3099,7 +3099,11 @@
     "include_size": "Size",
     "show_title": "Show title",
     "show_caption": "Show caption",
-    "editable": "Editable"
+    "editable": "Editable",
+    "line_numbers": "Line numbers",
+    "line_numbers_auto": "Auto",
+    "line_numbers_on": "On",
+    "line_numbers_off": "Off"
   },
   "electron_integration": {
     "desktop-application": "Desktop Application",
@@ -4383,6 +4387,7 @@
       "attach-file": "Attach file",
       "attach-file-as-a-link": "Attach file as a link",
       "box-size": "Box size",
+      "box-size-0": "Box size: %0",
       "bulleted-list": "Bulleted list",
       "caption-for-the-included-note": "Caption for the included note",
       "card": "Card",

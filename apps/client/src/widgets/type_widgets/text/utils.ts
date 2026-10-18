@@ -7,7 +7,7 @@ import linkContextMenu from "../../../menus/link_context_menu";
 import content_renderer, {
     type AttachmentEditor, CONTENT_RENDERERS, type NoteEditor
 } from "../../../services/content_renderer";
-import { getEmbedCaption } from "../../../services/content_renderer_text";
+import { getEmbedCaption, getEmbedCodeView } from "../../../services/content_renderer_text";
 import froca from "../../../services/froca";
 import link, { ViewScope } from "../../../services/link";
 import { getSourceEmbedTypeByLanguage } from "../../../services/source_embeds";
@@ -74,7 +74,8 @@ export async function loadEmbeddedNote(
         hasDisplayModes: true,
         noteEditor,
         block,
-        onBlockChange
+        onBlockChange,
+        hasCodeLineNumbers: getEmbedCodeView(el.closest(".include-note")).hasCodeLineNumbers
     });
 
     const box = h(ContentEmbed, {
@@ -140,7 +141,7 @@ export async function loadEmbeddedAttachment(
         mediaEnvironment: "embedded",
         hasDisplayModes: true,
         attachmentEditor,
-        codeLanguage: el.closest(".include-note")?.getAttribute("data-code-language") ?? undefined
+        ...getEmbedCodeView(el.closest(".include-note"))
     });
 
     const box = h(ContentEmbed, {

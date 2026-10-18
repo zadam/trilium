@@ -99,6 +99,29 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
   - `hasEditableFlag` — shows the Editable toggle; the embed carries `data-editable="true"`.
   - `hasDisplayModes` — shows Source/Split/Preview; the embed carries `data-display-mode`.
   - `hiddenToolbarItems` — moves box size, title or convert-to-link from the toolbar to the ⋮ menu.
+  - `boxSizeIcon` — an SVG the box size dropdown shows in place of the size name, which moves to
+    its tooltip (`Box size: %0`). Code and Markdown embeds set it even while read-only
+    (`hasEditableFlag: false`), so every one of them shows the icon; code embeds through
+    `useContentEmbedMenus()`.
+  - `getMenuItems()` — items of the ⋮ menu after Editable, in a group of their own
+    (`useContentEmbedMenus(rootRef, menus, menuItems)` passes them through).
+- **A CodeMirror pane in an embed** (code, Markdown, Mermaid) takes its line wrapping and line
+  numbers from `useEmbedLines(rootRef, note)` (`code/CodeEmbed.tsx`): pass `wrapLines` /
+  `hasLineNumbers` to `EmbedSourcePane` or `CodeEmbedEditor`, and `menuItems` (the _Word wrap_
+  and _Line numbers_ submenus) to `getMenuItems()` while the content can be edited. A note keeps
+  the wrapping in `#wrapLines`; everything else lives in `data-code-wrap-lines` /
+  `data-code-line-numbers`, on the `<pre>` for inline source (the code view command sets only
+  line numbers on a note embed). `ReadOnlyText` copies them from the `<pre>` to its box.
+- **The `/` list** of a CodeMirror pane is the note's own: `CodeEditor` calls
+  `useEditorCompletions()` (`code/editor_completions.tsx`) with its `completions` prop, which
+  `CodeEmbedEditor` passes while it has an `editor`. For any language other than Markdown it
+  only loads the snippets of the pane's MIME type and hands them to `CodeMirror`'s `getSnippets`,
+  which `codeCompletions()` (`code/code_completions.tsx`) lists with the TypeScript completions.
+  For Markdown it registers its own list instead: the commands and snippets, `@` and `[[`, which
+  need `ownerNote` (the note an attachment belongs to) for uploads and new notes.
+  `getEdgeLeftBy()` holds the caret in the embed while either list is open. Specs that mount an editable Markdown pane mock
+  `services/task_states`; specs that mount any of them keep `services/i18n` partial
+  (`importOriginal`), as `NoteAutocomplete` reads it.
   - `group` on a tool — a separator goes between groups. Notify listeners only when the tools
     really changed (`MermaidDiagramTools.update()` compares a JSON snapshot) and after the render
     (`queueMicrotask`), as a listener updates the editor's toolbar.
@@ -190,7 +213,13 @@ in-place drawings replaced the code blocks the boxes need.
   included note.
 - **CodeMirror's `readOnly` is fixed at creation.** Remount the editor when editability changes
   (`key={isEditing ? "editing" : "read-only"}` on `CodeEmbedEditor`). Test with
-  `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`.
+  `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`. A read-only
+  `CodeEmbedEditor` carries the `read-only` class, which hides the active-line highlight.
+- **A parent render can run effects ahead of CodeMirror's.** Preact runs a component's pending
+  effects when it renders again before they flush, so the `setContent` that `onClose` causes as
+  Editable goes off ran the new `CodeEmbedEditor`'s effects before `CodeMirror` created the view:
+  no find target, no `onReady`. Its effects wait for the `view` state that `onInitialized` sets;
+  the content loads in a layout effect, so it paints with the editor.
 - **Box sizes need a title row.** Tiny and Expandable show only the title, so an untitled inline
   embed was invisible at Tiny. `INLINE_BOX_SIZES` (Small, Medium, Full) limits the dropdown, the
   command and the ⋮ menu (`getBoxSizes(domElement)`), and other sizes load as Medium. Give each

@@ -712,6 +712,27 @@ describe("content_renderer", () => {
             expect(result.content).not.toContain("hljs");
         });
 
+        it("numbers the lines of an embedded code note unless its embed turns them off", async () => {
+            await ensureShareHighlighting();
+            buildShareNotes([
+                { id: "pylines", type: "code", mime: "text/x-python", content: "x = 1" }
+            ]);
+            const hasLineNumbers = (attributes: string) => {
+                const result = getContent(buildShareNote({
+                    content: `<section class="include-note" data-note-id="pylines"${attributes}>`
+                        + "&nbsp;</section>"
+                }));
+                if (typeof result.content !== "string") throw new Error("expected string content");
+                const preview = parse(result.content).querySelector("pre.code-preview");
+                if (!preview) throw new Error("expected a code preview");
+                return !preview.classList.contains("code-preview-no-line-numbers");
+            };
+
+            expect(hasLineNumbers("")).toBe(true);
+            expect(hasLineNumbers(' data-code-line-numbers="true"')).toBe(true);
+            expect(hasLineNumbers(' data-code-line-numbers="false"')).toBe(false);
+        });
+
         it("renders a picture or drawing embed as an image, any other embed as a download", () => {
             const embed = (id: string) =>
                 `<section class="include-note" data-attachment-id="${id}">&nbsp;</section>`;

@@ -28,11 +28,14 @@ const renderServiceRender = vi.fn(async (...args: any[]) => {
 });
 vi.mock("./render.js", () => ({ default: { render: (...args: any[]) => renderServiceRender(...args) } }));
 
-const renderCodeNotePreview = vi.fn(async (content: string, _mime: string, _note?: unknown) => (
-    $("<pre>").append($("<code>").text(content))[0]
-));
+const renderCodeNotePreview = vi.fn(
+    async (content: string, _mime: string, _note?: unknown, _lines?: unknown) => (
+        $("<pre>").append($("<code>").text(content))[0]
+    )
+);
 vi.mock("./code_note_preview.js", () => ({
-    renderCodeNotePreview: (...args: [ string, string, unknown ]) => renderCodeNotePreview(...args)
+    renderCodeNotePreview: (...args: [ string, string, unknown, unknown ]) =>
+        renderCodeNotePreview(...args)
 }));
 
 const setupContextMenu = vi.fn((..._args: any[]) => {});
@@ -372,7 +375,7 @@ describe("getRenderedContent code rendering", () => {
         expect(type).toBe("code");
         expect($renderedContent.find("pre > code").text()).toBe('{\n    "a": 1\n}');
         expect(renderCodeNotePreview.mock.calls)
-            .toEqual([ [ '{\n    "a": 1\n}', "application/json", note ] ]);
+            .toEqual([ [ '{\n    "a": 1\n}', "application/json", note, {} ] ]);
     });
 
     it("leaves invalid JSON untouched", async () => {
@@ -457,7 +460,7 @@ describe("getRenderedContent editable code", () => {
         expect(props.entity).toBe(note);
         expect(props.content).toBe("unsaved");
         expect(props.mime).toBe("text/javascript");
-        expect(props.preview.textContent).toBe("unsaved");
+        expect(renderCodeNotePreview).not.toHaveBeenCalled();
 
         const getContent = () => "edited";
         const onSaved = () => {};
@@ -556,7 +559,22 @@ describe("getRenderedContent editable code", () => {
         });
         const props = codeEmbedComponent.mock.lastCall?.[0];
         expect([ props.mime, props.codeLanguage ]).toEqual([ "text/x-python", "text/x-sh" ]);
-        expect(renderCodeNotePreview.mock.lastCall?.[1]).toBe("text/x-sh");
+        expect(renderCodeNotePreview).toHaveBeenCalledOnce();
+    });
+
+    it("wraps and numbers the lines of code as its embed sets, for CodeEmbed too", async () => {
+        const att = buildAttachment({ role: "file", mime: "text/plain", title: "a.py" });
+        att.getBlob = (async () => ({ content: "echo 1" })) as any;
+        const lines = { isCodeWrapped: false, hasCodeLineNumbers: false };
+
+        await getRenderedContent(att, lines);
+        expect(renderCodeNotePreview.mock.lastCall?.[3])
+            .toEqual({ isWrapped: false, hasLineNumbers: false });
+
+        await getRenderedContent(att, {
+            ...lines, interactive: true, attachmentEditor: buildEditor()
+        });
+        expect(codeEmbedComponent.mock.lastCall?.[0]).toMatchObject(lines);
     });
 
     it("mounts TextEmbed for an interactive text note, with a preview to render again", async () => {
@@ -619,31 +637,34 @@ describe("getRenderedContent editable code", () => {
         const json = buildNote({
             title: "Data", type: "file", mime: "application/json", content: "{}"
         });
-        const { $renderedContent } = await getRenderedContent(json, {
+        await getRenderedContent(json, {
             interactive: true,
             noteEditor: buildEditor()
         });
 
-        expect($renderedContent.find("pre > code").text()).toBe("{}");
-        expect(codeEmbedComponent).not.toHaveBeenCalled();
+        const props = codeEmbedComponent.mock.lastCall?.[0];
+        expect([ props.entity, props.editor, props.content ]).toEqual([ json, undefined, "{}" ]);
     });
 
-    it("keeps the static preview without an editor, or outside an embed", async () => {
+    it("shows code read-only without an editor, and as a static preview outside an embed", async () => {
         const note = buildNote({
             title: "Script", type: "code", mime: "text/javascript", content: "x"
         });
         const att = buildAttachment({ role: "file", mime: "text/plain" });
         att.getBlob = (async () => ({ content: "y" })) as any;
 
-        const results = await Promise.all([
-            getRenderedContent(note, { interactive: true, attachmentEditor: buildEditor() }),
-            getRenderedContent(att, { interactive: true, noteEditor: buildEditor() }),
-            getRenderedContent(note, { noteEditor: buildEditor() })
-        ]);
+        await getRenderedContent(note, { interactive: true, attachmentEditor: buildEditor() });
+        await getRenderedContent(att, { interactive: true, noteEditor: buildEditor() });
+        expect(codeEmbedComponent.mock.calls.map(([ props ]) => [
+            props.entity, props.editor, props.content
+        ])).toEqual([ [ note, undefined, "x" ], [ att, undefined, "y" ] ]);
+        expect(renderCodeNotePreview).not.toHaveBeenCalled();
 
-        expect(results.map(({ $renderedContent }) => $renderedContent.find("pre > code").text()))
-            .toEqual([ "x", "y", "x" ]);
-        expect(codeEmbedComponent).not.toHaveBeenCalled();
+        const { $renderedContent: $static } = await getRenderedContent(note, {
+            noteEditor: buildEditor()
+        });
+        expect($static.find("pre > code").text()).toBe("x");
+        expect(codeEmbedComponent).toHaveBeenCalledTimes(2);
 
         const text = buildNote({ title: "Doc", type: "text", content: "<p>Hi</p>" });
         const { $renderedContent } = await getRenderedContent(text, { noteEditor: buildEditor() });

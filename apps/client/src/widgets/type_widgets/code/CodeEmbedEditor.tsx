@@ -1,6 +1,7 @@
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import clsx from "clsx";
 import type { RefObject } from "preact";
-import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
@@ -12,6 +13,8 @@ import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
     note: FNote | null;
+    /** The note that holds an attachment, which images upload to and new notes go under. */
+    ownerNote?: FNote | null;
     /** Saves the edits, or `undefined` to show the content read-only. */
     editor: ContentEditor | undefined;
     content: string;
@@ -20,6 +23,10 @@ export interface CodeEmbedEditorProps {
     tabWidth: number | undefined;
     /** Whether to indent with tabs, or `undefined` to follow the global option. */
     useTabs: boolean | undefined;
+    /** Whether to wrap the lines, over the `#wrapLines` label of `note` and the global option. */
+    wrapLines?: boolean;
+    /** Whether to show the line numbers. Shown by default. */
+    hasLineNumbers?: boolean;
     /** Holds the CodeMirror view while the editor is open, and `null` once it goes away. */
     viewRef: RefObject<VanillaCodeMirror | null>;
     /** Whether the editor shows. "Search in note" skips a hidden one. Shown by default. */
@@ -37,24 +44,25 @@ export interface CodeEmbedEditorProps {
  * `editor`, the content is read-only.
  */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, tabWidth, useTabs, viewRef, isShown = true, onClose, onChange,
-    onReady
+    note, ownerNote, editor, content, mime, tabWidth, useTabs, wrapLines, hasLineNumbers, viewRef,
+    isShown = true, onClose, onChange, onReady
 }: CodeEmbedEditorProps) {
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
     const [ noteWrapLines ] = useNoteLabelOptionalBool(note, "wrapLines");
+    const lineWrapping = wrapLines ?? noteWrapLines;
+    // The effects below wait for this state rather than read `viewRef`: a render of this component
+    // before the effects flush runs them ahead of the effect of `CodeMirror` that creates the view.
+    const [ view, setView ] = useState<VanillaCodeMirror | null>(null);
     useEmbedCaretNavigation(() => viewRef.current);
 
-    // Runs after the effects of `CodeMirror`, which creates the view.
     useEffect(() => {
-        const view = viewRef.current;
         if (view) {
             onReady?.(view);
         }
-    }, []);
+    }, [ view ]);
 
     useEffect(() => {
-        const view = viewRef.current;
         if (!view || !isShown) return;
 
         const unregister = registerEmbedFindTarget(view.dom, new CodeMirrorFindTarget(view));
@@ -65,11 +73,11 @@ export default function CodeEmbedEditor({
                 view.cleanSearch();
             }
         };
-    }, [ isShown ]);
+    }, [ view, isShown ]);
 
-    // Runs after the effects of `CodeMirror`, which empties the document as it mounts.
-    useEffect(() => {
-        const view = viewRef.current;
+    // Runs after the effects of `CodeMirror`, which empties the document as it mounts, and before
+    // the editor first paints.
+    useLayoutEffect(() => {
         if (!view || view.getText() === content) return;
 
         // Loading changes the document as well, which must not schedule a save.
@@ -77,7 +85,7 @@ export default function CodeEmbedEditor({
         view.setText(content);
         isLoadingRef.current = false;
         view.clearHistory();
-    }, [ content ]);
+    }, [ view, content ]);
 
     // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
     useLayoutEffect(() => () => {
@@ -94,10 +102,13 @@ export default function CodeEmbedEditor({
         <CodeEditor
             ntxId={null}
             editorRef={viewRef}
-            className="code-embed-editor"
+            className={clsx("code-embed-editor", !editor && "read-only")}
             mime={mime}
+            completions={editor && { note, ownerNote }}
             vimKeybindings={vimKeymapEnabled}
             readOnly={!editor}
+            lineNumbers={hasLineNumbers}
+            onInitialized={() => setView(viewRef.current)}
             onContentChanged={() => {
                 if (editor && !isLoadingRef.current) {
                     editor.scheduleSave(() => viewRef.current?.getText() ?? "");
@@ -106,7 +117,7 @@ export default function CodeEmbedEditor({
             }}
             {...(tabWidth !== undefined && { indentSize: tabWidth })}
             {...(useTabs !== undefined && { useTabs })}
-            {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
+            {...(lineWrapping != null && { lineWrapping })}
         />
     );
 }
