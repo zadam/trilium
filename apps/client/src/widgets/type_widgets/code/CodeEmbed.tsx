@@ -1,7 +1,7 @@
 import type { ContentEmbedCodeView } from "@triliumnext/ckeditor5";
 import type VanillaCodeMirror from "@triliumnext/codemirror";
 import { createPortal, type RefObject } from "preact";
-import { lazy, useSyncExternalStore } from "preact/compat";
+import { lazy, Suspense, useSyncExternalStore } from "preact/compat";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { CommandNames } from "../../../components/app_context";
@@ -9,28 +9,25 @@ import type FAttachment from "../../../entities/fattachment";
 import FNote from "../../../entities/fnote";
 import type { MenuItem } from "../../../menus/context_menu";
 import type { CodePreviewLines } from "../../../services/code_note_preview";
-import { type ContentEditor, renderCodePreview } from "../../../services/content_renderer";
+import type { ContentEditor } from "../../../services/content_renderer";
 import {
     type CodeSettings, type CodeText, getLineNumbersMenu, getWordWrapMenu, useCodeLanguageMenu,
     useNoteCodeSettings, useTabWidthMenu
 } from "../../layout/code_menus";
 import { SaveStateBadge } from "../../layout/NoteBadges";
-import {
-    useNoteBlob, useNoteLabelOptionalBool, useTriliumEvent, useTriliumOption
-} from "../../react/hooks";
+import { useNoteBlob, useNoteLabelOptionalBool, useTriliumEvent } from "../../react/hooks";
 import { useContentEmbedMenus } from "../text/content_embed_menus";
 import { useContentEmbedAttribute, useContentEmbedFlag } from "../text/content_embed_tools";
 import {
-    EditableEmbedContent, findTextEditorAround, useEditableEmbed, useEmbedBadgeSlot,
-    useEmbedPreview
+    CaretNavigationContext, findTextEditorAround, useEditableEmbed, useEmbedBadgeSlot
 } from "../text/editable_embed";
 
 const CodeEmbedEditor = lazy(() => import("./CodeEmbedEditor"));
 
 interface CodeEmbedProps {
     entity: FNote | FAttachment;
-    /** Saves the changes to `entity`. */
-    editor: ContentEditor;
+    /** Saves the changes to `entity`, or `undefined` where the content is read-only. */
+    editor: ContentEditor | undefined;
     /** The content shown first. */
     content: string;
     /**
@@ -44,17 +41,15 @@ interface CodeEmbedProps {
     isCodeWrapped?: boolean;
     /** Whether the embed shows line numbers. Shown by default. */
     hasCodeLineNumbers?: boolean;
-    /** The highlighted `content`. */
-    preview: HTMLElement;
 }
 
 /**
- * A code note or a code file in an embed, shown highlighted, and edited with CodeMirror while the
- * Editable toggle of its embed is on.
+ * A code note or a code file in an embed, shown in a read-only CodeMirror, which edits the content
+ * while the Editable toggle of its embed is on.
  */
 export default function CodeEmbed({
     entity, editor, content: initialContent, mime: initialMime, codeLanguage, isCodeWrapped,
-    hasCodeLineNumbers, preview
+    hasCodeLineNumbers
 }: CodeEmbedProps) {
     const rootRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<VanillaCodeMirror>(null);
@@ -72,54 +67,48 @@ export default function CodeEmbed({
     const [ content, setContent ] = useState(initialContent);
     const mime = settings.mime ?? initialMime;
     useSavedContent(entity, editor, setContent);
-    const appearance = useCodePreviewAppearance();
-    const { wrapLines, hasLineNumbers } = lines;
-    const shownPreview = useEmbedPreview(
-        preview,
-        `${mime}\n${appearance}\n${wrapLines}\n${hasLineNumbers}\n${content}`,
-        () => renderCodePreview(content, mime, note, { isWrapped: wrapLines, hasLineNumbers }),
-        isEditing
-    );
-    // The editor while it is open, otherwise the content with the unsaved changes of any embed of
-    // it, which a change saves.
-    const getCodeText = (): CodeText => viewRef.current ?? {
-        getText: () => editor.getUnsavedContent() ?? content,
-        setText: (text) => {
-            editor.scheduleSave(() => text);
-            setContent(text);
-        }
+    // The editor while the content is edited, otherwise the content with the unsaved changes of any
+    // embed of it, which a change saves.
+    const getCodeText = (contentEditor: ContentEditor): CodeText => {
+        const view = isEditing ? viewRef.current : null;
+        return view ?? {
+            getText: () => contentEditor.getUnsavedContent() ?? content,
+            setText: (text) => {
+                contentEditor.scheduleSave(() => text);
+                setContent(text);
+            }
+        };
     };
 
     return (
         <>
-            <EditableEmbedContent
-                rootRef={rootRef}
-                className="code-embed-content"
-                isEditing={isEditing}
-                hasCaretNavigation
-                preview={shownPreview}
-            >
-                <CodeEmbedEditor
-                    note={note}
-                    ownerNote={entity instanceof FNote ? entity : entity.getNote()}
-                    editor={editor}
-                    content={content}
-                    mime={mime}
-                    tabWidth={settings.tabWidth}
-                    useTabs={settings.useTabs}
-                    wrapLines={wrapLines}
-                    hasLineNumbers={hasLineNumbers}
-                    viewRef={viewRef}
-                    onClose={setContent}
-                />
-            </EditableEmbedContent>
-            <SaveStatus rootRef={rootRef} editor={editor} isShown={isEditing} />
-            {canEdit && (
+            <div ref={rootRef} className="code-embed-content">
+                <CaretNavigationContext.Provider value={isEditing ? rootRef : null}>
+                    <Suspense fallback={null}>
+                        <CodeEmbedEditor
+                            key={isEditing ? "editing" : "read-only"}
+                            note={note}
+                            ownerNote={entity instanceof FNote ? entity : entity.getNote()}
+                            editor={isEditing ? editor : undefined}
+                            content={content}
+                            mime={mime}
+                            tabWidth={settings.tabWidth}
+                            useTabs={settings.useTabs}
+                            wrapLines={lines.wrapLines}
+                            hasLineNumbers={lines.hasLineNumbers}
+                            viewRef={viewRef}
+                            onClose={setContent}
+                        />
+                    </Suspense>
+                </CaretNavigationContext.Provider>
+            </div>
+            {editor && <SaveStatus rootRef={rootRef} editor={editor} isShown={isEditing} />}
+            {editor && canEdit && (
                 <CodeTools
                     rootRef={rootRef}
                     settings={settings}
                     menuItems={lines.menuItems}
-                    getCodeText={getCodeText}
+                    getCodeText={() => getCodeText(editor)}
                 />
             )}
         </>
@@ -170,17 +159,6 @@ export function useEmbedLines(
             })
         ]
     };
-}
-
-/** The options that `renderCodePreview()` draws with, as a key that changes with any of them. */
-function useCodePreviewAppearance() {
-    const [ theme ] = useTriliumOption("codeNoteTheme");
-    const [ matchesApp ] = useTriliumOption("codeNoteThemeMatchesApp");
-    const [ lightTheme ] = useTriliumOption("codeNoteThemeLight");
-    const [ darkTheme ] = useTriliumOption("codeNoteThemeDark");
-    const [ isWrapped ] = useTriliumOption("codeLineWrapEnabled");
-
-    return [ theme, matchesApp, lightTheme, darkTheme, isWrapped ].join("\n");
 }
 
 /**

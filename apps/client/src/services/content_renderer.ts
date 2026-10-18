@@ -483,8 +483,9 @@ async function renderIconPack(note: FNote, $renderedContent: JQuery<HTMLElement>
 
 /**
  * Renders a code note or file, by displaying its content and applying syntax highlighting based on
- * the selected MIME type. Interactive content that an editor can save mounts `CodeEmbed`, which
- * edits the content with CodeMirror while the Editable toggle of its embed is on.
+ * the selected MIME type. Interactive content mounts `CodeEmbed`, which shows the content in a
+ * read-only CodeMirror, and edits it while the Editable toggle of its embed is on if an editor can
+ * save it.
  */
 async function renderCode(
     entity: FNote | FAttachment,
@@ -495,14 +496,13 @@ async function renderCode(
     const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
     const mime = getCodeMime(entity);
     const { codeLanguage, isCodeWrapped, hasCodeLineNumbers } = options;
-    const note = entity instanceof FNote ? entity : null;
-    const preview = await renderCodePreview(content, codeLanguage ?? mime, note, {
-        isWrapped: isCodeWrapped,
-        hasLineNumbers: hasCodeLineNumbers
-    });
 
-    if (!editor) {
-        $renderedContent.append(preview);
+    if (!options.interactive) {
+        const note = entity instanceof FNote ? entity : null;
+        $renderedContent.append(await renderCodePreview(content, codeLanguage ?? mime, note, {
+            isWrapped: isCodeWrapped,
+            hasLineNumbers: hasCodeLineNumbers
+        }));
         return;
     }
 
@@ -511,7 +511,7 @@ async function renderCode(
     const container = $container.get(0);
     if (container) {
         await mountInteractiveWidget(h(CodeEmbed, {
-            entity, editor, content, mime, codeLanguage, isCodeWrapped, hasCodeLineNumbers, preview
+            entity, editor, content, mime, codeLanguage, isCodeWrapped, hasCodeLineNumbers
         }), container);
     }
     $renderedContent.append($container);
@@ -522,7 +522,7 @@ async function renderCode(
  *
  * @param note the note whose `#wrapLines` label sets the line wrapping, unless `lines` sets it.
  */
-export async function renderCodePreview(
+async function renderCodePreview(
     content: string,
     mime: string,
     note?: FNote | null,

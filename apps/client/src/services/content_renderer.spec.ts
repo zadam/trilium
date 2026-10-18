@@ -460,7 +460,7 @@ describe("getRenderedContent editable code", () => {
         expect(props.entity).toBe(note);
         expect(props.content).toBe("unsaved");
         expect(props.mime).toBe("text/javascript");
-        expect(props.preview.textContent).toBe("unsaved");
+        expect(renderCodeNotePreview).not.toHaveBeenCalled();
 
         const getContent = () => "edited";
         const onSaved = () => {};
@@ -559,7 +559,7 @@ describe("getRenderedContent editable code", () => {
         });
         const props = codeEmbedComponent.mock.lastCall?.[0];
         expect([ props.mime, props.codeLanguage ]).toEqual([ "text/x-python", "text/x-sh" ]);
-        expect(renderCodeNotePreview.mock.lastCall?.[1]).toBe("text/x-sh");
+        expect(renderCodeNotePreview).toHaveBeenCalledOnce();
     });
 
     it("wraps and numbers the lines of code as its embed sets, for CodeEmbed too", async () => {
@@ -637,31 +637,34 @@ describe("getRenderedContent editable code", () => {
         const json = buildNote({
             title: "Data", type: "file", mime: "application/json", content: "{}"
         });
-        const { $renderedContent } = await getRenderedContent(json, {
+        await getRenderedContent(json, {
             interactive: true,
             noteEditor: buildEditor()
         });
 
-        expect($renderedContent.find("pre > code").text()).toBe("{}");
-        expect(codeEmbedComponent).not.toHaveBeenCalled();
+        const props = codeEmbedComponent.mock.lastCall?.[0];
+        expect([ props.entity, props.editor, props.content ]).toEqual([ json, undefined, "{}" ]);
     });
 
-    it("keeps the static preview without an editor, or outside an embed", async () => {
+    it("shows code read-only without an editor, and as a static preview outside an embed", async () => {
         const note = buildNote({
             title: "Script", type: "code", mime: "text/javascript", content: "x"
         });
         const att = buildAttachment({ role: "file", mime: "text/plain" });
         att.getBlob = (async () => ({ content: "y" })) as any;
 
-        const results = await Promise.all([
-            getRenderedContent(note, { interactive: true, attachmentEditor: buildEditor() }),
-            getRenderedContent(att, { interactive: true, noteEditor: buildEditor() }),
-            getRenderedContent(note, { noteEditor: buildEditor() })
-        ]);
+        await getRenderedContent(note, { interactive: true, attachmentEditor: buildEditor() });
+        await getRenderedContent(att, { interactive: true, noteEditor: buildEditor() });
+        expect(codeEmbedComponent.mock.calls.map(([ props ]) => [
+            props.entity, props.editor, props.content
+        ])).toEqual([ [ note, undefined, "x" ], [ att, undefined, "y" ] ]);
+        expect(renderCodeNotePreview).not.toHaveBeenCalled();
 
-        expect(results.map(({ $renderedContent }) => $renderedContent.find("pre > code").text()))
-            .toEqual([ "x", "y", "x" ]);
-        expect(codeEmbedComponent).not.toHaveBeenCalled();
+        const { $renderedContent: $static } = await getRenderedContent(note, {
+            noteEditor: buildEditor()
+        });
+        expect($static.find("pre > code").text()).toBe("x");
+        expect(codeEmbedComponent).toHaveBeenCalledTimes(2);
 
         const text = buildNote({ title: "Doc", type: "text", content: "<p>Hi</p>" });
         const { $renderedContent } = await getRenderedContent(text, { noteEditor: buildEditor() });

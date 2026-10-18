@@ -207,7 +207,13 @@ in-place drawings replaced the code blocks the boxes need.
   included note.
 - **CodeMirror's `readOnly` is fixed at creation.** Remount the editor when editability changes
   (`key={isEditing ? "editing" : "read-only"}` on `CodeEmbedEditor`). Test with
-  `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`.
+  `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`. A read-only
+  `CodeEmbedEditor` carries the `read-only` class, which hides the active-line highlight.
+- **A parent render can run effects ahead of CodeMirror's.** Preact runs a component's pending
+  effects when it renders again before they flush, so the `setContent` that `onClose` causes as
+  Editable goes off ran the new `CodeEmbedEditor`'s effects before `CodeMirror` created the view:
+  no find target, no `onReady`. Its effects wait for the `view` state that `onInitialized` sets;
+  the content loads in a layout effect, so it paints with the editor.
 - **Box sizes need a title row.** Tiny and Expandable show only the title, so an untitled inline
   embed was invisible at Tiny. `INLINE_BOX_SIZES` (Small, Medium, Full) limits the dropdown, the
   command and the ⋮ menu (`getBoxSizes(domElement)`), and other sizes load as Medium. Give each
