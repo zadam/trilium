@@ -162,6 +162,24 @@ describe("MermaidDiagram", () => {
             await waitForDiagram(other.figure);
             expect(getZoomButtons(other.figure)?.querySelectorAll("button")).toHaveLength(3);
         }
+
+        const source = await mount({
+            editor: undefined, displayMode: "source", boxSize: "full", hideTitle: true
+        });
+        const sourceButtons = source.figure
+            .querySelectorAll<HTMLElement>(".mermaid-diagram-controls button");
+        expect(sourceButtons).toHaveLength(1);
+        const sourceBox = source.figure.querySelector(".include-note-content");
+        if (!(sourceBox instanceof HTMLElement)) throw new Error("Expected the content box.");
+        sourceBox.requestFullscreen = requestFullscreen;
+        await act(async () => sourceButtons[0]?.click());
+        expect(requestFullscreen).toHaveBeenCalledTimes(2);
+
+        const split = await mount({
+            editor: undefined, displayMode: "split", boxSize: "full", hideTitle: true
+        });
+        await waitForDiagram(split.figure);
+        expect(split.figure.querySelector(".mermaid-diagram-controls")).toBeNull();
     });
 
     it("makes the source editable once Editable turns on", async () => {

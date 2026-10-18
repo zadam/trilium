@@ -15,7 +15,7 @@ import { renderMermaidSvg } from "../../../services/mermaid";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
 import { isMobile, openInAppHelpFromUrl } from "../../../services/utils";
 import { useDebouncedValue } from "../../react/hooks";
-import { OverlayFullscreenButton } from "../../react/OverlayControlGroup";
+import OverlayControlGroup, { OverlayFullscreenButton } from "../../react/OverlayControlGroup";
 import { useZoomPanWheel } from "../../react/zoom_pan";
 import { useZoomPanKeyboard } from "../../react/zoom_pan_keyboard";
 import { SplitLayout, useMountedPanes } from "../helpers/SplitEditor";
@@ -82,6 +82,13 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
         view.setNamedExtension("mermaid-lint", mermaidLinter());
     }, []);
 
+    const fullscreenButton = !canEdit && hasFullscreenButton && (
+        <OverlayFullscreenButton
+            isFullscreen={false}
+            onToggle={() => showContentEmbedFullscreen(rootRef.current)}
+        />
+    );
+
     return (
         <div ref={rootRef} className="mermaid-diagram include-note-box-height">
             <SplitLayout
@@ -112,17 +119,15 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
                 previewStale={!!svg}
                 previewContent={<SvgPreview svg={svg} zoom={zoom} viewportRef={setPreviewEl} />}
                 previewButtons={(!canEdit || isFullscreen) && !!svg && (
-                    <SvgZoomControls
-                        zoom={zoom}
-                        after={!canEdit && hasFullscreenButton && (
-                            <OverlayFullscreenButton
-                                isFullscreen={false}
-                                onToggle={() => showContentEmbedFullscreen(rootRef.current)}
-                            />
-                        )}
-                    />
+                    <SvgZoomControls zoom={zoom} after={fullscreenButton} />
                 )}
             />
+            {/* The preview pane, which holds the zoom buttons, is hidden in Source view. */}
+            {mode === "source" && fullscreenButton && (
+                <OverlayControlGroup className="mermaid-diagram-controls" placement="bottom-end">
+                    {fullscreenButton}
+                </OverlayControlGroup>
+            )}
         </div>
     );
 }

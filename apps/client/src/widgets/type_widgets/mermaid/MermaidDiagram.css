@@ -1,5 +1,10 @@
 .mermaid-diagram {
+    position: relative;
     text-align: start;
+
+    > .mermaid-diagram-controls {
+        z-index: 10;
+    }
 
     pre.code-embed-editor {
         margin: 0;
