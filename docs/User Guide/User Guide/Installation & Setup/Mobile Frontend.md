@@ -65,6 +65,19 @@ The mobile view can be set up as a PWA. While this does not offer any offline ca
     4.  Select _Add to_, followed by _Home screen_.
     5.  Press _Add_ and the web app will appear on the home page.
 
+## Sharing to Trilium
+
+Once installed as a PWA on Android, Trilium appears in the system's share menu, so links, text, images and other files can be sent to it from other apps. Shared content is saved to the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Notes/Note%20Inbox.md">Note Inbox</a>, and Trilium opens the note it created:
+
+*   Text or a link becomes a text note. A shared link is also stored in the `#pageUrl` label.
+*   A single file becomes an image note or a file note, placed directly in the inbox.
+*   Several files, or files shared together with text, are placed under a new text note that holds the text.
+
+Every note created this way carries the `#clipType=share` label, which gives a shared text note the <span class="tn-icon bx bx-share"></span> icon unless the note has an `#iconClass` of its own. A single share can carry at most 20 files.
+
+> [!NOTE]
+> Sharing requires being logged in. If the session has expired, log in again and share once more.
+
 ## Testing via the desktop application
 
 If you are running Trilium without a dedicated [server installation](Server%20Installation.md), you can still test the mobile application using the desktop application. For more information, see <a class="reference-link" href="Desktop%20Installation/Using%20the%20desktop%20application%20as%20a%20server.md">Using the desktop application as a server</a>. To access it go to `http://<ip>:37840/login?mobile` .

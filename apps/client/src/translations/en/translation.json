@@ -750,7 +750,7 @@
     "ai_quick_action": "Offers this note as an instruction in the text editor's AI assistant menu. The title names the action, the content is the prompt.",
     "execute_title": "Title of the tab this code note is executed from.",
     "clipper_inbox": "Where the Web Clipper saves what it collects, instead of the day note.",
-    "clip_type": "Records how the Web Clipper made this note, e.g. <code>clippings</code>.",
+    "clip_type": "Records how this note was saved: by the Web Clipper (e.g. <code>clippings</code>) or from the system share menu (<code>share</code>).",
     "sent_from_sender": "Marks a note as having arrived through the sender rather than having been written in Trilium.",
     "hide_children_overview": "Hides the list of child notes shown under this note's content.",
     "media_notes_play_mode": "What the media player does when a track ends, e.g. <code>next</code> to carry on with the following note.",

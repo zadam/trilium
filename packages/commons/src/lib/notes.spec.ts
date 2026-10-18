@@ -121,9 +121,9 @@ describe("getNoteIcon", () => {
     it("draws a web clipping by its clip type, behind its own icon", () => {
         const clipped = (clipType: string) => (name: string) => name === "clipType" ? clipType : null;
 
-        expect([ "clippings", "page", "note", "tabs" ].map((clipType) =>
+        expect([ "clippings", "page", "note", "tabs", "share" ].map((clipType) =>
             getNoteIcon(buildArgs({ getLabelValue: clipped(clipType) }))))
-            .toEqual([ "bx bx-paperclip", "bx bx-globe", "bx bx-bookmark", "bx bx-window-alt" ]);
+            .toEqual([ "bx bx-paperclip", "bx bx-globe", "bx bx-bookmark", "bx bx-window-alt", "bx bx-share" ]);
         expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), isFolder: () => true })))
             .toBe("bx bx-globe");
         expect(getNoteIcon(buildArgs({ getLabelValue: clipped("page"), iconClass: "bx bx-star" })))
