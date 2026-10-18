@@ -1,8 +1,9 @@
 import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createOrUpdateFile, tsFacet } from "./codemirror-ts/environment.js";
+import { getHover } from "./codemirror-ts/hover.js";
 import {
     buildTypeCompletion,
     getScriptCompletions,
@@ -555,6 +556,23 @@ describe("tsSync", () => {
         added.dispatch({ effects: compartment.reconfigure(extensions) });
         expect(synced(added)).toBe("let b;");
         added.destroy();
+    }, TIMEOUT);
+});
+
+describe("getHover", () => {
+    it("returns the quick info under the position, with no definition lookups", async () => {
+        const { extensions } = await buildTypeCompletion(SCRIPT_MIME_BACKEND);
+        const config = EditorState.create({ extensions }).facet(tsFacet);
+        if (!config) throw new Error("expected the TypeScript facet");
+        createOrUpdateFile(config.env, config.path, "api.log(\"x\");");
+        const typeDefinition = vi.spyOn(config.env.languageService, "getTypeDefinitionAtPosition");
+        const definition = vi.spyOn(config.env.languageService, "getDefinitionAtPosition");
+
+        const hover = getHover({ ...config, pos: 5 });
+        expect(hover).toMatchObject({ start: 4, end: 7 });
+        expect(hover?.quickInfo?.displayParts?.map((part) => part.text).join("")).toContain("log");
+        expect(typeDefinition).not.toHaveBeenCalled();
+        expect(definition).not.toHaveBeenCalled();
     }, TIMEOUT);
 });
 
