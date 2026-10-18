@@ -7,6 +7,7 @@ import {
     CKTextEditor,
     type FileUploadData,
     type FileUploadEvent,
+    type InlineEmbedSource,
     SnippetDefinition
 } from "@triliumnext/ckeditor5";
 import { deferred, formatBlockRange, parseBlockRange } from "@triliumnext/commons";
@@ -39,7 +40,7 @@ import IconPicker from "../../react/IconPicker";
 import { setEditorNoteId } from "../../react/NoteStore";
 import { convertImageToDrawing } from "../canvas/image_to_drawing";
 import { TypeWidgetProps } from "../type_widget";
-import AttachmentSaves, { useNoteEditor } from "./attachment_saves";
+import AttachmentSaves, { InlineSourceSaves, useNoteEditor } from "./attachment_saves";
 import CKEditor, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditor";
 import { enterContentEmbed, getContentEmbedTools } from "./content_embed_tools";
 import { useEmbedEditors } from "./editable_embed";
@@ -50,6 +51,7 @@ import {
     getAttachmentHref,
     loadEmbeddedAttachment,
     loadEmbeddedNote,
+    loadInlineEmbed,
     openContentEmbedMenu,
     refreshEmbeddedNote,
     setupImageOpening,
@@ -99,6 +101,8 @@ export default function EditableText({
         : undefined));
     const [ attachmentSaves ] = useState(() =>
         new AttachmentSaves(() => spacedUpdate.scheduleUpdate()));
+    const [ inlineSourceSaves ] = useState(() =>
+        new InlineSourceSaves(() => spacedUpdate.scheduleUpdate()));
     const noteEditor = useNoteEditor(noteContext);
     const { noteEditor: embedNoteEditor, attachmentEditor: embedAttachmentEditor } =
         useEmbedEditors({ noteEditor, attachmentEditor: attachmentSaves });
@@ -114,6 +118,7 @@ export default function EditableText({
                 return;
             }
 
+            inlineSourceSaves.flush();
             const attachments = attachmentSaves.collect();
             const savedAttachments = attachments.length ? { attachments } : {};
             if (block !== undefined) {
@@ -294,6 +299,14 @@ export default function EditableText({
                 attachmentEditor: embedAttachmentEditor,
                 isFocused
             });
+        },
+        loadInlineEmbed(
+            source: InlineEmbedSource,
+            $el: JQuery<HTMLElement>,
+            boxSize: string | undefined,
+            options: { isFocused: boolean }
+        ) {
+            return loadInlineEmbed(source, $el, boxSize, { ...options, saves: inlineSourceSaves });
         },
         focusContentEmbed(attachmentId: string) {
             focusedAttachmentIdRef.current = attachmentId;
@@ -651,6 +664,7 @@ export default function EditableText({
 
                     editor.plugins.get("FileUploadEditing")
                         .on<FileUploadEvent>("upload", showFileUploadProgress);
+                    inlineSourceSaves.flushBeforeHistory(editor);
 
                     if (block !== undefined) {
                         editor.plugins.get("BlockReferenceEditing").editRange();

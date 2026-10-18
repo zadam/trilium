@@ -289,7 +289,7 @@ samp {
  * content and not what anyone is asking for. Inheritance is what makes `.cm-editor` enough to cover
  * CodeMirror's internals.
  */
-body.monospace-ligatures-disabled :is(code, kbd, pre, samp, .cm-editor, .ck-mermaid__editing-view) {
+body.monospace-ligatures-disabled :is(code, kbd, pre, samp, .cm-editor) {
     font-variant-ligatures: none;
 }
 
@@ -831,10 +831,6 @@ div[data-notify="container"] {
     color: var(--muted-text-color);
 }
 
-.ck-editor__editable .ck-mermaid__editing-view {
-    font-family: var(--monospace-font-family);
-}
-
 svg.ck-icon.note-icon {
     color: var(--main-text-color);
     font-size: 20px;
@@ -1145,11 +1141,28 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 
 /* Media takes a resized height inside the border and padding, as with the edge-to-edge types. */
 .include-note[data-box-size] .include-note-content:is(
-    .type-image, .type-canvas, .type-canvasDrawing, .type-mindMap, .type-spreadsheet, .type-mermaid,
+    .type-image, .type-canvas, .type-canvasDrawing, .type-mermaidDiagram, .type-mindMap,
+    .type-spreadsheet, .type-mermaid,
     .type-video
 ) {
     box-sizing: content-box;
     max-height: none;
+}
+
+.include-note-box-height {
+    height: var(--include-note-height, 20em);
+}
+
+.include-note[data-box-size="small"] .include-note-box-height {
+    height: var(--include-note-height, 10em);
+}
+
+.include-note[data-box-size="full"] .include-note-box-height {
+    height: 50em;
+}
+
+.include-note-content:fullscreen .include-note-box-height {
+    height: 100%;
 }
 
 /* Tiny and Full fit their content: only these box sizes take a resized size. */
@@ -1440,6 +1453,7 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 .include-note-content.type-video,
 .include-note-content.type-canvas,
 .include-note-content.type-canvasDrawing,
+.include-note-content.type-mermaidDiagram,
 .include-note-content.type-webView,
 .include-note-content.type-book:has(.note-list-widget.full-height),
 .include-note-content.type-search:has(.note-list-widget.full-height) {
@@ -1460,6 +1474,10 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     overflow: auto;
 }
 
+.include-note-content:fullscreen > .rendered-content > .source-embed {
+    height: 100%;
+}
+
 .include-note-content.type-text:fullscreen > .rendered-content:not(.full-content-width) > * {
     max-width: var(--preferred-max-content-width);
     margin-inline: auto;
@@ -1474,7 +1492,8 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
         calc(var(--safe-area-inset-top, env(safe-area-inset-top)) + var(--overlay-group-inset));
     --overlay-group-inset-end:
         calc(var(--safe-area-inset-right, env(safe-area-inset-right)) + var(--overlay-group-inset));
-    z-index: 1;
+    /* Above the 10 of `.note-detail-error-card` in SplitEditor.css. */
+    z-index: 11;
 }
 
 .include-note-exit-fullscreen > button {

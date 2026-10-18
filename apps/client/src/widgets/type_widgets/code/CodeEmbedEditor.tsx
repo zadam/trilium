@@ -7,7 +7,7 @@ import type { ContentEditor } from "../../../services/content_renderer";
 import { CodeMirrorFindTarget } from "../../find_in_code";
 import { useNoteLabelOptionalBool, useTriliumOptionBool } from "../../react/hooks";
 import { registerEmbedFindTarget } from "../text/content_embed_tools";
-import { useEmbedCaretNavigation } from "../text/editable_embed";
+import { CaretNavigationContext, useEmbedCaretNavigation } from "../text/editable_embed";
 import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
@@ -108,5 +108,46 @@ export default function CodeEmbedEditor({
             {...(useTabs !== undefined && { useTabs })}
             {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
         />
+    );
+}
+
+export interface EmbedSourcePaneProps
+    extends Omit<CodeEmbedEditorProps, "isShown" | "onClose" | "onChange"> {
+    /** The root of the embed content, which the arrow keys enter the source from. */
+    rootRef: RefObject<HTMLElement | null>;
+    /** Whether the Editable toggle of the embed is on. */
+    isEditing: boolean;
+    /** Whether the display mode of the embed shows the source. */
+    isSourceShown: boolean;
+    /** Receives the content as it is edited, and when the editor goes away. */
+    onContentChange: (content: string) => void;
+}
+
+/**
+ * The source pane of an embed laid out by `SplitLayout`: a {@link CodeEmbedEditor} that edits the
+ * source while `isEditing`, and shows it read-only otherwise.
+ */
+export function EmbedSourcePane({
+    rootRef, editor, isEditing, isSourceShown, onContentChange, ...editorProps
+}: EmbedSourcePaneProps) {
+    return (
+        <div className="note-detail-split-editor">
+            {/* An edited source stays mounted while the rendering shows alone, which keeps its
+                undo history. "Search in note" and the arrow keys skip it then. */}
+            {(isEditing || isSourceShown) && (
+                <CaretNavigationContext.Provider
+                    value={isEditing && isSourceShown ? rootRef : null}
+                >
+                    <CodeEmbedEditor
+                        key={isEditing ? "editing" : "read-only"}
+                        editor={isEditing ? editor : undefined}
+                        isShown={isSourceShown}
+                        onClose={onContentChange}
+                        onChange={onContentChange}
+                        {...editorProps}
+                    />
+                </CaretNavigationContext.Provider>
+            )}
+        </div>
     );
 }

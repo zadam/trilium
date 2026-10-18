@@ -33,6 +33,7 @@ import { encodeBlockParameter, parseBlockRange } from '@triliumnext/commons';
 import { getAttachmentId, getNoteId } from '../referencelink.js';
 import ResizableWidgets, { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
 import { restoreRendererFocusOnInput } from '../widget_utils.js';
+import ContentEmbedInlineSource, { isInlineSourceEmbed } from './inline_source.js';
 import './nested_editor_events.js';
 
 export const COMMAND_NAME = 'insertContentEmbed';
@@ -52,6 +53,12 @@ export const CONTENT_EMBED_MENU = 'contentEmbedMenu';
 export const BOX_SIZES = [ 'tiny', 'small', 'medium', 'full', 'expandable' ] as const;
 
 export type BoxSizeValue = typeof BOX_SIZES[number];
+
+/**
+ * The box sizes of an embed that keeps its source in the note, which has no title for Tiny and
+ * Expandable to show.
+ */
+export const INLINE_BOX_SIZES: readonly BoxSizeValue[] = [ 'small', 'medium', 'full' ];
 
 /** What content with display modes shows: its source, its rendering, or both side by side. */
 export const DISPLAY_MODES = [ 'source', 'split', 'preview' ] as const;
@@ -164,9 +171,11 @@ export function getDisplayModeLabel( t: ( message: string ) => string, mode: Dis
 export default class ContentEmbed extends Plugin {
 	/** The buttons that the content of the selected embed adds to its toolbar, or `null`. */
 	declare public selectedEmbedTools: ContentEmbedToolProvider | null;
+	/** Whether the selected embed keeps its source in the note, and so has no title or caption. */
+	declare public isSelectedEmbedInline: boolean;
 
 	static get requires() {
-		return [ ContentEmbedEditing, ContentEmbedUI ];
+		return [ ContentEmbedEditing, ContentEmbedUI, ContentEmbedInlineSource ];
 	}
 
 	static get pluginName() {
@@ -177,12 +186,15 @@ export default class ContentEmbed extends Plugin {
 		super( editor );
 		// Set before `init()` of the plugins it requires, whose toolbar items bind to it.
 		this.set( 'selectedEmbedTools', null );
+		this.set( 'isSelectedEmbedInline', false );
 	}
 
 	init() {
 		// Runs before `WidgetToolbarRepository` positions the toolbar from its width.
 		this.listenTo( this.editor.ui, 'update', () => {
 			this.selectedEmbedTools = getSelectedEmbedTools( this.editor );
+			const embed = getSelectedContentEmbed( this.editor );
+			this.isSelectedEmbedInline = !!embed && isInlineSourceEmbed( embed );
 		}, { priority: 'high' } );
 	}
 
@@ -235,9 +247,14 @@ export default class ContentEmbed extends Plugin {
 		return !!getLinkToEmbed( this.editor, domElement );
 	}
 
-	/** The box sizes, with the labels the toolbar gives them. */
-	getBoxSizes(): { value: BoxSizeValue; label: string }[] {
-		return BOX_SIZES.map( value => ( { value, label: getBoxSizeLabel( this.editor.t, value ) } ) );
+	/**
+	 * The box sizes, with the labels the toolbar gives them: those of the embed that `domElement`
+	 * is part of, or all of them.
+	 */
+	getBoxSizes( domElement?: Element ): { value: BoxSizeValue; label: string }[] {
+		const embed = domElement ? getContentEmbedAt( this.editor, domElement ) : null;
+		return getEmbedBoxSizes( embed )
+			.map( value => ( { value, label: getBoxSizeLabel( this.editor.t, value ) } ) );
 	}
 }
 
@@ -315,6 +332,8 @@ class ContentEmbedUI extends Plugin {
 				buttonView.bind( 'label' ).to( command, 'value', value =>
 					value ? t( 'Toggle caption off' ) : t( 'Toggle caption on' ) );
 			}
+			buttonView.bind( 'isVisible' ).to( editor.plugins.get( ContentEmbed ),
+				'isSelectedEmbedInline', isInline => !isInline );
 
 			this.listenTo( buttonView, 'execute', () => {
 				editor.execute( TOGGLE_CAPTION_COMMAND_NAME, { focusCaptionOnShow: true } );
@@ -419,11 +438,17 @@ class ContentEmbedUI extends Plugin {
 				tooltip: true
 			} );
 
-			// Replaces the menu button of the title row while the title is hidden.
+			// Replaces the menu button of the title row while the title is hidden, and stands in
+			// for it on an embed without one.
 			if ( command ) {
-				buttonView.bind( 'isEnabled' ).to( command );
+				const plugin = editor.plugins.get( ContentEmbed );
+				buttonView.bind( 'isEnabled' ).to(
+					command, 'isEnabled', plugin, 'isSelectedEmbedInline',
+					( isEnabled, isInline ) => isEnabled || isInline );
 				buttonView.bind( 'isVisible' ).to( command, 'isEnabled', command, 'value',
-					( isEnabled, isTitleShown ) => isEnabled && !isTitleShown );
+					plugin, 'isSelectedEmbedInline',
+					( isEnabled, isTitleShown, isInline ) =>
+						isInline || ( isEnabled && !isTitleShown ) );
 			}
 
 			this.listenTo( buttonView, 'execute', () => {
@@ -665,6 +690,20 @@ class ContentEmbedEditing extends Plugin {
 					}
 				} );
 			}
+			dispatcher.on( 'attribute:displayMode:contentEmbed', ( _evt, data, api ) => {
+				const viewElement = api.mapper.toViewElement( data.item as ModelElement );
+				/* v8 ignore next 3 -- converted after the embed itself, so always mapped */
+				if ( !viewElement ) {
+					return;
+				}
+
+				const mode = data.attributeNewValue as string | null;
+				if ( mode ) {
+					api.writer.setAttribute( 'data-display-mode', mode, viewElement );
+				} else {
+					api.writer.removeAttribute( 'data-display-mode', viewElement );
+				}
+			} );
 
 			// Redraws the content in place when an upload ends. A converter that lists
 			// `attributes` also reconverts the embed on every change of its children, such as
@@ -789,7 +828,7 @@ class ContentEmbedBoxSizeCommand extends Command {
 		const editor = this.editor;
 		const embedElement = getSelectedContentEmbed( editor );
 
-		if ( embedElement ) {
+		if ( embedElement && getEmbedBoxSizes( embedElement ).includes( options.value ) ) {
 			editor.model.change( writer => {
 				const wasTiny = embedElement.getAttribute( 'boxSize' ) === 'tiny';
 				writer.setAttribute( 'boxSize', options.value, embedElement );
@@ -1128,12 +1167,17 @@ export function isContentEmbed(
 /** Whether the title of `embed` can be hidden: a Tiny or an Expandable one always shows it. */
 function isEmbedTitleToggleable( embed: ModelElement ) {
 	const boxSize = embed.getAttribute( 'boxSize' );
-	return boxSize !== 'tiny' && boxSize !== 'expandable';
+	return boxSize !== 'tiny' && boxSize !== 'expandable' && !isInlineSourceEmbed( embed );
 }
 
 /** Whether the content of `embed` has an editable mode, which its content type opts in to. */
 function isEmbedEditableToggleable( editor: Editor, embed: ModelElement ) {
 	return !!getEmbedTools( editor, embed )?.hasEditableFlag;
+}
+
+/** The box sizes that `embed` can take, or all of them without an embed. */
+export function getEmbedBoxSizes( embed: ModelElement | null ): readonly BoxSizeValue[] {
+	return embed && isInlineSourceEmbed( embed ) ? INLINE_BOX_SIZES : BOX_SIZES;
 }
 
 /** Whether the content of `embed` has display modes, which its content type opts in to. */
@@ -1159,7 +1203,7 @@ export function toDisplayMode( value: unknown ): DisplayModeValue | null {
 
 /** Whether `embed` can have a caption. A Tiny embed has none. */
 function isEmbedCaptionToggleable( editor: Editor, embed: ModelElement ) {
-	return embed.getAttribute( 'boxSize' ) !== 'tiny'
+	return embed.getAttribute( 'boxSize' ) !== 'tiny' && !isInlineSourceEmbed( embed )
 		&& editor.model.schema.checkChild( embed, 'caption' );
 }
 
@@ -1207,6 +1251,10 @@ function addContentEmbeds(
  * it. An embed whose upload has not ended names nothing.
  */
 function getEmbeddedEntityAttributes( element: ModelElement ): Record<string, string> {
+	const language = element.getAttribute( 'language' ) as string | undefined;
+	if ( language ) {
+		return { 'data-language': language };
+	}
 	const attachmentId = element.getAttribute( 'attachmentId' ) as string | undefined;
 	const noteId = element.getAttribute( 'noteId' ) as string | undefined;
 	const block = element.getAttribute( 'block' ) as string | undefined;
@@ -1254,13 +1302,15 @@ function getFlagsOfView( viewElement: ViewElement ): Partial<Record<EmbedFlag, t
 }
 
 /** The `data-display-mode` attribute of `element`, when it has a display mode. */
-function getDisplayModeAttributes( element: ModelElement ): Record<string, string> {
+export function getDisplayModeAttributes( element: ModelElement ): Record<string, string> {
 	const mode = toDisplayMode( element.getAttribute( 'displayMode' ) );
 	return mode ? { 'data-display-mode': mode } : {};
 }
 
 /** The display mode that the `data-display-mode` attribute of a saved embed names. */
-function getDisplayModeOfView( viewElement: ViewElement ): { displayMode?: DisplayModeValue } {
+export function getDisplayModeOfView(
+	viewElement: ViewElement
+): { displayMode?: DisplayModeValue } {
 	const mode = toDisplayMode( viewElement.getAttribute( 'data-display-mode' ) );
 	return mode ? { displayMode: mode } : {};
 }
@@ -1410,6 +1460,11 @@ function loadEmbeddedContent(
 	wrapper: HTMLElement,
 	boxSize: string | undefined
 ) {
+	if ( isInlineSourceEmbed( element ) ) {
+		editor.plugins.get( ContentEmbedInlineSource ).load( element, wrapper, boxSize );
+		return;
+	}
+
 	const $wrapper = $( wrapper );
 	const editorEl = editor.editing.view.getDomRoot();
 	const component = glob.getComponentByEl<EditorComponent>( editorEl );

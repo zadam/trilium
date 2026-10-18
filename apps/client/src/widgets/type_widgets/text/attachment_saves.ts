@@ -1,3 +1,4 @@
+import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import type { default as NoteContext, SaveState } from "../../../components/note_context";
@@ -220,6 +221,45 @@ export class NoteSaves extends PendingSaves<FNote, SavedNote> implements NoteEdi
         this.saveStates.set(noteId, state);
         for (const listener of this.stateListeners) {
             listener();
+        }
+    }
+}
+
+/**
+ * The writes that inline sources, such as Mermaid diagrams, hold back until their source stops
+ * changing. The text note saves them into its model first, since they are part of its content.
+ */
+export class InlineSourceSaves {
+    private readonly pending = new Set<() => void>();
+
+    /** @param scheduleUpdate schedules a save of the text note. */
+    constructor(private readonly scheduleUpdate: () => void) {}
+
+    /** Holds `write` until {@link flush}, or until the source writes it itself. */
+    add(write: () => void) {
+        this.pending.add(write);
+        this.scheduleUpdate();
+    }
+
+    delete(write: () => void) {
+        this.pending.delete(write);
+    }
+
+    /** Makes the held writes now. */
+    flush() {
+        for (const write of [ ...this.pending ]) {
+            write();
+        }
+    }
+
+    /**
+     * Makes the held writes before `editor` undoes or redoes, so that a held write is a step of
+     * the undo history rather than a change made after it.
+     */
+    flushBeforeHistory(editor: Pick<CKTextEditor, "commands">) {
+        for (const name of [ "undo", "redo" ]) {
+            // Runs before the command checks `isEnabled`, which a held write can turn on.
+            editor.commands.get(name)?.on("execute", () => this.flush(), { priority: "highest" });
         }
     }
 }

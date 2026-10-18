@@ -22,6 +22,7 @@ export type {
     ContentEmbedCodeView, ContentEmbedState
 } from "./plugins/content_embed/content_embed.js";
 export type { EmbedEdge } from "./plugins/content_embed/content_embed_caret.js";
+export type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
 export type { AttachmentLinkChange } from "./plugins/referencelink.js";
 export type { default as TriliumEmojiMention, EmojiSuggestion } from "./plugins/mention/emoji_mention.js";
 export type { default as TriliumSlashCommands, SlashCommandConfig, SlashCommandDefinition, SlashCommandItem } from "./plugins/mention/slash_commands.js";

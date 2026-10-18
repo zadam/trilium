@@ -458,6 +458,10 @@ describe("openContextMenu", () => {
         const selectEmbedAt = vi.fn();
         let hasPlugin = true;
         let state: Record<string, unknown> | null;
+        const getBoxSizes = vi.fn(() => [
+            { value: "tiny", label: "Tiny" },
+            { value: "medium", label: "Medium" }
+        ]);
         let editable: HTMLElement;
 
         beforeEach(() => {
@@ -478,10 +482,7 @@ describe("openContextMenu", () => {
                     get: () => ({
                         selectEmbedAt,
                         getEmbedStateAt: () => state,
-                        getBoxSizes: () => [
-                            { value: "tiny", label: "Tiny" },
-                            { value: "medium", label: "Medium" }
-                        ]
+                        getBoxSizes
                     })
                 },
                 commands: { get: () => undefined },
@@ -566,6 +567,7 @@ describe("openContextMenu", () => {
             const items = await openOn(editable.querySelector("a"));
             expect(pick(items[7].items[0]))
                 .toEqual([ [ "contentEmbedBoxSize", { value: "tiny" } ] ]);
+            expect(getBoxSizes).toHaveBeenLastCalledWith(embed());
             expect(pick(items[8])).toEqual([ [ "toggleContentEmbedTitle", undefined ] ]);
             expect(pick(items[9]))
                 .toEqual([ [ "toggleContentEmbedCaption", { focusCaptionOnShow: true } ] ]);
