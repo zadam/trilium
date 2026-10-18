@@ -155,7 +155,9 @@ describe("ContentEmbedInlineSource", () => {
         editor.setData(`<pre><code class="language-mermaid">a</code></pre>`);
         const source = getLoadedSource();
         const listener = vi.fn();
+        const other = vi.fn();
         const unsubscribe = source.subscribe(listener);
+        source.subscribe(other);
 
         source.setSource("a");
         expect(listener).not.toHaveBeenCalled();
@@ -163,6 +165,47 @@ describe("ContentEmbedInlineSource", () => {
         unsubscribe();
         source.setSource("b");
         expect(listener).not.toHaveBeenCalled();
+        expect(other).toHaveBeenCalledOnce();
+    });
+
+    it("reads the text of a highlighted code block, its line breaks included", () => {
+        editor.setData(
+            `<pre><code class="language-mermaid">graph TD;<br>`
+            + `<span class="hljs-keyword">A</span>--&gt;B</code></pre>`
+        );
+
+        expect(getEmbed().getAttribute("source")).toBe("graph TD;\nA-->B");
+    });
+
+    it("saves an embed that has lost its source or its Editable flag", () => {
+        editor.setData(`<pre data-box-size="medium" data-editable="true">`
+            + `<code class="language-mermaid">a</code></pre>`);
+        editor.model.change((writer) => {
+            writer.removeAttribute("source", getEmbed());
+            writer.removeAttribute("editable", getEmbed());
+        });
+
+        expect(getLoadedSource().getSource()).toBe("");
+        expect(editor.getData()).toBe(`<pre data-box-size="medium" data-hide-title="true">`
+            + `<code class="language-mermaid"></code></pre>`);
+    });
+
+    it("makes no embed where the schema allows none", () => {
+        editor.model.schema.addChildCheck((_context, definition) =>
+            definition.name === "contentEmbed" ? false : undefined);
+        editor.setData(`<pre><code class="language-mermaid">graph TD;</code></pre>`);
+
+        expect(getModelData(editor.model, { withoutSelection: true }))
+            .not.toContain("<contentEmbed");
+        expect(loadInlineEmbed).not.toHaveBeenCalled();
+    });
+
+    it("makes no embed of any code block when the host lists no inline language", async () => {
+        const bare = await createTestEditor([ Essentials, Paragraph, Widget, ContentEmbed ]);
+        bare.setData(`<pre><code class="language-mermaid">graph TD;</code></pre>`);
+
+        expect(getModelData(bare.model, { withoutSelection: true }))
+            .not.toContain("<contentEmbed");
     });
 
     it("inserts a new embed editable and untitled, and has its content take the focus", () => {

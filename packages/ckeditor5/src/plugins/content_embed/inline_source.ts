@@ -147,9 +147,7 @@ export default class ContentEmbedInlineSource extends Plugin {
 			return;
 		}
 
-		const source = Array.from( code.getChildren() )
-			.map( child => child.is( '$text' ) ? child.data : '' )
-			.join( '' );
+		const source = getViewText( code );
 		const embed = api.writer.createElement( 'contentEmbed', {
 			language,
 			source,
@@ -229,6 +227,21 @@ function downcastData( model: Model, embed: ModelElement, api: DowncastConversio
 	writer.insert( mapper.toViewPosition( model.createPositionBefore( embed ) ), pre );
 	// `ResizableWidgets` writes the size attributes on the `<pre>` through this mapping.
 	mapper.bindElements( embed, pre );
+}
+
+/**
+ * The text of `element`, with a `<br>` as a line break. A code block pasted from a page can hold
+ * its highlighting as `<span>` elements.
+ */
+function getViewText( element: ViewElement ): string {
+	return Array.from( element.getChildren() )
+		.map( child => {
+			if ( child.is( '$text' ) ) {
+				return child.data;
+			}
+			return child.is( 'element', 'br' ) ? '\n' : getViewText( child as ViewElement );
+		} )
+		.join( '' );
 }
 
 /** The inline language of `code`, when it is one in `contentEmbed.inlineLanguages`. */
