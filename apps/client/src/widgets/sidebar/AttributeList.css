@@ -160,6 +160,11 @@
     }
 }
 
+/* The toolbar continues the pane's header, so the header's rule moves below the toolbar. */
+#right-pane:has(> .right-pane-tab-body:not(.hidden-ext) > .attribute-toolbar) > .right-pane-header {
+    border-bottom: 0;
+}
+
 /* The card titles are uppercase and letter-spaced; the count is not. */
 .attribute-run-count {
     margin-inline-start: 6px;
