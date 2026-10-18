@@ -142,6 +142,8 @@ describe("script note diagnostics", () => {
         const codes = await getScriptDiagnosticCodes(
             SCRIPT_MIME_BACKEND,
             "console.log('start'); console.error(new Error('x'));\n"
+            + "console.assert(true, 'x'); console.count(); console.countReset(); console.dir({});\n"
+            + "console.group('g'); console.groupCollapsed(); console.groupEnd(); console.timeLog('t');\n"
             + "const timer = setTimeout(() => {}, 10); clearTimeout(timer);\n"
             + "const ticker = setInterval(() => {}, 10); clearInterval(ticker);\n"
             + "queueMicrotask(() => {});\n"

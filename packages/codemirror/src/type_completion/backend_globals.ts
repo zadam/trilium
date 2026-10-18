@@ -11,9 +11,17 @@ interface Console {
     error(...data: unknown[]): void;
     debug(...data: unknown[]): void;
     trace(...data: unknown[]): void;
+    assert(condition?: boolean, ...data: unknown[]): void;
+    count(label?: string): void;
+    countReset(label?: string): void;
+    dir(item?: unknown, options?: unknown): void;
+    group(...data: unknown[]): void;
+    groupCollapsed(...data: unknown[]): void;
+    groupEnd(): void;
     table(data: unknown): void;
     time(label?: string): void;
     timeEnd(label?: string): void;
+    timeLog(label?: string, ...data: unknown[]): void;
 }
 declare var console: Console;
 
