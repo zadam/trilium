@@ -592,6 +592,34 @@ describe("Attachment embeds", () => {
             .toBe(`#root/${owner.noteId}?viewMode=attachments&attachmentId=embedPic`);
     });
 
+    it("renders an embedded code file in the language that its embed sets", async () => {
+        const owner = buildNote({
+            title: "Code owner",
+            content: `<figure class="include-note" data-attachment-id="embedCode"`
+                + ` data-code-language="text/x-sh">&nbsp;</figure>`
+        });
+        const attachment = new FAttachment(froca, {
+            attachmentId: "embedCode",
+            ownerId: owner.noteId,
+            role: "file",
+            mime: "text/plain",
+            title: "script.py",
+            dateModified: "",
+            utcDateModified: "",
+            utcDateScheduledForErasureSince: "",
+            contentLength: 0
+        });
+        attachment.getBlob = async () => null;
+        const getRenderedContent = vi.spyOn(content_renderer, "getRenderedContent");
+
+        await renderText(owner, $(document.createElement("div")));
+        expect(getRenderedContent).toHaveBeenCalledWith(
+            expect.objectContaining({ attachmentId: "embedCode" }),
+            { codeLanguage: "text/x-sh" }
+        );
+        getRenderedContent.mockRestore();
+    });
+
     it("leaves the embed of an attachment that cannot be loaded as it is", async () => {
         const owner = buildNote({
             title: "Missing embed owner",

@@ -1,6 +1,6 @@
 import "./StatusBar.css";
 
-import { getCodeLanguageIcon, Locale, NOTE_TYPE_ICONS, NoteType, SimilarNoteResponse } from "@triliumnext/commons";
+import { Locale, NOTE_TYPE_ICONS, NoteType, SimilarNoteResponse } from "@triliumnext/commons";
 import clsx from "clsx";
 import { type ComponentChildren, createPortal, RefObject } from "preact";
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
@@ -22,9 +22,12 @@ import AttributeHelp from "../attribute_widgets/AttributeHelp";
 import InheritedAttributes from "../attribute_widgets/InheritedAttributes";
 import { ContentLanguagesModal, useLanguageSwitcher } from "../dialogs/content_languages";
 import Dropdown, { type DropdownHandle, DropdownPanel, type DropdownPanelProps } from "../react/Dropdown";
-import { FormDropdownDivider, FormListHeader, FormListItem } from "../react/FormList";
+import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import HelpDropdown from "../react/HelpDropdown";
-import { useActiveNoteContext, useLegacyImperativeHandlers, useNoteLabel, useNoteLabelInt, useNoteLabelOptionalBool, useNoteProperty, useStaticTooltip, useTriliumEvent, useTriliumEvents, useTriliumOptionBool, useTriliumOptionInt, useAttachments } from "../react/hooks";
+import {
+    useActiveNoteContext, useAttachments, useLegacyImperativeHandlers, useNoteLabel, useNoteProperty,
+    useStaticTooltip, useTriliumEvent, useTriliumEvents
+} from "../react/hooks";
 import Icon from "../react/Icon";
 import LinkButton from "../react/LinkButton";
 import NoItems from "../react/NoItems";
@@ -35,9 +38,10 @@ import { NotePathsWidget, useSortedNotePaths } from "../sidebar/NotePaths";
 import type { RightPaneTabId } from "../sidebar/RightPaneTabs";
 import { useProcessedLocales } from "../type_widgets/options/components/LocaleSelector";
 import Breadcrumb from "./Breadcrumb";
+import {
+    type CodeMenu, useCodeLanguageMenu, useNoteCodeSettings, useTabWidthMenu
+} from "./code_menus";
 import { NoteSizeWidget, useNoteMetadata } from "./note_metadata";
-import { codeLanguageItems, NoteTypeOptionsModal, useMimeTypes } from "./NoteTypeSwitcher";
-import { convertIndentation } from "./reindentation";
 
 interface StatusBarContext {
     note: FNote;
@@ -549,132 +553,43 @@ function NotePaths({ note, hoistedNoteId, notePath }: StatusBarContext) {
 //#endregion
 
 //#region Tab width switcher
-const TAB_WIDTH_OPTIONS = [1, 2, 3, 4, 6, 8] as const;
-
 function TabWidthSwitcher({ note, noteContext }: StatusBarContext) {
     const noteType = useNoteProperty(note, "type");
-    const [ globalTabWidth ] = useTriliumOptionInt("codeNoteTabWidth");
-    const [ globalUseTabs ] = useTriliumOptionBool("codeNoteIndentWithTabs");
-    const [ noteTabWidth, setNoteTabWidth ] = useNoteLabelInt(note, "tabWidth");
-    const [ noteUseTabs, setNoteUseTabs ] = useNoteLabelOptionalBool(note, "indentWithTabs");
-    const effectiveTabWidth = noteTabWidth ?? globalTabWidth ?? 4;
-    const effectiveUseTabs = noteUseTabs ?? globalUseTabs;
-    const hasWidthOverride = noteTabWidth != null;
-    const hasStyleOverride = noteUseTabs != null;
+    const menu = useTabWidthMenu(useNoteCodeSettings(note), () => noteContext.getCodeEditor());
 
-    const reindentTo = async (targetUseTabs: boolean, targetWidth: number) => {
-        const editor = await noteContext.getCodeEditor();
-        if (!editor) return;
-        const converted = convertIndentation(
-            editor.getText(),
-            { useTabs: effectiveUseTabs, width: effectiveTabWidth },
-            { useTabs: targetUseTabs, width: targetWidth }
-        );
-        if (converted !== editor.getText()) {
-            editor.setText(converted);
-        }
-        setNoteTabWidth(targetWidth);
-        setNoteUseTabs(targetUseTabs);
-    };
-
-    const statusText = effectiveUseTabs
-        ? t("status_bar.tab_width_tabs", { width: effectiveTabWidth })
-        : t("status_bar.tab_width_spaces_short", { width: effectiveTabWidth });
-
-    return (noteType === "code" &&
-        <StatusBarDropdown
-            icon="bx bx-right-indent"
-            text={statusText}
-            title={t("status_bar.tab_width_title")}
-        >
-            <FormListHeader text={t("status_bar.tab_width_style_header")} />
-            <FormListItem
-                checked={!effectiveUseTabs}
-                onClick={() => setNoteUseTabs(false)}
-            >
-                {t("status_bar.tab_width_style_spaces")}
-            </FormListItem>
-            <FormListItem
-                checked={effectiveUseTabs}
-                onClick={() => setNoteUseTabs(true)}
-            >
-                {t("status_bar.tab_width_style_tabs")}
-            </FormListItem>
-            {hasStyleOverride &&
-                <FormListItem icon="bx bx-x" onClick={() => setNoteUseTabs(null)}>
-                    {t("status_bar.tab_width_use_default_style", {
-                        style: globalUseTabs ? t("status_bar.tab_width_style_tabs") : t("status_bar.tab_width_style_spaces")
-                    })}
-                </FormListItem>
-            }
-
-            <FormListHeader text={t("status_bar.tab_width_display_header")} />
-            {TAB_WIDTH_OPTIONS.map(size => (
-                <FormListItem
-                    key={`display-${size}`}
-                    checked={effectiveTabWidth === size}
-                    onClick={() => setNoteTabWidth(size)}
-                >
-                    {t("status_bar.tab_width_spaces", { count: size })}
-                </FormListItem>
-            ))}
-            {hasWidthOverride &&
-                <FormListItem icon="bx bx-x" onClick={() => setNoteTabWidth(null)}>
-                    {t("status_bar.tab_width_use_default", { width: globalTabWidth })}
-                </FormListItem>
-            }
-
-            <FormListHeader text={t("status_bar.tab_width_reindent_header")} />
-            {TAB_WIDTH_OPTIONS.map(size => (
-                <FormListItem
-                    key={`reindent-spaces-${size}`}
-                    disabled={!effectiveUseTabs && effectiveTabWidth === size}
-                    onClick={() => reindentTo(false, size)}
-                >
-                    {t("status_bar.tab_width_spaces", { count: size })}
-                </FormListItem>
-            ))}
-            <FormListItem
-                disabled={effectiveUseTabs}
-                onClick={() => reindentTo(true, effectiveTabWidth)}
-            >
-                {t("status_bar.tab_width_style_tabs")}
-            </FormListItem>
-        </StatusBarDropdown>
-    );
+    return (noteType === "code" && <CodeMenuDropdown menu={menu} />);
 }
 //#endregion
 
 //#region Code note switcher
 function CodeNoteSwitcher({ note }: StatusBarContext) {
-    const [ modalShown, setModalShown ] = useState(false);
     const noteType = useNoteProperty(note, "type");
-    const currentNoteMime = useNoteProperty(note, "mime");
-    const { enabledMimeTypes, allMimeTypes } = useMimeTypes();
-    const correspondingMimeType = useMemo(() => (
-        allMimeTypes.find(m => m.mime === currentNoteMime)
-    ), [ allMimeTypes, currentNoteMime ]);
+    const { menu, modal } = useCodeLanguageMenu(useNoteCodeSettings(note));
 
     return (noteType === "code" &&
         <>
-            <StatusBarDropdown
-                icon={getCodeLanguageIcon(correspondingMimeType)}
-                text={correspondingMimeType?.title}
-                title={t("status_bar.code_note_switcher")}
+            <CodeMenuDropdown
+                menu={menu}
                 dropdownContainerClassName="dropdown-code-note-switcher"
-                filterable
-                items={codeLanguageItems({
-                    currentMimeType: currentNoteMime,
-                    mimeTypes: enabledMimeTypes,
-                    changeNoteType: (type, mime) => void server.put(`notes/${note.noteId}/type`, { type, mime }),
-                    onConfigure: () => setModalShown(true)
-                })}
             />
-            {createPortal(
-                <NoteTypeOptionsModal modalShown={modalShown} setModalShown={setModalShown} />,
-                document.body
-            )}
+            {modal}
         </>
+    );
+}
+
+function CodeMenuDropdown({ menu, dropdownContainerClassName }: {
+    menu: CodeMenu;
+    dropdownContainerClassName?: string;
+}) {
+    return (
+        <StatusBarDropdown
+            icon={menu.icon}
+            text={menu.text}
+            title={menu.title}
+            dropdownContainerClassName={dropdownContainerClassName}
+            filterable={menu.filterable}
+            items={menu.items}
+        />
     );
 }
 //#endregion

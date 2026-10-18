@@ -9,6 +9,7 @@ import froca from "../services/froca.js";
 import { t } from "../services/i18n.js";
 import type { ViewScope } from "../services/link.js";
 import utils, { escapeHtml, isMobile, isShare } from "../services/utils.js";
+import { DISPLAY_MODE_OPTIONS } from "../widgets/type_widgets/helpers/split_editor_mode.js";
 import { getClosestNtxId } from "../widgets/widget_utils.js";
 import contextMenu, { type ContextMenuOptions, type MenuItem } from "./context_menu.js";
 import { submenuItem } from "./context_menu_utils.js";
@@ -290,9 +291,19 @@ function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
         checked: state.isEditable,
         handler: () => runEmbedCommand(embed, "toggleContentEmbedEditable")
     } ] : [];
+    const displayModeItems = state.displayMode
+        ? DISPLAY_MODE_OPTIONS.map(({ value, icon, titleKey }): MenuItem<CommandNames> => ({
+            title: t(titleKey),
+            uiIcon: icon,
+            checked: value === state.displayMode,
+            handler: () => runEmbedCommand(embed, "contentEmbedDisplayMode", { value })
+        }))
+        : [];
 
     return [
         ...editableItems,
+        ...displayModeItems,
+        ...(displayModeItems.length ? [ { kind: "separator" } as const ] : []),
         submenuItem({
             title: t("link_context_menu.include_size"),
             uiIcon: "bx bx-expand-vertical"
@@ -429,6 +440,7 @@ export default {
     getQuickEditItem,
     getOpenNoteItem,
     handleLinkContextMenuItem,
+    keepEditorFocused,
     openContextMenu,
     setShareLinkResolver
 };
