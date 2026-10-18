@@ -638,7 +638,7 @@ async function renderCanvasDrawing(
         await CONTENT_RENDERERS.file.canvasDrawing();
 
     if (options.interactive && entity instanceof FAttachment) {
-        const $container = $('<div class="canvas-drawing">');
+        const $container = $('<div class="canvas-drawing include-note-box-height">');
         const container = $container.get(0);
         if (container) {
             await mountInteractiveWidget(h(CanvasDrawing, {

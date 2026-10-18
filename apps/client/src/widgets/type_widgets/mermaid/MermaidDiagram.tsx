@@ -14,6 +14,7 @@ import { t } from "../../../services/i18n";
 import { renderMermaidSvg } from "../../../services/mermaid";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
 import { isMobile, openInAppHelpFromUrl } from "../../../services/utils";
+import { useDebouncedValue } from "../../react/hooks";
 import { OverlayFullscreenButton } from "../../react/OverlayControlGroup";
 import { useZoomPanWheel } from "../../react/zoom_pan";
 import { useZoomPanKeyboard } from "../../react/zoom_pan_keyboard";
@@ -33,9 +34,10 @@ import {
     useContentEmbedEvent,
     useNeedsFullscreenButton
 } from "../text/content_embed_tools";
-import { CaretNavigationContext, useEditableEmbed } from "../text/editable_embed";
+import { useEditableEmbed } from "../text/editable_embed";
 
-const CodeEmbedEditor = lazy(() => import("../code/CodeEmbedEditor"));
+const EmbedSourcePane = lazy(async () =>
+    (await import("../code/CodeEmbedEditor")).EmbedSourcePane);
 
 /**
  * A Mermaid diagram in an embed, laid out by the `SplitLayout` and shown in the `SvgPreview` of
@@ -81,39 +83,28 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     }, []);
 
     return (
-        <div ref={rootRef} className="mermaid-diagram">
+        <div ref={rootRef} className="mermaid-diagram include-note-box-height">
             <SplitLayout
                 className="svg-editor"
                 mode={mode}
                 orientation={isMobile() ? "vertical" : "horizontal"}
                 editor={(
-                    <div className="note-detail-split-editor">
-                        {/* An edited source stays mounted while the diagram shows alone, which
-                            keeps its undo history. "Search in note" and the arrow keys skip it
-                            then. */}
-                        {(isEditing || isSourceShown) && (
-                            <CaretNavigationContext.Provider
-                                value={isEditing && isSourceShown ? rootRef : null}
-                            >
-                                <Suspense fallback={null}>
-                                    <CodeEmbedEditor
-                                        key={isEditing ? "editing" : "read-only"}
-                                        note={null}
-                                        editor={isEditing ? editor : undefined}
-                                        content={source}
-                                        mime={MERMAID_ATTACHMENT_MIME}
-                                        tabWidth={undefined}
-                                        useTabs={undefined}
-                                        viewRef={viewRef}
-                                        isShown={isSourceShown}
-                                        onClose={setSource}
-                                        onChange={setSource}
-                                        onReady={setupEditor}
-                                    />
-                                </Suspense>
-                            </CaretNavigationContext.Provider>
-                        )}
-                    </div>
+                    <Suspense fallback={null}>
+                        <EmbedSourcePane
+                            rootRef={rootRef}
+                            isEditing={isEditing}
+                            isSourceShown={isSourceShown}
+                            note={null}
+                            editor={editor}
+                            content={source}
+                            mime={MERMAID_ATTACHMENT_MIME}
+                            tabWidth={undefined}
+                            useTabs={undefined}
+                            viewRef={viewRef}
+                            onContentChange={setSource}
+                            onReady={setupEditor}
+                        />
+                    </Suspense>
                 )}
                 isEditorMounted={editorMounted.current}
                 isPreviewMounted={previewMounted.current}
@@ -142,14 +133,11 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
  */
 function useMermaidRender(source: string) {
     const { svg, error, render } = useSvgRender(renderMermaidSvg);
-    const isFirstRender = useRef(true);
+    const renderedSource = useDebouncedValue(source, RENDER_DELAY);
 
     useEffect(() => {
-        const delay = isFirstRender.current ? 0 : RENDER_DELAY;
-        isFirstRender.current = false;
-        const timeout = setTimeout(() => render(source), delay);
-        return () => clearTimeout(timeout);
-    }, [ source ]);
+        void render(renderedSource);
+    }, [ renderedSource ]);
 
     return { svg, error };
 }

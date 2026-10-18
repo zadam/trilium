@@ -1144,6 +1144,22 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     max-height: none;
 }
 
+.include-note-box-height {
+    height: var(--include-note-height, 20em);
+}
+
+.include-note[data-box-size="small"] .include-note-box-height {
+    height: var(--include-note-height, 10em);
+}
+
+.include-note[data-box-size="full"] .include-note-box-height {
+    height: 50em;
+}
+
+.include-note-content:fullscreen .include-note-box-height {
+    height: 100%;
+}
+
 /* Tiny and Full fit their content: only these box sizes take a resized size. */
 .include-note:is([data-box-size="small"], [data-box-size="medium"], [data-box-size="expandable"]) {
     margin-inline: auto;

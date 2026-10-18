@@ -124,8 +124,12 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
 2. Map the MIME to the content type in `getFileContentType()` and give it an icon in the
    attachment icon map next to it; add the content type to the list in `content_renderer.ts`.
 3. Write the component on the note type's parts (see the rule above). For a split source/preview
-   view, `SplitLayout` + `useMountedPanes()` + `CodeEmbedEditor` give the layout, the divider, the
-   error card and the stale badge for free.
+   view, `SplitLayout` + `useMountedPanes()` + `EmbedSourcePane` (in `code/CodeEmbedEditor.tsx`)
+   give the layout, the divider, the error card, the stale badge and a source pane that keeps its
+   undo history behind the preview. Delay re-rendering with `useDebouncedValue()`. Give the root
+   the `include-note-box-height` class for the 10/20/50em heights per box size and full height in
+   fullscreen, and round it with `--_include-note-content-*-radius` (edge to edge) or
+   `--_include-note-framed-*-radius` (inside the 2px frame), all in `style.css`.
 4. An insert command: `INSERT_INLINE_EMBED_COMMAND` with `{ language, source }` (see
    `mermaid_ui.ts` and `slash_commands.ts`). New embeds are editable, untitled and Medium.
 5. Read-only rendering needs nothing more: `applySourceEmbeds()` in `ReadOnlyText.tsx` picks up any
