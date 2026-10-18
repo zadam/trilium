@@ -261,6 +261,11 @@ function applySourceEmbeds(container: HTMLDivElement) {
             figure.dataset.displayMode = displayMode;
         }
         figure.dataset.hideTitle = "true";
+        // Diagrams saved before the embed keep their block ID on the `<code>`.
+        const blockId = pre.dataset.triliumBlockId ?? code.dataset.triliumBlockId;
+        if (blockId) {
+            figure.dataset.triliumBlockId = blockId;
+        }
         const style = pre.getAttribute("style");
         if (style) {
             figure.setAttribute("style", style);

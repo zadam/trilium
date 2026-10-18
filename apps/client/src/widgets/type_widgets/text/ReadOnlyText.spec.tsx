@@ -446,8 +446,10 @@ describe("ReadOnlyText embedded notes", () => {
 
 describe("ReadOnlyText Mermaid diagrams", () => {
     const html = `<pre data-box-size="small" data-display-mode="source" data-hide-title="true"`
-        + ` style="--include-note-height:12em;"><code class="language-mermaid">graph TD;</code></pre>`
-        + `<pre><code class="language-mermaid" data-trilium-display-mode="split">graph LR;</code></pre>`
+        + ` data-trilium-block-id="b1" style="--include-note-height:12em;">`
+        + `<code class="language-mermaid">graph TD;</code></pre>`
+        + `<pre><code class="language-mermaid" data-trilium-display-mode="split"`
+        + ` data-trilium-block-id="b2">graph LR;</code></pre>`
         + `<pre><code class="language-javascript">let a;</code></pre>`;
 
     afterEach(() => {
@@ -493,13 +495,13 @@ describe("ReadOnlyText Mermaid diagrams", () => {
             {
                 language: "mermaid", source: "graph TD;", isReadOnly: true, boxSize: "small",
                 options: { isFocused: false }, isInPage: true,
-                data: { boxSize: "small", displayMode: "source", hideTitle: "true" },
+                data: { boxSize: "small", displayMode: "source", hideTitle: "true", triliumBlockId: "b1" },
                 height: "12em"
             },
             {
                 language: "mermaid", source: "graph LR;", isReadOnly: true, boxSize: "medium",
                 options: { isFocused: false }, isInPage: true,
-                data: { boxSize: "medium", hideTitle: "true" },
+                data: { boxSize: "medium", hideTitle: "true", triliumBlockId: "b2" },
                 height: ""
             }
         ]);
