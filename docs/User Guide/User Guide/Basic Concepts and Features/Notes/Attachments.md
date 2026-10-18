@@ -39,7 +39,7 @@ Links follow changes to their attachment: renaming it updates the title they sho
 
 ## Embedding an attachment
 
-An attachment can be shown in the text instead of linked, the way <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a> shows a note: a picture is displayed, a PDF, a video or a document is previewed, and a code or text file is shown with syntax highlighting. An embedded code file can also be edited in place (see _Editing an include in place_ in <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a>).
+An attachment can be shown in the text instead of linked, the way <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a> shows a note: a picture is displayed, a PDF, a video or a document is previewed, a code or text file is shown with syntax highlighting, and a Markdown file such as a `.md` file is shown rendered. An embedded code file can also be edited in place (see _Editing an include in place_ in <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a>), and an embedded Markdown file shows its source, its rendering or both, as an included Markdown note does (see _Included Markdown_ there).
 
 *   To attach files and embed them straight away, press the <span class="tn-icon cke cke-paper-clip"></span>_Attach file_ button. Each file gets an embed of its own, which shows the file name while the file uploads.
 *   To embed an attachment that is already linked, right-click a link to it in a text note being edited and select _Convert link to an embed_, at the end of the menu.
@@ -65,4 +65,4 @@ To do so:
 
 ## Attachment previews
 
-Attachments share the same content preview for images, videos, PDFs, etc. as the <a class="reference-link" href="../../Note%20Types/File.md">File</a> note type.
+Attachments share the same content preview for images, videos, PDFs, etc. as the <a class="reference-link" href="../../Note%20Types/File.md">File</a> note type. A Markdown attachment is previewed rendered, as a <a class="reference-link" href="../../Note%20Types/Markdown.md">Markdown</a> note is.

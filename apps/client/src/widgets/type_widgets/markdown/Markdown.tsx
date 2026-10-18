@@ -251,7 +251,7 @@ function usePublishHighlights(
  * preview so the block tagged with that line is at the top — interpolating to
  * the next block for smoothness.
  */
-function useSyncedScrolling(view: VanillaCodeMirror | null, preview: HTMLDivElement | null) {
+export function useSyncedScrolling(view: VanillaCodeMirror | null, preview: HTMLDivElement | null) {
     useEffect(() => {
         if (!view || !preview) return;
 
@@ -300,7 +300,7 @@ function useSyncedScrolling(view: VanillaCodeMirror | null, preview: HTMLDivElem
  * be measured here. Every block is observed for resize, since a block that grows after render —
  * a mermaid diagram, an image, an embedded note — shifts everything below it.
  */
-function useSyncedHighlight(view: VanillaCodeMirror | null, preview: HTMLDivElement | null, html: string) {
+export function useSyncedHighlight(view: VanillaCodeMirror | null, preview: HTMLDivElement | null, html: string) {
     useEffect(() => {
         if (!view || !preview) return;
 
@@ -475,7 +475,7 @@ function useTextCommands(parentComponent: TypeWidgetProps["parentComponent"], ed
  * Draws the `[[noteId]]` links as chips with the note's icon and title, as the search field draws
  * its note ids, showing a link's text while the selection touches it so it stays editable.
  */
-function useNoteLinkChips(editorView: VanillaCodeMirror | null) {
+export function useNoteLinkChips(editorView: VanillaCodeMirror | null) {
     useEffect(() => {
         if (!editorView) return;
 
@@ -487,7 +487,7 @@ function useNoteLinkChips(editorView: VanillaCodeMirror | null) {
     }, [editorView]);
 }
 
-function useMarkdownKeymap(editorView: VanillaCodeMirror | null) {
+export function useMarkdownKeymap(editorView: VanillaCodeMirror | null) {
     useEffect(() => {
         if (!editorView) return;
 

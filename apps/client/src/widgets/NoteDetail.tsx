@@ -411,8 +411,12 @@ function NoteDetailLoadingOverlay({ noteContext }: { noteContext: NoteContext | 
     );
 }
 
-/** Manages both note changes and changes to the widget type, which are asynchronous. */
-function useNoteInfo() {
+/**
+ * Manages both note changes and changes to the widget type, which are asynchronous.
+ *
+ * Exported for testing.
+ */
+export function useNoteInfo() {
     const { note: actualNote, noteContext, parentComponent } = useNoteContext();
     const [ note, setNote ] = useState<FNote | null | undefined>();
     const [ type, setType ] = useState<ExtendedNoteType>();
@@ -445,7 +449,9 @@ function useNoteInfo() {
         if (eventNoteContext?.ntxId !== noteContext?.ntxId) return;
         refresh();
     });
-    useTriliumEvent("noteTypeMimeChanged", refresh);
+    useTriliumEvent("noteTypeMimeChanged", ({ noteId }) => {
+        if (noteId === actualNote?.noteId) refresh();
+    });
 
     return { note, type, mime, noteContext, parentComponent };
 }

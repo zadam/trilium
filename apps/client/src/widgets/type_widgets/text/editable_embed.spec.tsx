@@ -245,6 +245,9 @@ describe("useEmbedCaretNavigation", () => {
         expect(leaveEmbed).toHaveBeenCalledExactlyOnceWith(
             figure.querySelector(".caret-content"), "end"
         );
+        expect(editor.prepareToLeave).toHaveBeenCalledOnce();
+        expect(editor.prepareToLeave.mock.invocationCallOrder[0])
+            .toBeLessThan(leaveEmbed.mock.invocationCallOrder[0]);
         expect(onKeyDown).not.toHaveBeenCalled();
 
         leaveEmbed.mockReturnValue(false);
@@ -252,10 +255,13 @@ describe("useEmbedCaretNavigation", () => {
         editor.getEdgeLeftBy.mockReturnValue(null);
         expect(pressKey()).toBe(false);
         expect(leaveEmbed).toHaveBeenCalledTimes(2);
+        expect(editor.prepareToLeave).toHaveBeenCalledTimes(2);
         expect(onKeyDown).toHaveBeenCalledTimes(2);
         unmount();
 
-        const outside = mountCaretProbe(buildCaretEditor("end"), { hasHost: false });
+        const outside = mountCaretProbe(
+            { focusAt: vi.fn(), getEdgeLeftBy: () => "end" }, { hasHost: false }
+        );
         expect(outside.pressKey()).toBe(false);
         outside.unmount();
     });
@@ -338,7 +344,8 @@ function mountCaretProbe(
 function buildCaretEditor(edge: EmbedEdge | null) {
     return {
         focusAt: vi.fn(),
-        getEdgeLeftBy: vi.fn((_event: KeyboardEvent): EmbedEdge | null => edge)
+        getEdgeLeftBy: vi.fn((_event: KeyboardEvent): EmbedEdge | null => edge),
+        prepareToLeave: vi.fn()
     };
 }
 

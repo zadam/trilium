@@ -359,6 +359,19 @@ export default class CodeMirror extends EditorView {
     }
 
     /**
+     * Drops the line-wrap side (`assoc`) of the cursor before the caret leaves the editor. On a
+     * focus change, CodeMirror moves the DOM selection to that side, which focuses the editor
+     * again.
+     */
+    prepareToLeave() {
+        const { main } = this.state.selection;
+        if (!main.empty || !main.assoc) return;
+
+        const cursor = EditorSelection.cursor(main.head);
+        this.dispatch({ selection: this.state.selection.replaceRange(cursor) });
+    }
+
+    /**
      * Inserts a blank line at the very top of the document and places the cursor on it — the code-note
      * analog of the Notion-like behavior when pressing Enter in the note title. If the first line is
      * already empty, the cursor is simply moved there instead of inserting another blank line, so a

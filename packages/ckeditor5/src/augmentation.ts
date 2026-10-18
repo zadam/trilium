@@ -52,6 +52,11 @@ declare global {
         keystroke?: string;
         /** The tools of the menu that the button opens. */
         children?: ContentEmbedTool[];
+        /**
+         * Whether the button opens a menu that the content draws, with
+         * `ContentEmbedToolProvider.openMenu()`, instead of running the tool.
+         */
+        opensMenu?: boolean;
         /** A class of the button, for the content to style it. */
         class?: string;
     }
@@ -64,6 +69,8 @@ declare global {
     interface ContentEmbedToolProvider {
         getTools(): ContentEmbedTool[];
         execute(id: string): void;
+        /** Opens the menu of the tool `id`, which sets `opensMenu`, below `anchor`. */
+        openMenu?(id: string, anchor: HTMLElement): void;
         /** Calls `callback` when `getTools()` changes, until the returned function is called. */
         subscribe(callback: () => void): () => void;
         /** The items of the embed toolbar to hide. The menu of the embed still offers them. */
@@ -73,6 +80,11 @@ declare global {
          * then turn on and off. The embed carries `data-editable="true"` while it is on.
          */
         hasEditableFlag?: boolean;
+        /**
+         * Whether the content shows its source, its rendering or both, which the toolbar and the
+         * menu of the embed then switch. The embed carries the mode as `data-display-mode`.
+         */
+        hasDisplayModes?: boolean;
     }
 
     interface EditorComponent extends Component {

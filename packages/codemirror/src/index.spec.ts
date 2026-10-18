@@ -411,6 +411,25 @@ describe("CodeMirror", () => {
             expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
         });
 
+        it("drops the line-wrap side of the cursor before the caret leaves", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab\ncd");
+            // A transaction keeps the `assoc` of an `EditorSelection`, not of a bare range.
+            const cursor = EditorSelection.cursor(4, -1);
+            instance.dispatch({ selection: EditorSelection.create([ cursor ]) });
+            expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: -1 });
+
+            instance.prepareToLeave();
+            expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: 0 });
+            for (const selection of [ EditorSelection.cursor(4), EditorSelection.range(0, 1) ]) {
+                instance.dispatch({ selection });
+                const { state } = instance;
+                instance.prepareToLeave();
+                expect(instance.state).toBe(state);
+            }
+        });
+
         it("leaves the arrow keys to an open completion list", async () => {
             const instance = build();
             editor = instance;

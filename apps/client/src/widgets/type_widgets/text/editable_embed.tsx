@@ -110,6 +110,8 @@ export interface EmbeddedCaretEditor {
      * its completions, takes the key.
      */
     getEdgeLeftBy(event: KeyboardEvent): EmbedEdge | null;
+    /** Runs before the caret leaves the editor past an edge, while the editor has the focus. */
+    prepareToLeave?(): void;
 }
 
 /**
@@ -130,8 +132,12 @@ export function useEmbedCaretNavigation(
 
         // The capture phase runs before the editor handles the key.
         const onKeyDown = (event: KeyboardEvent) => {
-            const edge = getEditorRef.current()?.getEdgeLeftBy(event);
-            if (edge && leaveContentEmbed(root, edge)) {
+            const editor = getEditorRef.current();
+            const edge = editor?.getEdgeLeftBy(event);
+            if (!editor || !edge) return;
+
+            editor.prepareToLeave?.();
+            if (leaveContentEmbed(root, edge)) {
                 event.preventDefault();
                 event.stopPropagation();
             }
@@ -279,8 +285,12 @@ type EditorRootElement = HTMLElement & { ckeditorInstance?: CKTextEditor };
 
 const EDITOR_ROOT_SELECTOR = ".ck-editor__editable:not(.ck-editor__nested-editable)";
 
-/** The content box of an embed whose editor has caret navigation, or `null`. */
-const CaretNavigationContext = createContext<RefObject<HTMLElement | null> | null>(null);
+/**
+ * The root of the content of an embed whose editor has caret navigation, or `null`. Set by
+ * `EditableEmbedContent` for `hasCaretNavigation`, and by content that lays out its own editor,
+ * such as `MarkdownEmbed`.
+ */
+export const CaretNavigationContext = createContext<RefObject<HTMLElement | null> | null>(null);
 
 const EDITABLE_FLAG_TOOLS: ContentEmbedToolProvider = {
     hasEditableFlag: true,
@@ -299,7 +309,8 @@ function leaveContentEmbed(element: HTMLElement, edge: EmbedEdge) {
         && editor.plugins.get("ContentEmbedCaret").leaveEmbed(element, edge);
 }
 
-function EmbedPreview({ element }: { element: HTMLElement }) {
+/** Shows `element`, the rendered content of an embed. */
+export function EmbedPreview({ element }: { element: HTMLElement }) {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {

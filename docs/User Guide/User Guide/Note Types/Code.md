@@ -55,6 +55,8 @@ The status bar at the bottom of the editor shows the current indentation setting
 
 Clicking the language indicator lets you change the note's MIME type. As in the _Note type_ selector, typing narrows the list of languages.
 
+The same two menus are in the toolbar of a code note or a code file included in a text note, see <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>.
+
 ### Re-indentation
 
 When you re-indent content, the editor:

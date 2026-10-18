@@ -27,6 +27,11 @@ export interface ContentEmbedTool {
     keystroke?: string;
     /** The tools of the menu that the button opens. */
     children?: ContentEmbedTool[];
+    /**
+     * Whether the button opens a menu that the content draws, with
+     * `ContentEmbedToolProvider.openMenu()`, instead of running the tool.
+     */
+    opensMenu?: boolean;
     /** A class of the button, for the content to style it. */
     class?: string;
 }
@@ -39,6 +44,8 @@ export type ContentEmbedToolbarItem =
 export interface ContentEmbedToolProvider {
     getTools(): ContentEmbedTool[];
     execute(id: string): void;
+    /** Opens the menu of the tool `id`, which sets `opensMenu`, below `anchor`. */
+    openMenu?(id: string, anchor: HTMLElement): void;
     /** Calls `callback` when `getTools()` changes, until the returned function is called. */
     subscribe(callback: () => void): () => void;
     /** The items of the embed toolbar to hide. The menu of the embed still offers them. */
@@ -48,6 +55,11 @@ export interface ContentEmbedToolProvider {
      * turn on and off. The embed carries `data-editable="true"` while it is on.
      */
     hasEditableFlag?: boolean;
+    /**
+     * Whether the content shows its source, its rendering or both, which the toolbar and the menu
+     * of the embed then switch. The embed carries the mode as `data-display-mode`.
+     */
+    hasDisplayModes?: boolean;
 }
 
 /**
@@ -255,6 +267,40 @@ export function useIsContentEmbedEditable(ref: RefObject<HTMLElement | null>) {
     }, [ ref ]);
 
     return isEditable;
+}
+
+/**
+ * The attribute `name` of the embed that contains `ref`, which follows its changes. `initial` until
+ * the content is in the embed, as content mounts before its embed box takes it in.
+ */
+export function useContentEmbedAttribute(
+    ref: RefObject<HTMLElement | null>,
+    name: string,
+    initial: string | null = null
+) {
+    const [ value, setValue ] = useState(initial);
+
+    useEffect(() => {
+        const embed = ref.current?.closest<HTMLElement>(".include-note");
+        if (!embed) return;
+
+        const update = () => setValue(embed.getAttribute(name));
+        const observer = new MutationObserver(update);
+        observer.observe(embed, { attributes: true, attributeFilter: [ name ] });
+        update();
+        return () => observer.disconnect();
+    }, [ ref, name ]);
+
+    return value;
+}
+
+/**
+ * The display mode picked for the embed that contains `ref`, for content whose provider sets
+ * `hasDisplayModes`. `null` while none is picked, outside an embed, and until the content is in the
+ * embed: `resolveDisplayMode()` then tells what to show.
+ */
+export function useContentEmbedDisplayMode(ref: RefObject<HTMLElement | null>) {
+    return useContentEmbedAttribute(ref, "data-display-mode");
 }
 
 /**
