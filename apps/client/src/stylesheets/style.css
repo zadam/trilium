@@ -1028,13 +1028,24 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     /* The corners of the embed box that its content touches, as lengths for `calc()`. */
     --_include-note-content-top-radius: 0px;
     --_include-note-content-bottom-radius: var(--_include-note-bottom-border-radius, 8px);
+    /* The frame around content that fills the box. Below a title and above a caption, the 2px
+       border between them and the content is the frame on that side. */
+    --_include-note-content-inset: 2px;
+    --_include-note-content-top-inset: 0px;
+    --_include-note-content-bottom-inset: var(--_include-note-content-inset);
+    --_include-note-framed-top-radius:
+        max(0px, var(--_include-note-content-top-radius) - var(--_include-note-content-top-inset));
+    --_include-note-framed-bottom-radius: max(0px,
+        var(--_include-note-content-bottom-radius) - var(--_include-note-content-bottom-inset));
 
     &[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"]) {
         --_include-note-content-top-radius: var(--_include-note-top-border-radius, 8px);
+        --_include-note-content-top-inset: var(--_include-note-content-inset);
     }
 
     &:has(> figcaption) {
         --_include-note-content-bottom-radius: 0px;
+        --_include-note-content-bottom-inset: 0px;
     }
 }
 
@@ -1349,29 +1360,28 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     margin-bottom: 0;
 }
 
+/* Outranks the margin, shadow and corners that the themes give `.ck-content pre`, the first two
+   with `!important`. */
+:root .include-note-content pre.code-embed-editor,
+:root .include-note-content.type-code pre {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0;
+}
+
 .include-note-content pre.code-embed-editor {
     padding: 0;
 }
 
 .include-note-content.type-code {
-    --_code-embed-inset: 2px;
-    padding: 0 var(--_code-embed-inset) var(--_code-embed-inset);
+    padding: var(--_include-note-content-top-inset) var(--_include-note-content-inset)
+             var(--_include-note-content-bottom-inset);
 }
 
-.include-note[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"])
-    .include-note-content.type-code {
-    padding-top: var(--_code-embed-inset);
-}
-
-/* Outranks the `!important` margin and shadow that the themes give `.ck-content pre`. */
 :root .include-note-content.type-code pre {
-    margin: 0 !important;
-    box-shadow: none !important;
-    border-radius:
-        max(0px, var(--_include-note-content-top-radius) - var(--_code-embed-inset))
-        max(0px, var(--_include-note-content-top-radius) - var(--_code-embed-inset))
-        max(0px, var(--_include-note-content-bottom-radius) - var(--_code-embed-inset))
-        max(0px, var(--_include-note-content-bottom-radius) - var(--_code-embed-inset));
+    border-radius: var(--_include-note-framed-top-radius) var(--_include-note-framed-top-radius)
+                   var(--_include-note-framed-bottom-radius)
+                   var(--_include-note-framed-bottom-radius);
 
     &.code-embed-editor {
         overflow: hidden;

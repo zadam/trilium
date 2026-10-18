@@ -1,7 +1,8 @@
 .include-note-content:has(
     > .rendered-content > .markdown-embed > .markdown-embed-content.with-source
 ) {
-    padding: 0;
+    padding: var(--_include-note-content-top-inset) var(--_include-note-content-inset)
+             var(--_include-note-content-bottom-inset);
     box-sizing: content-box;
     max-height: none;
 }
@@ -40,8 +41,8 @@
 }
 
 .include-note-content:not(:fullscreen) .markdown-embed-content.with-source {
-    border-radius: var(--_include-note-content-top-radius) var(--_include-note-content-top-radius)
-                   var(--_include-note-content-bottom-radius)
-                   var(--_include-note-content-bottom-radius);
+    border-radius: var(--_include-note-framed-top-radius) var(--_include-note-framed-top-radius)
+                   var(--_include-note-framed-bottom-radius)
+                   var(--_include-note-framed-bottom-radius);
     overflow: hidden;
 }
