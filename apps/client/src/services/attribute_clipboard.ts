@@ -248,7 +248,8 @@ export function mergePastedAttributes(
 export function getPreprocessedData(currentValue: string) {
     const str = currentValue
         .replace(/<a[^>]+href="(#[A-Za-z0-9_/]*)"[^>]*>[^<]*<\/a>/g, "$1")
-        .replace(/&nbsp;/g, " "); // otherwise .text() below outputs non-breaking space in unicode
+        .replace(/&nbsp;/g, " "); // otherwise textContent below outputs non-breaking space in unicode
 
-    return $("<div>").html(str).text();
+    // A `DOMParser` document is inert: pasted markup such as `<img onerror>` neither loads nor runs.
+    return new DOMParser().parseFromString(str, "text/html").body.textContent ?? "";
 }

@@ -191,6 +191,22 @@ describe("getPreprocessedData", () => {
         expect(getPreprocessedData("<a href=\"https://example.com\">Example</a>")).toBe("Example");
         expect(getPreprocessedData("#a&amp;b")).toBe("#a&b");
     });
+
+    it("parses pasted HTML outside the live document, so its markup never loads or runs", () => {
+        // An element owned by `document` loads its resources even while detached, which runs an
+        // `onerror` handler from a page the user copied from.
+        const createElement = vi.spyOn(document, "createElement");
+        try {
+            const attributes = readAttributes(clipboard({
+                "text/html": '#author=Elian<img src="x" onerror="alert(1)">'
+            }));
+
+            expect(attributes).toMatchObject([ { type: "label", name: "author", value: "Elian" } ]);
+            expect(createElement).not.toHaveBeenCalled();
+        } finally {
+            createElement.mockRestore();
+        }
+    });
 });
 
 function label(name: string, value?: string): Attribute {
