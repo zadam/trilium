@@ -99,6 +99,10 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
   - `hasEditableFlag` — shows the Editable toggle; the embed carries `data-editable="true"`.
   - `hasDisplayModes` — shows Source/Split/Preview; the embed carries `data-display-mode`.
   - `hiddenToolbarItems` — moves box size, title or convert-to-link from the toolbar to the ⋮ menu.
+  - `boxSizeIcon` — an SVG the box size dropdown shows in place of the size name, which moves to
+    its tooltip (`Box size: %0`). Code and Markdown embeds set it even while read-only
+    (`hasEditableFlag: false`), so every one of them shows the icon; code embeds through
+    `useContentEmbedMenus()`.
   - `getMenuItems()` — items of the ⋮ menu after Editable, in a group of their own
     (`useContentEmbedMenus(rootRef, menus, menuItems)` passes them through).
 - **A CodeMirror pane in an embed** (code, Markdown, Mermaid) takes its line wrapping and line

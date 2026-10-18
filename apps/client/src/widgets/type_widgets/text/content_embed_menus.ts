@@ -1,5 +1,5 @@
 import type { RefObject } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useMemo } from "preact/hooks";
 
 import type { CommandNames } from "../../../components/app_context";
 import contextMenu, { type ContextMenuOptions, type MenuItem } from "../../../menus/context_menu";
@@ -21,17 +21,30 @@ export interface ContentEmbedMenu {
     filterable?: boolean;
 }
 
+/** What `ContentEmbedMenus` adds to the embed toolbar besides its buttons. */
+export interface ContentEmbedMenusOptions {
+    /** Whether the toolbar and the menu of the embed offer the Editable toggle. On by default. */
+    hasEditableFlag?: boolean;
+    /** An SVG icon that the box size dropdown shows in place of the name of the box size. */
+    boxSizeIcon?: string;
+}
+
 /**
  * Adds a button for each of `menus` to the toolbar of the embed around `rootRef`, besides the
- * Editable toggle, and `menuItems` to the menu of the embed. Both follow their arguments as they
- * change.
+ * Editable toggle unless `hasEditableFlag` is off, and `menuItems` to the menu of the embed. Both
+ * follow their arguments as they change.
  */
 export function useContentEmbedMenus(
     rootRef: RefObject<HTMLElement | null>,
     menus: ContentEmbedMenu[],
-    menuItems: MenuItem<CommandNames>[] = []
+    menuItems: MenuItem<CommandNames>[] = [],
+    { hasEditableFlag = true, boxSizeIcon }: ContentEmbedMenusOptions = {}
 ) {
-    const [ provider ] = useState(() => new ContentEmbedMenus(rootRef));
+    // The toolbar reads the options when the provider of the selected embed changes.
+    const provider = useMemo(
+        () => new ContentEmbedMenus(rootRef, { hasEditableFlag, boxSizeIcon }),
+        [ rootRef, hasEditableFlag, boxSizeIcon ]
+    );
 
     useEffect(() => provider.setMenus(menus, menuItems));
 
@@ -45,7 +58,8 @@ export function useContentEmbedMenus(
 
 /** The buttons of the embed toolbar that open menus with `contextMenu`. */
 export class ContentEmbedMenus implements ContentEmbedToolProvider {
-    readonly hasEditableFlag = true;
+    readonly hasEditableFlag: boolean;
+    readonly boxSizeIcon: string | undefined;
     private menus: ContentEmbedMenu[] = [];
     private menuItems: MenuItem<CommandNames>[] = [];
     /** The menu that is open, whose button shows as on. */
@@ -56,7 +70,13 @@ export class ContentEmbedMenus implements ContentEmbedToolProvider {
     /** The tools as last notified, to notify the listeners only when they change. */
     private shownTools = "";
 
-    constructor(private readonly rootRef: RefObject<HTMLElement | null>) {}
+    constructor(
+        private readonly rootRef: RefObject<HTMLElement | null>,
+        { hasEditableFlag = true, boxSizeIcon }: ContentEmbedMenusOptions = {}
+    ) {
+        this.hasEditableFlag = hasEditableFlag;
+        this.boxSizeIcon = boxSizeIcon;
+    }
 
     /** Sets the menus of the buttons, and the items of the menu of the embed. */
     setMenus(menus: ContentEmbedMenu[], menuItems: MenuItem<CommandNames>[] = []) {

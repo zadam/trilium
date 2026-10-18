@@ -4372,6 +4372,7 @@
       "attach-file": "Attach file",
       "attach-file-as-a-link": "Attach file as a link",
       "box-size": "Box size",
+      "box-size-0": "Box size: %0",
       "bulleted-list": "Bulleted list",
       "caption-for-the-included-note": "Caption for the included note",
       "card": "Card",

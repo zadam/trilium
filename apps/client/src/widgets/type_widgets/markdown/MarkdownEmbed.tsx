@@ -1,6 +1,7 @@
 import "./MarkdownEmbed.css";
 
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import moveVerticalIcon from "boxicons/svg/regular/bx-move-vertical.svg?raw";
 import clsx from "clsx";
 import type { RefObject } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
@@ -116,8 +117,8 @@ export function renderMarkdownHtml(source: string) {
 }
 
 /**
- * Offers the display modes of the content in `rootRef` on its embed, and the Editable toggle and
- * `menuItems` while `canEdit`.
+ * Offers the display modes of the content in `rootRef` on its embed and its box size as an icon,
+ * and the Editable toggle and `menuItems` while `canEdit`.
  */
 function useDisplayModeTools(
     rootRef: RefObject<HTMLElement | null>,
@@ -134,6 +135,7 @@ function useDisplayModeTools(
         return registerContentEmbedTools(root, {
             hasEditableFlag: canEdit,
             hasDisplayModes: true,
+            boxSizeIcon: moveVerticalIcon,
             getTools: () => [],
             execute: () => {},
             subscribe: () => () => {},

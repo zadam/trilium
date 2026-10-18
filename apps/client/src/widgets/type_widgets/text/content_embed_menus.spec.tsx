@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CommandNames } from "../../../components/app_context";
 import contextMenu, { type ContextMenuOptions, type MenuItem } from "../../../menus/context_menu";
 import {
-    type ContentEmbedMenu, ContentEmbedMenus, useContentEmbedMenus
+    type ContentEmbedMenu, ContentEmbedMenus, type ContentEmbedMenusOptions, useContentEmbedMenus
 } from "./content_embed_menus";
 import { getContentEmbedTools } from "./content_embed_tools";
 
@@ -146,18 +146,46 @@ describe("useContentEmbedMenus", () => {
         act(() => render(<Harness menus={[ LANGUAGE ]} />, root));
         expect(getContentEmbedTools(figure)).toBeNull();
     });
+
+    it("offers its options, with another provider once the Editable flag changes", () => {
+        const { figure, root } = buildEmbed();
+        const icon = "<svg></svg>";
+
+        act(() => render(
+            <Harness
+                menus={[]} root={root} options={{ hasEditableFlag: false, boxSizeIcon: icon }}
+            />, root
+        ));
+        const readOnly = getContentEmbedTools(figure);
+        expect([ readOnly?.hasEditableFlag, readOnly?.boxSizeIcon ]).toEqual([ false, icon ]);
+        expect(readOnly?.getTools()).toEqual([]);
+
+        act(() => render(
+            <Harness menus={[ LANGUAGE ]} root={root} options={{ boxSizeIcon: icon }} />, root
+        ));
+        const editable = getContentEmbedTools(figure);
+        expect(editable).not.toBe(readOnly);
+        expect([ editable?.hasEditableFlag, editable?.boxSizeIcon ]).toEqual([ true, icon ]);
+        expect(editable?.getTools().map((tool) => tool.text)).toEqual([ "Python" ]);
+
+        act(() => render(
+            <Harness menus={[ LANGUAGE ]} root={root} options={{ boxSizeIcon: icon }} />, root
+        ));
+        expect(getContentEmbedTools(figure)).toBe(editable);
+    });
 });
 
 interface HarnessProps {
     menus: ContentEmbedMenu[];
     menuItems?: MenuItem<CommandNames>[];
+    options?: ContentEmbedMenusOptions;
     root?: HTMLElement;
 }
 
 /** Mounts `useContentEmbedMenus()` with a ref to `root`, or to nothing while `root` is unset. */
-function Harness({ menus, menuItems, root }: HarnessProps) {
+function Harness({ menus, menuItems, options, root }: HarnessProps) {
     const rootRef: RefObject<HTMLElement | null> = useRef(root ?? null);
-    useContentEmbedMenus(rootRef, menus, menuItems);
+    useContentEmbedMenus(rootRef, menus, menuItems, options);
     return null;
 }
 

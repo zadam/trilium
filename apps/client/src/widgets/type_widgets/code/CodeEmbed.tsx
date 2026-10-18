@@ -1,5 +1,6 @@
 import type { ContentEmbedCodeView } from "@triliumnext/ckeditor5";
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import moveVerticalIcon from "boxicons/svg/regular/bx-move-vertical.svg?raw";
 import { createPortal, type RefObject } from "preact";
 import { lazy, Suspense, useSyncExternalStore } from "preact/compat";
 import { useEffect, useRef, useState } from "preact/hooks";
@@ -69,15 +70,12 @@ export default function CodeEmbed({
     useSavedContent(entity, editor, setContent);
     // The editor while the content is edited, otherwise the content with the unsaved changes of any
     // embed of it, which a change saves.
-    const getCodeText = (contentEditor: ContentEditor): CodeText => {
-        const view = isEditing ? viewRef.current : null;
-        return view ?? {
-            getText: () => contentEditor.getUnsavedContent() ?? content,
-            setText: (text) => {
-                contentEditor.scheduleSave(() => text);
-                setContent(text);
-            }
-        };
+    const getCodeText = (): CodeText => (isEditing ? viewRef.current : null) ?? {
+        getText: () => editor?.getUnsavedContent() ?? content,
+        setText: (text) => {
+            editor?.scheduleSave(() => text);
+            setContent(text);
+        }
     };
 
     return (
@@ -103,14 +101,13 @@ export default function CodeEmbed({
                 </CaretNavigationContext.Provider>
             </div>
             {editor && <SaveStatus rootRef={rootRef} editor={editor} isShown={isEditing} />}
-            {editor && canEdit && (
-                <CodeTools
-                    rootRef={rootRef}
-                    settings={settings}
-                    menuItems={lines.menuItems}
-                    getCodeText={() => getCodeText(editor)}
-                />
-            )}
+            <CodeTools
+                rootRef={rootRef}
+                settings={settings}
+                canEdit={canEdit}
+                menuItems={lines.menuItems}
+                getCodeText={getCodeText}
+            />
         </>
     );
 }
@@ -200,6 +197,8 @@ function setCodeView(root: HTMLElement | null, codeView: ContentEmbedCodeView) {
 interface CodeToolsProps {
     rootRef: RefObject<HTMLElement | null>;
     settings: CodeSettings;
+    /** Whether the content can be edited, which offers the menus and the Editable toggle. */
+    canEdit: boolean;
     /** The items of the menu of the embed. */
     menuItems: MenuItem<CommandNames>[];
     /** The text that the re-indent items of the tab width menu convert. */
@@ -207,18 +206,22 @@ interface CodeToolsProps {
 }
 
 /**
- * The "Change language mode" and "Change tab width" menus of the status bar, as buttons of the
- * toolbar of the embed around `rootRef`, and `menuItems` in its menu.
+ * The box size of the embed around `rootRef` as an icon of its toolbar, and while `canEdit`, the
+ * "Change language mode" and "Change tab width" menus of the status bar as buttons of the toolbar
+ * and `menuItems` in the menu of the embed.
  */
-function CodeTools({ rootRef, settings, menuItems, getCodeText }: CodeToolsProps) {
+function CodeTools({ rootRef, settings, canEdit, menuItems, getCodeText }: CodeToolsProps) {
     const language = useCodeLanguageMenu(settings);
     const tabWidth = useTabWidthMenu(settings, async () => getCodeText());
-    useContentEmbedMenus(rootRef, [
+    useContentEmbedMenus(rootRef, canEdit ? [
         { id: "codeLanguage", ...language.menu },
         { id: "tabWidth", ...tabWidth }
-    ], menuItems);
+    ] : [], canEdit ? menuItems : [], {
+        hasEditableFlag: canEdit,
+        boxSizeIcon: moveVerticalIcon
+    });
 
-    return language.modal;
+    return canEdit ? language.modal : null;
 }
 
 interface SaveStatusProps {

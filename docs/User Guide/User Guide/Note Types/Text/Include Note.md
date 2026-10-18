@@ -29,7 +29,7 @@ A new include gets the size that suits what it shows:
 *   _Full_ for a code note or a code file, such as a `.js`, `.py` or `.txt` attachment, and for an excerpt of the blocks of a text note.
 *   _Medium_ for anything else.
 
-The dialog that includes a note selects that size once the note is picked, and you can choose another one there. To change the size later, select the include and use the _Box size_ menu in its toolbar, or the _Size_ submenu of its _More actions_ menu.
+The dialog that includes a note selects that size once the note is picked, and you can choose another one there. To change the size later, select the include and use the _Box size_ menu in its toolbar, or the _Size_ submenu of its _More actions_ menu. For an included code or Markdown note and an embedded code or Markdown file, the _Box size_ menu is the <span class="tn-icon bx bx-move-vertical"></span> button, whose tooltip names the current size.
 
 ## Resizing
 
@@ -113,7 +113,7 @@ An included text note, an included code note and an embedded code file such as a
 *   While an included text note has the focus, the formatting toolbar applies to it. The notes it includes in turn stay read-only.
 *   Code is edited in the same code editor as a <a class="reference-link" href="../Code.md">Code</a> note, with its theme, indentation and line wrapping settings.
 *   Typing `/` in the code lists the <a class="reference-link" href="../../Advanced%20Usage/Snippets/Code%20Snippets.md">Code Snippets</a> of its language, as in a code note.
-*   The toolbar of an included code note or an embedded code file also has the language and indentation menus of the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a>, between _Editable_ and the _Box size_ menu: _Change language mode_, which shows the current language, and _Change tab width_, which shows the current indentation. _Re-indent content to_ converts the indentation of the code itself and saves it to the included note or file, whether _Editable_ is on or off.
+*   The toolbar of an included code note or an embedded code file also has the language and indentation menus of the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a>, between _Editable_ and the <span class="tn-icon bx bx-move-vertical"></span> _Box size_ menu: _Change language mode_, which shows the current language, and _Change tab width_, which shows the current indentation. _Re-indent content to_ converts the indentation of the code itself and saves it to the included note or file, whether _Editable_ is on or off.
     *   For an included note, the menus change the note, as they do in its own tab.
     *   For an embedded code file, the language and indentation settings change only how this include shows the file, and are saved with the note that includes it. The language replaces the one that the file name gives, and the _Use default_ entries return to the indentation set in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Code Notes_. These settings leave the file itself unchanged, and other includes of it keep their own settings.
 *   The <span class="tn-icon cke cke-three-vertical-dots"></span> _More actions_ menu of an included code or Markdown note, an embedded code or Markdown file and a [Mermaid diagram](Insert%20buttons.md) has two more submenus after _Editable_, each with _Auto_, _On_ and _Off_. They change how the code editor shows the source.

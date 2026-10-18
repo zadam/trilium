@@ -1,4 +1,5 @@
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import moveVerticalIcon from "boxicons/svg/regular/bx-move-vertical.svg?raw";
 import { render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -50,8 +51,10 @@ describe("MarkdownEmbed", () => {
         expect(figure.querySelector(".editable-embed-preview")?.firstChild).toBe(preview);
         expect(figure.querySelector(".note-detail-split.split-read-only")).not.toBeNull();
         expect(figure.querySelector(".cm-editor")).toBeNull();
-        expect(getContentEmbedTools(figure))
-            .toMatchObject({ hasDisplayModes: true, hasEditableFlag: true });
+        expect(getContentEmbedTools(figure)).toMatchObject({
+            hasDisplayModes: true, hasEditableFlag: true, boxSizeIcon: moveVerticalIcon
+        });
+        expect(moveVerticalIcon).toContain("<svg");
 
         const readOnly = buildNote({
             title: "Fixed", type: "code", mime: "text/x-markdown", content: "", "#readOnly": ""
@@ -62,8 +65,9 @@ describe("MarkdownEmbed", () => {
             [ readOnly, buildEditor() ]
         ] as const) {
             const { figure: locked } = await mount(entity, editor);
-            expect(getContentEmbedTools(locked))
-                .toMatchObject({ hasDisplayModes: true, hasEditableFlag: false });
+            expect(getContentEmbedTools(locked)).toMatchObject({
+                hasDisplayModes: true, hasEditableFlag: false, boxSizeIcon: moveVerticalIcon
+            });
         }
     });
 

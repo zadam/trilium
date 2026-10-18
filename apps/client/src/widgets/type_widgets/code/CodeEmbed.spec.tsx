@@ -1,4 +1,5 @@
 import VanillaCodeMirror from "@triliumnext/codemirror";
+import moveVerticalIcon from "boxicons/svg/regular/bx-move-vertical.svg?raw";
 import { render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -53,26 +54,28 @@ describe("CodeEmbed", () => {
         const { figure } = await mount(note, buildEditor());
         const view = await findView(figure, true);
         expect([ view.state.doc.toString(), view.state.readOnly ]).toEqual([ "print(1)", true ]);
-        expect(getContentEmbedTools(figure)?.hasEditableFlag).toBe(true);
+        const tools = getContentEmbedTools(figure);
+        expect([ tools?.hasEditableFlag, tools?.boxSizeIcon ]).toEqual([ true, moveVerticalIcon ]);
+        expect(moveVerticalIcon).toContain("<svg");
 
         const { figure: locked } = await mount(note, buildEditor({ canEdit: () => false }), {
             isEditable: true
         });
         expect((await findView(locked, true)).state.readOnly).toBe(true);
-        expect(getContentEmbedTools(locked)).toBeNull();
+        expectBoxSizeIconAlone(locked);
 
         const readOnly = buildNote({
             title: "Fixed", type: "code", mime: "text/x-python", content: "", "#readOnly": ""
         });
         const { figure: fixed } = await mount(readOnly, buildEditor());
-        expect(getContentEmbedTools(fixed)).toBeNull();
+        expectBoxSizeIconAlone(fixed);
 
         // Without an editor, as in a read-only text note.
         const { figure: shown } = await mount(note, undefined, { isEditable: true });
         const shownView = await findView(shown, true);
         expect([ shownView.state.doc.toString(), shownView.state.readOnly ])
             .toEqual([ "print(1)", true ]);
-        expect(getContentEmbedTools(shown)).toBeNull();
+        expectBoxSizeIconAlone(shown);
     });
 
     it("edits with CodeMirror while the toggle is on, and saves only the changes", async () => {
@@ -697,6 +700,13 @@ async function selectMenuItem(figure: HTMLElement, id: string, title: string, is
         .find((candidate) => "title" in candidate && candidate.title === title);
     if (!item || "kind" in item) throw new Error(`No item titled ${title}.`);
     await act(async () => item.handler?.(item, new MouseEvent("click")));
+}
+
+/** Asserts that the toolbar of the embed `figure` shows the box size as an icon, and no tools. */
+function expectBoxSizeIconAlone(figure: HTMLElement) {
+    const tools = getContentEmbedTools(figure);
+    expect([ tools?.hasEditableFlag, tools?.boxSizeIcon ]).toEqual([ false, moveVerticalIcon ]);
+    expect([ tools?.getTools(), tools?.getMenuItems?.() ]).toEqual([ [], [] ]);
 }
 
 /** The editing or the read-only CodeMirror view in `figure`, once the editor module has loaded. */
