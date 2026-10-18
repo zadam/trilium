@@ -652,11 +652,24 @@ function getTooltipHost() {
     return host;
 }
 
-/** The read-only facet, or the placeholder of an editable editor. */
+/** The read-only facet with a hidden caret, or the placeholder of an editable editor. */
 function buildEditability(isReadOnly: boolean, placeholderText: string | undefined): Extension {
-    if (isReadOnly) return EditorState.readOnly.of(true);
+    if (isReadOnly) return [ EditorState.readOnly.of(true), hiddenCaretTheme ];
     return placeholderText ? placeholder(placeholderText) : [];
 }
+
+/**
+ * Hides the caret, and the block cursor that Vim draws in its place. `Prec.highest` outranks the
+ * `.cm-content` rule of the color theme.
+ */
+const hiddenCaretTheme = Prec.highest(EditorView.theme({
+    ".cm-content": {
+        caretColor: "transparent"
+    },
+    ".cm-vimCursorLayer": {
+        display: "none"
+    }
+}));
 
 /** The extension of each theme that an editor has loaded. */
 const loadedThemes = new WeakMap<ThemeDefinition, Extension>();

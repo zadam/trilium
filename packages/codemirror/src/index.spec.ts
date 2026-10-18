@@ -285,9 +285,11 @@ describe("CodeMirror", () => {
             editor = build({ readOnly: true, placeholder: "Type here" });
             const hasPlaceholder = () => !!editor?.dom.querySelector(".cm-placeholder");
             expect(hasPlaceholder()).toBe(false);
+            expect(getHiddenCaretRules(editor)).toHaveLength(2);
 
             editor.setReadOnly(false);
             expect([ editor.state.readOnly, hasPlaceholder() ]).toEqual([ false, true ]);
+            expect(getHiddenCaretRules(editor)).toEqual([]);
             editor.dispatch({ changes: { from: 0, insert: "a" } });
             expect(undo(editor)).toBe(true);
             expect(editor.getText()).toBe("");
@@ -296,12 +298,27 @@ describe("CodeMirror", () => {
             editor.setReadOnly(true);
             editor.setReadOnly(true);
             expect(editor.state.readOnly).toBe(true);
+            expect(getHiddenCaretRules(editor)).toHaveLength(2);
             editor.insertBlankLineAtTop();
             expect(editor.getText()).toBe("b");
 
             editor.setReadOnly(false);
             expect(undo(editor)).toBe(false);
             expect(editor.getText()).toBe("b");
+        });
+
+        it("hides the caret of a read-only editor over that of the color theme", async () => {
+            const theme = getThemeById("github-dark");
+            expect(theme).not.toBeNull();
+            if (!theme) return;
+            editor = build({ readOnly: true });
+            await editor.setTheme(theme);
+
+            const caretRules = editor.state.facet(EditorView.styleModule)
+                .flatMap((module) => module.getRules().split("\n"))
+                .filter((rule) => / \.cm-content \{[^}]*caret-color/.test(rule));
+            expect(caretRules.length).toBeGreaterThan(1);
+            expect(caretRules[0]).toContain("caret-color: transparent;");
         });
 
         it("toggles line wrapping both ways", () => {
@@ -812,6 +829,14 @@ function getGutterRules(view: CodeMirror) {
     return view.state.facet(EditorView.styleModule)
         .flatMap((module) => module.getRules().split("\n"))
         .filter((rule) => / \.cm-gutters \{/.test(rule));
+}
+
+/** The rules of `view` that hide the caret and the block cursor of Vim. */
+function getHiddenCaretRules(view: CodeMirror) {
+    return view.state.facet(EditorView.styleModule)
+        .flatMap((module) => module.getRules().split("\n"))
+        .filter((rule) => / \.cm-content \{caret-color: transparent;\}/.test(rule)
+            || / \.cm-vimCursorLayer \{display: none;\}/.test(rule));
 }
 
 /** A keydown of `key` from `target`, which the editor does not handle, as it is not dispatched. */
