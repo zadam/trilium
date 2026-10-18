@@ -787,8 +787,8 @@ importers:
         specifier: 9.1.0
         version: 9.1.0(supports-color@10.2.2)
       i18next-fs-backend:
-        specifier: 2.6.8
-        version: 2.6.8
+        specifier: 2.6.9
+        version: 2.6.9
       image-type:
         specifier: 6.1.0
         version: 6.1.0(supports-color@10.2.2)
@@ -8003,8 +8003,8 @@ packages:
     resolution: {integrity: sha512-ag87y7cJJ9/3+GxFr8Oy4O5faDsGRGnBGsJj/YjOSsSx/5eadKLYTMPlzuR6obgoCDDm0abAAZitXXQkMOPSpA==}
     engines: {node: '>= 20'}
 
-  i18next-fs-backend@2.6.8:
-    resolution: {integrity: sha512-6w7An//zrZgwOrniDl0E3jXTPQayMexFnksuHrBA3dTyFbpbmmkKfPoI6SgaKq5gH5jXMzqrQpzN10jlKj6n7Q==}
+  i18next-fs-backend@2.6.9:
+    resolution: {integrity: sha512-YZ5PQUV9xnAeh45CCSQW095wYDWZEwKse/1wr3m0z0Mij5zoCFMs67Q3M+w/9un8fUruubMR4DzETnDGH85heQ==}
 
   i18next-http-backend@4.0.2:
     resolution: {integrity: sha512-oay62dIB2kL7+WHzoUXBjWfL3+mwijD3pQkQkIEaRLhy6kjXxUhrRenV0gInwlCASAaJaDy94+XvYizK+cAGdA==}
@@ -20309,7 +20309,7 @@ snapshots:
       - kerberos
       - supports-color
 
-  i18next-fs-backend@2.6.8: {}
+  i18next-fs-backend@2.6.9: {}
 
   i18next-http-backend@4.0.2: {}
 
