@@ -51,6 +51,7 @@ import SidebarHelp from "./SidebarHelp";
  */
 export default function AttributeList() {
     const { note } = useActiveNoteContext();
+    const canEdit = !!note && note.isContentWritable;
     const { isMasterDetail } = useMasterDetail();
     const parentComponent = useContext(ParentComponent);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -314,7 +315,6 @@ export default function AttributeList() {
     }
 
     const sections = splitIntoSections(owned.current, inherited.current);
-    const canEdit = !!note && note.isContentWritable;
     const internalRows = internal.current.map((attribute) => toEntry(attribute, true));
 
     //#region Selection and the clipboard
@@ -433,7 +433,7 @@ export default function AttributeList() {
      * from either lands here whole, as does one written out by hand.
      */
     async function pasteAttributes(e: ClipboardEvent) {
-        if (!note) {
+        if (!canEdit) {
             return;
         }
         e.preventDefault();
@@ -518,7 +518,7 @@ export default function AttributeList() {
             ...pasteMenuItems()
         ];
 
-        if (picked.every((candidate) => owned.current.includes(candidate))) {
+        if (canEdit && picked.every((candidate) => owned.current.includes(candidate))) {
             items.push({ kind: "separator" });
             items.push({
                 title: t("attribute_list_panel.delete_selection", { count: picked.length }),
@@ -553,7 +553,7 @@ export default function AttributeList() {
      */
     function pasteMenuItems(): MenuItem<never>[] {
         const heldAttributes = getHeldAttributes();
-        if (heldAttributes.length === 0 || !note) {
+        if (heldAttributes.length === 0 || !canEdit) {
             return [];
         }
 
@@ -744,8 +744,8 @@ export default function AttributeList() {
     const selectionBar = note && isSelecting && (
         <AttributeSelectionBar
             count={selection.size}
-            canDelete={selectedAttributes().every((candidate) => owned.current.includes(candidate))}
-            canPaste={heldAttributes.length > 0}
+            canDelete={canEdit && selectedAttributes().every((candidate) => owned.current.includes(candidate))}
+            canPaste={canEdit && heldAttributes.length > 0}
             onCopy={() => void copyPickedAttributes(selectedAttributes())}
             onPaste={() => void applyPaste(heldAttributes)}
             onDelete={() => void deleteSelection(selectedAttributes())}
@@ -793,7 +793,7 @@ export default function AttributeList() {
                                 rows would land on is nothing at all on the note that most wants
                                 pasting into, having no rows to give it a height. The header is the
                                 one part of a run that stands whatever the run holds. */}
-                            {heldAttributes.length > 0 && (
+                            {canEdit && heldAttributes.length > 0 && (
                                 <ActionButton
                                     icon="bx bx-paste"
                                     text={t("attribute_list_panel.paste", { count: heldAttributes.length })}

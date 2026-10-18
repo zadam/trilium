@@ -124,6 +124,13 @@ describe("AttributeList on a phone", () => {
         const [ url, saved ] = put.mock.calls[0] as [ string, { name: string; value: string }[] ];
         expect(url).toBe("notes/phone-bare/attributes");
         expect(saved).toEqual([ { type: "label", name: "author", value: "Elian", isInheritable: false } ]);
+
+        // A note that cannot be edited has no paste button, even with attributes held.
+        render(null, container);
+        const locked = buildNote({ id: "phone-locked", title: "Locked" });
+        locked.isContentWritable = false;
+        renderPanel(locked);
+        expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle" ]);
     });
 
     it("still picks rows out, by the press held down, and says what can be done with them", () => {

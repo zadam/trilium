@@ -1141,6 +1141,37 @@ describe("AttributeList", () => {
         expect(firstPanel().className).not.toContain("selecting");
     });
 
+    it("lets a note that cannot be edited be copied from, but not deleted from or pasted onto", async () => {
+        const note = noteWithAttributes();
+        note.isContentWritable = false;
+        writeAttributes(null, [ plain("tag") ]);
+        renderPanel(note);
+
+        // The selection bar offers copying and the way out only.
+        checkbox(0).click();
+        checkbox(1).click();
+        expect(barIcons()).toEqual([ "bx bx-copy", "bx bx-x" ]);
+
+        // So does the row menu, over rows the note owns.
+        rightPress(0);
+        expect(menuItem("bx bx-copy")).toBeDefined();
+        expect(menuItem("bx bx-trash")).toBeUndefined();
+        expect(menuItem("bx bx-paste")).toBeUndefined();
+
+        // A right press beside the rows has nothing to offer, so the browser's menu shows.
+        showContextMenu.mockClear();
+        const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+        act(() => {
+            firstPanel().dispatchEvent(event);
+        });
+        expect(showContextMenu).not.toHaveBeenCalled();
+        expect(event.defaultPrevented).toBe(false);
+
+        // The paste key saves nothing.
+        await act(async () => pasteInto(firstPanel(), { "text/plain": "#tag=new" }));
+        expect(put).not.toHaveBeenCalled();
+    });
+
     function rows() {
         return [ ...container.querySelectorAll<HTMLElement>(".attribute-row") ];
     }
