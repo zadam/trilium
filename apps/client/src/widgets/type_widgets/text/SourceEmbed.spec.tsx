@@ -4,6 +4,7 @@ import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { SourceEmbedProps } from "../../../services/source_embeds";
+import { InlineSourceSaves } from "./attachment_saves";
 import { createInlineSourceEditor, InlineSourceEmbed } from "./SourceEmbed";
 
 /** An inline source as the text editor hands it over, which notifies its listeners on writes. */
@@ -64,6 +65,32 @@ describe("createInlineSourceEditor", () => {
 
         vi.advanceTimersByTime(500);
         expect(source.setSource).toHaveBeenCalledOnce();
+    });
+
+    it("marks the note changed while a write waits, and writes it when the note saves", () => {
+        vi.useFakeTimers();
+        const source = createSource("a");
+        const onChange = vi.fn();
+        const saves = new InlineSourceSaves(onChange);
+        const editor = createInlineSourceEditor(source, saves);
+
+        saves.flush();
+        expect(source.setSource).not.toHaveBeenCalled();
+
+        editor.scheduleSave(() => "b");
+        expect(onChange).toHaveBeenCalledOnce();
+        saves.flush();
+        expect(source.setSource).toHaveBeenCalledExactlyOnceWith("b");
+        expect(editor.getUnsavedContent()).toBeUndefined();
+
+        vi.advanceTimersByTime(500);
+        saves.flush();
+        expect(source.setSource).toHaveBeenCalledOnce();
+
+        editor.scheduleSave(() => "c");
+        vi.advanceTimersByTime(500);
+        saves.flush();
+        expect(source.setSource).toHaveBeenCalledTimes(2);
     });
 
     it("cannot edit the source of a read-only text editor", () => {

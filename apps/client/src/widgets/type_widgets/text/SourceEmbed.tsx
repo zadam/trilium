@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import type FAttachment from "../../../entities/fattachment";
 import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
+import type { InlineSourceSaves } from "./attachment_saves";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
 import { useSavedContent } from "../code/CodeEmbed";
 
@@ -30,12 +31,14 @@ export default function AttachmentSourceEmbed({
 interface InlineSourceEmbedProps {
     source: InlineEmbedSource;
     component: ComponentType<SourceEmbedProps>;
+    /** The writes that the text note saves first. */
+    saves?: InlineSourceSaves;
 }
 
 /** The component of a source embed type, over a source kept inline in the text note. */
-export function InlineSourceEmbed({ source, component: Component }: InlineSourceEmbedProps) {
+export function InlineSourceEmbed({ source, component: Component, saves }: InlineSourceEmbedProps) {
     const content = useSyncExternalStore(source.subscribe, source.getSource);
-    const editor = useMemo(() => createInlineSourceEditor(source), [ source ]);
+    const editor = useMemo(() => createInlineSourceEditor(source, saves), [ source, saves ]);
     useEffect(() => () => editor.release(), [ editor ]);
 
     return <Component content={content} editor={editor} />;
@@ -43,15 +46,20 @@ export function InlineSourceEmbed({ source, component: Component }: InlineSource
 
 /**
  * The editor of a source kept inline, which writes the source into the text note a moment after
- * it stops changing, each write one step of the text editor's undo.
+ * it stops changing, each write one step of the text editor's undo. Until then `saves` holds the
+ * write, so that the text note makes it before it saves.
  */
-export function createInlineSourceEditor(source: InlineEmbedSource): ContentEditor {
+export function createInlineSourceEditor(
+    source: InlineEmbedSource,
+    saves?: InlineSourceSaves
+): ContentEditor {
     let getPending: (() => string) | undefined;
     let timeout: ReturnType<typeof setTimeout> | undefined;
 
     const flush = () => {
         clearTimeout(timeout);
         timeout = undefined;
+        saves?.delete(flush);
         const getContent = getPending;
         getPending = undefined;
         if (getContent) {
@@ -64,6 +72,7 @@ export function createInlineSourceEditor(source: InlineEmbedSource): ContentEdit
         getUnsavedContent: () => getPending?.(),
         scheduleSave(getContent, onSaved) {
             getPending = getContent;
+            saves?.add(flush);
             clearTimeout(timeout);
             timeout = setTimeout(() => {
                 flush();

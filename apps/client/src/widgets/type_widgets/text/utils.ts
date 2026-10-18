@@ -12,6 +12,7 @@ import froca from "../../../services/froca";
 import link, { ViewScope } from "../../../services/link";
 import { getSourceEmbedTypeByLanguage } from "../../../services/source_embeds";
 import utils from "../../../services/utils";
+import type { InlineSourceSaves } from "./attachment_saves";
 import { watchContentEmbedTools } from "./content_embed_tools";
 import ContentEmbed, { getNoteActions, TinyContentEmbed } from "./ContentEmbed";
 
@@ -158,7 +159,7 @@ export async function loadInlineEmbed(
     source: InlineEmbedSource,
     $el: JQuery<HTMLElement>,
     boxSize: string | undefined,
-    { isFocused }: { isFocused: boolean }
+    { isFocused, saves }: { isFocused: boolean; saves?: InlineSourceSaves }
 ) {
     const type = getSourceEmbedTypeByLanguage(source.language);
     if (!type) return;
@@ -170,7 +171,7 @@ export async function loadInlineEmbed(
     ]);
     const $renderedContent = $('<div class="rendered-content">');
     const container = $('<div class="source-embed">').appendTo($renderedContent)[0];
-    await content_renderer.mountInteractiveWidget(h(InlineSourceEmbed, { source, component }), container);
+    await content_renderer.mountInteractiveWidget(h(InlineSourceEmbed, { source, component, saves }), container);
 
     const box = h(ContentEmbed, {
         boxSize: boxSize ?? getEmbedBoxSize(el),

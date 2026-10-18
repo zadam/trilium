@@ -162,6 +162,20 @@ in-place drawings replaced the code blocks the boxes need.
 
 ## Traps already hit
 
+- **A write held back is part of the note.** `InlineSourceEmbed` writes the source 500 ms after the
+  last change. Until then the text note's model does not have it, so a note switch saved the old
+  source and `setData()` then dropped the embed, whose later write went to the graveyard. The
+  editor hands each held write to `InlineSourceSaves` (`text/attachment_saves.ts`), which marks the
+  note changed, and `getData()` in `EditableText` flushes it first — as `AttachmentSaves` does for
+  attachments.
+- **Non-interactive rendering must be finished when it returns.** A presentation slide snapshots
+  `getRenderedContent()` and disposes it at once, so a mounted component that draws in an effect
+  leaves it blank. Without `options.interactive`, draw a picture before returning
+  (`SourceEmbedType.renderPreview()`, `renderCanvasDrawingPicture()`).
+- **Keep the block ID.** A read-only view that swaps the saved element for a box copies
+  `data-trilium-block-id` onto it (on the `<pre>`, or the `<code>` of older diagrams), or links to
+  the block stop resolving.
+
 - **Content renders detached.** `loadInlineEmbed()` renders into a detached `div` before the box
   mounts it, so a hook that looks up `.closest(".include-note")` once finds nothing. Use the
   helpers (`useEmbedState()` / `whenInPage()` inside `content_embed_tools.ts`) that wait for the
