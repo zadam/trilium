@@ -399,7 +399,9 @@
     "previous": "上一页",
     "next": "下一页",
     "page-navigation": "上一页和下一页",
-    "hidden-subpages_other": "{{count}} 个已从树中隐藏的子页面"
+    "hidden-subpages_other": "{{count}} 个已从树中隐藏的子页面",
+    "previous-tabs": "滚动到前面的标签页",
+    "next-tabs": "滚动到后面的标签页"
   },
   "hidden_subtree_templates": {
     "text-snippet": "文本片段",
