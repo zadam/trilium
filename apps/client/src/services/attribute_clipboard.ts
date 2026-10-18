@@ -260,5 +260,6 @@ export function getPreprocessedData(currentValue: string) {
         .replace(/&nbsp;/g, " "); // otherwise textContent below outputs non-breaking space in unicode
 
     // A `DOMParser` document is inert: pasted markup such as `<img onerror>` neither loads nor runs.
+    /* v8 ignore next -- an element's `textContent` is never null; the fallback satisfies the DOM types */
     return new DOMParser().parseFromString(str, "text/html").body.textContent ?? "";
 }

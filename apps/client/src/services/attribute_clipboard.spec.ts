@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Only the titles of the notes relations point at are read, and only to make the links readable.
 const titles: Record<string, string> = { abc123: "Some note", evil: "Tom & <Jerry>" };
@@ -10,6 +10,7 @@ vi.mock("./froca", () => ({
 
 import attribute_parser, { Attribute } from "./attribute_parser";
 import {
+    copyAttributesToClipboard,
     getHeldAttributes,
     getPreprocessedData,
     mergePastedAttributes,
@@ -80,6 +81,79 @@ describe("serializeAttributesAsHtml", () => {
 
         expect(getPreprocessedData(html)).toBe("#author=Elian ~parent=#root/abc123");
     });
+
+    it("leaves out a relation with no target, as the text does", () => {
+        expect(serializeAttributesAsHtml([ relation("parent", ""), label("kept", "yes") ])).toBe("#kept=yes");
+    });
+});
+
+describe("copyAttributesToClipboard", () => {
+    const copied = [ label("author", "Elian") ];
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+        Reflect.deleteProperty(document, "execCommand");
+        writeAttributes(null, []);
+    });
+
+    it("writes the text through the clipboard API where there is one", async () => {
+        const writeText = vi.fn(async (_text: string) => {});
+        vi.spyOn(navigator, "clipboard", "get").mockReturnValue({ writeText } as unknown as Clipboard);
+        const execCommand = stubExecCommand(() => true);
+
+        await copyAttributesToClipboard(copied);
+
+        expect(writeText).toHaveBeenCalledWith("#author=Elian");
+        expect(execCommand).not.toHaveBeenCalled();
+        expect(getHeldAttributes()).toEqual(copied);
+    });
+
+    it("falls back to the copy command when the API refuses, giving the focus back afterwards", async () => {
+        const writeText = vi.fn(async (_text: string) => {
+            throw new Error("Not allowed");
+        });
+        vi.spyOn(navigator, "clipboard", "get").mockReturnValue({ writeText } as unknown as Clipboard);
+        const button = document.createElement("button");
+        document.body.append(button);
+        button.focus();
+
+        let selectedText: string | undefined;
+        const execCommand = stubExecCommand(() => {
+            selectedText = document.querySelector("textarea")?.value;
+            return true;
+        });
+
+        try {
+            await copyAttributesToClipboard(copied);
+
+            expect(execCommand).toHaveBeenCalledWith("copy");
+            expect(selectedText).toBe("#author=Elian");
+            expect(document.querySelector("textarea")).toBeNull();
+            expect(document.activeElement).toBe(button);
+        } finally {
+            button.remove();
+        }
+    });
+
+    it("still holds the attributes where neither way reaches the system clipboard", async () => {
+        vi.spyOn(navigator, "clipboard", "get").mockReturnValue(undefined as unknown as Clipboard);
+        vi.spyOn(document, "activeElement", "get").mockReturnValue(null);
+        stubExecCommand(() => {
+            throw new Error("Not supported");
+        });
+
+        await copyAttributesToClipboard(copied);
+
+        expect(document.querySelector("textarea")).toBeNull();
+        expect(getHeldAttributes()).toEqual(copied);
+    });
+
+    /** happy-dom has no `document.execCommand`, so each test defines its own. */
+    function stubExecCommand(implementation: (command: string) => boolean) {
+        const execCommand = vi.fn(implementation);
+        Object.defineProperty(document, "execCommand", { value: execCommand, configurable: true });
+        return execCommand;
+    }
 });
 
 describe("readAttributes", () => {
@@ -194,6 +268,26 @@ describe("mergePastedAttributes", () => {
         );
         expect(replaced.filter((attribute) => attribute.name === "tag").map((attribute) => attribute.value))
             .toEqual([ "read" ]);
+    });
+
+    it("reads an attribute the parser left without a value or inheritability as empty and not inherited", () => {
+        const { attributes, added } = mergePastedAttributes(
+            [ { type: "label", name: "tag" } ],
+            [ { type: "label", name: "label:tag" }, { type: "label", name: "tag" }, { type: "label", name: "flag" } ],
+            () => true
+        );
+
+        // `label:tag` with no value defines a single value, so the bare `tag` replaces the note's own.
+        expect(attributes).toEqual([
+            { type: "label", name: "tag", value: "", isInheritable: false },
+            { type: "label", name: "label:tag", value: "", isInheritable: false },
+            { type: "label", name: "flag", value: "", isInheritable: false }
+        ]);
+        expect(added).toBe(2);
+
+        // Pasted into a set that already holds the empty value, it is not added a second time.
+        expect(mergePastedAttributes([ { type: "label", name: "flag" } ], [ { type: "label", name: "flag" } ], () => true).added)
+            .toBe(0);
     });
 
     it("tells a label from a relation of the same name", () => {
