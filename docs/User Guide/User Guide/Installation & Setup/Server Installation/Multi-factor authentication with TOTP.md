@@ -17,7 +17,15 @@ TOTP (Time-Based One-Time Password) is a security feature that generates a uniqu
 4.  Scan the QR code or manually enter the code in your authenticator app.
 5.  Enter the verification code from your authenticator app to confirm that the setup was successful and press _Verify & continue_.
 6.  Save the recovery codes, then tick the confirmation and press _Finish setup_.
-7.  Re-login will be required after TOTP setup is finished (After you refreshing the page).
+7.  Re-login will be required after TOTP setup is finished (after refreshing the page).
+
+## Signing in
+
+Once TOTP is enabled, the sign-in page asks for the code from your authenticator app in _One-time password or recovery code_, below the password.
+
+Trilium accepts the code for the current 30-second period as well as the periods just before and after it, so a clock that is slightly off on either side still works. Since v0.106.0, each code is accepted only once: after a successful sign-in, that code and any older one are rejected, even while they are still valid.
+
+A wrong one-time password counts toward the same limit of failed attempts as a wrong password. See _Brute-force protection_ in <a class="reference-link" href="Authentication.md">Authentication</a>.
 
 ## Connecting a device to the server
 
