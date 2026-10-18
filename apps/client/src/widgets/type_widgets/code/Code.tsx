@@ -16,7 +16,7 @@ import { CODE_THEME_DEFAULT_PREFIX as DEFAULT_PREFIX } from "../constants";
 import { TypeWidgetProps } from "../type_widget";
 import ApiLog from "./ApiLog";
 import CodeMirror, { CodeMirrorProps } from "./CodeMirror";
-import { useSnippetSlashCommands } from "./snippets";
+import { useCodeSnippets } from "./snippets";
 
 export interface EditableCodeProps extends TypeWidgetProps {
     // if true, the update will be debounced to prevent excessive updates. Especially useful if the editor is linked to a live preview.
@@ -97,10 +97,8 @@ function formatViewSource(note: FNote, content: string) {
 export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentComponent, updateInterval, noteType = "code", onContentChanged, dataSaved, placeholder, editorRef: externalEditorRef, ...editorProps }: EditableCodeProps) {
     const editorRef = useRef<VanillaCodeMirror>(null);
     const containerRef = useRef<HTMLPreElement>(null);
-    const [ editorView, setEditorView ] = useState<VanillaCodeMirror | null>(null);
     const combinedEditorRef = useCallback((view: VanillaCodeMirror | null) => {
         editorRef.current = view;
-        setEditorView(view);
         if (typeof externalEditorRef === "function") externalEditorRef(view);
         else if (externalEditorRef) externalEditorRef.current = view;
     }, [externalEditorRef]);
@@ -148,16 +146,16 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
 
     useKeyboardShortcuts("code-detail", containerRef, parentComponent, ntxId);
 
-    // Code snippets (#snippet notes with a matching MIME) as `/snippet:<name>` slash commands.
-    // Disabled for Markdown notes, whose editor provides its own combined slash-command menu. On
-    // script notes the snippet source co-exists with the TypeScript language service's source via
-    // the editor's shared completion-source registry.
-    useSnippetSlashCommands(
-        editorView,
+    // Code snippets (#snippet notes of the note's MIME type or plain text) for the editor's `/`
+    // list. A Markdown note's editor lists them in its own `/` list.
+    const snippetsRef = useCodeSnippets(
         (candidate) => candidate.type === "code" && (candidate.mime === note.mime || candidate.mime === "text/plain"),
         note.mime,
-        !note.isMarkdown(),
-        note.noteId
+        !note.isMarkdown()
+    );
+    const getSnippets = useCallback(
+        () => snippetsRef.current.filter((snippet) => snippet.noteId !== note.noteId),
+        [ snippetsRef, note.noteId ]
     );
 
     return (
@@ -167,6 +165,7 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
                 editorRef={combinedEditorRef} containerRef={containerRef}
                 mime={mime ?? "text/plain"}
                 customRequestHandler={customRequestHandler != null}
+                getSnippets={getSnippets}
                 className="note-detail-code-editor"
                 placeholder={placeholder ?? t("editable_code.placeholder")}
                 vimKeybindings={vimKeymapEnabled}
@@ -207,14 +206,10 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
         ? (colorScheme === "dark" ? darkTheme : lightTheme)
         : codeNoteTheme;
 
-    // React to theme changes.
+    // React to theme changes. `onInitialized` applies it too, for an editor `CodeMirror` creates
+    // after this effect has run.
     useEffect(() => {
-        if (codeEditorRef.current && effectiveTheme.startsWith(DEFAULT_PREFIX)) {
-            const theme = getThemeById(effectiveTheme.substring(DEFAULT_PREFIX.length));
-            if (theme) {
-                codeEditorRef.current.setTheme(theme);
-            }
-        }
+        if (codeEditorRef.current) applyTheme(codeEditorRef.current, effectiveTheme);
     }, [ codeEditorRef, effectiveTheme ]);
 
     useTriliumEvent("executeWithCodeEditor", async ({ resolve, ntxId: eventNtxId }) => {
@@ -266,6 +261,7 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
                 else if (externalContainerRef) externalContainerRef.current = containerRef.current;
             }
             if (codeEditorRef.current) {
+                applyTheme(codeEditorRef.current, effectiveTheme);
                 if (typeof externalEditorRef === "function") externalEditorRef(codeEditorRef.current);
                 else if (externalEditorRef) externalEditorRef.current = codeEditorRef.current;
             }
@@ -273,4 +269,13 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
             onInitialized?.();
         }}
     />;
+}
+
+/** Applies a `default:`-prefixed code note theme, the only kind the editor knows how to load. */
+function applyTheme(editor: VanillaCodeMirror, effectiveTheme: string | undefined) {
+    if (!effectiveTheme?.startsWith(DEFAULT_PREFIX)) return;
+    const theme = getThemeById(effectiveTheme.substring(DEFAULT_PREFIX.length));
+    if (theme) {
+        void editor.setTheme(theme);
+    }
 }

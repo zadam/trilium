@@ -1,12 +1,13 @@
-import { type Completion, type CompletionContext, type CompletionSource } from "@codemirror/autocomplete";
-import type { EditorView } from "@codemirror/view";
-import type VanillaCodeMirror from "@triliumnext/codemirror";
+import type {
+    HostedCompletionApply
+} from "@triliumnext/codemirror/src/extensions/hosted_completion";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote.js";
 import type LoadResults from "../../../services/load_results.js";
 import search from "../../../services/search.js";
 import { useTriliumEvent } from "../../react/hooks";
+import type { CommandEntry } from "../../react/NoteAutocomplete";
 
 /** Matches a `/command` token at the start of a line or after whitespace. Shared by every editor. */
 export const SLASH_COMMAND_REGEX = /(?:^|(?<=\s))\/[\w:-]*/;
@@ -63,22 +64,28 @@ export function isCodeSnippetChange(loadResults: LoadResults, knownNoteIds: Set<
 }
 
 /**
- * Builds the `/snippet:<title> - <description>` CodeMirror completions; applying one replaces the
- * typed `/snippet:…` token with the snippet's content and moves the caret to its end.
+ * A snippet as an entry of a `/` list, found by its title or by `snippet:<title>`. Picking it puts
+ * the snippet's content in place of the typed `/command` and moves the caret to its end.
  */
-export function buildSnippetCompletions(snippets: CodeSnippet[]): Completion[] {
-    return snippets.map((snippet) => ({
-        label: snippet.description
-            ? `/snippet:${snippet.title} - ${snippet.description}`
-            : `/snippet:${snippet.title}`,
-        apply(view: EditorView, _completion: Completion, from: number, to: number) {
+export function snippetCommand(snippet: CodeSnippet): SnippetCommand {
+    const name = `snippet:${snippet.title}`;
+
+    return {
+        id: name,
+        title: snippet.title,
+        description: snippet.description,
+        aliases: [ name, "snippet", "template" ],
+        icon: "bx bx-code-curly",
+        apply(view, from, to) {
             view.dispatch({
                 changes: { from, to, insert: snippet.content },
                 selection: { anchor: from + snippet.content.length }
             });
         }
-    }));
+    };
 }
+
+export type SnippetCommand = CommandEntry & { apply: HostedCompletionApply };
 
 /**
  * Loads the snippets accepted by `matches` into a ref and keeps it fresh: reloaded on mount, when
@@ -119,49 +126,4 @@ export function useCodeSnippets(matches: (note: FNote) => boolean, reloadKey: st
     });
 
     return snippetsRef;
-}
-
-/**
- * Registers a `/snippet:<name>` slash command on a CodeMirror code editor, listing the snippets
- * accepted by `matches` (e.g. those whose MIME equals the editor note's). Inserting one drops its
- * content at the cursor. No-op when `enabled` is false (e.g. the Markdown editor, which builds its
- * own combined slash-command menu instead).
- */
-export function useSnippetSlashCommands(editorView: VanillaCodeMirror | null, matches: (note: FNote) => boolean, reloadKey: string, enabled: boolean, currentNoteId: string) {
-    const snippetsRef = useCodeSnippets(matches, reloadKey, enabled);
-    // The note being edited, kept in a ref so the once-registered completion source always excludes
-    // the current snippet from its own menu — even when the editor is reused for a different note.
-    const currentNoteIdRef = useRef(currentNoteId);
-    useEffect(() => { currentNoteIdRef.current = currentNoteId; });
-
-    useEffect(() => {
-        if (!editorView) return;
-        if (!enabled) {
-            editorView.setCompletionSource("snippets", null);
-            return;
-        }
-
-        // Contribute the snippet `/snippet:` source to the editor's shared
-        // autocompletion. Registering a source (rather than a whole
-        // autocompletion) lets it co-exist with other sources — e.g. the
-        // TypeScript language service on backend/frontend script notes.
-        const source: CompletionSource = (context: CompletionContext) => {
-            const match = context.matchBefore(SLASH_COMMAND_REGEX);
-            if (!match) return null;
-            const options = buildSnippetCompletions(
-                snippetsRef.current.filter((snippet) => snippet.noteId !== currentNoteIdRef.current)
-            );
-            // No matching snippets (e.g. none for this MIME, or only the current note) → no source,
-            // so an empty completion popup never appears when the user types "/".
-            return options.length ? { from: match.from, options } : null;
-        };
-
-        // `setCompletionSource` types its argument via the codemirror package's own copy of
-        // @codemirror/autocomplete. Under TypeScript project references that is a distinct type
-        // identity from the client's copy, even though it is the same package at runtime, so bridge
-        // the two here. (CodeMirror requires a single physical @codemirror/state, which holds.)
-        type CmCompletionSource = Parameters<VanillaCodeMirror["setCompletionSource"]>[1];
-        editorView.setCompletionSource("snippets", source as unknown as CmCompletionSource);
-        return () => editorView.setCompletionSource("snippets", null);
-    }, [editorView, enabled]);
 }

@@ -4,13 +4,22 @@ import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import CodeMirror, { type EditorConfig, getThemeById } from "./index.js";
+vi.mock("./type_completion/index.js", async (importOriginal) => {
+    const original = await importOriginal<typeof import("./type_completion/index.js")>();
+    return { ...original, buildTypeCompletion: vi.fn(original.buildTypeCompletion) };
+});
+
+import { hostedCompletion } from "./extensions/hosted_completion.js";
+import CodeMirror, { type EditorConfig, getThemeById, SCRIPT_MIME_BACKEND } from "./index.js";
+import { buildTypeCompletion } from "./type_completion/index.js";
 
 let editor: CodeMirror | undefined;
 
 afterEach(() => {
     editor?.destroy();
     editor = undefined;
+    // Back to the real build, which `vi.fn()` was given.
+    vi.mocked(buildTypeCompletion).mockReset();
 });
 
 describe("CodeMirror", () => {
@@ -446,6 +455,30 @@ describe("CodeMirror", () => {
             closeCompletion(instance);
             expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
         });
+
+        it("leaves the arrow keys to a hosted list while it shows entries", async () => {
+            const instance = build();
+            editor = instance;
+            let element: HTMLElement | null = null;
+            instance.setNamedExtension("test", hostedCompletion({
+                match: () => ({ from: 0 }),
+                list: () => ({
+                    show() { element = document.createElement("div"); },
+                    hide() { element = null; },
+                    handleKeyDown: () => false,
+                    get element() { return element; }
+                })
+            }));
+            instance.focus();
+            instance.setText("ab");
+            instance.dispatch({ selection: EditorSelection.cursor(2) });
+            await vi.waitFor(() => expect(element).not.toBe(null));
+
+            const arrowDown = createKeydown("ArrowDown", instance.contentDOM);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe(null);
+            element = null;
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
+        });
     });
 
     describe("find and replace", () => {
@@ -583,6 +616,23 @@ describe("CodeMirror", () => {
         });
     });
 
+    describe("type completions", () => {
+        it("looks up the language service's completions at the caret of a script", async () => {
+            editor = build();
+            await editor.setMimeType("text/plain");
+            expect(editor.hasTypeCompletions()).toBe(false);
+            expect(await editor.getTypeCompletions()).toBe(null);
+
+            editor.setText("api.");
+            await editor.setMimeType(SCRIPT_MIME_BACKEND);
+            editor.dispatch({ selection: EditorSelection.cursor(4) });
+            expect(editor.hasTypeCompletions()).toBe(true);
+            const completions = await editor.getTypeCompletions() ?? [];
+            expect(completions).toContainEqual({ label: "getNote", type: "method" });
+            expect(completions.map(({ label }) => label)).not.toContain("Array");
+        }, 30_000);
+    });
+
     describe("script api context", () => {
         it("is safe to set before any MIME type is known", async () => {
             editor = build();
@@ -595,6 +645,52 @@ describe("CodeMirror", () => {
             await editor.setMimeType("text/plain");
             await editor.setScriptApiContext({ customRequestHandler: true });
             expect(editor.getText()).toBe("");
+        });
+
+        it("builds the completion once while the MIME type and context stay the same", async () => {
+            const buildMock = vi.mocked(buildTypeCompletion);
+            buildMock.mockResolvedValue({ extensions: [], complete: null });
+            editor = build();
+
+            // What a code note's effects request on mount.
+            await Promise.all([
+                editor.setMimeType("text/jsx"),
+                editor.setMimeType("text/jsx"),
+                editor.setScriptApiContext({ customRequestHandler: false, bulkActionNote: false }),
+                editor.setMimeType("text/jsx")
+            ]);
+            expect(buildMock).toHaveBeenCalledOnce();
+
+            await editor.setScriptApiContext({ customRequestHandler: true, bulkActionNote: false });
+            await editor.setMimeType("text/css");
+            expect(buildMock).toHaveBeenCalledTimes(3);
+        });
+
+        it("keeps a newer build when an older one fails after it", async () => {
+            const buildMock = vi.mocked(buildTypeCompletion);
+            let failOlder: (error: Error) => void = () => {};
+            buildMock.mockReturnValueOnce(new Promise((_resolve, reject) => { failOlder = reject; }));
+            buildMock.mockResolvedValue({ extensions: [], complete: null });
+            editor = build();
+
+            const older = editor.setMimeType("text/jsx");
+            await editor.setMimeType("text/css");
+            failOlder(new Error("no language service"));
+            await expect(older).rejects.toThrow("no language service");
+
+            await editor.setMimeType("text/css");
+            expect(buildMock).toHaveBeenCalledTimes(2);
+        });
+
+        it("builds the completion again after a build failed", async () => {
+            const buildMock = vi.mocked(buildTypeCompletion);
+            buildMock.mockRejectedValueOnce(new Error("no language service"));
+            buildMock.mockResolvedValue({ extensions: [], complete: null });
+            editor = build();
+
+            await expect(editor.setMimeType("text/jsx")).rejects.toThrow("no language service");
+            await editor.setMimeType("text/jsx");
+            expect(buildMock).toHaveBeenCalledTimes(2);
         });
     });
 

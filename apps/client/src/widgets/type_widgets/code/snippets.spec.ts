@@ -1,5 +1,3 @@
-import type { Completion } from "@codemirror/autocomplete";
-import type { EditorView } from "@codemirror/view";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type FNote from "../../../entities/fnote";
@@ -10,7 +8,7 @@ vi.mock("../../../services/search.js", () => ({
 }));
 
 import search from "../../../services/search.js";
-import { buildSnippetCompletions, getCodeSnippets, isCodeSnippetChange } from "./snippets.js";
+import { getCodeSnippets, isCodeSnippetChange, snippetCommand } from "./snippets.js";
 
 const logErrorMock = vi.fn();
 
@@ -49,24 +47,24 @@ function makeLoadResults(opts: {
     } as unknown as LoadResults;
 }
 
-describe("buildSnippetCompletions", () => {
-    it("formats labels with/without a description and inserts content on apply", () => {
-        const [withDesc, withoutDesc] = buildSnippetCompletions([
-            { noteId: "a", title: "Header", description: "Page header", content: "# Header\n" },
-            { noteId: "b", title: "Footer", content: "the footer" }
-        ]);
+describe("snippetCommand", () => {
+    it("lists a snippet by title and description, and inserts its content for the command", () => {
+        const command = snippetCommand({
+            noteId: "b", title: "Footer", description: "Page footer", content: "the footer"
+        });
 
-        expect(withDesc?.label).toBe("/snippet:Header - Page header");
-        expect(withoutDesc?.label).toBe("/snippet:Footer");
+        expect(command).toMatchObject({
+            id: "snippet:Footer",
+            title: "Footer",
+            description: "Page footer",
+            aliases: [ "snippet:Footer", "snippet", "template" ]
+        });
 
         // Applying replaces the typed [from, to] token with the content, caret at its end.
-        const apply = withoutDesc?.apply;
-        expect(typeof apply).toBe("function");
-        if (typeof apply !== "function") return;
-
         const dispatched: unknown[] = [];
-        const view = { dispatch: (tx: unknown) => dispatched.push(tx) } as unknown as EditorView;
-        apply(view, {} as Completion, 3, 11);
+        const view = { dispatch: (tx: unknown) => dispatched.push(tx) } as unknown as
+            Parameters<typeof command.apply>[0];
+        command.apply(view, 3, 11);
 
         expect(dispatched).toEqual([{
             changes: { from: 3, to: 11, insert: "the footer" },
