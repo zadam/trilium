@@ -136,21 +136,33 @@ body.setup {
         }
 
         .page {
+            --page-padding-inline: 2em;
+            --page-padding-block: 2em;
+            --page-padding-top: var(--page-padding-block);
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding-top: calc(2em + var(--safe-area-inset-top, env(safe-area-inset-top)));
-            padding-bottom: calc(2em + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
-            padding-left: calc(2em + var(--safe-area-inset-left, env(safe-area-inset-left)));
-            padding-right: calc(2em + var(--safe-area-inset-right, env(safe-area-inset-right)));
+            padding-top: calc(var(--page-padding-top) + var(--safe-area-inset-top, env(safe-area-inset-top)));
+            padding-bottom: calc(var(--page-padding-block) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+            padding-left: calc(var(--page-padding-inline) + var(--safe-area-inset-left, env(safe-area-inset-left)));
+            padding-right: calc(var(--page-padding-inline) + var(--safe-area-inset-right, env(safe-area-inset-right)));
             overflow: auto;
+
+            body.electron & {
+                --page-padding-block: 1em;
+            }
+
+            /* Clears the traffic lights, which overlay the page under the hidden title bar. */
+            body.electron.platform-darwin & {
+                --page-padding-top: 2em;
+            }
 
             >.back-button {
                 /* `.page` scrolls (not `.setup-container`), so sticky is required here, not
                    absolute, to stay in flow and follow the scroll. */
                 position: sticky;
-                top: calc(1em + var(--safe-area-inset-top, env(safe-area-inset-top)));
-                inset-inline-start: 1em;
+                top: 0;
+                inset-inline-start: 0;
                 align-self: flex-start;
                 z-index: 1;
                 color: var(--muted-text-color);
@@ -160,11 +172,6 @@ body.setup {
 
                 body.background-effects & {
                     background: transparent;
-                }
-
-                body.desktop & {
-                    inset-inline-start: 2em;
-                    top: 2em;
                 }
 
                 .tn-icon {
@@ -195,7 +202,7 @@ body.setup {
             >footer {
                 background: var(--main-background-color);
                 position: sticky;
-                bottom: -2rem;
+                bottom: calc(-1 * var(--page-padding-block));
                 left: 0;
                 right: 0;
                 display: flex;
@@ -203,10 +210,10 @@ body.setup {
                 gap: 0.5rem;
                 border-top: 1px solid var(--main-border-color);
                 padding-top: 1rem;
-                padding-bottom: 2rem;
-                margin-inline: -2rem;
-                margin-bottom: -2rem;
-                padding-inline: 2rem;
+                padding-bottom: var(--page-padding-block);
+                margin-inline: calc(-1 * var(--page-padding-inline));
+                margin-bottom: calc(-1 * var(--page-padding-block));
+                padding-inline: var(--page-padding-inline);
 
                 body.background-effects & {
                     background: transparent;
