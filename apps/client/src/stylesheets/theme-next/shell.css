@@ -1237,19 +1237,28 @@ body.layout-horizontal #rest-pane > .classic-toolbar-widget {
 #center-pane .note-split {
     padding-top: 2px;
     background-color: var(--note-split-background-color, var(--main-background-color));
-    transition: border-color 150ms ease-out;
-    border: 2px solid transparent;
 }
 
 /* Mobile has no #center-pane: its splits stack inside #detail-container instead. */
-body.mobile #detail-container .note-split {
-    transition: border-color 150ms ease-out;
-    border: 2px solid transparent;
+:is(#center-pane, body.mobile #detail-container) .note-split {
+    position: relative;
+
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 2px solid transparent;
+        border-radius: inherit;
+        pointer-events: none;
+        transition: border-color 150ms ease-out;
+        /* Above CodeMirror's gutters and panels (up to 300), below dropdowns (1000). */
+        z-index: 500;
+    }
 }
 
 /* The active split in a multi-split view */
-#center-pane > .split-note-container-widget:has(> .note-split.visible ~ .note-split.visible) > .note-split.active,
-body.mobile #detail-container > .split-note-container-widget:has(> .note-split.visible ~ .note-split.visible) > .note-split.active {
+#center-pane > .split-note-container-widget:has(> .note-split.visible ~ .note-split.visible) > .note-split.active::after,
+body.mobile #detail-container > .split-note-container-widget:has(> .note-split.visible ~ .note-split.visible) > .note-split.active::after {
     border-color: var(--link-selection-outline-color);
 }
 
