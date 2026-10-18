@@ -96,7 +96,7 @@ function findTimeStep(
  * differs from `secretSize`, and secrets enrolled before v0.107.0 are 10 bytes long.
  */
 function getSecretSize(secret: string): number {
-    return Math.floor(secret.trim().replace(/=+$/, "").length * 5 / 8);
+    return Math.floor(secret.trim().replaceAll("=", "").length * 5 / 8);
 }
 
 /**
