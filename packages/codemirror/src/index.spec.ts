@@ -4,13 +4,21 @@ import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("./type_completion/index.js", async (importOriginal) => {
+    const original = await importOriginal<typeof import("./type_completion/index.js")>();
+    return { ...original, buildTypeCompletion: vi.fn(original.buildTypeCompletion) };
+});
+
 import CodeMirror, { type EditorConfig, getThemeById } from "./index.js";
+import { buildTypeCompletion } from "./type_completion/index.js";
 
 let editor: CodeMirror | undefined;
 
 afterEach(() => {
     editor?.destroy();
     editor = undefined;
+    // Back to the real build, which `vi.fn()` was given.
+    vi.mocked(buildTypeCompletion).mockReset();
 });
 
 describe("CodeMirror", () => {
@@ -595,6 +603,25 @@ describe("CodeMirror", () => {
             await editor.setMimeType("text/plain");
             await editor.setScriptApiContext({ customRequestHandler: true });
             expect(editor.getText()).toBe("");
+        });
+
+        it("builds the completion once while the MIME type and context stay the same", async () => {
+            const buildMock = vi.mocked(buildTypeCompletion);
+            buildMock.mockResolvedValue({ extensions: [], source: null });
+            editor = build();
+
+            // What a code note's effects request on mount.
+            await Promise.all([
+                editor.setMimeType("text/jsx"),
+                editor.setMimeType("text/jsx"),
+                editor.setScriptApiContext({ customRequestHandler: false, bulkActionNote: false }),
+                editor.setMimeType("text/jsx")
+            ]);
+            expect(buildMock).toHaveBeenCalledOnce();
+
+            await editor.setScriptApiContext({ customRequestHandler: true, bulkActionNote: false });
+            await editor.setMimeType("text/css");
+            expect(buildMock).toHaveBeenCalledTimes(3);
         });
     });
 

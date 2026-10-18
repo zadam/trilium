@@ -105,6 +105,8 @@ export default class CodeMirror extends EditorView {
     private completionSources = new Map<string, CompletionSource>();
     /** Monotonic token guarding against out-of-order async type-completion updates. */
     private typeCompletionToken = 0;
+    /** The latest type-completion build, which a request for the same MIME type and context joins. */
+    private typeCompletionBuild: { key: string; done: Promise<void> } | null = null;
     /** Current MIME type, retained so the type completion can be rebuilt when only the api context changes. */
     private currentMime: string | null = null;
     /** Per-note context tuning the script `api` surface (e.g. custom-request-handler members). */
@@ -506,10 +508,27 @@ export default class CodeMirror extends EditorView {
     /**
      * Enables the TypeScript language service (full completion, hover docs and
      * diagnostics) for backend/frontend script notes, and clears it otherwise.
-     * Guarded by a token so a slow async build for a previous MIME type can't
-     * overwrite a newer one.
+     * A request for the MIME type and context of the latest build joins that build,
+     * since a code note's effects request the same one several times on mount.
      */
-    async #updateTypeCompletion(mime: string) {
+    #updateTypeCompletion(mime: string) {
+        const key = typeCompletionKey(mime, this.scriptApiContext);
+        if (this.typeCompletionBuild?.key === key) {
+            return this.typeCompletionBuild.done;
+        }
+
+        const done = this.#buildTypeCompletion(mime);
+        const build = { key, done };
+        this.typeCompletionBuild = build;
+        // A failed build is not reused, so the next request tries again.
+        done.catch(() => {
+            if (this.typeCompletionBuild === build) this.typeCompletionBuild = null;
+        });
+        return done;
+    }
+
+    /** Guarded by a token so a slow build for a previous MIME type can't overwrite a newer one. */
+    async #buildTypeCompletion(mime: string) {
         const token = ++this.typeCompletionToken;
         const { extensions, source } = await buildTypeCompletion(mime, this.scriptApiContext);
         if (token !== this.typeCompletionToken) {
@@ -543,6 +562,15 @@ export default class CodeMirror extends EditorView {
             )
         });
     }
+}
+
+/** Identifies a type-completion build by its MIME type and the context flags that are set. */
+function typeCompletionKey(mime: string, context: ScriptApiContext) {
+    const flags = Object.entries(context)
+        .filter(([ , value ]) => value)
+        .map(([ name ]) => name)
+        .sort();
+    return [ mime, ...flags ].join(" ");
 }
 
 /**
