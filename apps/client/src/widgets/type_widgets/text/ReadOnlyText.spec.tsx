@@ -446,7 +446,8 @@ describe("ReadOnlyText embedded notes", () => {
 
 describe("ReadOnlyText Mermaid diagrams", () => {
     const html = `<pre data-box-size="small" data-display-mode="source" data-hide-title="true"`
-        + ` data-trilium-block-id="b1" style="--include-note-height:12em;">`
+        + ` data-trilium-block-id="b1" data-code-wrap-lines="true" data-code-line-numbers="false"`
+        + ` style="--include-note-height:12em;">`
         + `<code class="language-mermaid">graph TD;</code></pre>`
         + `<pre><code class="language-mermaid" data-trilium-display-mode="split"`
         + ` data-trilium-block-id="b2">graph LR;</code></pre>`
@@ -495,7 +496,10 @@ describe("ReadOnlyText Mermaid diagrams", () => {
             {
                 language: "mermaid", source: "graph TD;", isReadOnly: true, boxSize: "small",
                 options: { isFocused: false }, isInPage: true,
-                data: { boxSize: "small", displayMode: "source", hideTitle: "true", triliumBlockId: "b1" },
+                data: {
+                    boxSize: "small", displayMode: "source", hideTitle: "true",
+                    triliumBlockId: "b1", codeWrapLines: "true", codeLineNumbers: "false"
+                },
                 height: "12em"
             },
             {

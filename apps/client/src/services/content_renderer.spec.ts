@@ -28,11 +28,14 @@ const renderServiceRender = vi.fn(async (...args: any[]) => {
 });
 vi.mock("./render.js", () => ({ default: { render: (...args: any[]) => renderServiceRender(...args) } }));
 
-const renderCodeNotePreview = vi.fn(async (content: string, _mime: string, _note?: unknown) => (
-    $("<pre>").append($("<code>").text(content))[0]
-));
+const renderCodeNotePreview = vi.fn(
+    async (content: string, _mime: string, _note?: unknown, _lines?: unknown) => (
+        $("<pre>").append($("<code>").text(content))[0]
+    )
+);
 vi.mock("./code_note_preview.js", () => ({
-    renderCodeNotePreview: (...args: [ string, string, unknown ]) => renderCodeNotePreview(...args)
+    renderCodeNotePreview: (...args: [ string, string, unknown, unknown ]) =>
+        renderCodeNotePreview(...args)
 }));
 
 const setupContextMenu = vi.fn((..._args: any[]) => {});
@@ -372,7 +375,7 @@ describe("getRenderedContent code rendering", () => {
         expect(type).toBe("code");
         expect($renderedContent.find("pre > code").text()).toBe('{\n    "a": 1\n}');
         expect(renderCodeNotePreview.mock.calls)
-            .toEqual([ [ '{\n    "a": 1\n}', "application/json", note ] ]);
+            .toEqual([ [ '{\n    "a": 1\n}', "application/json", note, {} ] ]);
     });
 
     it("leaves invalid JSON untouched", async () => {
@@ -557,6 +560,21 @@ describe("getRenderedContent editable code", () => {
         const props = codeEmbedComponent.mock.lastCall?.[0];
         expect([ props.mime, props.codeLanguage ]).toEqual([ "text/x-python", "text/x-sh" ]);
         expect(renderCodeNotePreview.mock.lastCall?.[1]).toBe("text/x-sh");
+    });
+
+    it("wraps and numbers the lines of code as its embed sets, for CodeEmbed too", async () => {
+        const att = buildAttachment({ role: "file", mime: "text/plain", title: "a.py" });
+        att.getBlob = (async () => ({ content: "echo 1" })) as any;
+        const lines = { isCodeWrapped: false, hasCodeLineNumbers: false };
+
+        await getRenderedContent(att, lines);
+        expect(renderCodeNotePreview.mock.lastCall?.[3])
+            .toEqual({ isWrapped: false, hasLineNumbers: false });
+
+        await getRenderedContent(att, {
+            ...lines, interactive: true, attachmentEditor: buildEditor()
+        });
+        expect(codeEmbedComponent.mock.lastCall?.[0]).toMatchObject(lines);
     });
 
     it("mounts TextEmbed for an interactive text note, with a preview to render again", async () => {

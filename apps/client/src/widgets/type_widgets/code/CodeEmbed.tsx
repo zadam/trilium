@@ -4,18 +4,22 @@ import { createPortal, type RefObject } from "preact";
 import { lazy, useSyncExternalStore } from "preact/compat";
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import type { CommandNames } from "../../../components/app_context";
 import type FAttachment from "../../../entities/fattachment";
 import FNote from "../../../entities/fnote";
+import type { MenuItem } from "../../../menus/context_menu";
+import type { CodePreviewLines } from "../../../services/code_note_preview";
 import { type ContentEditor, renderCodePreview } from "../../../services/content_renderer";
 import {
-    type CodeSettings, type CodeText, useCodeLanguageMenu, useNoteCodeSettings, useTabWidthMenu
+    type CodeSettings, type CodeText, getLineNumbersMenu, getWordWrapMenu, useCodeLanguageMenu,
+    useNoteCodeSettings, useTabWidthMenu
 } from "../../layout/code_menus";
 import { SaveStateBadge } from "../../layout/NoteBadges";
 import {
     useNoteBlob, useNoteLabelOptionalBool, useTriliumEvent, useTriliumOption
 } from "../../react/hooks";
 import { useContentEmbedMenus } from "../text/content_embed_menus";
-import { useContentEmbedAttribute } from "../text/content_embed_tools";
+import { useContentEmbedAttribute, useContentEmbedFlag } from "../text/content_embed_tools";
 import {
     EditableEmbedContent, findTextEditorAround, useEditableEmbed, useEmbedBadgeSlot,
     useEmbedPreview
@@ -36,6 +40,10 @@ interface CodeEmbedProps {
     mime: string;
     /** The language that the embed of a file sets, as a MIME type, in place of `mime`. */
     codeLanguage?: string;
+    /** The line wrapping that the embed of a file sets, in place of the option. */
+    isCodeWrapped?: boolean;
+    /** Whether the embed shows line numbers. Shown by default. */
+    hasCodeLineNumbers?: boolean;
     /** The highlighted `content`. */
     preview: HTMLElement;
 }
@@ -45,7 +53,8 @@ interface CodeEmbedProps {
  * Editable toggle of its embed is on.
  */
 export default function CodeEmbed({
-    entity, editor, content: initialContent, mime: initialMime, codeLanguage, preview
+    entity, editor, content: initialContent, mime: initialMime, codeLanguage, isCodeWrapped,
+    hasCodeLineNumbers, preview
 }: CodeEmbedProps) {
     const rootRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<VanillaCodeMirror>(null);
@@ -57,14 +66,18 @@ export default function CodeEmbed({
     const noteSettings = useNoteCodeSettings(note);
     const fileSettings = useFileCodeSettings(rootRef, initialMime, codeLanguage);
     const settings = note ? noteSettings : fileSettings;
+    const lines = useEmbedLines(rootRef, note, {
+        isWrapped: isCodeWrapped, hasLineNumbers: hasCodeLineNumbers
+    });
     const [ content, setContent ] = useState(initialContent);
     const mime = settings.mime ?? initialMime;
     useSavedContent(entity, editor, setContent);
-    const appearance = useCodePreviewAppearance(note);
+    const appearance = useCodePreviewAppearance();
+    const { wrapLines, hasLineNumbers } = lines;
     const shownPreview = useEmbedPreview(
         preview,
-        `${mime}\n${appearance}\n${content}`,
-        () => renderCodePreview(content, mime, note),
+        `${mime}\n${appearance}\n${wrapLines}\n${hasLineNumbers}\n${content}`,
+        () => renderCodePreview(content, mime, note, { isWrapped: wrapLines, hasLineNumbers }),
         isEditing
     );
     // The editor while it is open, otherwise the content with the unsaved changes of any embed of
@@ -93,31 +106,80 @@ export default function CodeEmbed({
                     mime={mime}
                     tabWidth={settings.tabWidth}
                     useTabs={settings.useTabs}
+                    wrapLines={wrapLines}
+                    hasLineNumbers={hasLineNumbers}
                     viewRef={viewRef}
                     onClose={setContent}
                 />
             </EditableEmbedContent>
             <SaveStatus rootRef={rootRef} editor={editor} isShown={isEditing} />
             {canEdit && (
-                <CodeTools rootRef={rootRef} settings={settings} getCodeText={getCodeText} />
+                <CodeTools
+                    rootRef={rootRef}
+                    settings={settings}
+                    menuItems={lines.menuItems}
+                    getCodeText={getCodeText}
+                />
             )}
         </>
     );
 }
 
+/** How a code editor in an embed, and its preview, show their lines. */
+export interface EmbedLines {
+    /** Whether to wrap the lines, or `undefined` to follow the global option. */
+    wrapLines: boolean | undefined;
+    hasLineNumbers: boolean;
+    /** The "Word wrap" and "Line numbers" submenus, for the menu of the embed. */
+    menuItems: MenuItem<CommandNames>[];
+}
+
 /**
- * The options and the `#wrapLines` label of `note` that `renderCodePreview()` draws with, as a key
- * that changes with any of them.
+ * How the code editor in the embed around `rootRef` shows its lines. The line wrapping of `note`
+ * is its `#wrapLines` label. The embed keeps the line numbers, and the line wrapping of content
+ * other than a note, in `data-code-*` attributes. `initial` applies until the content is in the
+ * embed.
  */
-function useCodePreviewAppearance(note: FNote | null) {
+export function useEmbedLines(
+    rootRef: RefObject<HTMLElement | null>,
+    note: FNote | null,
+    initial: CodePreviewLines = {}
+): EmbedLines {
+    const [ noteWrapLines, setNoteWrapLines ] = useNoteLabelOptionalBool(note, "wrapLines");
+    const embedWrapLines = useContentEmbedFlag(rootRef, "data-code-wrap-lines", initial.isWrapped);
+    const lineNumbers = useContentEmbedFlag(
+        rootRef, "data-code-line-numbers", initial.hasLineNumbers
+    );
+    const wrapLines = note ? noteWrapLines : embedWrapLines;
+    const setWrapLines = (value: boolean | null) => {
+        if (note) {
+            setNoteWrapLines(value);
+        } else {
+            setCodeView(rootRef.current, { wrapLines: value });
+        }
+    };
+
+    return {
+        wrapLines,
+        hasLineNumbers: lineNumbers ?? true,
+        menuItems: [
+            getWordWrapMenu(wrapLines, setWrapLines),
+            getLineNumbersMenu(lineNumbers, (value) => {
+                setCodeView(rootRef.current, { lineNumbers: value });
+            })
+        ]
+    };
+}
+
+/** The options that `renderCodePreview()` draws with, as a key that changes with any of them. */
+function useCodePreviewAppearance() {
     const [ theme ] = useTriliumOption("codeNoteTheme");
     const [ matchesApp ] = useTriliumOption("codeNoteThemeMatchesApp");
     const [ lightTheme ] = useTriliumOption("codeNoteThemeLight");
     const [ darkTheme ] = useTriliumOption("codeNoteThemeDark");
     const [ isWrapped ] = useTriliumOption("codeLineWrapEnabled");
-    const [ isNoteWrapped ] = useNoteLabelOptionalBool(note, "wrapLines");
 
-    return [ theme, matchesApp, lightTheme, darkTheme, isWrapped, isNoteWrapped ].join("\n");
+    return [ theme, matchesApp, lightTheme, darkTheme, isWrapped ].join("\n");
 }
 
 /**
@@ -159,21 +221,23 @@ function setCodeView(root: HTMLElement | null, codeView: ContentEmbedCodeView) {
 interface CodeToolsProps {
     rootRef: RefObject<HTMLElement | null>;
     settings: CodeSettings;
+    /** The items of the menu of the embed. */
+    menuItems: MenuItem<CommandNames>[];
     /** The text that the re-indent items of the tab width menu convert. */
     getCodeText: () => CodeText;
 }
 
 /**
  * The "Change language mode" and "Change tab width" menus of the status bar, as buttons of the
- * toolbar of the embed around `rootRef`.
+ * toolbar of the embed around `rootRef`, and `menuItems` in its menu.
  */
-function CodeTools({ rootRef, settings, getCodeText }: CodeToolsProps) {
+function CodeTools({ rootRef, settings, menuItems, getCodeText }: CodeToolsProps) {
     const language = useCodeLanguageMenu(settings);
     const tabWidth = useTabWidthMenu(settings, async () => getCodeText());
     useContentEmbedMenus(rootRef, [
         { id: "codeLanguage", ...language.menu },
         { id: "tabWidth", ...tabWidth }
-    ]);
+    ], menuItems);
 
     return language.modal;
 }

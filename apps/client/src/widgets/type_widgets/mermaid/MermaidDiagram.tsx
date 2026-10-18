@@ -10,6 +10,8 @@ import type { RefObject } from "preact";
 import { lazy, Suspense } from "preact/compat";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
+import type { CommandNames } from "../../../components/app_context";
+import type { MenuItem } from "../../../menus/context_menu";
 import { t } from "../../../services/i18n";
 import { renderMermaidSvg } from "../../../services/mermaid";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
@@ -18,6 +20,7 @@ import { useDebouncedValue } from "../../react/hooks";
 import OverlayControlGroup, { OverlayFullscreenButton } from "../../react/OverlayControlGroup";
 import { useZoomPanWheel } from "../../react/zoom_pan";
 import { useZoomPanKeyboard } from "../../react/zoom_pan_keyboard";
+import { useEmbedLines } from "../code/CodeEmbed";
 import { SplitLayout, useMountedPanes } from "../helpers/SplitEditor";
 import { type DisplayMode, resolveDisplayMode } from "../helpers/split_editor_mode";
 import {
@@ -67,7 +70,8 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
     const { editorMounted, previewMounted } = useMountedPanes(mode);
     const isFullscreen = useIsEmbedFullscreen(rootRef);
     const hasFullscreenButton = useNeedsFullscreenButton(rootRef) && !isFullscreen;
-    tools.setState(zoom, mode);
+    const lines = useEmbedLines(rootRef, null);
+    tools.setState(zoom, mode, lines.menuItems);
 
     // A source saved elsewhere, or undone, replaces the shown one unless it has unsaved edits.
     useEffect(() => {
@@ -107,6 +111,8 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
                             mime={MERMAID_ATTACHMENT_MIME}
                             tabWidth={undefined}
                             useTabs={undefined}
+                            wrapLines={lines.wrapLines}
+                            hasLineNumbers={lines.hasLineNumbers}
                             viewRef={viewRef}
                             onContentChange={setSource}
                             onReady={setupEditor}
@@ -165,16 +171,18 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
     private zoom: SvgZoom | null = null;
     private isDiagramShown = true;
     private isSourceShown = false;
+    private menuItems: MenuItem<CommandNames>[] = [];
     private listeners = new Set<() => void>();
     private shownTools = "";
 
     constructor(private readonly rootRef: RefObject<HTMLElement | null>) {}
 
-    /** Follows the zoom state and the display mode of the latest render. */
-    setState(zoom: SvgZoom, mode: DisplayMode) {
+    /** Follows the zoom state, the display mode and the menu items of the latest render. */
+    setState(zoom: SvgZoom, mode: DisplayMode, menuItems: MenuItem<CommandNames>[]) {
         this.zoom = zoom;
         this.isDiagramShown = mode !== "source";
         this.isSourceShown = mode !== "preview";
+        this.menuItems = menuItems;
         // Notifies after the render, as a listener updates the toolbar of the editor.
         queueMicrotask(() => this.update());
     }
@@ -230,6 +238,10 @@ class MermaidDiagramTools implements ContentEmbedToolProvider {
         return () => {
             this.listeners.delete(callback);
         };
+    }
+
+    getMenuItems() {
+        return this.menuItems;
     }
 
     /** Fullscreen, while the title row of the embed, which has a button for it, is hidden. */

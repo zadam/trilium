@@ -3,6 +3,8 @@ import type { RefObject } from "preact";
 import { flushSync } from "preact/compat";
 import { useEffect, useRef, useState } from "preact/hooks";
 
+import type { CommandNames } from "../../../components/app_context";
+import type { MenuItem } from "../../../menus/context_menu";
 import type { FindTarget } from "../../merged_find";
 
 /** A button that the content of an embed adds to the toolbar of the embed. */
@@ -48,6 +50,8 @@ export interface ContentEmbedToolProvider {
     openMenu?(id: string, anchor: HTMLElement): void;
     /** Calls `callback` when `getTools()` changes, until the returned function is called. */
     subscribe(callback: () => void): () => void;
+    /** The items that the content adds to the menu of the embed, after Editable. */
+    getMenuItems?(): MenuItem<CommandNames>[];
     /** The items of the embed toolbar to hide. The menu of the embed still offers them. */
     hiddenToolbarItems?: readonly ContentEmbedToolbarItem[];
     /**
@@ -116,7 +120,7 @@ export function watchContentEmbedTools(container: HTMLElement, callback: () => v
 }
 
 /** The buttons that the content of `embed` adds to its toolbar, or `null`. */
-export function getContentEmbedTools(embed: HTMLElement) {
+export function getContentEmbedTools(embed: Element) {
     for (const [ element, provider ] of providers) {
         if (embed.contains(element)) {
             return provider;
@@ -347,6 +351,29 @@ export function useContentEmbedAttribute(
         outsideEmbed: initial,
         attributes: [ name ],
         read: (embed) => embed.getAttribute(name)
+    });
+}
+
+/** The `"true"` or `"false"` attribute `name` of `embed`, or `undefined` while it is unset. */
+export function getContentEmbedFlag(embed: Element | null | undefined, name: string) {
+    const value = embed?.getAttribute(name);
+    return value == null ? undefined : value !== "false";
+}
+
+/**
+ * {@link getContentEmbedFlag} for the embed that contains `ref`, which follows its changes.
+ * `initial` until the content is in the embed.
+ */
+export function useContentEmbedFlag(
+    ref: RefObject<HTMLElement | null>,
+    name: string,
+    initial?: boolean
+) {
+    return useEmbedState(ref, {
+        initial,
+        outsideEmbed: initial,
+        attributes: [ name ],
+        read: (embed) => getContentEmbedFlag(embed, name)
     });
 }
 

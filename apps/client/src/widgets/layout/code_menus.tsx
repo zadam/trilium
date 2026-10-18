@@ -4,7 +4,7 @@ import { createPortal } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import type FNote from "../../entities/fnote";
-import type { MenuItem } from "../../menus/context_menu";
+import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
 import { t } from "../../services/i18n";
 import server from "../../services/server";
 import {
@@ -61,6 +61,49 @@ export function useNoteCodeSettings(note: FNote | null | undefined): CodeSetting
             if (indentation.tabWidth !== undefined) setTabWidth(indentation.tabWidth);
             if (indentation.useTabs !== undefined) setUseTabs(indentation.useTabs);
         }
+    };
+}
+
+/**
+ * The "Word wrap" submenu of a code editor: follow the global option, on, or off.
+ *
+ * @param wrapLines whether to wrap the lines, or `undefined` to follow the global option.
+ * @param setWrapLines sets the line wrapping, or follows the global option again for `null`.
+ */
+export function getWordWrapMenu<T>(
+    wrapLines: boolean | undefined,
+    setWrapLines: (wrapLines: boolean | null) => void
+): MenuCommandItem<T> {
+    return {
+        title: t("note_actions.word_wrap"),
+        uiIcon: "bx bx-align-justify",
+        items: getAutoOnOffItems(wrapLines, setWrapLines, {
+            auto: t("note_actions.word_wrap_auto"),
+            autoDescription: t("note_actions.word_wrap_auto_description"),
+            on: t("note_actions.word_wrap_on"),
+            off: t("note_actions.word_wrap_off")
+        })
+    };
+}
+
+/**
+ * The "Line numbers" submenu of a code embed: shown as in a code note, on, or off.
+ *
+ * @param lineNumbers whether the embed shows line numbers, or `undefined` for the default.
+ * @param setLineNumbers sets them, or the default again for `null`.
+ */
+export function getLineNumbersMenu<T>(
+    lineNumbers: boolean | undefined,
+    setLineNumbers: (lineNumbers: boolean | null) => void
+): MenuCommandItem<T> {
+    return {
+        title: t("link_context_menu.line_numbers"),
+        uiIcon: "bx bx-list-ol",
+        items: getAutoOnOffItems(lineNumbers, setLineNumbers, {
+            auto: t("link_context_menu.line_numbers_auto"),
+            on: t("link_context_menu.line_numbers_on"),
+            off: t("link_context_menu.line_numbers_off")
+        })
     };
 }
 
@@ -188,4 +231,29 @@ export function useTabWidthMenu(
         icon: "bx bx-right-indent",
         items
     };
+}
+
+interface AutoOnOffTitles {
+    auto: string;
+    autoDescription?: string;
+    on: string;
+    off: string;
+}
+
+/** The Auto, On and Off items of a setting that is `undefined` while it follows its default. */
+function getAutoOnOffItems<T>(
+    value: boolean | undefined,
+    setValue: (value: boolean | null) => void,
+    titles: AutoOnOffTitles
+): MenuCommandItem<T>[] {
+    return [
+        {
+            title: titles.auto,
+            description: titles.autoDescription,
+            checked: value === undefined,
+            handler: () => setValue(null)
+        },
+        { title: titles.on, checked: value === true, handler: () => setValue(true) },
+        { title: titles.off, checked: value === false, handler: () => setValue(false) }
+    ];
 }

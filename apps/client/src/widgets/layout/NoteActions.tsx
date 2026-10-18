@@ -24,7 +24,9 @@ import { isAlwaysFullWidthByType } from "../note_wrapper";
 import Dropdown, { type DropdownHandle } from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem, FormListToggleableItem } from "../react/FormList";
 import { useEffectiveReadOnly, useIsNoteReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelOptionalBool, useNoteProperty, useNoteRelation, useSyncedRef, useTriliumEvent, useTriliumOption } from "../react/hooks";
+import { MenuItemRows } from "../react/Menu";
 import { ParentComponent, POPUP_EDITOR_NTX_ID, useCommandTrigger } from "../react/react_utils";
+import { getWordWrapMenu } from "./code_menus";
 import NoteActionsCustom from "./NoteActionsCustom";
 import { useShareState } from "./NoteBadges";
 import { NoteTypeDropdownContent } from "./NoteTypeSwitcher";
@@ -224,17 +226,7 @@ function CodeProperties({ note }: { note: FNote }) {
 
     return (
         <>
-            <FormDropdownSubmenu title={t("note_actions.word_wrap")} icon="bx bx-align-justify">
-                <FormListItem checked={wrapLines == null} onClick={() => setWrapLines(null)} description={t("note_actions.word_wrap_auto_description")}>
-                    {t("note_actions.word_wrap_auto")}
-                </FormListItem>
-                <FormListItem checked={wrapLines === true} onClick={() => setWrapLines(true)}>
-                    {t("note_actions.word_wrap_on")}
-                </FormListItem>
-                <FormListItem checked={wrapLines === false} onClick={() => setWrapLines(false)}>
-                    {t("note_actions.word_wrap_off")}
-                </FormListItem>
-            </FormDropdownSubmenu>
+            <MenuItemRows items={[ getWordWrapMenu(wrapLines, setWrapLines) ]} />
             <FormDropdownDivider />
         </>
     );

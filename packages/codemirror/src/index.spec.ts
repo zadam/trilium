@@ -265,6 +265,24 @@ describe("CodeMirror", () => {
             expect(editor.getText()).toBe("");
         });
 
+        it("shows line numbers unless configured off, and toggles them both ways", () => {
+            const hasLineNumbers = (view: CodeMirror) =>
+                !!view.dom.querySelector(".cm-lineNumbers");
+            editor = build();
+            expect(hasLineNumbers(editor)).toBe(true);
+            const gutter = editor.dom.querySelector(".cm-lineNumbers");
+            editor.setLineNumbers(true);
+            expect(editor.dom.querySelector(".cm-lineNumbers")).toBe(gutter);
+            editor.setLineNumbers(false);
+            expect(hasLineNumbers(editor)).toBe(false);
+            editor.setLineNumbers(true);
+            expect(hasLineNumbers(editor)).toBe(true);
+            editor.destroy();
+
+            editor = build({ lineNumbers: false });
+            expect(hasLineNumbers(editor)).toBe(false);
+        });
+
         it("clamps the indent size to a sane range", () => {
             editor = build();
 

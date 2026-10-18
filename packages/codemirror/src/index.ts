@@ -62,6 +62,8 @@ export interface EditorConfig {
     parent: HTMLElement;
     placeholder?: string;
     lineWrapping?: boolean;
+    /** Whether to show the line numbers in the gutter. Defaults to true. */
+    lineNumbers?: boolean;
     vimKeybindings?: boolean;
     readOnly?: boolean;
     /** Disables some of the nice-to-have features (bracket matching, syntax highlighting, indentation markers) in order to improve performance. */
@@ -94,6 +96,8 @@ export default class CodeMirror extends EditorView {
     private historyCompartment: Compartment;
     private themeCompartment: Compartment;
     private lineWrappingCompartment: Compartment;
+    private lineNumbersCompartment: Compartment;
+    private hasLineNumbers: boolean;
     private keyboardSuggestionsCompartment: Compartment;
     private indentUnitCompartment: Compartment;
     private searchHighlightCompartment: Compartment;
@@ -115,6 +119,7 @@ export default class CodeMirror extends EditorView {
         const historyCompartment = new Compartment();
         const themeCompartment = new Compartment();
         const lineWrappingCompartment = new Compartment();
+        const lineNumbersCompartment = new Compartment();
         const keyboardSuggestionsCompartment = new Compartment();
         const indentUnitCompartment = new Compartment();
         const searchHighlightCompartment = new Compartment();
@@ -139,7 +144,7 @@ export default class CodeMirror extends EditorView {
             typeCompletionCompartment.of([]),
             completionSourceCompartment.of([]),
             highlightActiveLine(),
-            lineNumbers(),
+            lineNumbersCompartment.of(config.lineNumbers === false ? [] : lineNumbers()),
             themeCompartment.of([
                 syntaxHighlighting(defaultHighlightStyle, { fallback: true })
             ]),
@@ -194,6 +199,8 @@ export default class CodeMirror extends EditorView {
         this.historyCompartment = historyCompartment;
         this.themeCompartment = themeCompartment;
         this.lineWrappingCompartment = lineWrappingCompartment;
+        this.lineNumbersCompartment = lineNumbersCompartment;
+        this.hasLineNumbers = config.lineNumbers !== false;
         this.keyboardSuggestionsCompartment = keyboardSuggestionsCompartment;
         this.indentUnitCompartment = indentUnitCompartment;
         this.searchHighlightCompartment = searchHighlightCompartment;
@@ -269,6 +276,15 @@ export default class CodeMirror extends EditorView {
     setLineWrapping(wrapping: boolean) {
         this.dispatch({
             effects: [ this.lineWrappingCompartment.reconfigure(wrapping ? EditorView.lineWrapping : []) ]
+        });
+    }
+
+    setLineNumbers(isShown: boolean) {
+        if (isShown === this.hasLineNumbers) return;
+
+        this.hasLineNumbers = isShown;
+        this.dispatch({
+            effects: [ this.lineNumbersCompartment.reconfigure(isShown ? lineNumbers() : []) ]
         });
     }
 

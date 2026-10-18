@@ -55,6 +55,9 @@ describe("renderCodePreview", () => {
 
         const plain = render(null);
         expect(plain.className).toBe("code-preview");
+        expect(parse(renderCodePreview(code, {
+            themes: slots, language: null, isWrapped: true, hasLineNumbers: false
+        })).className).toBe("code-preview code-preview-wrap code-preview-no-line-numbers");
         expect(plain.getAttribute("style")).toBe("--code-preview-digits: 2");
         expect(plain.querySelectorAll(".code-preview-line span").length).toBe(0);
         expect(plain.querySelector(".code-preview-line")?.innerHTML).toBe("x &lt; 0");

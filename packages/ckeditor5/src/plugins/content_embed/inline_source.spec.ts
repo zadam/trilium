@@ -22,6 +22,7 @@ import ContentEmbedBoxSizeDropdown, {
 import ContentEmbed, {
     BOX_SIZE_COMMAND_NAME,
     BOX_SIZES,
+    CODE_VIEW_COMMAND_NAME,
     CONTENT_EMBED_MENU,
     CONVERT_EMBED_TO_LINK_COMMAND,
     TOGGLE_CAPTION_COMMAND_NAME,
@@ -110,6 +111,23 @@ describe("ContentEmbedInlineSource", () => {
         expect(editor.getData()).toContain(`data-box-size="small"`);
         expect(editor.getData()).toContain(`data-editable="true"`);
         expect(editor.getData()).toContain("--include-note-height:12em");
+    });
+
+    it("keeps how the embed shows its code on the <pre>, set by the code view command", () => {
+        const html = `<pre data-box-size="medium" data-hide-title="true"`
+            + ` data-code-wrap-lines="true" data-code-line-numbers="false">`
+            + `<code class="language-mermaid">x</code></pre>`;
+        editor.setData(html);
+
+        expect([ "codeWrapLines", "codeLineNumbers" ].map((name) => getEmbed().getAttribute(name)))
+            .toEqual([ "true", "false" ]);
+        expect(editor.getData()).toBe(html);
+
+        editor.model.change((writer) => writer.setSelection(getEmbed(), "on"));
+        expect(editor.commands.get(CODE_VIEW_COMMAND_NAME)?.isEnabled).toBe(true);
+        editor.execute(CODE_VIEW_COMMAND_NAME, { wrapLines: null, lineNumbers: true });
+        expect(editor.getData()).toBe(`<pre data-box-size="medium" data-hide-title="true"`
+            + ` data-code-line-numbers="true"><code class="language-mermaid">x</code></pre>`);
     });
 
     it("leaves a code block of another language alone", () => {

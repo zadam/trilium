@@ -5,8 +5,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import Component from "../../../components/component";
 import type FNote from "../../../entities/fnote";
+import attributes from "../../../services/attributes";
 import type { ContentEditor } from "../../../services/content_renderer";
 import options from "../../../services/options";
+import {
+    buildCodeViewTextEditor, getEmbedMenuItems, runEmbedMenuItem, summarizeMenuItem
+} from "../../../test/content_embed";
 import { buildNote } from "../../../test/easy-froca";
 import { CodeMirrorFindTarget } from "../../find_in_code";
 import { ParentComponent } from "../../react/react_utils";
@@ -159,6 +163,38 @@ describe("MarkdownEmbed", () => {
         pressCtrl(view, "z");
         expect(view.state.doc.toString()).toBe("a");
     });
+
+    it("wraps and numbers the lines of the source as the menu of its embed sets", async () => {
+        const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue(undefined);
+        const { textEditor, editable } = buildCodeViewTextEditor();
+        const note = buildNote({
+            title: "Readme", type: "code", mime: "text/x-markdown", content: "a",
+            "#wrapLines": "true"
+        });
+        const { figure } = await mount(note, buildEditor(), {
+            embedAttributes: { "data-display-mode": "source", "data-code-line-numbers": "false" },
+            container: editable
+        });
+        const view = await findView(figure);
+        expect(view.contentDOM.classList.contains("cm-lineWrapping")).toBe(true);
+        expect(figure.querySelector(".cm-lineNumbers")).toBeNull();
+        expect(getEmbedMenuItems(figure).map(summarizeMenuItem)).toMatchObject([
+            { title: "note_actions.word_wrap", items: [ {}, { checked: true }, {} ] },
+            { title: "link_context_menu.line_numbers", items: [ {}, {}, { checked: true } ] }
+        ]);
+
+        // The line wrapping of a note is its `#wrapLines` label.
+        await runEmbedMenuItem(figure, 0, 2);
+        expect(setLabel).toHaveBeenCalledWith(note.noteId, "wrapLines", "false");
+        await runEmbedMenuItem(figure, 1, 1);
+        expect(textEditor.execute)
+            .toHaveBeenCalledWith("setContentEmbedCodeView", { lineNumbers: true });
+        await vi.waitFor(() => expect(figure.querySelector(".cm-lineNumbers")).not.toBeNull());
+
+        // Content that cannot be edited offers neither.
+        const { figure: locked } = await mount(note, buildEditor({ canEdit: () => false }));
+        expect(getEmbedMenuItems(locked)).toEqual([]);
+    });
 });
 
 /** Picks the display mode `mode` on the embed `figure`. */
@@ -175,6 +211,8 @@ interface MountOptions {
     renderPreview?: (content: string) => Promise<HTMLElement>;
     /** Attributes of the embed, such as `data-display-mode`. */
     embedAttributes?: Record<string, string>;
+    /** The element the embed goes in, such as the editable root of a text editor. */
+    container?: HTMLElement;
 }
 
 /** Renders `MarkdownEmbed` in the markup of an embed, as the host does. */
@@ -202,7 +240,7 @@ async function mount(
     box.className = "include-note-content";
     wrapper.append(titleRow, box);
     figure.append(wrapper);
-    document.body.append(figure);
+    (options.container ?? document.body).append(figure);
     figures.push(figure);
 
     const content = (await entity.getBlob())?.content ?? "";

@@ -132,6 +132,15 @@ describe("Menu with declared rows", () => {
         expect(toggle?.querySelector(".description")?.previousElementSibling?.textContent).toBe("Search");
     });
 
+    it("draws the description of an item under its title", () => {
+        render(<Menu anchor={{ x: 10, y: 10 }} onClose={vi.fn()} items={[
+            { title: "Auto", description: "Follow the global setting", checked: true }
+        ]} />, host);
+        const description = document.querySelector(".dropdown-item .description");
+        expect(description?.textContent).toBe("Follow the global setting");
+        expect(description?.previousElementSibling?.textContent).toBe("Auto");
+    });
+
     it("closes the menu after running a row, but not for a row that opens a submenu or is disabled", async () => {
         const { menu, calls } = renderMenu();
 

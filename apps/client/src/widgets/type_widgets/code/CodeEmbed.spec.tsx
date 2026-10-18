@@ -8,10 +8,14 @@ import FAttachment from "../../../entities/fattachment";
 import FBlob from "../../../entities/fblob";
 import type FNote from "../../../entities/fnote";
 import contextMenu from "../../../menus/context_menu";
+import attributes from "../../../services/attributes";
 import type { ContentEditor } from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import LoadResults from "../../../services/load_results";
 import options from "../../../services/options";
+import {
+    buildCodeViewTextEditor, getEmbedMenuItems, runEmbedMenuItem, summarizeMenuItem
+} from "../../../test/content_embed";
 import { buildNote } from "../../../test/easy-froca";
 import { ParentComponent } from "../../react/react_utils";
 import { CodeMirrorFindTarget } from "../../find_in_code";
@@ -19,8 +23,11 @@ import { NoteSaves } from "../text/attachment_saves";
 import { getContentEmbedTools, getEmbedFindTarget } from "../text/content_embed_tools";
 import CodeEmbed from "./CodeEmbed";
 
+/** How a preview shows the lines of an embed that sets neither. */
+const DEFAULT_LINES = { isWrapped: undefined, hasLineNumbers: true };
+
 const renderCodePreview = vi.hoisted(() => vi.fn(
-    async (content: string, _mime: string, _note?: unknown) => {
+    async (content: string, _mime: string, _note?: unknown, _lines?: unknown) => {
         const pre = document.createElement("pre");
         pre.textContent = content;
         return pre;
@@ -218,7 +225,7 @@ describe("CodeEmbed", () => {
         options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python", "text/x-sh" ]));
         vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
         const editor = buildEditor();
-        const { textEditor, editable } = buildTextEditor();
+        const { textEditor, editable } = buildCodeViewTextEditor();
         const { figure } = await mount(buildAttachment("script.py"), editor, {
             content: "if a:\n  b",
             mime: "text/x-python",
@@ -240,12 +247,14 @@ describe("CodeEmbed", () => {
         expect(textEditor.execute)
             .toHaveBeenLastCalledWith("setContentEmbedCodeView", { language: null });
         await vi.waitFor(() => {
-            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/x-python", null);
+            expect(renderCodePreview)
+                .toHaveBeenLastCalledWith("if a:\n  b", "text/x-python", null, DEFAULT_LINES);
         });
         await select("codeLanguage", "Plain text");
         expect(figure.getAttribute("data-code-language")).toBe("text/plain");
         await vi.waitFor(() => {
-            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/plain", null);
+            expect(renderCodePreview)
+                .toHaveBeenLastCalledWith("if a:\n  b", "text/plain", null, DEFAULT_LINES);
         });
 
         // The indentation, which a re-indent sets with the content, as one change.
@@ -278,6 +287,109 @@ describe("CodeEmbed", () => {
         expect(textEditor.execute).not.toHaveBeenCalled();
     });
 
+    it("offers the line wrapping and line numbers of a note in the menu of its embed", async () => {
+        const setLabel = vi.spyOn(attributes, "setLabel").mockResolvedValue(undefined);
+        const removeLabel = vi.spyOn(attributes, "removeOwnedLabelByName")
+            .mockResolvedValue(undefined as never);
+        const { textEditor, editable } = buildCodeViewTextEditor();
+        const note = buildNote({
+            title: "Script", type: "code", mime: "text/x-python", content: "a",
+            "#wrapLines": "false"
+        });
+        const { figure } = await mount(note, buildEditor(), {
+            hasCodeLineNumbers: false,
+            embedAttributes: { "data-code-line-numbers": "false" },
+            container: editable
+        });
+        expect(getEmbedMenuItems(figure).map(summarizeMenuItem)).toEqual([
+            {
+                title: "note_actions.word_wrap",
+                items: [
+                    { title: "note_actions.word_wrap_auto", checked: false },
+                    { title: "note_actions.word_wrap_on", checked: false },
+                    { title: "note_actions.word_wrap_off", checked: true }
+                ]
+            },
+            {
+                title: "link_context_menu.line_numbers",
+                items: [
+                    { title: "link_context_menu.line_numbers_auto", checked: false },
+                    { title: "link_context_menu.line_numbers_on", checked: false },
+                    { title: "link_context_menu.line_numbers_off", checked: true }
+                ]
+            }
+        ]);
+        expect(renderCodePreview).not.toHaveBeenCalled();
+
+        // The line wrapping is the `#wrapLines` label of the note.
+        await runEmbedMenuItem(figure, 0, 0);
+        expect(removeLabel).toHaveBeenCalledWith(note, "wrapLines");
+        await runEmbedMenuItem(figure, 0, 1);
+        expect(setLabel).toHaveBeenCalledWith(note.noteId, "wrapLines", "true");
+        expect(textEditor.execute).not.toHaveBeenCalled();
+
+        // The line numbers are kept in the embed, as the note has no label for them.
+        await runEmbedMenuItem(figure, 1, 0);
+        expect(textEditor.execute)
+            .toHaveBeenLastCalledWith("setContentEmbedCodeView", { lineNumbers: null });
+        await vi.waitFor(() => {
+            expect(summarizeMenuItem(getEmbedMenuItems(figure)[1])).toMatchObject({
+                items: [ { checked: true }, { checked: false }, { checked: false } ]
+            });
+        });
+        await vi.waitFor(() => expect(renderCodePreview).toHaveBeenLastCalledWith(
+            "a", "text/x-python", note, { isWrapped: false, hasLineNumbers: true }
+        ));
+        await runEmbedMenuItem(figure, 1, 1);
+        expect(figure.getAttribute("data-code-line-numbers")).toBe("true");
+    });
+
+    it("keeps the line wrapping and the line numbers of a file in its embed", async () => {
+        const { textEditor, editable } = buildCodeViewTextEditor();
+        const { figure } = await mount(buildAttachment("script.py"), buildEditor(), {
+            content: "a",
+            mime: "text/x-python",
+            isCodeWrapped: true,
+            embedAttributes: { "data-code-wrap-lines": "true" },
+            container: editable
+        });
+        expect(getEmbedMenuItems(figure).map(summarizeMenuItem)).toMatchObject([
+            {
+                items: [
+                    { checked: false },
+                    { checked: true },
+                    { checked: false }
+                ]
+            },
+            { items: [ { checked: true }, { checked: false }, { checked: false } ] }
+        ]);
+        expect(renderCodePreview).not.toHaveBeenCalled();
+
+        await runEmbedMenuItem(figure, 0, 2);
+        expect(textEditor.execute)
+            .toHaveBeenLastCalledWith("setContentEmbedCodeView", { wrapLines: false });
+        await runEmbedMenuItem(figure, 1, 2);
+        expect(textEditor.execute)
+            .toHaveBeenLastCalledWith("setContentEmbedCodeView", { lineNumbers: false });
+        expect([ "data-code-wrap-lines", "data-code-line-numbers" ]
+            .map((name) => figure.getAttribute(name))).toEqual([ "false", "false" ]);
+        await vi.waitFor(() => expect(renderCodePreview).toHaveBeenLastCalledWith(
+            "a", "text/x-python", null, { isWrapped: false, hasLineNumbers: false }
+        ));
+
+        // CodeMirror follows the embed.
+        await runEmbedMenuItem(figure, 0, 1);
+        await act(async () => {
+            figure.dataset.editable = "true";
+            await Promise.resolve();
+        });
+        const view = await findView(figure);
+        expect(view.contentDOM.classList.contains("cm-lineWrapping")).toBe(true);
+        expect(figure.querySelector(".cm-lineNumbers")).toBeNull();
+        await runEmbedMenuItem(figure, 1, 1);
+        await vi.waitFor(() => expect(figure.querySelector(".cm-lineNumbers")).not.toBeNull());
+    });
+
     it("highlights an attachment with the MIME type it is given", async () => {
         const attachment = new FAttachment(froca, {
             attachmentId: "script1",
@@ -303,7 +415,8 @@ describe("CodeEmbed", () => {
             await Promise.resolve();
         });
         await vi.waitFor(() => {
-            expect(renderCodePreview).toHaveBeenLastCalledWith("ab", "text/x-python", null);
+            expect(renderCodePreview)
+                .toHaveBeenLastCalledWith("ab", "text/x-python", null, DEFAULT_LINES);
         });
     });
 
@@ -465,6 +578,8 @@ interface MountOptions {
     content?: string;
     mime?: string;
     codeLanguage?: string;
+    isCodeWrapped?: boolean;
+    hasCodeLineNumbers?: boolean;
     preview?: HTMLElement;
     isEditable?: boolean;
     /** Attributes of the embed, such as `data-code-language`. */
@@ -511,6 +626,8 @@ async function mount(
                     content={options.content ?? (await entity.getBlob())?.content ?? content}
                     mime={options.mime ?? entity.mime}
                     codeLanguage={options.codeLanguage}
+                    isCodeWrapped={options.isCodeWrapped}
+                    hasCodeLineNumbers={options.hasCodeLineNumbers}
                     preview={options.preview ?? buildPreview(content)}
                 />
             </ParentComponent.Provider>,
@@ -556,42 +673,6 @@ async function selectMenuItem(figure: HTMLElement, id: string, title: string, is
         .find((candidate) => "title" in candidate && candidate.title === title);
     if (!item || "kind" in item) throw new Error(`No item titled ${title}.`);
     await act(async () => item.handler?.(item, new MouseEvent("click")));
-}
-
-/**
- * The editable root of a text editor, in the page, and the editor, whose code view command sets
- * the `data-code-*` attributes of the embed it selects, as the text editor renders them.
- */
-function buildTextEditor() {
-    let selected: Element | null = null;
-    const textEditor = {
-        selectEmbedAt: vi.fn((element: Element) => {
-            selected = element.closest(".include-note");
-            return true;
-        }),
-        plugins: { get: () => ({ selectEmbedAt: textEditor.selectEmbedAt }) },
-        execute: vi.fn((_name: string, codeView: Record<string, unknown>) => {
-            const attributes = {
-                language: "data-code-language",
-                tabWidth: "data-code-tab-width",
-                indentWithTabs: "data-code-indent-with-tabs"
-            };
-            for (const [ setting, attribute ] of Object.entries(attributes)) {
-                const value = codeView[setting];
-                if (value === null) {
-                    selected?.removeAttribute(attribute);
-                } else if (value !== undefined) {
-                    selected?.setAttribute(attribute, String(value));
-                }
-            }
-        })
-    };
-    const editable = document.createElement("div");
-    editable.className = "ck-editor__editable";
-    Object.assign(editable, { ckeditorInstance: textEditor });
-    document.body.append(editable);
-    figures.push(editable);
-    return { textEditor, editable };
 }
 
 function buildPreview(content: string) {

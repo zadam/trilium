@@ -3,7 +3,8 @@ import { useRef } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import contextMenu, { type ContextMenuOptions } from "../../../menus/context_menu";
+import type { CommandNames } from "../../../components/app_context";
+import contextMenu, { type ContextMenuOptions, type MenuItem } from "../../../menus/context_menu";
 import {
     type ContentEmbedMenu, ContentEmbedMenus, useContentEmbedMenus
 } from "./content_embed_menus";
@@ -17,6 +18,7 @@ const LANGUAGE: ContentEmbedMenu = {
     filterable: true
 };
 const WIDTH: ContentEmbedMenu = { id: "width", title: "Change width", text: "4", items: [] };
+const WRAP_ITEM: MenuItem<CommandNames> = { title: "Word wrap", items: [] };
 
 const elements: HTMLElement[] = [];
 
@@ -128,9 +130,14 @@ describe("useContentEmbedMenus", () => {
         expect(tools?.hasEditableFlag).toBe(true);
         expect(tools?.getTools().map((tool) => tool.text)).toEqual([ "Python" ]);
 
-        act(() => render(<Harness menus={[ LANGUAGE, WIDTH ]} root={root} />, root));
+        expect(tools?.getMenuItems?.()).toEqual([]);
+
+        act(() => render(
+            <Harness menus={[ LANGUAGE, WIDTH ]} menuItems={[ WRAP_ITEM ]} root={root} />, root
+        ));
         expect(getContentEmbedTools(figure)).toBe(tools);
         expect(tools?.getTools().map((tool) => tool.text)).toEqual([ "Python", "4" ]);
+        expect(tools?.getMenuItems?.()).toEqual([ WRAP_ITEM ]);
 
         act(() => render(null, root));
         expect(getContentEmbedTools(figure)).toBeNull();
@@ -141,10 +148,16 @@ describe("useContentEmbedMenus", () => {
     });
 });
 
+interface HarnessProps {
+    menus: ContentEmbedMenu[];
+    menuItems?: MenuItem<CommandNames>[];
+    root?: HTMLElement;
+}
+
 /** Mounts `useContentEmbedMenus()` with a ref to `root`, or to nothing while `root` is unset. */
-function Harness({ menus, root }: { menus: ContentEmbedMenu[]; root?: HTMLElement }) {
+function Harness({ menus, menuItems, root }: HarnessProps) {
     const rootRef: RefObject<HTMLElement | null> = useRef(root ?? null);
-    useContentEmbedMenus(rootRef, menus);
+    useContentEmbedMenus(rootRef, menus, menuItems);
     return null;
 }
 

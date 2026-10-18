@@ -1,6 +1,7 @@
 import type { RefObject } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
+import type { CommandNames } from "../../../components/app_context";
 import contextMenu, { type ContextMenuOptions, type MenuItem } from "../../../menus/context_menu";
 import linkContextMenu from "../../../menus/link_context_menu";
 import {
@@ -22,15 +23,17 @@ export interface ContentEmbedMenu {
 
 /**
  * Adds a button for each of `menus` to the toolbar of the embed around `rootRef`, besides the
- * Editable toggle. The buttons follow `menus` as they change.
+ * Editable toggle, and `menuItems` to the menu of the embed. Both follow their arguments as they
+ * change.
  */
 export function useContentEmbedMenus(
     rootRef: RefObject<HTMLElement | null>,
-    menus: ContentEmbedMenu[]
+    menus: ContentEmbedMenu[],
+    menuItems: MenuItem<CommandNames>[] = []
 ) {
     const [ provider ] = useState(() => new ContentEmbedMenus(rootRef));
 
-    useEffect(() => provider.setMenus(menus));
+    useEffect(() => provider.setMenus(menus, menuItems));
 
     useEffect(() => {
         const root = rootRef.current;
@@ -44,6 +47,7 @@ export function useContentEmbedMenus(
 export class ContentEmbedMenus implements ContentEmbedToolProvider {
     readonly hasEditableFlag = true;
     private menus: ContentEmbedMenu[] = [];
+    private menuItems: MenuItem<CommandNames>[] = [];
     /** The menu that is open, whose button shows as on. */
     private openMenuId: string | null = null;
     /** The menu that closed last. */
@@ -54,9 +58,15 @@ export class ContentEmbedMenus implements ContentEmbedToolProvider {
 
     constructor(private readonly rootRef: RefObject<HTMLElement | null>) {}
 
-    setMenus(menus: ContentEmbedMenu[]) {
+    /** Sets the menus of the buttons, and the items of the menu of the embed. */
+    setMenus(menus: ContentEmbedMenu[], menuItems: MenuItem<CommandNames>[] = []) {
         this.menus = menus;
+        this.menuItems = menuItems;
         this.update();
+    }
+
+    getMenuItems() {
+        return this.menuItems;
     }
 
     getTools(): ContentEmbedTool[] {

@@ -20,6 +20,10 @@ export interface CodeEmbedEditorProps {
     tabWidth: number | undefined;
     /** Whether to indent with tabs, or `undefined` to follow the global option. */
     useTabs: boolean | undefined;
+    /** Whether to wrap the lines, over the `#wrapLines` label of `note` and the global option. */
+    wrapLines?: boolean;
+    /** Whether to show the line numbers. Shown by default. */
+    hasLineNumbers?: boolean;
     /** Holds the CodeMirror view while the editor is open, and `null` once it goes away. */
     viewRef: RefObject<VanillaCodeMirror | null>;
     /** Whether the editor shows. "Search in note" skips a hidden one. Shown by default. */
@@ -37,12 +41,13 @@ export interface CodeEmbedEditorProps {
  * `editor`, the content is read-only.
  */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, tabWidth, useTabs, viewRef, isShown = true, onClose, onChange,
-    onReady
+    note, editor, content, mime, tabWidth, useTabs, wrapLines, hasLineNumbers, viewRef,
+    isShown = true, onClose, onChange, onReady
 }: CodeEmbedEditorProps) {
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
     const [ noteWrapLines ] = useNoteLabelOptionalBool(note, "wrapLines");
+    const lineWrapping = wrapLines ?? noteWrapLines;
     useEmbedCaretNavigation(() => viewRef.current);
 
     // Runs after the effects of `CodeMirror`, which creates the view.
@@ -98,6 +103,7 @@ export default function CodeEmbedEditor({
             mime={mime}
             vimKeybindings={vimKeymapEnabled}
             readOnly={!editor}
+            lineNumbers={hasLineNumbers}
             onContentChanged={() => {
                 if (editor && !isLoadingRef.current) {
                     editor.scheduleSave(() => viewRef.current?.getText() ?? "");
@@ -106,7 +112,7 @@ export default function CodeEmbedEditor({
             }}
             {...(tabWidth !== undefined && { indentSize: tabWidth })}
             {...(useTabs !== undefined && { useTabs })}
-            {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
+            {...(lineWrapping != null && { lineWrapping })}
         />
     );
 }

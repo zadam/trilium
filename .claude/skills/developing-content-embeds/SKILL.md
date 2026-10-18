@@ -99,6 +99,15 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
   - `hasEditableFlag` — shows the Editable toggle; the embed carries `data-editable="true"`.
   - `hasDisplayModes` — shows Source/Split/Preview; the embed carries `data-display-mode`.
   - `hiddenToolbarItems` — moves box size, title or convert-to-link from the toolbar to the ⋮ menu.
+  - `getMenuItems()` — items of the ⋮ menu after Editable, in a group of their own
+    (`useContentEmbedMenus(rootRef, menus, menuItems)` passes them through).
+- **A CodeMirror pane in an embed** (code, Markdown, Mermaid) takes its line wrapping and line
+  numbers from `useEmbedLines(rootRef, note)` (`code/CodeEmbed.tsx`): pass `wrapLines` /
+  `hasLineNumbers` to `EmbedSourcePane` or `CodeEmbedEditor`, and `menuItems` (the _Word wrap_
+  and _Line numbers_ submenus) to `getMenuItems()` while the content can be edited. A note keeps
+  the wrapping in `#wrapLines`; everything else lives in `data-code-wrap-lines` /
+  `data-code-line-numbers`, on the `<pre>` for inline source (the code view command sets only
+  line numbers on a note embed). `ReadOnlyText` copies them from the `<pre>` to its box.
   - `group` on a tool — a separator goes between groups. Notify listeners only when the tools
     really changed (`MermaidDiagramTools.update()` compares a JSON snapshot) and after the render
     (`queueMicrotask`), as a listener updates the editor's toolbar.
