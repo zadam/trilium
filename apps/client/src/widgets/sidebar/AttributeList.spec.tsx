@@ -1102,19 +1102,19 @@ describe("AttributeList", () => {
         expect(selectedNames()).toEqual([ "template" ]);
 
         // The theme draws the box on the label, over the input, so that is where a press lands. A
-        // browser would pass it on to the input as a second click, after re-rendering, which toggled
-        // the row straight back; the label's press is the only one.
-        const part = (selector: string) =>
-            container.querySelectorAll(".attribute-kind-check")[1]?.querySelector<HTMLElement>(selector);
-        expect(part("label")).not.toBeNull();
-        const inputClicks = vi.fn();
-        part("input")?.addEventListener("click", inputClicks);
-
-        act(() => part("label")?.click());
-        expect(selectedNames()).toEqual([ "cssClass", "template" ]);
-        act(() => part("label")?.click());
-        expect(selectedNames()).toEqual([ "template" ]);
-        expect(inputClicks).not.toHaveBeenCalled();
+        // browser passes an uncancelled label click on to the input after re-rendering, and that
+        // second click toggled the row straight back. happy-dom passes it on before the click
+        // bubbles, so the cancellation is what is asserted.
+        const label = () => container.querySelectorAll(".attribute-kind-check")[1]?.querySelector("label");
+        for (const expected of [ [ "cssClass", "template" ], [ "template" ] ]) {
+            const press = new MouseEvent("click", { bubbles: true, cancelable: true });
+            expect(label()).not.toBeNull();
+            act(() => {
+                label()?.dispatchEvent(press);
+            });
+            expect(press.defaultPrevented).toBe(true);
+            expect(selectedNames()).toEqual(expected);
+        }
     });
 
     it("turns the toolbar over to the selected rows, keeping paste and add where they were", async () => {

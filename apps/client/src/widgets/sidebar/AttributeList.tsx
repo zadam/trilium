@@ -1255,17 +1255,23 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, selected
                         class="attribute-kind-check"
                         onClick={(e) => {
                             // Kept from the row, whose press would open the form over the selection.
-                            // The tick itself is left to the browser: refusing it puts the box back
-                            // after this handler has run, leaving it a press behind the selection it
-                            // is drawn from. What the press means either way is the same, so the two
-                            // agree — and the box is drawn from the selection on every render after.
                             e.stopPropagation();
+                            // The label's `::after` covers the input, so presses land on the label. Its
+                            // default action clicks the input a second time, after a re-render, which
+                            // would toggle the row back. `checked` follows the selection either way.
+                            // A press on the input itself keeps its default: cancelling a checkbox's
+                            // click reverts its tick after this handler runs.
+                            if (e.target instanceof HTMLLabelElement) {
+                                e.preventDefault();
+                            }
                             onSelect(e.shiftKey);
                         }}
                     >
-                        {/* Not the form's checkbox component: that one is a labelled row of a settings
-                            page, where this is the glyph of an icon's slot. */}
-                        <input type="checkbox" class="form-check-input" checked={selected} tabIndex={-1} />
+                        {/* The theme's checkbox (`label.tn-checkbox`) without `FormCheckbox`'s label
+                            text, which the icon slot has no room for. */}
+                        <label class="tn-checkbox">
+                            <input type="checkbox" checked={selected} tabIndex={-1} />
+                        </label>
                     </span>
                 )}
             </span>

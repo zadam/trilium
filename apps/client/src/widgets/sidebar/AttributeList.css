@@ -42,23 +42,9 @@
     background-color: var(--hover-item-background-color);
 }
 
-/* Picked out to be copied. Held apart from the row merely being pointed at or shown in the popup —
-   which come and go with the pointer — by the standing mark of a filled leading edge, and by a
-   ground that outweighs the hover film so a picked row pointed at still reads as picked. */
 .attribute-list-panel .attribute-row.selected,
 .attribute-list-panel .attribute-row.selected:hover {
-    background-color: var(--active-item-background-color);
-}
-
-.attribute-list-panel .attribute-row.selected::before {
-    content: "";
-    position: absolute;
-    inset-block: 2px;
-    inset-inline-start: 0;
-    width: 2px;
-    border-radius: 1px;
-    background-color: var(--main-text-color);
-    opacity: 0.5;
+    background-color: var(--selection-background-color);
 }
 
 /* While its value is edited (or the attribute created), the row lets the editor standing over it
@@ -88,10 +74,13 @@
     display: flex;
 }
 
-.attribute-list-panel .attribute-kind-check .form-check-input {
-    /* The icon's own size, so that the row is laid out the same whichever of the two is showing. */
-    width: 13px;
-    height: 13px;
+.attribute-list-panel .attribute-kind-check .tn-checkbox {
+    --box-size: 13px;
+    --box-label-gap: 0px;
+
+    display: block;
+    width: var(--box-size);
+    height: var(--box-size);
     margin: 0;
     cursor: pointer;
 }
