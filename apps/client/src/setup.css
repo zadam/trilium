@@ -37,6 +37,10 @@ body.setup {
             position: relative;
             height: 100%;
 
+            body.electron & {
+                border-radius: 0;
+            }
+
             @media (min-width: 700px) {
                 display: flex;
                 width: 750px;
@@ -222,8 +226,10 @@ body.setup {
                 padding-inline-end: 2.5em;
                 user-select: text;
 
-                @media (min-width: 700px) {
-                    border-radius: 16px 16px 0 0;
+                body:not(.electron) & {
+                    @media (min-width: 700px) {
+                        border-radius: 16px 16px 0 0;
+                    }
                 }
 
                 button {
