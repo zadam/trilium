@@ -142,6 +142,7 @@ body.layout-horizontal #vertical-main-container {
             /* The flexible share is given up before the buttons are: they stay whole and pressable
                at any pane width. */
             min-width: max-content;
+            padding-inline-end: 5px;
         }
     }
 
