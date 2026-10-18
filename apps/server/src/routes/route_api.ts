@@ -6,7 +6,7 @@ import { readFile, rm } from "fs/promises";
 import { t } from "i18next";
 import multer from "multer";
 import { join } from "path";
-import { Transform } from "stream";
+import { PassThrough, Transform } from "stream";
 
 import { bindEmitter } from "../cls_provider.js";
 import auth from "../services/auth.js";
@@ -240,13 +240,7 @@ function createShareTargetUploadMiddleware(maxFileSize: number): RequestHandler 
         storage: tmpDirStorage(),
         // `streamHandler` is not yet in @types/multer 2.3.0.
         streamHandler: (req, busboy) => {
-            const boundary = /boundary=(?:"([^"]+)"|([^;\s]+))/i.exec(req.headers["content-type"] ?? "");
-            const delimiterBoundary = boundary?.[1] ?? boundary?.[2];
-            if (delimiterBoundary) {
-                req.pipe(stripNulBeforeDelimiters(delimiterBoundary)).pipe(busboy);
-            } else {
-                req.pipe(busboy);
-            }
+            req.pipe(stripNulBeforeDelimiters(multipartBoundary(req.headers["content-type"]))).pipe(busboy);
         }
     };
     options.limits = { ...options.limits, files: MAX_SHARED_FILES, fileSize: maxFileSize };
@@ -254,12 +248,22 @@ function createShareTargetUploadMiddleware(maxFileSize: number): RequestHandler 
     return multer(options).array("files");
 }
 
+/** The `boundary` parameter of a multipart `Content-Type`, quoted or not. */
+export function multipartBoundary(contentType: string | undefined): string | undefined {
+    const match = /boundary=(?:"([^"]+)"|([^;\s]+))/i.exec(contentType ?? "");
+    return match?.[1] ?? match?.[2];
+}
+
 /**
  * Removes the NUL byte that Samsung Internet writes between the CRLF and a boundary delimiter
  * (`\r\n\0--boundary`) in a Web Share Target body; busboy rejects that body as "Unexpected end of
  * form".
  */
-export function stripNulBeforeDelimiters(boundary: string): Transform {
+export function stripNulBeforeDelimiters(boundary: string | undefined): Transform {
+    if (!boundary) {
+        return new PassThrough();
+    }
+
     const needle = Buffer.from(`\r\n\0--${boundary}`, "latin1");
     let pending = Buffer.alloc(0);
 

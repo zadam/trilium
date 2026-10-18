@@ -9,6 +9,7 @@ import {
     asyncRoute,
     createShareTargetMiddleware,
     importMiddlewareWithErrorHandling,
+    multipartBoundary,
     route,
     router,
     stripNulBeforeDelimiters,
@@ -156,6 +157,47 @@ describe("createShareTargetMiddleware", () => {
         expect(handler).not.toHaveBeenCalled();
         await request(app).post("/share").attach("files", Buffer.from("1234"), "fits.bin").expect(200);
     });
+
+    it("forwards a body busboy cannot parse as an error instead of reaching the handler", async () => {
+        const app = express();
+        const handler = vi.fn((_req: express.Request, res: express.Response) => res.sendStatus(200));
+        app.post("/share", createShareTargetMiddleware(), handler);
+        app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+            res.status(500).send(err.message);
+        });
+
+        const unterminated = await request(app)
+            .post("/share")
+            .set("Content-Type", "multipart/form-data; boundary=b")
+            .send("--b\r\nContent-Disposition: form-data; name=\"text\"\r\n\r\nhi");
+        expect(unterminated.status).toBe(500);
+        expect(unterminated.text).toBe("Unexpected end of form");
+
+        const noBoundary = await request(app).post("/share").set("Content-Type", "multipart/form-data").send("x");
+        expect(noBoundary.status).toBe(500);
+        expect(handler).not.toHaveBeenCalled();
+    });
+
+    it("parses a body whose boundary is quoted", async () => {
+        const app = express();
+        app.post("/share", createShareTargetMiddleware(), (req, res) => res.json(req.body));
+
+        const res = await request(app)
+            .post("/share")
+            .set("Content-Type", "multipart/form-data; boundary=\"b c\"")
+            .send("--b c\r\nContent-Disposition: form-data; name=\"text\"\r\n\r\nhi\r\n\0--b c--\r\n");
+
+        expect(res.body).toEqual({ text: "hi" });
+    });
+});
+
+describe("multipartBoundary", () => {
+    it("reads a plain or quoted boundary parameter", () => {
+        expect(multipartBoundary("multipart/form-data; boundary=----abc")).toBe("----abc");
+        expect(multipartBoundary("multipart/form-data; charset=utf-8; BOUNDARY=\"a b\"")).toBe("a b");
+        expect(multipartBoundary("multipart/form-data")).toBeUndefined();
+        expect(multipartBoundary(undefined)).toBeUndefined();
+    });
 });
 
 describe("stripNulBeforeDelimiters", () => {
@@ -173,6 +215,16 @@ describe("stripNulBeforeDelimiters", () => {
             await ended;
             expect(Buffer.concat(output).toString("latin1"), `split at ${split}`).toBe(expected);
         }
+    });
+
+    it("passes the bytes through unchanged without a boundary", async () => {
+        const filter = stripNulBeforeDelimiters(undefined);
+        const output: Buffer[] = [];
+        filter.on("data", (chunk: Buffer) => output.push(chunk));
+        const ended = new Promise((resolve) => filter.on("end", resolve));
+        filter.end(Buffer.from("x\r\n\0--b", "latin1"));
+        await ended;
+        expect(Buffer.concat(output).toString("latin1")).toBe("x\r\n\0--b");
     });
 });
 

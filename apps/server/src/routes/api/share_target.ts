@@ -16,7 +16,7 @@ async function handleShare(req: Request, res: Response) {
     const text = getOptionalString(req.body?.text);
     const rawUrl = getOptionalString(req.body?.url);
     const url = rawUrl ? sanitize.sanitizeUrl(rawUrl) : undefined;
-    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+    const files = req.files as Express.Multer.File[];
 
     if (!text && !url && files.length === 0) {
         res.status(400).type("text/plain").send(t("share_target.nothing-to-share"));
@@ -71,11 +71,11 @@ function saveShare(rawTitle: unknown, text: string | undefined, url: string | un
     }
 
     const fileParent = containerNote ?? inboxNote;
-    let firstFileNote: BNote | undefined;
+    const fileNotes: BNote[] = [];
 
     for (const file of files) {
         const content = readFileSync(file.path);
-        const originalName = file.originalname || "file";
+        const originalName = file.originalname;
         let note: BNote;
 
         if (isAcceptedImageMime(file.mimetype)) {
@@ -87,17 +87,18 @@ function saveShare(rawTitle: unknown, text: string | undefined, url: string | un
                 title: deriveTitle(originalName, undefined),
                 content,
                 type: "file",
-                mime: file.mimetype || "application/octet-stream",
+                mime: file.mimetype,
                 isProtected: isProtectedUnder(fileParent)
             }));
             note.addLabel("originalFileName", originalName);
         }
 
         note.addLabel("clipType", "share");
-        firstFileNote ??= note;
+        fileNotes.push(note);
     }
 
-    const openNote = containerNote ?? firstFileNote ?? inboxNote;
+    // Without a parent note there is exactly one file: handleShare() refuses an empty share.
+    const openNote = containerNote ?? fileNotes[0];
     return { openNote, imageNoteIds };
 }
 
@@ -114,7 +115,7 @@ export function deriveTitle(rawTitle: unknown, fallbackBody: string | undefined)
         return rawTitle.trim().slice(0, SAFE_TITLE_MAX);
     }
     if (fallbackBody) {
-        const firstLine = fallbackBody.trim().split(/\r?\n/, 1)[0] ?? "";
+        const [ firstLine ] = fallbackBody.trim().split(/\r?\n/, 1);
         if (firstLine) {
             return firstLine.slice(0, SAFE_TITLE_MAX);
         }

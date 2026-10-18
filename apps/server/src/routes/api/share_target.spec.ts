@@ -100,6 +100,21 @@ describe("POST /share-target", () => {
         expect(note.getParentNotes().map((parent) => parent.noteId)).toEqual([ inbox.noteId ]);
     });
 
+    it("saves into a protected inbox unprotected while the protected session is locked", async () => {
+        const inbox = cls.init(() => specialNotes.getInboxNote(dateUtils.localNowDate()));
+        inbox.isProtected = true;
+        try {
+            const res = await agent.post("/share-target").field("text", "while locked").expect(303);
+
+            const note = redirectedNote(res.headers.location);
+            expect(note.getParentNotes().map((parent) => parent.noteId)).toEqual([ inbox.noteId ]);
+            expect(note.isProtected).toBe(false);
+            expect(note.getContent()).toBe("<p>while locked</p>");
+        } finally {
+            inbox.isProtected = false;
+        }
+    });
+
     it("accepts Samsung Internet's NUL byte between a CRLF and a boundary delimiter", async () => {
         const boundary = "----MultipartBoundary--eyLOlXbH76aoDXmj8rZPdIY8RnUN0YjNE3TJOXyUwe----";
         const body = Buffer.concat([
