@@ -185,8 +185,10 @@ describe("MermaidDiagram", () => {
         expect(split.figure.querySelector(".mermaid-diagram-controls")).toBeNull();
     });
 
-    it("makes the source editable once Editable turns on", async () => {
-        const { figure } = await mount({ editor: buildEditor(), displayMode: "split" });
+    it("makes the same source editor editable while Editable is on", async () => {
+        const editor = buildEditor();
+        const { figure } = await mount({ editor, displayMode: "split" });
+        const view = await findSourceView(figure);
         expect(await isSourceEditable(figure)).toBe(false);
 
         await act(async () => {
@@ -194,6 +196,16 @@ describe("MermaidDiagram", () => {
             await Promise.resolve();
         });
         await vi.waitFor(async () => expect(await isSourceEditable(figure)).toBe(true));
+        expect(await findSourceView(figure)).toBe(view);
+        act(() => view.dispatch({ changes: { from: 0, insert: "%% " } }));
+        expect(editor.scheduleSave).toHaveBeenCalledOnce();
+
+        await act(async () => {
+            delete figure.dataset.editable;
+            await Promise.resolve();
+        });
+        expect(await isSourceEditable(figure)).toBe(false);
+        expect(await findSourceView(figure)).toBe(view);
     });
 
     it("wraps and numbers the lines of the source as the menu of its embed sets", async () => {

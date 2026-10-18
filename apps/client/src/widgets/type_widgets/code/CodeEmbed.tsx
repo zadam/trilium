@@ -84,7 +84,6 @@ export default function CodeEmbed({
                 <CaretNavigationContext.Provider value={isEditing ? rootRef : null}>
                     <Suspense fallback={null}>
                         <CodeEmbedEditor
-                            key={isEditing ? "editing" : "read-only"}
                             note={note}
                             ownerNote={entity instanceof FNote ? entity : entity.getNote()}
                             editor={isEditing ? editor : undefined}

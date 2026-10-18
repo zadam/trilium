@@ -1,4 +1,5 @@
 import { closeCompletion, completionStatus, startCompletion } from "@codemirror/autocomplete";
+import { undo } from "@codemirror/commands";
 import { indentUnit } from "@codemirror/language";
 import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
@@ -267,6 +268,42 @@ describe("CodeMirror", () => {
             expect(editor.getText()).toBe("");
         });
 
+        it("applies a theme it has loaded before without waiting", async () => {
+            const theme = getThemeById("github-light");
+            expect(theme).not.toBeNull();
+            if (!theme) return;
+            editor = build();
+            await editor.setTheme(theme);
+            editor.destroy();
+
+            editor = build();
+            void editor.setTheme(theme);
+            expect(getGutterRules(editor).join("\n")).toContain("background-color: #f6f8fa;");
+        });
+
+        it("switches between read-only and editable in place, with a new history", () => {
+            editor = build({ readOnly: true, placeholder: "Type here" });
+            const hasPlaceholder = () => !!editor?.dom.querySelector(".cm-placeholder");
+            expect(hasPlaceholder()).toBe(false);
+
+            editor.setReadOnly(false);
+            expect([ editor.state.readOnly, hasPlaceholder() ]).toEqual([ false, true ]);
+            editor.dispatch({ changes: { from: 0, insert: "a" } });
+            expect(undo(editor)).toBe(true);
+            expect(editor.getText()).toBe("");
+            editor.dispatch({ changes: { from: 0, insert: "b" } });
+
+            editor.setReadOnly(true);
+            editor.setReadOnly(true);
+            expect(editor.state.readOnly).toBe(true);
+            editor.insertBlankLineAtTop();
+            expect(editor.getText()).toBe("b");
+
+            editor.setReadOnly(false);
+            expect(undo(editor)).toBe(false);
+            expect(editor.getText()).toBe("b");
+        });
+
         it("toggles line wrapping both ways", () => {
             editor = build();
             editor.setLineWrapping(true);
@@ -369,7 +406,7 @@ describe("CodeMirror", () => {
         });
 
         it("does nothing for a read-only editor", () => {
-            // A read-only editor has no history compartment to reconfigure.
+            // A read-only editor keeps no history.
             editor = build({ readOnly: true });
             expect(() => editor?.clearHistory()).not.toThrow();
         });

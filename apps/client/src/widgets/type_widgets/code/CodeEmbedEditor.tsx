@@ -87,16 +87,33 @@ export default function CodeEmbedEditor({
         view.clearHistory();
     }, [ view, content ]);
 
-    // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
-    useLayoutEffect(() => () => {
-        const text = viewRef.current?.getText();
-        // `release()` reads the pending content through `viewRef`, so the ref clears after it.
-        editor?.release();
-        viewRef.current = null;
-        if (editor && text !== undefined) {
-            onClose(text);
-        }
+    // Layout cleanups run as `editor` goes away and during the unmount, before CodeMirror is
+    // destroyed, in the order of these hooks.
+    useLayoutEffect(() => {
+        if (!editor) return;
+
+        return () => {
+            const text = viewRef.current?.getText();
+            // `release()` reads the pending content through `viewRef`, so the ref clears after it.
+            editor.release();
+            if (text !== undefined) {
+                onClose(text);
+            }
+        };
     }, [ editor, onClose ]);
+
+    useLayoutEffect(() => () => {
+        viewRef.current = null;
+    }, []);
+
+    // `CodeMirror` keeps the `onContentChanged` it is created with, which calls the latest one.
+    const handleChangeRef = useRef<() => void>(() => {});
+    handleChangeRef.current = () => {
+        if (editor && !isLoadingRef.current) {
+            editor.scheduleSave(() => viewRef.current?.getText() ?? "");
+            onChange?.(viewRef.current?.getText() ?? "");
+        }
+    };
 
     return (
         <CodeEditor
@@ -109,12 +126,7 @@ export default function CodeEmbedEditor({
             readOnly={!editor}
             lineNumbers={hasLineNumbers}
             onInitialized={() => setView(viewRef.current)}
-            onContentChanged={() => {
-                if (editor && !isLoadingRef.current) {
-                    editor.scheduleSave(() => viewRef.current?.getText() ?? "");
-                    onChange?.(viewRef.current?.getText() ?? "");
-                }
-            }}
+            onContentChanged={() => handleChangeRef.current()}
             {...(tabWidth !== undefined && { indentSize: tabWidth })}
             {...(useTabs !== undefined && { useTabs })}
             {...(lineWrapping != null && { lineWrapping })}
@@ -150,7 +162,6 @@ export function EmbedSourcePane({
                     value={isEditing && isSourceShown ? rootRef : null}
                 >
                     <CodeEmbedEditor
-                        key={isEditing ? "editing" : "read-only"}
                         editor={isEditing ? editor : undefined}
                         isShown={isSourceShown}
                         onClose={onContentChange}

@@ -121,7 +121,7 @@ describe("CodeEmbed", () => {
         await vi.waitFor(() => expect(view.state.doc.toString()).toBe("print('hi')"));
     });
 
-    it("lets the find search both editors and replace only in the editable one", async () => {
+    it("lets the find search the editor, and replace only while it edits", async () => {
         const { figure } = await mount(buildCodeNote("print(1)\nprint(2)"), buildEditor(), {
             isEditable: true
         });
@@ -154,37 +154,37 @@ describe("CodeEmbed", () => {
             delete figure.dataset.editable;
             await Promise.resolve();
         });
-        const readOnlyView = await findView(figure, true);
-        const readOnlyTarget = getEmbedFindTarget(figure);
-        if (!(readOnlyTarget instanceof CodeMirrorFindTarget)) {
-            throw new Error("Expected a code target.");
-        }
-        expect(readOnlyTarget).not.toBe(target);
-        expect(await readOnlyTarget.find("print", { matchCase: false, wholeWord: false })).toBe(1);
-        expect(await target.find("print", { matchCase: false, wholeWord: false })).toBe(0);
-        expect(readOnlyTarget.canReplace()).toBe(false);
-        expect(await readOnlyTarget.replace(0, "log")).toBe(1);
-        expect(await readOnlyTarget.replaceAll("log")).toBe(1);
-        expect(readOnlyView.state.doc.toString()).toBe("#print(1)\nlog(2)");
+        expect(await findView(figure, true)).toBe(view);
+        expect(getEmbedFindTarget(figure)).toBe(target);
+        expect(await target.find("print", { matchCase: false, wholeWord: false })).toBe(1);
+        expect(target.canReplace()).toBe(false);
+        expect(await target.replace(0, "log")).toBe(1);
+        expect(await target.replaceAll("log")).toBe(1);
+        expect(view.state.doc.toString()).toBe("#print(1)\nlog(2)");
     });
 
-    it("releases the edited content and shows it read-only once the toggle goes off", async () => {
+    it("switches the same CodeMirror to editing and back, and releases the edits", async () => {
         const note = buildCodeNote("a");
         const editor = buildSavingEditor(note);
-        const { figure } = await mount(note, editor, { isEditable: true });
-        const view = await findView(figure);
+        const { figure } = await mount(note, editor);
+        const view = await findView(figure, true);
+
+        await act(async () => {
+            figure.dataset.editable = "true";
+            await Promise.resolve();
+        });
+        expect(await findView(figure)).toBe(view);
+        expect(view.state.readOnly).toBe(false);
         act(() => view.dispatch({ changes: { from: 1, insert: "b" } }));
+        expect(editor.getUnsavedContent()).toBe("ab");
 
         await act(async () => {
             delete figure.dataset.editable;
             await Promise.resolve();
         });
-
         expect(editor.getUnsavedContent()).toBe("ab");
-        const readOnlyView = await findView(figure, true);
-        expect(readOnlyView).not.toBe(view);
-        expect([ readOnlyView.state.doc.toString(), readOnlyView.state.readOnly ])
-            .toEqual([ "ab", true ]);
+        expect(await findView(figure, true)).toBe(view);
+        expect([ view.state.doc.toString(), view.state.readOnly ]).toEqual([ "ab", true ]);
         expect(figure.querySelectorAll(".cm-editor")).toHaveLength(1);
     });
 

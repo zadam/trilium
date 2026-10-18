@@ -102,6 +102,7 @@ export default class CodeMirror extends EditorView {
     private config: EditorConfig;
     private languageCompartment: Compartment;
     private historyCompartment: Compartment;
+    private editabilityCompartment: Compartment;
     private themeCompartment: Compartment;
     private lineWrappingCompartment: Compartment;
     private lineNumbersCompartment: Compartment;
@@ -129,6 +130,7 @@ export default class CodeMirror extends EditorView {
     constructor(config: EditorConfig) {
         const languageCompartment = new Compartment();
         const historyCompartment = new Compartment();
+        const editabilityCompartment = new Compartment();
         const themeCompartment = new Compartment();
         const lineWrappingCompartment = new Compartment();
         const lineNumbersCompartment = new Compartment();
@@ -185,19 +187,11 @@ export default class CodeMirror extends EditorView {
             ];
         }
 
-        extensions.push(EditorView.updateListener.of((v) => this.#onDocumentUpdated(v)));
-
-        if (!config.readOnly) {
-            // Logic specific to editable notes
-            if (config.placeholder) {
-                extensions.push(placeholder(config.placeholder));
-            }
-
-            extensions.push(historyCompartment.of(history()));
-        } else {
-            // Logic specific to read-only notes
-            extensions.push(EditorState.readOnly.of(true));
-        }
+        extensions.push(
+            EditorView.updateListener.of((v) => this.#onDocumentUpdated(v)),
+            editabilityCompartment.of(buildEditability(!!config.readOnly, config.placeholder)),
+            historyCompartment.of(config.readOnly ? [] : history())
+        );
 
         super({
             parent: config.parent,
@@ -211,6 +205,7 @@ export default class CodeMirror extends EditorView {
         this.config = config;
         this.languageCompartment = languageCompartment;
         this.historyCompartment = historyCompartment;
+        this.editabilityCompartment = editabilityCompartment;
         this.themeCompartment = themeCompartment;
         this.lineWrappingCompartment = lineWrappingCompartment;
         this.lineNumbersCompartment = lineNumbersCompartment;
@@ -280,10 +275,32 @@ export default class CodeMirror extends EditorView {
         }
     }
 
+    /** Applies `theme`, at once if an editor has loaded it before. */
     async setTheme(theme: ThemeDefinition) {
-        const extension = await theme.load();
+        let extension = loadedThemes.get(theme);
+        if (!extension) {
+            extension = await theme.load();
+            loadedThemes.set(theme, extension);
+        }
         this.dispatch({
             effects: [ this.themeCompartment.reconfigure([ extension ]) ]
+        });
+    }
+
+    /**
+     * Makes the editor read-only or editable without replacing its view. An editable editor starts
+     * a new undo history.
+     */
+    setReadOnly(isReadOnly: boolean) {
+        if (isReadOnly === this.state.readOnly) return;
+
+        this.dispatch({
+            effects: [
+                this.editabilityCompartment.reconfigure(
+                    buildEditability(isReadOnly, this.config.placeholder)
+                ),
+                this.historyCompartment.reconfigure(isReadOnly ? [] : history())
+            ]
         });
     }
 
@@ -337,7 +354,7 @@ export default class CodeMirror extends EditorView {
      * Clears the history of undo/redo. Generally useful when changing to a new document.
      */
     clearHistory() {
-        if (this.config.readOnly) {
+        if (this.state.readOnly) {
             return;
         }
 
@@ -414,7 +431,7 @@ export default class CodeMirror extends EditorView {
      * CodeMirror's `readOnly` facet does not block programmatic transactions.
      */
     insertBlankLineAtTop() {
-        if (this.config.readOnly) {
+        if (this.state.readOnly) {
             return;
         }
         const firstLineEmpty = this.state.doc.line(1).length === 0;
@@ -634,6 +651,15 @@ function getTooltipHost() {
     document.body.appendChild(host);
     return host;
 }
+
+/** The read-only facet, or the placeholder of an editable editor. */
+function buildEditability(isReadOnly: boolean, placeholderText: string | undefined): Extension {
+    if (isReadOnly) return EditorState.readOnly.of(true);
+    return placeholderText ? placeholder(placeholderText) : [];
+}
+
+/** The extension of each theme that an editor has loaded. */
+const loadedThemes = new WeakMap<ThemeDefinition, Extension>();
 
 /**
  * Merges the gutter, which still holds the fold markers, into the code area while the line

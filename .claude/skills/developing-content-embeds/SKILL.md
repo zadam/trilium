@@ -217,15 +217,21 @@ in-place drawings replaced the code blocks the boxes need.
   element to join the page. `registerContentEmbedTools()` likewise notifies the toolbar only once
   the content is in the page — otherwise an embed auto-selected on load shows the toolbar of an
   included note.
-- **CodeMirror's `readOnly` is fixed at creation.** Remount the editor when editability changes
-  (`key={isEditing ? "editing" : "read-only"}` on `CodeEmbedEditor`). Test with
-  `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`. A read-only
-  `CodeEmbedEditor` carries the `read-only` class, which hides the active-line highlight.
+- **Switch editability in place, never by remounting.** `CodeMirror.tsx` follows its `readOnly`
+  prop through `setReadOnly()`, which keeps the view, its scroll and selection, and starts a new
+  undo history. A `key` that remounted `CodeEmbedEditor` on the toggle painted an empty `<pre>` (a
+  Full box collapsed) and then CodeMirror's light default until `setTheme()` loaded the theme. An
+  embed renders read-only before it finds its figure, so this runs on every editable load too.
+  `CodeMirror` keeps the `onContentChanged` it was created with, so `CodeEmbedEditor` reads the
+  current `editor` through a ref, and releases it in a layout cleanup as `editor` goes away. Test
+  with `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`, and
+  assert the view is the same one after the toggle. A read-only `CodeEmbedEditor` carries the
+  `read-only` class, which hides the active-line highlight.
 - **A parent render can run effects ahead of CodeMirror's.** Preact runs a component's pending
-  effects when it renders again before they flush, so the `setContent` that `onClose` causes as
-  Editable goes off ran the new `CodeEmbedEditor`'s effects before `CodeMirror` created the view:
-  no find target, no `onReady`. Its effects wait for the `view` state that `onInitialized` sets;
-  the content loads in a layout effect, so it paints with the editor.
+  effects when it renders again before they flush, which once ran `CodeEmbedEditor`'s effects
+  before `CodeMirror` created the view: no find target, no `onReady`. Its effects wait for the
+  `view` state that `onInitialized` sets; the content loads in a layout effect, so it paints with
+  the editor.
 - **Box sizes need a title row.** Tiny and Expandable show only the title, so an untitled inline
   embed was invisible at Tiny. `INLINE_BOX_SIZES` (Small, Medium, Full) limits the dropdown, the
   command and the ⋮ menu (`getBoxSizes(domElement)`), and other sizes load as Medium. Give each
