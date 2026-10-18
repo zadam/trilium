@@ -21,7 +21,7 @@ interface CustomTitleBarButton {
 }
 
 export interface ModalProps {
-    className: string;
+    className?: string;
     title?: string | ComponentChildren;
     customTitleBarButtons?: (CustomTitleBarButton | null)[];
     size: "xl" | "lg" | "md" | "sm";
@@ -108,7 +108,7 @@ export interface ModalProps {
     ariaLabel?: string;
 }
 
-export default function Modal({ children, className, size, title, customTitleBarButtons: titleBarButtons, header, footer, footerStyle, footerAlignment, onShown, onSubmit, helpPageId, minWidth, maxWidth, zIndex, scrollable, onHidden, modalRef: externalModalRef, formRef, bodyStyle, show, stackable, keepInDom, noFocus, sidebar, hideSidebarHeader, isFullPageOnMobile, ariaLabel }: ModalProps) {
+export default function Modal({ children, className = "", size, title, customTitleBarButtons: titleBarButtons, header, footer, footerStyle, footerAlignment, onShown, onSubmit, helpPageId, minWidth, maxWidth, zIndex, scrollable, onHidden, modalRef: externalModalRef, formRef, bodyStyle, show, stackable, keepInDom, noFocus, sidebar, hideSidebarHeader, isFullPageOnMobile, ariaLabel }: ModalProps) {
     const modalRef = useSyncedRef<HTMLDivElement>(externalModalRef);
     const modalInstanceRef = useRef<BootstrapModal | undefined>(undefined);
     const elementToFocus = useRef<Element | null | undefined>(undefined);

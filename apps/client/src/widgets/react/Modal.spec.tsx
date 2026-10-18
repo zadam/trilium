@@ -223,6 +223,14 @@ describe("Modal", () => {
         expect(dialog?.classList.contains("show")).toBe(true);
     });
 
+    it("renders without a class of the host's own", async () => {
+        await act(async () => {
+            render(<Modal size="md" show onHidden={() => {}}>body</Modal>, container);
+        });
+
+        expect(container.querySelector(".modal")?.getAttribute("class")).toBe("modal fade mx-auto");
+    });
+
     /**
      * `openDialog` moves focus onto the new backdrop synchronously, and a focus-trap still active on
      * the dialog underneath pulls it straight back in. Over the Options dialog that lands in the
