@@ -171,7 +171,9 @@ in-place drawings replaced the code blocks the boxes need.
   source and `setData()` then dropped the embed, whose later write went to the graveyard. The
   editor hands each held write to `InlineSourceSaves` (`text/attachment_saves.ts`), which marks the
   note changed, and `getData()` in `EditableText` flushes it first — as `AttachmentSaves` does for
-  attachments.
+  attachments. The text editor's Undo and Redo flush it too (`flushBeforeHistory()`): otherwise
+  Undo reverted the write before it, the embed ignored that while it held newer text, and the held
+  write then landed after the Undo and cleared Redo.
 - **Non-interactive rendering must be finished when it returns.** A presentation slide snapshots
   `getRenderedContent()` and disposes it at once, so a mounted component that draws in an effect
   leaves it blank. Without `options.interactive`, draw a picture before returning

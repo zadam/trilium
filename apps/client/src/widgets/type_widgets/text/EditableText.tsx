@@ -664,6 +664,7 @@ export default function EditableText({
 
                     editor.plugins.get("FileUploadEditing")
                         .on<FileUploadEvent>("upload", showFileUploadProgress);
+                    inlineSourceSaves.flushBeforeHistory(editor);
 
                     if (block !== undefined) {
                         editor.plugins.get("BlockReferenceEditing").editRange();

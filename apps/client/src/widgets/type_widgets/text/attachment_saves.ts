@@ -1,3 +1,4 @@
+import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import type { default as NoteContext, SaveState } from "../../../components/note_context";
@@ -248,6 +249,17 @@ export class InlineSourceSaves {
     flush() {
         for (const write of [ ...this.pending ]) {
             write();
+        }
+    }
+
+    /**
+     * Makes the held writes before `editor` undoes or redoes, so that a held write is a step of
+     * the undo history rather than a change made after it.
+     */
+    flushBeforeHistory(editor: Pick<CKTextEditor, "commands">) {
+        for (const name of [ "undo", "redo" ]) {
+            // Runs before the command checks `isEnabled`, which a held write can turn on.
+            editor.commands.get(name)?.on("execute", () => this.flush(), { priority: "highest" });
         }
     }
 }
