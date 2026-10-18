@@ -126,11 +126,12 @@ body.mobile .modal.note-attributes-modal {
             background: transparent;
             border-radius: 0;
         }
-    }
 
-    /* A menu item wraps its contents in a span, so the row's flex `gap` does not reach them. */
-    .attribute-row :is(.attribute-owner, .attribute-value) {
-        margin-inline-start: 6px;
+        /* `!important` to outweigh the menus' hover fill (`.dropdown-item:hover` in
+           theme-next/menus.css), which a touch screen leaves on the last row tapped. */
+        .attribute-row.selected {
+            background-color: var(--selection-background-color) !important;
+        }
     }
 
     /* The help button beside the title in every card, whether or not an add button follows it. */

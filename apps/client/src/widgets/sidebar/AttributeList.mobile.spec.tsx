@@ -144,10 +144,17 @@ describe("AttributeList on a phone", () => {
         act(() => void vi.advanceTimersByTime(600));
 
         expect(row?.className).toContain("selected");
-        // The mark a menu item is checked with, in the slot the kind icon holds — a phone has no
-        // checkbox to put there.
-        expect(row?.querySelector(".bx-check")).not.toBeNull();
+        // The checkbox in the kind icon's slot, as on a desktop, ticked; nothing is added at the
+        // row's end, so its layout stays as it was.
+        expect(row?.querySelector<HTMLInputElement>(".attribute-kind-check input")?.checked).toBe(true);
+        expect(row?.querySelector(".menu-trailing-icon")).toBeNull();
         expect(container.querySelector(".attribute-list-panel")?.className).toContain("selecting");
+
+        // Once rows are being picked out, a tap anywhere on another row picks it too.
+        const next = section("attributes").querySelectorAll<HTMLElement>(".attribute-row")[1];
+        act(() => next.click());
+        expect(next.className).toContain("selected");
+        expect(next.querySelector<HTMLInputElement>(".attribute-kind-check input")?.checked).toBe(true);
 
         // The toolbar above the cards turns over to the selection.
         expect(iconsIn(toolbar())).toEqual([ "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);

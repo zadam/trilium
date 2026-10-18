@@ -79,7 +79,6 @@
     justify-content: center;
 }
 
-.attribute-list-panel .attribute-row:hover .attribute-kind-check,
 .attribute-list-panel.selecting .attribute-kind-check {
     display: flex;
 }
@@ -95,24 +94,29 @@
     cursor: pointer;
 }
 
-/* The glyph the checkbox stands in for — badge and all, which would otherwise hang off its corner
-   saying something about an attribute that is not what the checkbox is asking. Hidden rather than
-   left out, so the slot keeps the width the icon gave it.
-
-   Only where there is a checkbox to stand in for it, which is a pointer's rows: a phone marks a
-   picked row by turning its icon into a check (see AttributeRow), so its unpicked rows keep theirs
-   — and would otherwise be stripped of a badge that says the attribute is Trilium's own or its
-   field promoted, neither of which the picking is about. The wrapper holding the icon is what
-   these are about; on a phone the icon is itself `.attribute-kind`, hence the `.tn-icon` it always
-   carries telling the two apart. */
-.attribute-list-panel .attribute-row:hover .attribute-kind:not(.tn-icon) > .tn-icon,
-.attribute-list-panel.selecting .attribute-kind:not(.tn-icon) > .tn-icon {
+/* The kind icon and its badge give way to the checkbox, hidden rather than removed so the slot keeps
+   its width. */
+.attribute-list-panel.selecting .attribute-kind:has(.attribute-kind-check) > .tn-icon {
     visibility: hidden;
 }
 
-.attribute-list-panel .attribute-row:hover .attribute-kind:not(.tn-icon)::after,
-.attribute-list-panel.selecting .attribute-kind:not(.tn-icon)::after {
+.attribute-list-panel.selecting .attribute-kind:has(.attribute-kind-check)::after {
     display: none;
+}
+
+/* A touch screen keeps `:hover` on the last row tapped. */
+@media (hover: hover) {
+    .attribute-list-panel .attribute-row:hover .attribute-kind-check {
+        display: flex;
+    }
+
+    .attribute-list-panel .attribute-row:hover .attribute-kind:has(.attribute-kind-check) > .tn-icon {
+        visibility: hidden;
+    }
+
+    .attribute-list-panel .attribute-row:hover .attribute-kind:has(.attribute-kind-check)::after {
+        display: none;
+    }
 }
 
 /* A fixed height, so that a selection starting or ending does not move the cards below. Sticky so that

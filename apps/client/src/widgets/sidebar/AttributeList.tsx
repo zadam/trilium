@@ -1078,8 +1078,7 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, selected
     /**
      * A phone has no modifier to hold down, so it has the press itself held instead: held long enough,
      * it picks the row out rather than opening it, which is how a phone's lists are picked through.
-     * Once rows are being picked out a plain tap picks too — there being no checkbox to aim a thumb at
-     * on a row that is a menu item — which is the turn those lists take as well.
+     * Once rows are being picked out a tap anywhere on the row picks too (see `selectFromRow`).
      */
     useEffect(() => {
         const row = rowRef.current;
@@ -1135,18 +1134,6 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, selected
         e.stopPropagation();
         onSelect?.(e.shiftKey);
     }
-
-    // A menu item takes no capture handler of its own, so a phone's rows are bound theirs by hand.
-    useEffect(() => {
-        const row = rowRef.current;
-        if (!IS_MOBILE || !row || !selectsWholeRow) return;
-
-        row.addEventListener("click", selectFromRow, true);
-        return () => row.removeEventListener("click", selectFromRow, true);
-        // The handler itself is left out: it is written anew on every render, where what it does
-        // turns only on the two below.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [ selectsWholeRow, onSelect ]);
 
     function open(e: MouseEvent) {
         // Keep the container's closing handler from undoing this.
@@ -1234,38 +1221,21 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, selected
         </>
     );
 
-    // On a phone the rows are menu items, drawn as everything else the note's menu leads to is: the
-    // panel is reached from that menu (see the note attributes modal), and a row there is something
-    // pressed with a thumb rather than pointed at.
-    if (IS_MOBILE) {
-        return (
-            <FormListItem
-                itemRef={rowRef}
-                className={rowClass}
-                icon={kindIcon}
-                // The badge hangs off the icon's own corner here, there being no wrapper to hang it on.
-                iconClassName={clsx("attribute-kind", markerClass)}
-                // A picked-out row takes the mark a menu item is checked with, in the slot its kind
-                // icon holds — the same trade the checkbox makes for itself on a desktop below.
-                checked={selected}
-                onClick={open}
-            >
-                {contents}
-            </FormListItem>
-        );
-    }
-
     return (
         <li
             ref={rowRef}
-            class={rowClass}
+            // On a phone the row is dressed as a menu item, as the rest of what the note's menu leads
+            // to is (see the note attributes modal).
+            class={clsx(rowClass, IS_MOBILE && "dropdown-item")}
             onClickCapture={selectsWholeRow ? selectFromRow : undefined}
             onClick={open}
-            onContextMenu={onShowMenu}
+            // A phone raises `contextmenu` on a long press, which selects the row instead.
+            onContextMenu={IS_MOBILE ? undefined : onShowMenu}
         >
             {/* The icon is what carries the row's one tooltip: everything else about a row is already
-                written on it, and what the icon (badge and all) stands for is exactly what is not. */}
-            <span class={clsx("attribute-kind", markerClass)} title={kindTooltip}>
+                written on it, and what the icon (badge and all) stands for is exactly what is not. A
+                phone shows a tooltip only on a long press, which selects the row. */}
+            <span class={clsx("attribute-kind", markerClass)} title={IS_MOBILE ? undefined : kindTooltip}>
                 <Icon icon={kindIcon} />
 
                 {/* The way rows are picked out, standing in the kind icon's slot rather than taking a
