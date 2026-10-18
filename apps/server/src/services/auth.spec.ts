@@ -2,6 +2,7 @@ import { attributes, authenticateSetup, enterSetupMode, leaveSetupMode, options,
 import type { NextFunction, Request, Response } from "express";
 import { Application } from "express";
 import supertest from "supertest";
+import { generateConfig, Totp } from "time2fa";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import auth, { refreshAuth, verifyLoginCredentials } from "./auth";
@@ -524,6 +525,36 @@ describe("Auth", () => {
             const recovery = await call({ "trilium-totp": "recovery-code" });
             expect(recovery.next).toHaveBeenCalled();
             expect(recoverySpy).toHaveBeenLastCalledWith("recovery-code");
+        });
+
+        // `checkCredentials` runs as middleware, before the route handler opens a CLS context, and
+        // `verifyTOTP()` records the code's time step as an option.
+        it("checkCredentials accepts a real TOTP code outside a CLS context and records its time step", async () => {
+            const { secret } = Totp.generateKey({ issuer: "Trilium", user: "spec" });
+            cls.init(() => {
+                options.setOption("mfaMethod", "totp");
+                totp.setSecret(secret);
+            });
+            vi.spyOn(sqlInit, "isDbInitialized").mockReturnValue(true);
+            vi.spyOn(passwordService, "isPasswordSet").mockReturnValue(true);
+            vi.spyOn(passwordEncryptionService, "verifyPassword").mockResolvedValue(true as never);
+            const [ code ] = Totp.generatePasscodes({ secret }, generateConfig());
+            expect(code).toBeDefined();
+
+            const res = makeRes();
+            const next = vi.fn();
+            await auth.checkCredentials(makeReq({
+                headers: { "trilium-cred": Buffer.from("user:pw").toString("base64"), "trilium-totp": code }
+            }), res as never, next);
+
+            expect(res.statusCode).toBe(0);
+            expect(next).toHaveBeenCalled();
+            expect(Number(options.getOptionOrNull("totpLastUsedStep"))).toBeGreaterThan(0);
+
+            cls.init(() => {
+                totp.resetTotp();
+                options.setOption("totpLastUsedStep", "");
+            });
         });
     });
 

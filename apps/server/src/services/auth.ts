@@ -1,4 +1,4 @@
-import { attributes, isSetupAuthorized, isSetupAuthRequired, options, password as passwordService, password_encryption as passwordEncryptionService } from "@triliumnext/core";
+import { attributes, cls, isSetupAuthorized, isSetupAuthRequired, options, password as passwordService, password_encryption as passwordEncryptionService } from "@triliumnext/core";
 import type { NextFunction, Request, Response } from "express";
 
 import config from "./config.js";
@@ -275,7 +275,9 @@ async function checkCredentials(req: Request, res: Response, next: NextFunction)
         return;
     }
 
-    const failedFactor = await verifyLoginCredentials(password, totpToken);
+    // Middleware runs before the route opens a CLS context, and `verifyTOTP()` and
+    // `verifyRecoveryCode()` write options when they accept a code.
+    const failedFactor = await cls.init(() => verifyLoginCredentials(password, totpToken));
     if (failedFactor === "password") {
         res.setHeader("Content-Type", "text/plain").status(401).send("Incorrect password");
         getLog().info(`WARNING: Wrong password from ${req.ip}, rejecting.`);
