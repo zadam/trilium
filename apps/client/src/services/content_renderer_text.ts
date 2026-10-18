@@ -10,6 +10,7 @@ import {
 
 import FAttachment from "../entities/fattachment.js";
 import FNote from "../entities/fnote.js";
+import { getContentEmbedFlag } from "../widgets/type_widgets/text/content_embed_tools.js";
 import { highlightBlockReference } from "./block_reference.js";
 import {
     addContentDisposer, default as content_renderer, type RenderOptions
@@ -141,9 +142,9 @@ async function renderContentEmbeds(contentEl: HTMLElement, context: ContentEmbed
                 const { ownerId, attachmentId } = attachment;
                 replaceWithReferenceLink(embedEl, getAttachmentEmbedHref(ownerId, attachmentId));
             } else {
-                const { $renderedContent } = await content_renderer.getRenderedContent(attachment, {
-                    codeLanguage: embedEl.getAttribute("data-code-language") ?? undefined
-                });
+                const { $renderedContent } = await content_renderer.getRenderedContent(
+                    attachment, getEmbedCodeView(embedEl)
+                );
                 replaceEmbedContent(embedEl, $renderedContent.toArray());
             }
             continue;
@@ -160,10 +161,23 @@ async function renderContentEmbeds(contentEl: HTMLElement, context: ContentEmbed
             continue;
         }
 
-        const { $renderedContent } = await content_renderer.getRenderedContent(note,
-            getNestedEmbedOptions(context, embed.block));
+        const { $renderedContent } = await content_renderer.getRenderedContent(note, {
+            ...getNestedEmbedOptions(context, embed.block),
+            hasCodeLineNumbers: getEmbedCodeView(embedEl).hasCodeLineNumbers
+        });
         replaceEmbedContent(embedEl, $renderedContent.toArray());
     }
+}
+
+/** How `embedEl` shows a code file or a code note, by its `data-code-*` attributes. */
+export function getEmbedCodeView(
+    embedEl: Element | null | undefined
+): Pick<RenderOptions, "codeLanguage" | "isCodeWrapped" | "hasCodeLineNumbers"> {
+    return {
+        codeLanguage: embedEl?.getAttribute("data-code-language") ?? undefined,
+        isCodeWrapped: getContentEmbedFlag(embedEl, "data-code-wrap-lines"),
+        hasCodeLineNumbers: getContentEmbedFlag(embedEl, "data-code-line-numbers")
+    };
 }
 
 /** Puts `content` in an embed, followed by the embed's caption. */

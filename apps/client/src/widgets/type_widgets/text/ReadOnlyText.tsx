@@ -262,10 +262,13 @@ function applySourceEmbeds(container: HTMLDivElement) {
 
         const figure = document.createElement("figure");
         figure.className = "include-note";
-        const { boxSize, displayMode } = pre.dataset;
+        const { boxSize, displayMode, codeWrapLines, codeLineNumbers } = pre.dataset;
         figure.dataset.boxSize = boxSize === "small" || boxSize === "full" ? boxSize : "medium";
-        if (displayMode) {
-            figure.dataset.displayMode = displayMode;
+        const views = { displayMode, codeWrapLines, codeLineNumbers };
+        for (const [ name, value ] of Object.entries(views)) {
+            if (value) {
+                figure.dataset[name] = value;
+            }
         }
         figure.dataset.hideTitle = "true";
         // Diagrams saved before the embed keep their block ID on the `<code>`.

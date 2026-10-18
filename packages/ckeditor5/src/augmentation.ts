@@ -78,6 +78,11 @@ declare global {
         /** The items of the embed toolbar to hide. The menu of the embed still offers them. */
         hiddenToolbarItems?: readonly ContentEmbedToolbarItem[];
         /**
+         * An SVG icon that the box size dropdown of the embed toolbar shows in place of the name of
+         * the box size, which its tooltip then names.
+         */
+        boxSizeIcon?: string;
+        /**
          * Whether the content has an editable mode, which the toolbar and the menu of the embed
          * then turn on and off. The embed carries `data-editable="true"` while it is on.
          */

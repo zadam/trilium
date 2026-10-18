@@ -24,7 +24,7 @@ export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
     getSnippets?: () => CodeSnippet[];
 }
 
-export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, getSnippets, ...extraOpts }: CodeMirrorProps) {
+export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, lineNumbers = true, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, getSnippets, ...extraOpts }: CodeMirrorProps) {
     const parentRef = useSyncedRef(externalContainerRef);
     const codeEditorRef = useRef<VanillaCodeMirror | undefined>(undefined);
     const getSnippetsRef = useRef(getSnippets);
@@ -37,6 +37,7 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
         const codeEditor = new VanillaCodeMirror({
             parent: parentRef.current,
             allowKeyboardSuggestions,
+            lineNumbers,
             ...extraOpts
         });
         codeEditorRef.current = codeEditor;
@@ -75,6 +76,9 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
 
     // React to line wrapping.
     useEffect(() => codeEditorRef.current?.setLineWrapping(!!lineWrapping), [ lineWrapping ]);
+
+    // React to line numbers.
+    useEffect(() => codeEditorRef.current?.setLineNumbers(lineNumbers), [ lineNumbers ]);
 
     // React to indent size / style changes.
     useEffect(() => {

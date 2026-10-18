@@ -1,11 +1,13 @@
 import type {
     HostedCompletionApply
 } from "@triliumnext/codemirror/src/extensions/hosted_completion";
+import { isMarkdownMime } from "@triliumnext/commons";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote.js";
 import type LoadResults from "../../../services/load_results.js";
 import search from "../../../services/search.js";
+import { logError } from "../../../services/ws.js";
 import { useTriliumEvent } from "../../react/hooks";
 import type { CommandEntry } from "../../react/NoteAutocomplete";
 
@@ -23,13 +25,16 @@ export interface CodeSnippet {
  * Loads the code snippets (notes carrying `#snippet`) accepted by `matches`, pre-fetching their
  * content and optional `#snippetDescription` so callers can insert them synchronously. The `matches`
  * predicate selects which snippets are relevant to a given editor (e.g. `note.isMarkdown()` for the
- * Markdown editor, or a MIME comparison for a code editor).
+ * Markdown editor, or a MIME comparison for a code editor). `changes` are the reloaded entities
+ * that called for the load, which a search started before them can miss.
  */
-export async function getCodeSnippets(matches: (note: FNote) => boolean): Promise<CodeSnippet[]> {
+export async function getCodeSnippets(
+    matches: (note: FNote) => boolean, changes?: LoadResults
+): Promise<CodeSnippet[]> {
     try {
         // The `search` route includes archived notes, so drop archived ones; also skip protected
         // snippets whose content isn't available (no active protected session) — they can't be inserted.
-        const notes = (await search.searchForNotes("#snippet"))
+        const notes = (await searchSnippetNotes(changes))
             .filter((note) => matches(note) && !note.isArchived && note.isContentAvailable());
 
         return await Promise.all(notes.map(async (note) => ({
@@ -39,10 +44,28 @@ export async function getCodeSnippets(matches: (note: FNote) => boolean): Promis
             content: (await note.getContent()) ?? ""
         })));
     } catch (e) {
-        logError("Error while building code snippets: ", e);
+        logError(`Error while building code snippets: ${e}`);
         return [];
     }
 }
+
+/**
+ * The `#snippet` notes. Editors that load them at the same time share one search, unless the
+ * search started before `changes`.
+ */
+function searchSnippetNotes(changes?: LoadResults) {
+    if (pendingSearch && (!changes || pendingSearch.changes === changes)) {
+        return pendingSearch.notes;
+    }
+
+    const notes = search.searchForNotes("#snippet").finally(() => {
+        if (pendingSearch?.notes === notes) pendingSearch = null;
+    });
+    pendingSearch = { notes, changes };
+    return notes;
+}
+
+let pendingSearch: { notes: Promise<FNote[]>; changes?: LoadResults } | null = null;
 
 /**
  * Whether the reloaded entities could change the snippet list — a snippet was created, deleted,
@@ -61,6 +84,16 @@ export function isCodeSnippetChange(loadResults: LoadResults, knownNoteIds: Set<
     });
 
     return attributeChanged || loadResults.getNoteIds().some((noteId) => knownNoteIds.has(noteId));
+}
+
+/**
+ * Whether the snippet note `candidate` can be inserted into content of `mime`: a code note of the
+ * same language, of any Markdown MIME type for Markdown, or of plain text.
+ */
+export function isSnippetFor(candidate: FNote, mime: string) {
+    if (candidate.type !== "code") return false;
+    if (candidate.mime === "text/plain") return true;
+    return isMarkdownMime(mime) ? candidate.isMarkdown() : candidate.mime === mime;
 }
 
 /**
@@ -88,40 +121,35 @@ export function snippetCommand(snippet: CodeSnippet): SnippetCommand {
 export type SnippetCommand = CommandEntry & { apply: HostedCompletionApply };
 
 /**
- * Loads the snippets accepted by `matches` into a ref and keeps it fresh: reloaded on mount, when
- * `reloadKey` changes (e.g. the editor note's MIME), and when relevant entities change. Held in a
- * ref so consumers (a slash menu) read the latest list when invoked, without re-registering anything.
- * When `enabled` is false the ref stays empty and nothing is loaded.
+ * Loads the snippets for content of `mime` into a ref and keeps it fresh: reloaded on mount, when
+ * `mime` changes, and when relevant entities change. Held in a ref so a `/` list reads the latest
+ * list when it opens, without registering anything again. Nothing loads while `isEnabled` is false.
  */
-export function useCodeSnippets(matches: (note: FNote) => boolean, reloadKey: string, enabled = true) {
+export function useCodeSnippets(mime: string, isEnabled = true) {
     const snippetsRef = useRef<CodeSnippet[]>([]);
     // Monotonic id so a slow fetch that resolves after a newer reload is discarded (avoids stale data).
     const reloadCountRef = useRef(0);
-    // Keep the latest predicate without making it a dependency (it's a fresh closure each render);
-    // `reloadKey` is the stable trigger for filter changes.
-    const matchesRef = useRef(matches);
-    useEffect(() => { matchesRef.current = matches; });
 
-    const reload = useCallback(() => {
-        if (!enabled) {
+    const reload = useCallback((changes?: LoadResults) => {
+        const reloadId = ++reloadCountRef.current;
+        if (!isEnabled) {
             snippetsRef.current = [];
             return;
         }
-        const reloadId = ++reloadCountRef.current;
-        void getCodeSnippets((note) => matchesRef.current(note)).then((snippets) => {
+        void getCodeSnippets((note) => isSnippetFor(note, mime), changes).then((snippets) => {
             if (reloadId === reloadCountRef.current) {
                 snippetsRef.current = snippets;
             }
         });
-    }, [enabled]);
+    }, [isEnabled, mime]);
 
-    useEffect(() => { reload(); }, [reload, reloadKey]);
+    useEffect(() => { reload(); }, [reload]);
 
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
-        if (!enabled) return;
+        if (!isEnabled) return;
         const knownNoteIds = new Set(snippetsRef.current.map((snippet) => snippet.noteId));
         if (isCodeSnippetChange(loadResults, knownNoteIds)) {
-            reload();
+            reload(loadResults);
         }
     });
 

@@ -16,7 +16,7 @@ import { CODE_THEME_DEFAULT_PREFIX as DEFAULT_PREFIX } from "../constants";
 import { TypeWidgetProps } from "../type_widget";
 import ApiLog from "./ApiLog";
 import CodeMirror, { CodeMirrorProps } from "./CodeMirror";
-import { useCodeSnippets } from "./snippets";
+import { type CompletionTarget, useEditorCompletions } from "./editor_completions";
 
 export interface EditableCodeProps extends TypeWidgetProps {
     // if true, the update will be debounced to prevent excessive updates. Especially useful if the editor is linked to a live preview.
@@ -146,26 +146,14 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
 
     useKeyboardShortcuts("code-detail", containerRef, parentComponent, ntxId);
 
-    // Code snippets (#snippet notes of the note's MIME type or plain text) for the editor's `/`
-    // list. A Markdown note's editor lists them in its own `/` list.
-    const snippetsRef = useCodeSnippets(
-        (candidate) => candidate.type === "code" && (candidate.mime === note.mime || candidate.mime === "text/plain"),
-        note.mime,
-        !note.isMarkdown()
-    );
-    const getSnippets = useCallback(
-        () => snippetsRef.current.filter((snippet) => snippet.noteId !== note.noteId),
-        [ snippetsRef, note.noteId ]
-    );
-
     return (
         <>
             <CodeEditor
                 ntxId={ntxId}
                 editorRef={combinedEditorRef} containerRef={containerRef}
                 mime={mime ?? "text/plain"}
+                completions={{ note, getNotePath: () => noteContext?.notePath }}
                 customRequestHandler={customRequestHandler != null}
-                getSnippets={getSnippets}
                 className="note-detail-code-editor"
                 placeholder={placeholder ?? t("editable_code.placeholder")}
                 vimKeybindings={vimKeymapEnabled}
@@ -189,10 +177,21 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
     );
 }
 
-export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRef: externalEditorRef, mime, onInitialized, lineWrapping, allowKeyboardSuggestions, ...editorProps }: CodeMirrorProps & Pick<TypeWidgetProps, "ntxId">) {
+export interface CodeEditorProps
+    extends Omit<CodeMirrorProps, "getSnippets">, Pick<TypeWidgetProps, "ntxId"> {
+    /** The content that the `/` list completes, or `undefined` for no list. */
+    completions?: CompletionTarget;
+}
+
+export function CodeEditor({
+    ntxId, containerRef: externalContainerRef, editorRef: externalEditorRef, mime, onInitialized,
+    lineWrapping, allowKeyboardSuggestions, completions, ...editorProps
+}: CodeEditorProps) {
     const codeEditorRef = useRef<VanillaCodeMirror>(null);
+    const [ view, setView ] = useState<VanillaCodeMirror | null>(null);
     const containerRef = useSyncedRef(externalContainerRef);
     const initialized = useRef($.Deferred());
+    const getSnippets = useEditorCompletions(view, mime, completions);
     const [ codeLineWrapEnabled ] = useTriliumOptionBool("codeLineWrapEnabled");
     const [ codeNoteTheme ] = useTriliumOption("codeNoteTheme");
     const [ codeNoteTabWidth ] = useTriliumOption("codeNoteTabWidth");
@@ -249,6 +248,7 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
     return <CodeMirror
         {...editorProps}
         mime={mime}
+        getSnippets={getSnippets}
         editorRef={codeEditorRef}
         containerRef={containerRef}
         lineWrapping={lineWrapping ?? codeLineWrapEnabled}
@@ -265,6 +265,7 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
                 if (typeof externalEditorRef === "function") externalEditorRef(codeEditorRef.current);
                 else if (externalEditorRef) externalEditorRef.current = codeEditorRef.current;
             }
+            setView(codeEditorRef.current);
             initialized.current.resolve();
             onInitialized?.();
         }}

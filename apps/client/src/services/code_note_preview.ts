@@ -27,25 +27,40 @@ const cache = new Map<string, string>();
 let cacheLength = 0;
 const mountedThemes = new Set<string>();
 
+/** How a code preview shows its lines. */
+export interface CodePreviewLines {
+    /** Whether to wrap the lines, over the `#wrapLines` label of the note and the option. */
+    isWrapped?: boolean;
+    /** Whether to number the lines. Defaults to true. */
+    hasLineNumbers?: boolean;
+}
+
 /**
  * Renders `content` as CodeMirror shows it in a code note: in the colors of the code note themes,
  * with line numbers.
  *
  * @param note the note whose `#wrapLines` label sets the line wrapping, over the option.
  */
-export async function renderCodeNotePreview(content: string, mime: string, note?: FNote | null) {
+export async function renderCodeNotePreview(
+    content: string,
+    mime: string,
+    note?: FNote | null,
+    lines: CodePreviewLines = {}
+) {
     const [ themes, language ] = await Promise.all([
         Promise.all(getThemeChoices().map(loadSlot)),
         shouldSyntaxHighlight(content) ? loadPreviewLanguage(mime) : null
     ]);
-    const isWrapped = isLineWrapped(note);
+    const isWrapped = lines.isWrapped ?? isLineWrapped(note);
+    const hasLineNumbers = lines.hasLineNumbers ?? true;
     const cacheKey = [
-        ...themes.map(({ theme, key }) => `${key}:${theme.id}`), mime, isWrapped, content
+        ...themes.map(({ theme, key }) => `${key}:${theme.id}`), mime, isWrapped, hasLineNumbers,
+        content
     ].join("\0");
 
     let html = cache.get(cacheKey);
     if (html === undefined) {
-        html = renderCodePreview(content, { themes, language, isWrapped });
+        html = renderCodePreview(content, { themes, language, isWrapped, hasLineNumbers });
         remember(cacheKey, html);
     }
 

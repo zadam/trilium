@@ -1498,7 +1498,8 @@ describe("ContentEmbed code view", () => {
         + " data-box-size=\"full\">&nbsp;</figure>";
     const CODE_VIEW = ATTACHMENT.replace("data-box-size=\"full\"", "data-box-size=\"full\""
         + " data-code-language=\"text/x-python\" data-code-tab-width=\"2\""
-        + " data-code-indent-with-tabs=\"false\"");
+        + " data-code-indent-with-tabs=\"false\" data-code-wrap-lines=\"true\""
+        + " data-code-line-numbers=\"false\"");
     let editor: ClassicEditor;
     let loadEmbeddedAttachment: ReturnType<typeof vi.fn>;
 
@@ -1522,7 +1523,7 @@ describe("ContentEmbed code view", () => {
     /** The `data-code-*` attributes of the rendered embed. */
     function getRenderedCodeView() {
         const embed = editor.editing.view.getDomRoot()?.querySelector("figure.include-note");
-        return [ "language", "tab-width", "indent-with-tabs" ]
+        return [ "language", "tab-width", "indent-with-tabs", "wrap-lines", "line-numbers" ]
             .map((name) => embed?.getAttribute(`data-code-${name}`) ?? null);
     }
 
@@ -1536,15 +1537,16 @@ describe("ContentEmbed code view", () => {
 
         expect(getModelData(editor.model, { withoutSelection: true })).toBe(
             "<contentEmbed attachmentId=\"att1\" boxSize=\"full\" codeIndentWithTabs=\"false\""
-            + " codeLanguage=\"text/x-python\" codeTabWidth=\"2\"></contentEmbed>"
+            + " codeLanguage=\"text/x-python\" codeLineNumbers=\"false\" codeTabWidth=\"2\""
+            + " codeWrapLines=\"true\"></contentEmbed>"
         );
         expect(editor.getData()).toBe(CODE_VIEW);
-        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "false" ]);
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "false", "true", "false" ]);
 
         editor.setData(ATTACHMENT);
         expect(getModelData(editor.model, { withoutSelection: true })).not.toContain("code");
         expect(editor.getData()).toBe(ATTACHMENT);
-        expect(getRenderedCodeView()).toEqual([ null, null, null ]);
+        expect(getRenderedCodeView()).toEqual([ null, null, null, null, null ]);
     });
 
     it("sets and removes the settings of the selected embed as one undo step each", () => {
@@ -1553,31 +1555,38 @@ describe("ContentEmbed code view", () => {
         const wrapper = editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper");
 
         editor.execute(CODE_VIEW_COMMAND_NAME, {
-            language: "text/x-python", tabWidth: 2, indentWithTabs: true
+            language: "text/x-python", tabWidth: 2, indentWithTabs: true, wrapLines: true,
+            lineNumbers: false
         });
-        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true" ]);
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true", "true", "false" ]);
         expect(editor.getData()).toBe(CODE_VIEW.replace("\"false\"", "\"true\""));
 
-        editor.execute(CODE_VIEW_COMMAND_NAME, { language: null, indentWithTabs: false });
-        expect(getRenderedCodeView()).toEqual([ null, "2", "false" ]);
+        editor.execute(CODE_VIEW_COMMAND_NAME, {
+            language: null, indentWithTabs: false, wrapLines: false, lineNumbers: null
+        });
+        expect(getRenderedCodeView()).toEqual([ null, "2", "false", "false", null ]);
 
         editor.execute("undo");
-        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true" ]);
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true", "true", "false" ]);
         editor.execute("undo");
-        expect(getRenderedCodeView()).toEqual([ null, null, null ]);
+        expect(getRenderedCodeView()).toEqual([ null, null, null, null, null ]);
         expect(editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper"))
             .toBe(wrapper);
         expect(loadEmbeddedAttachment).toHaveBeenCalledTimes(1);
     });
 
-    it("is enabled only on an embed of an attachment, whose included notes follow the note", () => {
+    it("sets only the line numbers of an included note, which follows the note otherwise", () => {
         setModelData(editor.model, "<paragraph>foo[]</paragraph>");
         expect(getCommand().isEnabled).toBe(false);
         editor.execute(CODE_VIEW_COMMAND_NAME, { language: "text/x-python" });
 
         insertContentEmbed(editor, "n1", "full");
-        expect(getCommand().isEnabled).toBe(false);
-        editor.execute(CODE_VIEW_COMMAND_NAME, { language: "text/x-python" });
+        expect(getCommand().isEnabled).toBe(true);
+        editor.execute(CODE_VIEW_COMMAND_NAME, {
+            language: "text/x-python", tabWidth: 2, indentWithTabs: true, wrapLines: true,
+            lineNumbers: false
+        });
+        expect(getRenderedCodeView()).toEqual([ null, null, null, null, "false" ]);
         expect(editor.getData()).not.toContain("data-code-language");
 
         editor.setData(ATTACHMENT);

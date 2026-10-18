@@ -520,7 +520,7 @@ function MenuItemRow<T>({ row, onSelect }: { row: MenuItem<T>, onSelect: MenuPro
         return <FormListCustomItem><row.componentFn /></FormListCustomItem>;
     }
 
-    const { title, uiIcon, iconColorClass, checked, enabled, badges, className, keyboardShortcut, shortcut, trailingIcon, items } = row;
+    const { title, description, uiIcon, iconColorClass, checked, enabled, badges, className, keyboardShortcut, shortcut, trailingIcon, items } = row;
     // Callers pass HTML: titles escaped with `escapeHtml()` or boxed by `menuName()`.
     const label = <span dangerouslySetInnerHTML={{ __html: title }} />;
     // `onSelect` decides whether the menu closes, as `contextMenu` does.
@@ -543,7 +543,7 @@ function MenuItemRow<T>({ row, onSelect }: { row: MenuItem<T>, onSelect: MenuPro
             // An item with neither keeps no slot for an icon, as an all-text menu such as spelling fixes needs.
             icon={"uiIcon" in row || "checked" in row ? uiIcon : null}
             iconClassName={iconColorClass} checked={checked} checkable={"checked" in row} disabled={enabled === false}
-            className={className} badges={badges?.map((badge) => ({ className: badge.className, text: badge.title }))}
+            description={description} className={className} badges={badges?.map((badge) => ({ className: badge.className, text: badge.title }))}
             keyboardShortcut={keyboardShortcut} shortcut={shortcut} trailingIcon={trailingIcon} closeOnSelect={false}
             onClick={select}
         >

@@ -5,6 +5,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ContentEditor } from "../../../services/content_renderer";
 import { renderMermaidSvg } from "../../../services/mermaid";
 import options from "../../../services/options";
+import {
+    buildCodeViewTextEditor, getEmbedMenuItems, runEmbedMenuItem, summarizeMenuItem
+} from "../../../test/content_embed";
 import { getContentEmbedTools } from "../text/content_embed_tools";
 import MermaidDiagram from "./MermaidDiagram";
 
@@ -192,6 +195,34 @@ describe("MermaidDiagram", () => {
         });
         await vi.waitFor(async () => expect(await isSourceEditable(figure)).toBe(true));
     });
+
+    it("wraps and numbers the lines of the source as the menu of its embed sets", async () => {
+        const { textEditor, editable } = buildCodeViewTextEditor();
+        const { figure } = await mount({
+            editor: buildEditor(),
+            displayMode: "source",
+            embedAttributes: { "data-code-wrap-lines": "true", "data-code-line-numbers": "false" },
+            container: editable
+        });
+        const view = await findSourceView(figure);
+        expect(view.contentDOM.classList.contains("cm-lineWrapping")).toBe(true);
+        expect(figure.querySelector(".cm-lineNumbers")).toBeNull();
+        // Word wrap, then line numbers.
+        expect(getEmbedMenuItems(figure).map(summarizeMenuItem)).toMatchObject([
+            { items: [ { checked: false }, { checked: true }, { checked: false } ] },
+            { items: [ { checked: false }, { checked: false }, { checked: true } ] }
+        ]);
+
+        // A diagram has no note, so its embed keeps both.
+        await runEmbedMenuItem(figure, 0, 2);
+        await runEmbedMenuItem(figure, 1, 0);
+        expect(textEditor.execute.mock.calls.map(([ , codeView ]) => codeView))
+            .toEqual([ { wrapLines: false }, { lineNumbers: null } ]);
+        await vi.waitFor(() => {
+            expect(view.contentDOM.classList.contains("cm-lineWrapping")).toBe(false);
+            expect(figure.querySelector(".cm-lineNumbers")).not.toBeNull();
+        });
+    });
 });
 
 interface MountOptions {
@@ -200,19 +231,28 @@ interface MountOptions {
     displayMode?: string;
     boxSize?: string;
     hideTitle?: boolean;
+    /** Other attributes of the embed, such as `data-code-wrap-lines`. */
+    embedAttributes?: Record<string, string>;
+    /** The element the embed goes in, such as the editable root of a text editor. */
+    container?: HTMLElement;
 }
 
-async function mount({ editor, isEditable, displayMode, boxSize, hideTitle }: MountOptions) {
+async function mount({
+    editor, isEditable, displayMode, boxSize, hideTitle, embedAttributes, container
+}: MountOptions) {
     const figure = document.createElement("figure");
     figure.className = "include-note";
     if (isEditable) figure.dataset.editable = "true";
     if (displayMode) figure.dataset.displayMode = displayMode;
     if (boxSize) figure.dataset.boxSize = boxSize;
     if (hideTitle) figure.dataset.hideTitle = "true";
+    for (const [ name, value ] of Object.entries(embedAttributes ?? {})) {
+        figure.setAttribute(name, value);
+    }
     const box = document.createElement("div");
     box.className = "include-note-content";
     figure.append(box);
-    document.body.append(figure);
+    (container ?? document.body).append(figure);
     figures.push(figure);
 
     await act(async () => render(<MermaidDiagram content="graph TD;" editor={editor} />, box));
@@ -241,6 +281,11 @@ function getPanes(figure: HTMLElement) {
 
 /** Whether the CodeMirror of the source pane takes edits, once it has loaded. */
 async function isSourceEditable(figure: HTMLElement) {
+    return !(await findSourceView(figure)).state.readOnly;
+}
+
+/** The CodeMirror of the source pane, once it has loaded. */
+async function findSourceView(figure: HTMLElement) {
     const { EditorView } = await import("@codemirror/view");
     let view: InstanceType<typeof EditorView> | null = null;
     await vi.waitFor(() => {
@@ -248,7 +293,8 @@ async function isSourceEditable(figure: HTMLElement) {
         view = dom instanceof HTMLElement ? EditorView.findFromDOM(dom) : null;
         expect(view).not.toBeNull();
     }, { timeout: 5000 });
-    return !(view as InstanceType<typeof EditorView> | null)?.state.readOnly;
+    if (!view) throw new Error("CodeMirror did not mount.");
+    return view as InstanceType<typeof EditorView>;
 }
 
 function buildEditor(): ContentEditor {

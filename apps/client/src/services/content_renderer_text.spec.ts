@@ -592,11 +592,12 @@ describe("Attachment embeds", () => {
             .toBe(`#root/${owner.noteId}?viewMode=attachments&attachmentId=embedPic`);
     });
 
-    it("renders an embedded code file in the language that its embed sets", async () => {
+    it("renders an embedded code file in the language and lines that its embed sets", async () => {
         const owner = buildNote({
             title: "Code owner",
             content: `<figure class="include-note" data-attachment-id="embedCode"`
-                + ` data-code-language="text/x-sh">&nbsp;</figure>`
+                + ` data-code-language="text/x-sh" data-code-wrap-lines="true"`
+                + ` data-code-line-numbers="false">&nbsp;</figure>`
         });
         const attachment = new FAttachment(froca, {
             attachmentId: "embedCode",
@@ -615,7 +616,23 @@ describe("Attachment embeds", () => {
         await renderText(owner, $(document.createElement("div")));
         expect(getRenderedContent).toHaveBeenCalledWith(
             expect.objectContaining({ attachmentId: "embedCode" }),
-            { codeLanguage: "text/x-sh" }
+            { codeLanguage: "text/x-sh", isCodeWrapped: true, hasCodeLineNumbers: false }
+        );
+        getRenderedContent.mockRestore();
+    });
+
+    it("renders an embedded code note with the line numbers that its embed sets", async () => {
+        const code = buildNote({ title: "Script", type: "code", mime: "text/x-sh", content: "a" });
+        const owner = buildNote({
+            title: "Code note owner",
+            content: `<figure class="include-note" data-note-id="${code.noteId}"`
+                + ` data-code-line-numbers="false">&nbsp;</figure>`
+        });
+        const getRenderedContent = vi.spyOn(content_renderer, "getRenderedContent");
+
+        await renderText(owner, $(document.createElement("div")));
+        expect(getRenderedContent).toHaveBeenCalledWith(
+            code, expect.objectContaining({ hasCodeLineNumbers: false })
         );
         getRenderedContent.mockRestore();
     });

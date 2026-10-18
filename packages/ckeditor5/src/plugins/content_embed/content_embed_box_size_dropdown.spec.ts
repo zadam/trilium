@@ -75,6 +75,49 @@ describe("ContentEmbedBoxSizeDropdown", () => {
         expect(dropdownView.buttonView.label).toBe("Small");
     });
 
+    it("shows the box size icon of the selected embed's content, naming the size in its tooltip", () => {
+        const icon = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"></svg>";
+        let provider: ContentEmbedToolProvider | null = {
+            boxSizeIcon: icon,
+            getTools: () => [],
+            execute: () => {},
+            subscribe: () => () => {}
+        };
+        installGlobMock({
+            getComponentByEl: () => ({
+                loadEmbeddedNote: vi.fn(),
+                getContentEmbedTools: () => provider
+            })
+        });
+        const dropdownView = editor.ui.componentFactory.create("contentEmbedBoxSizeDropdown") as unknown as {
+            buttonView: { icon?: string; label: string; withText: boolean; tooltip: boolean };
+        };
+        const getFace = () => {
+            const { icon, label, withText, tooltip } = dropdownView.buttonView;
+            return { icon, label, withText, tooltip };
+        };
+
+        editor.model.change((writer) => {
+            const root = editor.model.document.getRoot();
+            if (!root) {
+                throw new Error("No root");
+            }
+            const contentEmbed = writer.createElement("contentEmbed", {
+                noteId: "test-note",
+                boxSize: "small"
+            });
+            writer.insert(contentEmbed, root, 0);
+            writer.setSelection(contentEmbed, "on");
+        });
+        editor.ui.update();
+        expect(getFace()).toEqual({ icon, label: "Box size: Small", withText: false, tooltip: true });
+
+        // Content without an icon shows the name of the size.
+        provider = null;
+        editor.ui.update();
+        expect(getFace()).toEqual({ icon: undefined, label: "Small", withText: true, tooltip: true });
+    });
+
     it("button label falls back to raw value for an unknown size", () => {
         // Insert an contentEmbed with a size value not in BOX_SIZES
         editor.model.change((writer) => {

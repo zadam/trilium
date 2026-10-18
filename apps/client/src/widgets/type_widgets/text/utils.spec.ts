@@ -258,17 +258,27 @@ describe("loadEmbeddedAttachment", () => {
         expect(lastMount().props).toMatchObject({ isFocusedOnMount: true });
     });
 
-    it("renders a code file in the language that its embed sets", async () => {
+    it("renders a code file or note in the language and lines that its embed sets", async () => {
         const wrapper = createWrapper();
         const embed = inPage(document.createElement("figure"));
         embed.className = "include-note";
         embed.setAttribute("data-code-language", "text/x-sh");
+        embed.setAttribute("data-code-wrap-lines", "false");
+        embed.setAttribute("data-code-line-numbers", "false");
         embed.append(wrapper);
+        const getLastOptions = () =>
+            vi.mocked(content_renderer.getRenderedContent).mock.lastCall?.[1];
 
         await loadEmbeddedAttachment("att1", $(wrapper), "full");
+        expect(getLastOptions()).toMatchObject({
+            codeLanguage: "text/x-sh", isCodeWrapped: false, hasCodeLineNumbers: false
+        });
 
-        expect(vi.mocked(content_renderer.getRenderedContent).mock.lastCall?.[1])
-            .toMatchObject({ codeLanguage: "text/x-sh" });
+        // A note keeps its language and line wrapping in its own labels.
+        await loadEmbeddedNote("noteY", $(wrapper), "full");
+        expect(getLastOptions()).toMatchObject({ hasCodeLineNumbers: false });
+        expect(getLastOptions()).not.toHaveProperty("codeLanguage");
+        expect(getLastOptions()).not.toHaveProperty("isCodeWrapped");
     });
 
     it("leaves the box alone for a deleted attachment", async () => {

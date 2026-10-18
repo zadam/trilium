@@ -44,6 +44,15 @@
         white-space: pre-wrap;
         overflow-wrap: anywhere;
     }
+
+    &.code-preview-no-line-numbers > .code-preview-content {
+        padding-inline-start: 6px;
+        background: var(--code-preview-background);
+
+        > .code-preview-line::before {
+            content: none;
+        }
+    }
 }
 
 .code-preview-line::before {

@@ -23,6 +23,7 @@ import { t } from "../services/i18n.js";
 import { type MediaEnvironment, showsFileActions } from "../widgets/type_widgets/file/media_environment.js";
 import type { LlmChatContent, StoredMessage } from "../widgets/type_widgets/llm_chat/llm_chat_types.js";
 import type { BoxSize } from "../widgets/type_widgets/text/CKEditor.js";
+import type { CodePreviewLines } from "./code_note_preview.js";
 import renderText, {
     postProcessRichContent, renderChildrenList, renderTextContent
 } from "./content_renderer_text.js";
@@ -77,6 +78,10 @@ export interface RenderOptions {
      * in place of the language of its name.
      */
     codeLanguage?: string;
+    /** Whether the embed of a code file wraps its lines, over the option. */
+    isCodeWrapped?: boolean;
+    /** Whether the embed of a code note or file numbers its lines. Defaults to true. */
+    hasCodeLineNumbers?: boolean;
     /**
      * Lets content that has a source and a rendering, such as Markdown, show either or both, as
      * the box of an embed picks. Without it, the rendering shows alone.
@@ -478,8 +483,9 @@ async function renderIconPack(note: FNote, $renderedContent: JQuery<HTMLElement>
 
 /**
  * Renders a code note or file, by displaying its content and applying syntax highlighting based on
- * the selected MIME type. Interactive content that an editor can save mounts `CodeEmbed`, which
- * edits the content with CodeMirror while the Editable toggle of its embed is on.
+ * the selected MIME type. Interactive content mounts `CodeEmbed`, which shows the content in a
+ * read-only CodeMirror, and edits it while the Editable toggle of its embed is on if an editor can
+ * save it.
  */
 async function renderCode(
     entity: FNote | FAttachment,
@@ -489,12 +495,14 @@ async function renderCode(
     const editor = options.interactive ? getContentEditor(entity, options) : undefined;
     const content = editor?.getUnsavedContent() ?? (await entity.getBlob())?.content ?? "";
     const mime = getCodeMime(entity);
-    const { codeLanguage } = options;
-    const note = entity instanceof FNote ? entity : null;
-    const preview = await renderCodePreview(content, codeLanguage ?? mime, note);
+    const { codeLanguage, isCodeWrapped, hasCodeLineNumbers } = options;
 
-    if (!editor) {
-        $renderedContent.append(preview);
+    if (!options.interactive) {
+        const note = entity instanceof FNote ? entity : null;
+        $renderedContent.append(await renderCodePreview(content, codeLanguage ?? mime, note, {
+            isWrapped: isCodeWrapped,
+            hasLineNumbers: hasCodeLineNumbers
+        }));
         return;
     }
 
@@ -502,10 +510,9 @@ async function renderCode(
     const $container = $('<div class="code-embed">');
     const container = $container.get(0);
     if (container) {
-        await mountInteractiveWidget(
-            h(CodeEmbed, { entity, editor, content, mime, codeLanguage, preview }),
-            container
-        );
+        await mountInteractiveWidget(h(CodeEmbed, {
+            entity, editor, content, mime, codeLanguage, isCodeWrapped, hasCodeLineNumbers
+        }), container);
     }
     $renderedContent.append($container);
 }
@@ -513,9 +520,14 @@ async function renderCode(
 /**
  * The highlighted content of a code note or file, with JSON indented.
  *
- * @param note the note whose `#wrapLines` label sets the line wrapping.
+ * @param note the note whose `#wrapLines` label sets the line wrapping, unless `lines` sets it.
  */
-export async function renderCodePreview(content: string, mime: string, note?: FNote | null) {
+async function renderCodePreview(
+    content: string,
+    mime: string,
+    note?: FNote | null,
+    lines?: CodePreviewLines
+) {
     if (mime === "application/json") {
         try {
             content = JSON.stringify(JSON.parse(content), null, 4);
@@ -525,7 +537,7 @@ export async function renderCodePreview(content: string, mime: string, note?: FN
     }
 
     const { renderCodeNotePreview } = await import("./code_note_preview.js");
-    return renderCodeNotePreview(content, mime, note);
+    return renderCodeNotePreview(content, mime, note, lines);
 }
 
 /**
