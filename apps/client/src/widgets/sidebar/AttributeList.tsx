@@ -306,15 +306,35 @@ export default function AttributeList() {
      */
     async function deleteAttribute(attribute: Attribute) {
         const name = getDisplayName(attribute, getAttributeKind(attribute));
+        const noteId = note?.noteId ?? null;
         if (!await dialog.confirm(t("attribute_list_panel.delete_confirm", { name }))) {
             return;
         }
 
-        owned.current = owned.current.filter((candidate) => candidate !== attribute);
+        if (!removeOwned(noteId, [ attribute ])) {
+            return;
+        }
         setDetail(null);
         rerender();
 
         await save();
+    }
+
+    /**
+     * Drops the given attributes from the draft, matched by `attributeId` when they have one since a
+     * reload during the confirmation rebuilds the row objects. Returns `false`, changing nothing, once
+     * the panel shows another note than `noteId`.
+     */
+    function removeOwned(noteId: string | null, attributes: Attribute[]) {
+        if (shownNoteId.current !== noteId) {
+            return false;
+        }
+
+        const ids = new Set(attributes.flatMap((attribute) => attribute.attributeId ?? []));
+        owned.current = owned.current.filter((candidate) => candidate.attributeId
+            ? !ids.has(candidate.attributeId)
+            : !attributes.includes(candidate));
+        return true;
     }
 
     const sections = splitIntoSections(owned.current, inherited.current);
@@ -593,11 +613,14 @@ export default function AttributeList() {
             return;
         }
 
+        const noteId = note?.noteId ?? null;
         if (!await dialog.confirm(t("attribute_list_panel.delete_selection_confirm", { count: picked.length }))) {
             return;
         }
 
-        owned.current = owned.current.filter((candidate) => !picked.includes(candidate));
+        if (!removeOwned(noteId, picked)) {
+            return;
+        }
         clearSelection();
         setDetail(null);
         rerender();

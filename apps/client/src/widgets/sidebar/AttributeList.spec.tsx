@@ -972,6 +972,44 @@ describe("AttributeList", () => {
         expect(selectedNames()).toEqual([ "cssClass", "template", "inheritedLabel" ]);
     });
 
+    it("deletes the picked rows by attributeId once confirmed, whatever a reload did meanwhile", async () => {
+        const note = noteWithAttributes();
+        renderPanel(note, true);
+        pick(0, { ctrlKey: true });
+        pick(1, { ctrlKey: true });
+
+        // A reload rebuilds the row objects while the confirmation is open.
+        let answer: (confirmed: boolean) => void = () => {};
+        confirm.mockImplementationOnce(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+        rightPress(1);
+        const deletion = menuItem("bx bx-trash")?.handler?.();
+        act(() => fireEntitiesReloaded(() => affectingRows(note)));
+        await act(async () => {
+            answer(true);
+            await deletion;
+        });
+
+        expect(put).toHaveBeenCalledOnce();
+        const [ url, saved ] = put.mock.calls[0] as [ string, Attribute[] ];
+        expect(url).toBe("notes/subject/attributes");
+        expect(saved.map((attribute) => attribute.name)).toEqual([ "template", "label:priority" ]);
+
+        // Confirmed after reading another note, the deletion is dropped instead of saving that note's
+        // attributes over the one the rows were picked on.
+        put.mockClear();
+        pick(0, { ctrlKey: true });
+        confirm.mockImplementationOnce(() => new Promise<boolean>((resolve) => { answer = resolve; }));
+        rightPress(0);
+        const lateDeletion = menuItem("bx bx-trash")?.handler?.();
+        showNote(buildNote({ id: "elsewhere", title: "Elsewhere", "#other": "x" }));
+        await act(async () => {
+            answer(true);
+            await lateDeletion;
+        });
+        expect(put).not.toHaveBeenCalled();
+        expect(namesIn(container)).toEqual([ "other" ]);
+    });
+
     it("keeps a press on a picked row from whatever it lands on within it", () => {
         renderPanel(noteWithAttributes());
 
