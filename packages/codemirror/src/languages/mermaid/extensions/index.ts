@@ -1,25 +1,5 @@
 import { foldService } from "@codemirror/language";
 
-const countLeadingSpaces = (str: string) => {
-    let count = 0;
-
-    for (let i = 0; i < str.length; i++) {
-        if (str[i] === " ") {
-            count++;
-        } else if (str[i] === "\t") {
-            count += 4;
-        } else {
-            break;
-        }
-    }
-
-    return count;
-};
-
-const isEmptyLine = (text: string) => {
-    return /^[ \t]*$/.test(text);
-};
-
 export const foldByIndent = () => {
     return foldService.of((state, lineStart, lineEnd) => {
         const line = state.doc.lineAt(lineStart);
@@ -60,3 +40,23 @@ export const foldByIndent = () => {
         return { from: foldStart, to: foldEnd };
     });
 };
+
+function countLeadingSpaces(str: string) {
+    let count = 0;
+
+    for (let i = 0; i < str.length; i++) {
+        if (str[i] === " ") {
+            count++;
+        } else if (str[i] === "\t") {
+            count += 4;
+        } else {
+            break;
+        }
+    }
+
+    return count;
+}
+
+function isEmptyLine(text: string) {
+    return /^[ \t]*$/.test(text);
+}
