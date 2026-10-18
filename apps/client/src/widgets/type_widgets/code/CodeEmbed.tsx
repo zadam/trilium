@@ -101,6 +101,7 @@ export default function CodeEmbed({
             >
                 <CodeEmbedEditor
                     note={note}
+                    ownerNote={entity instanceof FNote ? entity : entity.getNote()}
                     editor={editor}
                     content={content}
                     mime={mime}

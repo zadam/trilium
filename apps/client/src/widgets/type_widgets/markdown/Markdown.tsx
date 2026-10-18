@@ -14,21 +14,20 @@ import { useCallback, useContext, useEffect, useMemo, useState } from "preact/ho
 import appContext from "../../../components/app_context";
 import NoteContext from "../../../components/note_context";
 import FNote from "../../../entities/fnote";
-import froca from "../../../services/froca";
 import keyboard_actions from "../../../services/keyboard_actions";
 import note_create from "../../../services/note_create";
-import options from "../../../services/options";
 import { removeIndividualBinding } from "../../../services/shortcuts";
-import tree from "../../../services/tree";
-import utils, { isDesktop } from "../../../services/utils";
+import { isDesktop } from "../../../services/utils";
 import { useLegacyImperativeHandlers, useTriliumEvent } from "../../react/hooks";
 import { resolveNoteChip } from "../../search_field_editor";
 import { extractHighlightsFromStaticHtml, type RawHighlight } from "../../sidebar/highlights_extract";
 import SplitEditor from "../helpers/SplitEditor";
 import { ReadOnlyTextContent } from "../text/ReadOnlyText";
 import { TypeWidgetProps } from "../type_widget";
-import { useMarkdownCompletions } from "./completions";
-import { insertText, replaceSelection, uploadImageAndInsert } from "./editor_utils";
+import {
+    insertDateTime, insertText, replaceSelection, showAddLinkDialog, showIncludeNoteDialog,
+    uploadImageAndInsert
+} from "./editor_utils";
 
 const marked = new Marked({ breaks: true, gfm: true });
 // Headings in the outline are rendered by this instance rather than by `renderToHtml`, so it needs
@@ -106,9 +105,8 @@ export default function Markdown(props: TypeWidgetProps) {
     usePublishToc(props.noteContext, editorView, previewEl, headings, props.note);
     usePublishHighlights(props.noteContext, editorView, previewEl, highlights, props.note);
     useImageDrop(props.note, editorView);
-    useTextCommands(props.parentComponent, editorView);
+    useTextCommands(editorView);
     useNoteLinkChips(editorView);
-    useMarkdownCompletions(props.parentComponent, editorView, props.note, () => props.noteContext?.notePath);
     useMarkdownKeymap(editorView);
 
     const ctx = useMemo<MarkdownContextValue>(
@@ -371,63 +369,18 @@ export function findActiveBlock(blocks: ArrayLike<HTMLElement>, activeLine: numb
  * - Add Link (Ctrl+L): opens the add-link dialog, inserts markdown link syntax
  * - Insert Date/Time (Alt+T): inserts a formatted date/time string
  */
-function useTextCommands(parentComponent: TypeWidgetProps["parentComponent"], editorView: VanillaCodeMirror | null) {
+function useTextCommands(editorView: VanillaCodeMirror | null) {
     useLegacyImperativeHandlers({
         addLinkToTextCommand() {
-            if (!editorView) return;
-
-            const { from, to } = editorView.state.selection.main;
-            const selectedText = editorView.state.sliceDoc(from, to);
-
-            parentComponent?.triggerCommand("showAddLinkDialog", {
-                text: selectedText,
-                hasSelection: from !== to,
-                async addLink(notePath: string, linkTitle: string | null, externalLink?: boolean) {
-                    if (!editorView) return;
-
-                    let md: string;
-                    if (externalLink) {
-                        const label = (from !== to) ? selectedText : (linkTitle || notePath);
-                        md = `[${label}](${notePath})`;
-                    } else if (linkTitle) {
-                        const label = (from !== to) ? selectedText : linkTitle;
-                        md = `[${label}](#${notePath})`;
-                    } else {
-                        const noteId = tree.getNoteIdFromUrl(notePath);
-                        md = `[[${noteId}]]`;
-                    }
-
-                    replaceSelection(editorView, md, from, to);
-                    editorView.focus();
-                }
-            });
+            if (editorView) showAddLinkDialog(editorView);
         },
 
         insertDateTimeToTextCommand() {
-            if (!editorView) return;
-
-            const dateString = utils.formatDateTime(new Date(), options.get("customDateTimeFormat"));
-            insertText(editorView, dateString);
+            if (editorView) insertDateTime(editorView);
         },
 
         addIncludeNoteToTextCommand() {
-            if (!editorView) return;
-
-            parentComponent?.triggerCommand("showContentEmbedDialog", {
-                editorApi: {
-                    addContentEmbed(noteId: string, boxSize?: string) {
-                        insertText(editorView, `<figure class="include-note" data-note-id="${noteId}" data-box-size="${boxSize ?? "full"}"></figure>\n`);
-                        editorView.focus();
-                    },
-                    async addImage(noteId: string) {
-                        const note = await froca.getNote(noteId);
-                        if (!note) return;
-                        const encodedTitle = encodeURIComponent(note.title);
-                        insertText(editorView, `![${note.title}](api/images/${noteId}/${encodedTitle})\n`);
-                        editorView.focus();
-                    }
-                }
-            });
+            if (editorView) showIncludeNoteDialog(editorView);
         },
 
         async cutIntoNoteCommand() {

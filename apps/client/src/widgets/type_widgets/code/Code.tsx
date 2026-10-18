@@ -16,7 +16,7 @@ import { CODE_THEME_DEFAULT_PREFIX as DEFAULT_PREFIX } from "../constants";
 import { TypeWidgetProps } from "../type_widget";
 import ApiLog from "./ApiLog";
 import CodeMirror, { CodeMirrorProps } from "./CodeMirror";
-import { useSnippetSlashCommands } from "./snippets";
+import { type CompletionTarget, useEditorCompletions } from "./editor_completions";
 
 export interface EditableCodeProps extends TypeWidgetProps {
     // if true, the update will be debounced to prevent excessive updates. Especially useful if the editor is linked to a live preview.
@@ -97,10 +97,8 @@ function formatViewSource(note: FNote, content: string) {
 export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentComponent, updateInterval, noteType = "code", onContentChanged, dataSaved, placeholder, editorRef: externalEditorRef, ...editorProps }: EditableCodeProps) {
     const editorRef = useRef<VanillaCodeMirror>(null);
     const containerRef = useRef<HTMLPreElement>(null);
-    const [ editorView, setEditorView ] = useState<VanillaCodeMirror | null>(null);
     const combinedEditorRef = useCallback((view: VanillaCodeMirror | null) => {
         editorRef.current = view;
-        setEditorView(view);
         if (typeof externalEditorRef === "function") externalEditorRef(view);
         else if (externalEditorRef) externalEditorRef.current = view;
     }, [externalEditorRef]);
@@ -148,24 +146,13 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
 
     useKeyboardShortcuts("code-detail", containerRef, parentComponent, ntxId);
 
-    // Code snippets (#snippet notes with a matching MIME) as `/snippet:<name>` slash commands.
-    // Disabled for Markdown notes, whose editor provides its own combined slash-command menu. On
-    // script notes the snippet source co-exists with the TypeScript language service's source via
-    // the editor's shared completion-source registry.
-    useSnippetSlashCommands(
-        editorView,
-        (candidate) => candidate.type === "code" && (candidate.mime === note.mime || candidate.mime === "text/plain"),
-        note.mime,
-        !note.isMarkdown(),
-        note.noteId
-    );
-
     return (
         <>
             <CodeEditor
                 ntxId={ntxId}
                 editorRef={combinedEditorRef} containerRef={containerRef}
                 mime={mime ?? "text/plain"}
+                completions={{ note, getNotePath: () => noteContext?.notePath }}
                 customRequestHandler={customRequestHandler != null}
                 className="note-detail-code-editor"
                 placeholder={placeholder ?? t("editable_code.placeholder")}
@@ -190,10 +177,20 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
     );
 }
 
-export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRef: externalEditorRef, mime, onInitialized, lineWrapping, allowKeyboardSuggestions, ...editorProps }: CodeMirrorProps & Pick<TypeWidgetProps, "ntxId">) {
+export interface CodeEditorProps extends CodeMirrorProps, Pick<TypeWidgetProps, "ntxId"> {
+    /** The content that the `/` list completes, or `undefined` for no list. */
+    completions?: CompletionTarget;
+}
+
+export function CodeEditor({
+    ntxId, containerRef: externalContainerRef, editorRef: externalEditorRef, mime, onInitialized,
+    lineWrapping, allowKeyboardSuggestions, completions, ...editorProps
+}: CodeEditorProps) {
     const codeEditorRef = useRef<VanillaCodeMirror>(null);
+    const [ view, setView ] = useState<VanillaCodeMirror | null>(null);
     const containerRef = useSyncedRef(externalContainerRef);
     const initialized = useRef($.Deferred());
+    useEditorCompletions(view, mime, completions);
     const [ codeLineWrapEnabled ] = useTriliumOptionBool("codeLineWrapEnabled");
     const [ codeNoteTheme ] = useTriliumOption("codeNoteTheme");
     const [ codeNoteTabWidth ] = useTriliumOption("codeNoteTabWidth");
@@ -209,7 +206,7 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
 
     // React to theme changes.
     useEffect(() => {
-        if (codeEditorRef.current && effectiveTheme.startsWith(DEFAULT_PREFIX)) {
+        if (codeEditorRef.current && effectiveTheme?.startsWith(DEFAULT_PREFIX)) {
             const theme = getThemeById(effectiveTheme.substring(DEFAULT_PREFIX.length));
             if (theme) {
                 codeEditorRef.current.setTheme(theme);
@@ -269,6 +266,7 @@ export function CodeEditor({ ntxId, containerRef: externalContainerRef, editorRe
                 if (typeof externalEditorRef === "function") externalEditorRef(codeEditorRef.current);
                 else if (externalEditorRef) externalEditorRef.current = codeEditorRef.current;
             }
+            setView(codeEditorRef.current);
             initialized.current.resolve();
             onInitialized?.();
         }}

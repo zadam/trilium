@@ -10,6 +10,7 @@ import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
 import smartIndentWithTab from "./extensions/custom_tab.js";
 import type { ThemeDefinition } from "./color_themes.js";
 import { createSearchHighlighter, SearchHighlighter, searchMatchHighlightTheme } from "./find_replace.js";
+import { isHostedCompletionShown } from "./extensions/hosted_completion.js";
 import { buildTypeCompletion, type ScriptApiContext } from "./type_completion/index.js";
 
 export { default as ColorThemes, type ThemeDefinition, type ThemeVariant, getThemeById } from "./color_themes.js";
@@ -354,7 +355,8 @@ export default class CodeMirror extends EditorView {
         const { ranges, main } = this.state.selection;
         const hasModifier = event.shiftKey || event.ctrlKey || event.altKey || event.metaKey;
         if (event.target !== this.contentDOM || hasModifier || event.isComposing
-            || ranges.length > 1 || !main.empty || completionStatus(this.state) === "active") {
+            || ranges.length > 1 || !main.empty || completionStatus(this.state) === "active"
+            || isHostedCompletionShown(this)) {
             return null;
         }
 

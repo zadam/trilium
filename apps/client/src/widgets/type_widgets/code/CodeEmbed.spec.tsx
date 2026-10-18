@@ -13,6 +13,7 @@ import type { ContentEditor } from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import LoadResults from "../../../services/load_results";
 import options from "../../../services/options";
+import search from "../../../services/search";
 import {
     buildCodeViewTextEditor, getEmbedMenuItems, runEmbedMenuItem, summarizeMenuItem
 } from "../../../test/content_embed";
@@ -34,7 +35,8 @@ const renderCodePreview = vi.hoisted(() => vi.fn(
     }
 ));
 vi.mock("../../../services/content_renderer", () => ({ renderCodePreview }));
-vi.mock("../../../services/i18n", () => ({
+vi.mock("../../../services/i18n", async (importOriginal) => ({
+    ...(await importOriginal<object>()),
     t: (key: string, values?: Record<string, unknown>) =>
         values ? `${key} ${Object.values(values).join(" ")}` : key
 }));
@@ -86,6 +88,34 @@ describe("CodeEmbed", () => {
         expect(editor.scheduleSave).toHaveBeenCalledOnce();
         const getContent = vi.mocked(editor.scheduleSave).mock.calls[0][0];
         expect(getContent()).toBe("# print(1)");
+    });
+
+    it("lists the snippets of its language after a slash while the toggle is on", async () => {
+        const snippet = buildNote({
+            title: "Greeting", type: "code", mime: "text/x-python", content: "print('hi')"
+        });
+        const searchForNotes = vi.spyOn(search, "searchForNotes").mockResolvedValue([ snippet ]);
+        const { figure } = await mount(buildCodeNote(""), buildEditor(), { isEditable: true });
+        const view = await findView(figure);
+        expect(searchForNotes).toHaveBeenCalledWith("#snippet");
+
+        view.focus();
+        const rows = () => [
+            ...document.querySelectorAll(".note-autocomplete-menu [role=option]")
+        ];
+        // Typed again until the snippets have loaded, as a list opens only where it has entries.
+        await vi.waitFor(() => {
+            act(() => view.dispatch({
+                changes: { from: 0, to: view.state.doc.length, insert: "/" },
+                selection: { anchor: 1 }
+            }));
+            expect(rows().map((row) => row.textContent))
+                .toEqual([ expect.stringContaining("Greeting") ]);
+        });
+        view.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {
+            key: "Enter", bubbles: true, cancelable: true
+        }));
+        await vi.waitFor(() => expect(view.state.doc.toString()).toBe("print('hi')"));
     });
 
     it("lets the find search the editor while the toggle is on", async () => {

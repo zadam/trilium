@@ -88,6 +88,7 @@ export default function MarkdownEmbed({
                         isEditing={isEditing}
                         isSourceShown={isSourceShown}
                         note={note}
+                        ownerNote={entity instanceof FNote ? entity : entity.getNote()}
                         editor={editor}
                         content={content}
                         mime={MARKDOWN_MIME}

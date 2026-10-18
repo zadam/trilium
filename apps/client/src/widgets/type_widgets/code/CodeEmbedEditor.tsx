@@ -12,6 +12,8 @@ import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
     note: FNote | null;
+    /** The note that holds an attachment, which images upload to and new notes go under. */
+    ownerNote?: FNote | null;
     /** Saves the edits, or `undefined` to show the content read-only. */
     editor: ContentEditor | undefined;
     content: string;
@@ -41,7 +43,7 @@ export interface CodeEmbedEditorProps {
  * `editor`, the content is read-only.
  */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, tabWidth, useTabs, wrapLines, hasLineNumbers, viewRef,
+    note, ownerNote, editor, content, mime, tabWidth, useTabs, wrapLines, hasLineNumbers, viewRef,
     isShown = true, onClose, onChange, onReady
 }: CodeEmbedEditorProps) {
     const isLoadingRef = useRef(false);
@@ -101,6 +103,7 @@ export default function CodeEmbedEditor({
             editorRef={viewRef}
             className="code-embed-editor"
             mime={mime}
+            completions={editor && { note, ownerNote }}
             vimKeybindings={vimKeymapEnabled}
             readOnly={!editor}
             lineNumbers={hasLineNumbers}

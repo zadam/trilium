@@ -4,6 +4,7 @@ import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { hostedCompletion } from "./extensions/hosted_completion.js";
 import CodeMirror, { type EditorConfig, getThemeById } from "./index.js";
 
 let editor: CodeMirror | undefined;
@@ -462,6 +463,30 @@ describe("CodeMirror", () => {
             const arrowDown = createKeydown("ArrowDown", instance.contentDOM);
             expect(instance.getEdgeLeftBy(arrowDown)).toBe(null);
             closeCompletion(instance);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
+        });
+
+        it("leaves the arrow keys to a hosted list while it shows entries", async () => {
+            const instance = build();
+            editor = instance;
+            let element: HTMLElement | null = null;
+            instance.setNamedExtension("test", hostedCompletion({
+                match: () => ({ from: 0 }),
+                list: () => ({
+                    show() { element = document.createElement("div"); },
+                    hide() { element = null; },
+                    handleKeyDown: () => false,
+                    get element() { return element; }
+                })
+            }));
+            instance.focus();
+            instance.setText("ab");
+            instance.dispatch({ selection: EditorSelection.cursor(2) });
+            await vi.waitFor(() => expect(element).not.toBe(null));
+
+            const arrowDown = createKeydown("ArrowDown", instance.contentDOM);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe(null);
+            element = null;
             expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
         });
     });

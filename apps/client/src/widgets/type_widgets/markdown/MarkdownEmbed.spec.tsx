@@ -23,6 +23,8 @@ vi.mock("../../../services/i18n", async (importOriginal) => ({
     ...(await importOriginal<object>()),
     t: (key: string) => key
 }));
+// The `/` list of the source loads the task states from the `_taskStates` subtree.
+vi.mock("../../../services/task_states", () => ({ getTaskStateDefinitions: async () => [] }));
 
 // `CodeEditor` reads the theme as a string.
 options.set("codeNoteTheme", "");

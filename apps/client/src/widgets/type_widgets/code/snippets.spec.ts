@@ -1,5 +1,4 @@
-import type { Completion } from "@codemirror/autocomplete";
-import type { EditorView } from "@codemirror/view";
+import type { NoteType } from "@triliumnext/commons";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type FNote from "../../../entities/fnote";
@@ -10,9 +9,9 @@ vi.mock("../../../services/search.js", () => ({
 }));
 
 import search from "../../../services/search.js";
-import { buildSnippetCompletions, getCodeSnippets, isCodeSnippetChange } from "./snippets.js";
-
-const logErrorMock = vi.fn();
+import * as ws from "../../../services/ws.js";
+import { buildNote } from "../../../test/easy-froca";
+import { getCodeSnippets, isCodeSnippetChange, isSnippetFor } from "./snippets.js";
 
 interface NoteStub {
     noteId: string;
@@ -49,29 +48,23 @@ function makeLoadResults(opts: {
     } as unknown as LoadResults;
 }
 
-describe("buildSnippetCompletions", () => {
-    it("formats labels with/without a description and inserts content on apply", () => {
-        const [withDesc, withoutDesc] = buildSnippetCompletions([
-            { noteId: "a", title: "Header", description: "Page header", content: "# Header\n" },
-            { noteId: "b", title: "Footer", content: "the footer" }
-        ]);
+describe("isSnippetFor", () => {
+    it("offers code of the same language, any Markdown to Markdown, and plain text to all", () => {
+        const snippet = (mime: string, type: NoteType = "code") => (
+            buildNote({ title: mime, type, mime })
+        );
+        const css = snippet("text/css");
+        const markdown = snippet("text/markdown");
+        const plain = snippet("text/plain");
 
-        expect(withDesc?.label).toBe("/snippet:Header - Page header");
-        expect(withoutDesc?.label).toBe("/snippet:Footer");
-
-        // Applying replaces the typed [from, to] token with the content, caret at its end.
-        const apply = withoutDesc?.apply;
-        expect(typeof apply).toBe("function");
-        if (typeof apply !== "function") return;
-
-        const dispatched: unknown[] = [];
-        const view = { dispatch: (tx: unknown) => dispatched.push(tx) } as unknown as EditorView;
-        apply(view, {} as Completion, 3, 11);
-
-        expect(dispatched).toEqual([{
-            changes: { from: 3, to: 11, insert: "the footer" },
-            selection: { anchor: 3 + "the footer".length }
-        }]);
+        expect(isSnippetFor(css, "text/css")).toBe(true);
+        expect(isSnippetFor(css, "text/x-python")).toBe(false);
+        expect(isSnippetFor(markdown, "text/x-markdown")).toBe(true);
+        expect(isSnippetFor(markdown, "text/css")).toBe(false);
+        expect(isSnippetFor(css, "text/x-markdown")).toBe(false);
+        expect(isSnippetFor(plain, "text/x-markdown")).toBe(true);
+        expect(isSnippetFor(plain, "text/css")).toBe(true);
+        expect(isSnippetFor(snippet("text/plain", "text"), "text/css")).toBe(false);
     });
 });
 
@@ -97,8 +90,6 @@ describe("isCodeSnippetChange", () => {
 describe("getCodeSnippets", () => {
     beforeEach(() => {
         vi.mocked(search.searchForNotes).mockReset();
-        logErrorMock.mockReset();
-        vi.stubGlobal("logError", logErrorMock);
     });
 
     it("maps matching notes, reading the description from #snippetDescription", async () => {
@@ -141,10 +132,25 @@ describe("getCodeSnippets", () => {
         expect(snippet?.content).toBe("");
     });
 
+    it("shares one search between loads at the same time, and searches again later", async () => {
+        vi.mocked(search.searchForNotes).mockResolvedValue([ makeNote({ noteId: "css1" }) ]);
+
+        const [ first, second ] = await Promise.all([
+            getCodeSnippets(() => true), getCodeSnippets(() => true)
+        ]);
+        expect(search.searchForNotes).toHaveBeenCalledOnce();
+        expect([ first, second ].map((snippets) => snippets.length)).toEqual([ 1, 1 ]);
+
+        await getCodeSnippets(() => true);
+        expect(search.searchForNotes).toHaveBeenCalledTimes(2);
+    });
+
     it("returns an empty list and logs when loading fails", async () => {
         vi.mocked(search.searchForNotes).mockRejectedValue(new Error("boom"));
+        const logError = vi.spyOn(ws, "logError");
 
         expect(await getCodeSnippets(() => true)).toEqual([]);
-        expect(logErrorMock).toHaveBeenCalled();
+        expect(logError).toHaveBeenCalled();
+        logError.mockRestore();
     });
 });

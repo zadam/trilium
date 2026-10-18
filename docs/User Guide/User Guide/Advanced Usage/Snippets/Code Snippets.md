@@ -15,7 +15,7 @@ The note's title becomes the title of the snippet. Optionally, you can add a des
 
 ## Inserting a snippet
 
-To insert a snippet, type `/snippet` and select its title from the dropdown.
+To insert a snippet, type `/` followed by the start of its title, or `/snippet` to list all of them, and pick it from the list. This also works in an included code or Markdown note that is being edited in place, see <a class="reference-link" href="../../Note%20Types/Text/Include%20Note.md">Include Note</a>.
 
 > [!IMPORTANT]
 > Only code snippets whose language mode matches the current code note are listed. For example, a CSS code note shows only CSS snippets, not JavaScript ones. The exception is snippets set to "Plain text", which are available in <a class="reference-link" href="../../Note%20Types/Markdown.md">Markdown</a> notes and any code note regardless of its language mode.

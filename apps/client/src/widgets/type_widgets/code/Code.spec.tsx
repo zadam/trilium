@@ -10,6 +10,9 @@ import { renderInto } from "../../../test/render";
 import { ParentComponent } from "../../react/react_utils";
 import { EditableCode, ReadOnlyCode } from "./Code";
 
+// The `/` list of a Markdown editor loads the task states from the `_taskStates` subtree.
+vi.mock("../../../services/task_states", () => ({ getTaskStateDefinitions: async () => [] }));
+
 describe("EditableCode", () => {
     const parent = { registerHandler() {}, removeHandler() {}, componentId: "c" } as any;
     const markdown = { type: "code", mime: "text/x-markdown" } as const;
