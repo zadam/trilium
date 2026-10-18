@@ -2,7 +2,6 @@ import { linter, Diagnostic } from "@codemirror/lint";
 import ts from "typescript";
 import type { DiagnosticWithLocation } from "typescript";
 import { type VirtualTypeScriptEnvironment } from "@typescript/vfs";
-import { tsFacet } from "./environment.js";
 
 /**
  * Binds the TypeScript `lint()` method with TypeScript's
@@ -10,18 +9,12 @@ import { tsFacet } from "./environment.js";
  * the `getLints` method for a lower-level interface
  * to the same data.
  */
-export function tsLinter({
-  diagnosticCodesToIgnore,
-}: { diagnosticCodesToIgnore?: number[] } = {}) {
-  return linter(async (view): Promise<readonly Diagnostic[]> => {
-    const config = view.state.facet(tsFacet);
-    return config
-      ? getLints({
-          ...config,
-          diagnosticCodesToIgnore: diagnosticCodesToIgnore || [],
-        })
-      : [];
-  });
+export function tsLinter(options: {
+  env: VirtualTypeScriptEnvironment;
+  path: string;
+  diagnosticCodesToIgnore: number[];
+}) {
+  return linter(() => getLints(options));
 }
 
 /**
@@ -40,10 +33,6 @@ export function getLints({
   path: string;
   diagnosticCodesToIgnore: number[];
 }) {
-  // Don't crash if the relevant file isn't created yet.
-  const exists = env.getSourceFile(path);
-  if (!exists) return [];
-
   const syntaticDiagnostics = env.languageService.getSyntacticDiagnostics(path);
   const semanticDiagnostics = env.languageService.getSemanticDiagnostics(path);
 

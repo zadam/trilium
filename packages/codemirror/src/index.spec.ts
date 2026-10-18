@@ -665,6 +665,33 @@ describe("CodeMirror", () => {
             await editor.setMimeType("text/css");
             expect(buildMock).toHaveBeenCalledTimes(3);
         });
+
+        it("keeps a newer build when an older one fails after it", async () => {
+            const buildMock = vi.mocked(buildTypeCompletion);
+            let failOlder: (error: Error) => void = () => {};
+            buildMock.mockReturnValueOnce(new Promise((_resolve, reject) => { failOlder = reject; }));
+            buildMock.mockResolvedValue({ extensions: [], complete: null });
+            editor = build();
+
+            const older = editor.setMimeType("text/jsx");
+            await editor.setMimeType("text/css");
+            failOlder(new Error("no language service"));
+            await expect(older).rejects.toThrow("no language service");
+
+            await editor.setMimeType("text/css");
+            expect(buildMock).toHaveBeenCalledTimes(2);
+        });
+
+        it("builds the completion again after a build failed", async () => {
+            const buildMock = vi.mocked(buildTypeCompletion);
+            buildMock.mockRejectedValueOnce(new Error("no language service"));
+            buildMock.mockResolvedValue({ extensions: [], complete: null });
+            editor = build();
+
+            await expect(editor.setMimeType("text/jsx")).rejects.toThrow("no language service");
+            await editor.setMimeType("text/jsx");
+            expect(buildMock).toHaveBeenCalledTimes(2);
+        });
     });
 
     describe("concurrent MIME changes", () => {

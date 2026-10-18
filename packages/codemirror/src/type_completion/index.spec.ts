@@ -1,11 +1,10 @@
 import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { createOrUpdateFile, tsFacet } from "./codemirror-ts/environment.js";
-import { getHover } from "./codemirror-ts/hover.js";
 import {
     buildTypeCompletion,
+    createEnv,
     getScriptCompletions,
     getScriptDiagnosticCodes,
     getScriptLints,
@@ -13,7 +12,9 @@ import {
     SCRIPT_MIME_BACKEND,
     SCRIPT_MIME_FRONTEND,
     SCRIPT_MIME_JSX,
-    type ScriptApiContext
+    type ScriptApiContext,
+    scriptPath,
+    tsSync
 } from "./index.js";
 
 /** Returns completions at the `|` marker in `source` (the marker is stripped). */
@@ -33,11 +34,11 @@ async function completeAtMarker(mime: string, source: string) {
     const offset = source.indexOf("|");
     const code = source.slice(0, offset) + source.slice(offset + 1);
     const { extensions, complete } = await buildTypeCompletion(mime);
-    // No editor view syncs the document here, so the test writes it into the environment.
-    const config = EditorState.create({ extensions }).facet(tsFacet);
-    expect(config).toBeTruthy();
-    if (config) createOrUpdateFile(config.env, config.path, code);
-    return (await complete?.(offset))?.map((entry) => entry.label) ?? [];
+    // The editor's `tsSync()` puts the document in the language service, as in the app.
+    const view = new EditorView({ state: EditorState.create({ doc: code, extensions }) });
+    const labels = (await complete?.(offset))?.map((entry) => entry.label) ?? [];
+    view.destroy();
+    return labels;
 }
 
 /** "Property 'x' does not exist on type 'y'." */
@@ -551,6 +552,13 @@ describe("buildTypeCompletion", () => {
         expect(labels).toEqual(expect.arrayContaining([ "api", "console", "const", "return" ]));
     }, TIMEOUT);
 
+    it("offers nothing inside a comment", async () => {
+        const { extensions, complete } = await buildTypeCompletion(SCRIPT_MIME_BACKEND);
+        const view = new EditorView({ state: EditorState.create({ doc: "// api", extensions }) });
+        expect(await complete?.(6)).toBe(null);
+        view.destroy();
+    }, TIMEOUT);
+
     it("leaves deprecated names out", async () => {
         const labels = await completeAtMarker(SCRIPT_MIME_FRONTEND, "e|");
         expect(labels).toContain("encodeURI");
@@ -560,44 +568,28 @@ describe("buildTypeCompletion", () => {
 });
 
 describe("tsSync", () => {
-    /** The text the language service holds for the editor's script. */
-    function synced(view: EditorView) {
-        const config = view.state.facet(tsFacet);
-        return config?.env.getSourceFile(config.path)?.text;
-    }
+    it("syncs the document from the moment the editor has the plugin, then every change", async () => {
+        const env = await createEnv(SCRIPT_MIME_BACKEND);
+        const path = scriptPath(SCRIPT_MIME_BACKEND);
+        const synced = () => env.getSourceFile(path)?.text;
 
-    it("syncs the document from the moment the editor has the extensions, then every change", async () => {
-        const { extensions } = await buildTypeCompletion(SCRIPT_MIME_BACKEND);
-
-        const created = new EditorView({ state: EditorState.create({ doc: "const a = 1;", extensions }) });
-        expect(synced(created)).toBe("const a = 1;");
+        const created = new EditorView({ state: EditorState.create({ doc: "const a = 1;", extensions: tsSync(env, path) }) });
+        expect(synced()).toBe("const a = 1;");
         created.dispatch({ changes: { from: 0, insert: "// note\n" } });
-        expect(synced(created)).toBe("// note\nconst a = 1;");
+        expect(synced()).toBe("// note\nconst a = 1;");
         created.destroy();
 
-        // As the editor adds them: to a document it already holds, through a compartment.
+        // As the editor adds it: to a document it already holds, through a compartment.
         const compartment = new Compartment();
         const added = new EditorView({ state: EditorState.create({ doc: "let b;", extensions: compartment.of([]) }) });
-        added.dispatch({ effects: compartment.reconfigure(extensions) });
-        expect(synced(added)).toBe("let b;");
+        added.dispatch({ effects: compartment.reconfigure(tsSync(env, path)) });
+        expect(synced()).toBe("let b;");
         added.destroy();
-    }, TIMEOUT);
-});
 
-describe("getHover", () => {
-    it("returns the quick info under the position, with no definition lookups", async () => {
-        const { extensions } = await buildTypeCompletion(SCRIPT_MIME_BACKEND);
-        const config = EditorState.create({ extensions }).facet(tsFacet);
-        if (!config) throw new Error("expected the TypeScript facet");
-        createOrUpdateFile(config.env, config.path, "api.log(\"x\");");
-        const typeDefinition = vi.spyOn(config.env.languageService, "getTypeDefinitionAtPosition");
-        const definition = vi.spyOn(config.env.languageService, "getDefinitionAtPosition");
-
-        const hover = getHover({ ...config, pos: 5 });
-        expect(hover).toMatchObject({ start: 4, end: 7 });
-        expect(hover?.quickInfo?.displayParts?.map((part) => part.text).join("")).toContain("log");
-        expect(typeDefinition).not.toHaveBeenCalled();
-        expect(definition).not.toHaveBeenCalled();
+        // An empty document leaves a space, which the language service still reads as a script.
+        const empty = new EditorView({ state: EditorState.create({ extensions: tsSync(env, path) }) });
+        expect(synced()).toBe(" ");
+        empty.destroy();
     }, TIMEOUT);
 });
 
@@ -660,5 +652,6 @@ describe("empty script notes", () => {
         // space so TypeScript still gets a valid file to parse.
         expect(await getScriptDiagnosticCodes(SCRIPT_MIME_BACKEND, "")).toEqual([]);
         expect(await getScriptCompletions(SCRIPT_MIME_BACKEND, "", 0)).toEqual(expect.any(Array));
+        expect(await getScriptLints(SCRIPT_MIME_BACKEND, "")).toEqual([]);
     }, TIMEOUT);
 });

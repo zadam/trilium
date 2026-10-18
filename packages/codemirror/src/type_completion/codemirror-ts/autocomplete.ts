@@ -18,9 +18,7 @@ export async function getAutocompletion({
   env: VirtualTypeScriptEnvironment;
   path: string;
   pos: number;
-}): Promise<Completion[] | null> {
-  if (!env.getSourceFile(path)) return null;
-
+}): Promise<(Completion & { boost: number })[] | null> {
   const completionInfo = env.languageService.getCompletionsAtPosition(
     path,
     pos,
@@ -36,7 +34,7 @@ export async function getAutocompletion({
         !TS_COMPLETE_BLOCKLIST.includes(entry.kind) &&
         !entry.kindModifiers?.split(",").includes(ts.ScriptElementKindModifier.deprecatedModifier),
     )
-    .map((entry): Completion => {
+    .map((entry): Completion & { boost: number } => {
       const boost = -Number(entry.sortText) || 0;
       let type = entry.kind ? String(entry.kind) : undefined;
 

@@ -1,26 +1,26 @@
 import { EditorView, hoverTooltip, Tooltip, TooltipView } from "@codemirror/view";
 import type ts from "typescript";
 import { type VirtualTypeScriptEnvironment } from "@typescript/vfs";
-import { tsFacet } from "./environment.js";
+
+interface HoverOptions {
+  env: VirtualTypeScriptEnvironment;
+  path: string;
+  renderTooltip: TooltipRenderer;
+}
 
 /**
  * This binds the CodeMirror `hoverTooltip` method
  * with a code that pulls types and documentation
  * from the TypeScript environment.
  */
-export function tsHover({
-  renderTooltip = defaultRenderer,
-}: {
-  renderTooltip?: TooltipRenderer;
-} = {}) {
-  return hoverTooltip(async (view, pos): Promise<Tooltip | null> => {
-    const config = view.state.facet(tsFacet);
-    if (!config) return null;
+export function tsHover(options: HoverOptions) {
+  return hoverTooltip(hoverSource(options));
+}
 
-    const hoverData = getHover({
-      ...config,
-      pos,
-    });
+/** The tooltip `tsHover()` shows at a position, or `null` where the language service has none. */
+export function hoverSource({ env, path, renderTooltip }: HoverOptions) {
+  return (view: EditorView, pos: number): Tooltip | null => {
+    const hoverData = getHover({ env, path, pos });
 
     if (!hoverData) return null;
 
@@ -29,7 +29,7 @@ export function tsHover({
       end: hoverData.end,
       create: () => renderTooltip(hoverData, view),
     };
-  });
+  };
 }
 
 /**
@@ -67,21 +67,3 @@ export type TooltipRenderer = (
   arg0: HoverInfo,
   editorView: EditorView,
 ) => TooltipView;
-
-/**
- * Default, barebones tooltip renderer. Generates
- * structure of a div, containing a series of
- * span elements with the typescript `kind` as
- * classes.
- */
-export const defaultRenderer: TooltipRenderer = (info: HoverInfo) => {
-  const div = document.createElement("div");
-  if (info.quickInfo?.displayParts) {
-    for (let part of info.quickInfo.displayParts) {
-      const span = div.appendChild(document.createElement("span"));
-      span.className = `quick-info-${part.kind}`;
-      span.innerText = part.text;
-    }
-  }
-  return { dom: div };
-};

@@ -1,5 +1,6 @@
-import type { Extension } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import type { EditorState, Extension } from "@codemirror/state";
+import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
+import type { VirtualTypeScriptEnvironment } from "@typescript/vfs";
 
 /**
  * Full IntelliSense for backend/frontend script notes.
@@ -73,7 +74,7 @@ const BACKEND_GLOBALS_DTS_PATH = "/backend-globals.d.ts";
 const TRILIUM_MODULES_DTS_PATH = "/trilium-modules.d.ts";
 
 /** The virtual source-file path used for a given script MIME type. */
-function scriptPath(mime: string): string {
+export function scriptPath(mime: string): string {
     return mime === SCRIPT_MIME_JSX ? JSX_SCRIPT_PATH : SCRIPT_PATH;
 }
 
@@ -99,7 +100,7 @@ const COMPILER_OPTIONS = {
 /** Cached lib.*.d.ts map; built once (see `createEnv`) and cloned per editor. */
 let cachedLibFilesMap: Map<string, string> | null = null;
 
-async function createEnv(mime: string, context: ScriptApiContext = {}) {
+export async function createEnv(mime: string, context: ScriptApiContext = {}) {
     const tsModule = await import("typescript");
     /* v8 ignore next -- typescript ships as CJS, so the interop namespace always carries
        `default`; the fallback only covers a future ESM-native build. */
@@ -233,8 +234,7 @@ export async function buildTypeCompletion(mime: string, context: ScriptApiContex
     }
 
     const env = await createEnv(mime, context);
-    const [ environment, { getAutocompletion }, { tsLinter }, { tsHover } ] = await Promise.all([
-        import("./codemirror-ts/environment.js"),
+    const [ { getAutocompletion }, { tsLinter }, { tsHover } ] = await Promise.all([
         import("./codemirror-ts/autocomplete.js"),
         import("./codemirror-ts/lint.js"),
         import("./codemirror-ts/hover.js")
@@ -246,10 +246,9 @@ export async function buildTypeCompletion(mime: string, context: ScriptApiContex
 
     return {
         extensions: [
-            environment.tsFacet.of({ env, path }),
-            environment.tsSync(),
-            tsLinter({ diagnosticCodesToIgnore: ignoredDiagnosticCodes(mime) }),
-            tsHover({ renderTooltip: renderHoverTooltip }),
+            tsSync(env, path),
+            tsLinter({ env, path, diagnosticCodesToIgnore: ignoredDiagnosticCodes(mime) }),
+            tsHover({ env, path, renderTooltip: renderHoverTooltip }),
             lintGutter(),
             hoverTheme
         ],
@@ -258,10 +257,29 @@ export async function buildTypeCompletion(mime: string, context: ScriptApiContex
             if (!options) return null;
 
             return options
-                .sort((a, b) => (b.boost ?? 0) - (a.boost ?? 0))
+                .sort((a, b) => b.boost - a.boost)
                 .map(({ label, type }) => ({ label, type }));
         }
     };
+}
+
+/**
+ * Writes the editor's document into the script at `path`: when the plugin joins an editor, at its
+ * creation or through a reconfiguration, and on every change after that.
+ */
+export function tsSync(env: VirtualTypeScriptEnvironment, path: string) {
+    // An empty script reads as missing to `@typescript/vfs` (see `createEnv()`).
+    const sync = (state: EditorState) => env.updateFile(path, state.doc.toString() || " ");
+
+    return ViewPlugin.fromClass(class {
+        constructor(view: EditorView) {
+            sync(view.state);
+        }
+
+        update(update: ViewUpdate) {
+            if (update.docChanged) sync(update.state);
+        }
+    });
 }
 
 /** Separates the JSDoc body/tags from the signature in the hover tooltip. */
