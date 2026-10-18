@@ -20,26 +20,6 @@ export function writeColumns(
 }
 
 /**
- * The config without the columns of one grouping, or nothing where it stores none for it.
- *
- * Used when the attribute a grouping is made from is deleted: `syncColumnsToDefinition` would
- * otherwise write the stored columns into a new definition once the board groups by it again.
- */
-export function removeColumns(
-    config: BoardViewData | undefined,
-    groupBy: string
-): BoardViewData | undefined {
-    const key = boardColumnsKey(groupBy);
-    if (!config || !(key in config)) {
-        return undefined;
-    }
-
-    const removed: BoardViewData = { ...config };
-    delete removed[key];
-    return removed;
-}
-
-/**
  * The config with a pre-switching `columns` list moved under the grouping it belongs to, or nothing
  * where there is none to move.
  *

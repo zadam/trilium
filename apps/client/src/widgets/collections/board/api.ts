@@ -30,7 +30,7 @@ import {
     DEFAULT_CARD_TEMPLATES, DEFAULT_COLUMN_ICON, DEFAULT_COLUMN_WIDTH, DEFAULT_GROUP_BY, INBOX_COLUMN,
     INBOX_COLUMN_ICON, parseColumnWidth
 } from "./columns";
-import { readColumns, removeColumns, writeColumns } from "./column_storage";
+import { readColumns, writeColumns } from "./column_storage";
 import { cardNotes, ColumnItem, ColumnMap } from "./data";
 import {
     cardReference, ColumnReferenceLabel, columnReference, newColumnId, readColumnId
@@ -1040,9 +1040,10 @@ export default class BoardApi {
     }
 
     /**
-     * Runs `deletion`, which deletes the attribute a grouping is made from, then drops the columns
+     * Runs `deletion`, which deletes the attribute a grouping is made from, then empties the columns
      * stored for that grouping so that `syncColumnsToDefinition()` cannot write them back into a
-     * new definition.
+     * new definition. The empty list keeps the grouping's key, without which
+     * `adoptLegacyColumns()` reads the default grouping's `columns` as this grouping's.
      *
      * Counted in `pending.inFlight` while `deletion` runs. A refresh that resolves later still
      * holds the old config, and `hasStoredSince()` keeps it from writing.
@@ -1052,10 +1053,11 @@ export default class BoardApi {
 
         try {
             await deletion();
-            const removed = removeColumns(this.viewConfig, groupBy);
-            if (removed) {
-                this.viewConfig = removed;
-                this.saveConfig(removed);
+            // A board that still reads the deleted definition fills an empty list from its options.
+            await ws.waitForMaxKnownEntityChangeId();
+            if (readColumns(this.viewConfig, groupBy)) {
+                this.viewConfig = writeColumns(this.viewConfig, groupBy, []);
+                this.saveConfig(this.viewConfig);
             }
         } finally {
             this.pending.inFlight--;

@@ -2171,7 +2171,7 @@ describe("deleting the attribute of a grouping", () => {
      * Left in `board.json`, the columns of a deleted grouping are written back into a new
      * definition by `syncColumnsToDefinition` once the board groups by it again.
      */
-    it("drops the stored columns of the grouping once deleted, leaving the rest", async () => {
+    it("empties the stored columns of the grouping once deleted, leaving the rest", async () => {
         const { api, saved } = createApi({
             columns: [ { value: "To Do" }, { value: "Done" } ],
             testViewColumns: [ { value: "A" } ],
@@ -2182,7 +2182,9 @@ describe("deleting the attribute of a grouping", () => {
         await api.deleteGrouping("status", async () => { savedDuringDeletion.push(saved.length); });
 
         expect(savedDuringDeletion).toEqual([ 0 ]);
-        expect(saved).toEqual([ { testViewColumns: [ { value: "A" } ], filterQuery: "#urgent" } ]);
+        expect(saved).toEqual([
+            { columns: [], testViewColumns: [ { value: "A" } ], filterQuery: "#urgent" }
+        ]);
     });
 
     /**
@@ -2199,7 +2201,7 @@ describe("deleting the attribute of a grouping", () => {
         });
 
         expect(inFlightDuringDeletion).toBe(1);
-        expect(saved).toEqual([ {} ]);
+        expect(saved).toEqual([ { columns: [] } ]);
         expect(pending.inFlight).toBe(0);
     });
 

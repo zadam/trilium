@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { BoardViewData } from ".";
-import { adoptLegacyColumns, readColumns, removeColumns, writeColumns } from "./column_storage";
+import { adoptLegacyColumns, readColumns, writeColumns } from "./column_storage";
 
 const CONFIG: BoardViewData = {
     columns: [ { value: "To Do" }, { value: "Done", icon: "bx bx-check" } ],
@@ -52,42 +52,6 @@ describe("writeColumns", () => {
 
         expect(written["~priorityViewColumns"]).toEqual([ { value: "someNoteId" } ]);
         expect(written.priorityViewColumns).toBeUndefined();
-    });
-});
-
-describe("removeColumns", () => {
-    it("drops one grouping's columns without touching another's or the rest of the config", () => {
-        const removed = removeColumns(CONFIG, "priority");
-
-        expect(removed).not.toHaveProperty("priorityViewColumns");
-        expect(removed?.columns).toBe(CONFIG.columns);
-        expect(removed?.templates).toBe(CONFIG.templates);
-        expect(CONFIG.priorityViewColumns).toEqual([ { value: "High", color: "#f00" } ]);
-    });
-
-    it("drops the default grouping's columns from the key every board already uses", () => {
-        for (const groupBy of [ "status", "#status" ]) {
-            const removed = removeColumns(CONFIG, groupBy);
-
-            expect(removed, groupBy).not.toHaveProperty("columns");
-            expect(removed?.priorityViewColumns, groupBy).toBe(CONFIG.priorityViewColumns);
-        }
-    });
-
-    it("keeps a relation apart from the label of the same name", () => {
-        const config: BoardViewData = {
-            "priorityViewColumns": [ { value: "High" } ],
-            "~priorityViewColumns": [ { value: "someNoteId" } ]
-        };
-
-        expect(removeColumns(config, "~priority")).toEqual({
-            priorityViewColumns: [ { value: "High" } ]
-        });
-    });
-
-    it("has nothing to write where the grouping stores no columns", () => {
-        expect(removeColumns(CONFIG, "severity")).toBeUndefined();
-        expect(removeColumns(undefined, "status")).toBeUndefined();
     });
 });
 
