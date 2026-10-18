@@ -751,7 +751,6 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
                     <CardSection>
                         <FormGroup
                             label={t("setup.server-totp-token")} name="serverTotpToken"
-                            description={t("setup.server-totp-token-description")}
                             error={refusedFactor === "totp-required" ? t("setup.totp-required")
                                 : refusedFactor === "totp" ? t("setup.wrong-totp") : undefined}
                         >

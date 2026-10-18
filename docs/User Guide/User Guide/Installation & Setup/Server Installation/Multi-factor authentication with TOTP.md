@@ -21,7 +21,7 @@ TOTP (Time-Based One-Time Password) is a security feature that generates a uniqu
 
 ## Connecting a device to the server
 
-Once TOTP is enabled, connecting a new desktop or mobile app to the server through <a class="reference-link" href="../Synchronization.md">Synchronization</a> also asks for the second factor. On the _Connect to an existing server_ screen, enter a one-time password or a recovery code in _One-time password or recovery code_, next to the server's password. Without it, the server refuses to set up the sync.
+Once TOTP is enabled, connecting a new desktop or mobile app to the server through <a class="reference-link" href="../Synchronization.md">Synchronization</a> also asks for the second factor. On the _Connect to an existing server_ screen, enter a one-time password or a recovery code in _One-time password or recovery code_, below the server's password. Without it, the server refuses to set up the sync.
 
 The second factor is only asked for when a device is first connected. A device that is already set up keeps syncing without it.
 
