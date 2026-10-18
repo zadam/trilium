@@ -415,7 +415,10 @@ describe("CodeMirror", () => {
             const instance = build();
             editor = instance;
             instance.setText("ab\ncd");
-            instance.dispatch({ selection: EditorSelection.cursor(4, -1) });
+            // A transaction keeps the `assoc` of an `EditorSelection`, not of a bare range.
+            const cursor = EditorSelection.cursor(4, -1);
+            instance.dispatch({ selection: EditorSelection.create([ cursor ]) });
+            expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: -1 });
 
             instance.prepareToLeave();
             expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: 0 });
