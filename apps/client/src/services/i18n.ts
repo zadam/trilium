@@ -6,7 +6,10 @@ import { initReactI18next } from "react-i18next";
 /**
  * A deferred promise that resolves when translations are initialized.
  */
-export const translationsInitializedPromise = $.Deferred();
+let resolveTranslationsInitialized = () => {};
+export const translationsInitializedPromise = new Promise<void>((resolve) => {
+    resolveTranslationsInitialized = resolve;
+});
 
 /** Every string in the app proper: 200-300 KB depending on the language. */
 const APP_NAMESPACE = "translation";
@@ -39,11 +42,16 @@ export async function initLocale(locale: LOCALE_IDS = "en", scope: "app" | "entr
         backend: {
             loadPath: `${window.glob.assetPath}/translations/{{lng}}/{{ns}}.json`
         },
+        // Interpolated values are not HTML-escaped: the client renders translated strings as text, where
+        // escaping shows `&#x2F;` and `&#39;` to the reader. A string headed for a sink that takes HTML
+        // escapes its own values: `Menu` titles and `highlightedNotePathTitle` callers use
+        // `escapeHtml()`, and the confirm and info dialogs render through `SanitizedHtml`.
+        interpolation: { escapeValue: false },
         returnEmptyString: false
     });
 
     await setDayjsLocale(locale);
-    translationsInitializedPromise.resolve();
+    resolveTranslationsInitialized();
 }
 
 /**

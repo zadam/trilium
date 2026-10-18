@@ -15,31 +15,21 @@ const ATTACHMENT_PREVIEW_MAX_LENGTH = 200;
 /** Skip expensive content loading/conversion for notes larger than this. */
 const CONTENT_PREVIEW_SIZE_THRESHOLD = 10_000;
 
+/**
+ * Note types the LLM can create or change a note to; each one stores string content. An `image` must
+ * be an SVG ({@link getSvgImageError}).
+ */
+export const LLM_NOTE_TYPES = [
+    "text", "code", "render", "book", "mermaid", "canvas", "webView", "relationMap", "search", "mindMap", "image"
+] as const;
+
+export const SVG_MIME = "image/svg+xml";
+
+/** An optional XML prolog, doctype and comments, then an `<svg>` root element through to `</svg>`. */
+const SVG_SOURCE_RE = /^\s*(?:<\?xml[\s\S]*?\?>\s*)?(?:(?:<!--(?:(?!-->)[\s\S])*-->|<!DOCTYPE[^>]*>)\s*)*<svg[\s>/][\s\S]*<\/svg>\s*$/i;
+
 /** Note IDs that must not be deleted, moved, or cloned by the LLM. */
 export const PROTECTED_SYSTEM_NOTES = new Set(["root", "_hidden", "_share", "_lbRoot", "_globalNoteMap"]);
-
-/** Host-provided reader for doc-note HTML. See {@link registerDocNoteHtmlReader}. */
-let docNoteHtmlReader: ((note: BNote) => string | null) | null = null;
-
-/**
- * Register the host's reader for in-app help pages.
- *
- * `doc` notes (the User Guide) keep no content in the database — their HTML
- * ships as static files, which the server reads off disk. The browser-hosted
- * build has no synchronous way to do that, so hosts that can supply it register
- * a reader here and the rest simply report the content as unavailable.
- */
-export function registerDocNoteHtmlReader(reader: (note: BNote) => string | null) {
-    docNoteHtmlReader = reader;
-}
-
-/**
- * Resolve the HTML of a `doc` note via the registered reader, or null when no
- * reader is registered or it cannot resolve the page.
- */
-export function getDocNoteHtml(note: BNote): string | null {
-    return docNoteHtmlReader?.(note) ?? null;
-}
 
 /**
  * Return `true` if the value is truthy, otherwise `undefined`.
@@ -57,10 +47,9 @@ export function flag(value: boolean | undefined): true | undefined {
  */
 export function getNoteContentForLlm(note: BNote) {
     if (note.type === "doc") {
-        // Doc notes (in-app help / User Guide pages) store no content in the
-        // database — their HTML lives on disk and is fetched by the client.
-        const html = getDocNoteHtml(note);
-        return html ? markdownExport.toMarkdown(html) : "[doc content not available]";
+        // Doc notes hold no content of their own: the client renders an explanatory page picked
+        // by their `docName` label, out of its own translation catalog.
+        return "[doc content not available]";
     }
 
     const content = note.getContent();
@@ -89,6 +78,20 @@ export function setNoteContentFromLlm(note: BNote, content: string) {
     } else {
         note.setContent(content);
     }
+}
+
+/**
+ * Why the LLM cannot write `content` into an image note of `mime`, or `undefined` if it can. The LLM
+ * writes only SVG images, and a truncated reply must not leave a broken image behind.
+ */
+export function getSvgImageError(mime: string, content: string): string | undefined {
+    if (mime !== SVG_MIME) {
+        return `Only SVG images are supported; use mime '${SVG_MIME}'`;
+    }
+    if (!SVG_SOURCE_RE.test(content)) {
+        return "Image content must be complete SVG source: an <svg> root element and its closing </svg>";
+    }
+    return undefined;
 }
 
 /** A single find-and-replace edit applied to note content. */

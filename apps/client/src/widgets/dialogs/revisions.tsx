@@ -4,8 +4,7 @@ import { dayjs, type RevisionItem, type RevisionPojo, safeHostname, safeLinkPrev
 import clsx from "clsx";
 import { diffWords } from "diff";
 import HtmlDiff from "htmldiff-js";
-import { Fragment } from "preact";
-import type { CSSProperties } from "preact/compat";
+import { type CSSProperties, Fragment } from "preact";
 import { Dispatch, StateUpdater, useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context";
@@ -48,8 +47,8 @@ export default function RevisionsDialog() {
     const { isMasterDetail, mobileView, switchMobileView, resetMobileView } = useMobileMasterDetail(modalRef);
     const isMobile = utils.isMobile();
 
-    useTriliumEvent("showRevisions", async ({ noteId }) => {
-        const note = await getNote(noteId);
+    useTriliumEvent("showRevisions", async ({ noteId, ntxId }) => {
+        const note = await getNote(noteId, ntxId);
         if (note) {
             setNote(note);
             // Mobile opens on the revision list; selecting one slides to its detail.
@@ -244,8 +243,7 @@ function RevisionsMenu({ note, onRevisionSaved, onAllDeleted, hasRevisions }: {
             buttonClassName="custom-title-bar-button"
             noSelectButtonStyle
             buttonProps={{ title: t("revisions.menu_tooltip") }}
-            dropdownContainerClassName="mobile-bottom-menu"
-            dropdownOptions={{ popperConfig: { strategy: "fixed" } }}
+            mobileBottomSheet
         >
             <FormListItem
                 icon="bx bx-save"
@@ -635,7 +633,7 @@ function RevisionContent({ noteContent, revisionItem, fullRevision, showDiff }: 
     }
     switch (revisionItem.type) {
         case "text":
-            return <RevisionContentText content={content} />;
+            return <RevisionContentText content={content} noteId={revisionItem.noteId} />;
         case "code":
             return <div className="revision-diff-code">{content}</div>;
         case "image":
@@ -671,7 +669,10 @@ function RevisionContent({ noteContent, revisionItem, fullRevision, showDiff }: 
     }
 }
 
-export function RevisionContentText({ content }: { content: string | Uint8Array | undefined }) {
+export function RevisionContentText({ content, noteId }: {
+    content: string | Uint8Array | undefined;
+    noteId: string;
+}) {
     const contentRef = useRef<HTMLDivElement>(null);
 
     // A revision stores what CKEditor's data downcast produced, and two of those constructs carry
@@ -684,8 +685,8 @@ export function RevisionContentText({ content }: { content: string | Uint8Array 
         if (!container) return;
 
         applyLinkEmbeds(container);
-        void applyReferenceLinks(container);
-    }, [content]);
+        void applyReferenceLinks(container, noteId);
+    }, [content, noteId]);
 
     useEffect(() => {
         if (contentRef.current?.querySelector("span.math-tex")) {
@@ -856,10 +857,10 @@ function FilePreviewInner({ revisionItem, fullRevision }: { revisionItem: Revisi
     return t("revisions.preview_not_available");
 }
 
-async function getNote(noteId?: string | null) {
+async function getNote(noteId: string | null | undefined, ntxId: string | null | undefined) {
     if (noteId) {
         return await froca.getNote(noteId);
     }
-    return appContext.tabManager.getActiveContextNote();
+    return appContext.tabManager.getCommandContext(ntxId)?.note;
 
 }

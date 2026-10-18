@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useState } from "preact/hooks";
 
+import Component from "../../../components/component";
 import type FNote from "../../../entities/fnote";
 import type { PrintReport } from "../../../print";
 import content_renderer from "../../../services/content_renderer";
 import froca from "../../../services/froca";
+import { waitForPendingRenders } from "../../../services/pending_renders";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content";
 import type { ViewModeProps } from "../interface";
 import { filterChildNotes, useFilteredNoteIds } from "./utils";
@@ -33,12 +35,17 @@ export function ListPrintView({ note, noteIds: unfilteredNoteIds, onReady, onPro
                     const content = await content_renderer.getRenderedContent(note, {
                         trim: false,
                         noChildrenList: true,
-                        // Printing preserves full include-note nesting (see expandNestedIncludes).
-                        expandNestedIncludes: true,
-                        mediaEnvironment: "native"
+                        // Printing preserves full embed nesting (see expandNestedEmbeds).
+                        expandNestedEmbeds: true,
+                        mediaEnvironment: "native",
+                        // The copied content has no component tree, so a JSX render note mounts under this root.
+                        parentComponent: new Component()
                     });
 
                     const contentEl = content.$renderedContent[0];
+                    // A render note's script finishes after `getRenderedContent()`, and its
+                    // output is copied below, so wait for it first.
+                    await waitForPendingRenders(contentEl);
 
                     insertPageTitle(contentEl, note.title);
                     rewriteHeadings(contentEl, depth);

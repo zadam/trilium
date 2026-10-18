@@ -1,14 +1,16 @@
 import "./ScrollableLabel.css";
 
 import clsx from "clsx";
-import type { ComponentChildren } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { type ComponentChildren, createRef, type RefObject, render } from "preact";
+import { useCallback, useEffect, useRef } from "preact/hooks";
 
-/** Fractional scroll offsets are reported at sub-pixel precision, so an edge is never tested exactly. */
-const EDGE_EPSILON = 1;
+import { useScrollFade } from "./scroll_fade";
 
 /** How fast a label reads itself out, in pixels a second: walking pace for the eye, not a marquee. */
 const AUTO_SCROLL_SPEED = 30;
+
+/** How far a pressed mouse moves along the label before it drags the line, in pixels. */
+const DRAG_THRESHOLD = 4;
 
 interface ScrollableLabelProps {
     children?: ComponentChildren;
@@ -35,12 +37,16 @@ interface ScrollableLabelProps {
  */
 export default function ScrollableLabel({ children, className, autoScroll }: ScrollableLabelProps) {
     const ref = useRef<HTMLDivElement>(null);
-    const [ fades, setFades ] = useState({ start: false, end: false });
-    // How much of the line lies outside the box. Kept because the walk below starts over whenever it
-    // changes, which is what walks a label whose words arrived after it did — a path waiting on its
-    // titles — without asking the caller to say so, and without restarting on a render that changed
-    // nothing (children given as elements rather than as text are a new value every time).
-    const [ overflow, setOverflow ] = useState(0);
+    // The walk below starts over whenever the overflow changes, which is what walks a label whose
+    // words arrived after it did, a path waiting on its titles, without asking the caller to say so
+    // and without restarting on a render that changed nothing.
+    // `minOverflow` is dropped to a pixel: a line cut off by a character still has to read as cut
+    // off, and the walk below runs on any overflow at all.
+    const { className: fadeClass, overflow } = useScrollFade(ref, {
+        direction: "horizontal",
+        minOverflow: 1
+    });
+    useMouseDragScroll(ref);
     // Set by the reader's own first scroll, and cleared only by a remount, which is what a new label
     // is: a walk they interrupted must not start again while the same line is still on screen. A
     // consumer whose label changes what it names keys it, so the new one arrives with a fresh walk.
@@ -48,49 +54,6 @@ export default function ScrollableLabel({ children, className, autoScroll }: Scr
     const handOver = useCallback(() => {
         handedOver.current = true;
     }, []);
-
-    const update = useCallback(() => {
-        const element = ref.current;
-
-        if (!element) {
-            return;
-        }
-
-        // Read as a distance travelled rather than as a coordinate: a right-to-left page scrolls the
-        // same line towards negative offsets, and both ends are the same question either way.
-        const travelled = Math.abs(element.scrollLeft);
-        const total = element.scrollWidth - element.clientWidth;
-
-        setOverflow(total);
-
-        const next = {
-            start: travelled > EDGE_EPSILON,
-            end: travelled < total - EDGE_EPSILON
-        };
-
-        setFades((current) =>
-            current.start === next.start && current.end === next.end ? current : next);
-    }, []);
-
-    useEffect(() => {
-        const element = ref.current;
-
-        if (!element) {
-            return;
-        }
-
-        update();
-
-        // The box can be resized without the text changing, and the pane this sits in is resized by
-        // everything from a rotation to a keyboard opening.
-        const observer = new ResizeObserver(update);
-
-        observer.observe(element);
-
-        return () => observer.disconnect();
-        // Re-measured on a new label as well: the same box holding a longer name overflows where the
-        // last one did not, and no resize says so.
-    }, [ update, children ]);
 
     useEffect(() => {
         const element = ref.current;
@@ -147,13 +110,7 @@ export default function ScrollableLabel({ children, className, autoScroll }: Scr
     return (
         <div
             ref={ref}
-            className={clsx(
-                "scrollable-label",
-                fades.start && "scrollable-label-fade-start",
-                fades.end && "scrollable-label-fade-end",
-                className
-            )}
-            onScroll={update}
+            className={clsx("scrollable-label", fadeClass, className)}
             // The gesture rather than the scrolling it causes: a pointer going down on the label, or a
             // wheel over it, says the reader has taken over before the line has moved an inch. Which
             // is also why this is not read off the scroll events, where the walk's own scrolling and
@@ -162,6 +119,115 @@ export default function ScrollableLabel({ children, className, autoScroll }: Scr
             onWheel={autoScroll ? handOver : undefined}
         >{children}</div>
     );
+}
+
+/**
+ * Moves the content of `element`, which Preact does not render, into a {@link ScrollableLabel}
+ * mounted inside it. Returns a function that unmounts the label and puts the content back.
+ */
+export function mountScrollableLabel(element: HTMLElement) {
+    // `render()` reuses or removes the children it finds in `element`.
+    const nodes = [ ...element.childNodes ];
+    element.replaceChildren();
+
+    const contentRef = createRef<HTMLSpanElement>();
+    render(<ScrollableLabel><span ref={contentRef} /></ScrollableLabel>, element);
+    const content = contentRef.current;
+    content?.append(...nodes);
+
+    return () => {
+        const current = content ? [ ...content.childNodes ] : nodes;
+        render(null, element);
+        element.replaceChildren(...current);
+    };
+}
+
+/**
+ * Scrolls the label in `ref` with a mouse dragged along it, as a swipe does on a touch screen.
+ * While the label overflows, a mouse press on it starts no native drag, such as that of a link, and
+ * no text selection, and the click that ends a drag is canceled.
+ */
+function useMouseDragScroll(ref: RefObject<HTMLElement | null>) {
+    useEffect(() => {
+        const element = ref.current;
+        if (!element) return;
+
+        let press: { pointerId: number; x: number; scrollLeft: number; isDragging: boolean }
+            | undefined;
+        let isClickCanceled = false;
+
+        // `user-select: none` on a pressed label keeps Firefox from starting a selection drag, whose
+        // autoscroll moves the label toward the pointer even when `selectstart` is canceled.
+        const setPress = (next: typeof press) => {
+            press = next;
+            element.toggleAttribute("data-pressed", !!next);
+        };
+
+        const onPointerDown = (event: PointerEvent) => {
+            isClickCanceled = false;
+            setPress(event.pointerType === "mouse" && event.button === 0
+                && element.scrollWidth > element.clientWidth
+                ? {
+                    pointerId: event.pointerId,
+                    x: event.clientX,
+                    scrollLeft: element.scrollLeft,
+                    isDragging: false
+                }
+                : undefined);
+        };
+        const onPointerMove = (event: PointerEvent) => {
+            if (event.pointerId !== press?.pointerId) return;
+            // Released away from the label before the drag captured the pointer.
+            if (!(event.buttons & 1)) {
+                setPress(undefined);
+                return;
+            }
+
+            const distance = event.clientX - press.x;
+            if (!press.isDragging && Math.abs(distance) >= DRAG_THRESHOLD) {
+                press.isDragging = true;
+                // Keeps the drag going once the pointer leaves the label.
+                element.setPointerCapture(event.pointerId);
+            }
+            if (press.isDragging) {
+                element.scrollLeft = press.scrollLeft - distance;
+            }
+        };
+        const onPointerUp = (event: PointerEvent) => {
+            if (event.pointerId !== press?.pointerId) return;
+
+            isClickCanceled = event.type === "pointerup" && press.isDragging;
+            setPress(undefined);
+        };
+        const preventWhilePressed = (event: Event) => {
+            if (press) {
+                event.preventDefault();
+            }
+        };
+        const cancelClick = (event: MouseEvent) => {
+            if (isClickCanceled) {
+                isClickCanceled = false;
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        };
+
+        element.addEventListener("pointerdown", onPointerDown);
+        element.addEventListener("pointermove", onPointerMove);
+        element.addEventListener("pointerup", onPointerUp);
+        element.addEventListener("pointercancel", onPointerUp);
+        element.addEventListener("dragstart", preventWhilePressed);
+        element.addEventListener("click", cancelClick, true);
+        return () => {
+            element.removeEventListener("pointerdown", onPointerDown);
+            element.removeEventListener("pointermove", onPointerMove);
+            element.removeEventListener("pointerup", onPointerUp);
+            element.removeEventListener("pointercancel", onPointerUp);
+            element.removeEventListener("dragstart", preventWhilePressed);
+            element.removeEventListener("click", cancelClick, true);
+            element.removeAttribute("data-pressed");
+        };
+    }, [ ref ]);
 }
 
 /** A line that moves on its own is the thing this setting is there to ask for less of. */

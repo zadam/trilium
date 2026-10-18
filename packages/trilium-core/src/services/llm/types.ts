@@ -4,8 +4,11 @@
  * should be imported from @triliumnext/commons.
  */
 
-import type { LlmChatConfig, LlmMessage, LlmStreamChunk } from "@triliumnext/commons";
+import type { LlmAttachmentKind, LlmChatConfig, LlmMessage, LlmReasoningEffort, LlmStreamChunk } from "@triliumnext/commons";
 import type { streamText } from "ai";
+
+import type { ToolApprovals } from "./tool_approval.js";
+import type { WebSearchSetup } from "./web_search.js";
 
 /**
  * Extended provider config with server-specific options.
@@ -13,6 +16,16 @@ import type { streamText } from "ai";
 export interface LlmProviderConfig extends LlmChatConfig {
     maxTokens?: number;
     temperature?: number;
+    /**
+     * The search provider named by {@link LlmChatConfig.webSearchProviderId}, resolved by
+     * `runChat()`. When set, web search goes through it instead of the model's built-in search.
+     */
+    webSearch?: WebSearchSetup;
+    /**
+     * Where the turn asks the user about each tool call, set by `runChat()`. Absent, the
+     * tools run unasked.
+     */
+    toolApprovals?: ToolApprovals;
 }
 
 /**
@@ -56,6 +69,12 @@ export interface ModelInfo {
     recommended?: boolean;
     /** Whether usage is covered by a subscription plan rather than metered per token */
     isSubscription?: boolean;
+    /** The reasoning efforts the model can be run at, weakest first; see `LlmModelInfo`. */
+    reasoningEfforts?: LlmReasoningEffort[];
+    /** The effort used when a chat has not chosen one. */
+    defaultReasoningEffort?: LlmReasoningEffort;
+    /** The attachment kinds the model reads natively; see `LlmModelInfo`. */
+    attachmentKinds?: LlmAttachmentKind[];
 }
 
 export interface LlmProvider {
@@ -64,10 +83,13 @@ export interface LlmProvider {
     /**
      * Create a streaming chat completion.
      * Returns the AI SDK StreamResult which is provider-agnostic.
+     *
+     * @param signal stops the completion and any tool call in progress when the user stops the turn
      */
     chat(
         messages: LlmMessage[],
-        config: LlmProviderConfig
+        config: LlmProviderConfig,
+        signal?: AbortSignal
     ): StreamResult;
 
     /**

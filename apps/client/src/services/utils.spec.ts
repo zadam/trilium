@@ -1,3 +1,4 @@
+import type { ViteHotContext } from "vite/types/hot.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import utils, {
@@ -8,6 +9,7 @@ import utils, {
     escapeHtml,
     escapeQuotes,
     escapeRegExp,
+    fileAccept,
     formatDateTime,
     formatSize,
     getErrorMessage,
@@ -30,6 +32,7 @@ import utils, {
     reloadFrontendApp,
     replaceHtmlEscapedSlashes,
     restartDesktopApp,
+    reuseAcrossHotReloads,
     rootCauseMessage,
     toggleBodyClass
 } from "./utils.js";
@@ -115,6 +118,20 @@ describe("formatSize", () => {
         // list with whatever power of 1024 the size came to.
         expect(formatSize(3 * 1024 ** 4)).toBe("3 TiB");
         expect(formatSize(5 * 1024 ** 5)).toBe("5120 TiB");
+    });
+
+    it("shows a size in another size's unit, for figures read down a column", () => {
+        const total = 711_000_000;
+        expect(formatSize(643_854, 2, total)).toBe("0.61 MiB");
+        expect(formatSize(40_257_283, 2, total)).toBe("38.39 MiB");
+        expect(formatSize(0, 2, total)).toBe("0.00 MiB");
+    });
+
+    it("shows a size too small for the places of its unit as below the smallest step", () => {
+        const total = 2.5 * 1024 ** 3;
+        expect(formatSize(643_854, 2, total)).toBe("<0.01 GiB");
+        expect(formatSize(643_854, 0, total)).toBe("<1 GiB");
+        expect(formatSize(0, 2, total)).toBe("0.00 GiB");
     });
 
     it("keeps the places it is given, trailing zeros and all", () => {
@@ -216,9 +233,11 @@ describe("isHtmlEmpty", () => {
         expect(isHtmlEmpty("<p>  </p>")).toBe(true);
     });
 
-    it("detects content via img / section / link-mention", () => {
+    it("detects content via img / section / include / link-mention", () => {
         expect(isHtmlEmpty("<IMG src='x'>")).toBe(false);
         expect(isHtmlEmpty("<SECTION></section>")).toBe(false);
+        expect(isHtmlEmpty("<figure class=\"include-note\" data-note-id=\"n1\">&nbsp;</figure>"))
+            .toBe(false);
         expect(isHtmlEmpty("<span class='link-mention'></span>")).toBe(false);
     });
 
@@ -303,6 +322,19 @@ describe("platform / device detection", () => {
         (window as any).Capacitor = { isNativePlatform: () => true };
         expect(isMobileApp()).toBe(true);
         delete (window as any).Capacitor;
+    });
+
+    it("fileAccept widens the filter on Android and iOS only", () => {
+        const uaSpy = vi.spyOn(navigator, "userAgent", "get");
+
+        uaSpy.mockReturnValue("Mozilla/5.0 (X11; Linux x86_64) Chrome/120.0.0.0");
+        expect(fileAccept(".gpx,application/gpx+xml")).toBe(".gpx,application/gpx+xml");
+
+        uaSpy.mockReturnValue("Mozilla/5.0 (Linux; Android 14; SM-S911B) Chrome/120.0.0.0 Mobile");
+        expect(fileAccept(".gpx,application/gpx+xml")).toBe("*/*");
+
+        uaSpy.mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari/605.1");
+        expect(fileAccept(".enex")).toBe("*/*");
     });
 
     it("isMobile / isDesktop respond to glob.device", () => {
@@ -995,5 +1027,21 @@ describe("isPreAuthScreen", () => {
     it("does NOT flag an unset glob (unit-test / unknown state) — strict === false keeps eager loads working", () => {
         setGlob({});
         expect(isPreAuthScreen()).toBe(false);
+    });
+});
+
+describe("reuseAcrossHotReloads", () => {
+    it("returns the stored instance on re-evaluation, and a fresh one without `hot.data`", () => {
+        const hot = { data: {} } as unknown as ViteHotContext;
+        const create = vi.fn(() => ({}));
+
+        const first = reuseAcrossHotReloads(hot, create);
+        expect(reuseAcrossHotReloads(hot, create)).toBe(first);
+        expect(create).toHaveBeenCalledTimes(1);
+
+        // Vitest's `import.meta.hot` stub has no `data`.
+        const stub = {} as unknown as ViteHotContext;
+        expect(reuseAcrossHotReloads(stub, create)).not.toBe(reuseAcrossHotReloads(stub, create));
+        expect(reuseAcrossHotReloads(undefined, create)).not.toBe(first);
     });
 });

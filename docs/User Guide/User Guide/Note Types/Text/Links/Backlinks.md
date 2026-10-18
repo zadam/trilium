@@ -5,13 +5,13 @@ Backlinks are maintained automatically and are read-only from this side. A backl
 
 ## What counts as a backlink
 
-Any r<a class="reference-link" href="Internal%20(reference)%20links.md">Internal (reference) links</a> pointing at the current note, which covers two rather different cases:
+Any <a class="reference-link" href="Internal%20(reference)%20links.md">Internal (reference) links</a> pointing at the current note, which covers two rather different cases:
 
 *   Relations that Trilium maintains on your behalf.
     *   The most common is `internalLink`, created whenever a note refers to another one through <a class="reference-link" href="Internal%20(reference)%20links.md">Internal (reference) links</a> in its text.
     *   Embedded images (`imageLink`), relation map connections (`relationMapLink`) and note inclusions (`includeNoteLink`) work the same way.
 *   Relations you define yourself.
-    *   If another note carries `~author` pointing at the current note, that note is listed here as well.
+    *   If another note has `~author` pointing at the current note, that note is listed here as well.
 
 Relations coming from a <a class="reference-link" href="../../Saved%20Search.md">Saved Search</a> are excluded, since a search stores an `ancestor` relation that would otherwise list every one of its results as a backlink.
 
@@ -35,6 +35,6 @@ Of note:
 ## Where backlinks are shown
 
 *   In the <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/UI%20Elements/Right%20Sidebar/Connections%20tab.md">Connections tab</a> of the <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/UI%20Elements/Right%20Sidebar.md">Right Sidebar</a>, as a dedicated section.
-*   As a badge in the <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/UI%20Elements/New%20Layout/Status%20bar.md">Status bar</a> showing the number of backlinks. The badge only appears when the note is being read normally (not in a revision or attachment view) and when there is at least one backlink; pressing it opens the section above.
+*   As a badge in the <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a> showing the number of backlinks. The badge only appears when the note is being read normally (not in a revision or attachment view) and when there is at least one backlink; pressing it opens the section above.
+*   In <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/Navigation/Quick%20edit.md">Quick edit</a>, as a button with a link icon in the header of the popup, under the same conditions; its tooltip gives the number of backlinks. Pressing a backlink opens that note in the popup.
 *   Incoming links are also drawn on the link map, see <a class="reference-link" href="../../../Advanced%20Usage/Note%20Map%20(Link%20map%2C%20Tree%20map).md">Note Map (Link map, Tree map)</a>.
-*   On the old layout, backlinks are showed as a dedicated button in the <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/UI%20Elements/Floating%20buttons.md">Floating buttons</a> area.

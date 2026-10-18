@@ -37,9 +37,11 @@ function makeCallbacks(): Record<keyof StreamCallbacks, ReturnType<typeof vi.fn>
         onToolInputStart: vi.fn(),
         onToolInputDelta: vi.fn(),
         onToolUse: vi.fn(),
+        onToolApprovalRequest: vi.fn(),
         onToolResult: vi.fn(),
         onCitation: vi.fn(),
         onUsage: vi.fn(),
+        onStatus: vi.fn(),
         onError: vi.fn(),
         onDone: vi.fn()
     } as Record<keyof StreamCallbacks, ReturnType<typeof vi.fn>> & StreamCallbacks;
@@ -51,36 +53,44 @@ const config = {} as LlmChatConfig;
 describe("fetchProviderModels", () => {
     it("posts the provider credentials and returns the models array", async () => {
         const models = [{ id: "gpt-4.1", name: "gpt", provider: "openai" }];
-        server.post = vi.fn(async () => ({ models })) as typeof server.post;
+        server.postWithTimeout = vi.fn(async () => ({ models })) as typeof server.postWithTimeout;
         const query = { provider: "openai", apiKey: "sk-test", baseURL: "http://localhost:11434/v1" };
         await expect(fetchProviderModels(query)).resolves.toBe(models);
-        expect(server.post).toHaveBeenCalledWith("llm-chat/provider-models", query);
+        // The model-selection screen shows a failure inline, so no toast repeats it.
+        expect(server.postWithTimeout).toHaveBeenCalledWith("llm-chat/provider-models", 60_000, query, undefined, { silentBadRequest: true });
+    });
+
+    it("waits as long as the provider asks for", async () => {
+        server.postWithTimeout = vi.fn(async () => ({ models: [] })) as typeof server.postWithTimeout;
+        const query = { provider: "openai" };
+        await fetchProviderModels(query, 90_000);
+        expect(server.postWithTimeout).toHaveBeenCalledWith("llm-chat/provider-models", 90_000, query, undefined, { silentBadRequest: true });
     });
 
     it("defaults to an empty array when models is absent", async () => {
-        server.post = vi.fn(async () => ({})) as typeof server.post;
+        server.postWithTimeout = vi.fn(async () => ({})) as typeof server.postWithTimeout;
         await expect(fetchProviderModels({ provider: "openai" })).resolves.toEqual([]);
     });
 
     it("surfaces the server error message when the request fails", async () => {
         // server.post rejects with the raw response body (a { message } JSON string).
-        server.post = vi.fn(async () => { throw '{"message":"Authentication failed (HTTP 401) — check the API key."}'; }) as typeof server.post;
+        server.postWithTimeout = vi.fn(async () => { throw '{"message":"Authentication failed (HTTP 401) — check the API key."}'; }) as typeof server.postWithTimeout;
         await expect(fetchProviderModels({ provider: "openai", apiKey: "bad" }))
             .rejects.toThrow("Authentication failed (HTTP 401) — check the API key.");
     });
 
     it("falls back to the raw rejection when it isn't a JSON error body", async () => {
-        server.post = vi.fn(async () => { throw "rejected by browser"; }) as typeof server.post;
+        server.postWithTimeout = vi.fn(async () => { throw "rejected by browser"; }) as typeof server.postWithTimeout;
         await expect(fetchProviderModels({ provider: "openai" })).rejects.toThrow("rejected by browser");
     });
 
     it("uses an Error's message when the rejection is an Error object", async () => {
-        server.post = vi.fn(async () => { throw new Error("network down"); }) as typeof server.post;
+        server.postWithTimeout = vi.fn(async () => { throw new Error("network down"); }) as typeof server.postWithTimeout;
         await expect(fetchProviderModels({ provider: "openai" })).rejects.toThrow("network down");
     });
 
     it("stringifies a non-string, non-Error rejection", async () => {
-        server.post = vi.fn(async () => { throw { code: 500 }; }) as typeof server.post;
+        server.postWithTimeout = vi.fn(async () => { throw { code: 500 }; }) as typeof server.postWithTimeout;
         await expect(fetchProviderModels({ provider: "openai" })).rejects.toThrow("[object Object]");
     });
 });
@@ -107,8 +117,26 @@ describe("streamChatCompletion", () => {
         expect(init.method).toBe("POST");
         expect((init.headers as Record<string, string>)["Content-Type"]).toBe("application/json");
         expect((init.headers as Record<string, string>)["x-csrf-token"]).toBe("tok");
-        expect(init.body).toBe(JSON.stringify({ messages, config }));
+        expect(JSON.parse(init.body as string)).toEqual({ streamId: expect.any(String), messages, config });
         expect(cb.onChunk).toHaveBeenCalledWith("hello");
+    });
+
+    it("hands a waiting tool call to the chat with a way to answer it under the stream's id", async () => {
+        const request = { toolCallId: "c1", toolName: "delete_note", toolInput: { noteId: "a" } };
+        const fetchMock = vi.fn(async () => makeStreamResponse([`data: ${JSON.stringify({ type: "tool_approval_request", ...request })}\n`]));
+        vi.stubGlobal("fetch", fetchMock);
+        server.post = vi.fn(async () => ({ answered: true })) as typeof server.post;
+
+        const cb = makeCallbacks();
+        await streamChatCompletion(messages, config, cb);
+        expect(cb.onToolApprovalRequest).toHaveBeenCalledExactlyOnceWith(request, expect.any(Function));
+
+        const answer = cb.onToolApprovalRequest.mock.calls[0][1] as (approved: boolean, scope?: "chat") => Promise<void>;
+        await answer(false);
+        const { streamId } = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+        expect(server.post).toHaveBeenCalledExactlyOnceWith("llm-chat/tool-approval", { streamId, toolCallId: "c1", approved: false });
+        await answer(true, "chat");
+        expect(server.post).toHaveBeenLastCalledWith("llm-chat/tool-approval", { streamId, toolCallId: "c1", approved: true, scope: "chat" });
     });
 
     it("rethrows an AbortError from fetch (user stopped)", async () => {
@@ -154,6 +182,7 @@ describe("streamChatCompletion", () => {
 
     it("dispatches every SSE event type to the matching callback", async () => {
         const events = [
+            { type: "status", status: "starting_agent" },
             { type: "text", content: "T" },
             { type: "thinking", content: "TH" },
             { type: "tool_input_start", toolCallId: "c1", toolName: "search" },
@@ -178,6 +207,7 @@ describe("streamChatCompletion", () => {
         const cb = makeCallbacks();
         await streamChatCompletion(messages, config, cb);
 
+        expect(cb.onStatus).toHaveBeenCalledWith("starting_agent");
         expect(cb.onChunk).toHaveBeenCalledWith("T");
         expect(cb.onThinking).toHaveBeenCalledWith("TH");
         expect(cb.onToolInputStart).toHaveBeenCalledWith("c1", "search");

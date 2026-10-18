@@ -1,31 +1,37 @@
 import "./NoteList.css";
 
-import { WebSocketMessage } from "@triliumnext/commons";
+import { HighlightedTokenInfo, WebSocketMessage } from "@triliumnext/commons";
 import { Component, VNode } from "preact";
 import { lazy, Suspense } from "preact/compat";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import FNote from "../../entities/fnote";
 import type { PrintReport } from "../../print";
-import froca from "../../services/froca";
 import { subscribeToMessages, unsubscribeToMessage as unsubscribeFromMessage } from "../../services/ws";
-import { useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteProperty, useTriliumEvent } from "../react/hooks";
+import { useGetContextDataFrom, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelInt, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import { allViewTypes, ViewModeMedia, ViewModeProps, ViewTypeOptions } from "./interface";
 import ViewModeStorage, { type ViewModeStorageType } from "./view_mode_storage";
 
 interface NoteListProps {
     note: FNote | null | undefined;
     notePath: string | null | undefined;
-    highlightedTokens?: string[] | null;
+    highlightedTokens?: (string | HighlightedTokenInfo)[] | null;
     /** if set to `true` then only collection-type views are displayed such as geo-map and the calendar. The original book types grid and list will be ignored. */
     displayOnlyCollections?: boolean;
     isEnabled: boolean;
+    /**
+     * When false, the note's content is still being loaded and the legacy list/grid views hold off
+     * their visibility check: without content the widget sits inside the viewport, so observing it
+     * now would latch it visible on effectively every note. Defaults to true.
+     */
+    contentReady?: boolean;
     ntxId: string | null | undefined;
     media: ViewModeMedia;
     viewType: ViewTypeOptions | undefined;
     onReady?: (data: PrintReport) => void;
     onProgressChanged?(progress: number): void;
     showTextRepresentation?: boolean;
+    onOpenNote?: (noteId: string) => void;
 }
 
 type LazyLoadedComponent = ((props: ViewModeProps<any>) => VNode<any> | undefined);
@@ -62,11 +68,13 @@ export default function NoteList(props: Pick<NoteListProps, "displayOnlyCollecti
     const { note, noteContext, notePath, ntxId, viewScope } = useNoteContext();
     const viewType = useNoteViewType(note);
     const noteType = useNoteProperty(note, "type");
+    const contentLoad = useGetContextDataFrom(noteContext, "contentLoad");
     const [ enabled, setEnabled ] = useState(noteContext?.hasNoteList());
     useEffect(() => {
         setEnabled(noteContext?.hasNoteList());
     }, [ note, noteContext, viewType, viewScope?.viewMode, noteType ]);
-    return <CustomNoteList viewType={viewType} note={note} isEnabled={!!enabled} notePath={notePath} ntxId={ntxId} {...props} />;
+    return <CustomNoteList viewType={viewType} note={note} isEnabled={!!enabled} notePath={notePath} ntxId={ntxId}
+                           contentReady={contentLoad?.state !== "loading"} {...props} />;
 }
 
 export function SearchNoteList(props: Omit<NoteListProps, "isEnabled" | "viewType">) {
@@ -83,7 +91,7 @@ export function EmbeddedNoteList(props: Omit<NoteListProps, "isEnabled" | "viewT
     return <CustomNoteList {...props} isEnabled={true} viewType={viewType} />;
 }
 
-export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, notePath, highlightedTokens, displayOnlyCollections, ntxId, onReady, onProgressChanged, ...restProps }: NoteListProps) {
+export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, contentReady = true, notePath, highlightedTokens, displayOnlyCollections, ntxId, onReady, onProgressChanged, ...restProps }: NoteListProps) {
     const widgetRef = useRef<HTMLDivElement>(null);
     const noteIds = useNoteIds(shouldEnable ? note : null, viewType, ntxId);
     const isFullHeight = (viewType && viewType !== "list" && viewType !== "grid");
@@ -94,6 +102,13 @@ export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, notePa
     useEffect(() => {
         if (isFullHeight || displayOnlyCollections || note?.type === "book") {
             // Double role: no need to check if the note list is visible if the view is full-height or book, but also prevent legacy views if `displayOnlyCollections` is true.
+            return;
+        }
+
+        if (!contentReady) {
+            // Drop any previous latch and wait for the load to finish before observing — a note
+            // switch reports "loading" again, so this also resets the latch across note switches.
+            setIsIntersecting(false);
             return;
         }
 
@@ -115,9 +130,12 @@ export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, notePa
 
         // there seems to be a race condition on Firefox which triggers the observer only before the widget is visible
         // (intersection is false). https://github.com/zadam/trilium/issues/4165
-        setTimeout(() => widgetRef.current && observer.observe(widgetRef.current), 10);
-        return () => observer.disconnect();
-    }, [ widgetRef, isFullHeight, displayOnlyCollections, note ]);
+        const observeTimeout = setTimeout(() => widgetRef.current && observer.observe(widgetRef.current), 10);
+        return () => {
+            clearTimeout(observeTimeout);
+            observer.disconnect();
+        };
+    }, [ widgetRef, isFullHeight, displayOnlyCollections, note, contentReady ]);
 
     // Preload the configuration.
     let props: ViewModeProps<any> | undefined | null = null;
@@ -171,6 +189,9 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
     const [ noteIds, setNoteIds ] = useState<string[]>([]);
     const [ includeArchived ] = useNoteLabelBoolean(note, "includeArchived");
     const directChildrenOnly = (viewType === "list" || viewType === "grid" || viewType === "table" || viewType === "dashboard" || note?.type === "search");
+    const [ labelMaxDepth ] = useNoteLabelInt(note, "maxNestingDepth");
+    const maxDepth = (viewType === "calendar" || viewType === "geoMap" || viewType === "board")
+        ? labelMaxDepth : undefined;
     // getNoteIds can do a server round-trip (archive filtering), so concurrent refreshes may resolve
     // out of order. Track the latest issued refresh so a stale one can't clobber a newer result.
     const refreshSeqRef = useRef(0);
@@ -192,14 +213,14 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
         if (directChildrenOnly) {
             return await note.getChildNoteIdsWithArchiveFiltering(includeArchived);
         }
-        return await note.getSubtreeNoteIds(includeArchived);
+        return await note.getSubtreeNoteIds(includeArchived, maxDepth);
 
     }
 
     // Refresh on note switch.
     useEffect(() => {
         refreshNoteIds();
-    }, [ note, includeArchived, directChildrenOnly ]);
+    }, [ note, includeArchived, directChildrenOnly, maxDepth ]);
 
     // Refresh on alterations to the note subtree.
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
@@ -222,24 +243,19 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
 
     // Refresh on import.
     useEffect(() => {
-        async function onImport(message: WebSocketMessage) {
+        function onImport(message: WebSocketMessage) {
             if (!("taskType" in message) || message.taskType !== "importNotes" || message.type !== "taskSucceeded") return;
             const { parentNoteId, importedNoteId } = message.result;
             if (!parentNoteId || !importedNoteId) return;
-            if (importedNoteId && (parentNoteId === note?.noteId || noteIds.includes(parentNoteId))) {
-                const importedNote = await froca.getNote(importedNoteId);
-                if (!importedNote) return;
-                setNoteIds([
-                    ...noteIds,
-                    ...await getNoteIds(importedNote),
-                    importedNoteId
-                ]);
+            // Walked again from the collection, so that `maxDepth` counts from there.
+            if (parentNoteId === note?.noteId || noteIds.includes(parentNoteId)) {
+                void refreshNoteIds();
             }
         }
 
         subscribeToMessages(onImport);
         return () => unsubscribeFromMessage(onImport);
-    }, [ note, noteIds, setNoteIds ]);
+    }, [ note, noteIds, includeArchived, directChildrenOnly, maxDepth ]);
 
     return noteIds;
 }
@@ -254,20 +270,25 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
         config: T | undefined;
         storeFn: (data: T) => void;
         note: FNote;
+        viewType: ViewModeStorageType;
     }>();
-    const storageRef = useRef<{ storage: ViewModeStorage<T>, storeFn: (data: T) => void, note: FNote }>();
+    const storageRef = useRef<{ storage: ViewModeStorage<T>, storeFn: (data: T) => void, note: FNote, viewType: ViewModeStorageType } | undefined>(undefined);
 
     useEffect(() => {
         if (!note || !viewType) return;
         setViewConfig(undefined);
         const viewStorage = new ViewModeStorage<T>(note, viewType);
         const storeFn = (config: T) => {
-            setViewConfig({ note, config, storeFn });
+            setViewConfig({ note, viewType, config, storeFn });
             viewStorage.store(config);
         };
-        storageRef.current = { storage: viewStorage, storeFn, note };
+        const current = { storage: viewStorage, storeFn, note, viewType };
+        storageRef.current = current;
         viewStorage.restore().then(config => {
-            setViewConfig({ note, config, storeFn });
+            // A restore that resolves after the note or view type changed would replace the newer
+            // config.
+            if (storageRef.current !== current) return;
+            setViewConfig({ note, viewType, config, storeFn });
         });
     }, [ note, viewType ]);
 
@@ -282,12 +303,13 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
             return;
         }
         current.storage.restoreIfChanged().then(config => {
-            if (config === undefined) return;
-            setViewConfig({ note: current.note, config, storeFn: current.storeFn });
+            if (config === undefined || storageRef.current !== current) return;
+            setViewConfig({ note: current.note, viewType: current.viewType, config, storeFn: current.storeFn });
         });
     });
 
-    // Only expose config for the current note, avoid leaking notes when switching between them.
-    if (viewConfig?.note !== note) return undefined;
+    // Only expose the config of the current note and view type, so a view never receives the config
+    // or `storeFn` of the one it replaced before the effect above resets them.
+    if (viewConfig?.note !== note || viewConfig?.viewType !== viewType) return undefined;
     return viewConfig;
 }

@@ -19,10 +19,13 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes
 は、大規模な個人知識ベースの構築に重点を置いた、無料かつオープンソースのクロスプラットフォームの階層型ノート作成アプリケーションです。
+
+"Trillium Notes" をお探しですか？このプロジェクトの正式な綴りは "Trilium Notes" で、`l` が 1 つです。
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -185,7 +188,7 @@ Trilium のインスタンスを完全に動作させることができ、完全
 
 iOS ネイティブアプリをお探しなら、[Trinote](https://apps.apple.com/us/app/trinote/id6761228249)
 が利用可能です。これは、セルフホスト型の Trilium または TriliumNext
-サーバー向けのオープンソースクライアントです。ノートツリーの閲覧・整理、サーバー上のノート検索、あらゆる種類のノート（テキスト、コード、マインドマップ、スプレッドシート、ジオマップ、キャンバスなど）の読み書きが可能なほか、オフラインでもノートの閲覧や編集が行えます。開発への貢献にご興味がある方はこちらの[リポジトリ](https://github.com/StephenArg/Trinote)を、フィードバックや提案について話し合いたい方はこちらの
+サーバー向けのオープンソースクライアントです。ノートツリーの閲覧・整理、サーバー上のノート検索、あらゆるタイプのノート（テキスト、コード、マインドマップ、スプレッドシート、ジオマップ、キャンバスなど）の読み書きが可能なほか、オフラインでもノートの閲覧や編集が行えます。開発への貢献にご興味がある方はこちらの[リポジトリ](https://github.com/StephenArg/Trinote)を、フィードバックや提案について話し合いたい方はこちらの
 [Discord](https://discord.com/invite/ghjJG56EUS) サーバーをご覧ください。
 
 ### サーバー
@@ -312,11 +315,6 @@ Trilium は、その基盤となる技術なしには実現できませんでし
 * Tabulator](https://github.com/olifolkerd/tabulator) -
   コレクションで使用されるインタラクティブなテーブル。
 * [FancyTree](https://github.com/mar10/fancytree) - 他に類を見ない機能豊富なツリーライブラリ。
-* [jsPlumb](https://github.com/jsplumb/jsplumb) -
-  視覚的な接続ライブラリ。[リレーションマップ](https://docs.triliumnotes.org/user-guide/note-types/relation-map)
-  と
-  [リンクマップ](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
-  で使用されます
 
 ## 🤝 サポート
 

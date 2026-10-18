@@ -3,6 +3,7 @@ import { APICallError } from "ai";
 import { describe, expect, it } from "vitest";
 
 import { describeStreamError, formatStreamError, type StreamOptions, streamToChunks } from "./stream.js";
+import { TOOL_CALL_DECLINED_REASON } from "./tool_approval.js";
 import type { ModelPricing, StreamResult } from "./types.js";
 
 type ErrorChunk = Extract<LlmStreamChunk, { type: "error" }>;
@@ -186,6 +187,21 @@ describe("streamToChunks", () => {
         const results = chunks.filter((c) => c.type === "tool_result") as Extract<LlmStreamChunk, { type: "tool_result" }>[];
         expect(results[0]).toMatchObject({ result: JSON.stringify({ hits: 2 }), isError: false });
         expect(results[1]).toMatchObject({ result: JSON.stringify({ error: "boom" }), isError: true });
+    });
+
+    it("reports a call the user declined as a failed result, so its card settles", async () => {
+        const chunks = await collect(fakeResult(
+            [{ type: "tool-output-denied", toolCallId: "c1", toolName: "delete_note" }],
+            Promise.resolve({ inputTokens: 1, outputTokens: 1 })
+        ));
+
+        expect(chunks).toContainEqual({
+            type: "tool_result",
+            toolCallId: "c1",
+            toolName: "delete_note",
+            result: JSON.stringify({ error: TOOL_CALL_DECLINED_REASON }),
+            isError: true
+        });
     });
 
     it("emits citations only for url sources and ignores other source types", async () => {

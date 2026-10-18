@@ -287,12 +287,12 @@ export type LoginFactor = "password" | "totp";
  * wrong password — silently wasting one of the user's limited codes. Password-first guarantees a
  * recovery code is only ever consumed once the rest of the login is known to succeed.
  */
-export async function verifyLoginCredentials(password: string, totpToken: string): Promise<LoginFactor | null> {
-    if (!(await passwordEncryptionService.verifyPassword(password))) {
+export async function verifyLoginCredentials(password: unknown, totpToken: unknown): Promise<LoginFactor | null> {
+    if (typeof password !== "string" || !(await passwordEncryptionService.verifyPassword(password))) {
         return "password";
     }
 
-    if (totp.isTotpEnabled() && !verifyTOTP(totpToken)) {
+    if (totp.isTotpEnabled() && (typeof totpToken !== "string" || !verifyTOTP(totpToken))) {
         return "totp";
     }
 
@@ -300,7 +300,7 @@ export async function verifyLoginCredentials(password: string, totpToken: string
 }
 
 function verifyTOTP(submittedTotpToken: string) {
-    if (totp.validateTOTP(submittedTotpToken)) {
+    if (totp.verifyTOTP(submittedTotpToken)) {
         return true;
     }
 

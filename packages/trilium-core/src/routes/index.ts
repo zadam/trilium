@@ -18,6 +18,7 @@ import revisionsApiRoute from "./api/revisions";
 import relationMapApiRoute from "./api/relation-map";
 import recentChangesApiRoute from "./api/recent_changes";
 import deletedNotesApiRoute from "./api/deleted_notes";
+import boardRoute from "./api/board";
 import bulkActionRoute from "./api/bulk_action";
 import searchRoute from "./api/search";
 import specialNotesRoute from "./api/special_notes";
@@ -38,7 +39,10 @@ import loginApiRoute from "./api/login";
 import fontsRoute from "./api/fonts";
 import ocrRoute from "./api/ocr";
 import linkEmbedRoute from "./api/link_embed";
+import spreadsheetRoute from "./api/spreadsheet";
 import llmRoute from "./api/llm";
+
+export { type CustomRequestResponse, handleCustomRequest } from "./custom";
 
 // TODO: Deduplicate with routes.ts
 const GET = "get",
@@ -90,13 +94,17 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     asyncApiRoute(PUT, "/api/options/:name/:value", optionsApiRoute.updateOption);
     asyncApiRoute(PUT, "/api/options", optionsApiRoute.updateOptions);
     apiRoute(GET, "/api/options/user-themes", optionsApiRoute.getUserThemes);
+    apiRoute(GET, "/api/options/user-fonts", optionsApiRoute.getUserFonts);
 
     apiRoute(PST, "/api/notes/:noteId/convert-to-attachment", notesApiRoute.convertNoteToAttachment);
     apiRoute(PST, "/api/notes/:noteId/convert-format", notesApiRoute.convertNoteFormat);
     apiRoute(GET, "/api/notes/:noteId", notesApiRoute.getNote);
     apiRoute(GET, "/api/notes/:noteId/blob", notesApiRoute.getNoteBlob);
     apiRoute(GET, "/api/notes/:noteId/metadata", notesApiRoute.getNoteMetadata);
+    apiRoute(PST, "/api/notes/metadata", notesApiRoute.getNotesMetadata);
     apiRoute(PUT, "/api/notes/:noteId/data", notesApiRoute.updateNoteData);
+    apiRoute(GET, "/api/notes/:noteId/blocks", notesApiRoute.getNoteBlocks);
+    apiRoute(PUT, "/api/notes/:noteId/blocks", notesApiRoute.updateNoteBlocks);
     apiRoute(DEL, "/api/notes/:noteId", notesApiRoute.deleteNote);
     apiRoute(PUT, "/api/notes/:noteId/undelete", notesApiRoute.undeleteNote);
     apiRoute(PST, "/api/notes/:noteId/revision", notesApiRoute.forceSaveRevision);
@@ -109,6 +117,7 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     apiRoute(PST, "/api/notes/erase-deleted-notes-now", notesApiRoute.eraseDeletedNotesNow);
     apiRoute(PST, "/api/notes/erase-unused-attachments-now", notesApiRoute.eraseUnusedAttachmentsNow);
     apiRoute(PST, "/api/delete-notes-preview", notesApiRoute.getDeleteNotesPreview);
+    apiRoute(PST, "/api/delete-notes", notesApiRoute.deleteNotes);
 
     apiRoute(GET, "/api/notes/:noteId/attachments", attachmentsApiRoute.getAttachments);
     apiRoute(PST, "/api/notes/:noteId/attachments", attachmentsApiRoute.saveAttachment);
@@ -140,7 +149,7 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     apiRoute(PST, "/api/revisions/:revisionId/restore", revisionsApiRoute.restoreRevision);
     apiRoute(GET, "/api/edited-notes/:date", revisionsApiRoute.getEditedNotesOnDate);
 
-    apiRoute(PUT, "/api/branches/:branchId/move-to/:parentBranchId", branchesApiRoute.moveBranchToParent);
+    apiRoute(PUT, "/api/branches/move-to/:parentBranchId", branchesApiRoute.moveBranchesToParent);
     apiRoute(PUT, "/api/branches/:branchId/move-before/:beforeBranchId", branchesApiRoute.moveBranchBeforeNote);
     apiRoute(PUT, "/api/branches/:branchId/move-after/:afterBranchId", branchesApiRoute.moveBranchAfterNote);
     apiRoute(PUT, "/api/branches/:branchId/expanded/:expanded", branchesApiRoute.setExpanded);
@@ -168,6 +177,8 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     // POSTed rather than taking the URL in a query string: a link can carry a one-time token or a
     // signature, and a query string ends up in every access log along the way.
     asyncApiRoute(PST, "/api/link-embed/metadata", linkEmbedRoute.getMetadata);
+
+    asyncRoute(GET, "/api/spreadsheet/:noteId/xlsx", [checkApiAuthOrElectron], spreadsheetRoute.exportXlsx);
 
     // group of the services below are meant to be executed from the outside
     // Not transactional: a status read needs no transaction, and one is unopenable during the moment
@@ -229,21 +240,26 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     asyncRoute(GET, "/api/branches/:branchId/export/:type/:format/:taskId", [checkApiAuthOrElectron], exportRoute.exportBranch);
     //#endregion
 
-    apiRoute(GET, "/api/quick-search/:searchString", searchRoute.quickSearch);
+    apiRoute(GET, "/api/quick-search", searchRoute.quickSearch);
     apiRoute(GET, "/api/search-note/:noteId", searchRoute.searchFromNote);
+    apiRoute(PST, "/api/search-note/:noteId/result-details", searchRoute.getSearchResultDetails);
     apiRoute(PST, "/api/search-and-execute-note/:noteId", searchRoute.searchAndExecute);
     apiRoute(PST, "/api/search-related", searchRoute.getRelatedNotes);
-    apiRoute(GET, "/api/search/:searchString", searchRoute.search);
+    apiRoute(PST, "/api/search/lint", searchRoute.lintSearchString);
+    apiRoute(GET, "/api/search/note-mimes", searchRoute.getNoteMimes);
+    apiRoute(GET, "/api/search", searchRoute.search);
     apiRoute(GET, "/api/search-templates", searchRoute.searchTemplates);
 
     // Streaming a chat is not here — it has no single form every runtime can serve.
     // The server and the desktop app answer `/api/llm-chat/stream` with Server-Sent
     // Events; standalone, whose bridge cannot hold a response open, registers
     // `llmRoute.startChatStream` itself. See `apps/standalone`'s browser_routes.ts.
+    // Answering a tool call is here: it reaches the turn by its stream id, whichever
+    // transport streams it.
     asyncApiRoute(PST, "/api/llm-chat/provider-models", llmRoute.getProviderModels);
+    apiRoute(PST, "/api/llm-chat/tool-approval", llmRoute.answerToolCall);
 
     apiRoute(GET, "/api/autocomplete", autocompleteApiRoute.getAutocomplete);
-    apiRoute(GET, "/api/autocomplete/notesCount", autocompleteApiRoute.getNotesCount);
 
     apiRoute(PUT, "/api/notes/:noteId/clone-to-branch/:parentBranchId", cloningApiRoute.cloneNoteToBranch);
     apiRoute(PUT, "/api/notes/:noteId/toggle-in-parent/:parentNoteId/:present", cloningApiRoute.toggleNoteInParent);
@@ -251,6 +267,7 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     apiRoute(PUT, "/api/notes/:noteId/clone-after/:afterBranchId", cloningApiRoute.cloneNoteAfter);
 
     asyncApiRoute(GET, "/api/special-notes/inbox/:date", specialNotesRoute.getInboxNote);
+    apiRoute(GET, "/api/special-notes/inbox-target", specialNotesRoute.getInboxTarget);
     asyncApiRoute(GET, "/api/special-notes/days/:date", specialNotesRoute.getDayNote);
     asyncApiRoute(GET, "/api/special-notes/week-first-day/:date", specialNotesRoute.getWeekFirstDayNote);
     asyncApiRoute(GET, "/api/special-notes/weeks/:week", specialNotesRoute.getWeekNote);
@@ -267,7 +284,6 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
     apiRoute(PUT, "/api/special-notes/api-script-launcher", specialNotesRoute.createOrUpdateScriptLauncherFromApi);
     apiRoute(PST, "/api/special-notes/llm-chat", specialNotesRoute.createLlmChat);
     apiRoute(GET, "/api/special-notes/most-recent-llm-chat", specialNotesRoute.getMostRecentLlmChat);
-    apiRoute(GET, "/api/special-notes/get-or-create-llm-chat", specialNotesRoute.getOrCreateLlmChat);
     apiRoute(GET, "/api/special-notes/recent-llm-chats", specialNotesRoute.getRecentLlmChats);
     apiRoute(PST, "/api/special-notes/save-llm-chat", specialNotesRoute.saveLlmChat);
 
@@ -290,6 +306,9 @@ export function buildSharedApiRoutes({ route, asyncRoute, asyncRouteWithoutTrans
 
     apiRoute(GET, "/api/sql/schema", sqlRoute.getSchema);
     apiRoute(PST, "/api/sql/execute/:noteId", sqlRoute.execute);
+
+    apiRoute(PUT, "/api/notes/:noteId/board/rename-column", boardRoute.renameColumn);
+    apiRoute(PUT, "/api/notes/:noteId/board/column-id", boardRoute.ensureColumnId);
 
     apiRoute(PST, "/api/bulk-action/execute", bulkActionRoute.execute);
     apiRoute(PST, "/api/bulk-action/affected-notes", bulkActionRoute.getAffectedNoteCount);

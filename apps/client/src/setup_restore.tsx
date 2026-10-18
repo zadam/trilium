@@ -8,13 +8,14 @@ import { ChunkedUploadError, uploadInChunks } from "./services/chunked_upload";
 import { describeDatabaseFile, describeDatabaseFormat } from "./services/database_files";
 import { t } from "./services/i18n";
 import server from "./services/server";
-import { formatSize } from "./services/utils";
+import { fileAccept, formatSize } from "./services/utils";
 import Button from "./widgets/react/Button";
 import { Card, CardSection } from "./widgets/react/Card";
 import DatabaseFileBadges from "./widgets/react/DatabaseFileBadges";
 import FormGroup from "./widgets/react/FormGroup";
 import FormTextBox from "./widgets/react/FormTextBox";
 import Icon from "./widgets/react/Icon";
+import ProgressBar from "./widgets/react/ProgressBar";
 import SetupPage from "./widgets/react/SetupPage";
 import SlidePages from "./widgets/react/SlidePages";
 
@@ -404,7 +405,7 @@ function PickBackup({ backups, onPick, onUpload, onFailure }: {
                     <input
                         ref={fileInput}
                         type="file"
-                        accept=".db,.tnbackup"
+                        accept={fileAccept(".db,.tnbackup")}
                         class="restore-file-input"
                         onChange={(e) => {
                             const file = (e.target as HTMLInputElement).files?.[0];
@@ -466,7 +467,7 @@ function UploadProgress({ upload }: { upload: UploadState }) {
                     <Icon icon="bx bx-loader-circle bx-spin" /> {t("setup.restore-uploading")}
                 </div>
 
-                <progress value={upload.sentBytes} max={upload.totalBytes} />
+                <ProgressBar value={upload.sentBytes} max={upload.totalBytes} />
 
                 <div class="restore-progress-detail">
                     <span>
@@ -611,7 +612,7 @@ function RestoreProgress({ reported, onRestored, onFailed }: {
                 rather than an empty bar that never moves. */}
             {shownFraction !== null && (
                 <div class="restore-stage-progress">
-                    <progress value={shownFraction} max={1} />
+                    <ProgressBar value={shownFraction} max={1} />
                     <span>{Math.floor(shownFraction * 100)}%</span>
                 </div>
             )}

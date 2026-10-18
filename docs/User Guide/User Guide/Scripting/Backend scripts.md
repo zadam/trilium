@@ -14,11 +14,13 @@ However, the main benefit of backend scripts is that they have easier access to 
 
 ## Creating a backend script
 
-Create a new <a class="reference-link" href="../Note%20Types/Code.md">Code</a> note and select the language _JavaScript (Trilium backend)_.
+Create a new <a class="reference-link" href="../Note%20Types/Code.md">Code</a> note and select the language _JavaScript (Trilium backend)_, or choose _Insert child note_ → _Code_ → _Backend script_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree/Note%20tree%20contextual%20menu.md">Note tree contextual menu</a>, which does both in one step.
 
 ## Running backend scripts
 
 Backend scripts can be either run manually (via the Execute button on the script page), or they can be triggered on certain events.
+
+When a script run manually or from a launcher throws an error, Trilium shows a _Scripting error_ notification with the error message and a link to the note that failed. If the error comes from a child note the script requires, the link points to that child note. Changes the script made to notes before the error are rolled back.
 
 In addition, scripts can be run automatically when the server starts up, on a fixed time interval or when a certain event occurs (such as an attribute being modified). For more information, see the dedicated <a class="reference-link" href="Backend%20scripts/Backend%20Events.md">Events</a> page.
 

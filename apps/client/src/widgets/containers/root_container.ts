@@ -2,9 +2,10 @@ import { LOCALES, OptionNames } from "@triliumnext/commons";
 
 import { EventData } from "../../components/app_context.js";
 import { getEnabledExperimentalFeatureIds } from "../../services/experimental_features.js";
+import { applyCustomFontsFromOptions, hasCustomFontContentChanged } from "../../services/custom_fonts.js";
 import { applyFontsFromOptions } from "../../services/font.js";
 import options from "../../services/options.js";
-import { applyThemeFromOptions, updateColorSchemeClasses, updateThemeCapabilities } from "../../services/theme.js";
+import { applyThemeFromOptions, onEffectiveThemeStyleChange, updateColorSchemeClasses, updateThemeCapabilities } from "../../services/theme.js";
 import utils, { isIOS, isMobile } from "../../services/utils.js";
 import type BasicWidget from "../basic_widget.js";
 import FlexContainer from "./flex_container.js";
@@ -56,8 +57,12 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         this.#setShadows();
         this.#setBackdropEffects();
         this.#setMonospaceLigatures();
+        this.#setStickyTableHeaders();
         updateThemeCapabilities();
         this.#setLocaleAndDirection(options.get("locale"));
+        // The fonts stylesheet went out with the page; the files the user's own fonts are stored in
+        // are fetched here, once froca can be asked which notes hold them.
+        void applyCustomFontsFromOptions();
         this.#setExperimentalFeatures();
         this.#initPWATopbarColor();
 
@@ -71,6 +76,11 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
 
         if (FONT_OPTIONS.some((optionName) => loadResults.isOptionReloaded(optionName))) {
             applyFontsFromOptions();
+            void applyCustomFontsFromOptions();
+        } else if (hasCustomFontContentChanged(loadResults)) {
+            // The options still name the same fonts, so the stylesheet they are served as holds; only
+            // the faces their files were loaded into have to be built again.
+            void applyCustomFontsFromOptions();
         }
 
         if (loadResults.isOptionReloaded("motionEnabled")) {
@@ -89,6 +99,10 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
             this.#setMonospaceLigatures();
         }
 
+        if (loadResults.isOptionReloaded("textNoteStickyTableHeadersEnabled")) {
+            this.#setStickyTableHeaders();
+        }
+
         if (loadResults.isOptionReloaded("maxContentWidth")
             || loadResults.isOptionReloaded("centerContent")) {
 
@@ -97,10 +111,9 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
     }
 
     #initTheme() {
-        const colorSchemeChangeObserver = matchMedia("(prefers-color-scheme: dark)");
-        colorSchemeChangeObserver.addEventListener("change", () => this.#updateColorScheme());
+        onEffectiveThemeStyleChange(() => this.#updateColorScheme());
         this.#updateColorScheme();
-        
+
         document.body.setAttribute("data-theme-id", options.get("theme"));
     }
 
@@ -157,6 +170,11 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
     #setMonospaceLigatures() {
         const enabled = options.is("monospaceLigaturesEnabled");
         document.body.classList.toggle("monospace-ligatures-disabled", !enabled);
+    }
+
+    #setStickyTableHeaders() {
+        const enabled = options.is("textNoteStickyTableHeadersEnabled");
+        document.body.classList.toggle("sticky-table-headers-disabled", !enabled);
     }
 
     #setExperimentalFeatures() {

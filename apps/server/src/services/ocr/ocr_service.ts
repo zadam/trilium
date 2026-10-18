@@ -14,6 +14,8 @@ export interface OCRResult {
     extractedAt: string;
     language?: string;
     pageCount?: number;
+    /** Pages whose OCR threw, for a document whose other pages still produced a result. */
+    failedPageCount?: number;
     processingType?: string;
 }
 
@@ -408,7 +410,11 @@ class OCRService {
 
 
     /**
-     * Get blobs that need OCR processing (those without text representation)
+     * Get blobs that need OCR processing (those without a stored text representation).
+     * A NULL text representation means "never processed"; an empty string means
+     * "processed, found no text" and is treated as done, so a blob is never re-OCR'd
+     * on every batch run. Existing scanned PDFs stored before the OCR fallback can be
+     * re-run individually via the manual "Process OCR" action (which forces reprocess).
      */
     getBlobsNeedingOCR(): Array<{ blobId: string; mimeType: string; entityType: 'note' | 'attachment'; entityId: string }> {
         try {

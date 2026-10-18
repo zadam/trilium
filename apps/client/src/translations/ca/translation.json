@@ -29,11 +29,11 @@
     "notes": "Notes",
     "other": "Altres",
     "bulk_actions": "Accions en bloc",
-    "affected_notes": "Notes afectades",
     "include_descendants": "Inclou els descendents de les notes seleccionades",
-    "available_actions": "Accions disponibles",
     "chosen_actions": "Accions escollides",
-    "execute_bulk_actions": "Executa accions en bloc",
+    "execute_bulk_actions_one": "Executa accions en bloc",
+    "execute_bulk_actions_many": "",
+    "execute_bulk_actions_other": "",
     "bulk_actions_executed": "Les accions en bloc s'han executat amb èxit.",
     "none_yet": "Cap encara.... afegeix una acció clicant una de les disponibles a dalt."
   },
@@ -89,8 +89,7 @@
   "sort_child_notes": {
     "title": "títol",
     "ascending": "ascendent",
-    "descending": "descendent",
-    "folders": "Carpetes"
+    "descending": "descendent"
   },
   "upload_attachments": {
     "options": "Opcions",
@@ -117,21 +116,6 @@
     "textarea": "Text multi linia",
     "date_time": "Data i hora",
     "precision_title": "Quants dígits han d'estar disponibles per a coma flotant a la interfície de configuració."
-  },
-  "rename_label": {
-    "to": "Per"
-  },
-  "move_note": {
-    "to": "a"
-  },
-  "add_relation": {
-    "to": "a"
-  },
-  "rename_relation": {
-    "to": "Per"
-  },
-  "update_relation_target": {
-    "to": "a"
   },
   "attachments_actions": {
     "download": "Descarrega"
@@ -164,15 +148,11 @@
     "advanced": "Avançat",
     "logout": "Tanca la sessió"
   },
-  "zpetne_odkazy": {
-    "relation": "relació"
-  },
   "note_icon": {
     "search": "Cerca:"
   },
   "basic_properties": {
-    "editable": "Editable",
-    "language": "Llengua"
+    "editable": "Editable"
   },
   "book_properties": {
     "grid": "Graella",
@@ -183,18 +163,9 @@
     "table": "Taula",
     "board": "Tauler"
   },
-  "edited_notes": {
-    "deleted": "(suprimit)"
-  },
   "file_properties": {
     "download": "Descarrega",
-    "open": "Obre",
-    "title": "Fitxer"
-  },
-  "image_properties": {
-    "download": "Descarrega",
-    "open": "Obre",
-    "title": "Imatge"
+    "open": "Obre"
   },
   "note_info_widget": {
     "created": "Creat",

@@ -1,14 +1,17 @@
 @import "./boxicons-compat.css";
+@import "./adaptive-colors.css";
+@import "./menus.css";
+@import "./buttons.css";
 
 @font-face {
     font-family: Montserrat;
-    src: url(../fonts/Montserrat-Light.ttf);
+    src: url(../fonts/Montserrat-Light.woff2) format("woff2");
     font-weight: normal;
 }
 
 @font-face {
     font-family: Montserrat;
-    src: url(../fonts/Montserrat-SemiBold.ttf);
+    src: url(../fonts/Montserrat-SemiBold.woff2) format("woff2");
     font-weight: bold;
 }
 
@@ -18,11 +21,6 @@
 }
 
 :root {
-    --admonition-note-accent-color: #69c7ff;
-    --admonition-tip-accent-color: #40c025;
-    --admonition-important-accent-color: #9839f7;
-    --admonition-caution-accent-color: #ff2e2e;
-    --admonition-warning-accent-color: #e2aa03;
     --bs-body-font-family: var(--main-font-family) !important;
     --bs-body-font-weight: var(--main-font-weight) !important;
     --bs-body-color: var(--main-text-color) !important;
@@ -64,7 +62,7 @@ body#trilium-app.backdrop-effects-disabled *::after {
 }
 
 :root {
-    --submenu-opening-delay: 300ms;
+    --submenu-opening-delay: 150ms;
     --launcher-pane-size: 53px;
     --bs-body-color: var(--main-text-color);
 }
@@ -91,7 +89,7 @@ body {
     --native-titlebar-darwin-y-offset: 12;
     --launcher-pane-height: 53px;
     --tab-bar-height: 40px;
-    --mobile-bottom-offset: env(safe-area-inset-bottom);
+    --mobile-bottom-offset: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
 }
 
 /*
@@ -148,19 +146,13 @@ body.desktop {
         #left-pane,
         #rest-pane {
             padding-top: var(--safe-area-inset-top, env(safe-area-inset-top));
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
         }
     }
 
-    &.experimental-feature-new-layout #root-widget.horizontal-layout {
+    #root-widget.horizontal-layout {
         >.status-bar {
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-    }
-
-    &:not(.experimental-feature-new-layout) #root-widget.horizontal-layout {
-        #horizontal-main-container {
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
         }
     }
 
@@ -216,10 +208,13 @@ textarea,
     color: var(--muted-text-color);
 }
 
-.form-group.disabled,
-.form-checkbox.disabled {
+.form-group.disabled {
     opacity: 0.5;
     pointer-events: none;
+}
+
+.form-checkbox.disabled {
+    opacity: 0.5;
 }
 
 .form-group {
@@ -343,43 +338,6 @@ button.custom-title-bar-button {
     overflow-x: hidden;
 }
 
-.icon-action {
-    border: 1px solid transparent;
-    padding: 5px;
-    width: 37px;
-    height: 35px;
-    cursor: pointer;
-    font-size: 1.5em;
-    color: var(--button-text-color);
-    background: var(--button-background-color);
-    border-radius: var(--button-border-radius);
-}
-
-.icon-action-always-border {
-    border-color: var(--button-border-color);
-}
-
-.icon-action:hover:not(.disabled) {
-    text-decoration: none;
-    border-color: var(--button-border-color);
-}
-
-/* An action that takes something away, marked as such the way destructive menu items are. */
-.icon-action.destructive-action-icon {
-    color: var(--dropdown-item-icon-destructive-color);
-}
-
-.icon-action.disabled {
-    color: var(--muted-text-color) !important;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.icon-action.btn {
-    padding: 0 8px;
-    min-width: unset !important;
-}
-
 .ui-widget-content a:not(.ui-tabs-anchor) {
     color: #337ab7 !important;
 }
@@ -431,176 +389,6 @@ button kbd {
     display: none;
 }
 
-.dropdown-divider {
-    border-color: var(--dropdown-border-color);
-}
-
-@keyframes dropdown-menu-opening {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-.dropdown-menu,
-.tabulator-popup-container,
-:root .excalidraw .popover {
-    color: var(--menu-text-color) !important;
-    font-size: inherit;
-    background: var(--menu-background-color) !important;
-    user-select: none;
-    -webkit-user-select: none;
-    --bs-dropdown-zindex: 999;
-    --bs-dropdown-link-active-bg: var(--active-item-background-color) !important;
-}
-
-/* A portaled menu (the Dropdown's `portalToBody`) stacks in the root context, so it has to clear a
-   modal (1055) and a stacked quick-edit popup (1100), and stay under the prompts (2000) it can
-   summon. */
-body > .tn-dropdown-portal > .dropdown-menu {
-    --bs-dropdown-zindex: 1200;
-}
-
-body.desktop .dropdown-menu,
-body.desktop .tabulator-popup-container,
-:root .excalidraw .dropdown-menu .dropdown-menu-container,
-:root .excalidraw .popover {
-    border: 1px solid var(--dropdown-border-color);
-    column-rule: 1px solid var(--dropdown-border-color);
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, var(--dropdown-shadow-opacity));
-    animation: dropdown-menu-opening 100ms ease-in;
-}
-
-@supports (animation-fill-mode: forwards) {
-    /* Delay the opening of submenus */
-    body.desktop:not(.motion-disabled) .dropdown-submenu .dropdown-menu {
-        opacity: 0;
-        animation-fill-mode: forwards;
-        animation-delay: var(--submenu-opening-delay);
-    }
-}
-
-.dropdown-menu.static {
-    box-shadow: unset;
-    backdrop-filter: unset !important;
-}
-
-.dropend .dropdown-toggle::after {
-    margin-inline-start: 0.5em;
-    color: var(--muted-text-color);
-}
-
-.dropdown-menu .disabled {
-    color: #888 !important;
-    pointer-events: none;
-}
-
-.dropdown-menu .disabled .contextual-help {
-    pointer-events: all;
-    margin-inline-start: 8px;
-    font-size: 0.75rem;
-    color: var(--contextual-help-icon-color);
-    cursor: help;
-    opacity: 0.75;
-}
-
-.dropdown-menu .disabled .contextual-help:hover {
-    opacity: 1;
-}
-
-.dropdown-item:hover:not(.disabled, .active, .dropdown-container-item),
-.tabulator-menu-item:hover,
-:root .excalidraw .context-menu .context-menu-item:hover {
-    color: var(--hover-item-text-color) !important;
-    background-color: var(--hover-item-background-color) !important;
-    border-color: var(--hover-item-border-color) !important;
-    cursor: pointer;
-}
-
-.dropdown-container-item,
-.dropdown-item.dropdown-container-item:hover,
-.dropdown-container-item:active {
-    background: transparent;
-    cursor: default;
-}
-
-.dropdown-menu a:not(.selected) .check {
-    visibility: hidden;
-}
-
-.dropdown-menu:not(#context-menu-container) .dropdown-item,
-body.desktop .dropdown-menu .dropdown-toggle,
-body #context-menu-container .dropdown-item > span,
-body.mobile .dropdown .dropdown-submenu > span {
-    display: flex;
-    align-items: center;
-}
-
-
-body.mobile .dropdown .dropdown-submenu {
-    flex-wrap: wrap;
-
-    & > span {
-        flex-grow: 1;
-    }
-}
-
-.dropdown-item span.keyboard-shortcut,
-.dropdown-item *:not(.keyboard-shortcut) > kbd {
-    flex-grow: 1;
-    text-align: end;
-    padding-inline-start: 12px;
-}
-
-.dropdown-menu kbd {
-    color: var(--muted-text-color);
-    border: none;
-    background-color: transparent;
-    box-shadow: none;
-    padding-bottom: 0;
-    padding: 0;
-}
-
-.dropdown-item,
-.dropdown-header,
-:root .excalidraw .context-menu .context-menu-item:hover {
-    color: var(--menu-text-color) !important;
-    border: 1px solid transparent !important;
-}
-
-/*  This is a workaround for Firefox not supporting break-before / break-after: avoid on columns.
- *  It usually wraps a menu item followed by a separator / header and another menu item. */
-.dropdown-no-break {
-    break-inside: avoid;
-}
-
-.dropdown-item.disabled,
-.dropdown-item.disabled kbd {
-    color: #aaa !important;
-}
-
-.dropdown-item.active,
-.dropdown-item:focus {
-    color: var(--active-item-text-color);
-    background-color: var(--active-item-background-color);
-    border-color: var(--active-item-border-color);
-    outline: none;
-}
-
-.dropdown-item .destructive-action-icon {
-    color: var(--dropdown-item-icon-destructive-color);
-}
-
-.dropdown-item > span:not([class]) {
-    width: 100%;
-}
-
-.dropdown-menu .note-color-picker {
-    padding: 4px 12px 8px 12px;
-}
-
 .cm-editor {
     height: 100%;
     outline: none !important;
@@ -612,8 +400,31 @@ body.mobile .dropdown .dropdown-submenu {
     font-family: var(--monospace-font-family) !important;
 }
 
-body .cm-editor .cm-placeholder {
-    color: #999 !important;
+.cm-editor .cm-placeholder {
+    color: inherit;
+    opacity: 0.5;
+    /* Out of flow, so the caret takes its height from the line rather than from the hint. */
+    position: absolute;
+}
+
+/* Firefox draws the caret against the spacer CodeMirror puts before the placeholder widget,
+   short (https://bugzilla.mozilla.org/show_bug.cgi?id=904846). The spacer must stay in layout:
+   CodeMirror measures a position next to a widget from its rect, and a hidden one reads as
+   zeros, which places a completion list at the caret off-screen. */
+@supports (-moz-appearance: none) {
+    .cm-editor .cm-widgetBuffer:has(+ .cm-placeholder) {
+        vertical-align: baseline;
+    }
+}
+
+/* `getTooltipHost()` renders CodeMirror tooltips here, outside the clipping `.cm-editor`.
+   Must stay above dialogs (1101) and below the context menu (2500). */
+.cm-tooltip-host {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    font-size: var(--monospace-font-size);
 }
 
 #sql-console-query {
@@ -735,56 +546,6 @@ pre > button.copy-button:active {
     cursor: pointer;
 }
 
-.show-recent-notes-button,
-.input-clearer-button,
-.go-to-selected-note-button {
-    padding-top: 8px;
-}
-
-.show-recent-notes-button,
-.full-text-search-button {
-    cursor: pointer;
-    font-size: 1.3em;
-    padding-inline-start: 5px;
-    padding-inline-end: 5px;
-}
-
-.input-clearer-button {
-    cursor: pointer;
-    font-size: 1.3em;
-    background: inherit !important;
-    padding-inline-start: 5px;
-    padding-inline-end: 5px;
-}
-
-.open-external-link-button {
-    cursor: pointer;
-    font-size: 1.3em;
-    padding-inline-start: 5px;
-    padding-inline-end: 5px;
-    padding-top: 8px;
-}
-
-.go-to-selected-note-button {
-    cursor: pointer;
-    font-size: 1.3em;
-    padding-inline-start: 4px;
-    padding-inline-end: 3px;
-}
-
-.go-to-selected-note-button.disabled,
-.go-to-selected-note-button.disabled:hover {
-    cursor: inherit;
-    color: var(--button-disabled-text-color) !important;
-    background-color: var(--button-disabled-background-color) !important;
-    text-decoration: none;
-}
-
-.note-autocomplete-input {
-    /* this is for seamless integration of "input clearer" button */
-    border-inline-end: 0;
-}
-
 table.promoted-attributes-in-tooltip {
     margin: auto;
 }
@@ -792,27 +553,6 @@ table.promoted-attributes-in-tooltip {
 table.promoted-attributes-in-tooltip td,
 table.promoted-attributes-in-tooltip th {
     padding: 10px;
-}
-
-.tooltip {
-    font-size: var(--main-font-size) !important;
-    /* Above every layer the app opens over the page: a tooltip is appended to `<body>`, so it
-       competes with a dialog in the root stacking context rather than painting inside it, and any
-       lower layer leaves it unreadable behind the very dialog it was asked for. Bootstrap's modal
-       sits at 1055, the dialogs the app lifts itself at up to 3000, the context menu at 2500.
-
-       This layer used to be chained to CKEditor's own — `calc(var(--ck-z-panel) - 1)` — which
-       `ckeditor-theme.css` raised to 10000 for exactly this reason, landing tooltips at 9999.
-       Upstream renamed the variable (`--ck-z-modal` → `--ck-z-panel`) and the override went dead
-       with the old name, dropping tooltips to 999 — under every dialog. Nothing showed it because
-       the math form's rescue rule named a bare `[role="tooltip"]`, lifting every tooltip in the app
-       to 3000; keeping that rule to MathLive's own UI is what finally uncovered it. Stated here in
-       full, and no longer read from a variable another package owns. */
-    z-index: 9999 !important;
-}
-
-.tooltip.tooltip-top {
-    z-index: 32767 !important;
 }
 
 /* Note tooltips are appended to <body> and are frequently triggered from inside a dialog (a link,
@@ -926,18 +666,6 @@ table.promoted-attributes-in-tooltip th {
     display: none;
 }
 
-.tooltip-inner {
-    padding: 15px;
-    background-color: var(--tooltip-background-color) !important;
-    border: 1px solid var(--main-border-color);
-    border-radius: 5px;
-    text-align: start;
-    color: var(--main-text-color) !important;
-    max-width: 500px;
-    white-space: pre-line;
-    box-shadow: 10px 10px 93px -25px #aaaaaa;
-}
-
 .tooltip-inner p:last-of-type {
     margin-bottom: 0;
 }
@@ -995,78 +723,6 @@ table.promoted-attributes-in-tooltip th {
     float: inline-end;
 }
 
-.tooltip.show {
-    opacity: 1;
-}
-
-.algolia-autocomplete {
-    width: calc(100% - 30px);
-    z-index: 2000 !important;
-}
-
-.algolia-autocomplete-container .aa-dropdown-menu {
-    position: inherit !important;
-    overflow: auto;
-}
-
-.algolia-autocomplete .aa-input,
-.algolia-autocomplete .aa-hint {
-    width: 100%;
-}
-
-.algolia-autocomplete .aa-dropdown-menu {
-    width: 100%;
-    background-color: var(--main-background-color);
-    border: 1px solid var(--main-border-color);
-    border-top: none;
-    z-index: 2000 !important;
-    max-height: 500px;
-    overflow: auto;
-    padding: 0;
-    margin: 0;
-}
-
-.aa-dropdown-menu .aa-suggestion {
-    cursor: pointer;
-    padding: 6px 16px;
-    margin: 0;
-}
-
-.aa-dropdown-menu .aa-suggestion .icon {
-    display: inline-block;
-    line-height: inherit;
-    vertical-align: top;
-}
-
-.aa-dropdown-menu .aa-suggestion .text {
-    display: inline-block;
-    width: calc(100% - 20px);
-    padding-inline-start: 4px;
-}
-
-.aa-dropdown-menu .aa-suggestion .search-result-title {
-    display: block;
-}
-
-.aa-dropdown-menu .aa-suggestion .search-result-attributes {
-    display: block;
-    font-size: 0.8em;
-    color: var(--muted-text-color);
-    opacity: 0.6;
-    line-height: 1;
-    word-wrap: break-word;
-}
-
-.aa-dropdown-menu .aa-suggestion p {
-    padding: 0;
-    margin: 0;
-}
-
-.aa-dropdown-menu .aa-suggestion.aa-cursor {
-    color: var(--active-item-text-color);
-    background-color: var(--active-item-background-color);
-}
-
 .help-button,
 .custom-title-bar-button {
     float: inline-end;
@@ -1078,10 +734,6 @@ table.promoted-attributes-in-tooltip th {
 
 .help-button {
     color: orange;
-}
-
-.multiplicity {
-    font-size: 1.3em;
 }
 
 /* this is because bootstrap (?) sets code color to red for some reason */
@@ -1169,7 +821,7 @@ div[data-notify="container"] {
     position: absolute;
     display: block;
 
-    margin: var(--ck-spacing-large) 0;
+    margin: var(--ck-spacing-large, var(--ck-spacing-lg)) 0;
 
     color: var(--muted-text-color);
 }
@@ -1203,54 +855,13 @@ svg.ck-icon.note-icon {
     margin: 0 !important;
 }
 
-.ck-content a:hover {
+/* `:where(:not(.excalidraw *))` leaves out the menus of an embedded canvas drawing. */
+.ck-content a:hover:where(:not(.excalidraw *)) {
     text-decoration: underline;
 }
 
 .ck-content .footnote-section {
     border: 1px solid #c4c4c4;
-    border-radius: 2px;
-    counter-reset: footnote-counter;
-    margin: 1em 0;
-    padding: 10px;
-}
-
-.ck-content .footnote-item {
-    counter-increment: footnote-counter;
-    display: flex;
-    list-style: none;
-    margin-inline-start: 0.5em;
-}
-
-.ck-content .footnote-item > * {
-    vertical-align: text-top;
-}
-
-.ck-content .footnote-back-link {
-    margin-inline-end: 0.1em;
-    position: relative;
-    top: -0.2em;
-}
-
-.ck-content .footnotes .footnote-back-link > sup {
-    margin-inline-end: 0;
-}
-
-.ck-content .footnote-item:before {
-    content: counter(footnote-counter) ". ";
-    display: inline-block;
-    min-width: fit-content;
-    position: relative;
-    inset-inline-end: 0.2em;
-    text-align: end;
-}
-
-.ck-content .footnote-content {
-    border-radius: 2px;
-    display: inline-block;
-    flex-grow: 1;
-    padding: 0 0.3em;
-    width: 95%;
 }
 
 .ck-content .ck-content-widget.footnote-section .ck-content-widget__type-around__button_after {
@@ -1270,13 +881,6 @@ svg.ck-icon.note-icon {
     background-color: var(--accented-background-color);
     border: 1px solid var(--main-border-color);
     padding: 2px;
-}
-
-a.external:not(.no-arrow):after, a[href^="http://"]:not(.no-arrow):after, a[href^="https://"]:not(.no-arrow):after
-{
-    font-size: smaller;
-    content: "\2197";
-    vertical-align: top;
 }
 
 .card {
@@ -1372,27 +976,6 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     width: auto;
 }
 
-.ck-mentions .ck-button {
-    font-size: var(--detail-font-size) !important;
-    padding: 5px;
-}
-
-.ck-mentions .ck-button b {
-    font-size: var(--detail-font-size) !important;
-}
-
-.ck-mentions {
-    --ck-color-list-button-on-background: var(--active-item-background-color);
-    --ck-color-list-button-on-background-focus: var(--ck-color-list-button-on-background);
-    --ck-color-list-button-on-text: var(--active-item-text-color);
-}
-
-.ck-mentions .ck-button b {
-    font-weight: bold !important;
-    color: inherit !important;
-    vertical-align: baseline !important;
-}
-
 .side-checkbox {
     display: flex;
     align-items: end;
@@ -1407,12 +990,63 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 }
 
 .include-note {
-    margin-bottom: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--card-border-color, var(--main-border-color));
+    --ck-color-focus-border: var(--link-color);
+
+    margin: 0 0 10px;
+    border-radius: var(--_include-note-top-border-radius, 8px)
+                   var(--_include-note-top-border-radius, 8px)
+                   var(--_include-note-bottom-border-radius, 8px)
+                   var(--_include-note-bottom-border-radius, 8px);
     background-color: var(--card-background-color, var(--accented-background-color));
     display: flex; /* see https://github.com/zadam/trilium/issues/1590 */
+    flex-direction: column;
     transition: background-color 200ms ease-out;
+}
+
+/* On the wrapper: the editor gives the caption a border of its own for the focus ring. */
+.include-note-wrapper:has(+ figcaption) {
+    border-bottom: 2px solid var(--main-background-color);
+}
+
+.include-note > figcaption {
+    padding: 6px 1rem;
+    font-size: .8em;
+    text-align: center;
+}
+
+/* Includes in a series share flush edges, as link previews and collapsible blocks do. */
+.include-note + .include-note {
+    --_include-note-top-border-radius: 0px;
+}
+
+.include-note:has(+ .include-note) {
+    --_include-note-bottom-border-radius: 0px;
+    margin-bottom: 3px;
+}
+
+.include-note {
+    /* The corners of the embed box that its content touches, as lengths for `calc()`. */
+    --_include-note-content-top-radius: 0px;
+    --_include-note-content-bottom-radius: var(--_include-note-bottom-border-radius, 8px);
+    /* The frame around content that fills the box. Below a title and above a caption, the 2px
+       border between them and the content is the frame on that side. */
+    --_include-note-content-inset: 2px;
+    --_include-note-content-top-inset: 0px;
+    --_include-note-content-bottom-inset: var(--_include-note-content-inset);
+    --_include-note-framed-top-radius:
+        max(0px, var(--_include-note-content-top-radius) - var(--_include-note-content-top-inset));
+    --_include-note-framed-bottom-radius: max(0px,
+        var(--_include-note-content-bottom-radius) - var(--_include-note-content-bottom-inset));
+
+    &[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"]) {
+        --_include-note-content-top-radius: var(--_include-note-top-border-radius, 8px);
+        --_include-note-content-top-inset: var(--_include-note-content-inset);
+    }
+
+    &:has(> figcaption) {
+        --_include-note-content-bottom-radius: 0px;
+        --_include-note-content-bottom-inset: 0px;
+    }
 }
 
 /* CKEditor counts only non-UIElements as content (see `hasContent` in the
@@ -1426,7 +1060,7 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 
 /* Using data- attribute to support both CKEditor and readonly view */
 .include-note[data-box-size="small"] .include-note-content {
-    max-height: 10em;
+    max-height: var(--include-note-height, 10em);
     overflow: auto;
 }
 
@@ -1434,7 +1068,7 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
    height per box size instead of an intrinsic, content-driven one. */
 .include-note[data-box-size="small"] .include-note-content.type-pdf,
 .include-note[data-box-size="small"] .include-note-content.type-webView {
-    height: 10em;
+    height: var(--include-note-height, 10em);
 }
 
 /* The small box has room for the compact audio player's visualizer band (which carries a floor of its own) or
@@ -1449,13 +1083,13 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 }
 
 .include-note[data-box-size="medium"] .include-note-content {
-    max-height: 20em;
+    max-height: var(--include-note-height, 20em);
     overflow: auto;
 }
 
 .include-note[data-box-size="medium"] .include-note-content.type-pdf .rendered-content,
 .include-note[data-box-size="medium"] .include-note-content.type-webView .rendered-content {
-    height: 20em;
+    height: var(--include-note-height, 20em);
 }
 
 .include-note[data-box-size="full"] .include-note-content.type-pdf .rendered-content,
@@ -1464,7 +1098,7 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 }
 
 .include-note[data-box-size="expandable"] .include-note-content.type-webView .rendered-content {
-    height: 20em;
+    height: var(--include-note-height, 20em);
 }
 
 /* Full-height collection views (table, board, calendar, geo map, presentation) render their own
@@ -1473,12 +1107,12 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
    collections are content-driven and keep the generic max-height above. */
 .include-note[data-box-size="small"] .include-note-content.type-book:has(.note-list-widget.full-height),
 .include-note[data-box-size="small"] .include-note-content.type-search:has(.note-list-widget.full-height) {
-    height: 10em;
+    height: var(--include-note-height, 10em);
 }
 
 .include-note[data-box-size="medium"] .include-note-content.type-book:has(.note-list-widget.full-height),
 .include-note[data-box-size="medium"] .include-note-content.type-search:has(.note-list-widget.full-height) {
-    height: 20em;
+    height: var(--include-note-height, 20em);
 }
 
 .include-note[data-box-size="full"] .include-note-content.type-book:has(.note-list-widget.full-height),
@@ -1488,7 +1122,53 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 
 .include-note[data-box-size="expandable"] .include-note-content.type-book:has(.note-list-widget.full-height),
 .include-note[data-box-size="expandable"] .include-note-content.type-search:has(.note-list-widget.full-height) {
-    height: 20em;
+    height: var(--include-note-height, 20em);
+}
+
+/* Pictures, diagrams and players fit the box height, where text scrolls in it. */
+.include-note[data-box-size="small"] {
+    --include-note-media-max-height: var(--include-note-height, 10em);
+}
+
+.include-note[data-box-size="medium"] {
+    --include-note-media-max-height: var(--include-note-height, 20em);
+}
+
+.include-note[data-box-size="expandable"] {
+    --include-note-media-max-height: var(--include-note-height);
+}
+
+/* Media takes a resized height inside the border and padding, as with the edge-to-edge types. */
+.include-note[data-box-size] .include-note-content:is(
+    .type-image, .type-canvas, .type-canvasDrawing, .type-mindMap, .type-spreadsheet, .type-mermaid,
+    .type-video
+) {
+    box-sizing: content-box;
+    max-height: none;
+}
+
+/* Tiny and Full fit their content: only these box sizes take a resized size. */
+.include-note:is([data-box-size="small"], [data-box-size="medium"], [data-box-size="expandable"]) {
+    margin-inline: auto;
+    max-width: 100%;
+    width: var(--include-note-width, auto);
+
+    .include-note-content {
+        height: var(--include-note-height, auto);
+        overflow: auto;
+    }
+
+    &:has(.include-note-content[hidden]) > .ck-widget__resize-handles
+        > :not(.ck-widget__resize-handle_width) {
+        display: none;
+    }
+}
+
+.include-note-content:not(:fullscreen) :is(
+    .rendered-content > img, .rendered-content > svg, .image-viewer-content > img,
+    .video-preview-wrapper:not(:fullscreen) > .video-preview
+) {
+    max-height: var(--include-note-media-max-height, none);
 }
 
 .include-note-wrapper {
@@ -1498,18 +1178,16 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     min-width: 0;
 }
 
-/* Header: the standalone title (non-expandable) and the title row (expandable)
-   both act as the card header, mirroring the grid/list note-book-card header. */
+/* The header: the title row, or the bare title of an embed whose upload is under way. */
 .include-note-wrapper > .include-note-title,
 .include-note-title-row {
     display: flex;
     align-items: center;
     gap: 8px;
     margin: 0;
-    padding: .5rem 1rem;
+    padding: .75rem 1rem;
     font-size: 1em;
     font-weight: 500;
-    border-bottom: 1px solid var(--card-border-color, var(--main-border-color));
 }
 
 /* createLink wraps the icon and anchor in a single <span>; lay it out as a flex
@@ -1538,50 +1216,216 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
     text-decoration: none;
 }
 
-/* Expandable include note styles */
-.include-note-title-row {
+.include-note[data-box-size="expandable"] > .include-note-wrapper > .include-note-title-row {
+    border-start-start-radius: var(--_include-note-top-border-radius, 8px);
+    border-start-end-radius: var(--_include-note-top-border-radius, 8px);
+
+    &:hover {
+        background: var(--card-background-hover-color);
+    }
+}
+
+.include-note[data-box-size="expandable"]:not(.ck-widget)
+    > .include-note-wrapper > .include-note-title-row {
     cursor: pointer;
+}
+
+.include-note[data-box-size="expandable"]:not(:has(> figcaption))
+    > .include-note-wrapper:has(> .include-note-body > .include-note-content[hidden])
+    > .include-note-title-row {
+    border-end-start-radius: var(--_include-note-bottom-border-radius, 8px);
+    border-end-end-radius: var(--_include-note-bottom-border-radius, 8px);
 }
 
 /* The title inside the expandable row defers its header styling to the row. */
 .include-note-title-row .include-note-title {
+    display: flex;
+    align-items: center;
     margin: 0;
     padding: 0;
     border-bottom: none;
+    width: max-content;
     font-weight: inherit;
     font-size: inherit;
-    min-width: 0;
+}
+
+.include-note-title-row > .include-note-title-label {
     flex-grow: 1;
 }
 
-.include-note-toggle {
-    background: none;
-    border: none;
-    padding: 2px;
-    cursor: pointer;
-    font-size: 1.2em;
-    color: var(--muted-text-color);
-    transition: transform 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.include-note-title-row > .icon-action {
     flex-shrink: 0;
 }
 
-.include-note-toggle:hover {
-    color: var(--main-link-color);
+.include-note-title-row > .include-note-display-modes {
+    flex-shrink: 0;
+}
+
+/* Outranks `:root div.btn-group .icon-action`, so the group is as tall as the other buttons. */
+:root .include-note-title-row > .include-note-display-modes .icon-action {
+    --icon-button-size: 24px;
+}
+
+/* Browsers drop a click on a disabled button, which then toggles no expandable embed. */
+.include-note-title-row > .icon-action.disabled {
+    pointer-events: auto;
+}
+
+.include-note-title-row > .include-note-badges:empty {
+    display: none;
+}
+
+.include-note-badges > .excerpt-badge {
+    order: 1;
+}
+
+.include-note-toggle {
+    --icon-button-hover-background: transparent;
+
+    transition: transform 0.2s ease;
 }
 
 .include-note-toggle.expanded {
     transform: rotate(90deg);
 }
 
+/* The selector must outrank the `display` that the icon pack sets on its own class. */
+.include-note-title-row > .include-note-icon {
+    --size: calc(1em + 12px);
+
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    margin-inline-end: 4px;
+    border-radius: 50%;
+    width: var(--size);
+    height: var(--size);
+    background: var(--note-list-view-large-icon-background, var(--main-background-color));
+    font-size: 1.2em;
+    color: var(--note-list-view-large-icon-color, var(--muted-text-color));
+}
+
+/* The glyph and its circle differ by a whole, even number of pixels. */
+@supports (width: round(1px, 1px)) {
+    .include-note-title-row > .include-note-icon {
+        font-size: round(1.2em, 1px);
+    }
+}
+
+.include-note-heading {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+
+    /* The note path from createLink() goes above the title. */
+    .include-note-title > span {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    small {
+        font-size: .7em;
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: .5pt;
+        opacity: .5;
+    }
+
+    .include-note-description {
+        margin-top: 4px;
+    }
+}
+
+.include-note-body {
+    position: relative;
+}
+
 .include-note-content {
+    /* Keeps the z-indexes inside the content, such as those of map panes, under the backdrop. */
+    isolation: isolate;
+    border-top: 2px solid var(--main-background-color);
     padding: .75rem 1rem;
+}
+
+/* Keeps the z-indexes of the content, such as those of a drawing's canvases, under the controls
+   of the embed, such as "Exit fullscreen". */
+.include-note-content > .rendered-content {
+    isolation: isolate;
 }
 
 .include-note-content > .rendered-content > *:last-child {
     margin-bottom: 0;
+}
+
+/* Outranks the margin, shadow and corners that the themes give `.ck-content pre`, the first two
+   with `!important`. */
+:root .include-note-content pre.code-embed-editor,
+:root .include-note-content.type-code pre {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0;
+}
+
+.include-note-content pre.code-embed-editor {
+    padding: 0;
+}
+
+.include-note-content.type-code {
+    padding: var(--_include-note-content-top-inset) var(--_include-note-content-inset)
+             var(--_include-note-content-bottom-inset);
+}
+
+:root .include-note-content.type-code pre {
+    border-radius: var(--_include-note-framed-top-radius) var(--_include-note-framed-top-radius)
+                   var(--_include-note-framed-bottom-radius)
+                   var(--_include-note-framed-bottom-radius);
+
+    &.code-embed-editor {
+        overflow: hidden;
+    }
+}
+
+/* Takes the wheel and the touch gestures for the page until the content has the focus. */
+.include-note-backdrop {
+    position: absolute;
+    inset: 0;
+}
+
+.include-note-content:focus {
+    outline: none;
+}
+
+/* Outlined as a selected widget in the editor. */
+.include-note:has(> .include-note-wrapper > .include-note-body.active) {
+    /* The editor shows a selected widget as blurred while the focus is in its content. */
+    --ck-color-widget-blurred-border: var(--ck-color-focus-border);
+
+    outline: var(--ck-widget-outline-thickness, 3px) solid var(--ck-color-focus-border);
+}
+
+/* Hides what a larger box size drew, until the Tiny row replaces it. */
+.include-note[data-box-size="tiny"] > .include-note-wrapper > .include-note-body {
+    display: none;
+}
+
+.include-note[data-box-size="tiny"] > .include-note-wrapper > .include-note-title-row {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.include-note[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"]) {
+    > .include-note-wrapper > :is(.include-note-title-row, .include-note-title) {
+        display: none;
+    }
+
+    > .include-note-wrapper > .include-note-body > .include-note-content:not(:fullscreen) {
+        border-top: none;
+        border-radius: var(--_include-note-top-border-radius, 8px)
+                       var(--_include-note-top-border-radius, 8px) 0 0;
+    }
 }
 
 /* Media that renders edge-to-edge (iframes, images, video, full-height collection views) shouldn't
@@ -1590,14 +1434,46 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 .include-note-content.type-image,
 .include-note-content.type-video,
 .include-note-content.type-canvas,
+.include-note-content.type-canvasDrawing,
 .include-note-content.type-webView,
 .include-note-content.type-book:has(.note-list-widget.full-height),
 .include-note-content.type-search:has(.note-list-widget.full-height) {
+    box-sizing: content-box;
     padding: 0;
 }
 
-.include-note[data-box-size="expandable"] .include-note-content {
-    padding-top: 0;
+.include-note-content:fullscreen {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--main-background-color);
+}
+
+/* Scrolls in place of the fullscreen box, so that the exit button stays put. */
+.include-note-content:fullscreen > .rendered-content {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.include-note-content.type-text:fullscreen > .rendered-content:not(.full-content-width) > * {
+    max-width: var(--preferred-max-content-width);
+    margin-inline: auto;
+}
+
+.include-note-content:not(:fullscreen) > .include-note-fullscreen-controls {
+    display: none;
+}
+
+.include-note-exit-fullscreen {
+    --overlay-group-inset-top:
+        calc(var(--safe-area-inset-top, env(safe-area-inset-top)) + var(--overlay-group-inset));
+    --overlay-group-inset-end:
+        calc(var(--safe-area-inset-right, env(safe-area-inset-right)) + var(--overlay-group-inset));
+    z-index: 1;
+}
+
+.include-note-exit-fullscreen > button {
+    gap: 8px;
 }
 
 .alert {
@@ -1630,103 +1506,6 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 
 .hidden-ext.note-split + .gutter {
     display: none;
-}
-
-#context-menu-cover.show {
-    position: fixed;
-    top: 0;
-    inset-inline-start: 0;
-    inset-inline-end: 0;
-    bottom: 0;
-    z-index: 2500;
-    background: rgba(0, 0, 0, 0.1);
-}
-
-#context-menu-container {
-    max-height: 100vh;
-    /* !!! Cannot set overflow: auto, submenus will break !!! */
-}
-
-body.mobile #context-menu-container.mobile-bottom-menu {
-    position: fixed !important;
-    inset-inline-start: 0 !important;
-    inset-inline-end: 0 !important;
-    bottom: 0 !important;
-    top: unset !important;
-    max-height: var(--tn-modal-max-height);
-    overflow: auto !important;
-    user-select: none;
-    -webkit-user-select: none;
-    padding-bottom: max(env(safe-area-inset-bottom), var(--padding, var(--menu-padding-size))) !important;
-}
-
-body.mobile .dropdown-menu {
-    position: fixed !important;
-    z-index: 3000 !important;
-}
-
-body.mobile .dropdown-submenu > .dropdown-menu {
-    position: static !important;
-    border: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    top: unset !important;
-    margin-top: 0 !important;
-    width: 100%;
-}
-
-#context-menu-container,
-#context-menu-container .dropdown-menu,
-.tabulator-popup-container {
-    padding: 3px 0;
-    z-index: 2000;
-}
-
-#context-menu-container .dropdown-item,
-.tabulator-menu .tabulator-menu-item {
-    padding: 0 7px 0 10px;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-body.desktop li.dropdown-submenu:hover > ul.dropdown-menu {
-    display: block;
-}
-
-.dropdown-submenu {
-    position: relative;
-}
-
-.dropdown-submenu > .dropdown-menu {
-    top: 0;
-    inset-inline-start: calc(100% - 2px); /* -2px, otherwise there's a small gap between menu and submenu where the hover can disappear */
-    margin-top: -10px;
-}
-
-/* to make submenu scrollable https://github.com/zadam/trilium/issues/3136 */
-.dropdown-submenu > .dropdown-menu:not(:has(.dropdown-submenu)) {
-    max-height: 600px;
-    overflow: auto;
-}
-
-/* Flipped upward (added by ContextMenu.repositionSubmenu) when the submenu would overflow the bottom of the viewport. */
-.dropdown-submenu > .dropdown-menu.submenu-flip-up {
-    top: auto;
-    bottom: 0;
-    margin-top: 0;
-    margin-bottom: -10px;
-}
-
-body.desktop .dropdown-submenu > .dropdown-menu {
-    min-width: max-content;
-    max-width: 300px;
-}
-
-.dropdown-submenu.dropstart > .dropdown-menu,
-body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
-    inset-inline-start: auto;
-    inset-inline-end: calc(100% - 2px);
 }
 
 .right-dropdown-widget {
@@ -1817,52 +1596,17 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
     display: none !important;
 }
 
-.ck.ck-mentions > .ck-list__item {
-    max-width: 700px;
-}
+/* Snippet form */
 
-.ck.ck-mentions > .ck-list__item .ck-button {
-    /* wrap text for very long note path title */
-    white-space: normal !important;
-}
-
-/*
- * A note suggestion is an icon beside a note path. Laid out as a row so the two are centred against
- * each other: left inline, the icon aligns on the text baseline, and `vertical-align: middle` only
- * gets it as far as the x-height — about a pixel below where the capitals it sits beside read as
- * centred. The icon carries its own font, so no baseline rule can line the two up in general.
- */
-.ck.ck-mentions .ck-button.note-mention-suggestion {
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-    text-align: start;
-}
-
-/* Its own box, so the row centres the glyph itself rather than the line box around it. */
-.ck.ck-mentions .ck-button.note-mention-suggestion > .bx {
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-/* Slash commands */
-
-.ck.ck-slash-command-button {
-    padding: 0.5em 1em !important;
-}
-
-.ck.ck-slash-command-button__text-part,
 .ck.ck-template-form__text-part {
     margin-inline-start: 0.5em;
     line-height: 1.2em !important;
 }
 
-.ck.ck-slash-command-button__text-part > span,
 .ck.ck-template-form__text-part > span {
     line-height: inherit !important;
 }
 
-.ck.ck-slash-command-button__text-part .ck.ck-slash-command-button__description,
 .ck.ck-template-form__text-part .ck-template-form__description {
     display: block;
     opacity: 0.8;
@@ -1967,10 +1711,12 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
 }
 
 @media (max-width: 991px) {
-    body.mobile #launcher-pane .dropdown.global-menu > .dropdown-menu.show,
-    body.mobile #launcher-container .dropdown > .dropdown-menu.show,
+    /* The launcher bar's menus stand in the page's body, in a wrapper with their dropdown's class,
+       outside the bar whose `--launcher-pane-size` the theme sets, so its horizontal size is read
+       where the theme defines it. */
+    body.mobile .tn-dropdown-portal:is(.global-menu, .right-dropdown-widget) > .dropdown-menu.show,
     body.mobile .dropdown-menu.mobile-bottom-menu.show {
-        --dropdown-bottom: calc(var(--mobile-bottom-offset) + var(--launcher-pane-size));
+        --dropdown-bottom: calc(var(--mobile-bottom-offset) + var(--launcher-pane-horiz-size, var(--launcher-pane-size)));
         position: fixed !important;
         bottom: var(--dropdown-bottom) !important;
         top: unset !important;
@@ -1981,14 +1727,14 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
         max-height: calc(var(--tn-modal-max-height) - var(--dropdown-bottom));
     }
 
-    body.mobile #launcher-container .dropdown > .dropdown-menu.show {
+    body.mobile .tn-dropdown-portal.right-dropdown-widget > .dropdown-menu.show {
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
 
     body.mobile .dropdown-menu.mobile-bottom-menu.show {
         --dropdown-bottom: 0px;
-        padding-bottom: calc(max(var(--menu-padding-size), env(safe-area-inset-bottom))) !important;
+        padding-bottom: calc(max(var(--menu-padding-size), var(--safe-area-inset-bottom, env(safe-area-inset-bottom)))) !important;
     }
 
     #mobile-sidebar-container {
@@ -2065,7 +1811,7 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
         max-width: unset;
 
         .modal-header {
-            margin-top: env(safe-area-inset-top);
+            margin-top: var(--safe-area-inset-top, env(safe-area-inset-top));
         }
 
         .modal-content {
@@ -2085,7 +1831,7 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
 
     body.mobile .modal-footer {
         padding-top: 12px;
-        padding-bottom: calc(max(env(safe-area-inset-bottom), 12px));
+        padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)), 12px));
     }
 
     body.mobile .help-dialog kbd {
@@ -2094,29 +1840,6 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
 
     body.mobile .options-section-card table {
         word-break: break-all;
-    }
-
-    body.mobile .jump-to-note-dialog {
-        .modal-header {
-            padding-bottom: 0.75rem !important;
-        }
-
-        .modal-content {
-            padding-bottom: 0 !important;
-        }
-
-        .modal-body {
-            overflow-y: auto;
-        }
-
-        .aa-dropdown-menu {
-            max-height: unset;
-            overflow: auto;
-        }
-
-        .aa-suggestion {
-            padding-inline: 0;
-        }
     }
 
     body.mobile .modal-dialog .dropdown-menu {
@@ -2136,6 +1859,19 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
     body.mobile #root-widget {
         flex-direction: column-reverse !important;
         background-color: var(--launcher-pane-background-color);
+    }
+
+    /* `column-reverse` puts `#mobile-bottom-bar` at the top, so the panes clear the navigation bar
+       instead. The open keyboard covers the navigation bar, as in phone mode. */
+    body.mobile #mobile-bottom-bar {
+        padding-bottom: 0;
+    }
+
+    body.mobile #root-widget:not(.virtual-keyboard-opened) {
+        #mobile-rest-container > #mobile-sidebar-wrapper,
+        #detail-container {
+            padding-bottom: var(--mobile-bottom-offset);
+        }
     }
 
     #mobile-sidebar-wrapper {
@@ -2171,10 +1907,6 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
 
 #launcher-pane .right-dropdown-widget {
     position: static;
-}
-
-#right-pane {
-    overflow: auto;
 }
 
 #right-pane .card {
@@ -2247,6 +1979,11 @@ body:not(.mobile) #launcher-pane.horizontal .dropdown-submenu > .dropdown-menu {
     --max-content-width: unset;
 }
 
+body.mobile {
+    /* The full width of a text note table, read by `TriliumTableScroll` and `table_scroll.css`. */
+    --table-reference-width: var(--preferred-max-content-width);
+}
+
 button.close:hover {
     text-shadow: none;
     color: currentColor;
@@ -2256,10 +1993,19 @@ button.close:hover {
     display: none;
 }
 
-.reference-link .tn-icon {
-    position: relative;
-    top: 1px;
-    margin-inline-end: 3px;
+.reference-link small {
+    display: inline-block;
+}
+
+:root a.reference-link.reference-link-missing,
+.ck-content a.reference-link > span.reference-link-missing {
+    color: var(--bs-danger);
+}
+
+/* The board column a reference points at. `--custom-color` is set by the theme on
+   `.use-note-color`. */
+.reference-link small.use-note-color {
+    color: var(--custom-color, inherit);
 }
 
 .options-section:first-of-type h4 {
@@ -2345,6 +2091,13 @@ body.electron:not(.platform-darwin) .tab-row-container {
     padding-inline-end: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw));
 }
 
+@media (display-mode: window-controls-overlay) {
+    body:not(.electron) .tab-row-container {
+        padding-inline-start: env(titlebar-area-x, 0px);
+        padding-inline-end: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw));
+    }
+}
+
 .tab-row-container .toggle-button {
     background: transparent;
     appearance: none;
@@ -2370,12 +2123,6 @@ body.electron:not(.platform-darwin) .tab-row-container {
     color: var(--hover-item-text-color);
 }
 
-.note-split.type-geoMap .floating-buttons-children {
-    background: var(--main-background-color);
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, var(--dropdown-shadow-opacity));
-    border-radius: 4px;
-}
-
 body.zen {
     --tab-bar-height: 0;
 }
@@ -2389,25 +2136,20 @@ body.zen .right-pane-peek-button,
 body.zen #mobile-sidebar-wrapper,
 body.zen .tab-row-container,
 body.zen .tab-row-widget,
-body.zen .shared-info-widget,
-body.zen .ribbon-container:not(:has(.classic-toolbar-widget)),
-body.zen .ribbon-container:has(.classic-toolbar-widget) .ribbon-top-row,
-body.zen .ribbon-container .ribbon-body:not(:has(.classic-toolbar-widget)),
 body.zen .title-row .icon-action,
 body.zen .note-badges > *:not(.read-only-badge),
-body.zen .ribbon-button-container,
+body.zen .note-actions-bar,
 body.zen .inline-title,
 body.zen .promoted-attributes-widget,
-body.zen .floating-buttons-children > *:not(.bx-edit-alt),
 body.zen .action-button,
 body.zen .tooltip.content-hint, /* content-area hints (task states, collapsible summaries, drag handles) */
 body.zen .note-split:not(.type-book) .note-list-widget {
     display: none !important;
 }
 
-body.experimental-feature-new-layout.zen #vertical-main-container {
+body.zen #vertical-main-container {
     /* Remove the placeholder for the right pane peek button */
-    --right-pane-peek-button-gutter: 0;
+    --right-pane-peek-button-gutter: 0 !important;
 }
 
 body.zen .split-note-container-widget > .gutter {
@@ -2430,20 +2172,6 @@ body.zen .title-row {
     padding-inline-start: env(titlebar-area-x);
     padding-inline-end: calc(100vw - env(titlebar-area-width, 100vw) + 2.5em);
     border-bottom: none !important;
-}
-
-body.zen .floating-buttons {
-    top: -10px;
-}
-
-body.zen .floating-buttons-children {
-    inset-inline-end: 0;
-}
-
-body.zen .floating-buttons-children .button-widget {
-    width: var(--zen-button-size);
-    height: var(--zen-button-size);
-    padding: 0;
 }
 
 body.zen .note-title-widget,
@@ -2508,64 +2236,7 @@ body.zen:not(.backdrop-effects-disabled) .note-split.type-text .scrolling-contai
 
 /* Fixed formatting toolbar */
 
-body.zen:not(.experimental-feature-new-layout) {
-    .note-split .ribbon-container {
-        position: fixed;
-        left: 0;
-        bottom: 20px;
-        width: 100%;
-        z-index: 1000;
-        opacity: 0; /* Hidden unless the current note split is focused */
-        pointer-events: none;
-        transition: opacity 100ms linear;
-    }
-
-    .note-split:focus-within .ribbon-container {
-        opacity: 1; /* Show when the note split is focused */
-    }
-
-    .note-split .ribbon-container .ribbon-body {
-        border: 0;
-    }
-
-    .note-split .ribbon-container .classic-toolbar-widget {
-        margin: auto;
-        width: fit-content;
-        box-shadow: 0px 10px 20px rgba(0, 0, 0, .1);
-        border-radius: 8px;
-        border: 1px solid var(--main-border-color);
-        padding: 4px;
-        background: var(--menu-background-color);
-    }
-
-    .note-split .ribbon-container .classic-toolbar-widget:not(:has(> .ck-toolbar)) {
-        /* Hide the toolbar wrapper if the toolbar is missing */
-        display: none;
-    }
-
-    .note-split:focus-within .ribbon-container .classic-toolbar-widget {
-        pointer-events: all;
-    }
-
-    @media (max-width: 1300px) {
-        .note-split .ribbon-container .classic-toolbar-widget {
-            /* Set the toolbar to full with */
-            width: 100%;
-        }
-
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_se,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_sw,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_smw,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_sme,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_s {
-            /* Force toolbar items overflow dropdowns open upwards */
-            top: auto;
-            bottom: 100%;
-        }
-    }
-}
-
-body.zen.experimental-feature-new-layout {
+body.zen {
     .status-bar {
         display: none;
     }
@@ -2588,8 +2259,10 @@ body.zen.experimental-feature-new-layout {
         backdrop-filter: blur(6px);
     }
 
+    /* An open dropdown holds the toolbar up: hovering its submenu takes focus out of the split. */
     #root-widget:has(.note-split.type-text:focus-within) .classic-toolbar-widget,
-    .classic-toolbar-widget:focus-within {
+    .classic-toolbar-widget:focus-within,
+    .classic-toolbar-widget:has(.ck-dropdown__panel-visible) {
         opacity: 1; /* Show when the note split is focused */
         pointer-events: all;
     }
@@ -2771,77 +2444,6 @@ footer.webview-footer button {
     100% { opacity: 0.3; }
 }
 
-/* Right Pane Tab Styles */
-#right-pane-tab-container {
-    display: flex;
-    gap: 10px;
-}
-
-.right-pane-tab {
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: background-color 0.2s ease;
-}
-
-.right-pane-tab:hover {
-    background-color: var(--hover-item-background-color);
-}
-
-.right-pane-tab.active {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.right-pane-tab .tab-title {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.right-pane-tab .tab-title .tn-icon {
-    font-size: 1.1em;
-}
-
-.admonition {
-    --accent-color: var(--card-border-color);
-    background: color-mix(in srgb, var(--accent-color) 15%, transparent);
-    border: 1px solid var(--accent-color);
-    border-radius: 0.5em;
-    padding: 1em;
-    margin: 1.25em 0;
-    position: relative;
-    padding-inline-start: 2.5em;
-    overflow: hidden;
-}
-
-.admonition p:last-child {
-    margin-bottom: 0;
-}
-
-.admonition::before {
-    color: var(--accent-color);
-    font-family: boxicons !important;
-    position: absolute;
-    top: 1em;
-    inset-inline-start: 1em;
-}
-
-.admonition.note { --accent-color: var(--admonition-note-accent-color); }
-.admonition.tip { --accent-color: var(--admonition-tip-accent-color); }
-.admonition.important { --accent-color: var(--admonition-important-accent-color); }
-.admonition.caution { --accent-color: var(--admonition-caution-accent-color); }
-.admonition.warning { --accent-color: var(--admonition-warning-accent-color); }
-
-.admonition.note::before { content: "\eb21"; }
-.admonition.tip::before { content: "\ea0d"; }
-.admonition.important::before { content: "\ea7c"; }
-.admonition.caution::before { content: "\eac7"; }
-.admonition.warning::before { content: "\eac5"; }
-
 .ck-content ul.todo-list li span.todo-list__label__description {
     transition: opacity 200ms ease;
 }
@@ -2999,6 +2601,12 @@ iframe.print-iframe {
     overflow: hidden;
 }
 
+/* A full-height note fills the container instead of scrolling it, so the padding that lets
+   flowing content scroll past its end would only take height away from the note. */
+.scrolling-container:has(> .note-detail.full-height) > .scroll-padding-widget {
+    display: none;
+}
+
 @media (max-width: 991px) {
     body.mobile {
         .split-note-container-widget {
@@ -3013,7 +2621,7 @@ iframe.print-iframe {
             }
         }
 
-        body:not(.ios) #root-widget.virtual-keyboard-opened .note-split:not(.active) {
+        &:not(.ios) #root-widget.virtual-keyboard-opened .note-split:not(.active) {
             max-height: 80px;
             opacity: 0.4;
         }
@@ -3068,17 +2676,6 @@ iframe.print-iframe {
  * TASK STATES
  */
 
-:where(:root) {
-    --task-checkbox-without-state-background: #d5d5d5;
-    --task-checkbox-with-state-background: orange;
-    --task-checkbox-done-color: green;
-    --task-checkbox-unknown-state-color: orange;
-    --task-checkbox-glyph-color: white;
-
-    --task-checkbox-border-radius: 4px;
-    --task-checkbox-glyph-ratio: .8;
-}
-
 :root .tn-task-checkbox {
     --_checkbox-size: 18px;
 
@@ -3113,235 +2710,6 @@ iframe.print-iframe {
    so no spacing is added. */
 .tn-task-tooltip-state {
     margin-bottom: 8px;
-}
-
-/* Prevent variables from bleeding into nested items */
-.ck-content .todo-list .todo-list {
-    --task-state-glyph: initial;
-    --task-state-glyph-font-family: initial;
-    --task-state-color: initial;
-    --task-state-adjusted-color: initial;
-    --task-state-hue: initial;
-    --_task-checkbox-background: initial;
-}
-
-/* All tasks with a state */
-:where(.ck-content .todo-list li[data-trilium-task-state]:not([data-trilium-task-state="none"])),
-.tn-task-checkbox:not([data-trilium-task-state="none"]) {
-    --_task-checkbox-background: var(--task-state-adjusted-color, var(--task-state-color, var(--task-checkbox-with-state-background)));
-}
-
-/* Default checked state */
-:where(.ck-content .todo-list li:where(:not([data-trilium-task-state]), [data-trilium-task-state="done"]):has(> .todo-list__label input[type="checkbox"]:checked)),
-.tn-task-checkbox[data-trilium-task-state="done"] {
-    --task-state-glyph: "";
-    --task-state-glyph-font-family: boxicons;
-    --task-state-hue: var(--task-checkbox-done-hue);
-    --_task-checkbox-background: var(--task-checkbox-done-color);
-}
-
-/* The read-only view renders a real <label>, which Bootstrap's reboot makes
-   inline-block — an empty label (its checkbox is absolutely positioned below)
-   then produces a full-height line of its own, pushing the item text onto the
-   next line. Restore the plain inline display so the empty label collapses. */
-:root .ck-content.ck-content ul.todo-list li .todo-list__label {
-    display: inline;
-}
-
-:root .ck-content.ck-content ul.todo-list li .todo-list__label input[type="checkbox"] {
-    --_checkbox-size: var(--ck-content-todo-list-checkmark-size);
-
-    /* Take the checkbox out of the inline flow in every variant and centre it
-       geometrically on the first text line (the li is the positioned ancestor,
-       `li p` has no margin, and CKEditor's own `left/right: -25px` still places
-       it in the gutter). Centering via `vertical-align: middle` depends on font
-       metrics and differs from the absolutely-positioned `_without-description`
-       variant — this makes both variants share one deterministic geometry. */
-    position: absolute;
-    top: calc((1lh - var(--_checkbox-size)) / 2);
-    inset-inline-start: -25px;
-    inset-inline-end: auto;
-    /* `1lh` must resolve against the text's line height, not the UA form-control
-       font, and the UA's 3px checkbox margins would offset the absolute position.
-       (Bootstrap's reboot happens to do both, but don't depend on it.) */
-    margin: 0;
-    font: inherit;
-}
-
-/* CKEditor middle-aligns the inline description span, while a real-<p> description
-   (the `_without-description` variant) sits on the plain baseline — so the text
-   position depended on which variant rendered. Align both on the baseline. */
-:root .ck-content.ck-content ul.todo-list li .todo-list__label .todo-list__label__description {
-    vertical-align: baseline;
-}
-
-/* Checkbox */
-:root .ck-content.ck-content ul.todo-list li .todo-list__label input[type="checkbox"],
-.tn-task-checkbox {
-    /* Checkbox body */
-    &::before {
-        all: unset;
-
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: var(--task-checkbox-border-radius);
-        background: var(--_task-checkbox-background, var(--task-checkbox-without-state-background));
-    }
-
-    /* Checkbox tick */
-    &::after {
-        all: unset;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        inset: 0;
-        content: var(--task-state-glyph);
-        font-family: var(--task-state-glyph-font-family, inherit);
-        /* Em box == checkbox box: the flex centering has zero leftover
-           space to round, so nothing can snap asymmetrically. */
-        font-size: var(--_checkbox-size);
-        line-height: 1;
-        color: var(--task-checkbox-glyph-color);
-        /* The shrink is geometric, not typographic — scale() doesn't snap
-           to the device-pixel grid, so the glyph stays centred at any zoom. */
-        transform: scale(var(--task-checkbox-glyph-ratio));
-    }
-
-    &:disabled {
-        opacity: 1;
-    }
-}
-
-/*
- * Collapsible blocks
- */
-
- /*
- * Shared styles for collapsible blocks (rendered as native HTML <details>/<summary>).
- * Used in both the editor and the read-only/published view via .ck-content.
- */
-
-.ck-content details.trilium-collapsible {
-    --collapsible-block-background: var(--card-background-color);
-    --collapsible-block-summary-background: var(--card-background-color);
-    --collapsible-block-summary-delimiter-color: var(--main-background-color);
-
-    --_border-radius: 8px;
-    --_block-padding: .75rem;
-    --_inline-padding: 1rem;
-    --_margin-between-collapsibles: 3px;
-    --_content-indent: 2rem;
-    --_arrow-gap: 2rem;
-
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    margin: 1em 0;
-    border-radius: var(--_border-radius);
-    background: var(--collapsible-block-background);
-    padding: var(--_block-padding) var(--_inline-padding) var(--_block-padding) var(--_content-indent);
-
-    &:not(& + &):has(+ details.trilium-collapsible) {
-        /* First collapsibile from the series */
-        margin-bottom: var(--_margin-between-collapsibles);
-        border-end-start-radius: 0;
-        border-end-end-radius: 0;
-    }
-
-    & + &:has(+ details.trilium-collapsible) {
-        /* Middle collapsibile blocks from the series */
-        margin-bottom: var(--_margin-between-collapsibles);
-        margin-top: 0;
-        border-radius: 0;
-    }
-
-    & + &:not(:has(+ details.trilium-collapsible)) {
-        /* The last collapsibile from the series */
-        margin-top: 0;
-        border-start-start-radius: 0;
-        border-start-end-radius: 0;
-    }
-
-    > summary {
-        position: relative;
-        left: calc(0px - var(--_content-indent ) / 2);
-        width: calc(100% + var(--_content-indent));
-        padding-left: var(--_arrow-gap);
-        cursor: pointer;
-        font-weight: 500;
-        outline: none;
-        list-style: none; /* native marker replaced by the custom arrow below */
-
-        &::-webkit-details-marker {
-            display: none;
-        }
-
-        &::after {
-            display: block;
-            content: "";
-            z-index: -1;
-            position: absolute;
-            top: calc(0px - (var(--_block-padding) + 1px));
-            left: calc(0px - var(--_content-indent ) / 2);
-            width: calc(100% + var(--_inline-padding) * 2 + 1px);
-            height: calc(100% + var(--_block-padding) * 2 + 1px);
-            background: var(--collapsible-block-summary-background);
-        }
-
-        &:hover::after {
-            background: var(--card-background-hover-color);
-        }
-    }
-
-    &[open] > summary {
-        margin-bottom: calc(var(--_block-padding) * 2);
-
-        &::after {
-            border-bottom: 2px solid var(--collapsible-block-summary-delimiter-color);
-        }
-    }
-
-    >*:last-child:not(summary) {
-        margin-bottom: 0;
-    }
-}
-
-/*
- * Custom arrow, shared by every view. In the editor it is a real <span> (inserted by the
- * editing downcast) because it needs click and keyboard handlers; elsewhere that span
- * doesn't exist — the arrow is deliberately not part of the saved HTML — so the data view
- * (read-only text notes, markdown preview) draws it on the summary instead and lets the
- * native <details> toggle do the work. Both share the geometry and the glyph below.
- */
-.ck-content details.trilium-collapsible > summary > .trilium-collapsible-arrow,
-.ck-content:not(.ck-editor__editable) details.trilium-collapsible > summary::before {
-    position: absolute;
-    left: 0;
-    top: -0.05em;
-    width: 1lh;
-    height: 1lh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: boxicons;
-    cursor: pointer;
-    user-select: none;
-    /* Scaled rather than sized with font-size, so the box keeps the summary's line metrics
-     * and the arrow stays centred on the first line of the title. */
-    transform: scale(1.3);
-    transition: transform 0.15s ease;
-}
-
-.ck-content details.trilium-collapsible > summary > .trilium-collapsible-arrow::before,
-.ck-content:not(.ck-editor__editable) details.trilium-collapsible > summary::before {
-    content: "\ea50";
-}
-
-.ck-content details.trilium-collapsible[open] > summary > .trilium-collapsible-arrow,
-.ck-content:not(.ck-editor__editable) details.trilium-collapsible[open] > summary::before {
-    transform: scale(1.3) rotate(90deg);
 }
 
 /*

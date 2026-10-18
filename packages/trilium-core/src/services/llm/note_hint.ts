@@ -23,9 +23,9 @@ export function buildNoteHint(noteId: string, hasAttachments: boolean): string |
 
     const metadata = dump(getNoteMeta(note, SYSTEM_PROMPT_LIMITS), { lineWidth: -1 });
     const lines = [
-        "The user is currently viewing the following note.",
-        "Use this metadata (including contentPreview) to answer questions about the note without calling tools when possible.",
-        "Use get_note_content only if the preview is insufficient."
+        "The user is currently viewing the note below.",
+        "To answer about any other note the user mentions or links, read it with the note tools.",
+        "For questions about this note, its metadata and contentPreview might be enough; use get_note_content when they are not."
     ];
     if (hasAttachments) {
         // When the user has attached files alongside this turn, those are

@@ -5,22 +5,22 @@ The Presentation view allows the creation of slideshows directly from within Tri
 
 ### Creating a new presentation
 
-Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ and look for _Presentation_.
+Right click on an existing note in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> and select _Insert child note_ → _Collection_ → _Presentation_.
 
 ## How it works
 
 *   Each slide is a child note of the collection.
 *   The order of the child notes determines the order of the slides.
-*   Unlike traditional presentation software, slides can be laid out both horizontally and vertically (see belwo for more information).
+*   Unlike traditional presentation software, slides can be laid out both horizontally and vertically (see below for more information).
 *   Direct children will be laid out horizontally and the children of those will be laid out vertically. Children deeper than two levels of nesting are ignored.
 
 ## Interaction and navigation
 
-In the floating buttons section (top-right):
+In the floating toolbar (top-right):
 
-*   Edit button to go to the corresponding note of the current slide.
-*   Press Overview button (or the <kbd>O</kbd> key) to show a birds-eye view of the slides. Press the button again to disable it.
-*   Press the “Start presentation” button to show the presentation in full-screen.
+*   <span class="tn-icon bx bx-edit"></span> _Edit this slide_ button to go to the corresponding note of the current slide. A [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md) presentation doesn't show it.
+*   Press the <span class="tn-icon bx bx-grid-horizontal"></span> Overview button (or the <kbd>O</kbd> key) to show a birds-eye view of the slides. Press the button again to disable it.
+*   Press the <span class="tn-icon bx bx-fullscreen"></span> “Start presentation” button to show the presentation in full-screen.
 
 The following keyboard shortcuts are supported:
 

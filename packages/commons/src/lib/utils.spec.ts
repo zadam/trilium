@@ -1,4 +1,4 @@
-import { deferred, formatLogMessage } from "./utils.js";
+import { deferred, escapeHtml, fnv1a, formatLogMessage } from "./utils.js";
 import { describe, expect, it } from "vitest";
 
 describe("#deferred", () => {
@@ -81,5 +81,34 @@ describe("#deferred resolution", () => {
         const d2 = deferred<number>();
         d2.reject(new Error("x"));
         await expect(d2).rejects.toThrow("x");
+    });
+});
+
+describe("#fnv1a", () => {
+    it("returns the FNV-1a reference digests as unsigned 32-bit numbers", () => {
+        expect(fnv1a("")).toBe(0x811c9dc5);
+        expect(fnv1a("a")).toBe(0xe40c292c);
+        expect(fnv1a("foobar")).toBe(0xbf9cf968);
+    });
+
+    it("is stable, distinguishes similar inputs and stays in range", () => {
+        expect(fnv1a("https://example.com/a")).toBe(fnv1a("https://example.com/a"));
+        expect(fnv1a("https://example.com/a")).not.toBe(fnv1a("https://example.com/b"));
+
+        for (const value of ["", "\u00ff", "\u4e2d\u6587", "x".repeat(1000)]) {
+            const hash = fnv1a(value);
+            expect(Number.isInteger(hash)).toBe(true);
+            expect(hash).toBeGreaterThanOrEqual(0);
+            expect(hash).toBeLessThanOrEqual(0xffffffff);
+        }
+    });
+});
+
+describe("#escapeHtml", () => {
+    it("escapes the characters that end text or a quoted attribute, ampersands first", () => {
+        expect(escapeHtml(`<a href="x">Tom & 'Jerry' &amp;</a>`))
+            .toBe("&lt;a href=&quot;x&quot;&gt;Tom &amp; &#39;Jerry&#39; &amp;amp;&lt;/a&gt;");
+        expect(escapeHtml("plain text = 1/2")).toBe("plain text = 1/2");
+        expect(escapeHtml("")).toBe("");
     });
 });

@@ -24,14 +24,14 @@ Setting up authentication with OpenID connect is a two-step process:
     | Client ID\* | `oauthClientId` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHCLIENTID` | The client ID from your provider configuration. |
     | Client Secret\* | `oauthClientSecret` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHCLIENTSECRET` | The client secret from your provider configuration. |
     | Client auth method | `oauthClientAuthMethod` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHCLIENTAUTHMETHOD` | Token-endpoint auth method: `client_secret_basic` or `client_secret_post`. Empty auto-detects.  Only needed if sign-in fails with a `WWW-Authenticate` or `invalid_client` error. |
-    | ID token algorithm | `oauthIdTokenSigningAlg` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHIDTOKENSIGNINGALG` | <span style="color:rgb(32,32,32)">The algorithm your provider signs ID tokens with, e.g.</span> `RS256`<span style="color:rgb(32,32,32)">,</span> `EdDSA`<span style="color:rgb(32,32,32)">,</span> `ES256`<span style="color:rgb(32,32,32)">. Empty auto-detects from the provider. Only needed if sign-in fails with an</span> `unexpected JWT alg` <span style="color:rgb(32,32,32)">error.</span> |
+    | ID token algorithm | `oauthIdTokenSigningAlg` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHIDTOKENSIGNINGALG` | <span style="color:rgb(32,32,32);">The algorithm your provider signs ID tokens with, e.g.</span> `RS256`<span style="color:rgb(32,32,32);">,</span> `EdDSA`<span style="color:rgb(32,32,32);">,</span> `ES256`<span style="color:rgb(32,32,32);">. Empty auto-detects from the provider. Only needed if sign-in fails with an</span> `unexpected JWT alg` <span style="color:rgb(32,32,32);">error.</span> |
     
     Asterisk (\*) marks a required field
 3.  The default OAuth issuer is Google. To use other services such as Authentik or Auth0, you can configure the settings via `oauthIssuerBaseUrl`, `oauthIssuerName`, and `oauthIssuerIcon` in the `config.ini` file. Alternatively, these values can be set using environment variables:
     
     | Configuration | `config.ini` in `[MultiFactorAuthentication]` section | Environment variable | Description |
     | --- | --- | --- | --- |
-    | Issuer base URL | `oauthIssuerBaseUrl` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERBASEURL` | Either the issuer itself (`https://auth.example.com`) or a full discovery URL (`https://auth.example.com/.well-known/openid-configuration`).  <br>  <br>A URL containing `/.well-known/` is used as-is<span style="color:rgb(32,32,32)">, which is convenient when your provider hands you a discovery URL to copy. A trailing slash may be included or omitted; Trilium matches whichever spelling the provider advertises.</span>  <br>  <br>Use the full form when your provider advertises an issuer that differs from the path serving its discovery document, such as Authentik in "global" issuer mode. |
+    | Issuer base URL | `oauthIssuerBaseUrl` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERBASEURL` | Either the issuer itself (`https://auth.example.com`) or a full discovery URL (`https://auth.example.com/.well-known/openid-configuration`).  <br>  <br>A URL containing `/.well-known/` is used as-is<span style="color:rgb(32,32,32);">, which is convenient when your provider hands you a discovery URL to copy. A trailing slash may be included or omitted; Trilium matches whichever spelling the provider advertises.</span>  <br>  <br>Use the full form when your provider advertises an issuer that differs from the path serving its discovery document, such as Authentik in "global" issuer mode. |
     | Issuer name | `oauthIssuerName` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERNAME` | The name of your authentication provider, used for reference on the login screen and in settings. Default is “Google”. |
     | Issuer icon | `oauthIssuerIcon` | `TRILIUM_MULTIFACTORAUTHENTICATION_OAUTHISSUERICON` | Optionally, the URL to a logo of the provider. By default it will try to obtain the favicon from the website, so it's optional. |
     
@@ -57,7 +57,7 @@ To do so:
 
 1.  Go to <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Password & Auth._
 2.  In the _Sign-in with_ field, choose _OpenID Connect provider._
-3.  In the _OpenID Connect_ section, look for the _Connect account_ button.
+3.  In the _OpenID Connect_ section, look for the _Connect account_ (<span class="tn-icon bx bx-log-in"></span>) button.
 4.  This will redirect you to your authentication provider, where you can sign in or confirm the action if needed.
 5.  Once you are authenticated you will be redirected back to the Trilium application.
 
@@ -70,7 +70,7 @@ When logging out of Trilium, a request is made to the authentication provider to
 When switching providers (e.g. going from Google to Authelia), it's important to take the following steps:
 
 1.  Go to <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Password & Auth_.
-2.  In the _OpenID Connect_ section, press the _Disconnect_ button.
+2.  In the _OpenID Connect_ section, press the _Disconnect_ (<span class="tn-icon bx bx-trash"></span>) button.
 3.  Wait for the section to indicate that you are disconnected.
 4.  Change the configuration pointing to the new provider.
 5.  Restart your server.

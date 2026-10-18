@@ -41,6 +41,7 @@ body.setup {
                 display: flex;
                 width: 750px;
                 height: 650px;
+                max-height: 100%;
                 top: unset;
                 overflow: hidden;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -134,17 +135,28 @@ body.setup {
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding-top: calc(2em + env(safe-area-inset-top));
-            padding-bottom: calc(2em + env(safe-area-inset-bottom));
-            padding-left: calc(2em + env(safe-area-inset-left));
-            padding-right: calc(2em + env(safe-area-inset-right));
+            padding-top: calc(2em + var(--safe-area-inset-top, env(safe-area-inset-top)));
+            padding-bottom: calc(2em + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+            padding-left: calc(2em + var(--safe-area-inset-left, env(safe-area-inset-left)));
+            padding-right: calc(2em + var(--safe-area-inset-right, env(safe-area-inset-right)));
             overflow: auto;
 
             >.back-button {
-                position: absolute;
-                top: calc(1em + env(safe-area-inset-top));
+                /* `.page` scrolls (not `.setup-container`), so sticky is required here, not
+                   absolute, to stay in flow and follow the scroll. */
+                position: sticky;
+                top: calc(1em + var(--safe-area-inset-top, env(safe-area-inset-top)));
                 inset-inline-start: 1em;
+                align-self: flex-start;
+                z-index: 1;
                 color: var(--muted-text-color);
+                /* Sticky content still scrolls in underneath; an opaque fill stops it showing
+                   through, same technique `.page > footer` below already uses. */
+                background: var(--main-background-color);
+
+                body.background-effects & {
+                    background: transparent;
+                }
 
                 body.desktop & {
                     inset-inline-start: 2em;
@@ -206,7 +218,7 @@ body.setup {
                 margin: 0;
                 border-radius: 0;
                 box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-                padding-top: calc(1em + env(safe-area-inset-top));
+                padding-top: calc(1em + var(--safe-area-inset-top, env(safe-area-inset-top)));
                 padding-inline-end: 2.5em;
                 user-select: text;
 
@@ -411,8 +423,18 @@ body.setup .bx-spin {
 .page.sync-from-desktop {
     .card-columns {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         gap: 1.5rem;
+
+        @media (min-width: 700px) {
+            flex-direction: row;
+
+            /* `container-type: inline-size` on `.tn-card` (Card.css) zeroes a flex item's
+               own width contribution; give this card an explicit share of the row. */
+            > :first-child {
+                flex: 1;
+            }
+        }
     }
 
     .sync-from-desktop-waiting {
@@ -462,21 +484,8 @@ body.setup .bx-spin {
         align-items: center;
         gap: 0.5rem;
 
-        progress {
-            width: 100%;
-            height: 1rem;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            appearance: none;
-
-            &::-webkit-progress-bar {
-                background-color: var(--main-border-color);
-            }
-
-            &::-webkit-progress-value {
-                background-color: var(--main-text-color);
-                transition: width 0.2s ease-out;
-            }
+        .tn-progress-bar {
+            flex: 1;
         }
 
         span {

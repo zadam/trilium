@@ -1,6 +1,26 @@
 import "../theme/collapsible_list_items.css";
 
-import { Command, DomEventObserver, FindAndReplaceEditing, ListEditing, MouseObserver, Plugin, type Editor, type FindResultType, type ModelElement, type ModelNode, type ModelWriter, type ViewDocumentDomEventData, type ViewDocumentMouseDownEvent, type ViewDocumentMouseOutEvent, type ViewElement } from "ckeditor5";
+import {
+    Command,
+    DomEventObserver,
+    ListEditing,
+    MouseObserver,
+    Plugin,
+    type Editor,
+    type EnterCommand,
+    type ListSplitCommand,
+    type ModelElement,
+    type ModelNode,
+    type ModelPosition,
+    type ModelWriter,
+    type ViewDocumentDomEventData,
+    type ViewDocumentEnterEvent,
+    type ViewDocumentMouseDownEvent,
+    type ViewDocumentMouseOutEvent,
+    type ViewElement
+} from "ckeditor5";
+
+import FindReveal from "./find_reveal.js";
 
 export const LIST_COLLAPSED_ATTRIBUTE = "listCollapsed";
 
@@ -37,7 +57,7 @@ export default class CollapsibleListItems extends Plugin {
     private _findClosing = false;
 
     static get requires() {
-        return [ListEditing] as const;
+        return [ ListEditing, FindReveal ] as const;
     }
 
     init() {
@@ -70,6 +90,7 @@ export default class CollapsibleListItems extends Plugin {
         this._enableToggleOnGutterClick();
         this._enableArrowHoverFeedback();
         this._enableToggleOnKeystroke();
+        this._enableEnterAfterCollapsedItem();
         this._enableAutoExpand();
         this._enableFindReveal();
     }
@@ -79,39 +100,23 @@ export default class CollapsibleListItems extends Plugin {
      * inside them, re-collapsing once the highlight moves away — the same treatment collapsible
      * `<details>` blocks get. Unlike {@link _enableAutoExpand} (which permanently drops the
      * collapsed state when the caret enters a hidden block), this is view-only and never touches
-     * the persisted attribute: search must not rewrite the user's collapsed layout. No-op when
-     * the editor has no find plugin.
+     * the persisted attribute: search must not rewrite the user's collapsed layout.
      */
     private _enableFindReveal() {
-        const editor = this.editor;
-        if (!editor.plugins.has(FindAndReplaceEditing)) {
-            return;
-        }
-        // Wire up on "ready", not here: FindAndReplaceEditing may load after this plugin and only
-        // creates its state in its own init(), so the state isn't available yet at this point.
-        this.listenTo(editor, "ready", () => {
-            const state = editor.plugins.get(FindAndReplaceEditing).state;
-            /* v8 ignore next 3 -- by "ready" FindAndReplaceEditing has initialized and always has a state; the guard only satisfies the optional type. */
-            if (!state) {
-                return;
-            }
-            this.listenTo(state, "change:highlightedResult", (_evt, _name, highlighted) => {
-                this._syncFindReveal(highlighted as FindResultType | null);
-            });
+        const findReveal = this.editor.plugins.get(FindReveal);
+        this.listenTo(findReveal, "change:position", (_evt, _name, position) => {
+            this._syncFindReveal(position);
         });
     }
 
     /**
-     * Reconcile {@link _findRevealed} with the collapsed items hiding the current highlight:
-     * reveal ancestors newly hiding it, re-collapse ones that no longer do. A `null` highlight
-     * (search cleared) collapses everything.
+     * Reconcile {@link _findRevealed} with the collapsed items hiding `position`, the match the
+     * find shows: reveal ancestors newly hiding it, re-collapse ones that no longer do. A `null`
+     * position (search cleared) collapses everything.
      */
-    private _syncFindReveal(highlighted: FindResultType | null) {
+    private _syncFindReveal(position: ModelPosition | null) {
         const wanted = new Set<ModelElement>();
-        // Split from `highlighted` so a cleared highlight (null) leaves `marker` undefined, keeping
-        // the marker-absent path reachable rather than short-circuited away on the first `?.`.
-        const marker = highlighted?.marker;
-        const block = marker?.getStart().parent;
+        const block = position?.parent;
         // getCollapsedAncestors tolerates any block (a non-list block has no collapsed ancestors),
         // so no list-specific guard is needed beyond narrowing the position parent to an element.
         if (block?.is("element")) {
@@ -120,11 +125,11 @@ export default class CollapsibleListItems extends Plugin {
             }
         }
 
-        // A cleared highlight means find is closing (or moving off): flag the current microtask so
+        // A cleared position means find is closing (or moving off): flag the current microtask so
         // the caret it is about to drop on the match doesn't permanently expand the item that
         // {@link _enableAutoExpand} would otherwise open. Reset after the tick, so it only affects
         // that synchronous caret landing and never a later real navigation.
-        if (!highlighted) {
+        if (!position) {
             this._findClosing = true;
             void Promise.resolve().then(() => {
                 this._findClosing = false;
@@ -177,6 +182,74 @@ export default class CollapsibleListItems extends Plugin {
             editor.execute("toggleListCollapse");
             cancel();
         });
+    }
+
+    /** Moves new list siblings after hidden descendants for both CKEditor Enter command paths. */
+    private _enableEnterAfterCollapsedItem() {
+        const editor = this.editor;
+        const enterCommand = editor.commands.get("enter") as EnterCommand;
+        const splitCommand = editor.commands.get("splitListItemBefore") as ListSplitCommand;
+        let pendingEnterSplit: ModelElement | null = null;
+
+        // ListEditing handles an empty final block with splitListItemBefore and stops the event,
+        // so EnterCommand never runs on that path.
+        this.listenTo<ViewDocumentEnterEvent>(
+            editor.editing.view.document, "enter", (_evt, data) => {
+                if (data.isSoft) {
+                    pendingEnterSplit = null;
+                    return;
+                }
+                const selectedBlock = getSelectedListBlock(editor);
+                pendingEnterSplit = selectedBlock?.isEmpty
+                    && selectedBlock.getAttribute(LIST_COLLAPSED_ATTRIBUTE) === true
+                    && hasNestedItems(selectedBlock)
+                    ? selectedBlock
+                    : null;
+
+                if (pendingEnterSplit) {
+                    // The split command runs synchronously; clear state if another listener
+                    // handles Enter.
+                    void Promise.resolve().then(() => {
+                        pendingEnterSplit = null;
+                    });
+                }
+            }, { context: "li", priority: "high" }
+        );
+
+        this.listenTo(splitCommand, "afterExecute", () => {
+            if (!pendingEnterSplit || pendingEnterSplit !== getSelectedListBlock(editor)) {
+                return;
+            }
+            pendingEnterSplit = null;
+            editor.model.change((writer) => this._moveItemAfterCollapsedDescendants(writer));
+        });
+
+        this.listenTo(enterCommand, "afterExecute", (_evt, data: { writer: ModelWriter }) => {
+            this._moveItemAfterCollapsedDescendants(data.writer);
+        });
+    }
+
+    /**
+     * Moves the item Enter creates in a collapsed list item after that item's hidden descendants.
+     */
+    private _moveItemAfterCollapsedDescendants(writer: ModelWriter) {
+        const block = getSelectedListBlock(this.editor);
+        if (!block || !block.isEmpty) {
+            return;
+        }
+
+        const previousBlock = block.previousSibling;
+        if (!isListBlock(previousBlock)
+            || previousBlock.getAttribute(LIST_COLLAPSED_ATTRIBUTE) !== true
+            || previousBlock.getAttribute("listItemId") === block.getAttribute("listItemId")) {
+            return;
+        }
+
+        const lastNestedBlock = getNestedBlocks(block).at(-1);
+        if (!lastNestedBlock) {
+            return;
+        }
+        writer.move(writer.createRangeOn(block), writer.createPositionAfter(lastNestedBlock));
     }
 
     /**
@@ -397,14 +470,23 @@ function getArrowBlockAtPointer(editor: Editor, data: ViewDocumentDomEventData<M
 
 function toggleCollapsed(editor: Editor, block: ModelElement): void {
     const collapse = !block.getAttribute(LIST_COLLAPSED_ATTRIBUTE);
+    const itemBlocks = getItemBlocks(block);
+    const nestedBlocks = getNestedBlocks(block);
+    const hidesSelection = collapse && [ ...editor.model.document.selection.getSelectedBlocks() ]
+        .some((selectedBlock) => nestedBlocks.includes(selectedBlock));
 
     editor.model.change((writer) => {
-        for (const itemBlock of getItemBlocks(block)) {
+        for (const itemBlock of itemBlocks) {
             if (collapse) {
                 writer.setAttribute(LIST_COLLAPSED_ATTRIBUTE, true, itemBlock);
             } else {
                 writer.removeAttribute(LIST_COLLAPSED_ATTRIBUTE, itemBlock);
             }
+        }
+
+        if (hidesSelection) {
+            const lastItemBlock = itemBlocks[itemBlocks.length - 1];
+            writer.setSelection(writer.createPositionAt(lastItemBlock, "end"));
         }
     });
 }
@@ -470,6 +552,22 @@ function hasNestedItems(block: ModelElement): boolean {
     return false;
 }
 
+/** Returns the list blocks hidden by collapsing `block`, including all descendant levels. */
+function getNestedBlocks(block: ModelElement): ModelElement[] {
+    const blocks: ModelElement[] = [];
+    const indent = getIndent(block);
+    const lastItemBlock = getItemBlocks(block).at(-1);
+
+    for (
+        let sibling = lastItemBlock?.nextSibling;
+        isListBlock(sibling) && getIndent(sibling) > indent;
+        sibling = sibling.nextSibling
+    ) {
+        blocks.push(sibling);
+    }
+    return blocks;
+}
+
 /** All consecutive blocks belonging to the same (possibly multi-block) list item. */
 function getItemBlocks(block: ModelElement): ModelElement[] {
     const itemId = block.getAttribute("listItemId");
@@ -505,7 +603,7 @@ function getCollapsedAncestors(block: ModelElement): ModelElement[] {
     return ancestors;
 }
 
-function isListBlock(node: ModelNode | null): node is ModelElement {
+function isListBlock(node: ModelNode | null | undefined): node is ModelElement {
     return !!node && node.is("element") && node.hasAttribute("listItemId");
 }
 

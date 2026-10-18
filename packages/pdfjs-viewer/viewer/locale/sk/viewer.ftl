@@ -107,11 +107,11 @@ pdfjs-document-properties-file-size = Veľkosť súboru:
 # Variables:
 #   $kb (Number) - the PDF file size in kilobytes
 #   $b (Number) - the PDF file size in bytes
-pdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) } kB ({ $b } bajtov)
+pdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) } kB ({ $b } bajtov)
 # Variables:
 #   $mb (Number) - the PDF file size in megabytes
 #   $b (Number) - the PDF file size in bytes
-pdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } bajtov)
+pdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } bajtov)
 pdfjs-document-properties-title = Názov:
 pdfjs-document-properties-author = Autor:
 pdfjs-document-properties-subject = Predmet:
@@ -189,23 +189,6 @@ pdfjs-printing-not-ready = Upozornenie: súbor PDF nie je plne načítaný pre t
 
 ## Tooltips and alt text for side panel toolbar buttons
 
-pdfjs-toggle-sidebar-button =
-    .title = Prepnúť bočný panel
-pdfjs-toggle-sidebar-notification-button =
-    .title = Prepnúť bočný panel (dokument obsahuje osnovu/prílohy/vrstvy)
-pdfjs-toggle-sidebar-button-label = Prepnúť bočný panel
-pdfjs-document-outline-button =
-    .title = Zobraziť osnovu dokumentu (dvojitým kliknutím rozbalíte/zbalíte všetky položky)
-pdfjs-document-outline-button-label = Osnova dokumentu
-pdfjs-attachments-button =
-    .title = Zobraziť prílohy
-pdfjs-attachments-button-label = Prílohy
-pdfjs-layers-button =
-    .title = Zobraziť vrstvy (dvojitým kliknutím uvediete všetky vrstvy do pôvodného stavu)
-pdfjs-layers-button-label = Vrstvy
-pdfjs-thumbs-button =
-    .title = Zobraziť miniatúry
-pdfjs-thumbs-button-label = Miniatúry
 pdfjs-current-outline-item-button =
     .title = Nájsť aktuálnu položku v osnove
 pdfjs-current-outline-item-button-label = Aktuálna položka v osnove
@@ -216,10 +199,6 @@ pdfjs-additional-layers = Ďalšie vrstvy
 
 ## Thumbnails panel item (tooltip and alt text for images)
 
-# Variables:
-#   $page (Number) - the page number
-pdfjs-thumb-page-title =
-    .title = Strana { $page }
 # Variables:
 #   $page (Number) - the page number
 pdfjs-thumb-page-canvas =
@@ -237,8 +216,8 @@ pdfjs-thumb-page-title1 =
 ## Find panel button title and messages
 
 pdfjs-find-input =
-    .title = Hľadať
     .placeholder = Hľadať v dokumente…
+    .title = Hľadať
 pdfjs-find-previous-button =
     .title = Vyhľadať predchádzajúci výskyt reťazca
 pdfjs-find-previous-button-label = Predchádzajúce
@@ -337,16 +316,16 @@ pdfjs-editor-highlight-button =
     .title = Zvýrazniť
 pdfjs-editor-highlight-button-label = Zvýrazniť
 pdfjs-highlight-floating-button1 =
-    .title = Zvýrazniť
     .aria-label = Zvýrazniť
+    .title = Zvýrazniť
 pdfjs-highlight-floating-button-label = Zvýrazniť
 pdfjs-comment-floating-button =
-    .title = Pridať komentár
     .aria-label = Pridať komentár
+    .title = Pridať komentár
 pdfjs-comment-floating-button-label = Pridať komentár
 pdfjs-editor-comment-button =
-    .title = Pridať komentár
     .aria-label = Pridať komentár
+    .title = Pridať komentár
 pdfjs-editor-comment-button-label = Pridať komentár
 pdfjs-editor-signature-button =
     .title = Pridať podpis
@@ -421,8 +400,8 @@ pdfjs-editor-comments-sidebar-title =
        *[other] Komentárov
     }
 pdfjs-editor-comments-sidebar-close-button =
-    .title = Zavrieť bočný panel
     .aria-label = Zavrieť bočný panel
+    .title = Zavrieť bočný panel
 pdfjs-editor-comments-sidebar-close-button-label = Zavrieť bočný panel
 # Instructional copy to add a comment by selecting text or an annotations.
 pdfjs-editor-comments-sidebar-no-comments1 = Vidíte niečo pozoruhodné? Zvýraznite to a zanechajte komentár.
@@ -517,8 +496,8 @@ pdfjs-editor-new-alt-text-error-close-button = Zavrieť
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-pdfjs-editor-new-alt-text-ai-model-downloading-progress = Sťahuje sa model AI pre alternatívne texty ({ $downloadedSize } z { $totalSize } MB)
-    .aria-valuetext = Sťahuje sa model AI pre alternatívne texty ({ $downloadedSize } z { $totalSize } MB)
+pdfjs-editor-new-alt-text-ai-model-downloading-progress = Sťahuje sa model AI pre alternatívne texty ({ $downloadedSize } z { $totalSize } MB)
+    .aria-valuetext = Sťahuje sa model AI pre alternatívne texty ({ $downloadedSize } z { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
 pdfjs-editor-new-alt-text-added-button =
     .aria-label = Alternatívny text bol pridaný
@@ -545,13 +524,6 @@ pdfjs-editor-alt-text-settings-dialog-label = Nastavenia alternatívneho textu o
 pdfjs-editor-alt-text-settings-automatic-title = Automatický alternatívny text
 pdfjs-editor-alt-text-settings-create-model-button-label = Automaticky vytvoriť alternatívny text
 pdfjs-editor-alt-text-settings-create-model-description = Navrhuje popisy, ktoré pomôžu ľuďom, ktorým sa obrázok nezobrazuje alebo ak sa obrázok nenačíta.
-# Variables:
-#   $totalSize (Number) - the total size (in MB) of the AI model.
-pdfjs-editor-alt-text-settings-download-model-label = Model AI pre alternatívne texty ({ $totalSize } MB)
-pdfjs-editor-alt-text-settings-ai-model-description = Beží lokálne na vašom zariadení, takže vaše dáta zostanú súkromné. Vyžaduje sa pre automatický alternatívny text.
-pdfjs-editor-alt-text-settings-delete-model-button = Odstrániť
-pdfjs-editor-alt-text-settings-download-model-button = Stiahnuť
-pdfjs-editor-alt-text-settings-downloading-model-button = Sťahuje sa…
 pdfjs-editor-alt-text-settings-editor-title = Editor alternatívneho textu
 pdfjs-editor-alt-text-settings-show-dialog-button-label = Pri pridávaní obrázka ihneď zobraziť editor alternatívneho textu
 pdfjs-editor-alt-text-settings-show-dialog-description = Pomáha vám zabezpečiť, aby všetky vaše obrázky mali alternatívny text.
@@ -774,8 +746,8 @@ pdfjs-toggle-views-manager-button1 =
 ## Digital signature properties (signature verification panel)
 
 pdfjs-digital-signature-properties-button =
-    .title = Vlastnosti digitálneho podpisu
     .aria-label = Vlastnosti digitálneho podpisu
+    .title = Vlastnosti digitálneho podpisu
 pdfjs-digital-signature-properties-button-label = Vlastnosti digitálneho podpisu
 
 ## Banner shown above the signature list summarising the overall

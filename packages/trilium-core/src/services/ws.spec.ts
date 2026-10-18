@@ -160,6 +160,7 @@ describe("ws service (real DB)", () => {
         ws.syncFailed();
         ws.syncHashCheckFailed(["blobs/9"]);
         ws.reloadFrontend("because");
+        ws.reloadFroca("repaired");
 
         const types = sentAll.map((m) => m.type);
         expect(types).toEqual(expect.arrayContaining([
@@ -172,7 +173,13 @@ describe("ws service (real DB)", () => {
         ]));
         const pull = sentAll.find((m) => m.type === "sync-pull-in-progress");
         expect(pull).toMatchObject({ lastSyncedPush: 42 });
+
+        ws.syncPullInProgress({ pulled: 3, total: 10 });
+        expect(sentAll.at(-1)).toEqual({
+            type: "sync-pull-in-progress", lastSyncedPush: 42, progress: { pulled: 3, total: 10 }
+        });
         expect(sentAll.find((m) => m.type === "sync-hash-check-failed")).toMatchObject({ sectors: ["blobs/9"] });
+        expect(sentAll.find((m) => m.type === "reload-froca")).toEqual({ type: "reload-froca", reason: "repaired" });
     });
 
     it("sends a ping frontend-update when there are no pending entity changes", () => {

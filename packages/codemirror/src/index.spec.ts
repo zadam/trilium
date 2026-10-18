@@ -1,6 +1,7 @@
+import { closeCompletion, completionStatus, startCompletion } from "@codemirror/autocomplete";
 import { indentUnit } from "@codemirror/language";
-import { EditorSelection, EditorState } from "@codemirror/state";
-import { EditorView, type ViewUpdate } from "@codemirror/view";
+import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
+import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import CodeMirror, { type EditorConfig, getThemeById } from "./index.js";
@@ -67,6 +68,82 @@ describe("CodeMirror", () => {
             editor = build({ tabIndex: 7 });
             expect(editor.dom.tabIndex).toBe(7);
         });
+
+        it("keeps on-screen keyboard suggestions off unless the editor holds prose", () => {
+            // Android reads `autocomplete`, not the `spellcheck`/`autocorrect` pair CodeMirror sets
+            // on its own, so its absence is what lets Gboard complete and correct words in code.
+            editor = build();
+            expect(editor.contentDOM.getAttribute("autocomplete")).toBe("off");
+
+            editor.destroy();
+            editor = build({ allowKeyboardSuggestions: true });
+            expect(editor.contentDOM.hasAttribute("autocomplete")).toBe(false);
+        });
+
+        it("follows a switch between prose and code after construction", () => {
+            // The language dropdown can move a note between `text/plain` and a real language, so
+            // the attributes have to track it rather than being fixed when the editor is built.
+            editor = build();
+            editor.setAllowKeyboardSuggestions(true);
+            expect(editor.contentDOM.hasAttribute("autocomplete")).toBe(false);
+
+            editor.setAllowKeyboardSuggestions(false);
+            expect(editor.contentDOM.getAttribute("autocomplete")).toBe("off");
+        });
+
+        it("gives a prose editor back the keyboard help CodeMirror turns off for code", () => {
+            // CodeMirror hard-codes both to off for every editor, so leaving its defaults alone
+            // would cost a Markdown note its sentence capitalization and its typo correction.
+            editor = build();
+            expect(editor.contentDOM.getAttribute("autocorrect")).toBe("off");
+            expect(editor.contentDOM.getAttribute("autocapitalize")).toBe("off");
+
+            editor.setAllowKeyboardSuggestions(true);
+            expect(editor.contentDOM.getAttribute("autocorrect")).toBe("on");
+            expect(editor.contentDOM.getAttribute("autocapitalize")).toBe("sentences");
+
+            editor.destroy();
+            editor = build({ allowKeyboardSuggestions: true });
+            expect(editor.contentDOM.getAttribute("autocorrect")).toBe("on");
+            expect(editor.contentDOM.getAttribute("autocapitalize")).toBe("sentences");
+        });
+
+        it("hosts tooltips in one body-level element, outside the editor that would clip them", () => {
+            editor = build();
+            const host = document.body.querySelector(".cm-tooltip-host");
+            expect(host).not.toBeNull();
+            expect(editor.dom.contains(host)).toBe(false);
+
+            // A second editor shares the host rather than adding one of its own.
+            const second = build();
+            try {
+                expect(document.body.querySelectorAll(".cm-tooltip-host")).toHaveLength(1);
+            } finally {
+                second.destroy();
+            }
+        });
+
+        it("renders a tooltip into the host, under the editor's theme classes", () => {
+            editor = build();
+            const dom = document.createElement("div");
+            dom.className = "cm-tooltip-lint";
+            editor.dispatch({
+                effects: StateEffect.appendConfig.of(showTooltip.of({ pos: 0, create: () => ({ dom }) }))
+            });
+
+            const host = document.body.querySelector(".cm-tooltip-host");
+            expect(host?.contains(dom)).toBe(true);
+            expect(editor.dom.contains(dom)).toBe(false);
+            // The editor's scoped base themes, such as the lint tooltip's width cap, match through
+            // these classes on the container.
+            const container = dom.closest(".cm-tooltip-host > *");
+            expect(container).not.toBeNull();
+            const themeClasses = editor.themeClasses.split(" ").filter(Boolean);
+            expect(themeClasses.length).toBeGreaterThan(0);
+            for (const cls of themeClasses) {
+                expect(container?.classList.contains(cls)).toBe(true);
+            }
+        });
     });
 
     describe("text access", () => {
@@ -95,6 +172,47 @@ describe("CodeMirror", () => {
             // With no selection there is nothing to return.
             editor.dispatch({ selection: EditorSelection.cursor(0) });
             expect(editor.getSelectedText()).toBe("");
+        });
+    });
+
+    describe("setText while hidden", () => {
+        const bigDoc = Array.from({ length: 10_000 }, (_, i) => `line ${i}`).join("\n");
+
+        /** happy-dom has no layout, so offsetParent cannot tell hidden from visible on its own. */
+        function pinOffsetParent(el: HTMLElement, value: Element | null) {
+            Object.defineProperty(el, "offsetParent", { value, configurable: true });
+        }
+
+        it("keeps the viewport small instead of rendering every line of the new document", () => {
+            editor = build();
+            pinOffsetParent(editor.dom, null);
+            editor.setText(bigDoc);
+
+            expect(editor.getText()).toBe(bigDoc);
+            // The regression rendered all 10,000 lines into the hidden DOM.
+            expect(editor.dom.querySelectorAll(".cm-line").length).toBeLessThan(1_000);
+
+            // The rebuilt view keeps accepting transactions once visible again.
+            pinOffsetParent(editor.dom, document.body);
+            editor.setText("visible again");
+            expect(editor.getText()).toBe("visible again");
+            editor.dispatch({ changes: { from: 0, insert: "still " } });
+            expect(editor.getText()).toBe("still visible again");
+        });
+
+        it("skips the change notification for hidden loads", () => {
+            const onContentChanged = vi.fn();
+            editor = build({ onContentChanged });
+
+            pinOffsetParent(editor.dom, null);
+            editor.setText(bigDoc);
+            // The hidden path swaps the state in without an update, so no change notification
+            // fires — hidden loads are programmatic, and the caller resets history right after.
+            expect(onContentChanged).not.toHaveBeenCalled();
+
+            pinOffsetParent(editor.dom, document.body);
+            editor.setText("typed");
+            expect(onContentChanged).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -249,6 +367,85 @@ describe("CodeMirror", () => {
             editor.insertBlankLineAtTop();
             expect(editor.getText()).toBe("");
         });
+
+        it("focuses the editor at either end of the document", () => {
+            editor = build();
+            editor.setText("line one\nline two");
+
+            editor.focusAt("end");
+            expect(editor.state.selection.main.head).toBe(editor.state.doc.length);
+            expect(document.activeElement).toBe(editor.contentDOM);
+            editor.focusAt("start");
+            expect(editor.state.selection.main.head).toBe(0);
+        });
+
+        it("tells the end of the document that an arrow key moves the cursor past", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab\ncd");
+            const getEdge = (head: number, key: string, init: KeyboardEventInit = {}) => {
+                instance.dispatch({ selection: EditorSelection.cursor(head) });
+                return instance.getEdgeLeftBy(createKeydown(key, instance.contentDOM, init));
+            };
+
+            expect(getEdge(0, "ArrowLeft")).toBe("start");
+            expect(getEdge(1, "ArrowLeft")).toBe(null);
+            expect(getEdge(5, "ArrowRight")).toBe("end");
+            expect(getEdge(4, "ArrowRight")).toBe(null);
+            expect(getEdge(1, "ArrowUp")).toBe("start");
+            expect(getEdge(4, "ArrowUp")).toBe(null);
+            expect(getEdge(4, "ArrowDown")).toBe("end");
+            expect(getEdge(1, "ArrowDown")).toBe(null);
+            expect(getEdge(0, "Enter")).toBe(null);
+            for (const modifier of [ "shiftKey", "ctrlKey", "altKey", "metaKey", "isComposing" ]) {
+                expect(getEdge(0, "ArrowLeft", { [modifier]: true })).toBe(null);
+            }
+            expect(instance.getEdgeLeftBy(createKeydown("ArrowLeft", document.body))).toBe(null);
+
+            const arrowLeft = createKeydown("ArrowLeft", instance.contentDOM);
+            instance.dispatch({ selection: EditorSelection.range(0, 1) });
+            expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
+            instance.setNamedExtension("multi", EditorState.allowMultipleSelections.of(true));
+            const cursors = [ EditorSelection.cursor(0), EditorSelection.cursor(5) ];
+            instance.dispatch({ selection: EditorSelection.create(cursors) });
+            expect(instance.getEdgeLeftBy(arrowLeft)).toBe(null);
+        });
+
+        it("drops the line-wrap side of the cursor before the caret leaves", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab\ncd");
+            // A transaction keeps the `assoc` of an `EditorSelection`, not of a bare range.
+            const cursor = EditorSelection.cursor(4, -1);
+            instance.dispatch({ selection: EditorSelection.create([ cursor ]) });
+            expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: -1 });
+
+            instance.prepareToLeave();
+            expect(instance.state.selection.main).toMatchObject({ head: 4, assoc: 0 });
+            for (const selection of [ EditorSelection.cursor(4), EditorSelection.range(0, 1) ]) {
+                instance.dispatch({ selection });
+                const { state } = instance;
+                instance.prepareToLeave();
+                expect(instance.state).toBe(state);
+            }
+        });
+
+        it("leaves the arrow keys to an open completion list", async () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("ab");
+            instance.setCompletionSource("test", (context) => ({
+                from: context.pos, options: [ { label: "alpha" }, { label: "beta" } ]
+            }));
+            instance.dispatch({ selection: EditorSelection.cursor(2) });
+            startCompletion(instance);
+            await vi.waitFor(() => expect(completionStatus(instance.state)).toBe("active"));
+
+            const arrowDown = createKeydown("ArrowDown", instance.contentDOM);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe(null);
+            closeCompletion(instance);
+            expect(instance.getEdgeLeftBy(arrowDown)).toBe("end");
+        });
     });
 
     describe("find and replace", () => {
@@ -258,6 +455,20 @@ describe("CodeMirror", () => {
 
             const result = await editor.performFind("foo", false, false);
             expect(result.totalFound).toBe(2);
+        });
+
+        it("wraps around to the first match when every match is before the cursor", async () => {
+            editor = build();
+            editor.setText("foo bar foo");
+            editor.dispatch({ selection: EditorSelection.cursor(11) });
+
+            const result = await editor.performFind("foo", false, false);
+            expect(result).toEqual({ totalFound: 2, currentFound: 1 });
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(1);
+
+            await editor.replace("baz");
+            expect(editor.getText()).toBe("baz bar foo");
         });
 
         it("replaces the active match and then all of them", async () => {
@@ -288,9 +499,29 @@ describe("CodeMirror", () => {
             expect(editor.getText()).toBe("foo bar foo");
         });
 
+        it("finds without activating a match, and clears the active match on request", async () => {
+            editor = build();
+            editor.setText("foo bar foo");
+
+            const result = await editor.performFind("foo", false, false, false);
+            expect(result).toEqual({ totalFound: 2, currentFound: 0 });
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
+            expect(editor.getSearchMatches()).toEqual([ { from: 0, to: 3 }, { from: 8, to: 11 } ]);
+
+            await editor.findNext(1, 0, 1);
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(1);
+
+            editor.clearActiveMatch();
+            expect(editor.contentDOM.querySelectorAll(".cm-activeMatch")).toHaveLength(0);
+            expect(editor.contentDOM.querySelectorAll(".cm-searchMatch")).toHaveLength(2);
+        });
+
         it("does nothing when cleaning a search that never ran", () => {
             editor = build();
             expect(() => editor?.cleanSearch()).not.toThrow();
+            expect(() => editor?.clearActiveMatch()).not.toThrow();
+            expect(editor.getSearchMatches()).toEqual([]);
         });
 
         it("does nothing when replace is called before a search", async () => {
@@ -405,4 +636,11 @@ function build(config: Partial<EditorConfig> = {}): CodeMirror {
     const parent = document.createElement("div");
     document.body.appendChild(parent);
     return new CodeMirror({ parent, ...config });
+}
+
+/** A keydown of `key` from `target`, which the editor does not handle, as it is not dispatched. */
+function createKeydown(key: string, target: EventTarget, init: KeyboardEventInit = {}) {
+    const event = new KeyboardEvent("keydown", { key, ...init });
+    Object.defineProperty(event, "target", { value: target });
+    return event;
 }

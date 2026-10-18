@@ -1,4 +1,4 @@
-import { type EntityChange, WebSocketMessage } from "@triliumnext/commons";
+import { type EntityChange, type SyncPullProgress, WebSocketMessage } from "@triliumnext/commons";
 
 import becca from "../becca/becca.js";
 import * as cls from "./context.js";
@@ -184,8 +184,8 @@ function sendTransactionEntityChangesToAllClients() {
     }
 }
 
-function syncPullInProgress() {
-    sendMessageToAllClients({ type: "sync-pull-in-progress", lastSyncedPush });
+function syncPullInProgress(progress?: SyncPullProgress) {
+    sendMessageToAllClients({ type: "sync-pull-in-progress", lastSyncedPush, ...(progress && { progress }) });
 }
 
 function syncPushInProgress() {
@@ -214,6 +214,14 @@ function reloadFrontend(reason: string) {
     sendMessageToAllClients({ type: "reload-frontend", reason });
 }
 
+/**
+ * Has the clients reload their froca cache in place, for a change made outside the entity layer
+ * that emits no entity changes for the frontend to apply.
+ */
+function reloadFroca(reason: string) {
+    sendMessageToAllClients({ type: "reload-froca", reason });
+}
+
 function setLastSyncedPush(entityChangeId: number) {
     lastSyncedPush = entityChangeId;
 }
@@ -228,5 +236,6 @@ export default {
     syncHashCheckFailed,
     sendTransactionEntityChangesToAllClients,
     setLastSyncedPush,
-    reloadFrontend
+    reloadFrontend,
+    reloadFroca
 };

@@ -19,11 +19,15 @@ aistriúcháin](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https:
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Is feidhmchlár saor in aisce agus foinse oscailte, tras-ardán, ordlathach é
 Trilium Notes chun nótaí a thógáil le fócas ar bhunachair mhóra eolais
 phearsanta a thógáil.
+
+An bhfuil tú ag lorg "Trillium Notes"? Is é "Trilium Notes" an litriú
+caighdeánach don tionscadal, le `l` amháin.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -383,11 +387,6 @@ Ní bheadh Trilium indéanta gan na teicneolaíochtaí atá taobh thiar de:
   úsáidtear i mbailiúcháin.
 * [FancyTree](https://github.com/mar10/fancytree) - leabharlann crann lán
   gnéithe gan iomaíocht cheart.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - leabharlann nascachta amhairc.
-  Úsáidte i [léarscáileanna
-  caidrimh](https://docs.triliumnotes.org/user-guide/note-types/relation-map)
-  agus [léarscáileanna
-  nasc](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Tacaíocht
 

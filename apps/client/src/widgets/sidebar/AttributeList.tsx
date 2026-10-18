@@ -1,9 +1,9 @@
+import "../attribute_widgets/attribute_kind.css";
 import "./AttributeList.css";
 
 import { promotedAttributeDefinitionParser } from "@triliumnext/commons";
 import clsx from "clsx";
-import { ComponentChildren } from "preact";
-import { createPortal } from "preact/compat";
+import { ComponentChildren, createPortal } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import FAttribute from "../../entities/fattribute";
@@ -15,7 +15,8 @@ import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
 import server from "../../services/server";
 import { isMobile } from "../../services/utils";
-import { AttributeDetail, AttributeDetailOpts, AttributeForm, AttrType, DEFINITION_TYPES, getAttrType, RELATION_DEFINITION_TYPE } from "../attribute_widgets/attribute_detail";
+import { AttributeDetail, AttributeDetailOpts, AttributeForm, AttrType, DEFINITION_TYPES, getAttrType } from "../attribute_widgets/attribute_detail";
+import { attributeKindIcon, RELATION_DEFINITION_TYPE } from "../attribute_widgets/attribute_types";
 import { ColorChip, renderLabelValue } from "../attribute_widgets/label_value_display";
 import ActionButton from "../react/ActionButton";
 import { FormListItem } from "../react/FormList";
@@ -72,7 +73,7 @@ export default function AttributeList() {
 
     // Collected while rendering rather than in an effect, which would leave one frame listing the
     // attributes of the note navigated away from. The initial `undefined` is what collects the first.
-    const shownNoteId = useRef<string | null>();
+    const shownNoteId = useRef<string | null | undefined>(undefined);
     if (shownNoteId.current !== (note?.noteId ?? null)) {
         // An attribute left open for editing — in the popup or in its own row — is closed by the
         // change of note, and closing keeps what was typed into it — as a press outside does — rather
@@ -148,7 +149,6 @@ export default function AttributeList() {
             attribute,
             isOwned,
             x: e.pageX,
-            y: e.pageY,
             anchor: anchor ?? undefined,
             // Presses on another row swap the shown attribute instead of dismissing the popup first.
             parent: spawningArea()
@@ -190,7 +190,6 @@ export default function AttributeList() {
             attribute,
             isOwned: true,
             x: e.pageX,
-            y: e.pageY,
             focus: "name",
             // There is no row to anchor to yet: the attribute only joins the list once it is saved.
             anchor: containerRef.current ?? undefined,
@@ -295,6 +294,7 @@ export default function AttributeList() {
     }
 
     const sections = splitIntoSections(owned.current, inherited.current);
+    const canEdit = !!note && note.isContentWritable;
     const internalRows = internal.current.map((attribute) => toEntry(attribute, true));
     // Not built for an attribute the list no longer holds: a reload can rebuild the rows out from
     // under the editor within this very render, before the state has caught up (see above).
@@ -338,6 +338,7 @@ export default function AttributeList() {
         note,
         activeAttribute: detail?.attribute,
         valueEditor,
+        locked: !canEdit,
         onOpen: openDetail,
         onEditValue: startValueEdit,
         onDelete: (attribute: Attribute) => void deleteAttribute(attribute)
@@ -381,11 +382,11 @@ export default function AttributeList() {
                     buttons={note && (
                         <>
                             <SidebarHelp section="attributes" />
-                            <AddAttributeButton
+                            {canEdit && <AddAttributeButton
                                 text={t("attribute_editor.add_a_new_attribute")}
                                 attrTypes={ALL_ATTRIBUTE_KINDS}
                                 onSelect={addAttribute}
-                            />
+                            />}
                         </>
                     )}
                 >
@@ -406,7 +407,7 @@ export default function AttributeList() {
                         {creationRow && <AttributeRowList rows={[ creationRow ]} {...rowProps} />}
 
                         {/* Only on a desktop: a phone adds from the header, page flow and all. */}
-                        {!IS_MOBILE && note && (
+                        {!IS_MOBILE && canEdit && (
                             <AddAttributeRow onAdd={(e) => addAttribute("label", e)} />
                         )}
                     </div>
@@ -430,7 +431,7 @@ export default function AttributeList() {
                         title={t("attribute_list_panel.definitions", { count: sections.definitions.length })}
                         buttons={<>
                             <SidebarHelp section="attributes-definitions" />
-                            {note && (
+                            {canEdit && (
                                 <AddAttributeButton
                                     text={t("attribute_list_panel.add_definition")}
                                     attrTypes={DEFINITION_KINDS}
@@ -542,6 +543,8 @@ interface AttributeRowListProps {
      * every one of them is Trilium's, which is what the card they are in says.
      */
     readOnly?: boolean;
+    /** Shows the rows as usual, but with no way to change them, for a note that cannot be edited. */
+    locked?: boolean;
     onOpen: (attribute: Attribute, isOwned: boolean, anchor: HTMLElement | null, e: MouseEvent) => void;
     /** Asks for the in-place editor over the attribute's value; wired to editable labels alone. */
     onEditValue: (attribute: Attribute) => void;
@@ -553,7 +556,9 @@ interface AttributeRowListProps {
  * Trilium reads for itself. What a row offers follows from whether the note owns its attribute rather
  * than from the card it is in: the definitions card holds the note's own alongside a template's.
  */
-function AttributeRowList({ rows, note, activeAttribute, valueEditor, readOnly, onOpen, onEditValue, onDelete }: AttributeRowListProps) {
+function AttributeRowList({ rows, note, activeAttribute, valueEditor, readOnly, locked, onOpen, onEditValue, onDelete }: AttributeRowListProps) {
+    const canChange = !readOnly && !locked;
+
     function renderRows(group: AttributeEntry[]) {
         return (
             // The rows are menu items on a phone (see AttributeRow), and the theme dresses a menu item
@@ -572,15 +577,15 @@ function AttributeRowList({ rows, note, activeAttribute, valueEditor, readOnly, 
                         // An attribute of another note names it; the current note's own would name itself.
                         showOwner={!isOwned && !readOnly}
                         // A read-only row opens the popup as an inherited one does: to be read, not edited.
-                        onOpen={(anchor, e) => onOpen(attribute, isOwned && !readOnly, anchor, e)}
+                        onOpen={(anchor, e) => onOpen(attribute, isOwned && canChange, anchor, e)}
                         // A label's value is typed straight into its row, and a relation's target is
                         // repicked in it (from the pencil — the value itself is a link, and stays
                         // one). Definitions, whose value is a summary of settings, keep the popup. On
                         // a phone the row is a menu item and opens its page whole.
-                        onEditValue={isOwned && !readOnly && !IS_MOBILE && !isDefinition(getAttributeKind(attribute))
+                        onEditValue={isOwned && canChange && !IS_MOBILE && !isDefinition(getAttributeKind(attribute))
                             ? () => onEditValue(attribute)
                             : undefined}
-                        onDelete={isOwned && !readOnly ? () => onDelete(attribute) : undefined}
+                        onDelete={isOwned && canChange ? () => onDelete(attribute) : undefined}
                     />
                 ))}
             </ul>
@@ -623,7 +628,7 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, showOwne
     const rowRef = useRef<HTMLLIElement>(null);
     const attrType = getAttributeKind(attribute);
     const markerClass = getKindMarkerClass(attribute, attrType, isSystem);
-    const kindIcon = getKindIcon(attribute, attrType);
+    const kindIcon = attributeKindIcon(attribute.type, attribute.name, attribute.value ?? "");
     const kindTooltip = getKindTooltip(attribute, attrType, isSystem);
     const rowClass = clsx("attribute-row", active && "active", valueEditor && "editing");
 
@@ -730,24 +735,9 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, showOwne
 const IS_MOBILE = isMobile();
 
 /**
- * What the attribute is, as an icon. A definition takes the icon of the field it sets up, the same one
- * the popup offers that field under — it needs no marker of its own, being only ever listed in a card
- * of definitions. Everything else is the icon of a label or of a relation.
- */
-function getKindIcon(attribute: Attribute, attrType: AttributeKind) {
-    if (isDefinition(attrType)) {
-        // A definition written by hand can name a field the popup knows nothing of, leaving the icon of
-        // the label it defines to stand for it.
-        return getDefinitionType(attribute, attrType)?.icon ?? "bx bx-hash";
-    }
-
-    return attrType === "relation" ? "bx bx-transfer" : "bx bx-hash";
-}
-
-/**
  * The badge the kind icon carries on its corner, where there is one to carry: a cog for the names
  * Trilium reads for itself, and a chevron for a definition whose field is promoted — lifted, that is,
- * out of the attributes and into the note's own ribbon. At most one of the two, which no attribute is
+ * out of the attributes and into the note's promoted attributes section. At most one of the two, which no attribute is
  * ever both of: no built-in name is a definition. The class alone: what either badge means is a line
  * of the icon's own tooltip (see {@link getKindTooltip}), the two being read as one mark.
  */

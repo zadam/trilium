@@ -15,14 +15,15 @@ interface EditToolbarProps {
     /** Arms the map for a note to be placed, or stands it down again — the visible counterpart of
      *  the Escape the instruction toast offers (see index.tsx). */
     onTogglePlacement: () => void;
-    /** Asks for a GPX file and brings it onto the map (see `addGpxTrack` in index.tsx). */
-    onAddGpxTrack: () => void;
+    /** Asks for a GPX file and brings it onto the map (see `addGpxTrack` in index.tsx). Absent on
+     *  an image map, which has no ground for a track to run over. */
+    onAddGpxTrack?: () => void;
 }
 
 /**
  * The editing actions, standing in the middle of the map's foot on an {@link OverlayControlGroup} of
- * their own — the surface every group over this map stands on: adding a marker and bringing in a GPX
- * track today, with room along the row for whatever editing the map comes to offer next.
+ * their own — the surface every group over this map stands on: adding a marker and bringing in a
+ * GPX track. The drawing tools have a group of their own (see {@link DrawToolbar}).
  *
  * A group of its own rather than more buttons on {@link MapToolbar}: that one is the camera — how
  * close in the map is drawn, how much screen it gets — and what changes the map is another kind of
@@ -43,10 +44,10 @@ export default function EditToolbar({ isReadOnly, placing, onTogglePlacement, on
 
     return (
         <OverlayControlGroup className="geo-edit-toolbar" placement="bottom-center" overCanvas>
-            {/* The pin a note dropped on the map wears (see CHILD_NOTE_ICON in api.ts) — the button
-                shows the very thing it drops, which is also the ghost that will follow the pointer
-                once armed. The words beside it are what names the button; the tooltip says at more
-                length what it does. */}
+            {/* The pin a note dropped on the map wears (see GEO_MARKER_ICON in commons) — the
+                button shows the very thing it drops, which is also the ghost that will follow the
+                pointer once armed. The words beside it are what names the button; the tooltip says
+                at more length what it does. */}
             <OverlayControlButton
                 title={placing ? t("geo-map.create-child-note-cancel") : t("geo-map.create-child-note-title")}
                 icon="bx-pin"
@@ -56,12 +57,12 @@ export default function EditToolbar({ isReadOnly, placing, onTogglePlacement, on
                 disabled={isReadOnly}
                 onClick={onTogglePlacement}
             />
-            <OverlayControlButton
+            {onAddGpxTrack && <OverlayControlButton
                 title={t("geo-map.add-gpx-track")}
                 icon="bx-trip"
                 disabled={isReadOnly}
                 onClick={onAddGpxTrack}
-            />
+            />}
         </OverlayControlGroup>
     );
 }

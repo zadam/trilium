@@ -1,9 +1,9 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
+import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tooltips, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
 import { Compartment, EditorSelection, EditorState, StateEffect, type Extension } from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
-import { autocompletion, type CompletionSource } from "@codemirror/autocomplete";
+import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
 import { vim } from "@replit/codemirror-vim";
 import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
@@ -42,6 +42,20 @@ const lintTooltipTheme = EditorView.baseTheme({
     }
 });
 
+// Chromium maps `autocomplete="off"` on the focused element to Android's
+// `TYPE_TEXT_FLAG_NO_SUGGESTIONS`, which is what stops Gboard from offering word completions and
+// rewriting what was typed. The `spellcheck`, `autocorrect` and `writingsuggestions` attributes
+// CodeMirror already sets reach no equivalent flag, so the on-screen keyboard ignores them.
+const noKeyboardSuggestions = EditorView.contentAttributes.of({ autocomplete: "off" });
+
+// CodeMirror sets `autocorrect="off"` and `autocapitalize="off"` on every editor it builds, which
+// suits code. An editor holding prose overrides both, since `contentAttributes` is merged in after
+// those defaults, so the on-screen keyboard capitalizes sentences and fixes typos again.
+const proseKeyboardAttributes = EditorView.contentAttributes.of({
+    autocorrect: "on",
+    autocapitalize: "sentences"
+});
+
 type ContentChangedListener = () => void;
 
 export interface EditorConfig {
@@ -57,8 +71,17 @@ export interface EditorConfig {
     indentSize?: number;
     /** If true, indent using a tab character instead of spaces. Defaults to false. */
     useTabs?: boolean;
+    /**
+     * Lets an on-screen keyboard offer word completions, correct typos and capitalize sentences.
+     * Defaults to false, which suits code; an editor holding prose, such as the Markdown note
+     * type, sets it to true.
+     */
+    allowKeyboardSuggestions?: boolean;
     onContentChanged?: ContentChangedListener;
 }
+
+/** An end of the document, where the cursor enters or leaves the editor. */
+export type DocumentEdge = "start" | "end";
 
 function buildIndentUnit(indentSize: number, useTabs: boolean) {
     return useTabs ? "\t" : " ".repeat(indentSize);
@@ -71,6 +94,7 @@ export default class CodeMirror extends EditorView {
     private historyCompartment: Compartment;
     private themeCompartment: Compartment;
     private lineWrappingCompartment: Compartment;
+    private keyboardSuggestionsCompartment: Compartment;
     private indentUnitCompartment: Compartment;
     private searchHighlightCompartment: Compartment;
     private typeCompletionCompartment: Compartment;
@@ -91,6 +115,7 @@ export default class CodeMirror extends EditorView {
         const historyCompartment = new Compartment();
         const themeCompartment = new Compartment();
         const lineWrappingCompartment = new Compartment();
+        const keyboardSuggestionsCompartment = new Compartment();
         const indentUnitCompartment = new Compartment();
         const searchHighlightCompartment = new Compartment();
         const typeCompletionCompartment = new Compartment();
@@ -106,8 +131,10 @@ export default class CodeMirror extends EditorView {
             ...extensions,
             languageCompartment.of([]),
             lineWrappingCompartment.of(config.lineWrapping ? EditorView.lineWrapping : []),
+            keyboardSuggestionsCompartment.of(config.allowKeyboardSuggestions ? proseKeyboardAttributes : noKeyboardSuggestions),
             searchMatchHighlightTheme,
             lintTooltipTheme,
+            tooltips({ parent: getTooltipHost() }),
             searchHighlightCompartment.of([]),
             typeCompletionCompartment.of([]),
             completionSourceCompartment.of([]),
@@ -167,6 +194,7 @@ export default class CodeMirror extends EditorView {
         this.historyCompartment = historyCompartment;
         this.themeCompartment = themeCompartment;
         this.lineWrappingCompartment = lineWrappingCompartment;
+        this.keyboardSuggestionsCompartment = keyboardSuggestionsCompartment;
         this.indentUnitCompartment = indentUnitCompartment;
         this.searchHighlightCompartment = searchHighlightCompartment;
         this.typeCompletionCompartment = typeCompletionCompartment;
@@ -210,13 +238,25 @@ export default class CodeMirror extends EditorView {
     }
 
     setText(content: string) {
-        this.dispatch({
+        const transaction = this.state.update({
             changes: {
                 from: 0,
                 to: this.state.doc.length,
                 insert: content || "",
             }
-        })
+        });
+        // Dispatching a full-document replacement maps the viewport onto the whole new document.
+        // A visible editor's next measure shrinks it back, but an editor inside a display:none
+        // subtree cannot measure (`measure()` bails out off-screen), so every line of the new
+        // document stays rendered in the DOM for as long as the editor stays hidden — e.g. a
+        // background tab that received its content after being covered. Rebuilding the view from
+        // the updated state resets the viewport to the initial estimate instead; the first
+        // measure after the editor becomes visible then sizes it to the real geometry.
+        if (this.dom.offsetParent === null) {
+            this.setState(transaction.state);
+        } else {
+            this.dispatch(transaction);
+        }
     }
 
     async setTheme(theme: ThemeDefinition) {
@@ -229,6 +269,12 @@ export default class CodeMirror extends EditorView {
     setLineWrapping(wrapping: boolean) {
         this.dispatch({
             effects: [ this.lineWrappingCompartment.reconfigure(wrapping ? EditorView.lineWrapping : []) ]
+        });
+    }
+
+    setAllowKeyboardSuggestions(allow: boolean) {
+        this.dispatch({
+            effects: [ this.keyboardSuggestionsCompartment.reconfigure(allow ? proseKeyboardAttributes : noKeyboardSuggestions) ]
         });
     }
 
@@ -276,6 +322,55 @@ export default class CodeMirror extends EditorView {
         });
     }
 
+    /** Focuses the editor with the cursor at the start or the end of the document. */
+    focusAt(edge: DocumentEdge) {
+        const position = edge === "start" ? 0 : this.state.doc.length;
+        this.dispatch({ selection: EditorSelection.cursor(position), scrollIntoView: true });
+        this.focus();
+    }
+
+    /**
+     * The edge of the document that the arrow key of `event`, pressed without modifiers, moves
+     * the cursor past, or `null` for any other key, while the cursor stays in the document and
+     * while the completion list is open.
+     */
+    getEdgeLeftBy(event: KeyboardEvent): DocumentEdge | null {
+        const { ranges, main } = this.state.selection;
+        const hasModifier = event.shiftKey || event.ctrlKey || event.altKey || event.metaKey;
+        if (event.target !== this.contentDOM || hasModifier || event.isComposing
+            || ranges.length > 1 || !main.empty || completionStatus(this.state) === "active") {
+            return null;
+        }
+
+        const length = this.state.doc.length;
+        switch (event.key) {
+            case "ArrowLeft":
+                return main.head === 0 ? "start" : null;
+            case "ArrowRight":
+                return main.head === length ? "end" : null;
+            // The line boundary is the start or end of the visual line, wrapped lines included.
+            case "ArrowUp":
+                return this.moveToLineBoundary(main, false).head === 0 ? "start" : null;
+            case "ArrowDown":
+                return this.moveToLineBoundary(main, true).head === length ? "end" : null;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Drops the line-wrap side (`assoc`) of the cursor before the caret leaves the editor. On a
+     * focus change, CodeMirror moves the DOM selection to that side, which focuses the editor
+     * again.
+     */
+    prepareToLeave() {
+        const { main } = this.state.selection;
+        if (!main.empty || !main.assoc) return;
+
+        const cursor = EditorSelection.cursor(main.head);
+        this.dispatch({ selection: this.state.selection.replaceRange(cursor) });
+    }
+
     /**
      * Inserts a blank line at the very top of the document and places the cursor on it — the code-note
      * analog of the Notion-like behavior when pressing Enter in the note title. If the first line is
@@ -296,7 +391,13 @@ export default class CodeMirror extends EditorView {
         });
     }
 
-    async performFind(searchTerm: string, matchCase: boolean, wholeWord: boolean) {
+    /**
+     * Highlights the matches of `searchTerm`. While `isActivating`, the match nearest the cursor
+     * becomes the active one and scrolls into view.
+     */
+    async performFind(
+        searchTerm: string, matchCase: boolean, wholeWord: boolean, isActivating = true
+    ) {
         const plugin = createSearchHighlighter();
         this.dispatch({
             effects: this.searchHighlightCompartment.reconfigure(plugin)
@@ -305,7 +406,7 @@ export default class CodeMirror extends EditorView {
         // Wait for the plugin to activate in the next render cycle
         await new Promise(requestAnimationFrame);
         const instance = this.plugin(plugin);
-        instance?.searchFor(searchTerm, matchCase, wholeWord);
+        instance?.searchFor(searchTerm, matchCase, wholeWord, isActivating);
         this.searchPlugin = instance;
 
         /* v8 ignore next 4 -- the plugin was just installed via the compartment above and the
@@ -327,6 +428,16 @@ export default class CodeMirror extends EditorView {
 
     async replaceAll(replaceText: string) {
         this.searchPlugin?.replaceAll(replaceText);
+    }
+
+    /** Leaves no match of the search active, keeping every match highlighted. */
+    clearActiveMatch() {
+        this.searchPlugin?.clearActiveMatch();
+    }
+
+    /** The matches of the search, in document order. */
+    getSearchMatches() {
+        return this.searchPlugin?.matchRanges ?? [];
     }
 
     cleanSearch() {
@@ -432,4 +543,20 @@ export default class CodeMirror extends EditorView {
             )
         });
     }
+}
+
+/**
+ * Returns the body-level element CodeMirror renders tooltips into, outside `.cm-editor`, whose
+ * `overflow: hidden` clips an absolutely positioned tooltip (Safari, iOS).
+ */
+function getTooltipHost() {
+    const existing = document.body.querySelector(".cm-tooltip-host");
+    if (existing instanceof HTMLElement) {
+        return existing;
+    }
+
+    const host = document.createElement("div");
+    host.className = "cm-tooltip-host";
+    document.body.appendChild(host);
+    return host;
 }

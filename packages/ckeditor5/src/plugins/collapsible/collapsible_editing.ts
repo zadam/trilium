@@ -1,6 +1,7 @@
-import { Plugin, Enter, Delete, enableViewPlaceholder, type ViewDocumentEnterEvent, type ViewDocumentDeleteEvent, type ViewDocumentArrowKeyEvent } from "ckeditor5";
+import { Plugin, Enter, Delete, enableViewPlaceholder, type ModelPosition, type ViewDocumentEnterEvent, type ViewDocumentDeleteEvent, type ViewDocumentArrowKeyEvent } from "ckeditor5";
 import { ContentHintManager, type HintHandle } from "../../content_hint_manager.js";
 import { renderShortcut } from "../../shortcut.js";
+import FindReveal from "../find_reveal.js";
 import BlockDragHandle from "./block_drag_handle.js";
 import CollapsibleCommand from "./collapsible_command.js";
 import { OPEN_ATTRIBUTE, TRANSIENT_OPEN_ATTRIBUTE } from "./constants.js";
@@ -76,7 +77,7 @@ export default class CollapsibleEditing extends Plugin {
     }
 
     public static get requires() {
-        return [Enter, Delete] as const;
+        return [ Enter, Delete, FindReveal ] as const;
     }
 
     private keydownListeners: Array<{ root: HTMLElement, handler: (e: KeyboardEvent) => void }> = [];
@@ -139,6 +140,7 @@ export default class CollapsibleEditing extends Plugin {
         });
         this.registerSchema();
         this.registerConversion();
+        this.registerListItemRefresh();
         this.registerBodyPlaceholder();
         this.registerKeyHandlers();
         this.registerMergeGuard();
@@ -395,13 +397,49 @@ export default class CollapsibleEditing extends Plugin {
         writer.insert(writer.createPositionAt(summary, 0), handle);
         // "Title" placeholder shown while the summary is empty. UIElements like the
         // arrow above don't count as content for placeholder purposes.
+        summary.placeholder = t("Summary");
         enableViewPlaceholder({
             view: this.editor.editing.view,
             element: summary,
-            text: t("Summary"),
             keepOnFocus: true
         });
         return summary;
+    }
+
+    /**
+     * Rebuilds the body's list blocks whenever the collapsible is reconverted, instead of
+     * letting CKEditor reuse their existing view.
+     *
+     * The editing downcast is an `elementToStructure`, so a reconversion re-slots the
+     * surviving children by moving their mapped view element. A to-do item's checkbox is a
+     * UIElement sibling of that element inside <span class="todo-list__label">, so the move
+     * leaves it behind. CKEditor's own opt-out, `isItemBlockInsideStructureSlot()`, walks up
+     * through `ol`/`ul`/`li` only and stops at that label. No-op when the editor has no list
+     * plugin.
+     */
+    private registerListItemRefresh() {
+        if (!this.editor.plugins.has("ListEditing")) return;
+        const model = this.editor.model;
+        // Default priority puts this between ListEditing's "high" handler, whose own refreshes
+        // add insert/remove entries that reconvert a <details>, and the editing controller's
+        // "low" one, which is what then runs the conversion.
+        this.listenTo(model.document, "change:data", () => {
+            const reconverted = new Set<any>();
+            for (const entry of model.document.differ.getChanges()) {
+                // Only a changed child list reconverts the structure, never an attribute.
+                if (entry.type !== "insert" && entry.type !== "remove") continue;
+                if (entry.position.parent.is("element", "details")) {
+                    reconverted.add(entry.position.parent);
+                }
+            }
+            for (const details of reconverted) {
+                for (const block of details.getChildren()) {
+                    if (block.is("element") && block.hasAttribute("listItemId")) {
+                        this.editor.editing.reconvertItem(block);
+                    }
+                }
+            }
+        });
     }
 
     // -----------------------------------------------------------------
@@ -517,10 +555,10 @@ export default class CollapsibleEditing extends Plugin {
                 const view = conversionApi.mapper.toViewElement(paragraph);
                 /* v8 ignore next -- the mapper always resolves a rendered model element */
                 if (!view || this.bodyPlaceholdersApplied.has(view)) return;
+                view.placeholder = t("Type the content here...");
                 enableViewPlaceholder({
                     view: editor.editing.view,
                     element: view,
-                    text: t("Type the content here..."),
                     keepOnFocus: true
                 });
                 this.bodyPlaceholdersApplied.add(view);
@@ -1150,28 +1188,24 @@ export default class CollapsibleEditing extends Plugin {
      * Follow the find-and-replace highlight: when it lands inside a collapsed
      * block, open that block (and any collapsed ancestors) just enough to show
      * the match; re-collapse the moment the highlight leaves. Purely editing-view
-     * state — see {@link findRevealed}. No-op when the editor has no find plugin.
+     * state — see {@link findRevealed}.
      */
     private registerFindReveal() {
-        if (!this.editor.plugins.has("FindAndReplaceEditing")) return;
-        const findEditing: any = this.editor.plugins.get("FindAndReplaceEditing");
-        const state = findEditing?.state;
-        /* v8 ignore next -- FindAndReplaceEditing always exposes a state with an observable on flag */
-        if (!state?.on) return;
-        this.listenTo(state, "change:highlightedResult", (_evt: any, _name: any, highlighted: any) => {
-            this.syncFindReveal(highlighted);
+        const findReveal = this.editor.plugins.get(FindReveal);
+        this.listenTo(findReveal, "change:position", (_evt, _name, position) => {
+            this.syncFindReveal(position);
         });
     }
 
     /**
-     * Reconcile {@link findRevealed} with the block(s) the current highlight sits
-     * in. Ancestors newly holding the highlight get revealed; blocks that no
-     * longer hold it are re-collapsed. A `null` highlight (search cleared/closed)
+     * Reconcile {@link findRevealed} with the block(s) that hold `position`, the
+     * match the find shows. Ancestors newly holding it get revealed; blocks that no
+     * longer hold it are re-collapsed. A `null` position (search cleared/closed)
      * collapses everything.
      */
-    private syncFindReveal(highlighted: any) {
+    private syncFindReveal(position: ModelPosition | null) {
         const wanted = new Set<any>();
-        for (let node = highlighted?.marker?.getStart?.()?.parent; node; node = node.parent) {
+        for (let node: any = position?.parent; node; node = node.parent) {
             // A persisted-open block is already visible — nothing transient to do.
             if (node.is?.("element", "details") && !this.isDetailsOpen(node)) {
                 wanted.add(node);

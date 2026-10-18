@@ -1,23 +1,22 @@
 import "./attribute_detail.css";
-import "./attribute_name_suggestion.css";
+import "./attribute_kind.css";
 
 import { type DefinitionObject, type LabelType, promotedAttributeDefinitionParser } from "@triliumnext/commons";
+import clsx from "clsx";
 import { ComponentChildren, ComponentProps } from "preact";
-import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context.js";
 import { DEFINITION_PREFIXES, isDefinitionName } from "../../entities/fattribute.js";
 import contextMenu, { MenuItem } from "../../menus/context_menu.js";
 import type { Attribute } from "../../services/attribute_parser.js";
 import { getBuiltinLabelSelectOptions, getBuiltinLabelValueType, isBuiltinAttribute } from "../../services/attributes.js";
-import { isExperimentalFeatureEnabled } from "../../services/experimental_features.js";
 import { focusSavedElement, saveFocusedElement } from "../../services/focus.js";
 import froca from "../../services/froca.js";
 import { t } from "../../services/i18n.js";
 import server from "../../services/server.js";
 import { isIMEComposing } from "../../services/shortcuts.js";
 import utils from "../../services/utils.js";
-import BasicWidget from "../basic_widget.js";
 import NoteContextAwareWidget from "../note_context_aware_widget.js";
 import { Badge, BadgeWithDropdown } from "../react/Badge.jsx";
 import Button from "../react/Button.jsx";
@@ -26,13 +25,15 @@ import FormDropdownList from "../react/FormDropdownList.jsx";
 import { FormDropdownDivider, FormListItem } from "../react/FormList.jsx";
 import FormTextBox, { FormTextBoxWithUnit } from "../react/FormTextBox.jsx";
 import HelpTooltipButton from "../react/HelpTooltipButton.jsx";
+import Icon from "../react/Icon.jsx";
 import { suspendModalFocusTraps } from "../react/modal_focustrap.js";
-import NoteAutocomplete from "../react/NoteAutocomplete.jsx";
+import NoteAutocomplete, { HighlightedText } from "../react/NoteAutocomplete.jsx";
 import NoteLink, { NewNoteLink } from "../react/NoteLink.jsx";
-import { disposeReactWidget, ParentComponent, renderReactWidgetAtElement } from "../react/react_utils.jsx";
+import { disposeReactWidget, renderReactWidgetAtElement } from "../react/react_utils.jsx";
 import OptionsRow, { OptionsRowWithToggle } from "../type_widgets/options/components/OptionsRow.jsx";
 import { ATTR_HELP, AttrHelpEntry } from "./attr_help.js";
-import LabelValueInput, { getTypedInputForLabel } from "./label_value_input.js";
+import { attributeKindIcon, DEFINITION_TYPE_ICONS, RELATION_DEFINITION_TYPE } from "./attribute_types.js";
+import LabelValueInput, { getTypedInputForLabel, useLabelValueSuggestions } from "./label_value_input.js";
 import ValuesInput from "./values_input.jsx";
 
 export interface AttributeDetailOpts {
@@ -40,7 +41,6 @@ export interface AttributeDetailOpts {
     attribute: Attribute;
     isOwned: boolean;
     x: number;
-    y: number;
     focus?: "name";
     /**
      * The element the popup was spawned from. Mouse presses inside it do not dismiss the
@@ -48,6 +48,21 @@ export interface AttributeDetailOpts {
      */
     parent?: HTMLElement;
     hideMultiplicity?: boolean;
+    /**
+     * Leaves out the inheritable and promoted toggles. For a host that sets both itself, such as a
+     * collection whose attributes are all inheritable and promoted.
+     */
+    hideInheritance?: boolean;
+    /**
+     * Leaves out the kind dropdown, holding the definition to the kind it was opened on. For a host
+     * that can only use one, such as a board grouping by a select.
+     */
+    hideType?: boolean;
+    /**
+     * Leaves out the rows the chosen kind adds, such as the precision of a number or the options of a
+     * select. For a host that fills them in itself, such as a board whose columns are the options.
+     */
+    hideTypeOptions?: boolean;
     /**
      * Places the popup beside this element instead of at `x`/`y`. For hosts whose attributes are shown
      * far from the note attributes pane the coordinates are otherwise resolved against, e.g. the
@@ -162,7 +177,6 @@ export interface AttributeDetailProps extends AttributeFormCallbacks {
  */
 export function AttributeDetail({ opts, currentNoteId, onDismiss, onCancel, ...formCallbacks }: AttributeDetailProps) {
     const popupRef = useRef<HTMLDivElement>(null);
-    const parentComponent = useContext(ParentComponent);
     const shown = !!opts;
     const { onSaveAndClose } = formCallbacks;
 
@@ -204,11 +218,7 @@ export function AttributeDetail({ opts, currentNoteId, onDismiss, onCancel, ...f
             return;
         }
 
-        // Classic-layout coordinates are relative to the hosting widget, mirroring how the
-        // legacy widget resolved its own parent in the component tree.
-        const hostWidget = parentComponent instanceof BasicWidget ? parentComponent : null;
-        const reposition = () =>
-            positionPopup(popup, opts, hostWidget?.$widget?.offset() ?? { top: 0, left: 0 });
+        const reposition = () => positionPopup(popup, opts);
         reposition();
 
         // The placement holds only for the size it measured, and editing changes that size — a
@@ -218,7 +228,7 @@ export function AttributeDetail({ opts, currentNoteId, onDismiss, onCancel, ...f
         const resizeObserver = new ResizeObserver(reposition);
         resizeObserver.observe(popup);
         return () => resizeObserver.disconnect();
-    }, [ opts, parentComponent ]);
+    }, [ opts ]);
 
     // Dismiss on click outside the popup, except in floating UI logically belonging
     // to it (autocomplete dropdowns and context menus are appended to the body).
@@ -239,9 +249,9 @@ export function AttributeDetail({ opts, currentNoteId, onDismiss, onCancel, ...f
                 // Modals count as belonging to the popup: creating a note straight from the target
                 // note field opens the note type chooser, and dismissing on its clicks would tear
                 // the popup down before the created note could be filled in. The type menu belongs
-                // to it too: it is portaled to the body (see the dropdown's `portalToBody`), so a
+                // to it too: it is portaled to the body, as every dropdown is, so a
                 // press on one of its items lands outside the popup element.
-                || e.target.closest(`${AUTOCOMPLETE_DROPDOWN_SELECTOR}, .algolia-autocomplete, #context-menu-container, .modal, .modal-backdrop, .attr-input-label-type`)) {
+                || e.target.closest(`${AUTOCOMPLETE_DROPDOWN_SELECTOR}, .note-autocomplete-menu, #context-menu-container, .modal, .modal-backdrop, .attr-input-label-type`)) {
                 return;
             }
             onDismiss();
@@ -326,6 +336,9 @@ export function isSameShow(previous: AttributeDetailOpts | null, next: Attribute
     return !next.focus
         && previous.isOwned === next.isOwned
         && previous.hideMultiplicity === next.hideMultiplicity
+        && previous.hideInheritance === next.hideInheritance
+        && previous.hideType === next.hideType
+        && previous.hideTypeOptions === next.hideTypeOptions
         && previous.attribute.noteId === next.attribute.noteId
         && previous.attribute.type === next.attribute.type
         && previous.attribute.name === next.attribute.name
@@ -367,11 +380,11 @@ export function AttributeForm({ opts, attrType: initialAttrType, currentNoteId, 
         ? fetchDefinitionNames(nameType, query)
         : fetchAttributeNames(nameType, query), [ nameType, isDefinitionType ]);
     const renderNameSuggestion = useCallback(
-        (suggestion: string) => <AttributeNameSuggestion type={nameType} name={suggestion} />, [ nameType ]);
+        (suggestion: string, query: string) => <AttributeNameSuggestion type={nameType} name={suggestion} query={query} />, [ nameType ]);
     // Whatever a relation is the inverse of is itself a relation.
     const suggestRelationNames = useCallback((query: string) => fetchAttributeNames("relation", query), []);
     const renderRelationSuggestion = useCallback(
-        (suggestion: string) => <AttributeNameSuggestion type="relation" name={suggestion} />, []);
+        (suggestion: string, query: string) => <AttributeNameSuggestion type="relation" name={suggestion} query={query} />, []);
     const [ name, setName ] = useState(() => stripDefinitionPrefix(attribute.name, attrType));
     const [ value, setValue ] = useState(attribute.value ?? "");
     const [ isInheritable, setIsInheritable ] = useState(!!attribute.isInheritable);
@@ -392,24 +405,7 @@ export function AttributeForm({ opts, attrType: initialAttrType, currentNoteId, 
         // same place the type came from rather than passed in.
         return labelType && { labelType, selectOptions: getBuiltinLabelSelectOptions(name) };
     }, [ attrType, name ]);
-    // The values known for a label name never change while the popup is open, so they are fetched
-    // once per name and filtered locally afterwards.
-    const knownValues = useRef<{ name: string; values: string[] }>();
-    const suggestLabelValues = useCallback(async (query: string) => {
-        if (!name.trim()) {
-            return [];
-        }
-
-        if (knownValues.current?.name !== name) {
-            knownValues.current = {
-                name,
-                values: await server.get<string[]>(`attribute-values/${encodeURIComponent(name)}`)
-            };
-        }
-
-        const term = query.toLowerCase();
-        return knownValues.current.values.filter((value) => value.toLowerCase().includes(term));
-    }, [ name ]);
+    const suggestLabelValues = useLabelValueSuggestions(name);
     // Committing mid-composition makes the spawning editor re-render and swallow the
     // characters being composed: https://github.com/zadam/trilium/pull/3812
     const isComposing = useRef(false);
@@ -591,13 +587,10 @@ export function AttributeForm({ opts, attrType: initialAttrType, currentNoteId, 
 
                 {/* No description: the values name themselves, and what they do to the field is plain
                     enough once one is picked. */}
-                {isDefinition(attrType) && (
+                {isDefinition(attrType) && !opts.hideType && (
                     <OptionsRow name="attr-label-type" label={t("attribute_detail.label_type")}>
                         <FormDropdownList
                             className="attr-input-label-type"
-                            // The popup is a scroll container, so an inline menu could only grow by
-                            // scrolling the form under itself — and the type list only gets longer.
-                            portalToBody
                             values={DEFINITION_TYPES}
                             keyProperty="value"
                             titleProperty="title"
@@ -612,7 +605,8 @@ export function AttributeForm({ opts, attrType: initialAttrType, currentNoteId, 
                     </OptionsRow>
                 )}
 
-                {attrType === "label-definition" && definition.labelType === "number" && (
+                {attrType === "label-definition" && definition.labelType === "number"
+                    && !opts.hideTypeOptions && (
                     <OptionsRow
                         name="attr-number-precision"
                         label={t("attribute_detail.precision")}
@@ -632,7 +626,8 @@ export function AttributeForm({ opts, attrType: initialAttrType, currentNoteId, 
                     </OptionsRow>
                 )}
 
-                {attrType === "label-definition" && definition.labelType === "select" && (
+                {attrType === "label-definition" && definition.labelType === "select"
+                    && !opts.hideTypeOptions && (
                     <OptionsRow
                         name="attr-select-options"
                         label={t("attribute_detail.select_options")}
@@ -653,7 +648,7 @@ export function AttributeForm({ opts, attrType: initialAttrType, currentNoteId, 
                     </OptionsRow>
                 )}
 
-                {attrType === "relation-definition" && (
+                {attrType === "relation-definition" && !opts.hideTypeOptions && (
                     <OptionsRow
                         name="attr-inverse-relation"
                         label={t("attribute_detail.inverse_relation")}
@@ -699,20 +694,22 @@ export function AttributeForm({ opts, attrType: initialAttrType, currentNoteId, 
                     />
                 )}
 
-                <OptionsRowWithToggle
-                    name="attr-inheritable"
-                    label={t("attribute_detail.inheritable")}
-                    description={t("attribute_detail.inheritable_title")}
-                    currentValue={isInheritable}
-                    disabled={!isOwned}
-                    onChange={(checked) => {
-                        setIsInheritable(checked);
-                        attribute.isInheritable = checked;
-                        onAttributesChanged?.(allAttributes ?? []);
-                    }}
-                />
+                {!opts.hideInheritance && (
+                    <OptionsRowWithToggle
+                        name="attr-inheritable"
+                        label={t("attribute_detail.inheritable")}
+                        description={t("attribute_detail.inheritable_title")}
+                        currentValue={isInheritable}
+                        disabled={!isOwned}
+                        onChange={(checked) => {
+                            setIsInheritable(checked);
+                            attribute.isInheritable = checked;
+                            onAttributesChanged?.(allAttributes ?? []);
+                        }}
+                    />
+                )}
 
-                {isDefinition(attrType) && (
+                {isDefinition(attrType) && !opts.hideInheritance && (
                     <OptionsRowWithToggle
                         name="attr-promoted"
                         label={t("attribute_detail.promoted")}
@@ -776,18 +773,30 @@ function AttributeNameField({ help, ...autocompleteProps }: { help?: AttrHelpEnt
 }
 
 /**
- * One row of an attribute name completion, marking the names Trilium itself attaches a meaning to.
- * The mark answers what a list of bare names cannot: whether picking one buys behaviour, or is only
- * a name. The inline editor's `#`/`~` completion lists the same names and marks them the same way.
+ * One row of an attribute name completion: the name behind the kind icon the attributes panel gives
+ * it, with the cog that panel marks the names Trilium itself attaches a meaning to. The mark answers
+ * what a list of bare names cannot: whether picking one buys behaviour, or is only a name.
  *
  * Exported, with {@link fetchAttributeNames}, for whatever else completes an attribute name — the
  * attribute panel's in-row creation — so every name box offers the same list the same way.
  */
-export function AttributeNameSuggestion({ type, name }: { type: "label" | "relation"; name: string }) {
+export function AttributeNameSuggestion({ type, name, query = "" }: {
+    type: "label" | "relation";
+    name: string;
+    /** The text typed, set in bold where the name holds it. */
+    query?: string;
+}) {
+    const isSystem = isBuiltinAttribute(type, name);
+
     return (
         <span class="attr-name-suggestion">
-            <span class="attr-name-suggestion-name">{name}</span>
-            {isBuiltinAttribute(type, name) && <Badge outline text={t("attribute_names.system")} />}
+            <span
+                class={clsx("attribute-kind", isSystem && "marker-system")}
+                title={isSystem ? t("attribute_list_panel.system_hint") : undefined}
+            >
+                <Icon icon={attributeKindIcon(type, name, "")} />
+            </span>
+            <span class="attr-name-suggestion-name"><HighlightedText text={name} query={query} /></span>
         </span>
     );
 }
@@ -816,23 +825,21 @@ const TARGET_NOTE_OPTS = { allowCreatingNotes: true };
  * The value standing for a definition that points at a note rather than holding a value of its own.
  * Not a label type: it is what the definition is named after, `relation:foo` rather than `label:foo`.
  */
-export const RELATION_DEFINITION_TYPE = "relation";
-
 /** Exported so that hosts listing definitions can name their label type as the popup does. */
 export const LABEL_TYPES = [
-    { value: "text", title: t("attribute_detail.text"), icon: "bx bx-text" },
-    { value: "textarea", title: t("attribute_detail.textarea"), icon: "bx bx-align-left" },
-    { value: "number", title: t("attribute_detail.number"), icon: "bx bx-hash" },
-    { value: "boolean", title: t("attribute_detail.boolean"), icon: "bx bx-toggle-left" },
-    { value: "select", title: t("attribute_detail.select_type"), icon: "bx bx-list-ul" },
-    { value: "date", title: t("attribute_detail.date"), icon: "bx bx-calendar" },
-    { value: "datetime", title: t("attribute_detail.date_time"), icon: "bx bx-calendar-event" },
-    { value: "time", title: t("attribute_detail.time"), icon: "bx bx-time" },
-    { value: "url", title: t("attribute_detail.url"), icon: "bx bx-link" },
-    { value: "email", title: t("attribute_detail.email"), icon: "bx bx-envelope" },
-    { value: "phone", title: t("attribute_detail.phone"), icon: "bx bx-phone" },
-    { value: "color", title: t("attribute_detail.color_type"), icon: "bx bx-palette" }
-];
+    { value: "text", title: t("attribute_detail.text") },
+    { value: "textarea", title: t("attribute_detail.textarea") },
+    { value: "number", title: t("attribute_detail.number") },
+    { value: "boolean", title: t("attribute_detail.boolean") },
+    { value: "select", title: t("attribute_detail.select_type") },
+    { value: "date", title: t("attribute_detail.date") },
+    { value: "datetime", title: t("attribute_detail.date_time") },
+    { value: "time", title: t("attribute_detail.time") },
+    { value: "url", title: t("attribute_detail.url") },
+    { value: "email", title: t("attribute_detail.email") },
+    { value: "phone", title: t("attribute_detail.phone") },
+    { value: "color", title: t("attribute_detail.color_type") }
+].map((type) => ({ ...type, icon: DEFINITION_TYPE_ICONS[type.value] }));
 
 /**
  * What a definition can set its field up to hold, the note it can point at instead included. The last
@@ -846,13 +853,13 @@ export const DEFINITION_TYPES: { value: string; title: string; icon: string; sta
     {
         value: RELATION_DEFINITION_TYPE,
         title: t("attribute_detail.relation_type"),
-        icon: "bx bx-transfer",
+        icon: DEFINITION_TYPE_ICONS[RELATION_DEFINITION_TYPE],
         startsGroup: true
     }
 ];
 
 export function fetchAttributeNames(type: "label" | "relation", query: string) {
-    return server.get<string[]>(`attribute-names/?type=${type}&query=${encodeURIComponent(query)}`);
+    return froca.getAttributeNames(type, query);
 }
 
 /**
@@ -1015,7 +1022,7 @@ function RelatedNotesBadge({ attribute, currentNoteId }: { attribute: Attribute;
             tooltip={t("attribute_detail.other_notes_with_name", { attributeType: type, attributeName: name })}
             // The menu stays nested in the popup: the badge places it with `position: fixed`, and the popup
             // sets `contain: none` and no transform, so it is not a containing block and does not clip it.
-            dropdownOptions={{ dropdownContainerClassName: "related-notes-menu" }}
+            dropdownProps={{ dropdownContainerClassName: "related-notes-menu" }}
         >
             {/* The icon comes from the item rather than from the link, so that the note entries and the
                 search entry below them line up on the same slot. */}
@@ -1089,9 +1096,7 @@ const ATTR_TITLES: Record<string, string> = {
     "relation-definition": t("attribute_detail.definition")
 };
 
-const isNewLayout = isExperimentalFeatureEnabled("new-layout");
-
-export function positionPopup(popup: HTMLElement, { x, y, anchor }: AttributeDetailOpts, parentOffset: { top: number; left: number }) {
+export function positionPopup(popup: HTMLElement, { x, anchor }: AttributeDetailOpts) {
     const outerWidth = popup.offsetWidth;
     const outerHeight = popup.offsetHeight;
     const windowHeight = document.documentElement.clientHeight;
@@ -1103,38 +1108,26 @@ export function positionPopup(popup: HTMLElement, { x, y, anchor }: AttributeDet
 
     if (anchor) {
         positionPopupBesideAnchor(popup, anchor);
-    } else if (isNewLayout) {
-        // The popup always sits above the note attributes pane so it never covers it;
-        // when the pane is closed (e.g. opened from the collection column editor),
-        // it docks to the status bar instead.
-        const attrPane = document.querySelector(".bottom-panel.attribute-list");
-        const paneShown = attrPane instanceof HTMLElement && !attrPane.classList.contains("hidden-ext");
-        const anchorTop = paneShown
-            ? attrPane.getBoundingClientRect().top
-            : document.body.clientHeight - (document.querySelector<HTMLElement>(".component.status-bar")?.offsetHeight ?? 0);
-
-        // Centered on the click, clamped to the viewport. Deliberately not using
-        // getDetailPosition(): its legacy right-pin quirk reads as a plain 0 here,
-        // which kept the popup flush left regardless of the click position.
-        const windowWidth = document.documentElement.clientWidth;
-        const left = Math.max(Math.min(x - outerWidth / 2, windowWidth - outerWidth - 10), 10);
-
-        popup.style.left = `${left}px`;
-        popup.style.right = "";
-        popup.style.top = "unset";
-        popup.style.bottom = `${document.body.clientHeight - anchorTop}px`;
-        popup.style.maxHeight = `${anchorTop}px`;
-    } else {
-        const detPosition = getDetailPosition(x, parentOffset.left, outerWidth);
-
-        popup.style.left = toCssPos(detPosition.left);
-        popup.style.right = toCssPos(detPosition.right);
-        popup.style.top = `${y - parentOffset.top + 70}px`;
-        popup.style.bottom = "";
-        // `>=` so that re-placing a popup already at the cap keeps the cap: with `>` it would
-        // un-cap, grow, and be capped again by the resize-driven re-placement, ping-ponging forever.
-        popup.style.maxHeight = outerHeight + y >= windowHeight - 50 ? `${windowHeight - y - 50}px` : "10000px";
+        return;
     }
+
+    // The popup sits above the note attributes pane so it never covers it; when the pane is closed
+    // (e.g. opened from the collection column editor), it docks to the status bar instead.
+    const attrPane = document.querySelector(".bottom-panel.attribute-list");
+    const paneShown = attrPane instanceof HTMLElement && !attrPane.classList.contains("hidden-ext");
+    const anchorTop = paneShown
+        ? attrPane.getBoundingClientRect().top
+        : document.body.clientHeight - (document.querySelector<HTMLElement>(".component.status-bar")?.offsetHeight ?? 0);
+
+    // Centered on the click, clamped to the viewport.
+    const windowWidth = document.documentElement.clientWidth;
+    const left = Math.max(Math.min(x - outerWidth / 2, windowWidth - outerWidth - 10), 10);
+
+    popup.style.left = `${left}px`;
+    popup.style.right = "";
+    popup.style.top = "unset";
+    popup.style.bottom = `${document.body.clientHeight - anchorTop}px`;
+    popup.style.maxHeight = `${anchorTop}px`;
 }
 
 /** How far the popup stays from its anchor, and from the edges of the viewport. */
@@ -1164,32 +1157,6 @@ function positionPopupBesideAnchor(popup: HTMLElement, anchor: HTMLElement) {
     // Level with the anchor, slid up as far as needed to stay wholly on screen.
     popup.style.top = `${Math.max(Math.min(anchorRect.top, windowHeight - outerHeight - VIEWPORT_MARGIN), VIEWPORT_MARGIN)}px`;
     popup.style.bottom = "";
-}
-
-function getDetailPosition(x: number, offsetLeft: number, outerWidth: number) {
-    let left: number | string = x - offsetLeft - outerWidth / 2;
-    let right: number | string = "";
-
-    if (left < 0) {
-        left = 10;
-    } else {
-        const rightEdge = left + outerWidth;
-
-        // Kept bug-for-bug from the legacy widget: this compares against the popup's own
-        // width instead of the viewport's, so it holds whenever left >= 0 and the popup
-        // effectively pins to the right edge except for far-left clicks.
-        if (rightEdge > outerWidth - 10) {
-            left = "";
-            right = 10;
-        }
-    }
-
-    return { left, right };
-}
-
-/** An empty string clears the property, matching the jQuery `.css()` behavior. */
-function toCssPos(value: number | string) {
-    return typeof value === "number" ? `${value}px` : value;
 }
 
 export type AttrType = "label" | "label-definition" | "relation" | "relation-definition" | undefined;

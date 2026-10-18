@@ -152,6 +152,12 @@
         max-height: 220px;
         object-fit: contain;
     }
+
+    .attachment-content-wrapper .canvas-drawing-picture {
+        display: block;
+        max-height: 220px;
+        margin-inline: auto;
+    }
 }
 
 /* The header stays put and only the listing under it scrolls, so the owning note and the upload actions
@@ -350,6 +356,18 @@ body[dir=rtl] .attachment-icon-marker {
     overflow: hidden;
 }
 
+.attachment-content-wrapper.attachment-transcript {
+    overflow: hidden;
+}
+
+.attachment-content-wrapper.attachment-canvas-drawing {
+    overflow: hidden;
+
+    > .canvas-render {
+        height: 100%;
+    }
+}
+
 /*
  * The countdown to an unlinked attachment's erasure.
  *
@@ -413,13 +431,6 @@ body[dir=rtl] .attachment-icon-marker {
 /* #endregion */
 
 /* #region Attachment actions */
-
-.attachment-actions .dropdown-item .tn-icon {
-    position: relative;
-    top: 3px;
-    font-size: 120%;
-    margin-inline-end: 5px;
-}
 
 .attachment-actions .dropdown-item[disabled], .attachment-actions .dropdown-item[disabled]:hover {
     color: var(--muted-text-color) !important;

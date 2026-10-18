@@ -1,4 +1,7 @@
-import { ALLOWED_NOTE_TYPES, getImageAttachmentTitle, type NoteType } from "@triliumnext/commons";
+import {
+    ALLOWED_NOTE_TYPES, CANVAS_ATTACHMENT_MIME, getDrawingPictureTitle, getImageAttachmentTitle,
+    type NoteType
+} from "@triliumnext/commons";
 import { basename, dirname } from "../utils/path.js";
 import { getZipProvider, type ZipSource } from "../zip_provider.js";
 
@@ -19,7 +22,7 @@ import type TaskContext from "../task_context.js";
 import treeService from "../tree.js";
 import markdownService from "./markdown.js";
 import mimeService from "./mime.js";
-import { AttributeMeta, NoteMeta } from "../../meta.js";
+import { AttachmentMeta, AttributeMeta, NoteMeta } from "../../meta.js";
 import { isMarkdownCodeNote } from "../export/rewrite_links.js";
 import { sanitizeHtml } from "../sanitizer.js";
 import { extractFrontmatter, type FrontmatterAttribute } from "./frontmatter.js";
@@ -60,6 +63,13 @@ interface ImportZipOpts {
      * archived "root" is remapped to a fresh id like any other note (see {@link getNewNoteId}).
      */
     restoreAsRoot?: boolean;
+    /**
+     * Imports the archive instead when the scan pass recognizes an Obsidian vault: a `.obsidian/` config
+     * folder at the archive root or under a single wrapper folder, and no `!!!meta.json`. Set by the
+     * dispatcher for an untagged `.zip`, so a dropped vault reaches the Obsidian importer without anyone
+     * reading the archive an extra time.
+     */
+    onObsidianVault?: () => Promise<BNote>;
 }
 
 async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSource, importRootNote: BNote, opts?: ImportZipOpts): Promise<BNote> {
@@ -126,6 +136,19 @@ async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSou
         }
 
         return attachmentIdMap[origAttachmentId];
+    }
+
+    /**
+     * The title of an imported attachment of a note with `attachments`: the picture of a canvas
+     * drawing takes the title that the new ID of its drawing gives it.
+     */
+    function getAttachmentTitle(attachmentMeta: AttachmentMeta, attachments: AttachmentMeta[]) {
+        const drawingId = attachments.find(({ attachmentId, mime }) => attachmentId
+            && mime === CANVAS_ATTACHMENT_MIME
+            && getDrawingPictureTitle(attachmentId) === attachmentMeta.title)?.attachmentId;
+        return drawingId
+            ? getDrawingPictureTitle(getNewAttachmentId(drawingId))
+            : attachmentMeta.title;
     }
 
     function getAttachmentMeta(parentNoteMeta: NoteMeta, dataFileName: string) {
@@ -460,6 +483,11 @@ async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSou
 
         });
 
+        content = content.replace(
+            /data-attachment-id="([a-zA-Z0-9_]+)"/g,
+            (_match, id: string) => `data-attachment-id="${getNewAttachmentId(id)}"`
+        );
+
         if (noteMeta) {
             const includeNoteLinks = (noteMeta.attributes || []).filter((attr) => attr.type === "relation" && attr.name === "includeNoteLink");
 
@@ -592,7 +620,7 @@ async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSou
             const attachment = new BAttachment({
                 attachmentId: getNewAttachmentId(attachmentMeta.attachmentId),
                 ownerId: noteId,
-                title: attachmentMeta.title,
+                title: getAttachmentTitle(attachmentMeta, noteMeta?.attachments ?? []),
                 role: attachmentMeta.role,
                 mime: attachmentMeta.mime,
                 position: attachmentMeta.position
@@ -650,7 +678,10 @@ async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSou
             content = processStringOrBuffer(content);
         }
 
-        const noteTitle = getNoteTitle(filePath, taskContext.data?.replaceUnderscoresWithSpaces || false, noteMeta);
+        // A plain archive carries no metadata, so the detected mime stands in for it: getNoteTitle
+        // reads the mime to drop the extension of the types that record their format in the note's
+        // own mime (video, audio, fonts), which single-file import already does.
+        const noteTitle = getNoteTitle(filePath, taskContext.data?.replaceUnderscoresWithSpaces || false, noteMeta ?? { mime });
 
         // Generic Markdown (not a Trilium export, which carries its attributes in !!!meta.json) may begin
         // with a YAML front matter block; lift it into labels and strip it before the body is rendered.
@@ -789,6 +820,8 @@ async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSou
     // count of entries the processing pass will handle, used as the progress denominator so the
     // client can show a progress bar ("X of N") instead of a bare running count
     let entriesToProcess = 0;
+    // Depth of the shallowest `.obsidian` segment, which sits at an Obsidian vault's root; -1 when absent.
+    let obsidianDepth = -1;
 
     await zipProvider.readZipFile(source, async (entry, readContent) => {
         const filePath = normalizeFilePath(entry.fileName);
@@ -805,12 +838,25 @@ async function importZip(taskContext: TaskContext<"importNotes">, source: ZipSou
             metaFile = JSON.parse(new TextDecoder("utf-8").decode(content));
         }
 
+        const depth = filePath.split("/").indexOf(".obsidian");
+        if (depth !== -1 && (obsidianDepth === -1 || depth < obsidianDepth)) {
+            obsidianDepth = depth;
+        }
+
         // determine the root of the .zip (i.e. if it has only one top-level folder then the root is that folder, or the root of the archive if there are multiple top-level folders).
         const firstSlash = filePath.indexOf("/");
         const topLevelPath = (firstSlash !== -1 ? filePath.substring(0, firstSlash) : filePath);
         topLevelItems.add(topLevelPath);
     }, filenameEncoding);
     timing.scan = Date.now() - timingMark;
+
+    // Only the two shapes importObsidian supports: `.obsidian/` at the archive root, or under a single
+    // wrapper folder. A vault nested among unrelated content stays with this importer, which leaves that
+    // content alone.
+    const isObsidianVault = obsidianDepth === 0 || (obsidianDepth === 1 && topLevelItems.size === 1);
+    if (opts?.onObsidianVault && isObsidianVault && !metaFile) {
+        return await opts.onObsidianVault();
+    }
 
     topLevelPath = (topLevelItems.size > 1 ? "" : topLevelItems.values().next().value ?? "");
 

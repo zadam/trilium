@@ -19,11 +19,15 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 تريليوم هو برنامج مجاني مفتوح المصدر، يمكن استخدامه في أكثر من جهاز بنفس الوقت،
 مبني على كتابة الملاحظات بالتفرعات الشجرية مع التركيز على بناء قاعدة بيانات
 معرفية ضخمة.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -367,11 +371,6 @@ pnpm run --filter desktop electron-forge:make --arch=x64 --platform=win32
   التفاعلية المستخدمة في المجموعات.
 * مكتبة [FancyTree](https://github.com/mar10/fancytree): - مكتبة "شجرية" غنية
   بالميزات ولا يوجد لها منافس حقيقي.
-* مكتبة [jsPlumb](https://github.com/jsplumb/jsplumb): - مكتبة للربط المرئي،
-  تُستخدم في [خرائط
-  العلاقات](https://docs.triliumnotes.org/user-guide/note-types/relation-map)
-  و[خرائط
-  الروابط](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 الدعم
 

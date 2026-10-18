@@ -133,6 +133,17 @@ describe("createNote", () => {
         expect(triggerEvent).not.toHaveBeenCalledWith("focusAndSelectTitle", expect.anything());
     });
 
+    it("focuses an AI chat's input rather than its title, which the first reply names", async () => {
+        setActiveContext(true);
+        await noteCreateService.createNote("root", { type: "llmChat" });
+        expect(triggerEvent).toHaveBeenCalledWith("focusOnDetail", { ntxId: "ntx-1" });
+        expect(triggerEvent).not.toHaveBeenCalledWith("focusAndSelectTitle", expect.anything());
+
+        triggerEvent.mockClear();
+        await noteCreateService.createNote("root", { type: "llmChat", focus: "title" });
+        expect(triggerEvent).toHaveBeenCalledWith("focusAndSelectTitle", { isNewNote: true, ntxId: "ntx-1" });
+    });
+
     it("activates without firing a focus event when focus is neither title nor content", async () => {
         const setNote = setActiveContext(true);
         // an out-of-range focus value still activates the note but triggers no focus event
@@ -275,6 +286,33 @@ describe("createNote", () => {
     });
 });
 
+describe("createTemplateNote", () => {
+    /**
+     * A template is a note carrying `#template`, and it is opened in a popup rather than in the
+     * tab: what asked for one is usually a dialog the reader is still standing in.
+     */
+    it("makes a note carrying the label under the given one, and opens it in a popup", async () => {
+        const result = await noteCreateService.createTemplateNote("board1", "New card template");
+
+        expect(server.post).toHaveBeenCalledWith(
+            expect.stringContaining("notes/board1/children"),
+            expect.objectContaining({
+                title: "New card template",
+                type: "text",
+                attributes: [
+                    { type: "label", name: "template", value: "", isInheritable: false }
+                ]
+            }),
+            undefined
+        );
+        expect(triggerCommand).toHaveBeenCalledWith("openInPopup", {
+            noteIdOrPath: NOTE_ID,
+            showNoteTypeSwitcher: true
+        });
+        expect(result).toBe(childNote);
+    });
+});
+
 describe("createNoteWithTypePrompt", () => {
     it("returns undefined and posts nothing when the chooser is cancelled", async () => {
         triggerCommand.mockImplementation((_name: string, data: any) => {
@@ -287,12 +325,13 @@ describe("createNoteWithTypePrompt", () => {
         expect(triggerCommand).toHaveBeenCalledWith("chooseNoteType", expect.anything());
     });
 
-    it("creates a note with chosen type/template, preferring the chooser notePath", async () => {
+    it("creates a note with chosen type/MIME/template, preferring the chooser notePath", async () => {
         setActiveContext(true);
         triggerCommand.mockImplementation((_name: string, data: any) => {
             data.callback({
                 success: true,
                 noteType: "code",
+                mime: "text/x-python",
                 templateNoteId: "tpl-1",
                 notePath: "chosen-parent"
             });
@@ -302,7 +341,22 @@ describe("createNoteWithTypePrompt", () => {
 
         expect(server.post).toHaveBeenCalledWith(
             `notes/chosen-parent/children?target=into&targetBranchId=`,
-            expect.objectContaining({ type: "code", templateNoteId: "tpl-1" }),
+            expect.objectContaining({ type: "code", mime: "text/x-python", templateNoteId: "tpl-1" }),
+            undefined
+        );
+    });
+
+    it("creates a note from a chosen preset with the label it owns", async () => {
+        setActiveContext(true);
+        triggerCommand.mockImplementation((_name: string, data: any) => {
+            data.callback({ success: true, noteType: "code", mime: "text/css", notePreset: "appCss" });
+        });
+
+        await noteCreateService.createNoteWithTypePrompt("parent", {});
+
+        expect(server.post).toHaveBeenCalledWith(
+            `notes/parent/children?target=into&targetBranchId=`,
+            expect.objectContaining({ type: "code", mime: "text/css", attributes: [ { type: "label", name: "appCss", value: "" } ] }),
             undefined
         );
     });
@@ -429,9 +483,18 @@ describe("duplicateSubtree", () => {
 
         await noteCreateService.duplicateSubtree(NOTE_ID, "root");
 
-        expect(server.post).toHaveBeenCalledWith(`notes/${NOTE_ID}/duplicate/root`);
+        expect(server.post).toHaveBeenCalledWith(`notes/${NOTE_ID}/duplicate/root`, { withChildren: true });
         expect(setNote).toHaveBeenCalledWith(`root/${NOTE_ID}`);
         expect(showMessage).toHaveBeenCalledWith(expect.stringContaining("note_create.duplicated"));
+    });
+
+    it("asks the server to leave the children out when told to", async () => {
+        setActiveContext(true);
+        server.post = vi.fn(async () => ({ note: { noteId: NOTE_ID } })) as typeof server.post;
+
+        await noteCreateService.duplicateSubtree(NOTE_ID, "root", { withChildren: false });
+
+        expect(server.post).toHaveBeenCalledWith(`notes/${NOTE_ID}/duplicate/root`, { withChildren: false });
     });
 
     it("does not throw when there is no active context", async () => {

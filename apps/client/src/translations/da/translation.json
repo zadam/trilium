@@ -1,0 +1,105 @@
+{
+  "about": {
+    "version_label": "Version:",
+    "build_info": "Build: {{buildDate}},revision:<buildRevision />",
+    "contributors_label": "Bidragsydere:",
+    "contributor_roles": {
+      "lead-dev": "Hovedudvikler",
+      "original-dev": "oprindelig udvikler"
+    },
+    "role_brief_history": {
+      "lead-dev": "Elian Doran grundlagde TriliumNext i 2024, en community-fork, der blev oprettet, efter at Zadam trak sig tilbage fra projektet. Zadam overførte senere det oprindelige repository til TriliumNext-teamet, så de to projekter igen blev samlet til ét.",
+      "original-dev": "Den 25. december 2017 udgav Zadam den første betaversion af Trilium (stavet med ét »l«, i modsætning til blomsten). Utilfreds med de eksisterende noteorganiseringsværktøjer byggede han en avanceret, selvhostet, hierarkisk vidensbase, som fik over 22.000 stjerner på GitHub. I 2024, da livet blev mere travlt, satte han projektet i vedligeholdelsestilstand."
+    },
+    "contributor_full_list": "Se hele samfundet",
+    "channel": {
+      "nightly": "Natlige"
+    },
+    "data_directory": "Data mappe:",
+    "github_tooltip": "Indberet fejl, foreslå funktioner, eller bidrag på GitHub.",
+    "license_tooltip": "Se licens",
+    "donate": "Donation",
+    "donate_tooltip": "Donér for at støtte dette projekt",
+    "version": "{{appVersion}} (database: {{dbVersion}}, synk protokol: {{syncVersion}})"
+  },
+  "toast": {
+    "critical-error": {
+      "title": "Kritisk fejl",
+      "message": "Der er opstået en kritisk fejl, som forhindrer klientprogrammet i at starte:\n\n{{message}}\n\nDet skyldes sandsynligvis, at et script ikke kørte som forventet. Prøv at starte programmet i fejlsikret tilstand, og løs problemet."
+    },
+    "widget-error": {
+      "title": "Kunne ikke initialisere en widget",
+      "message-unknown": "En ukendt widget kunne ikke initialiseres på grund af:\n\n{{message}}",
+      "message-custom": "Den brugerdefinerede widget fra noten med ID \"{{id}}\" og titlen \"{{title}}\" kunne ikke initialiseres på grund af:\n\n{{message}}"
+    },
+    "bundle-error": {
+      "title": "Kunne ikke indlæse et brugerdefineret script",
+      "message": "Scriptet kunne ikke køres på grund af:\n\n{{message}}"
+    },
+    "widget-list-error": {
+      "title": "Kunne ikke hente listen over widgets fra serveren"
+    },
+    "widget-render-error": {
+      "title": "Kunne ikke vise en brugerdefineret React-widget"
+    },
+    "widget-missing-parent": "Den brugerdefinerede widget mangler den obligatoriske egenskab '{{property}}'\n\nHvis scriptet skal køres uden et brugergrænsefladeelement, skal du i stedet bruge '#run=frontendStartup'",
+    "open-script-note": "Åbn scriptnote",
+    "scripting-error": "Scriptnoten kunne ikke køres",
+    "unhandled-error": {
+      "title": "En baggrundsopgave mislykkedes",
+      "details-button": "Vis flere detaljer…",
+      "details-intro": "Programmet kører stadig, og dine noter er ikke påvirket. Hvis det bliver ved med at ske, kan du overveje at rapportere det på GitHub ved at indsætte oplysningerne nedenfor.",
+      "details-title": "Teknisk information"
+    }
+  },
+  "add_link": {
+    "add_link": "Tilføj link",
+    "edit_link": "Ændre link",
+    "fix_link": "Fix linket",
+    "help_on_links": "Hjælp til links",
+    "note": "Note",
+    "search_note": "Søg efter en note ud fra dens navn",
+    "link_title_mirrors": "Linkets titel afspejler notens aktuelle titel",
+    "link_title_arbitrary": "Linkets titel kan ændres frit",
+    "link_title": "Link titel",
+    "anchor": "Anker (valgfrit)",
+    "anchor_none": "Ingen (link til note)",
+    "button_add_link": "Tilføj link",
+    "button_edit_link": "Gem link",
+    "button_fix_link": "Ret link"
+  },
+  "branch_prefix": {
+    "edit_branch_prefix": "Rediger grenpræfiks",
+    "edit_branch_prefix_multiple": "Rediger grenpræfikset for {{count}} grene",
+    "help_on_tree_prefix": "Hjælp til træpræfikset",
+    "prefix": "Præfiks",
+    "save": "Gem",
+    "branch_prefix_saved": "Grenpræfikset er blevet gemt.",
+    "branch_prefix_saved_multiple": "Grenpræfikset er blevet gemt for {{count}} grene.",
+    "affected_branches": "Berørte grene ({{count}}):",
+    "preview_in_tree": "Forhåndsvis i træet",
+    "description": "Tilføjes foran notens titel kun i denne gren. Andre grene beholder den oprindelige titel.",
+    "cancel": "Annuller"
+  },
+  "bulk_actions": {
+    "bulk_actions": "Massehandlinger",
+    "include_descendants": "Inkluder efterkommere af de valgte noter",
+    "chosen_actions": "Valgte handlinger",
+    "execute_bulk_actions_one": "Udfør massehandlinger",
+    "execute_bulk_actions_other": "",
+    "bulk_actions_executed": "Massehandlingerne er blevet udført.",
+    "none_yet": "Ingen endnu… tilføj en handling ved at klikke på en af de tilgængelige ovenfor.",
+    "labels": "Etiketter",
+    "relations": "Relationer",
+    "notes": "Noter",
+    "other": "Andre"
+  },
+  "clone_to": {
+    "clone_notes_to": "Klon noter til...",
+    "help_on_links": "Hjælp til links",
+    "notes_to_clone": "Noter, der skal klones",
+    "target_parent_note": "Målnote for overordnet niveau",
+    "search_for_note_by_its_name": "Søg efter en note ud fra dens navn",
+    "cloned_note_prefix_title": "Den klonede note vises i notetræet med det angivne præfiks"
+  }
+}

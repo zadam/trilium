@@ -128,6 +128,7 @@ export { type SearchParams } from "./services/search/services/types";
 export { checkImageAttachments, collectCanvasImageFileIds, default as note_service, findBookmarks, findLlmChatLinks, findMindMapLinks, saveLinks } from "./services/notes";
 export type { NoteParams } from "./services/notes";
 export * as sanitize from "./services/sanitizer";
+export { assertScriptingEnabled, assertSqlConsoleEnabled, isScriptingEnabled } from "./services/scripting_guard";
 export * as routes from "./routes";
 export { default as ws } from "./services/ws";
 export { default as request } from "./services/request";
@@ -140,7 +141,17 @@ export { default as sync_mutex } from "./services/sync_mutex";
 export { default as setup } from "./services/setup";
 export { getPlatform, type PlatformProvider } from "./services/platform";
 export { InAppHelpProvider } from "./services/in_app_help";
-export { type ImageProvider, type ImageFormat, type ImageCompressionOutcome, type ImageCompressionRequest, type ProcessedImage, getImageProvider } from "./services/image_provider";
+export {
+    getVirtualNoteContent,
+    getVirtualNoteProvider,
+    getVirtualNoteProviders,
+    registerVirtualNoteProvider,
+    unregisterVirtualNoteProvider,
+    type VirtualNoteProvider,
+    type VirtualSubtreeAttribute,
+    type VirtualSubtreeItem
+} from "./services/virtual_notes";
+export { type ImageProvider, type ImageFormat, type ImageCompressionOutcome, type ImageCompressionRequest, type ImageShrink, type ProcessedImage, getImageProvider } from "./services/image_provider";
 export { default as imageCompressionService } from "./services/image_compression";
 export { default as imageInventoryService, type ImageInventoryOptions } from "./services/image_inventory";
 export { getContentCounts } from "./services/space_usage";
@@ -154,7 +165,9 @@ export { default as imageService } from "./services/image";
 export { t } from "i18next";
 export type { RequestProvider, ExecOpts, CookieJar, FetchApiOpts, FetchResourceOpts, FetchedResource } from "./services/request";
 export type * from "./meta";
+export type { QueryString, QueryValue, Request, RequestHeaders, Response } from "./http_interface";
 export * as routeHelpers from "./routes/helpers";
+export { resolveYouTubePreview, storeFavicon } from "./routes/api/link_embed";
 
 export { getZipProvider, type ZipArchive, type ZipProvider } from "./services/zip_provider";
 export { default as zipImportService } from "./services/import/zip";
@@ -225,6 +238,11 @@ export async function initializeCore({ dbConfig, executionContext, crypto, zip, 
     initZipProvider(zip);
     initZipExportProviderFactory(zipExportProviderFactory);
     initContext(executionContext);
+    if (inAppHelp) {
+        // Must precede initSql: it registers the _help virtual note provider, and initSql can
+        // resolve dbReady, which triggers the becca load that injects virtual subtrees.
+        initInAppHelp(inAppHelp);
+    }
     await initSql(new SqlService(dbConfig, getLog()));
     initSchema(schema);
     initImageProvider(image);
@@ -237,8 +255,5 @@ export async function initializeCore({ dbConfig, executionContext, crypto, zip, 
     }
     if (request) {
         initRequest(request);
-    }
-    if (inAppHelp) {
-        initInAppHelp(inAppHelp);
     }
 };

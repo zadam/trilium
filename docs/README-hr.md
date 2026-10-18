@@ -19,10 +19,14 @@ status](https://hosted.weblate.org/widget/trilium/svg-badge.svg)](https://hosted
 [Korean](./README-ko.md) | [Polish](./README-pl.md) | [Romanian](./README-ro.md)
 | [Russian](./README-ru.md) | [Spanish](./README-es.md) |
 [Ukrainian](./README-uk.md) | [Urdu](./README-ur.md) | [Uyghur](./README-ug.md)
+| [Vietnamese](./README-vi.md)
 <!-- translate:on -->
 
 Trilium Notes is a free and open-source, cross-platform hierarchical note taking
 application with focus on building large personal knowledge bases.
+
+Looking for "Trillium Notes"? The project's canonical spelling is "Trilium
+Notes", with one `l`.
 
 <img src="./app.png" alt="Trilium Screenshot" width="1000">
 
@@ -363,11 +367,6 @@ Trilium would not be possible without the technologies behind it:
   table used in collections.
 * [FancyTree](https://github.com/mar10/fancytree) - feature-rich tree library
   without real competition.
-* [jsPlumb](https://github.com/jsplumb/jsplumb) - visual connectivity library.
-  Used in [relation
-  maps](https://docs.triliumnotes.org/user-guide/note-types/relation-map) and
-  [link
-  maps](https://docs.triliumnotes.org/user-guide/advanced-usage/note-map#link-map)
 
 ## 🤝 Support
 

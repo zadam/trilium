@@ -27,6 +27,8 @@ export interface ClientOpts {
      * address that has already been vetted, rather than on whatever DNS answers at connect time.
      */
     lookup?: unknown;
+    /** Chromium HTTP cache mode, read by `electron.net` and ignored by the node clients. */
+    cache?: "default" | "no-store";
 }
 
 type RequestEvent = "error" | "response" | "abort";
@@ -129,7 +131,9 @@ export default class NodeRequestProvider implements RequestProvider {
                     path: parsedTargetUrl.path,
                     timeout: opts.timeout, // works only for node.js client
                     headers,
-                    agent: proxyAgent
+                    agent: proxyAgent,
+                    // Chromium caches a 301 indefinitely, so a cached redirect would outlive a fixed sync host.
+                    cache: "no-store"
                 });
 
                 request.on("error", (err) => reject(generateError(opts, err)));

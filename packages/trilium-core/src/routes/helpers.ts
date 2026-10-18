@@ -1,7 +1,8 @@
 import { isSvgMime } from "@triliumnext/commons";
-import { Response } from "express";
+import { Response } from "../http_interface";
 import becca from "../becca/becca";
 import BNote from "../becca/entities/bnote";
+import noteService from "../services/notes";
 import protected_session from "../services/protected_session";
 import BAttachment from "../becca/entities/battachment";
 import { unwrapStringOrBuffer } from "../services/utils/binary";
@@ -39,7 +40,7 @@ export function downloadData(noteOrAttachment: BNote | BAttachment, res: Respons
         return sendSanitizedSvg(res, noteOrAttachment.getContent());
     }
 
-    res.send(noteOrAttachment.getContent());
+    res.send(noteService.getPortableContent(noteOrAttachment));
 }
 
 /**

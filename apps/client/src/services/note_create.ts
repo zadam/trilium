@@ -9,6 +9,7 @@ import type { ChooseNoteTypeResponse } from "../widgets/dialogs/note_type_choose
 import branchService from "./branches.js";
 import froca from "./froca.js";
 import { t } from "./i18n.js";
+import { notePresetOptions } from "./note_presets.js";
 import protectedSessionHolder from "./protected_session_holder.js";
 import server from "./server.js";
 import toastService from "./toast.js";
@@ -59,7 +60,8 @@ async function createNote(parentNotePath: string | undefined, options: CreateNot
     options = Object.assign(
         {
             activate: true,
-            focus: "title",
+            // An AI chat takes its title from the first reply, so the input is what to type into.
+            focus: options.type === "llmChat" ? "content" : "title",
             target: "into"
         },
         options
@@ -150,15 +152,19 @@ async function chooseNoteType() {
 }
 
 async function createNoteWithTypePrompt(parentNotePath: string, options: CreateNoteOpts = {}) {
-    const { success, noteType, templateNoteId, notePath, cloneToNoteIds } = await chooseNoteType();
+    const {
+        success, noteType, mime, templateNoteId, notePreset, notePath, cloneToNoteIds
+    } = await chooseNoteType();
 
     if (!success) {
         return;
     }
 
     options.type = noteType;
+    options.mime = mime;
     options.templateNoteId = templateNoteId;
     options.cloneToNoteIds = cloneToNoteIds;
+    Object.assign(options, notePresetOptions(notePreset));
 
     return await createNote(notePath || parentNotePath, options);
 }
@@ -224,9 +230,13 @@ function parseSelectedHtml(selectedHtml: string) {
     return [null, selectedHtml];
 }
 
-async function duplicateSubtree(noteId: string, parentNotePath: string) {
+/**
+ * Duplicates a note next to the original and opens the copy. With `withChildren: false`, the copy
+ * leaves out the note's children.
+ */
+async function duplicateSubtree(noteId: string, parentNotePath: string, { withChildren = true }: { withChildren?: boolean } = {}) {
     const parentNoteId = treeService.getNoteIdFromUrl(parentNotePath);
-    const { note } = await server.post<DuplicateResponse>(`notes/${noteId}/duplicate/${parentNoteId}`);
+    const { note } = await server.post<DuplicateResponse>(`notes/${noteId}/duplicate/${parentNoteId}`, { withChildren });
 
     await ws.waitForMaxKnownEntityChangeId();
 
@@ -236,9 +246,40 @@ async function duplicateSubtree(noteId: string, parentNotePath: string) {
     toastService.showMessage(t("note_create.duplicated", { title: origNote?.title }));
 }
 
+/**
+ * Creates a template under `parentNoteId` and opens it in the popup editor.
+ *
+ * A template is a note carrying `#template`. The popup editor keeps the dialog that asked for the
+ * template open, which a tab switch would not.
+ *
+ * @returns the new note, or `undefined` when it could not be created.
+ */
+async function createTemplateNote(parentNoteId: string, title: string) {
+    const { note } = await createNote(parentNoteId, {
+        activate: false,
+        title,
+        type: "text",
+        attributes: [
+            { type: "label", name: "template", value: "", isInheritable: false }
+        ]
+    });
+
+    if (!note) {
+        return undefined;
+    }
+
+    // Blank when it opens, so the editor offers the note types to make it one of instead.
+    appContext.triggerCommand("openInPopup", {
+        noteIdOrPath: note.noteId,
+        showNoteTypeSwitcher: true
+    });
+    return note;
+}
+
 export default {
     createNote,
     createNoteWithTypePrompt,
+    createTemplateNote,
     duplicateSubtree,
     chooseNoteType
 };

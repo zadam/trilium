@@ -6,13 +6,11 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
 import Component from "../../components/component";
-import { ExperimentalFeature, ExperimentalFeatureId, getAvailableExperimentalFeatures, isExperimentalFeatureEnabled, toggleExperimentalFeature } from "../../services/experimental_features";
 import { t } from "../../services/i18n";
-import utils, { isElectron, isMobile, isStandalone, reloadFrontendApp } from "../../services/utils";
+import utils, { isElectron, isMobile, isStandalone } from "../../services/utils";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../react/FormList";
 import { useStaticTooltip, useStaticTooltipWithKeyboardShortcut, useTriliumOption, useTriliumOptionBool } from "../react/hooks";
-import KeyboardShortcut from "../react/KeyboardShortcut";
 import { ParentComponent } from "../react/react_utils";
 
 interface MenuItemProps<T> {
@@ -23,6 +21,7 @@ interface MenuItemProps<T> {
     disabled?: boolean
     active?: boolean;
     outsideChildren?: ComponentChildren;
+    keyboardShortcut?: KeyboardActionNames;
 }
 
 export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout: boolean }) {
@@ -42,7 +41,6 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
                     <span className="bx bxs-down-arrow-alt global-menu-button-update-available-button" title={t("update_available.update_available")} />
                 </div>}
             </>}
-            noDropdownListStyle
             mobileBackdrop
         >
             {isMobile() && <>
@@ -64,7 +62,7 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
 
             <SwitchToOptions />
             <MenuItem command="showLaunchBarSubtree" icon={`bx ${isMobile() ? "bx-mobile" : "bx-sidebar"}`} text={t("global_menu.configure_launchbar")} />
-            <AdvancedMenu dropStart={!isVerticalLayout} />
+            <AdvancedMenu />
             <MenuItem command="showOptions" icon="bx bx-cog" text={t("global_menu.options")} />
             <FormDropdownDivider />
 
@@ -79,20 +77,19 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
                     text={t("global_menu.download-update", {latestVersion})} />
             </>}
 
-            {!isElectron() && <BrowserOnlyOptions />}
-            {glob.isDev && <DevelopmentOptions dropStart={!isVerticalLayout} />}
+            {!isElectron() && !isStandalone && <BrowserOnlyOptions />}
         </Dropdown>
     );
 }
 
-function AdvancedMenu({ dropStart }: { dropStart: boolean }) {
+function AdvancedMenu() {
     return (
-        <FormDropdownSubmenu icon="bx bx-chip" title={t("global_menu.advanced")} dropStart={dropStart}>
+        <FormDropdownSubmenu icon="bx bx-chip" title={t("global_menu.advanced")}>
             <MenuItem command="showHiddenSubtree" icon="bx bx-hide" text={t("global_menu.show_hidden_subtree")} />
             <MenuItem command="showSearchHistory" icon="bx bx-search-alt" text={t("global_menu.open_search_history")} />
             <FormDropdownDivider />
 
-            <KeyboardActionMenuItem command="showBackendLog" icon="bx bx-detail" text={t("global_menu.show_backend_log")} />
+            <KeyboardActionMenuItem command="showBackendLog" icon="bx bx-receipt" text={t("global_menu.show_backend_log")} />
             <KeyboardActionMenuItem command="showSQLConsole" icon="bx bx-data" text={t("global_menu.open_sql_console")} />
             <MenuItem command="showSQLConsoleHistory" icon="bx bx-data" text={t("global_menu.open_sql_console_history")} />
             <FormDropdownDivider />
@@ -110,32 +107,6 @@ function BrowserOnlyOptions() {
     </>;
 }
 
-function DevelopmentOptions({ dropStart }: { dropStart: boolean }) {
-    return <>
-        <FormListHeader text="Development Options" />
-        <FormDropdownSubmenu icon="bx bx-test-tube" title="Experimental features" dropStart={dropStart}>
-            {getAvailableExperimentalFeatures().map((feature) => (
-                <ExperimentalFeatureToggle key={feature.id} experimentalFeature={feature as ExperimentalFeature} />
-            ))}
-        </FormDropdownSubmenu>
-    </>;
-}
-
-function ExperimentalFeatureToggle({ experimentalFeature }: { experimentalFeature: ExperimentalFeature }) {
-    const featureEnabled = isExperimentalFeatureEnabled(experimentalFeature.id as ExperimentalFeatureId);
-
-    return (
-        <FormListItem
-            checked={featureEnabled}
-            title={experimentalFeature.description}
-            onClick={async () => {
-                await toggleExperimentalFeature(experimentalFeature.id as ExperimentalFeatureId, !featureEnabled);
-                reloadFrontendApp();
-            }}
-        >{experimentalFeature.name}</FormListItem>
-    );
-}
-
 function SwitchToOptions() {
     if (isElectron()) {
         return;
@@ -146,26 +117,23 @@ function SwitchToOptions() {
 
 }
 
-function MenuItem({ icon, text, title, command, disabled, active }: MenuItemProps<KeyboardActionNames | CommandNames | (() => void)>) {
+function MenuItem({ icon, text, title, command, disabled, active, keyboardShortcut }: MenuItemProps<KeyboardActionNames | CommandNames | (() => void)>) {
+    const parentComponent = useContext(ParentComponent);
     return <FormListItem
         icon={icon}
         title={title}
-        triggerCommand={typeof command === "string" ? command : undefined}
-        onClick={typeof command === "function" ? command : undefined}
+        keyboardShortcut={keyboardShortcut}
+        onClick={typeof command === "function" ? command : () => void parentComponent?.triggerCommand(command)}
         disabled={disabled}
         active={active}
     >{text}</FormListItem>;
 }
 
-function KeyboardActionMenuItem({ text, command, ...props }: MenuItemProps<KeyboardActionNames>) {
-    return <MenuItem
-        {...props}
-        command={command}
-        text={<>{text} <KeyboardShortcut actionName={command as KeyboardActionNames} /></>}
-    />;
+function KeyboardActionMenuItem({ command, ...props }: MenuItemProps<KeyboardActionNames>) {
+    return <MenuItem {...props} command={command} keyboardShortcut={command} />;
 }
 
-export function VerticalLayoutIcon({ logoRef }: { logoRef?: RefObject<SVGSVGElement> }) {
+function VerticalLayoutIcon({ logoRef }: { logoRef?: RefObject<SVGSVGElement | null> }) {
     return (
         <svg ref={logoRef} viewBox="0 0 256 256" title={t("global_menu.menu")}>
             <g>

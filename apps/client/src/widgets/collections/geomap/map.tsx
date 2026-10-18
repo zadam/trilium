@@ -1,6 +1,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { AttributionControl, type ErrorEvent as MapErrorEvent, Map as MapLibreGLMap, MapMouseEvent, type Point, type RequestTransformFunction, ScaleControl, type StyleSpecification, type TransformStyleFunction } from "maplibre-gl";
+import { AttributionControl, type ErrorEvent as MapErrorEvent, Map as MapLibreGLMap, MapMouseEvent, type Point, type RequestTransformFunction, ScaleControl, setWorkerUrl, type StyleSpecification, type TransformStyleFunction } from "maplibre-gl";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import { ComponentChildren, createContext, RefObject } from "preact";
 import { useEffect, useImperativeHandle, useRef, useState } from "preact/hooks";
 
@@ -17,6 +18,17 @@ export interface GeoMouseEvent {
     /** Where the event landed in the container, for hit-testing against the rendered layers. */
     point: Point;
 }
+
+/**
+ * Where MapLibre finds the worker that parses vector and GeoJSON tiles.
+ *
+ * MapLibre ships the worker as a sibling file of its own bundle and resolves it against
+ * `import.meta.url`, which after bundling names a chunk in `dist/src` that has no such sibling. The
+ * request 404s, no worker starts, and every source parsed off the main thread stays empty: a vector
+ * basemap draws nothing at all, and the markers and clusters go missing from a raster one. Named
+ * here instead so the bundler emits the worker and hands back the URL it was emitted under.
+ */
+setWorkerUrl(maplibreWorkerUrl);
 
 export const ParentMap = createContext<MapLibreGLMap | null>(null);
 
@@ -40,7 +52,7 @@ export const MapStyleLoaded = createContext(false);
 
 interface MapProps {
     apiRef?: RefObject<MapLibreGLMap | null>;
-    containerRef?: RefObject<HTMLDivElement>;
+    containerRef?: RefObject<HTMLDivElement | null>;
     coordinates: { lat: number; lng: number } | [number, number];
     zoom: number;
     layerData: MapLayer;
@@ -48,6 +60,16 @@ interface MapProps {
     children: ComponentChildren;
     onClick?: (e: GeoMouseEvent) => void;
     scale: boolean;
+    /** How far the camera can go, where it is held tighter than the whole world. Read once, when
+     *  the map is built. */
+    limits?: CameraLimits;
+}
+
+/** The camera's bounds on a map that is less than the world, as an image map is (see `imageSpace`). */
+export interface CameraLimits {
+    minZoom: number;
+    maxZoom: number;
+    maxBounds: [[number, number], [number, number]];
 }
 
 export function toGeoMouseEvent(e: MapMouseEvent): GeoMouseEvent {
@@ -61,13 +83,34 @@ export function toGeoMouseEvent(e: MapMouseEvent): GeoMouseEvent {
 /** Where the fonts a label is drawn from come from, matching what the vector styles ask for. */
 const GLYPHS_URL = "https://tiles.versatiles.org/assets/glyphs/{fontstack}/{range}.pbf";
 
-/** Builds the style that can be applied synchronously: the raster style spec, a vector style URL
- * or the vector fallback style used as a placeholder until the real style loads asynchronously. */
-function buildSyncStyle(layerData: MapLayer): StyleSpecification | string {
+/** The source, and the layer drawing it, of an image map's picture. */
+const IMAGE_SOURCE = "map-image";
+
+/** The style for a layer: a vector layer's URL for MapLibre to fetch, or a raster spec built here. */
+function buildStyle(layerData: MapLayer): StyleSpecification | string {
     if (layerData.type === "vector") {
-        return typeof layerData.style === "string"
-            ? layerData.style
-            : layerData.styleFallback;
+        return layerData.style;
+    }
+
+    if (layerData.type === "image") {
+        return {
+            version: 8,
+            glyphs: GLYPHS_URL,
+            sources: {
+                [IMAGE_SOURCE]: {
+                    type: "image",
+                    url: layerData.url,
+                    coordinates: layerData.corners
+                }
+            },
+            layers: [
+                {
+                    id: IMAGE_SOURCE,
+                    type: "raster",
+                    source: IMAGE_SOURCE
+                }
+            ]
+        };
     }
 
     return {
@@ -129,16 +172,16 @@ function toCenter(coordinates: { lat: number; lng: number } | [number, number]):
         : [ coordinates.lng, coordinates.lat ];
 }
 
-export default function Map({ coordinates, zoom, layerData, viewportChanged, children, onClick, scale, apiRef, containerRef: _containerRef }: MapProps) {
+export default function Map({ coordinates, zoom, layerData, viewportChanged, children, onClick, scale, limits, apiRef, containerRef: _containerRef }: MapProps) {
     // State rather than a ref: the children below read the map off the context, so its creation has
     // to produce a render or they would only ever see the null it started as.
     const [ map, setMap ] = useState<MapLibreGLMap | null>(null);
     const containerRef = useSyncedRef<HTMLDivElement>(_containerRef);
 
-    useImperativeHandle(apiRef ?? null, () => map);
+    useImperativeHandle<MapLibreGLMap | null, MapLibreGLMap | null>(apiRef ?? null, () => map);
     // What the style this map was last given was made of, which is how the sources and layers on it
     // that are its own are told from the ones a child added. See `keepAdditions`.
-    const appliedStyle = useRef<StyleContents>();
+    const appliedStyle = useRef<StyleContents | undefined>(undefined);
     // Whether there is no map to be had here at all — see the catch below.
     const [ unsupported, setUnsupported ] = useState(false);
     // See MapStyleLoaded.
@@ -157,9 +200,9 @@ export default function Map({ coordinates, zoom, layerData, viewportChanged, chi
      * loading — and every style still is for at least a frame, since even one handed over as plain
      * JSON is only taken up on the next animation frame. Rather than wait that frame out, MapLibre
      * gives up: "Unable to perform style diff" on the console, the whole style torn down, and the
-     * map blinking blank until the replacement and its tiles arrive. The vector styles here import
-     * asynchronously and routinely resolve inside that first frame, so the blink was a matter of
-     * which of the two won.
+     * map blinking blank until the replacement and its tiles arrive. The effect that reacts to the
+     * layer runs once on mount, right behind the map's own construction, so the first style is
+     * always applied into that window.
      *
      * Held styles are applied by the `style.load` listener below, where the diff cannot lose the
      * race. Only the latest is kept — a style overtaken before it was ever applied is a style
@@ -170,20 +213,29 @@ export default function Map({ coordinates, zoom, layerData, viewportChanged, chi
             pendingStyle.current = style;
             return;
         }
-        mapInstance.setStyle(style, { transformStyle: keepAdditions(appliedStyle.current) });
-        appliedStyle.current = typeof style === "string" ? undefined : styleContents(style);
+
+        const carryAdditions = keepAdditions(appliedStyle.current);
+        mapInstance.setStyle(style, {
+            transformStyle: (previous, next) => {
+                // Where the incoming style is read: `next` is what MapLibre resolved, fetched
+                // already if the style was named by URL, and still without the children's
+                // additions that the merge below puts back. Recorded so that the switch after
+                // this one can tell the map apart from what a child added to it.
+                appliedStyle.current = styleContents(next);
+                return carryAdditions(previous, next);
+            }
+        });
     }
 
     // Initialize the map.
     useEffect(() => {
         if (!containerRef.current) return;
 
-        const initialStyle = buildSyncStyle(layerData);
-        appliedStyle.current = typeof initialStyle === "string" ? undefined : styleContents(initialStyle);
+        const initialStyle = buildStyle(layerData);
 
         let mapInstance: MapLibreGLMap;
         try {
-            mapInstance = createMap(containerRef.current, initialStyle, toCenter(coordinates), zoom);
+            mapInstance = createMap(containerRef.current, initialStyle, toCenter(coordinates), zoom, limits);
         } catch (e) {
             // MapLibre draws through WebGL and has no other way to draw, so a context it cannot get
             // is the end of it: the constructor throws rather than firing the "error" event handled
@@ -203,6 +255,12 @@ export default function Map({ coordinates, zoom, layerData, viewportChanged, chi
         // that has loaded is followed only by another style loading, and each of those fires again.
         // Also where a style that arrived too early to be applied gets its turn — see applyStyle.
         mapInstance.on("style.load", () => {
+            // The style the map was built with is the one style that does not go through
+            // applyStyle, so this is where its contents are taken. Read here rather than from
+            // `initialStyle` because a vector layer names its style by URL, which only MapLibre
+            // has resolved. `??=` leaves every later style to applyStyle, which reads it before
+            // the children's additions are merged in; this listener runs after them.
+            appliedStyle.current ??= styleContents(mapInstance.getStyle());
             styleLoadedRef.current = true;
             setStyleLoaded(true);
 
@@ -247,27 +305,14 @@ export default function Map({ coordinates, zoom, layerData, viewportChanged, chi
         };
     }, []);
 
-    // React to layer changes. Also runs after the initial map creation, which for the synchronous
-    // styles re-applies the style the map was built with (a diff with nothing in it) but loads the
-    // asynchronous vector styles for the first time.
+    // React to layer changes. Also runs after the initial map creation, re-applying the style the
+    // map was built with: a diff with nothing in it, which MapLibre answers by leaving the map be.
     useEffect(() => {
         if (!map) return;
 
-        let cancelled = false;
-
-        if (layerData.type === "vector" && typeof layerData.style !== "string") {
-            layerData.style().then(asyncStyle => {
-                // Guard against the layer changing again or the map being torn down while the
-                // style was still loading.
-                if (cancelled) return;
-                applyStyle(map, asyncStyle);
-            });
-        } else {
-            applyStyle(map, buildSyncStyle(layerData));
-        }
+        applyStyle(map, buildStyle(layerData));
 
         return () => {
-            cancelled = true;
             // A style still being held is this run's; the run for the next layer brings its own.
             pendingStyle.current = null;
         };
@@ -382,13 +427,16 @@ export function useMapPitch(map: MapLibreGLMap | null) {
  * Separate from the effect that calls it so that the throw it is wrapped in covers the constructor
  * and nothing else: everything the effect goes on to do is on a map that exists.
  */
-function createMap(container: HTMLDivElement, style: StyleSpecification | string, center: [number, number], zoom: number) {
+function createMap(container: HTMLDivElement, style: StyleSpecification | string, center: [number, number], zoom: number, limits?: CameraLimits) {
     return new MapLibreGLMap({
         container,
         style,
         center,
         zoom,
         minZoom: 2,
+        // An image map's bounds are its image and a margin, well inside the world, so the crash
+        // described below cannot happen to them.
+        ...limits,
         // No explicit maxBounds: a bounds whose longitude range spans the full world
         // (-180..180) crashes MapLibre — the east edge wraps to -180, collapsing the range
         // to zero width and making the constrain zoom infinite (a singular-matrix null
@@ -504,9 +552,8 @@ export function styleContents(style: StyleSpecification): StyleContents {
  * turn one style into the other or has to build the new one from scratch, so nothing here depends on
  * which of the two it chooses.
  *
- * @param applied the style this map was last given, or `undefined` where it is not known — a style
- *                named by URL, whose contents we never see. Nothing is carried over then, and the
- *                additions are put back on `style.load` as they were before.
+ * @param applied the style this map was last given, or `undefined` where it is not known. Nothing
+ *                is carried over then, and the additions are put back on `style.load` instead.
  */
 export function keepAdditions(applied: StyleContents | undefined): TransformStyleFunction {
     return (previous, next) => {

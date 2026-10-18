@@ -9,19 +9,37 @@ const state = vi.hoisted(() => ({
     /** When true the fake provider is chunk-native, and records the signal it was handed. */
     chunkNative: false,
     chunkSignal: undefined as AbortSignal | undefined,
+    /** When true the chunk-native provider asks about a tool call and reports the answer. */
+    asksApproval: false,
     /** Records how runChat resolved the provider. */
     providerIdRequested: undefined as string | undefined,
-    providerTypeRequested: undefined as string | undefined
+    providerTypeRequested: undefined as string | undefined,
+    /** The config the provider's `chat()` was handed. */
+    chatConfig: undefined as unknown,
+    /** The abort signal the provider's `chat()` was handed. */
+    chatSignal: undefined as AbortSignal | undefined
 }));
 
 vi.mock("./index.js", () => {
-    const makeProvider = () => ({
+    const makeProvider = (resolvedFrom: string) => ({
         name: "fake",
-        chat: () => { if (state.chatThrows !== undefined) throw state.chatThrows; return {}; },
+        resolvedFrom,
+        chat: (_messages: unknown, config: unknown, signal?: AbortSignal) => {
+            state.chatConfig = config;
+            state.chatSignal = signal;
+            if (state.chatThrows !== undefined) throw state.chatThrows;
+            return {};
+        },
         chatChunks: state.chunkNative
-            ? async function* (_messages: unknown, _config: unknown, signal?: AbortSignal) {
+            ? async function* (_messages: unknown, config: LlmProviderConfig, signal?: AbortSignal) {
                 state.chunkSignal = signal;
                 for (const c of state.chunks) yield c;
+                if (state.asksApproval) {
+                    const toolInput = { title: "New" };
+                    yield { type: "tool_use", toolCallId: "c1", toolName: "create_note", toolInput };
+                    const approved = await config.toolApprovals?.request({ toolCallId: "c1", toolName: "create_note", toolInput });
+                    yield { type: "text", content: `approved: ${approved}` };
+                }
             }
             : undefined,
         getAvailableModels: () => state.availableModels,
@@ -30,8 +48,9 @@ vi.mock("./index.js", () => {
     return {
         hasConfiguredProviders: () => state.configured,
         getSelectedModel: () => undefined,
-        getProvider: (id: string) => { state.providerIdRequested = id; return makeProvider(); },
-        getProviderByType: (type: string) => { state.providerTypeRequested = type; return makeProvider(); }
+        getSearchProviderSetup: (id: string | undefined) => (id === "s1" ? { id: "s1", provider: "tavily", apiKey: "tk" } : undefined),
+        getProvider: (id: string) => { state.providerIdRequested = id; return makeProvider(`id:${id}`); },
+        getProviderByType: (type: string) => { state.providerTypeRequested = type; return makeProvider(`type:${type}`); }
     };
 });
 
@@ -52,11 +71,13 @@ vi.mock("../log.js", async (importOriginal) => ({
 }));
 
 import { runChat } from "./chat.js";
+import { answerToolApproval } from "./tool_approval.js";
+import type { LlmProviderConfig } from "./types.js";
 
 /** Drain a completion into an array, which is how every assertion here reads it. */
 async function collect(messages: LlmMessage[], config: object = {}, signal?: AbortSignal): Promise<LlmStreamChunk[]> {
     const collected: LlmStreamChunk[] = [];
-    for await (const chunk of runChat(messages, config, signal)) {
+    for await (const chunk of runChat("s1", messages, config, signal)) {
         collected.push(chunk);
     }
     return collected;
@@ -65,6 +86,16 @@ async function collect(messages: LlmMessage[], config: object = {}, signal?: Abo
 const HELLO: LlmMessage[] = [{ role: "user", content: "hi" }];
 
 describe("runChat", () => {
+    it("routes web search through the stored search provider the request names, and only that", async () => {
+        const smuggled = { provider: "brave", apiKey: "stolen", baseURL: "http://169.254.169.254" };
+
+        await collect(HELLO, { enableWebSearch: true, webSearchProviderId: "s1", webSearch: smuggled });
+        expect((state.chatConfig as { webSearch?: unknown }).webSearch).toEqual({ id: "s1", provider: "tavily", apiKey: "tk" });
+
+        await collect(HELLO, { enableWebSearch: true, webSearchProviderId: "deleted", webSearch: smuggled });
+        expect((state.chatConfig as { webSearch?: unknown }).webSearch).toBeUndefined();
+    });
+
     afterEach(() => {
         Object.assign(state, {
             configured: true,
@@ -73,8 +104,10 @@ describe("runChat", () => {
             chatThrows: undefined,
             chunkNative: false,
             chunkSignal: undefined,
+            asksApproval: false,
             providerIdRequested: undefined,
-            providerTypeRequested: undefined
+            providerTypeRequested: undefined,
+            chatConfig: undefined
         });
         generateChatTitle.mockClear();
         errorMock.mockClear();
@@ -138,28 +171,111 @@ describe("runChat", () => {
         expect(state.chunkSignal).toBe(controller.signal);
     });
 
+    it("hands the abort signal to an AI SDK provider too, so its tool calls stop with the turn", async () => {
+        const controller = new AbortController();
+        await collect(HELLO, {}, controller.signal);
+        expect(state.chatSignal).toBe(controller.signal);
+    });
+
     it("stops at the next chunk once aborted", async () => {
         state.chunks = [{ type: "text", content: "a" }, { type: "text", content: "b" }];
         const controller = new AbortController();
         const collected: LlmStreamChunk[] = [];
-        for await (const chunk of runChat(HELLO, {}, controller.signal)) {
+        for await (const chunk of runChat("s1", HELLO, {}, controller.signal)) {
             collected.push(chunk);
             controller.abort();
         }
         expect(collected).toEqual([{ type: "text", content: "a" }]);
     });
 
+    describe("tool approval", () => {
+        const TOOL_USE = { type: "tool_use", toolCallId: "c1", toolName: "create_note", toolInput: { title: "New" } };
+        const REQUEST = { type: "tool_approval_request", toolCallId: "c1", toolName: "create_note", toolInput: { title: "New" } };
+
+        it("announces a waiting call while it holds the stream, and resumes once the user answers", async () => {
+            state.chunkNative = true;
+            state.asksApproval = true;
+            const turn = runChat("s1", HELLO, {});
+
+            expect((await turn.next()).value).toEqual(TOOL_USE);
+            expect((await turn.next()).value).toEqual(REQUEST);
+            expect(answerToolApproval("s1", "c1", true)).toBe(true);
+            expect((await turn.next()).value).toEqual({ type: "text", content: "approved: true" });
+            expect((await turn.next()).done).toBe(true);
+            // The turn has ended, so nothing waits under its id any more.
+            expect(answerToolApproval("s1", "c1", true)).toBe(false);
+        });
+
+        it("runs a call of a tool the chat allowed without announcing it", async () => {
+            state.chunkNative = true;
+            state.asksApproval = true;
+            const turn = runChat("s1", HELLO, { allowedTools: [ "create_note" ] });
+
+            expect((await turn.next()).value).toEqual(TOOL_USE);
+            expect((await turn.next()).value).toEqual({ type: "text", content: "approved: true" });
+            expect((await turn.next()).done).toBe(true);
+        });
+
+        it("runs a call the permission mode lets through without announcing it", async () => {
+            state.chunkNative = true;
+            state.asksApproval = true;
+            const turn = runChat("s1", HELLO, { permissionMode: "dont_ask" });
+
+            expect((await turn.next()).value).toEqual(TOOL_USE);
+            expect((await turn.next()).value).toEqual({ type: "text", content: "approved: true" });
+            expect((await turn.next()).done).toBe(true);
+        });
+
+        it("declines a waiting call when the turn is stopped", async () => {
+            state.chunkNative = true;
+            state.asksApproval = true;
+            const controller = new AbortController();
+            const turn = runChat("s1", HELLO, {}, controller.signal);
+
+            expect((await turn.next()).value).toEqual(TOOL_USE);
+            expect((await turn.next()).value).toEqual(REQUEST);
+            const resumed = turn.next();
+            controller.abort();
+            // Stopped, the turn ends at its next chunk; the call itself was declined.
+            expect((await resumed).done).toBe(true);
+            expect(answerToolApproval("s1", "c1", true)).toBe(false);
+        });
+
+        it("refuses a stream id that another running turn holds", async () => {
+            state.chunkNative = true;
+            state.asksApproval = true;
+            const first = runChat("s1", HELLO, {});
+            await first.next();
+
+            expect(await collect(HELLO)).toEqual([{ type: "error", error: "Stream 's1' is already running." }]);
+
+            await first.return(undefined);
+            state.asksApproval = false;
+            state.chunks = [{ type: "done" }];
+            expect(await collect(HELLO)).toEqual([{ type: "done" }]);
+        });
+    });
+
     describe("title generation", () => {
         it("titles the note from the opening message, including the text parts of a multimodal one", async () => {
             await collect([{ role: "user", content: "hello" }], { chatNoteId: "abc" });
-            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello");
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello", expect.anything());
 
             generateChatTitle.mockClear();
             await collect([{ role: "user", content: [
                 { type: "image", attachmentId: "a1", mime: "image/png" },
                 { type: "text", text: "describe this" }
             ] }], { chatNoteId: "abc" });
-            expect(generateChatTitle).toHaveBeenCalledWith("abc", "describe this");
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "describe this", expect.anything());
+        });
+
+        it("titles the note with the provider the chat talks to", async () => {
+            await collect([{ role: "user", content: "hello" }], { chatNoteId: "abc", providerId: "p2" });
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello", expect.objectContaining({ resolvedFrom: "id:p2" }));
+
+            generateChatTitle.mockClear();
+            await collect([{ role: "user", content: "hello" }], { chatNoteId: "abc", provider: "openai" });
+            expect(generateChatTitle).toHaveBeenCalledWith("abc", "hello", expect.objectContaining({ resolvedFrom: "type:openai" }));
         });
 
         it("skips an image-only opening message, a follow-up turn, and a chat with no note", async () => {
