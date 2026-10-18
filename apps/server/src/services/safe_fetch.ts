@@ -26,8 +26,12 @@ const ALLOWED_IP_RANGES = new Set(["unicast"]);
  */
 const ALLOWED_IP_RANGES_INCLUDING_PRIVATE = new Set(["unicast", "loopback", "private", "uniqueLocal", "carrierGradeNat"]);
 
-/** Cloud metadata endpoints inside an allowed range, refused under every policy. */
-const METADATA_ADDRESSES = new Set(["100.100.100.200"]);
+/**
+ * Cloud metadata endpoints inside an allowed range, refused under every policy: Alibaba Cloud's
+ * in carrier-grade NAT and AWS's IPv6 one in unique-local. Listed in `ipaddr.js` `toString()`
+ * form, which `isBlockedIP` compares against.
+ */
+const METADATA_ADDRESSES = new Set(["100.100.100.200", "fd00:ec2::254"]);
 
 /** How hard an address is vetted, and how long the caller is prepared to wait for it. */
 export interface SafeFetchPolicy {

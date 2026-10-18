@@ -187,6 +187,8 @@ describe("validateHostResolution, for a destination the operator configured", ()
         await expect(validateHostResolution("169.254.1.1", true)).rejects.toThrow("link-local");
         await expect(validateHostResolution("100.100.100.200", true)).rejects.toThrow("metadata endpoint");
         await expect(validateHostResolution("::ffff:100.100.100.200", true)).rejects.toThrow("metadata endpoint");
+        await expect(validateHostResolution("fd00:ec2::254", true)).rejects.toThrow("metadata endpoint");
+        await expect(validateHostResolution("FD00:0EC2:0:0:0:0:0:0254", true)).rejects.toThrow("metadata endpoint");
         await expect(validateHostResolution("fe80::1", true)).rejects.toThrow("link-local");
         await expect(validateHostResolution("0.0.0.0", true)).rejects.toThrow("link-local");
         await expect(validateHostResolution("224.0.0.1", true)).rejects.toThrow("link-local");
