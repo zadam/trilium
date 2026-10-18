@@ -11,7 +11,9 @@ vi.mock("../../../services/search.js", () => ({
 import search from "../../../services/search.js";
 import * as ws from "../../../services/ws.js";
 import { buildNote } from "../../../test/easy-froca";
-import { getCodeSnippets, isCodeSnippetChange, isSnippetFor, snippetCommand } from "./snippets.js";
+import {
+    type CodeSnippet, getCodeSnippets, isCodeSnippetChange, isSnippetFor, snippetCommand
+} from "./snippets.js";
 
 interface NoteStub {
     noteId: string;
@@ -169,6 +171,33 @@ describe("getCodeSnippets", () => {
 
         await getCodeSnippets(() => true);
         expect(search.searchForNotes).toHaveBeenCalledTimes(2);
+    });
+
+    it("searches again for changes that arrive while a search runs, once for every editor", async () => {
+        const deferred = () => {
+            let resolve: (notes: FNote[]) => void = () => {};
+            const promise = new Promise<FNote[]>((done) => { resolve = done; });
+            return { promise, resolve };
+        };
+        const first = deferred();
+        const second = deferred();
+        vi.mocked(search.searchForNotes)
+            .mockReturnValueOnce(first.promise)
+            .mockReturnValueOnce(second.promise);
+        const changes = makeLoadResults({ attrs: [ { type: "label", name: "snippet" } ] });
+        const noteIds = (snippets: CodeSnippet[]) => snippets.map((snippet) => snippet.noteId);
+
+        const before = getCodeSnippets(() => true);
+        const after = [ getCodeSnippets(() => true, changes), getCodeSnippets(() => true, changes) ];
+        first.resolve([ makeNote({ noteId: "old" }) ]);
+        expect(search.searchForNotes).toHaveBeenCalledTimes(2);
+        expect(noteIds(await before)).toEqual([ "old" ]);
+
+        // The older search finishing leaves the newer one shared.
+        after.push(getCodeSnippets(() => true));
+        second.resolve([ makeNote({ noteId: "old" }), makeNote({ noteId: "new" }) ]);
+        expect(search.searchForNotes).toHaveBeenCalledTimes(2);
+        expect((await Promise.all(after)).map(noteIds)).toEqual(Array(3).fill([ "old", "new" ]));
     });
 
     it("returns an empty list and logs when loading fails", async () => {

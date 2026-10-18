@@ -500,6 +500,8 @@ export interface ShareRenderOptions {
      * out, and a missing block renders as a broken reference.
      */
     block?: string;
+    /** Whether a code note numbers its lines, as its embed's `data-code-line-numbers` sets. */
+    hasCodeLineNumbers?: boolean;
 }
 
 export function getContent(note: SNote | BNote, options: ShareRenderOptions = {}) {
@@ -522,7 +524,7 @@ export function getContent(note: SNote | BNote, options: ShareRenderOptions = {}
     } else if (note.type === "code" && note.mime === "text/x-markdown") {
         renderMarkdown(result, note);
     } else if (note.type === "code") {
-        renderCode(result, note.mime, note);
+        renderCode(result, note.mime, note, options.hasCodeLineNumbers);
     } else if (note.type === "mermaid") {
         renderMermaid(result, note);
         hostNoteView(result, note, options);
@@ -654,7 +656,8 @@ function renderText(result: Result, note: SNote | BNote, options: ShareRenderOpt
 
         const embeddedResult = getContent(embeddedNote, {
             ...getNestedEmbedOptions(embedContext, embed.block),
-            canAccessEmbed: options.canAccessEmbed
+            canAccessEmbed: options.canAccessEmbed,
+            hasCodeLineNumbers: embedEl.getAttribute("data-code-line-numbers") !== "false"
         });
         if (typeof embeddedResult.content !== "string") continue;
 
@@ -927,8 +930,11 @@ async function loadCodePreviews(mimeTypes: MimeType[]) {
  * has loaded the renderer. Until then the code is escaped in a `<pre><code>`.
  *
  * @param note the note whose `#wrapLines` label sets the line wrapping, over the option.
+ * @param hasLineNumbers whether the lines are numbered.
  */
-export function renderCode(result: Result, mime?: string, note?: SNote | BNote) {
+export function renderCode(
+    result: Result, mime?: string, note?: SNote | BNote, hasLineNumbers = true
+) {
     if (typeof result.content !== "string" || !result.content?.trim()) {
         result.isEmpty = true;
     } else if (codePreviews) {
@@ -937,7 +943,7 @@ export function renderCode(result: Result, mime?: string, note?: SNote | BNote) 
             ? module.getLoadedPreviewLanguage(mime) ?? null
             : null;
         result.content = module.renderCodePreview(result.content, {
-            themes, language, isWrapped: isLineWrapped(note)
+            themes, language, isWrapped: isLineWrapped(note), hasLineNumbers
         });
     } else {
         // Escape the raw code so that any `<`/`>` it contains are not later re-parsed as HTML.

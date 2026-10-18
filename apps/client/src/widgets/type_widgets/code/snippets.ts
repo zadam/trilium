@@ -25,13 +25,16 @@ export interface CodeSnippet {
  * Loads the code snippets (notes carrying `#snippet`) accepted by `matches`, pre-fetching their
  * content and optional `#snippetDescription` so callers can insert them synchronously. The `matches`
  * predicate selects which snippets are relevant to a given editor (e.g. `note.isMarkdown()` for the
- * Markdown editor, or a MIME comparison for a code editor).
+ * Markdown editor, or a MIME comparison for a code editor). `changes` are the reloaded entities
+ * that called for the load, which a search started before them can miss.
  */
-export async function getCodeSnippets(matches: (note: FNote) => boolean): Promise<CodeSnippet[]> {
+export async function getCodeSnippets(
+    matches: (note: FNote) => boolean, changes?: LoadResults
+): Promise<CodeSnippet[]> {
     try {
         // The `search` route includes archived notes, so drop archived ones; also skip protected
         // snippets whose content isn't available (no active protected session) — they can't be inserted.
-        const notes = (await searchSnippetNotes())
+        const notes = (await searchSnippetNotes(changes))
             .filter((note) => matches(note) && !note.isArchived && note.isContentAvailable());
 
         return await Promise.all(notes.map(async (note) => ({
@@ -46,15 +49,23 @@ export async function getCodeSnippets(matches: (note: FNote) => boolean): Promis
     }
 }
 
-/** The `#snippet` notes. Editors that load them at the same time share one search. */
-function searchSnippetNotes() {
-    pendingSearch ??= search.searchForNotes("#snippet").finally(() => {
-        pendingSearch = null;
+/**
+ * The `#snippet` notes. Editors that load them at the same time share one search, unless the
+ * search started before `changes`.
+ */
+function searchSnippetNotes(changes?: LoadResults) {
+    if (pendingSearch && (!changes || pendingSearch.changes === changes)) {
+        return pendingSearch.notes;
+    }
+
+    const notes = search.searchForNotes("#snippet").finally(() => {
+        if (pendingSearch?.notes === notes) pendingSearch = null;
     });
-    return pendingSearch;
+    pendingSearch = { notes, changes };
+    return notes;
 }
 
-let pendingSearch: Promise<FNote[]> | null = null;
+let pendingSearch: { notes: Promise<FNote[]>; changes?: LoadResults } | null = null;
 
 /**
  * Whether the reloaded entities could change the snippet list — a snippet was created, deleted,
@@ -119,13 +130,13 @@ export function useCodeSnippets(mime: string, isEnabled = true) {
     // Monotonic id so a slow fetch that resolves after a newer reload is discarded (avoids stale data).
     const reloadCountRef = useRef(0);
 
-    const reload = useCallback(() => {
+    const reload = useCallback((changes?: LoadResults) => {
         const reloadId = ++reloadCountRef.current;
         if (!isEnabled) {
             snippetsRef.current = [];
             return;
         }
-        void getCodeSnippets((note) => isSnippetFor(note, mime)).then((snippets) => {
+        void getCodeSnippets((note) => isSnippetFor(note, mime), changes).then((snippets) => {
             if (reloadId === reloadCountRef.current) {
                 snippetsRef.current = snippets;
             }
@@ -138,7 +149,7 @@ export function useCodeSnippets(mime: string, isEnabled = true) {
         if (!isEnabled) return;
         const knownNoteIds = new Set(snippetsRef.current.map((snippet) => snippet.noteId));
         if (isCodeSnippetChange(loadResults, knownNoteIds)) {
-            reload();
+            reload(loadResults);
         }
     });
 
