@@ -406,7 +406,11 @@ async function createSetupWindow() {
         icon: getIcon(),
         // Background effects (Mica on Windows 11 22H2+, vibrancy on macOS)
         ...(coreUtils.isWindows() && supportsBackgroundMaterial && { backgroundMaterial: "mica" as const }),
-        ...(coreUtils.isMac() && { transparent: true, visualEffectState: "active" as const, vibrancy: "under-window" as const, titleBarStyle: "hiddenInset" as const }),
+        ...(coreUtils.isMac() && { transparent: true, visualEffectState: "active" as const, vibrancy: "under-window" as const }),
+        // The window controls draw over the page, as in the main window with its default
+        // `nativeTitleBarVisible`; the page reserves `env(titlebar-area-height)` for them.
+        titleBarStyle: coreUtils.isMac() ? "hiddenInset" : "hidden",
+        titleBarOverlay: true,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,

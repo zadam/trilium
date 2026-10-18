@@ -31,7 +31,7 @@ This method is used when you already have a sync server and want to configure a 
 
 ![screenshot of the sync from server setup page](Synchronization_sync-init.png)
 
-1.  **Server Details**: Configure the Trilium server address and enter the correct username and password for authentication.
+1.  **Server Details**: Configure the Trilium server address and enter the server's password. If the server has <a class="reference-link" href="Server%20Installation/Multi-factor%20authentication%20with%20TOTP.md">Multi-factor authentication with TOTP</a> enabled, also enter a one-time password from your authenticator app, or a recovery code.
 2.  **Finish Setup**: Click the "Finish setup" button. If successful, you will see the following screen:
 
 ![screenshot of the sync page](Synchronization_sync-in-progress.png)
