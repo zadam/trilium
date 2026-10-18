@@ -3,7 +3,7 @@ import "./AttributeList.css";
 
 import { promotedAttributeDefinitionParser } from "@triliumnext/commons";
 import clsx from "clsx";
-import { ComponentChildren, createPortal } from "preact";
+import { ComponentChildren, createPortal, HTMLAttributes } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import FAttribute from "../../entities/fattribute";
@@ -606,10 +606,10 @@ export default function AttributeList() {
     }
 
     /**
-     * What every card carries so that the copy and paste keys reach the panel rather than the note
-     * behind it: a clipboard event goes to whatever holds the focus, so a press anywhere in a card
-     * takes it. Presses inside an open editor are left alone — taking the focus off a field would
-     * commit the very edit the press is part of.
+     * What every card and the toolbar carry so that the copy and paste keys reach the panel rather
+     * than the note behind it: a clipboard event goes to whatever holds the focus, so a press anywhere
+     * in a card or the toolbar takes it. Presses inside an open editor are left alone — taking the
+     * focus off a field would commit the very edit the press is part of.
      */
     const clipboardProps = {
         tabIndex: -1,
@@ -765,6 +765,7 @@ export default function AttributeList() {
             held={canEdit ? heldAttributes : []}
             canAdd={canEdit}
             canDelete={canEdit && selectedAttributes().every((candidate) => owned.current.includes(candidate))}
+            keyboardProps={clipboardProps}
             onAdd={addAttribute}
             onCopy={() => void copyPickedAttributes(selectedAttributes())}
             onPaste={() => void applyPaste(heldAttributes)}
@@ -1259,11 +1260,9 @@ function AttributeRow({ attribute, note, active, valueEditor, isSystem, selected
                             onSelect(e.shiftKey);
                         }}
                     >
-                        {/* The theme's checkbox (`label.tn-checkbox`) without `FormCheckbox`'s label
-                            text, which the icon slot has no room for. */}
-                        <label class="tn-checkbox">
-                            <input type="checkbox" checked={selected} tabIndex={-1} />
-                        </label>
+                        {/* The click handler above selects, since it reads the shift key that
+                            `onChange` does not carry. */}
+                        <FormCheckbox label="" currentValue={selected ?? false} tabIndex={-1} onChange={() => {}} />
                     </span>
                 )}
             </span>
@@ -1588,7 +1587,7 @@ function getClipboardValue(attribute: Attribute) {
  * Deleting is offered only when every selected row is the note's own. On a note that cannot be edited, a
  * lock and "Read-only" take the place of the paste and add buttons.
  */
-function AttributeToolbar({ selectionCount, selectableCount, readOnly, held, canAdd, canDelete, onAdd, onCopy, onPaste, onClearClipboard, onDelete, onSelectAll, onClearSelection }: {
+function AttributeToolbar({ selectionCount, selectableCount, readOnly, held, canAdd, canDelete, keyboardProps, onAdd, onCopy, onPaste, onClearClipboard, onDelete, onSelectAll, onClearSelection }: {
     selectionCount: number;
     /** How many rows can be selected; the checkbox is left out when there are none. */
     selectableCount: number;
@@ -1598,6 +1597,8 @@ function AttributeToolbar({ selectionCount, selectableCount, readOnly, held, can
     held: Attribute[];
     canAdd: boolean;
     canDelete: boolean;
+    /** The cards' copy, paste and Escape handlers, which the focus left in the toolbar must reach too. */
+    keyboardProps: HTMLAttributes<HTMLDivElement>;
     onAdd: (attrType: AttributeKind, e: MouseEvent) => void;
     onCopy: () => void;
     onPaste: () => void;
@@ -1610,7 +1611,7 @@ function AttributeToolbar({ selectionCount, selectableCount, readOnly, held, can
     const allSelected = isSelecting && selectionCount >= selectableCount;
 
     return (
-        <div class={clsx("attribute-toolbar", isSelecting && "selecting")} role="toolbar">
+        <div class={clsx("attribute-toolbar", isSelecting && "selecting")} role="toolbar" {...keyboardProps}>
             {selectableCount > 0 && (
                 <FormCheckbox
                     name="attribute-select-all"

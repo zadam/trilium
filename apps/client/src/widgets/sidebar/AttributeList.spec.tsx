@@ -1136,6 +1136,10 @@ describe("AttributeList", () => {
         // Every row offers one — the stylesheet is what shows it only over the row being pointed at
         // — but the rows Trilium keeps for itself offer none, being carried nowhere.
         expect(container.querySelectorAll(".attribute-kind-check")).toHaveLength(7);
+        // The shared `FormCheckbox`, kept out of the tab order: the rows are reached by pointer.
+        const input = container.querySelector<HTMLInputElement>(".attribute-kind-check .form-checkbox input.form-check-input");
+        expect(input).not.toBeNull();
+        expect(input?.tabIndex).toBe(-1);
 
         checkbox(0).click();
         expect(selectedNames()).toEqual([ "author" ]);
@@ -1223,6 +1227,25 @@ describe("AttributeList", () => {
         expect(selectedNames()).toEqual([]);
         expect(box?.checked).toBe(false);
         expect(box?.indeterminate).toBe(false);
+    });
+
+    it("answers the copy, paste and escape keys with the focus in the toolbar, as in the cards", async () => {
+        renderPanel(noteWithAttributes());
+        const box = selectAllBox();
+        expect(box).not.toBeNull();
+
+        // Selecting from the toolbar's checkbox leaves the focus there, outside every card.
+        checkbox(0).click();
+        const copied = copyFrom(box as HTMLElement);
+        expect(copied.defaultPrevented).toBe(true);
+        expect(copied.written["text/plain"]).toBe("#author=Elian");
+
+        act(() => void box?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+        expect(selectedNames()).toEqual([]);
+
+        await act(async () => pasteInto(box as HTMLElement, { "text/plain": "#tag=new" }));
+        expect(put).toHaveBeenCalledOnce();
+        expect(namesIn(container)).toContain("tag");
     });
 
     it("lets a note that cannot be edited be copied from, but not deleted from or pasted onto", async () => {
