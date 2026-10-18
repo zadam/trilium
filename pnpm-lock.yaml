@@ -97,8 +97,8 @@ importers:
         specifier: 5.0.8
         version: 5.0.8
       '@playwright/test':
-        specifier: 1.64.0
-        version: 1.64.0
+        specifier: 1.64.1
+        version: 1.64.1
       '@stylistic/eslint-plugin':
         specifier: 5.10.0
         version: 5.10.0(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))
@@ -116,7 +116,7 @@ importers:
         version: typescript@7.0.2
       '@vitest/browser-playwright':
         specifier: 5.0.4
-        version: 5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(vitest@5.0.4)
+        version: 5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(vitest@5.0.4)
       '@vitest/coverage-v8':
         specifier: 5.0.4
         version: 5.0.4(@vitest/browser@5.0.4)(vitest@5.0.4)
@@ -157,8 +157,8 @@ importers:
         specifier: 5.4.3
         version: 5.4.3
       playwright:
-        specifier: 1.64.0
-        version: 1.64.0
+        specifier: 1.64.1
+        version: 1.64.1
       tslib:
         specifier: 2.8.1
         version: 2.8.1
@@ -291,10 +291,10 @@ importers:
         version: 3.0.0
       force-graph:
         specifier: 1.52.0
-        version: 1.52.0(preact-render-to-string@6.8.0)
+        version: 1.52.0(preact-render-to-string@6.8.1)
       fullcalendar:
         specifier: 7.1.2
-        version: 7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.6)
+        version: 7.1.2(preact-render-to-string@6.8.1)(temporal-polyfill@1.0.6)
       gridstack:
         specifier: 14.0.0
         version: 14.0.0
@@ -302,11 +302,11 @@ importers:
         specifier: 1.0.5
         version: 1.0.5
       i18next:
-        specifier: 26.4.4
-        version: 26.4.4(typescript@6.0.3)
+        specifier: 26.4.5
+        version: 26.4.5(typescript@6.0.3)
       i18next-http-backend:
-        specifier: 4.0.2
-        version: 4.0.2
+        specifier: 4.0.3
+        version: 4.0.3
       jquery:
         specifier: 4.0.0
         version: 4.0.0
@@ -333,13 +333,13 @@ importers:
         version: 5.15.1
       preact:
         specifier: 11.0.1
-        version: 11.0.1(preact-render-to-string@6.8.0)
+        version: 11.0.1(preact-render-to-string@6.8.1)
       qrcode-generator:
         specifier: 2.0.4
         version: 2.0.4
       react-i18next:
         specifier: 17.0.16
-        version: 17.0.16(i18next@26.4.4(typescript@6.0.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
+        version: 17.0.16(i18next@26.4.5(typescript@6.0.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3)
       react-window:
         specifier: 2.3.4
         version: 2.3.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -655,7 +655,7 @@ importers:
         version: 4.0.93(zod@4.6.7)
       '@anthropic-ai/claude-agent-sdk':
         specifier: ^0.3.207
-        version: 0.3.296(@anthropic-ai/sdk@0.124.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.7))(zod@4.6.7)
+        version: 0.3.300(@anthropic-ai/sdk@0.124.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.7))(zod@4.6.7)
       '@hyzyla/pdfium':
         specifier: 3.0.0
         version: 3.0.0
@@ -669,8 +669,8 @@ importers:
         specifier: 13.0.3
         version: 13.0.3
       i18next:
-        specifier: 26.4.4
-        version: 26.4.4(typescript@6.0.3)
+        specifier: 26.4.5
+        version: 26.4.5(typescript@6.0.3)
       ipaddr.js:
         specifier: ^2.4.0
         version: 2.5.0
@@ -787,8 +787,8 @@ importers:
         specifier: 9.1.0
         version: 9.1.0(supports-color@10.2.2)
       i18next-fs-backend:
-        specifier: 2.6.8
-        version: 2.6.8
+        specifier: 2.6.9
+        version: 2.6.9
       image-type:
         specifier: 6.1.0
         version: 6.1.0(supports-color@10.2.2)
@@ -914,16 +914,16 @@ importers:
         version: 0.8.3
       force-graph:
         specifier: 1.52.0
-        version: 1.52.0(preact-render-to-string@6.8.0)
+        version: 1.52.0(preact-render-to-string@6.8.1)
       fullcalendar:
         specifier: 7.1.2
-        version: 7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.6)
+        version: 7.1.2(preact-render-to-string@6.8.1)(temporal-polyfill@1.0.6)
       i18next:
-        specifier: 26.4.4
-        version: 26.4.4(typescript@6.0.3)
+        specifier: 26.4.5
+        version: 26.4.5(typescript@6.0.3)
       i18next-http-backend:
-        specifier: 4.0.2
-        version: 4.0.2
+        specifier: 4.0.3
+        version: 4.0.3
       jquery:
         specifier: 4.0.0
         version: 4.0.0
@@ -962,10 +962,10 @@ importers:
         version: 5.15.1
       preact:
         specifier: 11.0.1
-        version: 11.0.1(preact-render-to-string@6.8.0)
+        version: 11.0.1(preact-render-to-string@6.8.1)
       react-i18next:
         specifier: 17.0.16
-        version: 17.0.16(i18next@26.4.4(typescript@6.0.3))(react-dom@18.3.1(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
+        version: 17.0.16(i18next@26.4.5(typescript@6.0.3))(react-dom@18.3.1(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
       react-window:
         specifier: 2.3.4
         version: 2.3.4(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
@@ -1035,7 +1035,7 @@ importers:
         version: 0.19.5
       preact:
         specifier: 11.0.1
-        version: 11.0.1(preact-render-to-string@6.8.0)
+        version: 11.0.1(preact-render-to-string@6.8.1)
     devDependencies:
       '@triliumnext/client':
         specifier: workspace:*
@@ -1056,20 +1056,20 @@ importers:
   apps/website:
     dependencies:
       i18next:
-        specifier: 26.4.4
-        version: 26.4.4(typescript@6.0.3)
+        specifier: 26.4.5
+        version: 26.4.5(typescript@6.0.3)
       preact:
         specifier: 11.0.1
-        version: 11.0.1(preact-render-to-string@6.8.0)
+        version: 11.0.1(preact-render-to-string@6.8.1)
       preact-iso:
         specifier: 2.12.2
-        version: 2.12.2(preact-render-to-string@6.8.0)(preact@11.0.1)
+        version: 2.12.2(preact-render-to-string@6.8.1)(preact@11.0.1)
       preact-render-to-string:
-        specifier: 6.8.0
-        version: 6.8.0(preact@11.0.1)
+        specifier: 6.8.1
+        version: 6.8.1(preact@11.0.1)
       react-i18next:
         specifier: 17.0.16
-        version: 17.0.16(i18next@26.4.4(typescript@6.0.3))(react-dom@18.3.1(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
+        version: 17.0.16(i18next@26.4.5(typescript@6.0.3))(react-dom@18.3.1(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
     devDependencies:
       '@preact/preset-vite':
         specifier: 2.10.6
@@ -1328,7 +1328,7 @@ importers:
         version: 21.0.1
       preact:
         specifier: 11.0.1
-        version: 11.0.1(preact-render-to-string@6.8.0)
+        version: 11.0.1(preact-render-to-string@6.8.1)
 
   packages/highlightjs:
     dependencies:
@@ -1476,8 +1476,8 @@ importers:
         specifier: 10.0.1
         version: 10.0.1
       i18next:
-        specifier: 26.4.4
-        version: 26.4.4(typescript@6.0.3)
+        specifier: 26.4.5
+        version: 26.4.5(typescript@6.0.3)
       js-yaml:
         specifier: 5.4.3
         version: 5.4.3
@@ -1497,8 +1497,8 @@ importers:
         specifier: 1.6.4
         version: 1.6.4
       sanitize-html:
-        specifier: 2.18.0
-        version: 2.18.0
+        specifier: 2.18.1
+        version: 2.18.1
       sax:
         specifier: 1.6.1
         version: 1.6.1
@@ -1540,8 +1540,8 @@ importers:
   packages/trilium-e2e:
     devDependencies:
       dotenv:
-        specifier: 18.0.7
-        version: 18.0.7
+        specifier: 18.0.8
+        version: 18.0.8
 
   packages/turndown-plugin-gfm:
     devDependencies:
@@ -1650,8 +1650,8 @@ packages:
   '@antfu/install-pkg@2.0.1':
     resolution: {integrity: sha512-iCKVQcIC0e3oDxEfs3SHQGW+ovhBMZmS1TE+bTk50rVyMCBmCfClv7Qi3HQKlumYwvjb/iIMeWCW2i67q6kFfQ==}
 
-  '@anthropic-ai/claude-agent-sdk@0.3.296':
-    resolution: {integrity: sha512-Y+cZ2BT8X94mQ9GJOVyIqhjC/nWGvwozUVLjdkzX7aSt+zuo5tgk7Hdv9V7tEUQ9fKnEuiL6moYNWDeHqCD4Lw==}
+  '@anthropic-ai/claude-agent-sdk@0.3.300':
+    resolution: {integrity: sha512-3NGPEUj+VTMQAQ0vaUUQtrce6rNb9a4XhY8QKIOLUp9mDkdbwrrjjD9oMKcDpcLhFKqZdTc02RBUo55GrbY9CA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@anthropic-ai/sdk': '>=0.93.0'
@@ -3643,8 +3643,8 @@ packages:
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
-  '@playwright/test@1.64.0':
-    resolution: {integrity: sha512-oTN9FNYuN6bqQMwiho6jJKLCG2/QOYCixGXuCjRmzOq23eODeukuY2XiAVoVpAECbuezMt1MHQjAiQxK8F+Y+g==}
+  '@playwright/test@1.64.1':
+    resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -6969,8 +6969,8 @@ packages:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
-  dotenv@18.0.7:
-    resolution: {integrity: sha512-QEvMEF8ca3GNZJJnAbOgxpj5ULhBvnMcURp+XKrtvqFNPgjBvYoswQ0Jl2cO7JzCjxZjJhr9ZuIEhlrRxMft/Q==}
+  dotenv@18.0.8:
+    resolution: {integrity: sha512-2KDeoFoK/zRtcnbunCDlLG5VWVMcyqeQc6iK65o231nfNAcuGrKoqUQfJFUtBI+QlShk5HKIHxwebBtUl3rEfA==}
     engines: {node: '>=12'}
     hasBin: true
 
@@ -8003,15 +8003,15 @@ packages:
     resolution: {integrity: sha512-ag87y7cJJ9/3+GxFr8Oy4O5faDsGRGnBGsJj/YjOSsSx/5eadKLYTMPlzuR6obgoCDDm0abAAZitXXQkMOPSpA==}
     engines: {node: '>= 20'}
 
-  i18next-fs-backend@2.6.8:
-    resolution: {integrity: sha512-6w7An//zrZgwOrniDl0E3jXTPQayMexFnksuHrBA3dTyFbpbmmkKfPoI6SgaKq5gH5jXMzqrQpzN10jlKj6n7Q==}
+  i18next-fs-backend@2.6.9:
+    resolution: {integrity: sha512-YZ5PQUV9xnAeh45CCSQW095wYDWZEwKse/1wr3m0z0Mij5zoCFMs67Q3M+w/9un8fUruubMR4DzETnDGH85heQ==}
 
-  i18next-http-backend@4.0.2:
-    resolution: {integrity: sha512-oay62dIB2kL7+WHzoUXBjWfL3+mwijD3pQkQkIEaRLhy6kjXxUhrRenV0gInwlCASAaJaDy94+XvYizK+cAGdA==}
+  i18next-http-backend@4.0.3:
+    resolution: {integrity: sha512-B5GJysCsJwqiDQRpUcikWsut82Vmekix58WIyiCpYtxaZ/wY8kwJCicMRvVcMoIa1x84siiRl5vBt6iCBVO6zg==}
     engines: {node: '>=18'}
 
-  i18next@26.4.4:
-    resolution: {integrity: sha512-O+rqmQUi54OwAgnZ4SAwO6aRrbXZt36VZXWt6zvq0FpC3vJbH46oQRs6u4Uwm1vf8ZI7UqOXQiJhQVTor7vRiQ==}
+  i18next@26.4.5:
+    resolution: {integrity: sha512-CY9xqbWNQ+eLGDhFX3eNl1kDO1amJixszVKjC4Nd0tvfxUFLKqarN0VUHRt+2b88U7bkNIhnL84dRKQ5mFI+fg==}
     peerDependencies:
       typescript: ^5 || ^6 || ^7
     peerDependenciesMeta:
@@ -9781,13 +9781,13 @@ packages:
   pkg-types@2.3.3:
     resolution: {integrity: sha512-j/lCFdcppV0JxWpCEITdbDltBxPP6cHT+yNJ6Go2OgoSA9518X847X9z0p6LtA4Nc16+eQzCZjRrWanTGvHJ5w==}
 
-  playwright-core@1.64.0:
-    resolution: {integrity: sha512-T9r+MZkTECl2+oUcZ26YgZzTrYidTsIhYYkJix+6iDOymOb1FB2RLLSOxRGnZGv5DStt+aduIVbt+E8WygXYpg==}
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.64.0:
-    resolution: {integrity: sha512-kVzTnYFYEyQ9RGzBjNCd2+yEqWmVbxl3AHPynv3qQ6JTjv4a+kwRcnqQwIpuP3NnrnIrE/Q6wWAIAvMfIE2/Yg==}
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -9872,8 +9872,8 @@ packages:
       preact: 11.0.1
       preact-render-to-string: '>=6.4.0'
 
-  preact-render-to-string@6.8.0:
-    resolution: {integrity: sha512-2qiMrReQz+MZ5+/bT27kbVnFE7QNCC2fku/Tnc2H5bFUS3I3ASbRy0q72XLZ+2p2KyDE5xMfvSEtkmVo6TRNyA==}
+  preact-render-to-string@6.8.1:
+    resolution: {integrity: sha512-EIaLVlarET55f737gG/g1bK1UfjAgT3Z7Ch1Z7UX4/TwHh1O7EI5sCtwhVP+cs0n37SyV2HjZCSRtrpMm4Bujw==}
     peerDependencies:
       preact: 11.0.1
 
@@ -10371,8 +10371,8 @@ packages:
   sanitize-filename@1.6.4:
     resolution: {integrity: sha512-9ZyI08PsvdQl2r/bBIGubpVdR3RR9sY6RDiWFPreA21C/EFlQhmgo20UZlNjZMMZNubusLhAQozkA0Od5J21Eg==}
 
-  sanitize-html@2.18.0:
-    resolution: {integrity: sha512-CvY+PV+NBhxe3BnjFI5f//vEDKLULm9OlZArso7gdgVsWvanBuq9PNDx+/2llfL+8XFYa/UNBxvqRBg3TWU2Ug==}
+  sanitize-html@2.18.1:
+    resolution: {integrity: sha512-2X5lC8fYla8YaT8g73Nj+HcLWXan5dLyCWLgVvaOmfw7JI78IRsyNtIDytTHdn7hBQbIkCah7Zbmd5jabzeDig==}
     engines: {node: '>=22.12.0'}
 
   sass@1.105.1:
@@ -12042,7 +12042,7 @@ snapshots:
       package-manager-detector: 1.8.0
       tinyexec: 1.3.1
 
-  '@anthropic-ai/claude-agent-sdk@0.3.296(@anthropic-ai/sdk@0.124.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.7))(zod@4.6.7)':
+  '@anthropic-ai/claude-agent-sdk@0.3.300(@anthropic-ai/sdk@0.124.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.32.1(supports-color@10.2.2)(zod@4.6.7))(zod@4.6.7)':
     dependencies:
       '@anthropic-ai/sdk': 0.124.0(zod@4.6.7)
       '@modelcontextprotocol/sdk': 1.32.1(supports-color@10.2.2)(zod@4.6.7)
@@ -14873,9 +14873,9 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
-  '@playwright/test@1.64.0':
+  '@playwright/test@1.64.1':
     dependencies:
-      playwright: 1.64.0
+      playwright: 1.64.1
 
   '@pnpm/config.env-replace@1.1.0': {}
 
@@ -14917,13 +14917,13 @@ snapshots:
   '@preact/signals@2.11.3(preact@11.0.1)':
     dependencies:
       '@preact/signals-core': 1.14.4
-      preact: 11.0.1(preact-render-to-string@6.8.0)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
 
   '@prefresh/babel-plugin@0.5.3': {}
 
   '@prefresh/core@1.5.11(preact@11.0.1)':
     dependencies:
-      preact: 11.0.1(preact-render-to-string@6.8.0)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
 
   '@prefresh/rolldown@0.1.0(rolldown@1.2.8)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))':
     dependencies:
@@ -14944,7 +14944,7 @@ snapshots:
       '@prefresh/core': 1.5.11(preact@11.0.1)
       '@prefresh/utils': 1.2.1
       '@rollup/pluginutils': 4.2.1
-      preact: 11.0.1(preact-render-to-string@6.8.0)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
     transitivePeerDependencies:
       - supports-color
@@ -14955,7 +14955,7 @@ snapshots:
       '@prefresh/rolldown': 0.1.0(rolldown@1.2.8)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
       '@prefresh/utils': 1.2.1
       '@rollup/pluginutils': 4.2.1
-      preact: 11.0.1(preact-render-to-string@6.8.0)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
       rolldown: 1.2.8
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
     optionalDependencies:
@@ -17039,11 +17039,11 @@ snapshots:
 
   '@vercel/oidc@3.2.0': {}
 
-  '@vitest/browser-playwright@5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(vitest@5.0.4)':
+  '@vitest/browser-playwright@5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(vitest@5.0.4)':
     dependencies:
       '@vitest/browser': 5.0.4(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(vitest@5.0.4)
       '@vitest/mocker': 5.0.4(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
-      playwright: 1.64.0
+      playwright: 1.64.1
       tinyrainbow: 3.2.0
       vitest: 5.0.4(@types/node@24.19.2)(@vitest/browser-playwright@5.0.4)(@vitest/coverage-v8@5.0.4)(@vitest/ui@5.0.4)(happy-dom@21.0.1)(jsdom@30.1.2(@noble/hashes@2.4.0))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
     transitivePeerDependencies:
@@ -18845,7 +18845,7 @@ snapshots:
 
   dotenv@17.4.2: {}
 
-  dotenv@18.0.7: {}
+  dotenv@18.0.8: {}
 
   dpdm@4.3.0:
     dependencies:
@@ -19707,11 +19707,11 @@ snapshots:
 
   flatted@3.4.4: {}
 
-  float-tooltip@1.7.5(preact-render-to-string@6.8.0):
+  float-tooltip@1.7.5(preact-render-to-string@6.8.1):
     dependencies:
       d3-selection: 3.0.0
       kapsule: 1.16.3
-      preact: 11.0.1(preact-render-to-string@6.8.0)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
     transitivePeerDependencies:
       - preact-render-to-string
 
@@ -19734,7 +19734,7 @@ snapshots:
     dependencies:
       is-callable: 1.2.7
 
-  force-graph@1.52.0(preact-render-to-string@6.8.0):
+  force-graph@1.52.0(preact-render-to-string@6.8.1):
     dependencies:
       '@tweenjs/tween.js': 25.0.0
       accessor-fn: 1.5.3
@@ -19747,7 +19747,7 @@ snapshots:
       d3-scale-chromatic: 3.1.0
       d3-selection: 3.0.0
       d3-zoom: 3.0.0
-      float-tooltip: 1.7.5(preact-render-to-string@6.8.0)
+      float-tooltip: 1.7.5(preact-render-to-string@6.8.1)
       index-array-by: 1.4.2
       kapsule: 1.16.3
       lodash-es: 4.18.1
@@ -19826,11 +19826,11 @@ snapshots:
       mkdirp: 0.5.6
       rimraf: 2.7.1
 
-  fullcalendar@7.1.2(preact-render-to-string@6.8.0)(temporal-polyfill@1.0.6):
+  fullcalendar@7.1.2(preact-render-to-string@6.8.1)(temporal-polyfill@1.0.6):
     dependencies:
       '@full-ui/headless-calendar': 7.1.2(temporal-polyfill@1.0.6)
       '@fullcalendar/core': 7.1.2(@full-ui/headless-calendar@7.1.2(temporal-polyfill@1.0.6))(temporal-polyfill@1.0.6)
-      preact: 11.0.1(preact-render-to-string@6.8.0)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
       temporal-polyfill: 1.0.6
     transitivePeerDependencies:
       - preact-render-to-string
@@ -20309,11 +20309,11 @@ snapshots:
       - kerberos
       - supports-color
 
-  i18next-fs-backend@2.6.8: {}
+  i18next-fs-backend@2.6.9: {}
 
-  i18next-http-backend@4.0.2: {}
+  i18next-http-backend@4.0.3: {}
 
-  i18next@26.4.4(typescript@6.0.3):
+  i18next@26.4.5(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
 
@@ -22243,11 +22243,11 @@ snapshots:
       exsolve: 1.1.1
       pathe: 2.0.3
 
-  playwright-core@1.64.0: {}
+  playwright-core@1.64.1: {}
 
-  playwright@1.64.0:
+  playwright@1.64.1:
     dependencies:
-      playwright-core: 1.64.0
+      playwright-core: 1.64.1
 
   plist@3.1.1:
     dependencies:
@@ -22321,18 +22321,18 @@ snapshots:
 
   powershell-utils@0.2.1: {}
 
-  preact-iso@2.12.2(preact-render-to-string@6.8.0)(preact@11.0.1):
+  preact-iso@2.12.2(preact-render-to-string@6.8.1)(preact@11.0.1):
     dependencies:
-      preact: 11.0.1(preact-render-to-string@6.8.0)
-      preact-render-to-string: 6.8.0(preact@11.0.1)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
+      preact-render-to-string: 6.8.1(preact@11.0.1)
 
-  preact-render-to-string@6.8.0(preact@11.0.1):
+  preact-render-to-string@6.8.1(preact@11.0.1):
     dependencies:
-      preact: 11.0.1(preact-render-to-string@6.8.0)
+      preact: 11.0.1(preact-render-to-string@6.8.1)
 
-  preact@11.0.1(preact-render-to-string@6.8.0):
+  preact@11.0.1(preact-render-to-string@6.8.1):
     optionalDependencies:
-      preact-render-to-string: 6.8.0(preact@11.0.1)
+      preact-render-to-string: 6.8.1(preact@11.0.1)
 
   prelude-ls@1.2.1: {}
 
@@ -22491,22 +22491,22 @@ snapshots:
       react: 19.3.0
       scheduler: 0.23.2
 
-  react-i18next@17.0.16(i18next@26.4.4(typescript@6.0.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3):
+  react-i18next@17.0.16(i18next@26.4.5(typescript@6.0.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@6.0.3):
     dependencies:
       '@babel/runtime': 7.29.7
       html-parse-stringify: 4.0.1
-      i18next: 26.4.4(typescript@6.0.3)
+      i18next: 26.4.5(typescript@6.0.3)
       react: 18.3.1
       use-sync-external-store: 1.7.0(react@18.3.1)
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
       typescript: 6.0.3
 
-  react-i18next@17.0.16(i18next@26.4.4(typescript@6.0.3))(react-dom@18.3.1(react@19.3.0))(react@19.3.0)(typescript@6.0.3):
+  react-i18next@17.0.16(i18next@26.4.5(typescript@6.0.3))(react-dom@18.3.1(react@19.3.0))(react@19.3.0)(typescript@6.0.3):
     dependencies:
       '@babel/runtime': 7.29.7
       html-parse-stringify: 4.0.1
-      i18next: 26.4.4(typescript@6.0.3)
+      i18next: 26.4.5(typescript@6.0.3)
       react: 19.3.0
       use-sync-external-store: 1.7.0(react@19.3.0)
     optionalDependencies:
@@ -22954,15 +22954,14 @@ snapshots:
     dependencies:
       truncate-utf8-bytes: 1.0.2
 
-  sanitize-html@2.18.0:
+  sanitize-html@2.18.1:
     dependencies:
-      deepmerge: 4.3.1
       escape-string-regexp: 4.0.0
       htmlparser2: 12.0.0
       is-plain-object: 5.1.0
       launder: 1.7.2
       parse-srcset: 1.0.2
-      postcss: 8.5.28
+      postcss: 8.5.29
 
   sass@1.105.1:
     dependencies:
@@ -24256,7 +24255,7 @@ snapshots:
       why-is-node-running: 3.2.1
     optionalDependencies:
       '@types/node': 24.19.2
-      '@vitest/browser-playwright': 5.0.4(playwright@1.64.0)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(vitest@5.0.4)
+      '@vitest/browser-playwright': 5.0.4(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(vitest@5.0.4)
       '@vitest/coverage-v8': 5.0.4(@vitest/browser@5.0.4)(vitest@5.0.4)
       '@vitest/ui': 5.0.4(vitest@5.0.4)
       happy-dom: 21.0.1

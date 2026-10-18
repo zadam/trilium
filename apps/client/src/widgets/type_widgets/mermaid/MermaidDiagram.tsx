@@ -33,7 +33,7 @@ import {
     useContentEmbedEvent,
     useNeedsFullscreenButton
 } from "../text/content_embed_tools";
-import { useEditableEmbed } from "../text/editable_embed";
+import { CaretNavigationContext, useEditableEmbed } from "../text/editable_embed";
 
 const CodeEmbedEditor = lazy(() => import("../code/CodeEmbedEditor"));
 
@@ -60,6 +60,8 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
         focusTarget: ".cm-content"
     });
     const mode = resolveDisplayMode(useContentEmbedDisplayMode(rootRef), !isEditing);
+    const isSourceShown = mode !== "preview";
+    const viewRef = useRef<VanillaCodeMirror>(null);
     const { editorMounted, previewMounted } = useMountedPanes(mode);
     const isFullscreen = useIsEmbedFullscreen(rootRef);
     const hasFullscreenButton = useNeedsFullscreenButton(rootRef) && !isFullscreen;
@@ -86,18 +88,31 @@ export default function MermaidDiagram({ content, editor }: SourceEmbedProps) {
                 orientation={isMobile() ? "vertical" : "horizontal"}
                 editor={(
                     <div className="note-detail-split-editor">
-                        <Suspense fallback={null}>
-                            <CodeEmbedEditor
-                                key={isEditing ? "editing" : "read-only"}
-                                note={null}
-                                editor={isEditing ? editor : undefined}
-                                content={source}
-                                mime={MERMAID_ATTACHMENT_MIME}
-                                onClose={setSource}
-                                onChange={setSource}
-                                onReady={setupEditor}
-                            />
-                        </Suspense>
+                        {/* An edited source stays mounted while the diagram shows alone, which
+                            keeps its undo history. "Search in note" and the arrow keys skip it
+                            then. */}
+                        {(isEditing || isSourceShown) && (
+                            <CaretNavigationContext.Provider
+                                value={isEditing && isSourceShown ? rootRef : null}
+                            >
+                                <Suspense fallback={null}>
+                                    <CodeEmbedEditor
+                                        key={isEditing ? "editing" : "read-only"}
+                                        note={null}
+                                        editor={isEditing ? editor : undefined}
+                                        content={source}
+                                        mime={MERMAID_ATTACHMENT_MIME}
+                                        tabWidth={undefined}
+                                        useTabs={undefined}
+                                        viewRef={viewRef}
+                                        isShown={isSourceShown}
+                                        onClose={setSource}
+                                        onChange={setSource}
+                                        onReady={setupEditor}
+                                    />
+                                </Suspense>
+                            </CaretNavigationContext.Provider>
+                        )}
                     </div>
                 )}
                 isEditorMounted={editorMounted.current}

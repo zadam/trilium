@@ -1,5 +1,9 @@
+import type { EmbedEdge } from "@triliumnext/ckeditor5";
 import type { RefObject } from "preact";
+import { flushSync } from "preact/compat";
 import { useEffect, useRef, useState } from "preact/hooks";
+
+import type { FindTarget } from "../../merged_find";
 
 /** A button that the content of an embed adds to the toolbar of the embed. */
 export interface ContentEmbedTool {
@@ -23,6 +27,11 @@ export interface ContentEmbedTool {
     keystroke?: string;
     /** The tools of the menu that the button opens. */
     children?: ContentEmbedTool[];
+    /**
+     * Whether the button opens a menu that the content draws, with
+     * `ContentEmbedToolProvider.openMenu()`, instead of running the tool.
+     */
+    opensMenu?: boolean;
     /** A class of the button, for the content to style it. */
     class?: string;
 }
@@ -35,6 +44,8 @@ export type ContentEmbedToolbarItem =
 export interface ContentEmbedToolProvider {
     getTools(): ContentEmbedTool[];
     execute(id: string): void;
+    /** Opens the menu of the tool `id`, which sets `opensMenu`, below `anchor`. */
+    openMenu?(id: string, anchor: HTMLElement): void;
     /** Calls `callback` when `getTools()` changes, until the returned function is called. */
     subscribe(callback: () => void): () => void;
     /** The items of the embed toolbar to hide. The menu of the embed still offers them. */
@@ -58,8 +69,20 @@ export interface ContentEmbedToolProvider {
  */
 export type ContentEmbedEvent = "fullscreenChangeStart" | "enterFullscreen" | "leaveFullscreen";
 
+/** The editor in an embed, as the caret of the text editor around the embed enters it. */
+export interface EmbedCaretTarget {
+    /** Focuses the editor with the caret at `edge` of its content, and returns whether it did. */
+    enter(edge: EmbedEdge): boolean;
+}
+
 const providers = new Map<HTMLElement, ContentEmbedToolProvider>();
 const watchers = new Set<{ container: HTMLElement; callback: () => void }>();
+const caretTargets = new Map<HTMLElement, EmbedCaretTarget>();
+const findTargets = new Map<HTMLElement, FindTarget>();
+const findWatchers = new Set<{ container: HTMLElement; callback: () => void }>();
+
+/** The event that `revealContentEmbed()` dispatches on the content box of an embed. */
+const FIND_REVEAL_EVENT = "contentEmbedFindReveal";
 
 /**
  * Adds the buttons of `provider` to the toolbar of the embed that contains `element`, until the
@@ -100,6 +123,112 @@ export function getContentEmbedTools(embed: HTMLElement) {
         }
     }
     return null;
+}
+
+/**
+ * Lets the caret of the text editor around the embed that contains `element` enter `target`, until
+ * the returned function is called.
+ */
+export function registerEmbedCaretTarget(element: HTMLElement, target: EmbedCaretTarget) {
+    caretTargets.set(element, target);
+    return () => {
+        caretTargets.delete(element);
+    };
+}
+
+/**
+ * Focuses the editor that `embed` shows, with the caret at `edge` of its content. Returns `false`
+ * when `embed` shows no editor that takes the caret.
+ */
+export function enterContentEmbed(embed: HTMLElement, edge: EmbedEdge) {
+    for (const [ element, target ] of caretTargets) {
+        if (embed.contains(element)) {
+            return target.enter(edge);
+        }
+    }
+    return false;
+}
+
+/**
+ * Lets "Search in note" search the content of the embed that contains `element` with `target`,
+ * until the returned function is called. Of the targets in one embed, the innermost one searches
+ * it, as the editor of an included note does rather than the preview around it.
+ */
+export function registerEmbedFindTarget(element: HTMLElement, target: FindTarget) {
+    findTargets.set(element, target);
+    notifyFindWatchers(element);
+    const stopWatching = target.watchContent?.(() => notifyFindWatchers(element));
+    return () => {
+        stopWatching?.();
+        findTargets.delete(element);
+        notifyFindWatchers(element);
+    };
+}
+
+/** The target that searches the content of `embed`, or `null` for content that is not searched. */
+export function getEmbedFindTarget(embed: HTMLElement) {
+    let found: [ HTMLElement, FindTarget ] | null = null;
+    for (const entry of findTargets) {
+        const [ element ] = entry;
+        if (element.closest(".include-note") === embed && (!found || found[0].contains(element))) {
+            found = entry;
+        }
+    }
+    return found?.[1] ?? null;
+}
+
+/**
+ * Calls `callback` when the targets that search the embeds inside `container` change, as when the
+ * editor of an included note replaces its preview, or when the content they search changes.
+ * Stops when the returned function is called.
+ */
+export function watchEmbedFindTargets(container: HTMLElement, callback: () => void) {
+    const watcher = { container, callback };
+    findWatchers.add(watcher);
+    return () => {
+        findWatchers.delete(watcher);
+    };
+}
+
+/**
+ * Shows the content of `embed` while a match of "Search in note" in it is the current one, as a
+ * collapsed Expandable embed hides its content. `false` hides it again.
+ */
+export function revealContentEmbed(embed: HTMLElement, isRevealed: boolean) {
+    const box = [ ...embed.querySelectorAll(".include-note-content") ]
+        .find((element) => element.closest(".include-note") === embed);
+    box?.dispatchEvent(new CustomEvent(FIND_REVEAL_EVENT, { detail: isRevealed }));
+}
+
+/**
+ * Whether "Search in note" shows the content box in `contentRef`, for a match in it, and the
+ * setter that stops showing it, as the user collapsing the embed does.
+ */
+export function useContentEmbedFindReveal(contentRef: RefObject<HTMLElement | null>) {
+    const [ isRevealed, setIsRevealed ] = useState(false);
+
+    useEffect(() => {
+        const box = contentRef.current;
+        if (!box) return;
+
+        const onReveal = (event: Event) => {
+            // The find scrolls to the match right after, which must show by then.
+            flushSync(() => setIsRevealed(event instanceof CustomEvent && event.detail === true));
+        };
+        box.addEventListener(FIND_REVEAL_EVENT, onReveal);
+        return () => box.removeEventListener(FIND_REVEAL_EVENT, onReveal);
+    }, [ contentRef ]);
+
+    return [ isRevealed, setIsRevealed ] as const;
+}
+
+function notifyFindWatchers(element: HTMLElement) {
+    for (const { container, callback } of findWatchers) {
+        // An element that left the page can have been in any container.
+        if (!element.isConnected || container.contains(element)) {
+            callback();
+        }
+    }
 }
 
 function notifyWatchers(element: HTMLElement) {
@@ -150,20 +279,6 @@ export function useIsContentEmbedEditable(ref: RefObject<HTMLElement | null>) {
         outsideEmbed: true,
         attributes: [ "data-editable" ],
         read: (embed) => embed.dataset.editable === "true"
-    });
-}
-
-/**
- * The display mode picked for the embed that contains `ref`, for content whose provider sets
- * `hasDisplayModes`. `null` while none is picked, outside an embed, and until the content is in the
- * page: `resolveDisplayMode()` then tells what to show.
- */
-export function useContentEmbedDisplayMode(ref: RefObject<HTMLElement | null>) {
-    return useEmbedState<string | null>(ref, {
-        initial: null,
-        outsideEmbed: null,
-        attributes: [ "data-display-mode" ],
-        read: (embed) => embed.dataset.displayMode ?? null
     });
 }
 
@@ -218,6 +333,31 @@ function useEmbedState<T>(
     return value;
 }
 
+/**
+ * The attribute `name` of the embed that contains `ref`, which follows its changes. `initial` until
+ * the content is in the embed, as content mounts before its embed box takes it in.
+ */
+export function useContentEmbedAttribute(
+    ref: RefObject<HTMLElement | null>,
+    name: string,
+    initial: string | null = null
+) {
+    return useEmbedState(ref, {
+        initial,
+        outsideEmbed: initial,
+        attributes: [ name ],
+        read: (embed) => embed.getAttribute(name)
+    });
+}
+
+/**
+ * The display mode picked for the embed that contains `ref`, for content whose provider sets
+ * `hasDisplayModes`. `null` while none is picked, outside an embed, and until the content is in the
+ * embed: `resolveDisplayMode()` then tells what to show.
+ */
+export function useContentEmbedDisplayMode(ref: RefObject<HTMLElement | null>) {
+    return useContentEmbedAttribute(ref, "data-display-mode");
+}
 
 /**
  * Calls `callback` when the embed that contains `ref` dispatches `name`. Listens on the document,

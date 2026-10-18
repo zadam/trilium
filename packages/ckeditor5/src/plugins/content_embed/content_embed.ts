@@ -32,6 +32,7 @@ import noteIcon from '../../icons/note.svg?raw';
 import { encodeBlockParameter, parseBlockRange } from '@triliumnext/commons';
 import { getAttachmentId, getNoteId } from '../referencelink.js';
 import ResizableWidgets, { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
+import { restoreRendererFocusOnInput } from '../widget_utils.js';
 import ContentEmbedInlineSource, { isInlineSourceEmbed } from './inline_source.js';
 import './nested_editor_events.js';
 
@@ -42,6 +43,7 @@ export const CONVERT_EMBED_TO_LINK_COMMAND = 'convertEmbedToLink';
 export const TOGGLE_CAPTION_COMMAND_NAME = 'toggleContentEmbedCaption';
 export const TOGGLE_TITLE_COMMAND_NAME = 'toggleContentEmbedTitle';
 export const TOGGLE_EDITABLE_COMMAND_NAME = 'toggleContentEmbedEditable';
+export const CODE_VIEW_COMMAND_NAME = 'setContentEmbedCodeView';
 export const CONTENT_EMBED_DISPLAY_MODE_COMMAND = 'contentEmbedDisplayMode';
 /** The toolbar separator between the Editable toggle and the display modes. */
 export const CONTENT_EMBED_DISPLAY_MODE_SEPARATOR = 'contentEmbedDisplayModeSeparator';
@@ -89,6 +91,26 @@ const FLAG_ATTRIBUTES = [
 ] as const;
 
 type EmbedFlag = typeof FLAG_ATTRIBUTES[number][0];
+
+/** The display mode of an embed, saved in a `data-*` attribute while one is picked. */
+const DISPLAY_MODE_ATTRIBUTE = [ 'displayMode', 'data-display-mode' ] as const;
+
+/**
+ * How an embed of an attachment shows its code: the language, as a MIME type, the tab width, and
+ * whether it indents with tabs. Each is saved in a `data-*` attribute while it is set.
+ */
+const CODE_VIEW_ATTRIBUTES = [
+	[ 'codeLanguage', 'data-code-language' ],
+	[ 'codeTabWidth', 'data-code-tab-width' ],
+	[ 'codeIndentWithTabs', 'data-code-indent-with-tabs' ]
+] as const;
+
+/** The settings of `SetContentEmbedCodeViewCommand`. `null` removes a setting. */
+export interface ContentEmbedCodeView {
+	language?: string | null;
+	tabWidth?: number | null;
+	indentWithTabs?: boolean | null;
+}
 
 /** What the toolbar of an embed shows of it, for a menu offering the same commands. */
 export interface ContentEmbedState {
@@ -208,8 +230,9 @@ export default class ContentEmbed extends Plugin {
 		return {
 			isEditable: !!embed.getAttribute( 'editable' ),
 			isEditableToggleable: isEmbedEditableToggleable( editor, embed ),
-			displayMode:
-				hasEmbedDisplayModes( editor, embed ) ? getEmbedDisplayMode( embed ) : null,
+			displayMode: hasEmbedDisplayModes( editor, embed )
+				? getEmbedDisplayMode( editor, embed )
+				: null,
 			boxSize: embed.getAttribute( 'boxSize' ) as BoxSizeValue | undefined ?? null,
 			isTitleShown: !isTitleToggleable || !embed.getAttribute( 'hideTitle' ),
 			isTitleToggleable,
@@ -477,10 +500,13 @@ class ContentEmbedEditing extends Plugin {
 		commands.add( TOGGLE_TITLE_COMMAND_NAME, new ToggleContentEmbedTitleCommand( editor ) );
 		commands.add(
 			TOGGLE_EDITABLE_COMMAND_NAME, new ToggleContentEmbedEditableCommand( editor ) );
+		commands.add( CODE_VIEW_COMMAND_NAME, new SetContentEmbedCodeViewCommand( editor ) );
 		commands.add(
 			CONTENT_EMBED_DISPLAY_MODE_COMMAND, new ContentEmbedDisplayModeCommand( editor ) );
 
 		editor.model.document.registerPostFixer( writer => this.removeTinyCaptions( writer ) );
+
+		restoreRendererFocusOnInput( this );
 	}
 
 	/** Keeps a copy of `caption`, for `embed` to show again. */
@@ -512,8 +538,8 @@ class ContentEmbedEditing extends Plugin {
 			// `FileUploadEditing` is uploading carries the upload attributes instead of its id.
 			allowAttributes: [
 				'noteId', 'block', 'attachmentId', 'boxSize', 'hideTitle', 'editable',
-				'displayMode', 'uploadId',
-				'uploadStatus', 'uploadFileName'
+				'displayMode', 'uploadId', 'uploadStatus', 'uploadFileName',
+				...CODE_VIEW_ATTRIBUTES.map( ( [ setting ] ) => setting )
 			],
 
 			// Allow in places where other blocks are allowed (e.g. directly in the root).
@@ -550,7 +576,8 @@ class ContentEmbedEditing extends Plugin {
 					...embedded,
 					boxSize: viewElement.getAttribute( 'data-box-size' ),
 					...getFlagsOfView( viewElement ),
-					...getDisplayModeOfView( viewElement )
+					...getDisplayModeOfView( viewElement ),
+					...getCodeViewOfView( viewElement )
 				} );
 			},
 			// Embeds saved before captions existed are `<section>` elements.
@@ -567,7 +594,8 @@ class ContentEmbedEditing extends Plugin {
 					...getEmbeddedEntityAttributes( modelElement ),
 					'data-box-size': modelElement.getAttribute( 'boxSize' ),
 					...getFlagAttributes( modelElement ),
-					...getDisplayModeAttributes( modelElement )
+					...getDisplayModeAttributes( modelElement ),
+					...getCodeViewAttributes( modelElement )
 				} );
 			}
 		} );
@@ -582,7 +610,8 @@ class ContentEmbedEditing extends Plugin {
 					...getEmbeddedEntityAttributes( modelElement ),
 					'data-box-size': boxSize,
 					...getFlagAttributes( modelElement ),
-					...getDisplayModeAttributes( modelElement )
+					...getDisplayModeAttributes( modelElement ),
+					...getCodeViewAttributes( modelElement )
 				} );
 
 				const embedWrapper = viewWriter.createUIElement( 'div', {
@@ -640,17 +669,22 @@ class ContentEmbedEditing extends Plugin {
 			} );
 
 			// Marks the view of the embed without drawing the content again. Content with an
-			// editable mode reads `data-editable` from the embed.
-			for ( const [ flag, dataAttribute ] of FLAG_ATTRIBUTES ) {
-				dispatcher.on( `attribute:${ flag }:contentEmbed`, ( _evt, data, api ) => {
+			// editable mode reads `data-editable` from the embed, content with display modes
+			// `data-display-mode`, and a code file the `data-code-*` attributes.
+			const markedAttributes = [
+				...FLAG_ATTRIBUTES, DISPLAY_MODE_ATTRIBUTE, ...CODE_VIEW_ATTRIBUTES
+			];
+			for ( const [ attribute, dataAttribute ] of markedAttributes ) {
+				dispatcher.on( `attribute:${ attribute }:contentEmbed`, ( _evt, data, api ) => {
 					const viewElement = api.mapper.toViewElement( data.item as ModelElement );
 					/* v8 ignore next 3 -- converted after the embed itself, so always mapped */
 					if ( !viewElement ) {
 						return;
 					}
 
-					if ( data.attributeNewValue ) {
-						api.writer.setAttribute( dataAttribute, 'true', viewElement );
+					const value = data.attributeNewValue;
+					if ( value ) {
+						api.writer.setAttribute( dataAttribute, String( value ), viewElement );
 					} else {
 						api.writer.removeAttribute( dataAttribute, viewElement );
 					}
@@ -912,6 +946,40 @@ export class ToggleContentEmbedEditableCommand extends Command {
 }
 
 /**
+ * Sets how the selected embed of an attachment shows its code. An embed of a note follows the
+ * settings of the note instead.
+ */
+export class SetContentEmbedCodeViewCommand extends Command {
+	override refresh() {
+		this.isEnabled = !!getSelectedContentEmbed( this.editor )?.getAttribute( 'attachmentId' );
+	}
+
+	/** Sets each setting given, and removes each given as `null`, as one undo step. */
+	override execute( { language, tabWidth, indentWithTabs }: ContentEmbedCodeView ) {
+		const embed = getSelectedContentEmbed( this.editor );
+		/* v8 ignore next 3 -- the command is enabled only while an embed is selected */
+		if ( !embed ) {
+			return;
+		}
+
+		const values = {
+			codeLanguage: language,
+			codeTabWidth: tabWidth,
+			codeIndentWithTabs: indentWithTabs
+		};
+		this.editor.model.change( writer => {
+			for ( const [ attribute, value ] of Object.entries( values ) ) {
+				if ( value === null ) {
+					writer.removeAttribute( attribute, embed );
+				} else if ( value !== undefined ) {
+					writer.setAttribute( attribute, String( value ), embed );
+				}
+			}
+		} );
+	}
+}
+
+/**
  * Sets what the content of the selected embed shows, for content that has display modes. The
  * Editable flag stays as it is: it tells whether the source shown can be changed.
  */
@@ -929,7 +997,7 @@ export class ContentEmbedDisplayModeCommand extends Command {
 		const embed = getSelectedContentEmbed( this.editor );
 
 		this.isEnabled = !!embed && hasEmbedDisplayModes( this.editor, embed );
-		this.value = embed && this.isEnabled ? getEmbedDisplayMode( embed ) : null;
+		this.value = embed && this.isEnabled ? getEmbedDisplayMode( this.editor, embed ) : null;
 	}
 
 	override execute( { value }: { value: DisplayModeValue } ) {
@@ -1079,7 +1147,7 @@ function getSelectedContentEmbed( editor: Editor ) {
 }
 
 /** The embed whose rendering contains `domElement`, or `null`. */
-function getContentEmbedAt( editor: Editor, domElement: Element ) {
+export function getContentEmbedAt( editor: Editor, domElement: Element ) {
 	const embedElement = domElement.closest<HTMLElement>( '.include-note' );
 	const viewElement = embedElement
 		&& editor.editing.view.domConverter.mapDomToView( embedElement );
@@ -1090,7 +1158,9 @@ function getContentEmbedAt( editor: Editor, domElement: Element ) {
 	return editor.editing.mapper.toModelElement( viewElement ) ?? null;
 }
 
-function isContentEmbed( node: ModelNode | ModelDocumentFragment | null ): node is ModelElement {
+export function isContentEmbed(
+	node: ModelNode | ModelDocumentFragment | null
+): node is ModelElement {
 	return !!node?.is( 'element', 'contentEmbed' );
 }
 
@@ -1115,10 +1185,15 @@ function hasEmbedDisplayModes( editor: Editor, embed: ModelElement ) {
 	return !!getEmbedTools( editor, embed )?.hasDisplayModes;
 }
 
-/** What the content of `embed` shows: its mode, or split while it is editable and has none. */
-function getEmbedDisplayMode( embed: ModelElement ): DisplayModeValue {
+/**
+ * What the content of `embed` shows: its mode, or split while it is edited and preview otherwise.
+ * Content that cannot be edited has no Editable toggle, and shows the preview.
+ */
+function getEmbedDisplayMode( editor: Editor, embed: ModelElement ): DisplayModeValue {
+	const isEditing = !!embed.getAttribute( 'editable' )
+		&& isEmbedEditableToggleable( editor, embed );
 	return toDisplayMode( embed.getAttribute( 'displayMode' ) )
-		?? ( embed.getAttribute( 'editable' ) ? 'split' : 'preview' );
+		?? ( isEditing ? 'split' : 'preview' );
 }
 
 /** `value` when it names a display mode, otherwise `null`. */
@@ -1139,7 +1214,7 @@ function isEmbedConvertibleToLink( editor: Editor, embed: ModelElement ) {
 }
 
 /** The caption of `embed`, or `null`. */
-function getCaption( embed: ModelElement ) {
+export function getCaption( embed: ModelElement ) {
 	return Array.from( embed.getChildren() )
 		.find( ( child ): child is ModelElement => child.is( 'element', 'caption' ) ) ?? null;
 }
@@ -1199,6 +1274,24 @@ function getFlagAttributes( element: ModelElement ): Record<string, string> {
 	return Object.fromEntries( FLAG_ATTRIBUTES
 		.filter( ( [ flag ] ) => element.getAttribute( flag ) )
 		.map( ( [ , dataAttribute ] ) => [ dataAttribute, 'true' ] ) );
+}
+
+/** The `data-*` attributes of the code view settings of `element`. */
+function getCodeViewAttributes( element: ModelElement ): Record<string, string> {
+	return Object.fromEntries( CODE_VIEW_ATTRIBUTES
+		.filter( ( [ setting ] ) => element.hasAttribute( setting ) )
+		.map( ( [ setting, dataAttribute ] ) => [
+			dataAttribute, String( element.getAttribute( setting ) )
+		] ) );
+}
+
+/** The code view settings that the `data-*` attributes of a saved embed set. */
+function getCodeViewOfView( viewElement: ViewElement ): Record<string, string> {
+	return Object.fromEntries( CODE_VIEW_ATTRIBUTES
+		.filter( ( [ , dataAttribute ] ) => viewElement.hasAttribute( dataAttribute ) )
+		.map( ( [ setting, dataAttribute ] ) => [
+			setting, String( viewElement.getAttribute( dataAttribute ) )
+		] ) );
 }
 
 /** The flags that the `data-*` attributes of a saved embed turn on. */
@@ -1276,7 +1369,10 @@ function openContentEmbedMenu( editor: Editor, anchor: HTMLElement | null ) {
 }
 
 /** The rendered `<figure>` of `embed`, or `null`. */
-function getContentEmbedDom( editor: Editor, embed: ModelElement | null ): HTMLElement | null {
+export function getContentEmbedDom(
+	editor: Editor,
+	embed: ModelElement | null
+): HTMLElement | null {
 	const viewElement = embed && editor.editing.mapper.toViewElement( embed );
 	const domElement = viewElement && editor.editing.view.domConverter.mapViewToDom( viewElement );
 	return domElement instanceof HTMLElement ? domElement : null;
@@ -1556,6 +1652,7 @@ declare module 'ckeditor5' {
 		toggleContentEmbedCaption: ToggleContentEmbedCaptionCommand;
 		toggleContentEmbedTitle: ToggleContentEmbedTitleCommand;
 		toggleContentEmbedEditable: ToggleContentEmbedEditableCommand;
+		setContentEmbedCodeView: SetContentEmbedCodeViewCommand;
 		contentEmbedDisplayMode: ContentEmbedDisplayModeCommand;
 	}
 }

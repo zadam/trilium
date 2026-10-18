@@ -1,11 +1,13 @@
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import type { RefObject } from "preact";
 import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
-import {
-    useNoteLabelInt, useNoteLabelOptionalBool, useTriliumOptionBool
-} from "../../react/hooks";
+import { CodeMirrorFindTarget } from "../../find_in_code";
+import { useNoteLabelOptionalBool, useTriliumOptionBool } from "../../react/hooks";
+import { registerEmbedFindTarget } from "../text/content_embed_tools";
+import { useEmbedCaretNavigation } from "../text/editable_embed";
 import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
@@ -14,6 +16,14 @@ export interface CodeEmbedEditorProps {
     editor: ContentEditor | undefined;
     content: string;
     mime: string;
+    /** The tab width, or `undefined` to follow the global option. */
+    tabWidth: number | undefined;
+    /** Whether to indent with tabs, or `undefined` to follow the global option. */
+    useTabs: boolean | undefined;
+    /** Holds the CodeMirror view while the editor is open, and `null` once it goes away. */
+    viewRef: RefObject<VanillaCodeMirror | null>;
+    /** Whether the editor shows. "Search in note" skips a hidden one. Shown by default. */
+    isShown?: boolean;
     /** Receives the edited content when the editor goes away. */
     onClose: (content: string) => void;
     /** Receives the content as it is edited. */
@@ -27,14 +37,35 @@ export interface CodeEmbedEditorProps {
  * `editor`, the content is read-only.
  */
 export default function CodeEmbedEditor({
-    note, editor, content, mime, onClose, onChange, onReady
+    note, editor, content, mime, tabWidth, useTabs, viewRef, isShown = true, onClose, onChange,
+    onReady
 }: CodeEmbedEditorProps) {
-    const viewRef = useRef<VanillaCodeMirror>(null);
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
-    const [ noteTabWidth ] = useNoteLabelInt(note, "tabWidth");
-    const [ noteUseTabs ] = useNoteLabelOptionalBool(note, "indentWithTabs");
     const [ noteWrapLines ] = useNoteLabelOptionalBool(note, "wrapLines");
+    useEmbedCaretNavigation(() => viewRef.current);
+
+    // Runs after the effects of `CodeMirror`, which creates the view.
+    useEffect(() => {
+        const view = viewRef.current;
+        if (view) {
+            onReady?.(view);
+        }
+    }, []);
+
+    useEffect(() => {
+        const view = viewRef.current;
+        if (!view || !isShown) return;
+
+        const unregister = registerEmbedFindTarget(view.dom, new CodeMirrorFindTarget(view));
+        return () => {
+            unregister();
+            // Clears the search matches of an editor that is hidden rather than unmounted.
+            if (view.dom.isConnected) {
+                view.cleanSearch();
+            }
+        };
+    }, [ isShown ]);
 
     // Runs after the effects of `CodeMirror`, which empties the document as it mounts.
     useEffect(() => {
@@ -48,18 +79,13 @@ export default function CodeEmbedEditor({
         view.clearHistory();
     }, [ content ]);
 
-    useEffect(() => {
-        if (viewRef.current) {
-            onReady?.(viewRef.current);
-        }
-    }, []);
-
     // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
     useLayoutEffect(() => () => {
-        if (!editor) return;
         const text = viewRef.current?.getText();
-        editor.release();
-        if (text !== undefined) {
+        // `release()` reads the pending content through `viewRef`, so the ref clears after it.
+        editor?.release();
+        viewRef.current = null;
+        if (editor && text !== undefined) {
             onClose(text);
         }
     }, [ editor, onClose ]);
@@ -78,8 +104,8 @@ export default function CodeEmbedEditor({
                     onChange?.(viewRef.current?.getText() ?? "");
                 }
             }}
-            {...(noteTabWidth != null && { indentSize: noteTabWidth })}
-            {...(noteUseTabs != null && { useTabs: noteUseTabs })}
+            {...(tabWidth !== undefined && { indentSize: tabWidth })}
+            {...(useTabs !== undefined && { useTabs })}
             {...(noteWrapLines != null && { lineWrapping: noteWrapLines })}
         />
     );

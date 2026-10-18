@@ -13,6 +13,8 @@ export interface ContextMenuOptions<T> {
     orientation?: "left";
     selectMenuItemHandler: MenuHandler<T>;
     items: MenuItem<T>[];
+    /** Offers an input at the top of the menu that filters its items. */
+    filterable?: boolean;
     /** On mobile, if set to `true` then the context menu is shown near the element. If `false` (default), then the context menu is shown at the bottom of the screen. */
     forcePositionOnMobile?: boolean;
     /** Called with the element the menu renders into, before the menu takes the focus. */
@@ -194,6 +196,7 @@ class ContextMenu {
             // As a native menu opened from the keyboard, it starts at its first row.
             startAt: this.lastInputWasKey ? "first" : undefined,
             items: options.items,
+            filterable: options.filterable,
             onSelect: (item, e) => {
                 // A submenu's row stays up to be opened, unless it runs something of its own.
                 if (!item.items || item.handler || item.command) void this.hide();

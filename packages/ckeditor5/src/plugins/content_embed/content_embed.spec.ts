@@ -15,16 +15,21 @@ import {
     Widget,
     type ModelElement
 } from "ckeditor5";
+import bxCode from "boxicons/svg/regular/bx-code.svg?raw";
 import bxEditAlt from "boxicons/svg/regular/bx-edit-alt.svg?raw";
+import bxShow from "boxicons/svg/regular/bx-show.svg?raw";
+import bxsDockLeft from "boxicons/svg/solid/bxs-dock-left.svg?raw";
 import bxWindowAlt from "boxicons/svg/regular/bx-window-alt.svg?raw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
 import { installGlobMock } from "../../../test/globals-test-kit.js";
+import LinkEmbed from "../link_embed/link_embed.js";
 import ReferenceLink from "../referencelink.js";
 import ContentEmbed, {
     BOX_SIZE_COMMAND_NAME,
     BOX_SIZES,
+    CODE_VIEW_COMMAND_NAME,
     COMMAND_NAME,
     CONVERT_EMBED_TO_LINK_COMMAND,
     CONVERT_LINK_TO_EMBED_COMMAND,
@@ -329,6 +334,96 @@ describe("ContentEmbed", () => {
         // The widget should now be selected (the mousedown handler selects it).
         const selected = editor.model.document.selection.getSelectedElement();
         expect(selected?.name).toBe("contentEmbed");
+    });
+
+    describe("renderer focus after a press in the widget", () => {
+        /** Presses the embed of a focused editor, which turns `_renderer.isFocused` off. */
+        function pressWidgetOfFocusedEditor() {
+            setModelData(editor.model, "<paragraph>foo[]</paragraph>"
+                + "<contentEmbed noteId=\"noteFocus\" boxSize=\"small\"></contentEmbed>"
+                + "<paragraph>bar</paragraph>");
+            // A headless page cannot take the real focus, so set the flag the renderer reads.
+            editor.editing.view.document.isFocused = true;
+            pressWidget();
+        }
+
+        function pressWidget() {
+            const wrapper = getDomRoot(editor).querySelector("div.include-note-wrapper");
+            if (!wrapper) {
+                throw new Error("The embed was not rendered.");
+            }
+            wrapper.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+            expect(editor.model.document.selection.getSelectedElement()?.name).toBe("contentEmbed");
+            expect(rendererIsFocused(editor)).toBe(false);
+        }
+
+        it("turns the renderer's focus back on for a press in the text, not in the widget", () => {
+            pressWidgetOfFocusedEditor();
+            const wrapper = getDomRoot(editor).querySelector("div.include-note-wrapper");
+            wrapper?.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+            expect(rendererIsFocused(editor)).toBe(false);
+
+            const paragraph = getDomRoot(editor).children[2];
+            paragraph.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+            expect(rendererIsFocused(editor)).toBe(true);
+
+            pressWidget();
+        });
+
+        it("turns the renderer's focus back on for the key that deletes the widget", () => {
+            pressWidgetOfFocusedEditor();
+
+            const domRoot = getDomRoot(editor);
+            domRoot.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace" }));
+            expect(rendererIsFocused(editor)).toBe(true);
+            editor.execute("delete");
+            expect(getModelData(editor.model)).toBe(
+                "<paragraph>foo</paragraph><paragraph>[]</paragraph><paragraph>bar</paragraph>");
+            // The DOM selection follows the model selection into the new empty paragraph.
+            const domSelection = window.getSelection();
+            expect(domRoot.children[1].contains(domSelection?.anchorNode ?? null)).toBe(true);
+        });
+
+        it("keeps the renderer's focus off for a press on a link preview", async () => {
+            installGlobMock({
+                getComponentByEl: () => ({
+                    triggerCommand,
+                    loadEmbeddedNote,
+                    renderLinkMention: vi.fn(),
+                    detectEmbedType: vi.fn(() => "opengraph")
+                })
+            });
+            const linkEditor = await createTestEditor([
+                Essentials, Paragraph, Widget, ContentEmbed, LinkEmbed
+            ]);
+            setModelData(linkEditor.model, "<paragraph>foo[]"
+                + "<linkMention url=\"https://e.com/\" embedType=\"opengraph\"></linkMention>"
+                + "</paragraph>");
+            linkEditor.editing.view.document.isFocused = true;
+
+            const mention = getDomRoot(linkEditor).querySelector(".link-mention-inner");
+            if (!mention) {
+                throw new Error("The link mention was not rendered.");
+            }
+            mention.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+
+            const selected = linkEditor.model.document.selection.getSelectedElement();
+            expect(selected?.name).toBe("linkMention");
+            expect(rendererIsFocused(linkEditor)).toBe(false);
+        });
+
+        function getDomRoot(target: ClassicEditor) {
+            const domRoot = target.editing.view.getDomRoot();
+            if (!domRoot) {
+                throw new Error("The editor has no DOM root.");
+            }
+            return domRoot;
+        }
+
+        function rendererIsFocused(target: ClassicEditor) {
+            //@ts-expect-error: The renderer is a private field.
+            return target.editing.view._renderer.isFocused as boolean;
+        }
     });
 
     it("suppresses the native caret on a non-interactive mousedown but not on interactive targets", () => {
@@ -1398,6 +1493,99 @@ describe("ContentEmbed title", () => {
     });
 });
 
+describe("ContentEmbed code view", () => {
+    const ATTACHMENT = "<figure class=\"include-note\" data-attachment-id=\"att1\""
+        + " data-box-size=\"full\">&nbsp;</figure>";
+    const CODE_VIEW = ATTACHMENT.replace("data-box-size=\"full\"", "data-box-size=\"full\""
+        + " data-code-language=\"text/x-python\" data-code-tab-width=\"2\""
+        + " data-code-indent-with-tabs=\"false\"");
+    let editor: ClassicEditor;
+    let loadEmbeddedAttachment: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+        loadEmbeddedAttachment = vi.fn();
+        installGlobMock({
+            getComponentByEl: () => ({ loadEmbeddedNote: vi.fn(), loadEmbeddedAttachment })
+        });
+
+        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ]);
+    });
+
+    function getCommand() {
+        const command = editor.commands.get(CODE_VIEW_COMMAND_NAME);
+        if (!command) {
+            throw new Error("Expected the code view command.");
+        }
+        return command;
+    }
+
+    /** The `data-code-*` attributes of the rendered embed. */
+    function getRenderedCodeView() {
+        const embed = editor.editing.view.getDomRoot()?.querySelector("figure.include-note");
+        return [ "language", "tab-width", "indent-with-tabs" ]
+            .map((name) => embed?.getAttribute(`data-code-${name}`) ?? null);
+    }
+
+    function selectEmbed() {
+        const embed = findContentEmbed(editor);
+        editor.model.change((writer) => writer.setSelection(embed ?? null, "on"));
+    }
+
+    it("loads and saves how an embed shows its code, and marks the embed it renders", () => {
+        editor.setData(CODE_VIEW);
+
+        expect(getModelData(editor.model, { withoutSelection: true })).toBe(
+            "<contentEmbed attachmentId=\"att1\" boxSize=\"full\" codeIndentWithTabs=\"false\""
+            + " codeLanguage=\"text/x-python\" codeTabWidth=\"2\"></contentEmbed>"
+        );
+        expect(editor.getData()).toBe(CODE_VIEW);
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "false" ]);
+
+        editor.setData(ATTACHMENT);
+        expect(getModelData(editor.model, { withoutSelection: true })).not.toContain("code");
+        expect(editor.getData()).toBe(ATTACHMENT);
+        expect(getRenderedCodeView()).toEqual([ null, null, null ]);
+    });
+
+    it("sets and removes the settings of the selected embed as one undo step each", () => {
+        editor.setData(ATTACHMENT);
+        selectEmbed();
+        const wrapper = editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper");
+
+        editor.execute(CODE_VIEW_COMMAND_NAME, {
+            language: "text/x-python", tabWidth: 2, indentWithTabs: true
+        });
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true" ]);
+        expect(editor.getData()).toBe(CODE_VIEW.replace("\"false\"", "\"true\""));
+
+        editor.execute(CODE_VIEW_COMMAND_NAME, { language: null, indentWithTabs: false });
+        expect(getRenderedCodeView()).toEqual([ null, "2", "false" ]);
+
+        editor.execute("undo");
+        expect(getRenderedCodeView()).toEqual([ "text/x-python", "2", "true" ]);
+        editor.execute("undo");
+        expect(getRenderedCodeView()).toEqual([ null, null, null ]);
+        expect(editor.editing.view.getDomRoot()?.querySelector(".include-note-wrapper"))
+            .toBe(wrapper);
+        expect(loadEmbeddedAttachment).toHaveBeenCalledTimes(1);
+    });
+
+    it("is enabled only on an embed of an attachment, whose included notes follow the note", () => {
+        setModelData(editor.model, "<paragraph>foo[]</paragraph>");
+        expect(getCommand().isEnabled).toBe(false);
+        editor.execute(CODE_VIEW_COMMAND_NAME, { language: "text/x-python" });
+
+        insertContentEmbed(editor, "n1", "full");
+        expect(getCommand().isEnabled).toBe(false);
+        editor.execute(CODE_VIEW_COMMAND_NAME, { language: "text/x-python" });
+        expect(editor.getData()).not.toContain("data-code-language");
+
+        editor.setData(ATTACHMENT);
+        selectEmbed();
+        expect(getCommand().isEnabled).toBe(true);
+    });
+});
+
 describe("ContentEmbed editable flag", () => {
     const EDITABLE = "<figure class=\"include-note\" data-note-id=\"n1\" data-box-size=\"medium\""
         + " data-hide-title=\"true\" data-editable=\"true\">&nbsp;</figure>";
@@ -1586,6 +1774,13 @@ describe("ContentEmbed display mode", () => {
         return embed;
     }
 
+    function setSelectedEditable() {
+        editor.model.change((writer) => {
+            const embed = editor.model.document.selection.getSelectedElement();
+            if (embed) writer.setAttribute("editable", true, embed);
+        });
+    }
+
     it("loads and saves the mode, drops an unknown one, and marks the embed it renders", () => {
         editor.setData(SPLIT);
         expect(getModelData(editor.model, { withoutSelection: true }))
@@ -1598,21 +1793,25 @@ describe("ContentEmbed display mode", () => {
         expect(getRenderedEmbed().hasAttribute("data-display-mode")).toBe(false);
     });
 
-    it("tells the mode, which follows the Editable flag until one is picked", () => {
+    it("tells the mode, which follows Editable for editable content until one is picked", () => {
+        getContentEmbedTools.mockReturnValue({ hasDisplayModes: true, hasEditableFlag: true });
         editor.setData(SPLIT.replace(" data-display-mode=\"split\"", ""));
         const embed = editor.model.document.getRoot()?.getChild(0) ?? null;
         editor.model.change((writer) => writer.setSelection(embed, "on"));
         const command = getCommand();
         expect([ command.isEnabled, command.value ]).toEqual([ true, "preview" ]);
 
-        editor.model.change((writer) => {
-            const embed = editor.model.document.selection.getSelectedElement();
-            if (embed) writer.setAttribute("editable", true, embed);
-        });
+        setSelectedEditable();
         expect(command.value).toBe("split");
+
+        // Content that cannot be edited has no Editable toggle, and shows the preview.
+        getContentEmbedTools.mockReturnValue({ hasDisplayModes: true });
+        editor.ui.update();
+        expect(command.value).toBe("preview");
     });
 
     it("switches the mode as one undo step, keeping the Editable flag", () => {
+        getContentEmbedTools.mockReturnValue({ hasDisplayModes: true, hasEditableFlag: true });
         const embed = insertContentEmbed(editor, "n1", "medium");
         editor.model.change((writer) => writer.setAttribute("editable", true, embed));
         const wrapper = getRenderedEmbed().querySelector(".include-note-wrapper");
@@ -1674,6 +1873,8 @@ describe("ContentEmbed display mode", () => {
         insertContentEmbed(editor, "n1", "medium");
         expect(buttons.map((button) => button.label))
             .toEqual([ "Source view", "Split view", "Preview" ]);
+        expect(buttons.map((button) => [ button.icon, button.isToggleable ]))
+            .toEqual([ [ bxCode, true ], [ bxsDockLeft, true ], [ bxShow, true ] ]);
         expect(buttons.map((button) => [ button.isOn, button.isVisible ]))
             .toEqual([ [ false, true ], [ false, true ], [ true, true ] ]);
 
@@ -1685,6 +1886,20 @@ describe("ContentEmbed display mode", () => {
         getContentEmbedTools.mockReturnValue(null);
         editor.ui.update();
         expect(buttons.map((button) => button.isVisible)).toEqual([ false, false, false ]);
+    });
+
+    it("changes nothing when no embed is selected", () => {
+        editor.setData(SPLIT + "<p>after</p>");
+        setModelData(editor.model, "<paragraph>foo[]bar</paragraph>");
+        const before = editor.getData();
+
+        // The decorated `Command#execute()` skips a disabled command, so the command is forced
+        // enabled to run `execute()` with no embed selected.
+        const command = getCommand();
+        command.isEnabled = true;
+        command.execute({ value: "source" });
+
+        expect(editor.getData()).toBe(before);
     });
 });
 

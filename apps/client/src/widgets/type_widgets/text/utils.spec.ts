@@ -124,7 +124,8 @@ describe("loadEmbeddedNote", () => {
         expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(note, {
             interactive: true,
             embedsAsReferenceLinks: true,
-            mediaEnvironment: "embedded"
+            mediaEnvironment: "embedded",
+            hasDisplayModes: true
         });
         const mount = lastMount();
         expect(mount.type).toBe(ContentEmbed);
@@ -224,8 +225,9 @@ describe("loadEmbeddedAttachment", () => {
             showNoteIcon: true,
             viewScope: ATTACHMENT_SCOPE
         });
-        expect(content_renderer.getRenderedContent)
-            .toHaveBeenCalledWith(attachment, { interactive: true, mediaEnvironment: "embedded" });
+        expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(attachment, {
+            interactive: true, mediaEnvironment: "embedded", hasDisplayModes: true
+        });
         const mount = lastMount();
         expect(mount.type).toBe(ContentEmbed);
         expect(mount.container).toBe(wrapper);
@@ -250,9 +252,23 @@ describe("loadEmbeddedAttachment", () => {
         expect(content_renderer.getRenderedContent).toHaveBeenCalledWith(attachment, {
             interactive: true,
             mediaEnvironment: "embedded",
+            hasDisplayModes: true,
             attachmentEditor
         });
         expect(lastMount().props).toMatchObject({ isFocusedOnMount: true });
+    });
+
+    it("renders a code file in the language that its embed sets", async () => {
+        const wrapper = createWrapper();
+        const embed = inPage(document.createElement("figure"));
+        embed.className = "include-note";
+        embed.setAttribute("data-code-language", "text/x-sh");
+        embed.append(wrapper);
+
+        await loadEmbeddedAttachment("att1", $(wrapper), "full");
+
+        expect(vi.mocked(content_renderer.getRenderedContent).mock.lastCall?.[1])
+            .toMatchObject({ codeLanguage: "text/x-sh" });
     });
 
     it("leaves the box alone for a deleted attachment", async () => {

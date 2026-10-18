@@ -1,4 +1,4 @@
-.note-detail-markdown {
+:is(.note-detail-markdown, .markdown-embed-content) {
     .note-detail-code-editor {
         margin-top: 0 !important;
 

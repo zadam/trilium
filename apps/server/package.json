@@ -38,7 +38,7 @@
     "@modelcontextprotocol/sdk": "^1.12.1",
     "ai": "7.0.140",
     "better-sqlite3": "13.0.3",
-    "i18next": "26.4.4",
+    "i18next": "26.4.5",
     "ipaddr.js": "^2.4.0",
     "js-yaml": "5.4.3",
     "unpdf": "1.8.1"
@@ -79,7 +79,7 @@
     "html": "1.0.0",
     "http-proxy-agent": "9.1.0",
     "https-proxy-agent": "9.1.0",
-    "i18next-fs-backend": "2.6.8",
+    "i18next-fs-backend": "2.6.9",
     "image-type": "6.1.0",
     "ini": "7.0.0",
     "is-animated": "3.0.11",

@@ -9,6 +9,7 @@ import froca from "../services/froca.js";
 import { t } from "../services/i18n.js";
 import type { ViewScope } from "../services/link.js";
 import utils, { escapeHtml, isMobile, isShare } from "../services/utils.js";
+import { DISPLAY_MODE_OPTIONS } from "../widgets/type_widgets/helpers/split_editor_mode.js";
 import { getClosestNtxId } from "../widgets/widget_utils.js";
 import contextMenu, { type ContextMenuOptions, type MenuItem } from "./context_menu.js";
 import { submenuItem } from "./context_menu_utils.js";
@@ -28,13 +29,6 @@ interface MenuEmbed {
 }
 
 const CHECK_ICON = "bx bx-check";
-
-/** The display modes of an embed, with the icons and labels of the note's mode switcher. */
-const DISPLAY_MODE_ITEMS = [
-    { value: "source", uiIcon: "bx bx-code", titleKey: "display_mode.source" },
-    { value: "split", uiIcon: "bx bxs-dock-left", titleKey: "display_mode.split" },
-    { value: "preview", uiIcon: "bx bx-show", titleKey: "display_mode.preview" }
-] as const;
 
 let lastMenuRequest = 0;
 
@@ -319,9 +313,9 @@ function getEmbedItems(embed: MenuEmbed): MenuItem<CommandNames>[] {
         handler: () => runEmbedCommand(embed, "toggleContentEmbedEditable")
     } ] : [];
     const displayModeItems = state.displayMode
-        ? DISPLAY_MODE_ITEMS.map(({ value, uiIcon, titleKey }): MenuItem<CommandNames> => ({
+        ? DISPLAY_MODE_OPTIONS.map(({ value, icon, titleKey }): MenuItem<CommandNames> => ({
             title: t(titleKey),
-            uiIcon,
+            uiIcon: icon,
             checked: value === state.displayMode,
             handler: () => runEmbedCommand(embed, "contentEmbedDisplayMode", { value })
         }))
@@ -467,6 +461,7 @@ export default {
     getQuickEditItem,
     getOpenNoteItem,
     handleLinkContextMenuItem,
+    keepEditorFocused,
     openContextMenu,
     openEmbedContextMenu,
     setShareLinkResolver

@@ -255,4 +255,28 @@ describe("LinkEmbedEditing", () => {
         expect(modelPosition.parent.is("element", "paragraph")).toBe(true);
         expect(modelPosition.offset).toBe(4);
     });
+
+    it("turns the renderer's focus back on for a key in the text after a press on a mention", () => {
+        setModelData(editor.model, "<paragraph>foo[]"
+            + "<linkMention url=\"https://e.com/\" embedType=\"opengraph\"></linkMention>"
+            + "</paragraph>");
+        // A headless page cannot take the real focus, so set the flag the renderer reads.
+        editor.editing.view.document.isFocused = true;
+        const domRoot = editor.editing.view.getDomRoot();
+        const mention = domRoot?.querySelector(".link-mention-inner");
+        if (!domRoot || !mention) {
+            throw new Error("The link mention was not rendered.");
+        }
+
+        mention.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+        expect(rendererIsFocused()).toBe(false);
+
+        domRoot.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace" }));
+        expect(rendererIsFocused()).toBe(true);
+    });
+
+    function rendererIsFocused() {
+        //@ts-expect-error: The renderer is a private field.
+        return editor.editing.view._renderer.isFocused as boolean;
+    }
 });

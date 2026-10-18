@@ -336,6 +336,25 @@ describe("contextMenu", () => {
             ]);
         });
 
+        it("offers an input above the items of a filterable menu, which filters them", async () => {
+            buildPage();
+            const contextMenu = await buildContextMenu();
+
+            await contextMenu.show({
+                x: 10, y: 10, filterable: true, selectMenuItemHandler: () => {},
+                items: [ { title: "Plain text" }, { title: "Python" } ]
+            });
+
+            const input = menuRows()[0]
+                ?.querySelector<HTMLInputElement>("input.tn-menu-filter-input");
+            if (!input) throw new Error("no filter input");
+            input.value = "pyt";
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+            await vi.waitFor(() => {
+                expect(menuRows().slice(1).map((row) => row.textContent)).toEqual([ "Python" ]);
+            });
+        });
+
         it("shows badges after the title, and a trailing icon at the end of the row", async () => {
             buildPage();
             const contextMenu = await buildContextMenu();

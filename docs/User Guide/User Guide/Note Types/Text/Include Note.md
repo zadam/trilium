@@ -66,7 +66,7 @@ To open an included note in a new tab, press the <span class="tn-icon bx bx-link
 
 The <span class="tn-icon bx bx-dots-vertical-rounded"></span> _More actions_ button at the end of the title row opens the same menu as right-clicking anywhere on the title row: the other places to open the note in and, for an embedded attachment, the actions on the attachment.
 
-In a note being edited, the menu also has the commands of the include's toolbar: the _Size_ submenu, _Show title_ and _Show caption_, each checked while it is in effect, and _Convert to link_ at the end. A drawing canvas, a Mermaid diagram, an included text or code note and an embedded code file also have _Editable_, above _Size_. A Mermaid diagram also has _Source view_, _Split view_ and _Preview_ after _Editable_. For an embedded attachment they follow its first group of actions; for an included note they end the menu.
+In a note being edited, the menu also has the commands of the include's toolbar: the _Size_ submenu, _Show title_ and _Show caption_, each checked while it is in effect, and _Convert to link_ at the end. A drawing canvas, a Mermaid diagram, an included text, code or Markdown note and an embedded code or Markdown file also have _Editable_, above _Size_. A Mermaid diagram, an included Markdown note and an embedded Markdown file also have _Source view_, _Split view_ and _Preview_ after _Editable_. For an embedded attachment they follow its first group of actions; for an included note they end the menu.
 
 To show an include of size _Medium_ or _Full_ on the whole screen, press the <span class="tn-icon bx bx-fullscreen"></span> _Fullscreen_ button at the end of its title. An excerpt of the blocks of a note has an <span class="tn-icon bx bx-pencil"></span> _Edit excerpt_ button there instead; see <a class="reference-link" href="Block%20references.md">Block references</a>. To return, press <span class="tn-icon bx bx-exit"></span> _Exit fullscreen_ in the top-right corner, or <kbd>Esc</kbd>.
 
@@ -106,14 +106,31 @@ In a _Small_ or _Medium_ box, the image is scaled down to fit the height of the 
 
 ## Editing an include in place
 
-An included text note, an included code note and an embedded code file such as a `.js`, `.py` or `.txt` attachment can be edited without leaving the note that includes them. A code note or file is shown with syntax highlighting until then.
+An included text note, an included code note and an embedded code file such as a `.js`, `.py` or `.txt` attachment can be edited without leaving the note that includes them. A code note or file is shown with syntax highlighting until then. Included Markdown can be edited too, see _Included Markdown_ below.
 
 *   To edit, select the include and turn on the <span class="tn-icon bx bx-edit-alt"></span> _Editable_ button at the start of its toolbar, or check _Editable_ in its <span class="tn-icon cke cke-three-vertical-dots"></span> _More actions_ menu. Turn _Editable_ off to return to the preview.
+*   While _Editable_ is on, the arrow keys move the caret into the include and back out, as through the rest of the text. Entering from above or from the left puts the caret at the start of the include, and entering from below or from the right puts it at the end. A collapsed _Expandable_ include is skipped.
 *   While an included text note has the focus, the formatting toolbar applies to it. The notes it includes in turn stay read-only.
 *   Code is edited in the same code editor as a <a class="reference-link" href="../Code.md">Code</a> note, with its theme, indentation and line wrapping settings.
+*   The toolbar of an included code note or an embedded code file also has the language and indentation menus of the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a>, between _Editable_ and the _Box size_ menu: _Change language mode_, which shows the current language, and _Change tab width_, which shows the current indentation. _Re-indent content to_ converts the indentation of the code itself and saves it to the included note or file, whether _Editable_ is on or off.
+    *   For an included note, the menus change the note, as they do in its own tab.
+    *   For an embedded code file, the language and indentation settings change only how this include shows the file, and are saved with the note that includes it. The language replaces the one that the file name gives, and the _Use default_ entries return to the indentation set in <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Code Notes_. These settings leave the file itself unchanged, and other includes of it keep their own settings.
 *   The changes are saved as you type, to the included note or to the attachment, as they would be in its own tab.
 *   An include of <a class="reference-link" href="Block%20references.md">Block references</a> edits only the referenced blocks.
 *   Editing is not available in a [read-only note](../../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md), for an included note marked `#readOnly`, or for an attachment of another note.
+*   <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Navigation/Search%20in%20note.md">Search in note</a> finds the text of included text and code notes among the results of the note around them, and replaces it while _Editable_ is on.
+
+## Included Markdown
+
+An included <a class="reference-link" href="../Markdown.md">Markdown</a> note and an embedded Markdown file, such as a `.md` attachment, are shown with the same three views as a Markdown note in its own tab (see <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20types%20with%20split%20view.md">Note types with split view</a>): <span class="tn-icon bx bx-code"></span> _Source view_, <span class="tn-icon bx bxs-dock-left"></span> _Split view_ and <span class="tn-icon bx bx-show"></span> _Preview_.
+
+*   To switch the view, press one of the three buttons in the title row of the include. In a note being edited, the toolbar of the include has the same buttons after _Editable_, and its <span class="tn-icon cke cke-three-vertical-dots"></span> _More actions_ menu has them as _Source view_, _Split view_ and _Preview_.
+*   Until a view is chosen, the include shows the _Preview_, and the _Split view_ while _Editable_ is on.
+*   To edit the Markdown, turn on _Editable_ (see _Editing an include in place_ above). The source is edited in the code editor of a Markdown note, and the preview follows the changes as you type. While _Editable_ is off, the source can be read and copied but not changed.
+*   As in a Markdown note, the preview scrolls along with the source and highlights the block where the cursor is, and <kbd>Ctrl</kbd>+<kbd>B</kbd>, <kbd>Ctrl</kbd>+<kbd>I</kbd>, <kbd>Ctrl</kbd>+<kbd>M</kbd> and <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd> format the selection.
+*   In a note being edited, the view is saved with the include, so two includes of the same note can show different views. In a [read-only note](../../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md), the view can be changed too, until the note is opened again.
+*   While the source shows, the include has the height of its box size, or the height it was resized to. A _Full_ include gets a fixed height too, instead of fitting its content.
+*   <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Navigation/Search%20in%20note.md">Search in note</a> searches the source while it shows, and the preview otherwise.
 
 ## Drawing canvases
 
