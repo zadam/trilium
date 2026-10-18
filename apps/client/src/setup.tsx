@@ -638,7 +638,9 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
     const [ syncProxy, setSyncProxy ] = useState("");
     const [ error, setError ] = useState<string | null>(null);
     const [ errorId, setErrorId ] = useState(0);
-    const [ isWrongPassword, setIsWrongPassword ] = useState(false);
+    const [ totpToken, setTotpToken ] = useState("");
+    const totpRef = useRef<HTMLInputElement>(null);
+    const [ refusedFactor, setRefusedFactor ] = useState<RefusedFactor | null>(null);
     const isValid = syncServerHost.trim() !== "" && password !== "";
 
     useEffect(() => {
@@ -664,11 +666,13 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
     }
 
     async function handleFinishSetup() {
+        setRefusedFactor(null);
         try {
             const resp = await server.post<SetupSyncFromServerResponse>("setup/sync-from-server", {
                 syncServerHost: syncServerHost.trim().replace(/\/+$/, ""),
                 syncProxy: syncProxy.trim(),
                 password,
+                totpToken: totpToken.trim(),
                 // On mobile (Capacitor), don't pull blobs above the default limit — they blow the
                 // WASM/native heap during sync. The server sends stubs instead; other platforms
                 // send 0 (no limit).
@@ -687,10 +691,18 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
             // the server knows which of the two happened, so it is asked rather than guessed at.
             await refreshExistingData();
 
-            if (resp.error.includes("Incorrect password")) {
-                setIsWrongPassword(true);
-            } else {
+            const factor = getRefusedFactor(resp.error);
+            if (!factor) {
                 raiseError(resp.error);
+                return;
+            }
+
+            setRefusedFactor(factor);
+            if (factor === "totp") {
+                setTotpToken("");
+            }
+            if (factor !== "password") {
+                totpRef.current?.focus();
             }
         } catch (e) {
             raiseError(e instanceof Error ? e.message : String(e));
@@ -725,13 +737,28 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
                     <CardSection>
                         <FormGroup
                             label={t("setup.server-password")} name="serverPassword"
-                            error={isWrongPassword ? t("setup.wrong-password") : undefined}
+                            error={refusedFactor === "password" ? t("setup.wrong-password") : undefined}
                         >
                             <FormTextBox
                                 type="password"
                                 currentValue={password} onChange={setPassword}
                                 autocomplete="trilium-sync-server-password"
                                 required
+                            />
+                        </FormGroup>
+                    </CardSection>
+
+                    <CardSection>
+                        <FormGroup
+                            label={t("setup.server-totp-token")} name="serverTotpToken"
+                            description={t("setup.server-totp-token-description")}
+                            error={refusedFactor === "totp-required" ? t("setup.totp-required")
+                                : refusedFactor === "totp" ? t("setup.wrong-totp") : undefined}
+                        >
+                            <FormTextBox
+                                inputRef={totpRef}
+                                currentValue={totpToken} onChange={setTotpToken}
+                                autocomplete="one-time-code"
                             />
                         </FormGroup>
                     </CardSection>
@@ -751,6 +778,16 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
             </form>
         </SetupPage>
     );
+}
+
+type RefusedFactor = "password" | "totp-required" | "totp";
+
+/** Reads which credential the sync server refused from the 401 body that `checkCredentials` sends. */
+function getRefusedFactor(error: string): RefusedFactor | null {
+    if (error.includes("Incorrect password")) return "password";
+    if (error.includes("TOTP token is required")) return "totp-required";
+    if (error.includes("Incorrect TOTP token")) return "totp";
+    return null;
 }
 
 function SyncFromDesktop({ setState }: { setState: (state: State) => void }) {

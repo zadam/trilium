@@ -19,6 +19,15 @@ TOTP (Time-Based One-Time Password) is a security feature that generates a uniqu
 6.  Save the recovery codes, then tick the confirmation and press _Finish setup_.
 7.  Re-login will be required after TOTP setup is finished (After you refreshing the page).
 
+## Connecting a device to the server
+
+Once TOTP is enabled, connecting a new desktop or mobile app to the server through <a class="reference-link" href="../Synchronization.md">Synchronization</a> also asks for the second factor. On the _Connect to an existing server_ screen, enter a one-time password or a recovery code in _One-time password or recovery code_, next to the server's password. Without it, the server refuses to set up the sync.
+
+The second factor is only asked for when a device is first connected. A device that is already set up keeps syncing without it.
+
+> [!NOTE]
+> Versions prior to v0.107.0 do not ask for the second factor when setting up the sync. Update the desktop and mobile apps along with the server, since older apps have no field to send it.
+
 ## Recovery codes
 
 Recovery codes can be used in place of the TOTP if you lose access to your authenticator. Trilium provides 8 different recovery codes, each recovery code can be used once.
