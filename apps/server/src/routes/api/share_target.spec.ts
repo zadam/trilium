@@ -52,6 +52,19 @@ describe("POST /share-target", () => {
         expect(Object.keys(becca.notes)).toHaveLength(notesBefore);
     });
 
+    it("refuses a form posted by another page and accepts the share sheet's navigation", async () => {
+        const notesBefore = Object.keys(becca.notes).length;
+        for (const site of [ "same-site", "cross-site" ]) {
+            const res = await agent.post("/share-target").set("Sec-Fetch-Site", site).field("text", "hello");
+            expect(res.status).toBe(403);
+        }
+        expect(Object.keys(becca.notes)).toHaveLength(notesBefore);
+
+        for (const site of [ "none", "same-origin" ]) {
+            await agent.post("/share-target").set("Sec-Fetch-Site", site).field("text", "hello").expect(303);
+        }
+    });
+
     it("saves shared text and a url as a text note with a pageUrl label", async () => {
         const res = await agent
             .post("/share-target")

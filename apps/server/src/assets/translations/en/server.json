@@ -594,6 +594,9 @@
     "stalled": "Downloading {{name}} stopped: nothing arrived for {{seconds}} seconds. Check your connection, then try again."
   },
   "share_target": {
-    "default-title": "Shared content"
+    "default-title": "Shared content",
+    "nothing-to-share": "Nothing to share: no text, link or files were received.",
+    "rejected": "Share rejected: {{- reason}}",
+    "other-page": "Only the system share menu can send content to this address."
   }
 }

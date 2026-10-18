@@ -1,8 +1,9 @@
-import { entity_changes as entityChangesService, HttpError, routes, utils as coreUtils } from "@triliumnext/core";
+import { entity_changes as entityChangesService, HttpError, MAX_BLOB_CONTENT_LENGTH, routes, utils as coreUtils } from "@triliumnext/core";
 import express, { type RequestHandler } from "express";
 import type { ParamsDictionary } from "express-serve-static-core";
 import { mkdirSync } from "fs";
 import { readFile, rm } from "fs/promises";
+import { t } from "i18next";
 import multer from "multer";
 import { join } from "path";
 import { Transform } from "stream";
@@ -198,7 +199,40 @@ export function createImportUploadMiddleware(): RequestHandler {
 /** The most files a single Web Share Target request can carry. */
 export const MAX_SHARED_FILES = 20;
 
-export function createShareTargetUploadMiddleware(): RequestHandler {
+/**
+ * Parses a Web Share Target POST into `req.body` and `req.files` and deletes its temp files once
+ * the response closes. Each shared file becomes one blob, so `maxFileSize` defaults to the blob limit:
+ * a file above it is rejected here, before the handler creates any note.
+ */
+export function createShareTargetMiddleware(maxFileSize = MAX_BLOB_CONTENT_LENGTH): RequestHandler {
+    const uploadMiddleware = createShareTargetUploadMiddleware(maxFileSize);
+
+    return (req, res, next) => {
+        uploadMiddleware(req, res, (err) => {
+            const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+            res.on("close", () => {
+                for (const file of files) {
+                    void rm(file.path, { force: true }).catch(() => {});
+                }
+            });
+
+            if (rejectedNestedField(err, res)) {
+                return;
+            }
+            if (err instanceof multer.MulterError) {
+                res.setHeader("Content-Type", "text/plain").status(400).send(t("share_target.rejected", { reason: err.message }));
+                return;
+            }
+            if (err) {
+                next(err);
+                return;
+            }
+            next();
+        });
+    };
+}
+
+function createShareTargetUploadMiddleware(maxFileSize: number): RequestHandler {
     // Disk storage: a share can carry several large files, so the handler reads them back from
     // `file.path` one at a time instead of holding all of them in memory.
     const options: multer.Options & { streamHandler?: (req: express.Request, busboy: NodeJS.WritableStream) => void } = {
@@ -215,7 +249,7 @@ export function createShareTargetUploadMiddleware(): RequestHandler {
             }
         }
     };
-    options.limits = { ...options.limits, files: MAX_SHARED_FILES };
+    options.limits = { ...options.limits, files: MAX_SHARED_FILES, fileSize: maxFileSize };
 
     return multer(options).array("files");
 }
@@ -263,7 +297,6 @@ function tmpDirStorage(): multer.StorageEngine {
 
 const uploadMiddleware = createUploadMiddleware();
 const importUploadMiddleware = createImportUploadMiddleware();
-const shareTargetUploadMiddleware = createShareTargetUploadMiddleware();
 
 /** Maps the multer field-nesting guard to a clean 400; returns true when the request was already answered. */
 function rejectedNestedField(err: { code?: string } | undefined, res: express.Response): boolean {
@@ -310,30 +343,7 @@ export const importMiddlewareWithErrorHandling = function (req: express.Request,
     });
 };
 
-/** Parses a Web Share Target POST and deletes its temp files once the response closes. */
-export const shareTargetMiddlewareWithErrorHandling = function (req: express.Request, res: express.Response, next: express.NextFunction) {
-    shareTargetUploadMiddleware(req, res, (err) => {
-        const files = (req.files as Express.Multer.File[] | undefined) ?? [];
-        res.on("close", () => {
-            for (const file of files) {
-                void rm(file.path, { force: true }).catch(() => {});
-            }
-        });
-
-        if (rejectedNestedField(err, res)) {
-            return;
-        }
-        if (err instanceof multer.MulterError) {
-            res.setHeader("Content-Type", "text/plain").status(400).send(`Share rejected: ${err.message}`);
-            return;
-        }
-        if (err) {
-            next(err);
-            return;
-        }
-        next();
-    });
-};
+export const shareTargetMiddlewareWithErrorHandling = createShareTargetMiddleware();
 
 /**
  * Whether this upload is a `.zip` read by a zip-reading importer — the case worth streaming from disk. That

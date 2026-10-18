@@ -1,6 +1,6 @@
 import { isAcceptedImageMime } from "@triliumnext/commons";
 import { type BNote, date_utils as dateUtils, getSql, note_service as noteService, protected_session as protectedSessionService, sanitize, special_notes as specialNotesService, utils } from "@triliumnext/core";
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { readFileSync } from "fs";
 import { t } from "i18next";
 
@@ -19,7 +19,7 @@ async function handleShare(req: Request, res: Response) {
     const files = (req.files as Express.Multer.File[] | undefined) ?? [];
 
     if (!text && !url && files.length === 0) {
-        res.status(400).type("text/plain").send("Nothing to share: no text, url or files were provided.");
+        res.status(400).type("text/plain").send(t("share_target.nothing-to-share"));
         return;
     }
 
@@ -29,6 +29,20 @@ async function handleShare(req: Request, res: Response) {
     await Promise.all(imageNoteIds.map((noteId) => imageService.awaitImageWrite(noteId)));
 
     res.redirect(303, `./#${openNote.getBestNotePathString()}`);
+}
+
+/**
+ * Rejects a form that another page posts to `/share-target`. The route takes no CSRF token, and the
+ * `SameSite=Lax` session cookie still reaches it from a page on the same site (another subdomain).
+ * The share sheet's navigation is browser-initiated, so it arrives as `Sec-Fetch-Site: none`.
+ */
+function rejectOtherPages(req: Request, res: Response, next: NextFunction) {
+    const site = req.headers["sec-fetch-site"];
+    if (site === "same-site" || site === "cross-site") {
+        res.status(403).type("text/plain").send(t("share_target.other-page"));
+        return;
+    }
+    next();
 }
 
 /**
@@ -135,5 +149,6 @@ export function needsContainerNote(hasText: boolean, fileCount: number): boolean
 }
 
 export default {
-    handleShare
+    handleShare,
+    rejectOtherPages
 };

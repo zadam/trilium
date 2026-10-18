@@ -167,9 +167,9 @@ function register(app: express.Application) {
     asyncRoute(PST, "/api/sender/image", [auth.checkEtapiToken, uploadMiddlewareWithErrorHandling], senderRoute.uploadImage, apiResultHandler);
     asyncRoute(PST, "/api/sender/note", [auth.checkEtapiToken], senderRoute.saveNote, apiResultHandler);
 
-    // The OS share sheet posts this form, so it carries no CSRF token; the session cookie is
-    // `SameSite=Lax`, which a cross-site POST does not carry.
-    asyncRoute(PST, "/share-target", [auth.checkApiAuth, shareTargetMiddlewareWithErrorHandling], shareTargetRoute.handleShare, null);
+    // The OS share sheet posts this form, so it carries no CSRF token; `rejectOtherPages` refuses
+    // the same form when another page posts it.
+    asyncRoute(PST, "/share-target", [auth.checkApiAuth, shareTargetRoute.rejectOtherPages, shareTargetMiddlewareWithErrorHandling], shareTargetRoute.handleShare, null);
 
     // POST rather than GET: the URL would otherwise sit in the query string of every access-log
     // line (Trilium's own, and any reverse proxy in front of it), and a pasted URL can carry a

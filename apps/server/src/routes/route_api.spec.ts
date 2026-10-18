@@ -7,6 +7,7 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import {
     apiResultHandler,
     asyncRoute,
+    createShareTargetMiddleware,
     importMiddlewareWithErrorHandling,
     route,
     router,
@@ -139,6 +140,21 @@ describe("uploadMiddlewareWithErrorHandling (in-memory)", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.hasFile).toBe(false);
+    });
+});
+
+describe("createShareTargetMiddleware", () => {
+    it("rejects a file above the size limit before the handler runs", async () => {
+        const app = express();
+        const handler = vi.fn((_req: express.Request, res: express.Response) => res.sendStatus(200));
+        app.post("/share", createShareTargetMiddleware(4), handler);
+
+        const res = await request(app).post("/share").attach("files", Buffer.from("12345"), "big.bin");
+
+        expect(res.status).toBe(400);
+        expect(res.text).toContain("Share rejected");
+        expect(handler).not.toHaveBeenCalled();
+        await request(app).post("/share").attach("files", Buffer.from("1234"), "fits.bin").expect(200);
     });
 });
 
