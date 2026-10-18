@@ -1,7 +1,9 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tooltips, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
-import { Compartment, EditorSelection, EditorState, StateEffect, type Extension } from "@codemirror/state";
+import {
+    Compartment, EditorSelection, EditorState, Prec, StateEffect, type Extension
+} from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
 import { vim } from "@replit/codemirror-vim";
@@ -145,7 +147,9 @@ export default class CodeMirror extends EditorView {
             typeCompletionCompartment.of([]),
             completionSourceCompartment.of([]),
             highlightActiveLine(),
-            lineNumbersCompartment.of(config.lineNumbers === false ? [] : lineNumbers()),
+            lineNumbersCompartment.of(
+                config.lineNumbers === false ? hiddenLineNumbersTheme : lineNumbers()
+            ),
             themeCompartment.of([
                 syntaxHighlighting(defaultHighlightStyle, { fallback: true })
             ]),
@@ -285,7 +289,11 @@ export default class CodeMirror extends EditorView {
 
         this.hasLineNumbers = isShown;
         this.dispatch({
-            effects: [ this.lineNumbersCompartment.reconfigure(isShown ? lineNumbers() : []) ]
+            effects: [
+                this.lineNumbersCompartment.reconfigure(
+                    isShown ? lineNumbers() : hiddenLineNumbersTheme
+                )
+            ]
         });
     }
 
@@ -578,3 +586,14 @@ function getTooltipHost() {
     document.body.appendChild(host);
     return host;
 }
+
+/**
+ * Merges the gutter, which still holds the fold markers, into the code area while the line
+ * numbers are off. `Prec.highest` outranks the `.cm-gutters` rule of the color theme.
+ */
+const hiddenLineNumbersTheme = Prec.highest(EditorView.theme({
+    ".cm-gutters": {
+        border: "none",
+        backgroundColor: "transparent"
+    }
+}));

@@ -284,6 +284,24 @@ describe("CodeMirror", () => {
             expect(hasLineNumbers(editor)).toBe(false);
         });
 
+        it("blends the gutter into the code while the line numbers are off", async () => {
+            const theme = getThemeById("github-light");
+            expect(theme).not.toBeNull();
+            if (!theme) return;
+            editor = build({ lineNumbers: false });
+            await editor.setTheme(theme);
+
+            const [ hidden ] = getGutterRules(editor);
+            expect(hidden).toContain("background-color: transparent;");
+            expect(hidden).toContain("border: none;");
+            expect(hidden).not.toContain("border-right");
+
+            editor.setLineNumbers(true);
+            const [ shown ] = getGutterRules(editor);
+            expect(shown).toContain("background-color: #f6f8fa;");
+            expect(shown).toContain("border-right: 1px solid");
+        });
+
         it("clamps the indent size to a sane range", () => {
             editor = build();
 
@@ -679,6 +697,13 @@ function build(config: Partial<EditorConfig> = {}): CodeMirror {
     const parent = document.createElement("div");
     document.body.appendChild(parent);
     return new CodeMirror({ parent, ...config });
+}
+
+/** The `.cm-gutters` rules of `view`, the one that takes effect first. */
+function getGutterRules(view: CodeMirror) {
+    return view.state.facet(EditorView.styleModule)
+        .flatMap((module) => module.getRules().split("\n"))
+        .filter((rule) => / \.cm-gutters \{/.test(rule));
 }
 
 /** A keydown of `key` from `target`, which the editor does not handle, as it is not dispatched. */
