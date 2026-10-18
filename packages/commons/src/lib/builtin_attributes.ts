@@ -208,9 +208,10 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "executeTitle", valueType: "text", hasUserValue: true },
     { type: "label", name: "newNotesOnTop", valueType: "boolean" },
     { type: "label", name: "clipperInbox", valueType: "boolean" },
-    // Stamped by the web clipper on what it saves, recording which of its actions produced the note.
+    // Stamped by the web clipper and the PWA share target on what they save, recording which
+    // action produced the note.
     { type: "label", name: "clipType", valueType: "select", selectOptions: [
-        "clippings", "page", "note", "tabs", "file"
+        "clippings", "page", "note", "tabs", "file", "share"
     ] },
     { type: "label", name: "sentFromSender", valueType: "boolean" },
     { type: "label", name: "hideChildrenOverview", valueType: "boolean" },

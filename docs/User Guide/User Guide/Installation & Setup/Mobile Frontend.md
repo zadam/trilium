@@ -73,7 +73,7 @@ Once installed as a PWA on Android, Trilium appears in the system's share menu, 
 *   A single file becomes an image note or a file note, placed directly in the inbox.
 *   Several files, or files shared together with text, are placed under a new text note that holds the text.
 
-Every note created this way carries the `#sharedToTrilium` label. A single share can carry at most 20 files.
+Every note created this way carries the `#clipType=share` label, which gives a shared text note the <span class="tn-icon bx bx-share"></span> icon unless the note has an `#iconClass` of its own. A single share can carry at most 20 files.
 
 > [!NOTE]
 > Sharing requires being logged in. If the session has expired, log in again and share once more.

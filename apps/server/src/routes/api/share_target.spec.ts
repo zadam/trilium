@@ -65,7 +65,7 @@ describe("POST /share-target", () => {
         expect(note.type).toBe("text");
         expect(note.getContent()).toBe(`<p>Worth a read</p><p><a href="https://example.com/a?x=1&amp;y=2">https://example.com/a?x=1&amp;y=2</a></p>`);
         expect(note.getLabelValue("pageUrl")).toBe("https://example.com/a?x=1&y=2");
-        expect(note.hasLabel("sharedToTrilium")).toBe(true);
+        expect(note.getLabelValue("clipType")).toBe("share");
     });
 
     it("puts a single file straight into the inbox and removes its temp file", async () => {
@@ -125,7 +125,7 @@ describe("POST /share-target", () => {
         const image = children.find((child) => child.type === "image");
         expect(image?.mime).toBe("image/png");
         expect(image?.getContent().length).toBeGreaterThan(0);
-        expect(children.every((child) => child.hasLabel("sharedToTrilium"))).toBe(true);
+        expect(children.map((child) => child.getLabelValue("clipType"))).toEqual([ "share", "share" ]);
     });
 
     it("answers a 400 to an empty share and to a malformed or oversized multipart body", async () => {

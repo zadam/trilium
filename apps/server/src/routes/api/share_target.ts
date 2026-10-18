@@ -50,7 +50,7 @@ function saveShare(rawTitle: unknown, text: string | undefined, url: string | un
             mime: "text/html",
             isProtected: isProtectedUnder(inboxNote)
         }));
-        containerNote.addLabel("sharedToTrilium");
+        containerNote.addLabel("clipType", "share");
         if (url) {
             containerNote.setLabel("pageUrl", url);
         }
@@ -79,7 +79,7 @@ function saveShare(rawTitle: unknown, text: string | undefined, url: string | un
             note.addLabel("originalFileName", originalName);
         }
 
-        note.addLabel("sharedToTrilium");
+        note.addLabel("clipType", "share");
         firstFileNote ??= note;
     }
 

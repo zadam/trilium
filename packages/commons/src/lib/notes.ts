@@ -161,12 +161,16 @@ export const GEO_SHAPE_ICONS: Record<string, string> = {
     circle: "bx bx-shape-circle"
 };
 
-/** The icon of a note made by the web clipper, keyed by its `#clipType` label. */
+/**
+ * The icon of a note made by the web clipper or the PWA share target, keyed by its `#clipType`
+ * label.
+ */
 export const CLIP_TYPE_ICONS: ReadonlyMap<string, string> = new Map([
     [ "clippings", "bx bx-paperclip" ],
     [ "page", "bx bx-globe" ],
     [ "note", "bx bx-bookmark" ],
-    [ "tabs", "bx bx-window-alt" ]
+    [ "tabs", "bx bx-window-alt" ],
+    [ "share", "bx bx-share" ]
 ]);
 
 /** The icon of a calendar event, a text note with a start date (see {@link getEventStartDate}). */
