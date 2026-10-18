@@ -434,6 +434,7 @@ button kbd {
         --cm-tooltip-background: var(--tooltip-background-color, transparent);
 
         max-width: 500px;
+        padding: 0;
         border: 0;
         border-radius: var(--tooltip-border-radius, 5px);
         background:
@@ -441,32 +442,44 @@ button kbd {
             var(--main-background-color);
         color: var(--tooltip-foreground-color, var(--main-text-color));
         box-shadow: var(--tooltip-box-shadow, 0 5px 10px rgba(0, 0, 0, 0.2));
+        font-family: var(--main-font-family);
         font-size: var(--tooltip-font-size, 0.9em);
+        line-height: 1.5;
         overflow: hidden;
     }
 
     .cm-diagnostic {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5em;
         margin: 0;
         padding: var(--tooltip-padding, 4px 8px);
-        padding-inline-start: 10px;
+        padding-inline-start: 16px;
         border: 0;
-        border-inline-start: 3px solid transparent;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset-block: 6px;
+            inset-inline-start: 6px;
+            width: 3px;
+            border-radius: 3px;
+            background: var(--cm-diagnostic-color, transparent);
+        }
     }
 
     .cm-diagnostic-error {
-        border-inline-start-color: var(--admonition-caution-accent-color);
+        --cm-diagnostic-color: var(--admonition-caution-accent-color);
     }
 
     .cm-diagnostic-warning {
-        border-inline-start-color: var(--admonition-warning-accent-color);
+        --cm-diagnostic-color: var(--admonition-warning-accent-color);
     }
 
     .cm-diagnostic-info {
-        border-inline-start-color: var(--admonition-note-accent-color);
+        --cm-diagnostic-color: var(--admonition-note-accent-color);
     }
 
     .cm-diagnosticAction {
