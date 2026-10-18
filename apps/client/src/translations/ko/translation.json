@@ -627,9 +627,9 @@
     "run_on_instance": "이 항목을 실행할 Trilium 인스턴스를 지정합니다. 기본값은 모든 인스턴스입니다.",
     "run_at_hour": "실행할 시간을 지정합니다. <code>#run=hourly</code> 와 함께 사용해야 합니다. 하루에 여러 번 실행하려면 여러 번 정의할 수 있습니다.",
     "disable_inclusion": "이 라벨이 붙은 스크립트는 상위 스크립트 실행에 포함되지 않습니다.",
-    "sorted": "하위 노트를 제목 기준 알파벳순으로 정렬합니다. 값을 지정하면 다른 기준으로 정렬할 수 있습니다. 쉼표로 구분된 여러 단계에 <code>title</code>, <code>dateCreated</code>, <code>dateModified</code> 또는 라벨 이름을 지정하고, 각 항목 뒤에는 <code>asc</code> 또는 <code>desc</code>, 둘 중 하나를 선택적으로 붙일 수 있습니다. 예: <code>priority desc, dueDate</code>.",
-    "sort_direction": "정렬 방향은 <code>#sorted</code> 설정으로 결정됩니다. 내림차순은 <code>desc</code> 값을 사용하고, 그 외의 값은 오름차순입니다. 각 정렬 단계에 <code>asc</code> 또는 <code>desc</code> 값을 직접 지정하면 이 설정을 무시합니다. <code>#sorted</code> 설정이 없으면 적용되지 않습니다.",
-    "sort_folders_first": "폴더(하위 노트가 있는 노트)를 맨 위에 정렬합니다.",
+    "sorted": "하위 노트를 제목의 가나다순 또는 알파벳순으로 정렬합니다. 값을 지정하면 다른 기준으로 정렬할 수 있습니다. 정렬 기준은 쉼표로 구분하여 여러 단계로 지정하며, 각 단계에는 <code>#name</code> 형식의 라벨이나 <code>title</code>, <code>dateCreated</code>, <code>dateModified</code> 중 하나를 사용합니다. 필요에 따라 <code>asc</code> 또는 <code>desc</code> 를 뒤에 추가할 수 있습니다. 예: <code>#priority desc, title</code>. 라벨이나 <code>folders</code> 뒤에 <code>first</code> 또는 <code>last</code> 를 지정하면 해당 조건을 만족하는 노트를 앞이나 뒤로 그룹화합니다. 예: <code>#archived last, folders first, title</code>. <code>#</code> 기호가 없는 단일 이름은 해당 속성을 기준으로 정렬하며, 속성이 없으면 같은 이름의 라벨을 기준으로 정렬합니다.",
+    "sort_direction": "<code>#sorted</code> 속성으로 하위 노트를 정렬할 때 적용할 방향을 지정합니다. <code>desc</code> 는 내림차순이며, 그 외의 값은 오름차순으로 정렬합니다. 각 정렬 단계에 <code>asc</code>, <code>desc</code>, <code>first</code> 또는 <code>last</code> 옵션이 별도로 지정되어 있으면 이 설정은 무시됩니다. <code>#sorted</code> 속성이 설정되지 않은 경우에도 무시됩니다.",
+    "sort_folders_first": "하위 노트가 있는 폴더를 맨 위에 정렬합니다. <code>#sorted</code> 설정에서 <code>folders</code> 항목의 위치를 직접 지정한 경우(예: <code>folders last</code>)에는 이 설정이 무시됩니다.",
     "top": "이 노트를 상위 노트의 맨 위에 유지합니다. 상위 노트가 정렬된 경우에만 적용됩니다.",
     "hide_promoted_attributes": "이 노트에서 표시 속성을 숨깁니다.",
     "read_only": "편집기를 읽기 전용 모드로 설정합니다. 텍스트 노트와 코드 노트에만 적용됩니다.",
@@ -855,7 +855,9 @@
     "modified_date": "웹 클리핑한 페이지의 마지막 수정일입니다. 노트의 \"웹 클립\" 배지 세부 정보에 표시됩니다.",
     "calendar_title_template": "캘린더에 표시되는 일정의 제목을 지정하며, 반복 일정의 경우 각 발생 날짜에 맞게 값이 채워집니다. <code>${title}</code> 은 제목, <code>${years}</code> 는 시작일로부터 경과한 만 나이(연수)를 나타내며, <code>${date}</code> 와 <code>${startDate}</code> 는 날짜를 나타냅니다. 예를 들어 매년 반복되는 생일 일정에는 <code>${title} (${years})</code> 형식을 사용할 수 있습니다.",
     "board_hide_add_column": "보드 컬렉션에서 마지막 열 뒤에 있는 <em>열 추가</em> 버튼을 숨깁니다. 보드 또는 열의 컨텍스트 메뉴에서는 계속 열을 추가할 수 있습니다.",
-    "meeting_recording": "실행 표시줄의 \"회의 내용 전사\" 버튼으로 생성된 노트임을 나타냅니다. 이 노트에는 회의 전사 내용이 저장됩니다."
+    "meeting_recording": "실행 표시줄의 \"회의 내용 전사\" 버튼으로 생성된 노트임을 나타냅니다. 이 노트에는 회의 전사 내용이 저장됩니다.",
+    "calendar_hide_routine_events": "일주일에 {{days}}일 이상 반복되는 시간 지정 일정을 월간, 연간 및 목록 보기에서 숨깁니다. 속성값에 관계없이 적용됩니다.",
+    "template_title_template": "템플릿 노트에 설정하는 속성으로, 해당 템플릿에서 생성되는 노트의 기본 제목을 지정합니다. 부모 노트의 <code>#titleTemplate</code> 설정보다 우선 적용됩니다. <code>#titleTemplate</code> 설정과 동일한 방식으로 평가되며, 자동으로 제공되는 <code>now</code> 및 <code>parentNote</code> 변수를 사용할 수 있습니다. 예: <code>Meeting ${now.format('YYYY-MM-DD')}</code>."
   },
   "attribute_editor": {
     "help_text_body1": "레이블을 추가하려면 예를 들어 <code>#rock</code> 값을 입력합니다. 값도 함께 추가하려면 예를 들어 <code>#year = 2020</code> 값을 입력합니다",
@@ -863,8 +865,8 @@
     "help_text_body3": "또는 오른쪽의 <code>+</code> 버튼으로 라벨과 관계를 추가할 수 있습니다.",
     "save_attributes": "속성 저장 <enter>",
     "add_a_new_attribute": "새로운 속성 추가",
-    "add_new_label": "새 라벨 추가 <kbd data-command=\"addNewLabel\"></kbd>",
-    "add_new_relation": "새 관계 추가 <kbd data-command=\"addNewRelation\"></kbd>",
+    "add_new_label": "새 라벨 추가... <kbd data-command=\"addNewLabel\"></kbd>",
+    "add_new_relation": "새 관계 추가... <kbd data-command=\"addNewRelation\"></kbd>",
     "add_new_label_definition": "새 라벨 정의 추가...",
     "add_new_relation_definition": "새 관계 정의 추가...",
     "placeholder": "여기에 라벨과 관계를 입력하세요"
@@ -2538,11 +2540,12 @@
     "allowed_tools": "이 채팅에서 허용됨",
     "permissions": "권한",
     "permission_mode_always_ask": "항상 확인",
-    "permission_mode_always_ask_description": "읽기 작업을 포함한 모든 작업 전에 확인합니다.",
+    "permission_mode_always_ask_description": "모든 작업 전에 확인 요청(읽기 포함)",
     "permission_mode_ask_before_changes": "변경 전 확인",
-    "permission_mode_ask_before_changes_description": "노트를 변경하기 전에만 확인합니다.",
+    "permission_mode_ask_before_changes_description": "노트를 변경하기 전에만 확인 요청",
     "permission_mode_dont_ask": "확인하지 않음",
-    "permission_mode_dont_ask_description": "변경을 포함한 모든 작업을 확인 없이 실행합니다."
+    "permission_mode_dont_ask_description": "변경 작업을 포함한 모든 작업을 확인 없이 자동 실행",
+    "allowed_tools_count_other": "도구 {{count}}개"
   },
   "sidebar_chat": {
     "title": "AI 채팅",
@@ -2770,7 +2773,7 @@
     "add-script-launcher": "스크립트 실행 항목 추가",
     "add-custom-widget": "사용자 지정 위젯 추가",
     "add-spacer": "여백 추가",
-    "delete": "삭제 <kbd data-command=\"deleteNotes\"></kbd>",
+    "delete": "삭제... <kbd data-command=\"deleteNotes\"></kbd>",
     "reset": "초기화...",
     "move-to-visible-launchers": "표시 중인 실행 항목으로 이동",
     "move-to-available-launchers": "사용 가능한 실행 항목으로 이동",
@@ -3296,7 +3299,9 @@
     "board-inbox-column": "받은 편지함 열 표시",
     "board-inbox-column-help": "열에 할당되지 않은 하위 노트를 나열하는 받은 편지함 열을 표시합니다.",
     "vector_auto": "벡터(자동)",
-    "max-nesting-depth-description": "컬렉션 자식 노트 아래로 몇 단계까지 표시할지 지정합니다. 0은 자식 노트만, 1은 그 자식 노트까지 표시하며, 이후에도 같은 방식으로 확장됩니다. 모든 단계를 표시하려면 비워 두세요."
+    "max-nesting-depth-description": "컬렉션 자식 노트 아래로 몇 단계까지 표시할지 지정합니다. 0은 자식 노트만, 1은 그 자식 노트까지 표시하며, 이후에도 같은 방식으로 확장됩니다. 모든 단계를 표시하려면 비워 두세요.",
+    "hide-routine-events": "반복 일정 숨기기",
+    "hide-routine-events-help": "일주일에 {{days}}일 이상 반복되는 시간 지정 일정을 월간, 연간 및 목록 보기에서 숨깁니다. 일간 및 주간 보기에는 계속 표시됩니다."
   },
   "table_context_menu": {
     "delete_row": "행 삭제...",
@@ -3521,7 +3526,8 @@
     "text_filtered_low_confidence": "OCR은 텍스트를 {{confidence}}% 신뢰도로 감지했지만, 최소 임계값이 {{threshold}}%라서 버려졌습니다.",
     "open_media_settings": "설정 열기",
     "view_extracted_text": "추출된 텍스트 보기 (OCR)",
-    "no_text_recognized": "OCR에서 인식할 텍스트를 찾지 못했습니다."
+    "no_text_recognized": "OCR에서 인식할 텍스트를 찾지 못했습니다.",
+    "pages_failed_other": "{{count}}개 페이지에서 OCR 처리에 실패하여 텍스트가 누락되었습니다. 자세한 원인은 로그에서 확인할 수 있습니다."
   },
   "command_palette": {
     "tree-action-name": "트리: {{name}}",
@@ -3980,7 +3986,8 @@
       "read_web_page": "웹 페이지 읽기",
       "note_moved_from": "<Note/> 항목을 <From/> 위치에서 <To/> 위치로 이동",
       "note_moved": "<Note/> 이동 위치: <To/>",
-      "attachment_in_note": "<Title/> 위치: <Note/>"
+      "attachment_in_note": "<Title/> 위치: <Note/>",
+      "search_in_subtree": "<Query/> in <Subtree/>"
     },
     "provider_unavailable_standalone": "브라우저 버전에서는 사용할 수 없습니다. 이 제공업체는 컴퓨터에서 별도의 프로그램을 실행하는 방식으로 작동하며, 여기에는 해당 프로그램을 실행할 컴퓨터가 없습니다.",
     "mcp_unavailable_standalone": "브라우저 버전에서는 사용할 수 없습니다. 어시스턴트는 네트워크를 통해 Trilium에 연결해야 하지만, 이 빌드는 이 페이지 안에서만 실행되므로 어시스턴트에 제공할 연결 주소가 없습니다.",
@@ -4251,7 +4258,31 @@
       "type-the-content-of-the-third-column": "세 번째 열의 내용을 입력하세요",
       "type-the-content-of-the-fourth-column": "네 번째 열의 내용을 입력하세요",
       "table-columns": "표 열",
-      "column-0-width-1": "열 %0 너비: %1%"
+      "column-0-width-1": "열 %0 너비: %1%",
+      "keystrokes-that-can-be-used-in-a-multicolumn-layout": "다중 열 레이아웃에서 사용할 수 있는 단축키",
+      "move-the-selected-content-to-the-column-on-the-left": "선택한 내용을 왼쪽 열로 이동",
+      "move-the-selected-content-to-the-column-on-the-right": "선택한 내용을 오른쪽 열로 이동",
+      "move-the-selected-content-to-the-first-column": "선택한 내용을 첫 번째 열로 이동",
+      "move-the-selected-content-to-the-last-column": "선택한 내용을 마지막 열로 이동",
+      "move-the-column-to-the-left": "열을 왼쪽으로 이동",
+      "move-the-column-to-the-right": "열을 오른쪽으로 이동",
+      "make-the-column-the-first-one": "열을 첫 번째로 이동",
+      "make-the-column-the-last-one": "열을 마지막으로 이동",
+      "add-a-column-after-the-current-one": "현재 열 뒤에 열 추가",
+      "add-a-column-before-the-current-one": "현재 열 앞에 열 추가",
+      "keystrokes-that-can-be-used-in-a-tabs-block": "탭 블록에서 사용할 수 있는 단축키",
+      "move-the-selected-content-to-the-tab-on-the-left": "선택한 내용을 왼쪽 탭으로 이동",
+      "move-the-selected-content-to-the-tab-on-the-right": "선택한 내용을 오른쪽 탭으로 이동",
+      "move-the-selected-content-to-the-first-tab": "선택한 내용을 첫 번째 탭으로 이동",
+      "move-the-selected-content-to-the-last-tab": "선택한 내용을 마지막 탭으로 이동",
+      "move-the-tab-to-the-left": "탭을 왼쪽으로 이동",
+      "move-the-tab-to-the-right": "탭을 오른쪽으로 이동",
+      "make-the-tab-the-first-one": "탭을 첫 번째로 이동",
+      "make-the-tab-the-last-one": "탭을 마지막으로 이동",
+      "add-a-tab-after-the-current-one": "현재 탭 뒤에 탭 추가",
+      "add-a-tab-before-the-current-one": "현재 탭 앞에 탭 추가",
+      "scroll-to-the-previous-tabs": "이전 탭으로 스크롤",
+      "scroll-to-the-next-tabs": "다음 탭으로 스크롤"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",
@@ -4692,7 +4723,16 @@
     "hidden": "<p>숨겨진 노트 트리는 사용자에게 대부분 표시할 필요가 없는 애플리케이션 수준의 다양한 데이터를 저장하는 데 사용됩니다.</p><p>작업 내용을 충분히 이해한 경우에만 수정하세요. 이 하위 트리를 잘못 변경하면 애플리케이션이 비정상 종료될 수 있습니다.</p>",
     "launchbar_command_launcher": "<p>이 실행 표시줄 작업의 키보드 단축키는 옵션 -&gt; 단축키에서 설정할 수 있습니다.</p>",
     "launchbar_history_navigation": "<p>뒤로 및 앞으로 버튼을 사용하여 탐색 기록에서 이전 페이지와 다음 페이지로 이동할 수 있습니다.</p><p>이 실행 표시줄 버튼은 데스크톱 버전에서만 작동합니다. 서버 버전에서는 브라우저 자체의 뒤로 및 앞으로 버튼을 사용할 수 있으므로 이 기능은 무시됩니다.</p>",
-    "launchbar_intro": "<p>실행 표시줄 설정에 오신 것을 환영합니다.</p><p>여기에서 다음 작업을 수행할 수 있습니다.</p><ul><li>사용 가능한 실행 항목을 드래그하여 표시 목록으로 이동하면 실행 표시줄에 추가됩니다.</li><li>표시된 실행 항목을 드래그하여 사용 가능한 목록으로 이동하면 실행 표시줄에서 숨겨집니다.</li><li>목록의 항목을 드래그하여 순서를 변경할 수 있습니다.</li><li>\"표시된 실행 항목\" 폴더를 마우스 오른쪽 버튼으로 클릭하여 새 실행 항목을 만들 수 있습니다.</li><li>기본 설정으로 되돌리려면 컨텍스트 메뉴에서 \"초기화\"를 선택하세요.</li></ul>",
-    "launchbar_note_launcher": "<p>다음 속성을 정의할 수 있습니다.</p><ol><li><code>target</code> - 실행 항목을 활성화하면 열리는 노트</li><li><code>hoistedNote</code> - 선택 사항, 대상 노트를 열기 전에 최상위 노트를 변경합니다.</li><li><code>keyboardShortcut</code> - 선택 사항, 키보드 단축키를 누르면 노트가 열립니다.</li></ol><p>실행 표시줄에는 실행 항목의 제목과 아이콘이 표시되며, 대상 노트의 제목이나 아이콘과 반드시 일치하지는 않습니다.</p>"
+    "launchbar_intro": "<p>런치바 설정에 오신 것을 환영합니다.</p><p>여기에서 다음 작업을 수행할 수 있습니다.</p><ul><li>사용 가능한 실행 항목을 드래그하여 표시 목록으로 이동하면 런치바에 추가됩니다.</li><li>표시된 실행 항목을 드래그하여 사용 가능한 목록으로 이동하면 런치바에서 숨겨집니다.</li><li>목록의 항목을 드래그하여 순서를 변경할 수 있습니다.</li><li>\"표시된 실행 항목\" 폴더를 마우스 오른쪽 버튼으로 클릭하여 새 실행 항목을 만들 수 있습니다.</li><li>기본 설정으로 되돌리려면 컨텍스트 메뉴에서 \"초기화\"를 선택하세요.</li></ul>",
+    "launchbar_note_launcher": "<p>다음 속성을 설정할 수 있습니다.</p><ol><li><code>target</code> - 실행 항목을 활성화할 때 열리는 노트를 지정합니다.</li><li><code>hoistedNote</code> - 선택 사항으로, 대상 노트를 열기 전에 최상위 노트를 변경합니다.</li><li><code>keyboardShortcut</code> - 선택 사항으로, 지정된 키보드 단축키를 누르면 노트가 열립니다.</li></ol><p>런치바에는 실행 항목의 제목과 아이콘이 표시되며, 대상 노트의 제목 및 아이콘과 반드시 일치하지는 않습니다.</p>",
+    "launchbar_quick_search": "<p>세로 레이아웃에서는 기본적으로 빠른 검색창이 표시되므로, <a href=\"#root/_help_Ms1nauBra7gq\" target=\"_blank\">빠른 검색창</a> 기능은 가로 레이아웃에서만 별도로 표시됩니다.</p><p>자세한 내용은 다음 문서를 참조하세요: <a href=\"#root/_help_x0JgW8UqGXvq\" target=\"_blank\">세로 및 가로 레이아웃</a>.</p>",
+    "launchbar_script_launcher": "<p>스크립트 실행 항목은 <code>~script</code> 관계로 연결된 스크립트(코드 노트)를 실행할 수 있습니다.</p><ol><li><code>script</code> - 실행 항목이 활성화될 때 실행할 스크립트 노트와의 관계</li><li><code>keyboardShortcut</code> - 선택 사항이며, 키보드 단축키를 누르면 실행 항목이 활성화됨</li></ol><h4>스크립트 예제</h4><pre>{{sample}}</pre>",
+    "launchbar_spacer": "<p>공백 항목을 사용하면 런치바의 실행 항목을 시각적으로 그룹화할 수 있습니다. 주요 속성에서 다음 항목을 설정할 수 있습니다.</p><ul><li><code>baseSize</code> - 공간이 충분한 경우 공백의 크기를 픽셀 단위로 지정합니다.</li><li><code>growthFactor</code> - 0으로 설정하면 공백이 <code>baseSize</code>로 지정한 크기로 고정되며, 양수로 설정하면 공백이 늘어납니다.</li></ul>",
+    "launchbar_widget_launcher": "<p>주요 속성에서 대상 위젯 노트를 지정하세요. 지정한 위젯은 실행 표시줄 아이콘을 표시하는 데 사용됩니다.</p><h4>실행 표시줄 위젯 예제</h4><pre>{{sample}}</pre>",
+    "share": "<p>여기에서 공유된 모든 노트를 확인할 수 있습니다.</p>",
+    "system_state": "<p>이 작업 상태는 기본 제공 항목이므로 편집하거나 삭제할 수 없습니다.</p><p>위치만 변경할 수 있으며, 이 위치에 따라 체크박스 도구 모음과 키보드 순환 선택에서의 순서가 결정됩니다.</p>",
+    "task_state": "<p>이 노트는 할 일의 작업 상태를 정의합니다. 노트의 아이콘은 해당 상태를 나타내기 위해 체크박스 안에 표시되며, 노트의 제목은 표시 이름으로 사용됩니다.</p><p>작업 상태는 다음 주요 속성을 통해 설정합니다.</p><ul><li><code>Identifier</code> — 필수 항목. 노트 마크업의 메타데이터에 저장되는 내부 이름입니다. 영문자, 숫자, <code>-</code> 및 <code>_</code> 문자만 사용할 수 있습니다.<p class=\"admonition warning\">향후 Trilium 버전에서 추가될 수 있는 작업 상태와의 충돌을 방지하려면 사용자 지정 작업 상태의 식별자 앞에 밑줄 <code>_</code> 또는 하이픈 <code>-</code> 문자를 붙이세요.</p>예시: <code>_postponed</code>, <code>_awaiting-feedback</code>, <code>_validated</code>.</li><li><code>Markdown symbol</code> — Markdown으로 내보낼 때 작업 상태를 나타내는 단일 문자입니다. 예를 들어 <code>/</code> 문자를 지정하면 <code>- [/]</code> 형식으로 표시됩니다.</li><li><code>Counts as completed</code> — 활성화하면 해당 상태의 작업을 완료된 것으로 처리합니다.</li><li><code>Color</code> — 해당 상태를 나타내는 체크박스 색상입니다.</li><li><code>Hidden from toolbar</code> — 활성화하면 해당 상태가 상태 목록과 키보드 순환 선택에서 제외됩니다. 이미 해당 상태를 사용하는 노트는 계속 정상적으로 표시됩니다.</li></ul><p class=\"admonition warning\">변경 사항은 애플리케이션을 다시 불러온 후 적용됩니다.</p>",
+    "task_states": "<p>이 노트에는 텍스트 편집기의 할 일 체크박스에서 사용할 수 있는 작업 상태가 포함되어 있습니다. 각 하위 노트는 하나의 작업 상태를 나타냅니다.</p><p>작업 상태는 추가, 수정, 순서 변경 또는 삭제할 수 있습니다. 새 작업 상태를 추가하려면 하위 노트를 만들고 주요 속성을 설정하세요.</p><p class=\"admonition warning\">변경 사항은 애플리케이션을 다시 불러온 후 적용됩니다.</p>",
+    "user_hidden": "<p>이 노트는 사용자 스크립트가 생성하는 데이터를 저장하기 위한 전용 하위 트리입니다. 사용자 스크립트가 숨겨진 하위 트리에 데이터를 임의로 생성하지 않도록 이 영역을 별도로 마련했습니다.</p>"
   }
 }
