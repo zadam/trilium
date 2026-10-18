@@ -93,8 +93,10 @@ export function registerContentEmbedTools(
     provider: ContentEmbedToolProvider
 ) {
     providers.set(element, provider);
-    notifyWatchers(element);
+    // Content rendered apart, such as inline source, reaches its watchers once in the page.
+    const stopWaiting = whenInPage(element, () => notifyWatchers(element));
     return () => {
+        stopWaiting();
         providers.delete(element);
         notifyWatchers(element);
     };
@@ -245,28 +247,90 @@ export function showContentEmbedFullscreen(element: Element | null) {
 }
 
 /**
+ * Whether `embed` can go fullscreen while it has no title row, which holds a button for it: a
+ * Medium or Full box with its title hidden. Its content then offers the button.
+ */
+export function needsFullscreenButton(embed: HTMLElement | null | undefined) {
+    const { hideTitle, boxSize } = embed?.dataset ?? {};
+    return hideTitle === "true" && (boxSize === "medium" || boxSize === "full");
+}
+
+/**
+ * {@link needsFullscreenButton} for the embed that contains `ref`. `false` until the content is
+ * in the page.
+ */
+export function useNeedsFullscreenButton(ref: RefObject<HTMLElement | null>) {
+    return useEmbedState(ref, {
+        initial: false,
+        outsideEmbed: false,
+        attributes: [ "data-hide-title", "data-box-size" ],
+        read: needsFullscreenButton
+    });
+}
+
+/**
  * Whether the Editable toggle of the embed that contains `ref` is on, for content whose provider
  * sets `hasEditableFlag`. Content outside an embed has no toggle, and is editable. `false` until
  * the content is in the page.
  */
 export function useIsContentEmbedEditable(ref: RefObject<HTMLElement | null>) {
-    const [ isEditable, setIsEditable ] = useState(false);
+    return useEmbedState(ref, {
+        initial: false,
+        outsideEmbed: true,
+        attributes: [ "data-editable" ],
+        read: (embed) => embed.dataset.editable === "true"
+    });
+}
+
+interface EmbedStateOptions<T> {
+    /** The value until the content is in the page. */
+    initial: T;
+    /** The value for content in the page but outside an embed. */
+    outsideEmbed: T;
+    /** The attributes of the embed that `read` depends on. */
+    attributes: string[];
+    read: (embed: HTMLElement) => T;
+}
+
+/**
+ * What `read` tells of the embed that contains `ref`, again whenever one of `attributes` changes.
+ * Content rendered apart, such as inline source, finds its embed once it joins the page.
+ */
+function useEmbedState<T>(
+    ref: RefObject<HTMLElement | null>,
+    { initial, outsideEmbed, attributes, read }: EmbedStateOptions<T>
+) {
+    const [ value, setValue ] = useState(initial);
 
     useEffect(() => {
-        const embed = ref.current?.closest<HTMLElement>(".include-note");
-        if (!embed) {
-            setIsEditable(true);
+        const element = ref.current;
+        if (!element) {
+            setValue(outsideEmbed);
             return;
         }
 
-        const update = () => setIsEditable(embed.dataset.editable === "true");
-        const observer = new MutationObserver(update);
-        observer.observe(embed, { attributes: true, attributeFilter: [ "data-editable" ] });
-        update();
-        return () => observer.disconnect();
+        let attributeObserver: MutationObserver | undefined;
+        const watch = () => {
+            const embed = element.closest<HTMLElement>(".include-note");
+            if (!embed) {
+                setValue(outsideEmbed);
+                return;
+            }
+
+            const update = () => setValue(read(embed));
+            attributeObserver = new MutationObserver(update);
+            attributeObserver.observe(embed, { attributes: true, attributeFilter: attributes });
+            update();
+        };
+
+        const stopWaiting = whenInPage(element, watch);
+        return () => {
+            stopWaiting();
+            attributeObserver?.disconnect();
+        };
     }, [ ref ]);
 
-    return isEditable;
+    return value;
 }
 
 /**
@@ -278,20 +342,12 @@ export function useContentEmbedAttribute(
     name: string,
     initial: string | null = null
 ) {
-    const [ value, setValue ] = useState(initial);
-
-    useEffect(() => {
-        const embed = ref.current?.closest<HTMLElement>(".include-note");
-        if (!embed) return;
-
-        const update = () => setValue(embed.getAttribute(name));
-        const observer = new MutationObserver(update);
-        observer.observe(embed, { attributes: true, attributeFilter: [ name ] });
-        update();
-        return () => observer.disconnect();
-    }, [ ref, name ]);
-
-    return value;
+    return useEmbedState(ref, {
+        initial,
+        outsideEmbed: initial,
+        attributes: [ name ],
+        read: (embed) => embed.getAttribute(name)
+    });
 }
 
 /**
@@ -325,4 +381,23 @@ export function useContentEmbedEvent(
         document.addEventListener(name, listener);
         return () => document.removeEventListener(name, listener);
     }, [ ref, name ]);
+}
+
+/**
+ * Calls `callback` once `element` is in the page: at once, or when it joins it. Stops waiting
+ * when the returned function is called.
+ */
+function whenInPage(element: HTMLElement, callback: () => void) {
+    if (element.isConnected) {
+        callback();
+        return () => {};
+    }
+
+    const observer = new MutationObserver(() => {
+        if (!element.isConnected) return;
+        observer.disconnect();
+        callback();
+    });
+    observer.observe(document, { childList: true, subtree: true });
+    return () => observer.disconnect();
 }

@@ -1,3 +1,5 @@
+import { AttributeEditor } from "@triliumnext/ckeditor5";
+import { _setModelData } from "ckeditor5";
 import { h, render } from "preact";
 import { act } from "preact/test-utils";
 import { describe, expect, it, vi } from "vitest";
@@ -8,7 +10,9 @@ import type FAttachment from "../../../entities/fattachment";
 import type FNote from "../../../entities/fnote";
 import type { AttachmentEditor, NoteEditor } from "../../../services/content_renderer";
 import { ParentComponent } from "../../react/react_utils";
-import AttachmentSaves, { NoteSaves, useAttachmentEditor, useNoteEditor } from "./attachment_saves";
+import AttachmentSaves, {
+    InlineSourceSaves, NoteSaves, useAttachmentEditor, useNoteEditor
+} from "./attachment_saves";
 
 const serverPost = vi.hoisted(() => vi.fn(async () => undefined));
 const serverPut = vi.hoisted(() => vi.fn(async () => undefined));
@@ -289,5 +293,42 @@ describe("useNoteEditor", () => {
         expect(serverPut).toHaveBeenCalledTimes(2);
         expect(serverPut).toHaveBeenLastCalledWith(
             "notes/code1/data", { content: "second" }, component.componentId);
+    });
+});
+
+describe("InlineSourceSaves", () => {
+    it("makes the held writes before the text editor undoes or redoes, as a step of their own", async () => {
+        const element = document.createElement("div");
+        document.body.append(element);
+        const editor = await AttributeEditor.create(element, { licenseKey: "GPL" });
+        const type = (text: string) => editor.model.change((writer) => {
+            editor.model.insertContent(writer.createText(text));
+        });
+        const saves = new InlineSourceSaves(() => {});
+        saves.flushBeforeHistory(editor);
+        // Holds a write that, like an inline source, leaves `saves` once made.
+        const hold = (text: string) => {
+            const write = () => {
+                saves.delete(write);
+                type(text);
+            };
+            saves.add(write);
+        };
+
+        _setModelData(editor.model, "<paragraph>a[]</paragraph>");
+        type("b");
+        hold("c");
+        editor.execute("undo");
+        expect(editor.getData()).toBe("<p>ab</p>");
+
+        editor.execute("redo");
+        expect(editor.getData()).toBe("<p>abc</p>");
+
+        hold("d");
+        editor.execute("redo");
+        expect(editor.getData()).toBe("<p>abcd</p>");
+
+        await editor.destroy();
+        element.remove();
     });
 });

@@ -10,10 +10,6 @@
 .markdown-embed-content {
     text-align: start;
 
-    &.with-source {
-        height: var(--include-note-height, 20em);
-    }
-
     .editable-embed-preview {
         height: 100%;
     }
@@ -26,17 +22,7 @@
     }
 }
 
-.include-note {
-    &[data-box-size="small"] .markdown-embed-content.with-source {
-        height: var(--include-note-height, 10em);
-    }
-
-    &[data-box-size="full"] .markdown-embed-content.with-source {
-        height: 50em;
-    }
-}
-
-.include-note-content:fullscreen :is(.markdown-embed, .markdown-embed-content.with-source) {
+.include-note-content:fullscreen .markdown-embed {
     height: 100%;
 }
 

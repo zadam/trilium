@@ -12,13 +12,11 @@ import { isDesktop } from "../../../services/utils";
 import { useNoteCodeSettings } from "../../layout/code_menus";
 import { useDebouncedValue } from "../../react/hooks";
 import { SaveStatus, useSavedContent } from "../code/CodeEmbed";
-import CodeEmbedEditor from "../code/CodeEmbedEditor";
+import { EmbedSourcePane } from "../code/CodeEmbedEditor";
 import { resolveDisplayMode } from "../helpers/split_editor_mode";
 import { SplitLayout, useMountedPanes } from "../helpers/SplitEditor";
 import { registerContentEmbedTools, useContentEmbedDisplayMode } from "../text/content_embed_tools";
-import {
-    CaretNavigationContext, EmbedPreview, useEditableEmbed, useEmbedPreview
-} from "../text/editable_embed";
+import { EmbedPreview, useEditableEmbed, useEmbedPreview } from "../text/editable_embed";
 import {
     renderWithSourceLines, useMarkdownKeymap, useNoteLinkChips, useSyncedHighlight,
     useSyncedScrolling
@@ -70,40 +68,32 @@ export default function MarkdownEmbed({
     useSyncedHighlight(shownView, previewElement, renderedContent);
     useNoteLinkChips(shownView);
     useMarkdownKeymap(isEditing ? shownView : null);
-    const caretNavigationRoot = isEditing && isSourceShown ? rootRef : null;
 
     return (
         <div
             ref={rootRef}
-            className={clsx("markdown-embed-content", isSourceShown && "with-source")}
+            className={clsx(
+                "markdown-embed-content", isSourceShown && "with-source include-note-box-height"
+            )}
         >
             <SplitLayout
                 mode={mode}
                 orientation={isDesktop() ? "horizontal" : "vertical"}
                 editor={(
-                    <div className="note-detail-split-editor">
-                        {/* An edited source stays mounted while the preview shows alone, which
-                            keeps its undo history. "Search in note" and the arrow keys skip it
-                            then. */}
-                        {(isEditing || isSourceShown) && (
-                            <CaretNavigationContext.Provider value={caretNavigationRoot}>
-                                <CodeEmbedEditor
-                                    key={isEditing ? "editing" : "read-only"}
-                                    note={note}
-                                    editor={isEditing ? editor : undefined}
-                                    content={content}
-                                    mime={MARKDOWN_MIME}
-                                    tabWidth={tabWidth}
-                                    useTabs={useTabs}
-                                    viewRef={viewRef}
-                                    isShown={isSourceShown}
-                                    onClose={setContent}
-                                    onChange={setContent}
-                                    onReady={setView}
-                                />
-                            </CaretNavigationContext.Provider>
-                        )}
-                    </div>
+                    <EmbedSourcePane
+                        rootRef={rootRef}
+                        isEditing={isEditing}
+                        isSourceShown={isSourceShown}
+                        note={note}
+                        editor={editor}
+                        content={content}
+                        mime={MARKDOWN_MIME}
+                        tabWidth={tabWidth}
+                        useTabs={useTabs}
+                        viewRef={viewRef}
+                        onContentChange={setContent}
+                        onReady={setView}
+                    />
                 )}
                 isEditorMounted={editorMounted.current}
                 isPreviewMounted={previewMounted.current}
