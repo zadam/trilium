@@ -229,11 +229,17 @@ export async function getRenderedContent(this: {} | { ctx: string }, entity: FNo
         await renderFile(entity, type, $renderedContent, options);
     } else if (type === "render" && entity instanceof FNote) {
         const $content = $("<div>");
+        // A script's `Modal` portals into `document.body`, so removing `$content` alone leaves it open.
+        const controller = new AbortController();
+        addContentDisposer($content[0], () => {
+            controller.abort();
+            render(null, $content[0]);
+        });
 
         const { default: renderService } = await CONTENT_RENDERERS.render();
         await renderService.render(entity, $content, (e, noteId) => {
             showRenderError($content, e, noteId).catch((cardError) => console.error("Failed to render the script error card:", cardError));
-        }, { parentComponent: options.parentComponent });
+        }, { parentComponent: options.parentComponent, signal: controller.signal });
 
         $renderedContent.append($content);
     } else if (type === "doc" && "noteId" in entity) {

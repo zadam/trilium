@@ -1,5 +1,6 @@
 import { attachmentIcon, CONTENT_RENDERER_GROUPS } from "@triliumnext/commons";
-import { h, VNode } from "preact";
+import { h, render, VNode } from "preact";
+import { useLayoutEffect } from "preact/hooks";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mock heavy / side-effecting collaborators BEFORE importing the SUT. ---
@@ -904,7 +905,27 @@ describe("getRenderedContent render / doc / protectedSession / mermaid", () => {
     it("mounts a JSX render note under the given parent component", async () => {
         const parentComponent = new Component();
         await getRenderedContent(buildNote({ title: "R", type: "render" }), { parentComponent });
-        expect(renderServiceRender.mock.lastCall?.[3]).toEqual({ parentComponent });
+        expect(renderServiceRender.mock.lastCall?.[3]).toEqual(expect.objectContaining({ parentComponent }));
+    });
+
+    it("aborts the render and unmounts its JSX when the content is disposed", async () => {
+        const unmounted = vi.fn();
+        function Probe() {
+            useLayoutEffect(() => unmounted, []);
+            return null;
+        }
+        renderServiceRender.mockImplementationOnce(async (_n: unknown, $content: JQuery<HTMLElement>) => {
+            render(h(Probe, {}), $content[0]);
+        });
+
+        const { $renderedContent } = await getRenderedContent(buildNote({ title: "R", type: "render" }));
+        const { signal } = renderServiceRender.mock.lastCall?.[3] as { signal: AbortSignal };
+        expect(signal.aborted).toBe(false);
+        expect(unmounted).not.toHaveBeenCalled();
+
+        disposeInteractiveContent($renderedContent);
+        expect(signal.aborted).toBe(true);
+        expect(unmounted).toHaveBeenCalledOnce();
     });
 
     it("render error callback shows an admonition with the error message", async () => {
