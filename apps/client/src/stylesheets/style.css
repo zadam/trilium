@@ -1016,12 +1016,26 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 
 /* Includes in a series share flush edges, as link previews and collapsible blocks do. */
 .include-note + .include-note {
-    --_include-note-top-border-radius: 0;
+    --_include-note-top-border-radius: 0px;
 }
 
 .include-note:has(+ .include-note) {
-    --_include-note-bottom-border-radius: 0;
+    --_include-note-bottom-border-radius: 0px;
     margin-bottom: 3px;
+}
+
+.include-note {
+    /* The corners of the embed box that its content touches, as lengths for `calc()`. */
+    --_include-note-content-top-radius: 0px;
+    --_include-note-content-bottom-radius: var(--_include-note-bottom-border-radius, 8px);
+
+    &[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"]) {
+        --_include-note-content-top-radius: var(--_include-note-top-border-radius, 8px);
+    }
+
+    &:has(> figcaption) {
+        --_include-note-content-bottom-radius: 0px;
+    }
 }
 
 /* CKEditor counts only non-UIElements as content (see `hasContent` in the
@@ -1333,6 +1347,35 @@ body.mobile .modal-content-with-sidebar > .modal-main > .modal-header > .modal-t
 
 .include-note-content > .rendered-content > *:last-child {
     margin-bottom: 0;
+}
+
+.include-note-content pre.code-embed-editor {
+    padding: 0;
+}
+
+.include-note-content.type-code {
+    --_code-embed-inset: 2px;
+    padding: 0 var(--_code-embed-inset) var(--_code-embed-inset);
+}
+
+.include-note[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"])
+    .include-note-content.type-code {
+    padding-top: var(--_code-embed-inset);
+}
+
+/* Outranks the `!important` margin and shadow that the themes give `.ck-content pre`. */
+:root .include-note-content.type-code pre {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius:
+        max(0px, var(--_include-note-content-top-radius) - var(--_code-embed-inset))
+        max(0px, var(--_include-note-content-top-radius) - var(--_code-embed-inset))
+        max(0px, var(--_include-note-content-bottom-radius) - var(--_code-embed-inset))
+        max(0px, var(--_include-note-content-bottom-radius) - var(--_code-embed-inset));
+
+    &.code-embed-editor {
+        overflow: hidden;
+    }
 }
 
 /* Takes the wheel and the touch gestures for the page until the content has the focus. */

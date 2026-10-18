@@ -1,5 +1,3 @@
-import "./CodeEmbed.css";
-
 import type { ContentEmbedCodeView } from "@triliumnext/ckeditor5";
 import type VanillaCodeMirror from "@triliumnext/codemirror";
 import { createPortal, type RefObject } from "preact";

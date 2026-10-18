@@ -39,22 +39,9 @@
     height: 100%;
 }
 
-.include-note {
-    /* The corners of the embed box that the split editor touches. */
-    --_markdown-embed-top-radius: 0;
-    --_markdown-embed-bottom-radius: var(--_include-note-bottom-border-radius, 8px);
-
-    &[data-hide-title="true"]:not([data-box-size="tiny"], [data-box-size="expandable"]) {
-        --_markdown-embed-top-radius: var(--_include-note-top-border-radius, 8px);
-    }
-
-    &:has(> figcaption) {
-        --_markdown-embed-bottom-radius: 0;
-    }
-}
-
 .include-note-content:not(:fullscreen) .markdown-embed-content.with-source {
-    border-radius: var(--_markdown-embed-top-radius) var(--_markdown-embed-top-radius)
-                   var(--_markdown-embed-bottom-radius) var(--_markdown-embed-bottom-radius);
+    border-radius: var(--_include-note-content-top-radius) var(--_include-note-content-top-radius)
+                   var(--_include-note-content-bottom-radius)
+                   var(--_include-note-content-bottom-radius);
     overflow: hidden;
 }
