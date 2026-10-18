@@ -277,6 +277,10 @@ Trilium 的诞生离不开其背后的技术支持：
 
 * [CKEditor 5](https://github.com/ckeditor/ckeditor5) - 文本笔记背后的可视化编辑器。
 * [CodeMirror](https://github.com/codemirror/CodeMirror) —— 支持海量编程语言的代码编辑器。
+* [Mermaid](https://github.com/mermaid-js/mermaid) - renders the diagrams of
+  Mermaid notes; its parsers are the model for their syntax highlighting.
+* [codemirror-lang-mermaid](https://github.com/inspirnathan/codemirror-lang-mermaid)
+  - the base of the Mermaid syntax highlighting.
 * [Excalidraw](https://github.com/excalidraw/excalidraw) —— 画布笔记中使用的无限白板。
 * [Mind Elixir](https://github.com/SSShooter/mind-elixir-core) —— 提供思维导图功能。
 * [Leaflet](https://github.com/Leaflet/Leaflet) —— 用于渲染地理地图。

@@ -317,6 +317,10 @@ Trilium은 다음 기반 기술이 있었기에 만들어질 수 있었습니다
 * [CKEditor 5](https://github.com/ckeditor/ckeditor5) - 텍스트 노트용 시각적 편집기입니다.
 * [CodeMirror](https://github.com/codemirror/CodeMirror) - 수많은 언어를 지원하는 코드
   편집기입니다.
+* [Mermaid](https://github.com/mermaid-js/mermaid) - renders the diagrams of
+  Mermaid notes; its parsers are the model for their syntax highlighting.
+* [codemirror-lang-mermaid](https://github.com/inspirnathan/codemirror-lang-mermaid)
+  - the base of the Mermaid syntax highlighting.
 * [Excalidraw](https://github.com/excalidraw/excalidraw) - Canvas 노트에서 사용되는 무한
   화이트보드입니다.
 * [Mind Elixir](https://github.com/SSShooter/mind-elixir-core) - 마인드맵 기능을 제공합니다.

@@ -307,6 +307,10 @@ Trilium は、その基盤となる技術なしには実現できませんでし
 * [CKEditor 5](https://github.com/ckeditor/ckeditor5) - テキストノートのビジュアルエディタ。
 * [CodeMirror](https://github.com/codemirror/CodeMirror) -
   膨大な数の言語をサポートするコードエディター。
+* [Mermaid](https://github.com/mermaid-js/mermaid) - renders the diagrams of
+  Mermaid notes; its parsers are the model for their syntax highlighting.
+* [codemirror-lang-mermaid](https://github.com/inspirnathan/codemirror-lang-mermaid)
+  - the base of the Mermaid syntax highlighting.
 * [Excalidraw](https://github.com/excalidraw/excalidraw) - Canvas
   ノートで使用される無限のホワイトボード。
 * [Mind Elixir](https://github.com/SSShooter/mind-elixir-core) -
