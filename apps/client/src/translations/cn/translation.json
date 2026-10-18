@@ -181,7 +181,11 @@
     "launchbar_spacer": "<p>间隔器允许您在视觉上将启动器分组。您可以在提升的属性中进行配置：</p><ul><li><code>baseSize</code> - 定义以像素为单位的大小（如果有足够的空间）</li><li><code>growthFactor</code> - 如果您希望间隔器保持恒定的 <code>baseSize</code>，则设置为 0；如果设置为正值，它将增长。</li></ul>",
     "launchbar_widget_launcher": "<p>请在提升的属性中定义目标小部件笔记。该小部件将用于渲染启动栏图标。</p><h4>示例启动栏小部件</h4><pre>{{sample}}</pre>",
     "share": "<p>在这里您可以找到所有分享的笔记。</p>",
-    "user_hidden": "<p>此笔记作为保留子树，用于存放用户脚本产生的数据，这些数据不应在隐藏子树中自由创建。</p>"
+    "user_hidden": "<p>此笔记作为保留子树，用于存放用户脚本产生的数据，这些数据不应在隐藏子树中自由创建。</p>",
+    "launchbar_quick_search": "<p>此<a href=\"#root/_help_Ms1nauBra7gq\" target=\"_blank\">快速搜索栏</a>仅在水平布局中显示，因为在垂直布局中它本来就默认可见。</p><p>更多信息请参阅 <a href=\"#root/_help_x0JgW8UqGXvq\" target=\"_blank\">垂直与水平布局</a>。</p>",
+    "system_state": "<p>这是内置的任务状态，无法编辑或删除。</p><p>只能更改它的位置，位置决定它在复选框工具栏和键盘循环中的顺序。</p>",
+    "task_state": "<p>此笔记定义了一个待办任务状态。笔记的图标显示在复选框内以表示该状态，笔记的标题则用作它的显示名称。</p><p>该状态通过以下提升属性进行配置：</p><ul><li><code>Identifier</code>——必填。作为元数据存储在笔记标记中的内部名称。只允许使用字母、数字、<code>-</code> 和 <code>_</code>。<p class=\"admonition warning\">请给自定义任务状态的标识符加上下划线 <code>_</code> 或连字符 <code>-</code> 前缀，以免与 Trilium 后续版本可能引入的任务状态冲突。</p>示例：<code>_postponed</code>、<code>_awaiting-feedback</code>、<code>_validated</code>。</li><li><code>Markdown symbol</code>——导出为 Markdown 时用来表示该状态的单个字符；例如 <code>/</code> 会生成 <code>- [/]</code>。</li><li><code>Counts as completed</code>——启用后，处于该状态的任务会被视为已完成。</li><li><code>Color</code>——该状态的复选框颜色。</li><li><code>Hidden from toolbar</code>——启用后，该状态会从状态列表和键盘循环中排除。已经在使用它的笔记仍会正常渲染。</li></ul><p class=\"admonition warning\">更改在重新加载应用后生效。</p>",
+    "task_states": "<p>此笔记包含文本编辑器中待办复选框可用的任务状态。每个子笔记代表一个状态。</p><p>可以添加、修改、重新排序或删除状态。要添加新状态，请创建子笔记并配置它的提升属性。</p><p class=\"admonition warning\">更改在重新加载应用后生效。</p>"
   },
   "help": {
     "noteNavigation": "笔记导航",
@@ -428,9 +432,9 @@
     "run_on_instance": "定义应在哪个Trilium实例上运行。默认为所有实例。",
     "run_at_hour": "应在几点运行。应与 <code>#run=hourly</code> 一起使用。可多次定义以在一天内多次运行。",
     "disable_inclusion": "含有此标签的脚本不会包含在父脚本执行中。",
-    "sorted": "按标题字母顺序对子笔记进行排序。若填写了值，则改用其他条件排序：以逗号分隔的多级条件，每级为 <code>title</code>、<code>dateCreated</code>、<code>dateModified</code> 或某个标签名，并可分别后接 <code>asc</code> 或 <code>desc</code>，例如 <code>priority desc, dueDate</code>。",
-    "sort_direction": "<code>#sorted</code> 对子笔记排序的方向：<code>desc</code> 为降序，其他任意值均为升序。若某一级条件自带 <code>asc</code> 或 <code>desc</code>，则忽略此项。仅在设置了 <code>#sorted</code> 时生效。",
-    "sort_folders_first": "文件夹（含有子笔记的笔记）应排在顶部。",
+    "sorted": "按标题字母顺序对子笔记进行排序。若填写了值，则改用其他条件排序：以逗号分隔的多级条件，每一层是一个写为<code>#name</code>的标签，或者是<code>title</code>、<code>dateCreated</code>和<code>dateModified</code>之一，后面可选跟<code>asc</code>或<code>desc</code>，例如<code>#priority desc, title</code>。一个标签或<code>folders</code>后跟<code>first</code>或<code>last</code>，会将拥有该标签的笔记分组，例如<code>#archived last, folders first, title</code>。不带<code>#</code>的单个名称会按该属性排序，或按该名称的标签排序。",
+    "sort_direction": "<code>#sorted</code> 对子笔记排序的方向：<code>desc</code> 为降序，其他任意值均为升序。若某一级条件自带 <code>asc</code> ， <code>desc</code>， <code>first</code> 或<code>last</code> 则忽略此项。仅在设置了 <code>#sorted</code> 时生效。",
+    "sort_folders_first": "文件夹（有子笔记的笔记）应排在顶部。当<code>#sorted</code>自身指定了<code>folders</code>的位置时（例如<code>folders last</code>），此项会被忽略。",
     "top": "将指定笔记置顶于父级内（仅适用于已排序的父级）。",
     "hide_promoted_attributes": "隐藏此笔记上的升级属性。",
     "read_only": "编辑器处于只读模式。仅适用于文本和代码笔记。",
@@ -667,7 +671,9 @@
     "modified_date": "剪藏页面的最后更新日期，显示在笔记的「网页剪藏」徽章详情中。",
     "calendar_title_template": "事件在日历上的标题格式，会为重复事件的每次出现填写。可读取 <code>${title}</code>, <code>${years}</code> （自开始日期起的整年数）以及日期 <code>${date}</code> and <code>${startDate}</code>, 例如在每年的生日上使用 <code>${title} (${years})</code> 。",
     "board_hide_add_column": "对于看板集合，在最后一列之后隐藏 <em>添加列</em> 按钮。仍可从看板或列的上下文菜单中添加列。",
-    "meeting_recording": "标记由启动栏中「转录会议」按钮创建的笔记，其中保存着会议的转录文本。"
+    "meeting_recording": "标记由启动栏中「转录会议」按钮创建的笔记，其中保存着会议的转录文本。",
+    "template_title_template": "设置在模板笔记上：从该模板创建的笔记的默认标题，用来替代父笔记的 <code>#titleTemplate</code>。求值方式与 <code>#titleTemplate</code> 相同，会注入 <code>now</code> 和 <code>parentNote</code> 变量，例如 <code>Meeting ${now.format('YYYY-MM-DD')}</code>。",
+    "calendar_hide_routine_events": "将每周重复 {{days}} 天或以上的定时事件从月视图、年视图和列表视图中隐藏。无论其值为何都会生效。"
   },
   "attribute_editor": {
     "help_text_body1": "要添加标签，只需输入例如 <code>#rock</code> ；或者如果你还想同时添加数值，则可输入例如 <code>#year = 2020</code>",
@@ -2514,7 +2520,9 @@
     "board-inbox-column": "显示收件箱列",
     "board-inbox-column-help": "显示收件箱列，其中列出所有未被分配到某一列的子笔记。",
     "vector_auto": "矢量（自动）",
-    "max-nesting-depth-description": "显示集合子笔记之下多少层：0 只显示子笔记，1 还会显示子笔记的子笔记，依此类推。留空则显示所有层级。"
+    "max-nesting-depth-description": "显示集合子笔记之下多少层：0 只显示子笔记，1 还会显示子笔记的子笔记，依此类推。留空则显示所有层级。",
+    "hide-routine-events": "隐藏常规事件",
+    "hide-routine-events-help": "将每周重复 {{days}} 天或以上的定时事件从月视图、年视图和列表视图中隐藏。日视图和周视图仍会显示它们。"
   },
   "table_context_menu": {
     "delete_row": "删除行...",
@@ -2854,7 +2862,16 @@
     "clipped_note_details": "此笔记取自网页。点击查看页面的描述、作者和日期。",
     "clipped_note_author": "作者",
     "clipped_note_published": "发布时间",
-    "clipped_note_modified": "更新时间"
+    "clipped_note_modified": "更新时间",
+    "read_only_locked": "只读",
+    "read_only_locked_description": "此笔记由 Trilium 提供，无法编辑。",
+    "template": "模板",
+    "template_description": "此笔记是一个模板。由它创建的笔记会继承它的属性，因此在此修改会同时改动所有由它创建的笔记。",
+    "template_scope_global": "随处可用",
+    "template_scope_workspace": "仅限其工作区内",
+    "template_scope_workspace_unavailable": "该模板不在任何工作区内。",
+    "workspace_template": "工作区模板",
+    "template_properties": "模板属性…"
   },
   "status_bar": {
     "language_title": "更改内容语言",
@@ -3053,7 +3070,11 @@
     "sample_wardley": "沃德利地图",
     "sample_cynefin": "Cynefin",
     "sample_swimlane": "泳道图",
-    "sample_railroad": "铁路图"
+    "sample_railroad": "铁路图",
+    "syntax_help": "Mermaid 语法帮助",
+    "sample_event_modeling": "事件建模",
+    "sample_use_case": "用例",
+    "sample_agentflow": "Agentflow"
   },
   "llm_chat": {
     "placeholder": "输入消息…",
@@ -3167,7 +3188,21 @@
     "manage_search_providers": "管理搜索提供商…",
     "web_search_builtin_unsupported": "此模型没有内置网络搜索。请改选搜索提供商。",
     "web_search_provider_unsupported": "此模型的提供商使用自己的工具进行网络搜索。",
-    "searched_with": "已使用 {{name}} 搜索"
+    "searched_with": "已使用 {{name}} 搜索",
+    "tool_approval_prompt": "允许此次工具调用吗？",
+    "tool_approval_allow": "允许",
+    "tool_approval_deny": "拒绝",
+    "tool_approval_declined": "已拒绝",
+    "tool_approval_allow_for_chat": "在此对话中始终允许 {{tool}}",
+    "allowed_tools": "本对话中已允许",
+    "allowed_tools_count_other": "{{count}} 个工具",
+    "permissions": "权限",
+    "permission_mode_always_ask": "始终询问",
+    "permission_mode_always_ask_description": "每次操作前都询问，读取也不例外",
+    "permission_mode_ask_before_changes": "更改前询问",
+    "permission_mode_ask_before_changes_description": "仅在更改笔记前询问",
+    "permission_mode_dont_ask": "不询问",
+    "permission_mode_dont_ask_description": "一切自行执行，包括更改"
   },
   "sidebar_chat": {
     "title": "AI对话",
@@ -3310,7 +3345,8 @@
       "read_web_page": "读取网页",
       "note_moved_from": "<Note/> 从 <From/> 移动到 <To/>",
       "note_moved": "<Note/> 移动到 <To/>",
-      "attachment_in_note": "<Title/> in <Note/>"
+      "attachment_in_note": "<Title/> in <Note/>",
+      "search_in_subtree": "<Query/> 在 <Subtree/> 中"
     },
     "base_url": "基础 URL",
     "base_url_description": "可选。通过代理或网关访问同一 API。要自行运行模型，请改为添加 Ollama 或 LM Studio 提供商。",
@@ -3825,7 +3861,31 @@
       "type-the-content-of-the-third-column": "输入第三栏的内容",
       "type-the-content-of-the-fourth-column": "输入第四栏的内容",
       "table-columns": "表格列",
-      "column-0-width-1": "第 %0 列宽度：%1%"
+      "column-0-width-1": "第 %0 列宽度：%1%",
+      "keystrokes-that-can-be-used-in-a-multicolumn-layout": "多栏布局中可用的快捷键",
+      "move-the-selected-content-to-the-column-on-the-left": "将所选内容移到左侧的列",
+      "move-the-selected-content-to-the-column-on-the-right": "将所选内容移到右侧的列",
+      "move-the-selected-content-to-the-first-column": "将所选内容移到第一列",
+      "move-the-selected-content-to-the-last-column": "将所选内容移到最后一列",
+      "move-the-column-to-the-left": "将列左移",
+      "move-the-column-to-the-right": "将列右移",
+      "make-the-column-the-first-one": "将该列设为第一列",
+      "make-the-column-the-last-one": "将该列设为最后一列",
+      "add-a-column-after-the-current-one": "在当前列之后添加一列",
+      "add-a-column-before-the-current-one": "在当前列之前添加一列",
+      "keystrokes-that-can-be-used-in-a-tabs-block": "标签页块中可用的快捷键",
+      "move-the-selected-content-to-the-tab-on-the-left": "将所选内容移到左侧的标签页",
+      "move-the-selected-content-to-the-tab-on-the-right": "将所选内容移到右侧的标签页",
+      "move-the-selected-content-to-the-first-tab": "将所选内容移到第一个标签页",
+      "move-the-selected-content-to-the-last-tab": "将所选内容移到最后一个标签页",
+      "move-the-tab-to-the-left": "将标签页左移",
+      "move-the-tab-to-the-right": "将标签页右移",
+      "make-the-tab-the-first-one": "将该标签页设为第一个",
+      "make-the-tab-the-last-one": "将该标签页设为最后一个",
+      "add-a-tab-after-the-current-one": "在当前标签页之后添加一个标签页",
+      "add-a-tab-before-the-current-one": "在当前标签页之前添加一个标签页",
+      "scroll-to-the-previous-tabs": "滚动到前面的标签页",
+      "scroll-to-the-next-tabs": "滚动到后面的标签页"
     },
     "toolbar-groups": {
       "text-formatting": "文本格式",
@@ -4664,5 +4724,15 @@
     "member_format": "按指定格式表示的日期，例如 YYYY-MM-DD"
   },
   "compress-images-menu": "压缩图片…",
-  "compress-image-menu": "压缩图片…"
+  "compress-image-menu": "压缩图片…",
+  "template_properties": {
+    "title": "模板属性",
+    "title_template": "新建笔记的默认标题",
+    "title_template_description": "可读取创建时间（now）以及创建时所在的笔记（parentNote）。",
+    "title_template_placeholder": "Meeting ${now.format('YYYY-MM-DD')}",
+    "new_notes": "新建笔记",
+    "default_parent": "新建笔记的默认位置",
+    "default_parent_description": "未另选位置时新建笔记的放置位置，例如在文本笔记中通过 @ 补全创建时。",
+    "default_parent_placeholder": "它们的创建位置"
+  }
 }
