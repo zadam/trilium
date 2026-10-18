@@ -219,7 +219,13 @@ export async function buildTypeCompletion(mime: string, context: ScriptApiContex
     }
 
     const env = await createEnv(mime, context);
-    const { tsFacet, tsSync, tsAutocomplete, tsLinter, tsHover } = await import("@valtown/codemirror-ts");
+    const [ { tsFacet }, { tsSync }, { tsAutocomplete }, { tsLinter }, { tsHover } ] = await Promise.all([
+        import("./codemirror-ts/facet/tsFacet.js"),
+        import("./codemirror-ts/sync/tsSync.js"),
+        import("./codemirror-ts/autocomplete/tsAutocomplete.js"),
+        import("./codemirror-ts/lint/tsLinter.js"),
+        import("./codemirror-ts/hover/tsHover.js")
+    ]);
     // `tsLinter` only underlines diagnostics inline; `lintGutter` adds the
     // error/warning markers in the gutter (as the old ESLint integration did).
     const { lintGutter } = await import("@codemirror/lint");
