@@ -116,47 +116,34 @@
     display: none;
 }
 
-/*
- * Sticky at the bottom of the scrolled tab, so it stays in view however far the selected rows are
- * scrolled. The background lays the card fill over the opaque app surface, so rows scrolling under the
- * bar do not show through it.
- */
-.attribute-selection-bar {
+/* A fixed height, so that a selection starting or ending does not move the cards below. Sticky so that
+   it stays in view on a phone, where the whole sheet scrolls. */
+.attribute-toolbar {
     position: sticky;
-    bottom: 0;
+    top: 0;
     z-index: 1;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 2px;
-    padding: 2px 3px 2px 10px;
-    margin: 6px 4px 4px;
-    border: 1px solid var(--card-border-color, var(--main-border-color));
-    border-radius: 10px;
-    box-shadow: var(--card-box-shadow, none);
+    height: 34px;
+    padding-inline: 4px;
+    border-bottom: 1px solid var(--main-border-color);
     background-color: var(--main-background-color);
-    background-image: linear-gradient(
-        var(--card-background-color, var(--accented-background-color)),
-        var(--card-background-color, var(--accented-background-color)));
-}
+    --icon-button-size: 26px;
 
-/* A phone's cards already paint the card fill, which would make the bar the same color as them. */
-body.mobile .attribute-selection-bar {
-    background-image: none;
-}
+    .attribute-selection-count {
+        color: var(--muted-text-color);
+        font-size: 0.85em;
+        white-space: nowrap;
+    }
 
-.attribute-selection-bar .attribute-selection-count {
-    /* Pushes the buttons to the trailing edge, where the values read from. */
-    margin-inline-end: auto;
-    color: var(--muted-text-color);
-    font-size: 0.85em;
-}
-
-/* At the compact size the row's own actions keep, the two rows of buttons reading as one kind. */
-.attribute-selection-bar .icon-action {
-    --icon-button-size: 24px;
-    --icon-button-icon-ratio: 0.8;
-
-    border-radius: 50%;
+    .attribute-toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-inline-start: auto;
+    }
 }
 
 /* The card titles are uppercase and letter-spaced; the count is not. */
@@ -325,7 +312,7 @@ body.mobile .attribute-selection-bar {
 
 /* Not while editing: the actions — later in the DOM — would paint over the very overlay that
    replaces them. Nor while rows are being picked out: a row's own actions are about the one row,
-   which is not what is being done then, and the foot of the card carries what is. */
+   which is not what is being done then, and the toolbar carries what is. */
 .attribute-list-panel:not(.selecting) .attribute-row:not(.editing):is(:hover, .active) .attribute-row-actions {
     display: flex;
 }

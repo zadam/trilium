@@ -333,8 +333,8 @@ export default function AttributeList() {
 
     /**
      * Whether rows are being picked out, which is the panel's second standing: every row shows the
-     * checkbox only the pointed-at one shows otherwise, the actions over the rows picked out are at
-     * the foot of the card, and a row's own — its pencil, its trash — are put away, being about the
+     * checkbox only the pointed-at one shows otherwise, the toolbar shows the actions on the
+     * selected rows, and a row's own — its pencil, its trash — are put away, being about the
      * one row. There is no mode to turn on and off beside the selection itself: picking the first
      * row out is what starts it, and letting the last one go is what ends it.
      */
@@ -502,7 +502,7 @@ export default function AttributeList() {
             // the panel offering to copy three rows while the menu deleted a fourth. With none
             // picked out there is no such contradiction — and picking this one out to make the
             // point would turn the whole panel over to a standing it was never asked for, every row
-            // grown a checkbox and stripped of its own buttons, the bar up at the foot, all for a
+            // grown a checkbox and stripped of its own buttons, the toolbar turned over, all for a
             // menu about the one row under the pointer. A press asking what can be done to a row is
             // not a press picking it out.
             if (isSelecting) {
@@ -736,16 +736,22 @@ export default function AttributeList() {
     // here rather than at each use so that one render offers the same thing everywhere in itself.
     const heldAttributes = getHeldAttributes();
 
-    // After the cards rather than inside one, since a selection can span several cards.
-    const selectionBar = note && isSelecting && (
-        <AttributeSelectionBar
-            count={selection.size}
+    // Above the cards rather than in one, since a selection can span several cards.
+    const toolbar = note && (canEdit || isSelecting) && (
+        <AttributeToolbar
+            selectionCount={selection.size}
+            held={canEdit ? heldAttributes : []}
+            canAdd={canEdit}
             canDelete={canEdit && selectedAttributes().every((candidate) => owned.current.includes(candidate))}
-            canPaste={canEdit && heldAttributes.length > 0}
+            onAdd={addAttribute}
             onCopy={() => void copyPickedAttributes(selectedAttributes())}
             onPaste={() => void applyPaste(heldAttributes)}
+            onClearClipboard={() => {
+                holdAttributes([]);
+                rerender();
+            }}
             onDelete={() => void deleteSelection(selectedAttributes())}
-            onClear={clearSelection}
+            onClearSelection={clearSelection}
         />
     );
 
@@ -761,6 +767,8 @@ export default function AttributeList() {
     // A card per run. With a single card, there is nothing to collapse it in favor of.
     const sectionList = (
         <CollapsibleWidgets.Provider value={runs.length > 1}>
+            {toolbar}
+
             {runs.map((run, index) => (
                 <AttributeSection
                     key={run.id}
@@ -771,27 +779,6 @@ export default function AttributeList() {
                     buttons={note && (
                         <>
                             {run.help && <SidebarHelp section={run.help} />}
-
-                            {/* The only paste control that is visible on every note, and the only
-                                one on a phone or a note with no rows to right-click. */}
-                            {index === 0 && canEdit && heldAttributes.length > 0 && (
-                                <AttributeClipboardDropdown
-                                    held={heldAttributes}
-                                    onPaste={() => void applyPaste(heldAttributes)}
-                                    onClear={() => {
-                                        holdAttributes([]);
-                                        rerender();
-                                    }}
-                                />
-                            )}
-
-                            {index === 0 && canEdit && (
-                                <AddAttributeButton
-                                    text={t("attribute_editor.add_a_new_attribute")}
-                                    attrTypes={ALL_ATTRIBUTE_KINDS}
-                                    onSelect={addAttribute}
-                                />
-                            )}
 
                             {/* A phone has no hover, so it adds from the header instead of the add row. */}
                             {index > 0 && IS_MOBILE && run.add && (
@@ -828,8 +815,6 @@ export default function AttributeList() {
                     </div>
                 </AttributeSection>
             ))}
-
-            {selectionBar}
         </CollapsibleWidgets.Provider>
     );
 
@@ -1518,11 +1503,7 @@ const KIND_TITLES: Record<AttributeKind, string> = {
     "relation-definition": t("attribute_list_panel.type_relation_definition")
 };
 
-/**
- * A card's add button: it offers the kinds the card is about, so the definitions card offers the two
- * definitions alone while the note's own attributes are added from the top of the panel, whether or not
- * a definitions card exists yet to add one from.
- */
+/** The toolbar's add button, which opens a menu of the given kinds. */
 function AddAttributeButton({ text, attrTypes, onSelect }: {
     text: string;
     attrTypes: AttributeKind[];
@@ -1533,8 +1514,6 @@ function AddAttributeButton({ text, attrTypes, onSelect }: {
             icon="bx bx-plus"
             text={text}
             onClick={(e) => {
-                // Keep the press from reaching the card header, which would collapse the card.
-                e.stopPropagation();
                 showAddMenu(e, attrTypes, (attrType) => onSelect(attrType, e));
             }}
         />
@@ -1542,7 +1521,7 @@ function AddAttributeButton({ text, attrTypes, onSelect }: {
 }
 
 /**
- * The attributes held for pasting, in the first card's header. The menu lists them, each with its kind
+ * The attributes held for pasting, in the toolbar. The menu lists them, each with its kind
  * icon and value, then pastes them onto the note or clears them.
  */
 function AttributeClipboardDropdown({ held, onPaste, onClear }: {
@@ -1595,63 +1574,73 @@ function getClipboardValue(attribute: Attribute) {
 }
 
 /**
- * What can be done to the rows picked out, at the foot of the card holding them: how many they are,
- * and the three things there are to do with them. It stands where the add row stands and takes its
- * turn (see the card above), so that picking rows out costs the list no room of its own — and it
- * says in words what the keys and the row menu offer without saying anything.
+ * The panel's toolbar, above the cards. It always holds pasting and adding; while rows are selected, it
+ * also holds the selection's count and actions. Its height stays the same either way, so starting or
+ * ending a selection moves nothing.
  *
- * Deleting is offered only where every picked row is the note's own, an inherited attribute being the
- * source note's to delete; pasting only where something has been copied to paste.
+ * Paste and add stay at the trailing end in both states, and the selection's actions go before them.
+ * Deleting is offered only when every selected row is the note's own.
  */
-function AttributeSelectionBar({ count, canDelete, canPaste, onCopy, onPaste, onDelete, onClear }: {
-    count: number;
+function AttributeToolbar({ selectionCount, held, canAdd, canDelete, onAdd, onCopy, onPaste, onClearClipboard, onDelete, onClearSelection }: {
+    selectionCount: number;
+    /** What there is to paste; empty when nothing is held or the note cannot be edited. */
+    held: Attribute[];
+    canAdd: boolean;
     canDelete: boolean;
-    canPaste: boolean;
+    onAdd: (attrType: AttributeKind, e: MouseEvent) => void;
     onCopy: () => void;
     onPaste: () => void;
+    onClearClipboard: () => void;
     onDelete: () => void;
-    onClear: () => void;
+    onClearSelection: () => void;
 }) {
-    /** Kept from the card, whose own handler would close the form the button is not about. */
-    const act = (action: () => void) => (e: MouseEvent) => {
-        e.stopPropagation();
-        action();
-    };
+    const isSelecting = selectionCount > 0;
 
     return (
-        <div class="attribute-selection-bar">
-            <span class="attribute-selection-count">{t("attribute_list_panel.selected", { count })}</span>
-
-            <ActionButton
-                icon="bx bx-copy"
-                text={t("attribute_list_panel.copy", { count })}
-                onClick={act(onCopy)}
-            />
-
-            {canPaste && (
-                <ActionButton
-                    icon="bx bx-paste"
-                    text={t("attribute_list_panel.paste", { count: getHeldAttributes().length })}
-                    onClick={act(onPaste)}
-                />
+        <div class={clsx("attribute-toolbar", isSelecting && "selecting")} role="toolbar">
+            {isSelecting && (
+                <>
+                    <ActionButton
+                        icon="bx bx-x"
+                        text={t("attribute_list_panel.clear_selection")}
+                        onClick={onClearSelection}
+                    />
+                    <span class="attribute-selection-count">
+                        {t("attribute_list_panel.selected", { count: selectionCount })}
+                    </span>
+                </>
             )}
 
-            {canDelete && (
-                <ActionButton
-                    className="attribute-delete-button"
-                    icon="bx bx-trash"
-                    text={t("attribute_list_panel.delete_selection", { count })}
-                    onClick={act(onDelete)}
-                />
-            )}
+            <div class="attribute-toolbar-actions">
+                {isSelecting && (
+                    <ActionButton
+                        icon="bx bx-copy"
+                        text={t("attribute_list_panel.copy", { count: selectionCount })}
+                        onClick={onCopy}
+                    />
+                )}
 
-            {/* The way out, which is letting every row go: there is no mode standing apart from the
-                selection to be turned off (see `isSelecting`). */}
-            <ActionButton
-                icon="bx bx-x"
-                text={t("attribute_list_panel.clear_selection")}
-                onClick={act(onClear)}
-            />
+                {isSelecting && canDelete && (
+                    <ActionButton
+                        className="attribute-delete-button"
+                        icon="bx bx-trash"
+                        text={t("attribute_list_panel.delete_selection", { count: selectionCount })}
+                        onClick={onDelete}
+                    />
+                )}
+
+                {held.length > 0 && (
+                    <AttributeClipboardDropdown held={held} onPaste={onPaste} onClear={onClearClipboard} />
+                )}
+
+                {canAdd && (
+                    <AddAttributeButton
+                        text={t("attribute_editor.add_a_new_attribute")}
+                        attrTypes={ALL_ATTRIBUTE_KINDS}
+                        onSelect={onAdd}
+                    />
+                )}
+            </div>
         </div>
     );
 }
@@ -1662,7 +1651,7 @@ function AttributeSelectionBar({ count, canDelete, canPaste, onCopy, onPaste, on
  * reached. A label for the note's own attributes, switched to a relation from the creation editor's
  * own name box or kind icon (see AttributeCreationEditor); a label definition for the definitions,
  * switched to a relation definition from the form's own list of field types, which offers "relation"
- * among them. The panel header's menu stays the way to any kind from anywhere.
+ * among them. The toolbar's add menu offers every kind.
  */
 function AddAttributeRow({ text, onAdd }: { text: string; onAdd: (e: MouseEvent) => void }) {
     return (

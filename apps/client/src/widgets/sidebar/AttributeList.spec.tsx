@@ -375,7 +375,7 @@ describe("AttributeList", () => {
 
         // One list, so one button, and it offers every kind: the definitions had a button of their
         // own while they had a card of their own, which offered nothing this one does not.
-        const addButton = container.querySelector<HTMLElement>(".card-header-buttons .bx-plus");
+        const addButton = container.querySelector<HTMLElement>(".attribute-toolbar .bx-plus");
         act(() => addButton?.click());
 
         // Four kinds and the rule setting the definitions apart from what they define.
@@ -420,7 +420,7 @@ describe("AttributeList", () => {
     it("creates a label straight in its row, and a draft left nameless not at all", async () => {
         renderPanel(noteWithAttributes());
 
-        const ownedMenu = container.querySelector<HTMLElement>(".card-header-buttons .bx-plus");
+        const ownedMenu = container.querySelector<HTMLElement>(".attribute-toolbar .bx-plus");
         act(() => ownedMenu?.click());
         act(() => showContextMenu.mock.calls[0][0].items[0].handler?.());
 
@@ -520,7 +520,7 @@ describe("AttributeList", () => {
         buildNote({ id: "target-note", title: "Target" });
         renderPanel(noteWithAttributes());
 
-        act(() => container.querySelector<HTMLElement>(".card-header-buttons .bx-plus")?.click());
+        act(() => container.querySelector<HTMLElement>(".attribute-toolbar .bx-plus")?.click());
         act(() => showContextMenu.mock.calls[0][0].items[1].handler?.());
 
         const editor = container.querySelector<HTMLElement>(".attribute-creation-editor");
@@ -919,7 +919,7 @@ describe("AttributeList", () => {
         expect(document.querySelector(".attr-detail")).toBeNull();
 
         // With none picked out it is the one attribute it landed on again.
-        act(() => barButton("bx bx-x")?.click());
+        act(() => toolbarButton("bx bx-x")?.click());
         act(() => rows()[1].click());
         expect(selectedNames()).toEqual([]);
         expect(document.querySelector(".attr-detail")).not.toBeNull();
@@ -1100,44 +1100,57 @@ describe("AttributeList", () => {
 
         checkbox(0).click();
         expect(selectedNames()).toEqual([ "template" ]);
+
+        // The theme draws the box on the label, over the input, so that is where a press lands. A
+        // browser would pass it on to the input as a second click, after re-rendering, which toggled
+        // the row straight back; the label's press is the only one.
+        const part = (selector: string) =>
+            container.querySelectorAll(".attribute-kind-check")[1]?.querySelector<HTMLElement>(selector);
+        expect(part("label")).not.toBeNull();
+        const inputClicks = vi.fn();
+        part("input")?.addEventListener("click", inputClicks);
+
+        act(() => part("label")?.click());
+        expect(selectedNames()).toEqual([ "cssClass", "template" ]);
+        act(() => part("label")?.click());
+        expect(selectedNames()).toEqual([ "template" ]);
+        expect(inputClicks).not.toHaveBeenCalled();
     });
 
-    it("stands a bar at the foot of the list saying what can be done to the rows picked out", async () => {
+    it("turns the toolbar over to the selected rows, keeping paste and add where they were", async () => {
+        writeAttributes(null, []);
         renderPanel(noteWithAttributes());
 
-        // Nothing picked out: no bar, and the list says it is not picking rows out — which is what
-        // draws the checkboxes.
-        expect(container.querySelector(".attribute-selection-bar")).toBeNull();
+        // Nothing selected: the toolbar holds adding alone, nothing being held to paste, and the list
+        // draws no checkboxes.
+        expect(toolbarIcons()).toEqual([ "bx bx-plus" ]);
         expect(firstPanel().className).not.toContain("selecting");
 
         checkbox(0).click();
-        const bar = container.querySelector(".attribute-selection-bar");
-        expect(bar).not.toBeNull();
-        expect(firstPanel().className).toContain("selecting");
-        // The bar follows the cards rather than sitting in one, since a selection can span several.
-        expect(bar?.closest(".card")).toBeNull();
-        // Adding an attribute stays on offer beside the note's own rows; the bar took nothing over.
-        expect(container.querySelector(".attribute-add-row")).not.toBeNull();
-        // Only that the count has a slot: the wording is translated, and translations stay unloaded.
-        expect(bar?.querySelector(".attribute-selection-count")).not.toBeNull();
-
-        // Copy, delete and the way out, the note owning the one row picked out; nothing to paste yet.
-        writeAttributes(null, []);
         checkbox(1).click();
-        expect(barIcons()).toEqual([ "bx bx-copy", "bx bx-trash", "bx bx-x" ]);
+        expect(firstPanel().className).toContain("selecting");
+        // Above the cards rather than in one, since a selection can span several.
+        const toolbar = container.querySelector(".attribute-toolbar");
+        expect(toolbar?.closest(".card")).toBeNull();
+        // Only that the count has a slot: the wording is translated, and translations stay unloaded.
+        expect(toolbar?.querySelector(".attribute-selection-count")).not.toBeNull();
+        expect(container.querySelector(".attribute-add-row")).not.toBeNull();
+        // Clearing, copying and deleting go ahead of adding, which stays at the end.
+        expect(toolbarIcons()).toEqual([ "bx bx-x", "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);
 
-        // Copying from the bar holds the attributes, which is what puts pasting on offer.
-        await act(async () => barButton("bx bx-copy")?.click());
-        expect(barIcons()).toEqual([ "bx bx-copy", "bx bx-paste", "bx bx-trash", "bx bx-x" ]);
+        // Copying holds the attributes, which puts pasting on offer, also at the end.
+        await act(async () => toolbarButton("bx bx-copy")?.click());
+        expect(toolbarIcons()).toEqual([ "bx bx-x", "bx bx-copy", "bx bx-trash", "bx bx-paste", "bx bx-plus" ]);
 
-        // An inherited row is the source note's to delete, so the lot cannot be.
+        // An inherited row is the source note's to delete, so the selection cannot be deleted.
         checkbox(3).click();
-        expect(barIcons()).not.toContain("bx bx-trash");
+        expect(toolbarIcons()).not.toContain("bx bx-trash");
 
-        // The way out is letting every row go, which takes the bar with it.
-        act(() => barButton("bx bx-x")?.click());
+        // Clearing the selection leaves pasting and adding where they were.
+        act(() => toolbarButton("bx bx-x")?.click());
         expect(selectedNames()).toEqual([]);
-        expect(container.querySelector(".attribute-selection-bar")).toBeNull();
+        expect(container.querySelector(".attribute-selection-count")).toBeNull();
+        expect(toolbarIcons()).toEqual([ "bx bx-paste", "bx bx-plus" ]);
         expect(firstPanel().className).not.toContain("selecting");
     });
 
@@ -1147,10 +1160,10 @@ describe("AttributeList", () => {
         writeAttributes(null, [ plain("tag") ]);
         renderPanel(note);
 
-        // The selection bar offers copying and the way out only.
+        // The toolbar offers clearing and copying only: no paste, delete or add.
         checkbox(0).click();
         checkbox(1).click();
-        expect(barIcons()).toEqual([ "bx bx-copy", "bx bx-x" ]);
+        expect(toolbarIcons()).toEqual([ "bx bx-x", "bx bx-copy" ]);
 
         // So does the row menu, over rows the note owns.
         rightPress(0);
@@ -1239,14 +1252,14 @@ describe("AttributeList", () => {
     }
 
     /** An action button wears its icon as classes of its own, rather than around a glyph of one. */
-    function barIcons() {
-        return [ ...container.querySelectorAll(".attribute-selection-bar .icon-action") ]
+    function toolbarIcons() {
+        return [ ...container.querySelectorAll(".attribute-toolbar .icon-action") ]
             .map((button) => [ ...button.classList ].filter((name) => name.startsWith("bx")).join(" "));
     }
 
-    function barButton(icon: string) {
+    function toolbarButton(icon: string) {
         return container.querySelector<HTMLElement>(
-            `.attribute-selection-bar .icon-action.${icon.split(" ").join(".")}`);
+            `.attribute-toolbar .icon-action.${icon.split(" ").join(".")}`);
     }
 
     function selectedNames() {

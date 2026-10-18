@@ -69,12 +69,13 @@ describe("AttributeList on a phone", () => {
         expect(section("attributes-owned").querySelector(".attribute-row")?.className).toContain("dropdown-item");
     });
 
-    it("keeps the ways in on the cards' own headers, there being no row to hover for one", () => {
+    it("adds from the toolbar and the cards' own headers, there being no row to hover for one", () => {
         renderPanel(noteWithRuns());
 
-        // The panel's own two ride on the first card, there being no header above the cards; the
-        // menu is also the only way to a relation here, whose creation editor is a pointer's.
-        expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle", "bx bx-plus" ]);
+        // The toolbar's menu adds any kind; it is also the only way to a relation here, whose creation
+        // editor is a pointer's.
+        expect(iconsIn(toolbar())).toEqual([ "bx bx-plus" ]);
+        expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle" ]);
         // Each card has its own help. A run that can be added to also has an add button, definitions
         // included; the inherited run, whose attributes belong to another note, has none.
         expect(iconsIn(header("attributes-definitions"))).toEqual([ "bx bx-help-circle", "bx bx-plus" ]);
@@ -96,25 +97,22 @@ describe("AttributeList on a phone", () => {
         expect(sectionIds()).toEqual([ "attributes-owned" ]);
     });
 
-    it("offers pasting from the first card's header, which is a phone's only way to it", async () => {
-        // Nothing copied, nothing offered — as the row menu and the selection's bar do.
+    it("offers pasting from the toolbar, which is a phone's only way to it", async () => {
+        // Nothing copied, nothing offered, as in the row menu.
         renderPanel(noteWithRuns());
-        expect(iconsIn(header("attributes-owned"))).not.toContain("bx bx-paste");
+        expect(iconsIn(toolbar())).not.toContain("bx bx-paste");
 
-        // The note that most wants pasting into is the one carrying nothing, and it is exactly the
-        // note where every other way in is gone: no row to hold down, so no selection and no bar,
-        // and the list a press beside the rows would land on has no rows to give it a height. The
-        // header stands whatever the run holds, which is why the way in belongs there.
+        // A note with no attributes has no row to hold down or press beside, so the toolbar is the
+        // only way to paste onto it.
         render(null, container);
         holdAttributes([ { type: "label", name: "author", value: "Elian", isInheritable: false } ]);
         renderPanel(buildNote({ id: "phone-bare", title: "Bare" }));
 
         expect(container.querySelectorAll(".attribute-row")).toHaveLength(0);
-        expect(container.querySelector(".attribute-selection-bar")).toBeNull();
-        expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle", "bx bx-paste", "bx bx-plus" ]);
+        expect(iconsIn(toolbar())).toEqual([ "bx bx-paste", "bx bx-plus" ]);
 
         // The button opens the clipboard menu, whose Paste row pastes.
-        const toggle = header("attributes-owned")?.querySelector<HTMLElement>(".attribute-clipboard > button");
+        const toggle = toolbar()?.querySelector<HTMLElement>(".attribute-clipboard > button");
         expect(toggle).not.toBeNull();
         act(() => toggle?.click());
         const paste = document.querySelector(".tn-dropdown-portal .bx-paste")?.closest<HTMLElement>("[role=menuitem]");
@@ -125,12 +123,12 @@ describe("AttributeList on a phone", () => {
         expect(url).toBe("notes/phone-bare/attributes");
         expect(saved).toEqual([ { type: "label", name: "author", value: "Elian", isInheritable: false } ]);
 
-        // A note that cannot be edited has no paste button, even with attributes held.
+        // A note that cannot be edited has nothing to paste or add, so it has no toolbar.
         render(null, container);
         const locked = buildNote({ id: "phone-locked", title: "Locked" });
         locked.isContentWritable = false;
         renderPanel(locked);
-        expect(iconsIn(header("attributes-owned"))).toEqual([ "bx bx-help-circle" ]);
+        expect(toolbar()).toBeNull();
     });
 
     it("still picks rows out, by the press held down, and says what can be done with them", () => {
@@ -150,12 +148,10 @@ describe("AttributeList on a phone", () => {
         expect(row?.querySelector(".bx-check")).not.toBeNull();
         expect(container.querySelector(".attribute-list-panel")?.className).toContain("selecting");
 
-        // The bar stands after the cards, the rows it acts on being picked out among any of them.
-        const bar = container.querySelector(".attribute-selection-bar");
-        expect(bar).not.toBeNull();
-        expect(iconsIn(bar)).toEqual([ "bx bx-copy", "bx bx-trash", "bx bx-x" ]);
-        expect(bar?.compareDocumentPosition(section("attributes-definitions")))
-            .toBe(Node.DOCUMENT_POSITION_PRECEDING);
+        // The toolbar above the cards turns over to the selection.
+        expect(iconsIn(toolbar())).toEqual([ "bx bx-x", "bx bx-copy", "bx bx-trash", "bx bx-plus" ]);
+        expect(toolbar()?.compareDocumentPosition(section("attributes-owned")))
+            .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     });
 
     function renderPanel(note: FNote) {
@@ -166,6 +162,10 @@ describe("AttributeList on a phone", () => {
     function sectionIds() {
         return [ ...container.querySelectorAll(".options-section") ]
             .map((el) => [ ...el.classList ].find((name) => name.startsWith("attributes-")));
+    }
+
+    function toolbar() {
+        return container.querySelector<HTMLElement>(".attribute-toolbar");
     }
 
     function section(id: string) {
