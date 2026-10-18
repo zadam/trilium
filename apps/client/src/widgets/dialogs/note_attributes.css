@@ -83,12 +83,8 @@ body.desktop .modal.note-attributes-modal {
  * nothing to be put away in favour of. All that is left here is fitting the rows to that card, the rows
  * being full-width menu items where a settings card holds inset controls.
  *
- * A page rather than a sheet, too: the sections are the whole of what there is to read here, and a sheet
- * sized to them would stand as tall as whatever the note happens to carry. `isFullPageOnMobile` asks for
- * the height, and being scrollable with it takes it away again — the two generic rules collide
- * (`height: 100%` against `height: unset`, at equal weight, in that order in style.css) — so the height
- * is claimed here and passed down: the content fills the dialog, and the body takes what the header
- * leaves and scrolls the sections within it.
+ * The sheet has a fixed height, as the revisions dialog's does, so that it neither grows with the
+ * note's attributes nor jumps between the list and an attribute's page.
  */
 body.mobile .modal.note-attributes-modal {
     .options-section-card {
@@ -168,11 +164,13 @@ body.mobile .modal.note-attributes-modal {
     }
 
     .modal-dialog {
-        height: 100%;
+        height: 85vh;
     }
 
     .modal-content {
-        height: 100%;
+        flex: 1;
+        min-height: 0;
+        padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
     }
 
     .modal-body {
