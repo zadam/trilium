@@ -52,6 +52,8 @@ const TS_TOP_LEVEL_AWAIT = 1375;
 const TS_JQUERY_NOT_FOUND = 2592;
 /** "Cannot find name 'x'." */
 const TS_NAME_NOT_FOUND = 2304;
+/** "Cannot find name 'document'. Do you need to change your target library?…" (a DOM name) */
+const TS_DOM_NAME_NOT_FOUND = 2584;
 /** "Unreachable code detected." — the one diagnostic rendered as a warning marker. */
 const TS_UNREACHABLE_CODE = 7027;
 
@@ -128,6 +130,29 @@ describe("script note diagnostics", () => {
             "const el = $('<div>');"
         );
         expect(codes).toContain(TS_JQUERY_NOT_FOUND);
+    }, TIMEOUT);
+
+    it("does not provide the DOM to backend scripts (Node and Web Workers have none)", async () => {
+        const codes = await getScriptDiagnosticCodes(SCRIPT_MIME_BACKEND, "const title = document.title;");
+        expect(codes).toContain(TS_DOM_NAME_NOT_FOUND);
+    }, TIMEOUT);
+
+    it("provides backend scripts the globals Node and Web Workers share", async () => {
+        const codes = await getScriptDiagnosticCodes(
+            SCRIPT_MIME_BACKEND,
+            "console.log('start'); console.error(new Error('x'));\n"
+            + "const timer = setTimeout(() => {}, 10); clearTimeout(timer);\n"
+            + "const ticker = setInterval(() => {}, 10); clearInterval(ticker);\n"
+            + "queueMicrotask(() => {});\n"
+            + "const url = new URL('https://example.com/?q=1'); url.searchParams.get('q');\n"
+            + "new URLSearchParams('a=1').toString();\n"
+            + "const bytes = new TextEncoder().encode('x'); new TextDecoder().decode(bytes);\n"
+            + "const controller = new AbortController();\n"
+            + "fetch('https://example.com', { method: 'POST', headers: { a: 'b' }, body: '{}', signal: controller.signal })\n"
+            + "    .then((response) => response.ok ? response.json() : response.text());\n"
+            + "structuredClone({ a: 1 }); atob(btoa('x')); crypto.randomUUID();"
+        );
+        expect(codes).toEqual([]);
     }, TIMEOUT);
 
     it("provides the glob global to frontend scripts (member + note typing)", async () => {

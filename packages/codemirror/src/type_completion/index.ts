@@ -69,6 +69,7 @@ const API_GLOBALS_PATH = "/trilium-api.d.ts";
 const API_TYPES_PATH = "/trilium-script-api.ts";
 const JQUERY_DTS_PATH = "/jquery-globals.d.ts";
 const GLOB_DTS_PATH = "/trilium-glob.d.ts";
+const BACKEND_GLOBALS_DTS_PATH = "/backend-globals.d.ts";
 const TRILIUM_MODULES_DTS_PATH = "/trilium-modules.d.ts";
 
 /** The virtual source-file path used for a given script MIME type. */
@@ -152,7 +153,8 @@ async function createEnv(mime: string, context: ScriptApiContext = {}) {
         rootFiles.push(GLOB_DTS_PATH);
     } else {
         // Backend `api` types come from the same shared public surface in commons
-        // (single source of truth, drift-guarded). No jQuery/DOM server-side.
+        // (single source of truth, drift-guarded). No jQuery or DOM: backend scripts run in Node
+        // and in a Web Worker, whose shared globals ./backend_globals declares.
         const apiTypes = (await import("../../../commons/src/lib/script_api.ts?raw")).default;
         fsMap.set(API_TYPES_PATH, apiTypes);
         // `req`/`res`/`pathParams` only exist at runtime for custom request handlers,
@@ -163,6 +165,10 @@ async function createEnv(mime: string, context: ScriptApiContext = {}) {
         const noteGlobal = context.bulkActionNote ? "    var note: ScriptBNote;\n" : "";
         fsMap.set(API_GLOBALS_PATH, `import type { BackendApi, ScriptBNote } from "./trilium-script-api";\ndeclare global {\n    // eslint-disable-next-line no-var\n    var api: ${apiType};\n${noteGlobal}}\n`);
         rootFiles.push(API_TYPES_PATH);
+
+        const { backendGlobals } = await import("./backend_globals.js");
+        fsMap.set(BACKEND_GLOBALS_DTS_PATH, backendGlobals);
+        rootFiles.push(BACKEND_GLOBALS_DTS_PATH);
     }
 
     if (mime === SCRIPT_MIME_JSX) {
@@ -180,7 +186,7 @@ async function createEnv(mime: string, context: ScriptApiContext = {}) {
     const compilerOptions = {
         ...COMPILER_OPTIONS,
         target: ts.ScriptTarget.ES2020,
-        lib: ["es2020", "dom"],
+        lib: isFrontendMime(mime) ? [ "es2020", "dom" ] : [ "es2020" ],
         // The runtime uses the classic `h` transform, but we only type-check (never
         // emit), so the automatic runtime is cleaner: it pulls `JSX.IntrinsicElements`
         // from `preact/jsx-runtime`, giving real element/attribute typing without a
