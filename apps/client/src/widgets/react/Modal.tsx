@@ -336,7 +336,7 @@ export function ScriptModal(props: ModalProps) {
     return <>
         <template ref={setOrigin} />
         {origin && createPortal(
-            <div className={isRenderNote ? RENDER_SCOPE_CLASS : undefined} data-ntx-id={ntxId} style={{ display: "contents" }}>
+            <div className={clsx("script-modal-host", isRenderNote && RENDER_SCOPE_CLASS)} data-ntx-id={ntxId}>
                 <Modal {...props} />
             </div>,
             document.body
