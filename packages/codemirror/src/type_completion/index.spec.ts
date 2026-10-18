@@ -1,5 +1,7 @@
+import { EditorState } from "@codemirror/state";
 import { describe, expect, it } from "vitest";
 
+import { createOrUpdateFile, tsFacet } from "./codemirror-ts/environment.js";
 import {
     buildTypeCompletion,
     getScriptCompletions,
@@ -493,6 +495,17 @@ describe("buildTypeCompletion", () => {
 
         const handler = await buildTypeCompletion(SCRIPT_MIME_BACKEND, { customRequestHandler: true });
         expect(handler.complete).toBeTruthy();
+    }, TIMEOUT);
+
+    it("completes globals and keywords at the start of a word", async () => {
+        const { extensions, complete } = await buildTypeCompletion(SCRIPT_MIME_FRONTEND);
+        // No editor view syncs the document here, so the test writes it into the environment.
+        const config = EditorState.create({ extensions }).facet(tsFacet);
+        expect(config).toBeTruthy();
+        if (config) createOrUpdateFile(config.env, config.path, "x");
+
+        const labels = (await complete?.(1, false))?.map((entry) => entry.label);
+        expect(labels).toEqual(expect.arrayContaining([ "api", "console", "glob", "const", "return" ]));
     }, TIMEOUT);
 });
 

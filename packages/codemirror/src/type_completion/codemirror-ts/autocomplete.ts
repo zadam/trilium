@@ -5,7 +5,6 @@ import type {
 } from "@codemirror/autocomplete";
 import ts from "typescript";
 import { type VirtualTypeScriptEnvironment } from "@typescript/vfs";
-import { AUTOCOMPLETION_SYMBOLS } from "./symbols.js";
 
 const TS_COMPLETE_BLOCKLIST: ts.ScriptElementKind[] = [
   ts.ScriptElementKind.warning,
@@ -15,11 +14,9 @@ export async function getAutocompletion({
   env,
   path,
   context,
-  keepLegacyLimitationForAutocompletionSymbols = true,
 }: {
   env: VirtualTypeScriptEnvironment;
   path: string;
-  keepLegacyLimitationForAutocompletionSymbols?: boolean;
   /**
    * Allow this to be a subset of the full CompletionContext
    * object, because the raw object isn't serializable.
@@ -56,8 +53,7 @@ export async function getAutocompletion({
       (entry) =>
         !TS_COMPLETE_BLOCKLIST.includes(entry.kind) &&
         (entry.sortText < "15" ||
-          (completionInfo.optionalReplacementSpan?.length &&
-            (!keepLegacyLimitationForAutocompletionSymbols || AUTOCOMPLETION_SYMBOLS.includes(entry.name)))),
+          completionInfo.optionalReplacementSpan?.length),
     )
     .map((entry): Completion => {
       const boost = -Number(entry.sortText) || 0;
