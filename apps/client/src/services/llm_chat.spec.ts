@@ -233,7 +233,7 @@ describe("streamChatCompletion", () => {
         expect(cb.onChunk).toHaveBeenCalledWith("hi");
     });
 
-    it("reports an interruption when the body ends without a done or error event (#10883)", async () => {
+    it("reports an interruption when the body ends without a done or error event", async () => {
         const chunks = [`data: ${JSON.stringify({ type: "text", content: "only" })}\n`];
         vi.stubGlobal("fetch", vi.fn(async () => makeStreamResponse(chunks)));
 
@@ -243,7 +243,8 @@ describe("streamChatCompletion", () => {
         expect(cb.onChunk).toHaveBeenCalledWith("only");
         expect(cb.onDone).not.toHaveBeenCalled();
         expect(cb.onError.mock.calls).toEqual([[
-            "LLM stream ended without completing — the connection closed before the response finished (network or proxy interruption)."
+            "LLM stream ended without completing — the connection closed before the response "
+            + "finished (network or proxy interruption)."
         ]]);
     });
 

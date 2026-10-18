@@ -196,7 +196,8 @@ async function streamChatOverSse(
 
         if (!completed) {
             callbacks.onError(
-                "LLM stream ended without completing — the connection closed before the response finished (network or proxy interruption)."
+                "LLM stream ended without completing — the connection closed before the response "
+                + "finished (network or proxy interruption)."
             );
         }
     } catch (e) {
