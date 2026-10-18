@@ -121,7 +121,7 @@ describe("CodeEmbed", () => {
         await vi.waitFor(() => expect(view.state.doc.toString()).toBe("print('hi')"));
     });
 
-    it("lets the find search the editor, the read-only one too", async () => {
+    it("lets the find search both editors and replace only in the editable one", async () => {
         const { figure } = await mount(buildCodeNote("print(1)\nprint(2)"), buildEditor(), {
             isEditable: true
         });
@@ -154,7 +154,7 @@ describe("CodeEmbed", () => {
             delete figure.dataset.editable;
             await Promise.resolve();
         });
-        await findView(figure, true);
+        const readOnlyView = await findView(figure, true);
         const readOnlyTarget = getEmbedFindTarget(figure);
         if (!(readOnlyTarget instanceof CodeMirrorFindTarget)) {
             throw new Error("Expected a code target.");
@@ -162,6 +162,10 @@ describe("CodeEmbed", () => {
         expect(readOnlyTarget).not.toBe(target);
         expect(await readOnlyTarget.find("print", { matchCase: false, wholeWord: false })).toBe(1);
         expect(await target.find("print", { matchCase: false, wholeWord: false })).toBe(0);
+        expect(readOnlyTarget.canReplace()).toBe(false);
+        expect(await readOnlyTarget.replace(0, "log")).toBe(1);
+        expect(await readOnlyTarget.replaceAll("log")).toBe(1);
+        expect(readOnlyView.state.doc.toString()).toBe("#print(1)\nlog(2)");
     });
 
     it("releases the edited content and shows it read-only once the toggle goes off", async () => {

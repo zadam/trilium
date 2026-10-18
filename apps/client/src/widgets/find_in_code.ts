@@ -130,12 +130,13 @@ export class CodeMirrorFindTarget implements FindTarget {
         return index >= 0 ? index : null;
     }
 
+    // `readOnly` blocks typing only, not the changes that `replace()` dispatches.
     canReplace() {
-        return true;
+        return !this.view.state.readOnly;
     }
 
     async replace(index: number, text: string) {
-        if (this.isAlive()) {
+        if (this.isAlive() && this.canReplace()) {
             await this.view.findNext(0, 0, index);
             await this.view.replace(text);
         }
@@ -143,7 +144,7 @@ export class CodeMirrorFindTarget implements FindTarget {
     }
 
     async replaceAll(text: string) {
-        if (this.isAlive()) {
+        if (this.isAlive() && this.canReplace()) {
             await this.view.replaceAll(text);
         }
         return this.searchAgain();
