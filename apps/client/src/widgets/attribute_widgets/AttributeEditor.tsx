@@ -10,6 +10,7 @@ import type { CommandData, FilteredCommandNames } from "../../components/app_con
 import FAttribute from "../../entities/fattribute";
 import FNote from "../../entities/fnote";
 import contextMenu from "../../menus/context_menu";
+import { getPreprocessedData } from "../../services/attribute_clipboard";
 import attribute_parser, { Attribute } from "../../services/attribute_parser";
 import attribute_renderer from "../../services/attribute_renderer";
 import attributes from "../../services/attributes";
@@ -412,15 +413,6 @@ function attributeNameMention(marker: "#" | "~", type: "label" | "relation"): Me
             toMention: (name) => ({ id: `${marker}${name}` })
         })
     };
-}
-
-/** The attributes as plain text: reference links back down to their note path, entities resolved. */
-export function getPreprocessedData(currentValue: string) {
-    const str = currentValue
-        .replace(/<a[^>]+href="(#[A-Za-z0-9_/]*)"[^>]*>[^<]*<\/a>/g, "$1")
-        .replace(/&nbsp;/g, " "); // otherwise .text() below outputs non-breaking space in unicode
-
-    return $("<div>").html(str).text();
 }
 
 /**

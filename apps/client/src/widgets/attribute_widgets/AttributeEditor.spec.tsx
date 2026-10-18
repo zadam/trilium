@@ -1,19 +1,7 @@
 import type { ModelPosition } from "@triliumnext/ckeditor5";
 import { describe, expect, it } from "vitest";
 
-import { getClickIndex, getPreprocessedData } from "./AttributeEditor";
-
-describe("getPreprocessedData", () => {
-    it("reduces a reference link back to the note path it stands for, and resolves the entities around it", () => {
-        expect(getPreprocessedData(
-            "<p>#author=Elian&nbsp;~parent=<a class=\"reference-link\" href=\"#root/abc123\">Some note</a>&nbsp;</p>"
-        )).toBe("#author=Elian ~parent=#root/abc123 ");
-
-        // A link to anywhere else is not a note path, so it is left to the text extraction below it.
-        expect(getPreprocessedData("<a href=\"https://example.com\">Example</a>")).toBe("Example");
-        expect(getPreprocessedData("#a&amp;b")).toBe("#a&b");
-    });
-});
+import { getClickIndex } from "./AttributeEditor";
 
 describe("getClickIndex", () => {
     it("measures every sibling before the pressed one as the text it stands for", () => {

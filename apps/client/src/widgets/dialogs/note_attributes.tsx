@@ -32,7 +32,6 @@ export default function NoteAttributesDialog() {
             show={shown}
             onHidden={() => setShown(false)}
             scrollable
-            isFullPageOnMobile
         >
             <AttributeList />
         </MasterDetailModal>

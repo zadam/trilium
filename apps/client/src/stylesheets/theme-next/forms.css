@@ -456,6 +456,13 @@ optgroup {
         animation: checkbox-checked 150ms ease-out;
     }
 
+    /* The mixed state of a box whose items are partly checked, such as a select-all box. */
+    label.tn-checkbox:has(> input[type="checkbox"]:indeterminate)::after {
+        mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3cpath d='M4 10.5h16v3H4z' /%3e%3c/svg%3e");
+        opacity: 1;
+        transform: scale(1);
+    }
+
     /* Radio buttons */
 
     label.tn-radio::before,
