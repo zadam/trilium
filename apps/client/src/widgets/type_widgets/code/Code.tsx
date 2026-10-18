@@ -177,7 +177,8 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
     );
 }
 
-export interface CodeEditorProps extends CodeMirrorProps, Pick<TypeWidgetProps, "ntxId"> {
+export interface CodeEditorProps
+    extends Omit<CodeMirrorProps, "getSnippets">, Pick<TypeWidgetProps, "ntxId"> {
     /** The content that the `/` list completes, or `undefined` for no list. */
     completions?: CompletionTarget;
 }
@@ -190,7 +191,7 @@ export function CodeEditor({
     const [ view, setView ] = useState<VanillaCodeMirror | null>(null);
     const containerRef = useSyncedRef(externalContainerRef);
     const initialized = useRef($.Deferred());
-    useEditorCompletions(view, mime, completions);
+    const getSnippets = useEditorCompletions(view, mime, completions);
     const [ codeLineWrapEnabled ] = useTriliumOptionBool("codeLineWrapEnabled");
     const [ codeNoteTheme ] = useTriliumOption("codeNoteTheme");
     const [ codeNoteTabWidth ] = useTriliumOption("codeNoteTabWidth");
@@ -204,14 +205,10 @@ export function CodeEditor({
         ? (colorScheme === "dark" ? darkTheme : lightTheme)
         : codeNoteTheme;
 
-    // React to theme changes.
+    // React to theme changes. `onInitialized` applies it too, for an editor `CodeMirror` creates
+    // after this effect has run.
     useEffect(() => {
-        if (codeEditorRef.current && effectiveTheme?.startsWith(DEFAULT_PREFIX)) {
-            const theme = getThemeById(effectiveTheme.substring(DEFAULT_PREFIX.length));
-            if (theme) {
-                codeEditorRef.current.setTheme(theme);
-            }
-        }
+        if (codeEditorRef.current) applyTheme(codeEditorRef.current, effectiveTheme);
     }, [ codeEditorRef, effectiveTheme ]);
 
     useTriliumEvent("executeWithCodeEditor", async ({ resolve, ntxId: eventNtxId }) => {
@@ -251,6 +248,7 @@ export function CodeEditor({
     return <CodeMirror
         {...editorProps}
         mime={mime}
+        getSnippets={getSnippets}
         editorRef={codeEditorRef}
         containerRef={containerRef}
         lineWrapping={lineWrapping ?? codeLineWrapEnabled}
@@ -263,6 +261,7 @@ export function CodeEditor({
                 else if (externalContainerRef) externalContainerRef.current = containerRef.current;
             }
             if (codeEditorRef.current) {
+                applyTheme(codeEditorRef.current, effectiveTheme);
                 if (typeof externalEditorRef === "function") externalEditorRef(codeEditorRef.current);
                 else if (externalEditorRef) externalEditorRef.current = codeEditorRef.current;
             }
@@ -271,4 +270,13 @@ export function CodeEditor({
             onInitialized?.();
         }}
     />;
+}
+
+/** Applies a `default:`-prefixed code note theme, the only kind the editor knows how to load. */
+function applyTheme(editor: VanillaCodeMirror, effectiveTheme: string | undefined) {
+    if (!effectiveTheme?.startsWith(DEFAULT_PREFIX)) return;
+    const theme = getThemeById(effectiveTheme.substring(DEFAULT_PREFIX.length));
+    if (theme) {
+        void editor.setTheme(theme);
+    }
 }

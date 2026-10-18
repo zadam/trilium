@@ -112,12 +112,14 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
   the wrapping in `#wrapLines`; everything else lives in `data-code-wrap-lines` /
   `data-code-line-numbers`, on the `<pre>` for inline source (the code view command sets only
   line numbers on a note embed). `ReadOnlyText` copies them from the `<pre>` to its box.
-- **The `/` list** of a CodeMirror pane is the note's own: `CodeEditor` registers
-  `useEditorCompletions()` (`code/editor_completions.tsx`) from its `completions` prop, which
-  `CodeEmbedEditor` passes while it has an `editor`. Snippets of the pane's MIME type for any
-  language; for Markdown also its commands, `@` and `[[`, which need `ownerNote` (the note an
-  attachment belongs to) for uploads and new notes. `getEdgeLeftBy()` holds the caret in the
-  embed while the list is open. Specs that mount an editable Markdown pane mock
+- **The `/` list** of a CodeMirror pane is the note's own: `CodeEditor` calls
+  `useEditorCompletions()` (`code/editor_completions.tsx`) with its `completions` prop, which
+  `CodeEmbedEditor` passes while it has an `editor`. For any language other than Markdown it
+  only loads the snippets of the pane's MIME type and hands them to `CodeMirror`'s `getSnippets`,
+  which `codeCompletions()` (`code/code_completions.tsx`) lists with the TypeScript completions.
+  For Markdown it registers its own list instead: the commands and snippets, `@` and `[[`, which
+  need `ownerNote` (the note an attachment belongs to) for uploads and new notes.
+  `getEdgeLeftBy()` holds the caret in the embed while either list is open. Specs that mount an editable Markdown pane mock
   `services/task_states`; specs that mount any of them keep `services/i18n` partial
   (`importOriginal`), as `NoteAutocomplete` reads it.
   - `group` on a tool — a separator goes between groups. Notify listeners only when the tools

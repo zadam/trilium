@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type FNote from "../../../entities/fnote";
 import type { NoteSuggestionOptions, Suggestion } from "../../../services/note_autocomplete";
-import { type CompletionTarget, snippetCommand, useEditorCompletions } from "./editor_completions";
+import { type CompletionTarget, useEditorCompletions } from "./editor_completions";
 import type { CodeSnippet } from "./snippets";
 
 // The hook's asynchronous sources of menu entries, stubbed so mounting it needs no server.
@@ -76,14 +76,16 @@ describe("useEditorCompletions", () => {
         editors.length = 0;
     });
 
-    /** Mounts the hook against `view`. */
+    /** Mounts the hook against `view`, and returns what it gives `codeCompletions()`. */
     function mount(view: VanillaCodeMirror, mime: string, target: CompletionTarget | undefined) {
+        let getSnippets: () => CodeSnippet[] = () => [];
         function Probe() {
-            useEditorCompletions(view, mime, target);
+            getSnippets = useEditorCompletions(view, mime, target);
             return null;
         }
 
         act(() => render(h(Probe, {}), container));
+        return () => getSnippets();
     }
 
     /** A focused editor, which the list opens in. */
@@ -115,27 +117,26 @@ describe("useEditorCompletions", () => {
     const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
     const textOf = (editor: VanillaCodeMirror) => editor.state.doc.toString();
 
-    it("registers the list, the fence languages only for Markdown, and withdraws both", () => {
+    it("registers the list and the fence languages only for Markdown, and withdraws both", () => {
         const setNamedExtension = vi.fn();
         const setCompletionSource = vi.fn();
         const view = { setNamedExtension, setCompletionSource } as unknown as VanillaCodeMirror;
 
         mount(view, MARKDOWN, { note: null });
         expect(setNamedExtension)
-            .toHaveBeenCalledExactlyOnceWith("slashCommands", expect.anything());
+            .toHaveBeenCalledExactlyOnceWith("markdownCompletions", expect.anything());
         expect(setCompletionSource)
             .toHaveBeenCalledExactlyOnceWith("markdownCodeFence", expect.any(Function));
         act(() => render(null, container));
-        expect(setNamedExtension).toHaveBeenLastCalledWith("slashCommands", []);
+        expect(setNamedExtension).toHaveBeenLastCalledWith("markdownCompletions", []);
         expect(setCompletionSource).toHaveBeenLastCalledWith("markdownCodeFence", null);
 
         setNamedExtension.mockClear();
         setCompletionSource.mockClear();
         mount(view, "text/x-python", { note: null });
-        expect(setNamedExtension)
-            .toHaveBeenCalledExactlyOnceWith("slashCommands", expect.anything());
+        expect(useCodeSnippets).toHaveBeenLastCalledWith("text/x-python", true);
         act(() => render(null, container));
-        expect(setNamedExtension).toHaveBeenLastCalledWith("slashCommands", []);
+        expect(setNamedExtension).not.toHaveBeenCalled();
         expect(setCompletionSource).not.toHaveBeenCalled();
 
         setNamedExtension.mockClear();
@@ -168,28 +169,23 @@ describe("useEditorCompletions", () => {
         await vi.waitFor(() => expect(textOf(editor)).toBe("Hello!"));
     });
 
-    it("lists only the snippets in a code editor, without the note being edited", async () => {
+    it("gives a code editor's snippets to its own list, without the note being edited", async () => {
         const editor = buildEditor();
-        mount(editor, "text/x-python", { note: { noteId: "s2" } as FNote });
-
-        type(editor, "/");
-        await settle();
-        expect(rows()).toEqual([]);
+        const getSnippets = mount(editor, "text/x-python", { note: { noteId: "s2" } as FNote });
+        expect(getSnippets()).toEqual([]);
 
         snippets.current = [ GREETING, { noteId: "s2", title: "Itself", content: "x" } ];
-        type(editor, "a /");
-        await vi.waitFor(() => expect(rowTexts()).toEqual(onlyRow("Greeting")));
-        // `/snippet` lists every snippet, as in the text editor.
-        type(editor, "a /snippet");
-        await vi.waitFor(() => expect(rows()).toHaveLength(1));
-        press(editor, "Enter");
-        await vi.waitFor(() => expect(textOf(editor)).toBe("a Hello!"));
+        expect(getSnippets()).toEqual([ GREETING ]);
 
         // A code editor offers no note lists.
         type(editor, "@Al");
         await settle();
         expect(rows()).toEqual([]);
         expect(getNoteSuggestions).not.toHaveBeenCalled();
+
+        // A Markdown editor lists them with its commands instead.
+        act(() => render(null, container));
+        expect(mount(editor, MARKDOWN, { note: null })()).toEqual([]);
     });
 
     it("lists the notes after an @ or a [[, and links the one picked or created", async () => {
@@ -262,27 +258,5 @@ describe("useEditorCompletions", () => {
         press(editor, "Enter");
         await vi.waitFor(() => expect(createNoteFromSuggestion)
             .toHaveBeenLastCalledWith(expect.anything(), "root/owner"));
-    });
-});
-
-describe("snippetCommand", () => {
-    it("lists a snippet by its title, also after /snippet, and inserts its content", () => {
-        const entry = snippetCommand(GREETING);
-        expect(entry).toMatchObject({
-            id: "snippet:Greeting",
-            title: "Greeting",
-            description: "Says hello",
-            aliases: [ "snippet:Greeting", "snippet", "template" ],
-            icon: "bx bx-code-curly"
-        });
-
-        const parent = document.createElement("div");
-        document.body.append(parent);
-        const editor = new VanillaCodeMirror({ parent });
-        editor.dispatch({ changes: { from: 0, insert: "Hi /snip" }, selection: { anchor: 8 } });
-        entry.apply(editor, 3, 8);
-        expect(editor.state.doc.toString()).toBe("Hi Hello!");
-        expect(editor.state.selection.main.head).toBe(9);
-        editor.destroy();
     });
 });

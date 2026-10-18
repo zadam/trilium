@@ -3,7 +3,7 @@ import {
     hostedCompletion, type HostedCompletionApply, type HostedCompletionState
 } from "@triliumnext/codemirror/src/extensions/hosted_completion";
 import { isMarkdownMime, type TaskStateDef } from "@triliumnext/commons";
-import { useEffect, useRef } from "preact/hooks";
+import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
 import { getTaskStateDefinitions } from "../../../services/task_states";
@@ -13,7 +13,7 @@ import {
 import {
     buildMarkdownCommands, codeFenceCompletionSource, linkToNote, markdownCompletionAt
 } from "../markdown/completions";
-import { type CodeSnippet, SLASH_COMMAND_REGEX, useCodeSnippets } from "./snippets";
+import { type CodeSnippet, snippetCommand, useCodeSnippets } from "./snippets";
 
 /** A `/` command of a code editor, listed as the text editor lists its own. */
 export interface SlashCommand extends CommandEntry {
@@ -40,15 +40,16 @@ export interface CompletionTarget {
 }
 
 /**
- * Registers the `/` list of `view`, drawn as the text editor's: the code snippets for `mime`, and
- * for Markdown its commands, the notes typed after `@` or `[[`, and the code-fence languages.
- * Nothing registers while `target` is `undefined`.
+ * Loads the code snippets for `mime` and returns them, without the note being edited, for
+ * `codeCompletions()` to list after a `/`. For Markdown, registers the `/` list of `view` instead,
+ * drawn as the text editor's: its commands and the snippets, the notes typed after `@` or `[[`,
+ * and the code-fence languages. Nothing loads or registers while `target` is `undefined`.
  */
 export function useEditorCompletions(
     view: VanillaCodeMirror | null,
     mime: string,
     target: CompletionTarget | undefined
-) {
+): () => CodeSnippet[] {
     const isEnabled = target !== undefined;
     const isMarkdown = isMarkdownMime(mime);
     // Read when the list opens, as switching notes reuses the editor.
@@ -56,6 +57,9 @@ export function useEditorCompletions(
     targetRef.current = target;
     const snippetsRef = useCodeSnippets(mime, isEnabled);
     const taskStatesRef = useRef<TaskStateDef[]>([]);
+    const getSnippets = useCallback(() => snippetsRef.current.filter(
+        (snippet) => snippet.noteId !== targetRef.current?.note?.noteId
+    ), [ snippetsRef ]);
 
     useEffect(() => {
         if (!isEnabled || !isMarkdown) return;
@@ -63,39 +67,25 @@ export function useEditorCompletions(
     }, [ isEnabled, isMarkdown ]);
 
     useEffect(() => {
-        if (!view || !isEnabled) return;
+        if (!view || !isEnabled || !isMarkdown) return;
 
         const getOwnerNote = () => targetRef.current?.ownerNote ?? targetRef.current?.note ?? null;
         const getNotePath = () => (
             targetRef.current?.getNotePath?.() ?? getOwnerNote()?.getBestNotePathString()
         );
         const commands = (): SlashCommand[] => [
-            ...(isMarkdown ? buildMarkdownCommands({
+            ...buildMarkdownCommands({
                 editorView: view, getOwnerNote, taskStates: taskStatesRef.current
-            }) : []),
-            ...snippetsRef.current
-                .filter((snippet) => snippet.noteId !== targetRef.current?.note?.noteId)
-                .map(snippetCommand)
+            }),
+            ...getSnippets().map(snippetCommand)
         ];
-        const codeCommandAt = (before: string): CompletionMatch | null => {
-            const typed = COMMAND_TYPED.exec(before);
-            if (!typed || commands().length === 0) return null;
-            return { kind: "command", from: typed.index, query: typed[0].slice(1) };
-        };
-        const match: typeof markdownCompletionAt = isMarkdown
-            ? markdownCompletionAt
-            : codeCommandAt;
 
         // Bridges the codemirror package's own @codemirror/state identity.
         type CmMatcher = Parameters<typeof hostedCompletion<CompletionMatch>>[0]["match"];
-        view.setNamedExtension("slashCommands", hostedCompletion({
-            match: match as unknown as CmMatcher,
+        view.setNamedExtension("markdownCompletions", hostedCompletion({
+            match: markdownCompletionAt as unknown as CmMatcher,
             list: () => createCompletionList(commands, getNotePath)
         }));
-        if (!isMarkdown) {
-            return () => view.setNamedExtension("slashCommands", []);
-        }
-
         // CodeMirror allows one `override` config per editor, so the fence languages go through
         // `setCompletionSource()`. Bridges the package's own @codemirror/autocomplete identity.
         type CmCompletionSource = Parameters<VanillaCodeMirror["setCompletionSource"]>[1];
@@ -103,31 +93,16 @@ export function useEditorCompletions(
             "markdownCodeFence", codeFenceCompletionSource as unknown as CmCompletionSource
         );
         return () => {
-            view.setNamedExtension("slashCommands", []);
+            view.setNamedExtension("markdownCompletions", []);
             view.setCompletionSource("markdownCodeFence", null);
         };
-    }, [ view, isEnabled, isMarkdown ]);
+    }, [ view, isEnabled, isMarkdown, getSnippets ]);
+
+    // A Markdown editor lists the snippets with its commands.
+    return isMarkdown ? noSnippets : getSnippets;
 }
 
-const COMMAND_TYPED = new RegExp(`${SLASH_COMMAND_REGEX.source}$`);
-
-/** The entry of `snippet` in the `/` list, which puts its content in place of the typed command. */
-export function snippetCommand(snippet: CodeSnippet): SlashCommand {
-    const name = `snippet:${snippet.title}`;
-    return {
-        id: name,
-        title: snippet.title,
-        description: snippet.description,
-        aliases: [ name, "snippet", "template" ],
-        icon: "bx bx-code-curly",
-        apply(view, from, to) {
-            view.dispatch({
-                changes: { from, to, insert: snippet.content },
-                selection: { anchor: from + snippet.content.length }
-            });
-        }
-    };
-}
+const noSnippets = (): CodeSnippet[] => [];
 
 /**
  * The `/` list or the `@` list, drawn as the text editor's: the first runs the command picked on

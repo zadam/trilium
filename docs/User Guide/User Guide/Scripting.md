@@ -41,7 +41,7 @@ To do so, apply the following [labels](Advanced%20Usage/Attributes/Labels.md):
 
 Starting with Trilium v0.104.0, frontend scripts, backend scripts and render notes benefit from an autocomplete system.
 
-The autocomplete triggers automatically when typing <kbd>.</kbd> or manually by pressing <kbd>Ctrl</kbd>+<kbd>Space</kbd>.
+The autocomplete opens automatically while typing a name or after a <kbd>.</kbd>, or manually by pressing <kbd>Ctrl</kbd>+<kbd>Space</kbd>. Its list looks and works like the <kbd>/</kbd> list of a text note: each entry has an icon for its kind (function, property, class…), <kbd>Enter</kbd> or <kbd>Tab</kbd> inserts the highlighted one and <kbd>Esc</kbd> closes it.
 
 In addition to that, the editor will also display syntax errors and warnings such as unreachable code.
 

@@ -1,7 +1,10 @@
-import { useEffect, useRef } from "preact/hooks";
 import { EditorConfig, default as VanillaCodeMirror } from "@triliumnext/codemirror";
-import { useSyncedRef } from "../../react/hooks";
 import { Ref } from "preact";
+import { useEffect, useRef } from "preact/hooks";
+
+import { useSyncedRef } from "../../react/hooks";
+import { codeCompletions } from "./code_completions";
+import type { CodeSnippet } from "./snippets";
 
 export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
     content?: string;
@@ -17,11 +20,15 @@ export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
     customRequestHandler?: boolean;
     /** Whether the script is a bulk action's, which runs with the processed note as `note`. */
     bulkActionNote?: boolean;
+    /** The snippets the completion list offers after a `/`, read each time the list opens. */
+    getSnippets?: () => CodeSnippet[];
 }
 
-export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, lineNumbers = true, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, ...extraOpts }: CodeMirrorProps) {
+export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, lineNumbers = true, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, getSnippets, ...extraOpts }: CodeMirrorProps) {
     const parentRef = useSyncedRef(externalContainerRef);
     const codeEditorRef = useRef<VanillaCodeMirror | undefined>(undefined);
+    const getSnippetsRef = useRef(getSnippets);
+    getSnippetsRef.current = getSnippets;
 
     // Create CodeMirror instance.
     useEffect(() => {
@@ -34,6 +41,7 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
             ...extraOpts
         });
         codeEditorRef.current = codeEditor;
+        codeEditor.setNamedExtension("codeCompletions", codeCompletions(codeEditor, () => getSnippetsRef.current?.() ?? []));
         if (typeof externalEditorRef === "function") externalEditorRef(codeEditor);
         else if (externalEditorRef) externalEditorRef.current = codeEditor;
         onInitialized?.();

@@ -1,3 +1,6 @@
+import type {
+    HostedCompletionApply
+} from "@triliumnext/codemirror/src/extensions/hosted_completion";
 import { isMarkdownMime } from "@triliumnext/commons";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
@@ -6,6 +9,7 @@ import type LoadResults from "../../../services/load_results.js";
 import search from "../../../services/search.js";
 import { logError } from "../../../services/ws.js";
 import { useTriliumEvent } from "../../react/hooks";
+import type { CommandEntry } from "../../react/NoteAutocomplete";
 
 /** Matches a `/command` token at the start of a line or after whitespace. Shared by every editor. */
 export const SLASH_COMMAND_REGEX = /(?:^|(?<=\s))\/[\w:-]*/;
@@ -80,6 +84,30 @@ export function isSnippetFor(candidate: FNote, mime: string) {
     if (candidate.mime === "text/plain") return true;
     return isMarkdownMime(mime) ? candidate.isMarkdown() : candidate.mime === mime;
 }
+
+/**
+ * A snippet as an entry of a `/` list, found by its title or by `snippet:<title>`. Picking it puts
+ * the snippet's content in place of the typed `/command` and moves the caret to its end.
+ */
+export function snippetCommand(snippet: CodeSnippet): SnippetCommand {
+    const name = `snippet:${snippet.title}`;
+
+    return {
+        id: name,
+        title: snippet.title,
+        description: snippet.description,
+        aliases: [ name, "snippet", "template" ],
+        icon: "bx bx-code-curly",
+        apply(view, from, to) {
+            view.dispatch({
+                changes: { from, to, insert: snippet.content },
+                selection: { anchor: from + snippet.content.length }
+            });
+        }
+    };
+}
+
+export type SnippetCommand = CommandEntry & { apply: HostedCompletionApply };
 
 /**
  * Loads the snippets for content of `mime` into a ref and keeps it fresh: reloaded on mount, when

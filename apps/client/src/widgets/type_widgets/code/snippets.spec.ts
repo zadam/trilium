@@ -11,7 +11,7 @@ vi.mock("../../../services/search.js", () => ({
 import search from "../../../services/search.js";
 import * as ws from "../../../services/ws.js";
 import { buildNote } from "../../../test/easy-froca";
-import { getCodeSnippets, isCodeSnippetChange, isSnippetFor } from "./snippets.js";
+import { getCodeSnippets, isCodeSnippetChange, isSnippetFor, snippetCommand } from "./snippets.js";
 
 interface NoteStub {
     noteId: string;
@@ -65,6 +65,32 @@ describe("isSnippetFor", () => {
         expect(isSnippetFor(plain, "text/x-markdown")).toBe(true);
         expect(isSnippetFor(plain, "text/css")).toBe(true);
         expect(isSnippetFor(snippet("text/plain", "text"), "text/css")).toBe(false);
+    });
+});
+
+describe("snippetCommand", () => {
+    it("lists a snippet by title and description, and inserts its content for the command", () => {
+        const command = snippetCommand({
+            noteId: "b", title: "Footer", description: "Page footer", content: "the footer"
+        });
+
+        expect(command).toMatchObject({
+            id: "snippet:Footer",
+            title: "Footer",
+            description: "Page footer",
+            aliases: [ "snippet:Footer", "snippet", "template" ]
+        });
+
+        // Applying replaces the typed [from, to] token with the content, caret at its end.
+        const dispatched: unknown[] = [];
+        const view = { dispatch: (tx: unknown) => dispatched.push(tx) } as unknown as
+            Parameters<typeof command.apply>[0];
+        command.apply(view, 3, 11);
+
+        expect(dispatched).toEqual([{
+            changes: { from: 3, to: 11, insert: "the footer" },
+            selection: { anchor: 3 + "the footer".length }
+        }]);
     });
 });
 

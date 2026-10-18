@@ -59,6 +59,12 @@ export interface HostedCompletionConfig<M extends HostedCompletionMatch> {
      * offers none. `state` is there for what the text alone does not tell, such as the syntax tree.
      */
     match(before: string, explicit: boolean, state: EditorState): M | null;
+    /**
+     * Whether moving the caret onto a match opens the list, as typing does. `true` by default. A host
+     * whose matches are everywhere, such as any identifier in code, passes `false`: a caret move then
+     * only keeps an open list while the caret stays on its match.
+     */
+    opensOnCaretMove?: boolean;
     /** Creates the list, once per editor. */
     list(view: EditorView): HostedCompletionList<M>;
 }
@@ -74,7 +80,7 @@ export interface HostedCompletionConfig<M extends HostedCompletionMatch> {
  * the same lists. The list closes when nothing matches, when the editor loses the focus, and on
  * Escape, after which it stays closed for that match.
  */
-export function hostedCompletion<M extends HostedCompletionMatch>({ match, list }: HostedCompletionConfig<M>): Extension {
+export function hostedCompletion<M extends HostedCompletionMatch>({ match, opensOnCaretMove = true, list }: HostedCompletionConfig<M>): Extension {
     const plugin = ViewPlugin.fromClass(class {
         private readonly list: HostedCompletionList<M>;
         /** Where the open list's match starts in the document, or `-1` while it is closed. */
@@ -113,7 +119,7 @@ export function hostedCompletion<M extends HostedCompletionMatch>({ match, list 
             }
 
             if (update.docChanged || update.selectionSet || update.focusChanged) {
-                this.sync();
+                this.sync(update.docChanged);
             }
         }
 
@@ -126,7 +132,7 @@ export function hostedCompletion<M extends HostedCompletionMatch>({ match, list 
                 this.explicit = true;
                 this.dismissedAt = -1;
                 this.from = -1;
-                this.sync();
+                this.sync(true);
                 // Nothing to complete here, so the key goes on to the editor's own completion.
                 if (this.from < 0) {
                     return false;
@@ -157,7 +163,8 @@ export function hostedCompletion<M extends HostedCompletionMatch>({ match, list 
             this.list.destroy?.();
         }
 
-        private sync() {
+        /** `typed`: the document changed, as typing or a commit does, rather than only the caret. */
+        private sync(typed: boolean) {
             const found = this.view.hasFocus ? matchAt(this.view.state, match, this.explicit) : null;
             if (found?.from !== this.dismissedAt) {
                 this.dismissedAt = -1;
@@ -171,6 +178,10 @@ export function hostedCompletion<M extends HostedCompletionMatch>({ match, list 
             }
 
             if (found.from === this.from && found.before === this.before) {
+                return;
+            }
+            if (!typed && !opensOnCaretMove && found.from !== this.from) {
+                this.close();
                 return;
             }
 

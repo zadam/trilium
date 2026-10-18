@@ -1,14 +1,32 @@
 // @vitest-environment jsdom
+import VanillaCodeMirror from "@triliumnext/codemirror";
 import { render } from "preact";
+import { useEffect, useState } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import FNote from "../../../entities/fnote";
+import options from "../../../services/options";
 import search from "../../../services/search";
 import { buildNote } from "../../../test/easy-froca";
 import { renderInto } from "../../../test/render";
 import { ParentComponent } from "../../react/react_utils";
 import { EditableCode, ReadOnlyCode } from "./Code";
+import type { CodeMirrorProps } from "./CodeMirror";
+
+// While `deferEditor.on` is set, the editor is created one render after `CodeEditor` mounts, after
+// its effects have run, as in a Mermaid note's split; otherwise the real component renders as is.
+const deferEditor = vi.hoisted(() => ({ on: false }));
+vi.mock("./CodeMirror", async (importOriginal) => {
+    const { default: RealCodeMirror } = await importOriginal<typeof import("./CodeMirror")>();
+    return {
+        default: (props: CodeMirrorProps) => {
+            const [ shown, setShown ] = useState(!deferEditor.on);
+            useEffect(() => setShown(true), []);
+            return shown ? <RealCodeMirror {...props} /> : null;
+        }
+    };
+});
 
 // The `/` list of a Markdown editor loads the task states from the `_taskStates` subtree.
 vi.mock("../../../services/task_states", () => ({ getTaskStateDefinitions: async () => [] }));
@@ -56,6 +74,36 @@ describe("EditableCode", () => {
         await act(async () => { renderInto(show(noteA, onContentChanged)); });
         await vi.waitFor(() => expect(onContentChanged).toHaveBeenCalledWith("# Note A"));
         expect(onContentChanged).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("code note theme", () => {
+    beforeEach(() => {
+        vi.spyOn(search, "searchForNotes").mockResolvedValue([]);
+        options.set("codeNoteThemeMatchesApp", "false");
+        options.set("codeNoteTheme", "default:github-light");
+    });
+
+    afterEach(() => {
+        deferEditor.on = false;
+        vi.restoreAllMocks();
+    });
+
+    it("applies the theme to an editor created after the component's effects have run", async () => {
+        const setTheme = vi.spyOn(VanillaCodeMirror.prototype, "setTheme");
+        deferEditor.on = true;
+        const note = buildNote({ type: "code", mime: "text/plain", title: "T", content: "text" });
+        const parent = { registerHandler() {}, removeHandler() {}, componentId: "c" } as any;
+
+        await act(async () => {
+            renderInto(
+                <ParentComponent.Provider value={parent}>
+                    <EditableCode note={note} ntxId="ntx" parentComponent={parent} noteContext={undefined} viewScope={undefined} />
+                </ParentComponent.Provider>
+            );
+        });
+
+        await vi.waitFor(() => expect(setTheme).toHaveBeenCalledWith(expect.objectContaining({ id: "github-light" })));
     });
 });
 

@@ -432,6 +432,86 @@ button kbd {
     font-size: var(--monospace-font-size);
 }
 
+/* CodeMirror's hover and lint tooltips in the app's tooltip style: a code note renders them in
+   `.cm-tooltip-host`, the search field (`search_field_editor.css`) inside its own editor. */
+:is(.cm-tooltip-host, .search-string-editor .cm-editor) {
+    .cm-tooltip:is(.cm-tooltip-hover, .cm-tooltip-lint) {
+        --cm-tooltip-background: var(--tooltip-background-color, transparent);
+
+        max-width: 500px;
+        padding: 0;
+        border: 0;
+        border-radius: var(--tooltip-border-radius, 5px);
+        background:
+            linear-gradient(var(--cm-tooltip-background), var(--cm-tooltip-background)),
+            var(--main-background-color);
+        color: var(--tooltip-foreground-color, var(--main-text-color));
+        box-shadow: var(--tooltip-box-shadow, 0 5px 10px rgba(0, 0, 0, 0.2));
+        font-family: var(--main-font-family);
+        font-size: var(--tooltip-font-size, 0.9em);
+        line-height: 1.5;
+        overflow: hidden;
+    }
+
+    .cm-diagnostic {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5em;
+        margin: 0;
+        padding: var(--tooltip-padding, 4px 8px);
+        padding-inline-start: 16px;
+        border: 0;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset-block: 6px;
+            inset-inline-start: 6px;
+            width: 3px;
+            border-radius: 3px;
+            background: var(--cm-diagnostic-color, transparent);
+        }
+    }
+
+    .cm-diagnostic-error {
+        --cm-diagnostic-color: var(--admonition-caution-accent-color);
+    }
+
+    .cm-diagnostic-warning {
+        --cm-diagnostic-color: var(--admonition-warning-accent-color);
+    }
+
+    .cm-diagnostic-info {
+        --cm-diagnostic-color: var(--admonition-note-accent-color);
+    }
+
+    .cm-diagnosticAction {
+        margin: 0;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: color-mix(in srgb, currentColor 15%, transparent);
+        color: inherit;
+
+        &:hover {
+            background: color-mix(in srgb, currentColor 25%, transparent);
+        }
+    }
+
+    .cm-ts-hover {
+        padding: var(--tooltip-padding, 4px 8px);
+    }
+
+    .cm-ts-hover-signature {
+        font-family: var(--monospace-font-family);
+    }
+
+    .cm-tooltip-section:not(:first-child) {
+        border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+    }
+}
+
 #sql-console-query {
     height: 150px;
     width: 100%;
