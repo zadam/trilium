@@ -201,6 +201,11 @@ in-place drawings replaced the code blocks the boxes need.
   `getRenderedContent()` and disposes it at once, so a mounted component that draws in an effect
   leaves it blank. Without `options.interactive`, draw a picture before returning
   (`SourceEmbedType.renderPreview()`, `renderCanvasDrawingPicture()`).
+- **Draw a level's diagrams before its embeds render.** `applyInlineMermaid()` reads the source
+  from the text of each `.rendered-mermaid-diagram`, so a pass over a container whose embeds are
+  already drawn renders their SVG text and replaces the drawing with an error.
+  `postProcessRichContent()` draws its own diagrams before `renderContentEmbeds()`, and printing
+  adds no pass of its own. `trim` keeps the `<style>` inside each SVG.
 - **Keep the block ID.** A read-only view that swaps the saved element for a box copies
   `data-trilium-block-id` onto it (on the `<pre>`, or the `<code>` of older diagrams), or links to
   the block stop resolving.

@@ -4,7 +4,6 @@ import { useCallback, useLayoutEffect, useRef } from "preact/hooks";
 import Component from "./components/component";
 import FNote from "./entities/fnote";
 import content_renderer from "./services/content_renderer";
-import { applyInlineMermaid } from "./services/content_renderer_text";
 import froca from "./services/froca";
 import { waitForPendingRenders } from "./services/pending_renders";
 import { isElectron } from "./services/utils";
@@ -149,11 +148,6 @@ export function SingleNoteRenderer({ note, onReady }: RendererProps) {
                         });
                     })
                 );
-
-                // Initialize mermaid.
-                if (note.type === "text") {
-                    await applyInlineMermaid(container);
-                }
             }
 
             // Check custom CSS.
