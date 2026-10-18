@@ -34,8 +34,8 @@
 }
 
 body.desktop .note-detail-split .note-detail-code-editor {
-    border-radius: var(--center-pane-border-radius, 6px);
-    margin-top: 1px;
+    border-end-start-radius: var(--center-pane-border-radius, 6px);
+    border-end-end-radius: var(--center-pane-border-radius, 6px);
 }
 
 /* Error card, anchored to the top so the dimmed last render stays visible behind it.
