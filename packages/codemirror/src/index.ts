@@ -43,7 +43,7 @@ const lintTooltipTheme = EditorView.baseTheme({
         maxWidth: "min(40em, 90vw)"
     },
     ".cm-diagnostic": {
-        whiteSpace: "normal",
+        whiteSpace: "pre-wrap",
         overflowWrap: "anywhere"
     }
 });

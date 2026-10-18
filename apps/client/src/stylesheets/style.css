@@ -427,6 +427,69 @@ button kbd {
     font-size: var(--monospace-font-size);
 }
 
+/* CodeMirror's hover and lint tooltips in the app's tooltip style: a code note renders them in
+   `.cm-tooltip-host`, the search field (`search_field_editor.css`) inside its own editor. */
+:is(.cm-tooltip-host, .search-string-editor .cm-editor) {
+    .cm-tooltip:is(.cm-tooltip-hover, .cm-tooltip-lint) {
+        --cm-tooltip-background: var(--tooltip-background-color, transparent);
+
+        max-width: 500px;
+        border: 0;
+        border-radius: var(--tooltip-border-radius, 5px);
+        background:
+            linear-gradient(var(--cm-tooltip-background), var(--cm-tooltip-background)),
+            var(--main-background-color);
+        color: var(--tooltip-foreground-color, var(--main-text-color));
+        box-shadow: var(--tooltip-box-shadow, 0 5px 10px rgba(0, 0, 0, 0.2));
+        font-size: var(--tooltip-font-size, 0.9em);
+        overflow: hidden;
+    }
+
+    .cm-diagnostic {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5em;
+        margin: 0;
+        padding: var(--tooltip-padding, 4px 8px);
+        padding-inline-start: 10px;
+        border: 0;
+        border-inline-start: 3px solid transparent;
+    }
+
+    .cm-diagnostic-error {
+        border-inline-start-color: var(--admonition-caution-accent-color);
+    }
+
+    .cm-diagnostic-warning {
+        border-inline-start-color: var(--admonition-warning-accent-color);
+    }
+
+    .cm-diagnostic-info {
+        border-inline-start-color: var(--admonition-note-accent-color);
+    }
+
+    .cm-diagnosticAction {
+        margin: 0;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: color-mix(in srgb, currentColor 15%, transparent);
+        color: inherit;
+
+        &:hover {
+            background: color-mix(in srgb, currentColor 25%, transparent);
+        }
+    }
+
+    .cm-ts-hover {
+        padding: var(--tooltip-padding, 4px 8px);
+    }
+
+    .cm-ts-hover-signature {
+        font-family: var(--monospace-font-family);
+    }
+}
+
 #sql-console-query {
     height: 150px;
     width: 100%;
