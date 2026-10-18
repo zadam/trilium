@@ -188,20 +188,41 @@ export function createImportUploadMiddleware(): RequestHandler {
     // Disk storage: imports can be large archives, so stream the upload to Trilium's tmp dir instead of
     // buffering the whole multipart in memory during the HTTP receive. The temp file is read back into
     // `file.buffer` and deleted by importMiddlewareWithErrorHandling before the handler runs.
+    return multer({
+        ...baseMulterOptions(),
+        storage: tmpDirStorage()
+    }).single("upload");
+}
+
+/** The most files a single Web Share Target request can carry. */
+export const MAX_SHARED_FILES = 20;
+
+export function createShareTargetUploadMiddleware(): RequestHandler {
+    // Disk storage: a share can carry several large files, so the handler reads them back from
+    // `file.path` one at a time instead of holding all of them in memory.
+    const options = baseMulterOptions();
+
+    return multer({
+        ...options,
+        limits: { ...options.limits, files: MAX_SHARED_FILES },
+        storage: tmpDirStorage()
+    }).array("files");
+}
+
+/** Writes each uploaded file to `upload/` under `dataDirs.TMP_DIR`. */
+function tmpDirStorage(): multer.StorageEngine {
     const outDir = join(dataDirs.TMP_DIR, "upload");
     mkdirSync(outDir, { recursive: true });
 
-    return multer({
-        ...baseMulterOptions(),
-        storage: multer.diskStorage({
-            destination: (req, file, cb) => cb(null, outDir),
-            filename: (req, file, cb) => cb(null, `upload-${coreUtils.randomString(13)}.trilium`)
-        })
-    }).single("upload");
+    return multer.diskStorage({
+        destination: (req, file, cb) => cb(null, outDir),
+        filename: (req, file, cb) => cb(null, `upload-${coreUtils.randomString(13)}.trilium`)
+    });
 }
 
 const uploadMiddleware = createUploadMiddleware();
 const importUploadMiddleware = createImportUploadMiddleware();
+const shareTargetUploadMiddleware = createShareTargetUploadMiddleware();
 
 /** Maps the multer field-nesting guard to a clean 400; returns true when the request was already answered. */
 function rejectedNestedField(err: { code?: string } | undefined, res: express.Response): boolean {
@@ -245,6 +266,31 @@ export const importMiddlewareWithErrorHandling = function (req: express.Request,
         }
 
         void materializeUploadedImport(file, next);
+    });
+};
+
+/** Parses a Web Share Target POST and deletes its temp files once the response closes. */
+export const shareTargetMiddlewareWithErrorHandling = function (req: express.Request, res: express.Response, next: express.NextFunction) {
+    shareTargetUploadMiddleware(req, res, (err) => {
+        const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+        res.on("close", () => {
+            for (const file of files) {
+                void rm(file.path, { force: true }).catch(() => {});
+            }
+        });
+
+        if (rejectedNestedField(err, res)) {
+            return;
+        }
+        if (err instanceof multer.MulterError) {
+            res.setHeader("Content-Type", "text/plain").status(400).send(`Share rejected: ${err.message}`);
+            return;
+        }
+        if (err) {
+            next(err);
+            return;
+        }
+        next();
     });
 };
 

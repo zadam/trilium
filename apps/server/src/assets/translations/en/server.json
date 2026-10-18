@@ -592,5 +592,8 @@
     "delete-while-downloading": "{{- title}} is being downloaded. Cancel the download before deleting it.",
     "not-foreign": "{{- name}} is not an unused entry of the resources folder.",
     "stalled": "Downloading {{name}} stopped: nothing arrived for {{seconds}} seconds. Check your connection, then try again."
+  },
+  "share_target": {
+    "default-title": "Shared content"
   }
 }
