@@ -151,7 +151,8 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
    give the layout, the divider, the error card, the stale badge and a source pane that keeps its
    undo history behind the preview. Delay re-rendering with `useDebouncedValue()`. Give the root
    the `include-note-box-height` class for the 10/20/50em heights per box size and full height in
-   fullscreen, and round it with `--_include-note-content-*-radius` (edge to edge) or
+   fullscreen (content with a height of its own can fit it at Full instead, as
+   `MarkdownEmbed.css` sets `height: auto` down to the split's columns), and round it with `--_include-note-content-*-radius` (edge to edge) or
    `--_include-note-framed-*-radius` (inside the 2px frame), all in `style.css`.
 4. An insert command: `INSERT_INLINE_EMBED_COMMAND` with `{ language, source }` (see
    `mermaid_ui.ts` and `slash_commands.ts`). New embeds are editable, untitled and Medium.

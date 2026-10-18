@@ -32,3 +32,13 @@
                    var(--_include-note-framed-bottom-radius);
     overflow: hidden;
 }
+
+.include-note[data-box-size="full"] .include-note-content:not(:fullscreen)
+    .markdown-embed-content.with-source {
+    height: auto;
+
+    .note-detail-split,
+    .note-detail-split > :is(.note-detail-split-editor-col, .note-detail-split-preview-col) {
+        height: auto;
+    }
+}

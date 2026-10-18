@@ -137,7 +137,9 @@ export default function ContentEmbed({
                 <div className="note-badges include-note-badges">
                     {isExcerpt && <ExcerptBadge />}
                 </div>
-                <DisplayModeButtons contentRef={contentRef} content={content} />
+                {(!isExpandable || isOpen) && (
+                    <DisplayModeButtons contentRef={contentRef} content={content} />
+                )}
                 <ContentEmbedActionButton
                     className="include-note-open"
                     action={getOpenInNewTabAction(notePath, viewScope)}
