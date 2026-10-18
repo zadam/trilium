@@ -100,7 +100,10 @@ function createCodeCompletionList(editor: VanillaCodeMirror, getSnippets: () => 
 
     const list = createHostedList<HostedCompletionState<CodeCompletionMatch>>((state, props) => {
         const { match } = state;
-        const key = `${match.kind}:${match.from}`;
+        // `match.from` counts from the start of the line, so the key also holds the line's place and
+        // its text before the match: a paste that ends at the same column elsewhere asks again.
+        const line = editor.state.doc.lineAt(editor.state.selection.main.head);
+        const key = `${match.kind}:${line.from + match.from}:${line.text.slice(0, match.from)}`;
         if (cached?.key !== key) {
             cached = { key, entries: entriesFor(match) };
         }

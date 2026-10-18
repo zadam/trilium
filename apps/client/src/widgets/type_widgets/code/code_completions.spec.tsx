@@ -54,6 +54,21 @@ describe("codeCompletions", () => {
         await vi.waitFor(() => expect(view.getText()).toBe("api.getNotes"));
     });
 
+    it("asks the language service again for a member at the same column of another expression", async () => {
+        const view = build([]);
+        vi.spyOn(view, "hasTypeCompletions").mockReturnValue(true);
+        const lookUp = vi.spyOn(view, "getTypeCompletions")
+            .mockResolvedValueOnce([ { label: "log" } ])
+            .mockResolvedValueOnce([ { label: "size" } ]);
+
+        type("api.");
+        await vi.waitFor(() => expect(rows()).toEqual([ "log" ]));
+
+        type("log(\"x\");\nobj.");
+        await vi.waitFor(() => expect(rows()).toEqual([ "size" ]));
+        expect(lookUp).toHaveBeenCalledTimes(2);
+    });
+
     it("lists the snippets after a /, and puts the content of the one picked in place of the command", async () => {
         const view = build([ { noteId: "s1", title: "Header", description: "Page header", content: "// header\n" } ]);
 
