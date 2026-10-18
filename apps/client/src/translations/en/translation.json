@@ -913,7 +913,8 @@
     "delete_selection_confirm": "Delete the {{count}} selected attributes?",
     "clear_clipboard": "Clear clipboard",
     "to_copy_one": "{{count}} attribute to copy",
-    "to_copy_other": "{{count}} attributes to copy"
+    "to_copy_other": "{{count}} attributes to copy",
+    "select_all": "Select all"
   },
   "attribute_names": {
     "system": "System",

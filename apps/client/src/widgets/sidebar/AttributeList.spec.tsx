@@ -1154,6 +1154,29 @@ describe("AttributeList", () => {
         expect(firstPanel().className).not.toContain("selecting");
     });
 
+    it("selects every row from the toolbar's checkbox, and clears the selection from it once all are", () => {
+        renderPanel(noteWithAttributes());
+        const box = container.querySelector<HTMLInputElement>(".attribute-toolbar .form-checkbox input");
+        expect(box).not.toBeNull();
+        expect(box?.checked).toBe(false);
+        expect(box?.indeterminate).toBe(false);
+
+        // Some rows selected: the box shows the mixed state, and a click selects the rest.
+        checkbox(0).click();
+        expect(box?.indeterminate).toBe(true);
+        expect(box?.checked).toBe(false);
+
+        act(() => box?.click());
+        expect(selectedNames()).toEqual([ "author", "cssClass", "template", "inheritedLabel", "archived", "priority", "status" ]);
+        expect(box?.checked).toBe(true);
+        expect(box?.indeterminate).toBe(false);
+
+        // All rows selected: a click clears the selection.
+        act(() => box?.click());
+        expect(selectedNames()).toEqual([]);
+        expect(box?.checked).toBe(false);
+    });
+
     it("lets a note that cannot be edited be copied from, but not deleted from or pasted onto", async () => {
         const note = noteWithAttributes();
         note.isContentWritable = false;

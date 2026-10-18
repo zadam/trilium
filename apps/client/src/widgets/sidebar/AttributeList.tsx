@@ -25,6 +25,7 @@ import { ColorChip, renderLabelValue } from "../attribute_widgets/label_value_di
 import ActionButton from "../react/ActionButton";
 import SimpleBadge from "../react/Badge";
 import Dropdown from "../react/Dropdown";
+import FormCheckbox from "../react/FormCheckbox";
 import { FormDropdownDivider, FormListHeader, FormListItem } from "../react/FormList";
 import { useActiveNoteContext, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
@@ -350,6 +351,15 @@ export default function AttributeList() {
     function clearSelection() {
         selectionAnchor.current = null;
         setSelection(EMPTY_SELECTION);
+    }
+
+    function selectAll() {
+        // Wraps up any open edit, as selecting a row does.
+        commit();
+        commitValueEdit();
+        commitCreation();
+        selectionAnchor.current = null;
+        setSelection(new Set(selectableIds));
     }
 
     /** Drops from the selection whatever the note no longer holds, so what is copied is what is shown. */
@@ -740,6 +750,7 @@ export default function AttributeList() {
     const toolbar = note && (
         <AttributeToolbar
             selectionCount={selection.size}
+            selectableCount={selectableIds.length}
             readOnly={!canEdit}
             held={canEdit ? heldAttributes : []}
             canAdd={canEdit}
@@ -753,6 +764,7 @@ export default function AttributeList() {
             }}
             onDelete={() => void deleteSelection(selectedAttributes())}
             onClearSelection={clearSelection}
+            onSelectAll={selectAll}
         />
     );
 
@@ -1581,16 +1593,21 @@ function getClipboardValue(attribute: Attribute) {
 }
 
 /**
- * The panel's toolbar, above the cards. It holds pasting and adding; while rows are selected, it also
- * holds the selection's count and actions. Its height stays the same either way, so starting or
- * ending a selection moves nothing.
+ * The panel's toolbar, above the cards. It holds the select-all checkbox, pasting and adding; while
+ * rows are selected, it also holds the selection's count and actions. Its height stays the same
+ * either way, so starting or ending a selection moves nothing.
+ *
+ * The checkbox's label is "Select all" with nothing selected and the count otherwise. It selects every
+ * row unless all are selected already, in which case it clears the selection.
  *
  * Paste and add stay at the trailing end in both states, and the selection's actions go before them.
  * Deleting is offered only when every selected row is the note's own. On a note that cannot be edited, a
  * lock and "Read-only" take the place of the paste and add buttons.
  */
-function AttributeToolbar({ selectionCount, readOnly, held, canAdd, canDelete, onAdd, onCopy, onPaste, onClearClipboard, onDelete, onClearSelection }: {
+function AttributeToolbar({ selectionCount, selectableCount, readOnly, held, canAdd, canDelete, onAdd, onCopy, onPaste, onClearClipboard, onDelete, onSelectAll, onClearSelection }: {
     selectionCount: number;
+    /** How many rows can be selected; the checkbox is left out when there are none. */
+    selectableCount: number;
     /** Shows a read-only notice in place of the add and paste buttons, which a read-only note has none of. */
     readOnly: boolean;
     /** What there is to paste; empty when nothing is held or the note cannot be edited. */
@@ -1602,33 +1619,43 @@ function AttributeToolbar({ selectionCount, readOnly, held, canAdd, canDelete, o
     onPaste: () => void;
     onClearClipboard: () => void;
     onDelete: () => void;
+    onSelectAll: () => void;
     onClearSelection: () => void;
 }) {
     const isSelecting = selectionCount > 0;
+    const allSelected = isSelecting && selectionCount >= selectableCount;
 
     return (
         <div class={clsx("attribute-toolbar", isSelecting && "selecting")} role="toolbar">
-            {isSelecting && (
-                <>
-                    <ActionButton
-                        icon="bx bx-x"
-                        text={t("attribute_list_panel.clear_selection")}
-                        onClick={onClearSelection}
-                    />
-                    <span class="attribute-selection-count">
-                        {t("attribute_list_panel.selected", { count: selectionCount })}
-                    </span>
-                </>
+            {selectableCount > 0 && (
+                <FormCheckbox
+                    name="attribute-select-all"
+                    label={isSelecting
+                        ? <span class="attribute-selection-count">{t("attribute_list_panel.selected", { count: selectionCount })}</span>
+                        : t("attribute_list_panel.select_all")}
+                    currentValue={allSelected}
+                    indeterminate={isSelecting && !allSelected}
+                    // A click on a partly checked box checks it, so `checked` alone tells the two actions apart.
+                    onChange={(checked) => checked ? onSelectAll() : onClearSelection()}
+                />
             )}
 
-            {!isSelecting && readOnly && (
-                <span class="attribute-toolbar-read-only" title={t("breadcrumb_badges.read_only_locked_description")}>
-                    <Icon icon="bx bx-lock-alt" />
-                    {t("breadcrumb_badges.read_only_locked")}
-                </span>
+            {isSelecting && (
+                <ActionButton
+                    icon="bx bx-x"
+                    text={t("attribute_list_panel.clear_selection")}
+                    onClick={onClearSelection}
+                />
             )}
 
             <div class="attribute-toolbar-actions">
+                {!isSelecting && readOnly && (
+                    <span class="attribute-toolbar-read-only" title={t("breadcrumb_badges.read_only_locked_description")}>
+                        <Icon icon="bx bx-lock-alt" />
+                        {t("breadcrumb_badges.read_only_locked")}
+                    </span>
+                )}
+
                 {isSelecting && (
                     <ActionButton
                         icon="bx bx-copy"

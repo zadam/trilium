@@ -47,6 +47,16 @@
     background-color: var(--selection-background-color);
 }
 
+.attribute-list-panel .attribute-row.selected:has(+ .attribute-row.selected) {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+}
+
+.attribute-list-panel .attribute-row.selected + .attribute-row.selected {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+}
+
 /* While its value is edited (or the attribute created), the row lets the editor standing over it
    (see AttributeEditorOverlay.css) spill past the one line the row keeps to, and comes forward so
    the editor is drawn over the rows below rather than under them. */
@@ -121,10 +131,15 @@
     background-color: var(--main-background-color);
     --icon-button-size: 26px;
 
-    .attribute-selection-count {
-        color: var(--muted-text-color);
-        font-size: 0.85em;
-        white-space: nowrap;
+    .form-checkbox {
+        padding-inline-start: 4px;
+
+        label {
+            margin: 0;
+            color: var(--muted-text-color);
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
     }
 
     .attribute-toolbar-read-only {
