@@ -558,8 +558,8 @@ export default class CodeMirror extends EditorView {
      * The language service's completions at the caret, best first, or null where it offers none
      * or the MIME type has no language service.
      */
-    async getTypeCompletions(explicit: boolean) {
-        return await this.typeCompleter?.(this.state.selection.main.head, explicit) ?? null;
+    async getTypeCompletions() {
+        return await this.typeCompleter?.(this.state.selection.main.head) ?? null;
     }
 
     /**

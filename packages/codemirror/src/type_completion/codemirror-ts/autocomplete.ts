@@ -1,8 +1,4 @@
-import type {
-  Completion,
-  CompletionContext,
-  CompletionResult,
-} from "@codemirror/autocomplete";
+import type { Completion } from "@codemirror/autocomplete";
 import ts from "typescript";
 import { type VirtualTypeScriptEnvironment } from "@typescript/vfs";
 
@@ -10,32 +6,20 @@ const TS_COMPLETE_BLOCKLIST: ts.ScriptElementKind[] = [
   ts.ScriptElementKind.warning,
 ];
 
+/**
+ * The completions the language service offers at `pos`. Whether a list opens there at all is the
+ * caller's decision.
+ */
 export async function getAutocompletion({
   env,
   path,
-  context,
+  pos,
 }: {
   env: VirtualTypeScriptEnvironment;
   path: string;
-  /**
-   * Allow this to be a subset of the full CompletionContext
-   * object, because the raw object isn't serializable.
-   */
-  context: Pick<CompletionContext, "pos" | "explicit">;
-}): Promise<CompletionResult | null> {
-  const { pos, explicit } = context;
-  const rawContents = env.getSourceFile(path)?.getFullText();
-
-  if (!rawContents) return null;
-
-  // If there's space behind the cursor, don't try and autocomplete.
-  // https://codemirror.net/examples/autocompletion/
-  let word = matchBefore(rawContents, pos, /\w*/);
-  if (!word?.text) {
-    word = matchBefore(rawContents, pos, /\./);
-  }
-
-  if (!word?.text && !explicit) return null;
+  pos: number;
+}): Promise<Completion[] | null> {
+  if (!env.getSourceFile(path)) return null;
 
   const completionInfo = env.languageService.getCompletionsAtPosition(
     path,
@@ -71,10 +55,7 @@ export async function getAutocompletion({
       };
     });
 
-  return {
-    from: word ? (word.text === "." ? word.to : word.from) : pos,
-    options,
-  };
+  return options;
 }
 
 /**
@@ -97,49 +78,3 @@ export const DEFAULT_CODEMIRROR_TYPE_ICONS = new Set([
   `type`,
   `variable`,
 ]);
-
-// From: https://github.com/codemirror/autocomplete/blob/53cc58393252659ac4a86162b40afef13eeb2241/src/completion.ts#L111
-// TODO: do we need to vendor this?
-export function matchBefore(code: string, pos: number, expr: RegExp) {
-  const line = getLineAtPosition(code, pos);
-  let start = Math.max(line.from, pos - 250);
-  let str = line.text.slice(start - line.from, pos - line.from);
-  let found = str.search(ensureAnchor(expr, false));
-  return found < 0
-    ? null
-    : { from: start + found, to: pos, text: str.slice(found) };
-}
-
-// From: https://github.com/codemirror/autocomplete/blob/53cc58393252659ac4a86162b40afef13eeb2241/src/completion.ts#L245
-// TODO: do we need this, or can use import it from codemirror?
-export function ensureAnchor(expr: RegExp, start: boolean) {
-  let { source } = expr;
-  let addStart = start && source[0] != "^",
-    addEnd = source[source.length - 1] != "$";
-  if (!addStart && !addEnd) return expr;
-  return new RegExp(
-    `${addStart ? "^" : ""}(?:${source})${addEnd ? "$" : ""}`,
-    expr.flags ?? (expr.ignoreCase ? "i" : ""),
-  );
-}
-
-/**
- * TODO: confirm that this is necessary; it may be possible
- * and more efficient to get the line from CodeMirror, though
- * that would mean it probably doesn't mix well with the approach
- * of persisting code in the TS enviroment.
- */
-export function getLineAtPosition(code: string, position: number) {
-  // lineStart is the index of line break or zero
-  const from = code.lastIndexOf("\n", position - 1) + 1;
-  let to = code.indexOf("\n", position);
-  if (to === -1) {
-    to = code.length;
-  }
-  const text = code.slice(from, to);
-  return {
-    from,
-    to,
-    text,
-  };
-}

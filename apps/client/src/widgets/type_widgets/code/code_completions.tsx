@@ -11,8 +11,6 @@ export interface CodeCompletionMatch {
     from: number;
     /** What the list filters by: the text after the `/`, or the identifier typed so far. */
     query: string;
-    /** Asked for with Ctrl-Space. */
-    explicit: boolean;
 }
 
 /** An entry of the code completion list, and what picking it puts in place of the match. */
@@ -44,7 +42,7 @@ export function codeCompletions(editor: VanillaCodeMirror, getSnippets: () => Co
 export function codeCompletionAt(before: string, explicit: boolean, available: { snippets: boolean; types: boolean }): CodeCompletionMatch | null {
     const command = available.snippets ? COMMAND_TYPED.exec(before) : null;
     if (command) {
-        return { kind: "snippets", from: command.index, query: command[0].slice(1), explicit };
+        return { kind: "snippets", from: command.index, query: command[0].slice(1) };
     }
     if (!available.types) {
         return null;
@@ -54,7 +52,7 @@ export function codeCompletionAt(before: string, explicit: boolean, available: {
     if (!word && !explicit && !before.endsWith(".")) {
         return null;
     }
-    return { kind: "types", from: before.length - word.length, query: word, explicit };
+    return { kind: "types", from: before.length - word.length, query: word };
 }
 
 const COMMAND_TYPED = new RegExp(`${SLASH_COMMAND_REGEX.source}$`);
@@ -123,7 +121,7 @@ function createCodeCompletionList(editor: VanillaCodeMirror, getSnippets: () => 
         if (match.kind === "snippets") {
             return getSnippets().map(snippetCommand);
         }
-        return typeCompletionEntries(await editor.getTypeCompletions(match.explicit) ?? []);
+        return typeCompletionEntries(await editor.getTypeCompletions() ?? []);
     }
 
     return {

@@ -202,8 +202,7 @@ export interface TypeCompletion {
 }
 
 /** The completions at `pos`, best first, or null where the language service offers none there. */
-export type TypeCompleter =
-    (pos: number, explicit: boolean) => Promise<TypeCompletionEntry[] | null>;
+export type TypeCompleter = (pos: number) => Promise<TypeCompletionEntry[] | null>;
 
 /** A completion the TypeScript language service offers. */
 export interface TypeCompletionEntry {
@@ -248,11 +247,11 @@ export async function buildTypeCompletion(mime: string, context: ScriptApiContex
             lintGutter(),
             hoverTheme
         ],
-        async complete(pos, explicit) {
-            const result = await getAutocompletion({ env, path, context: { pos, explicit } });
-            if (!result) return null;
+        async complete(pos) {
+            const options = await getAutocompletion({ env, path, pos });
+            if (!options) return null;
 
-            return [ ...result.options ]
+            return options
                 .sort((a, b) => (b.boost ?? 0) - (a.boost ?? 0))
                 .map(({ label, type }) => ({ label, type }));
         }

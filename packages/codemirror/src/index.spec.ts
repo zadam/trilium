@@ -621,13 +621,13 @@ describe("CodeMirror", () => {
             editor = build();
             await editor.setMimeType("text/plain");
             expect(editor.hasTypeCompletions()).toBe(false);
-            expect(await editor.getTypeCompletions(true)).toBe(null);
+            expect(await editor.getTypeCompletions()).toBe(null);
 
             editor.setText("api.");
             await editor.setMimeType(SCRIPT_MIME_BACKEND);
             editor.dispatch({ selection: EditorSelection.cursor(4) });
             expect(editor.hasTypeCompletions()).toBe(true);
-            const completions = await editor.getTypeCompletions(false) ?? [];
+            const completions = await editor.getTypeCompletions() ?? [];
             expect(completions).toContainEqual({ label: "getNote", type: "method" });
             expect(completions.map(({ label }) => label)).not.toContain("Array");
         }, 30_000);

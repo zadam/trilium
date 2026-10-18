@@ -8,14 +8,14 @@ import type { CodeSnippet } from "./snippets";
 describe("codeCompletionAt", () => {
     it("matches a /command where there are snippets, and an identifier or a member where there are type completions", () => {
         const both = { snippets: true, types: true };
-        expect(codeCompletionAt("x = /hea", false, both)).toEqual({ kind: "snippets", from: 4, query: "hea", explicit: false });
+        expect(codeCompletionAt("x = /hea", false, both)).toEqual({ kind: "snippets", from: 4, query: "hea" });
         expect(codeCompletionAt("a/b", false, both)).toMatchObject({ kind: "types", from: 2, query: "b" });
         expect(codeCompletionAt("/hea", false, { snippets: false, types: false })).toBe(null);
 
         expect(codeCompletionAt("const x = api.get", false, both)).toMatchObject({ kind: "types", from: 14, query: "get" });
         expect(codeCompletionAt("api.", false, both)).toMatchObject({ kind: "types", from: 4, query: "" });
         expect(codeCompletionAt("x = ", false, both)).toBe(null);
-        expect(codeCompletionAt("x = ", true, both)).toMatchObject({ kind: "types", from: 4, query: "", explicit: true });
+        expect(codeCompletionAt("x = ", true, both)).toEqual({ kind: "types", from: 4, query: "" });
         expect(codeCompletionAt("x = 12", false, both)).toBe(null);
         expect(codeCompletionAt("api.get", false, { snippets: true, types: false })).toBe(null);
     });
