@@ -33,11 +33,6 @@
     margin: 0 !important;
 }
 
-body.desktop .note-detail-split .note-detail-code-editor {
-    border-end-start-radius: var(--center-pane-border-radius, 6px);
-    border-end-end-radius: var(--center-pane-border-radius, 6px);
-}
-
 /* Error card, anchored to the top so the dimmed last render stays visible behind it.
    The card's header/details layout comes from `.extended-admonition`; here we only
    position it as an overlay and give it a solid background so the dimmed preview
