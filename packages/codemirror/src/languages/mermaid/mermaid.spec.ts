@@ -157,6 +157,31 @@ describe("accessibility lines", () => {
             .toBe(mermaidLanguage.parser.parse(blanked).toString());
         expect(mounted?.tree.toString()).not.toContain("⚠");
     });
+
+    it.each([
+        "flowchart TD\n  A[\"hello\naccDescr: world\nend\"] --> B\n  accTitle: real",
+        "classDiagram\n  class A {\n    accDescr: world\n  }\n  accTitle: real",
+        "stateDiagram-v2\n  state S {\n    accDescr: world\n    A --> B\n  }\n  accTitle: real"
+    ])("leaves the lines inside a string or body to the diagram in %j", (doc) => {
+        const highlighted = styles(doc);
+        expect(highlighted.filter((style) => style.includes("accDescr")))
+            .not.toContainEqual(expect.stringMatching(/^accDescr tok-keyword$/));
+        expect(highlighted).toContain("accTitle tok-keyword");
+        expect(highlighted).toContain("real tok-string");
+    });
+
+    it("keeps the statements in a body that holds statements, as in a C4 boundary", () => {
+        const doc = "C4Context\n  Boundary(b, \"B\") {\n    Person(a, \"A\")\n"
+            + "    accDescr: world\n  }";
+        expect(styles(doc)).toContain("accDescr tok-keyword");
+    });
+
+    it("mounts the diagram plainly when every statement is content", () => {
+        const doc = "classDiagram\n  class A {\n    accDescr: world\n  }";
+        // A plain mount, unlike an overlay, shows the diagram's own tree in place of the node.
+        expect(mermaidLanguage.parser.parse(doc).toString()).toBe("MermaidDiagram(ClassDiagram("
+            + "DiagramName,ClassDef(Class,ClassName,ClassBody(\"{\",Member,\"}\"))))");
+    });
 });
 
 describe("shape metadata", () => {

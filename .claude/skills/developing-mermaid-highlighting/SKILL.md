@@ -236,6 +236,10 @@ root; `\n`, `\r` and `\t` in an input are unescaped.
 
 ## Known limitations
 
+- An `accTitle:` or `accDescr:` line inside multi-line content is that content, and
+  `textAroundAccessibility()` finds it by the diagram grammar's tree: a token begun on an earlier
+  line, or a body in `CONTENT_BODIES`. State notes, class notes, git commit messages and pie labels
+  over several lines are not tokens in their grammars, so a statement there still highlights as one.
 - `mindmap root` (root on the `mindmap` line, valid Mermaid) parses as empty lines.
 - A bare word under a kanban column parses as another column, not a card.
 - Dotted edge labels (`A -. text .-> B`) parse as two links.
