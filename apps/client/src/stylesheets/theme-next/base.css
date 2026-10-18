@@ -16,6 +16,14 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: "JetBrains Mono";
+    src: url(../../fonts/JetBrainsMono/JetBrainsMono-VariableFont_wght.woff2) format("woff2-variations");
+    font-weight: 100 800;
+    font-style: normal;
+    font-display: swap;
+}
+
 /*
  * GLOBAL VARIABLES
  */
@@ -40,7 +48,7 @@
     --detail-font-family: var(--main-font-family);
     --detail-font-size: normal;
 
-    --monospace-font-family: JetBrainsLight, monospace;
+    --monospace-font-family: "JetBrains Mono", monospace;
     --monospace-font-size: normal;
 
     --left-pane-item-selected-shadow-size: 2px;
