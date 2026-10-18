@@ -451,7 +451,8 @@ describe("SyncFromServer", () => {
         await flushEffects();
 
         expect(window.glob.hasExistingData).toBe(false);
-        expect(c.querySelector(".page-error")?.textContent).toContain("setup.sync-failed");
+        expect(c.querySelector(".page-error .admonition-title")?.textContent).toBe("setup.sync-from-server-failed");
+        expect(c.querySelector(".page-error-message")?.textContent).toBe("the disk is full");
     });
 
     it("keeps it where the server refused the credentials, which erases nothing", async () => {

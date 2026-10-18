@@ -690,7 +690,7 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
             if (resp.error.includes("Incorrect password")) {
                 setIsWrongPassword(true);
             } else {
-                raiseError(t("setup.sync-failed", { message: resp.error }));
+                raiseError(resp.error);
             }
         } catch (e) {
             raiseError(e instanceof Error ? e.message : String(e));
@@ -704,6 +704,7 @@ export function SyncFromServer({ setState }: { setState: (state: State) => void 
             description={t("setup.sync-from-server-page-description")}
             illustration={<SyncIllustration targetDevice="server" />}
             error={error}
+            errorTitle={t("setup.sync-from-server-failed")}
             errorId={errorId}
             onBack={() => setState("firstOptions")}
             footer={<Button text={t("setup.button-finish-setup")} kind="primary" onClick={handleFinishSetup} disabled={!isValid} />}
