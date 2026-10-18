@@ -77,7 +77,7 @@ describe("renderCodeNotePreview", () => {
         expect(pre.getAttribute("style")).toBe("--code-preview-digits: 3");
     });
 
-    it("renders the same content once, until 256 others push it out", async () => {
+    it("renders the same content once, until others fill the budget of characters", async () => {
         const renderCodePreview = vi.fn();
         vi.doMock("@triliumnext/codemirror/src/code_preview.js", async (importOriginal) => {
             const original = await importOriginal<CodeMirrorPreviewModule>();
@@ -86,13 +86,29 @@ describe("renderCodeNotePreview", () => {
         });
         try {
             const { renderCodeNotePreview } = await freshModule({});
-            for (let index = 0; index <= 256; index++) {
-                await renderCodeNotePreview(`a = ${index}`, "text/plain");
+            const isRendered = async (content: string) => {
+                const calls = renderCodePreview.mock.calls.length;
+                await renderCodeNotePreview(content, "text/plain");
+                return renderCodePreview.mock.calls.length > calls;
+            };
+            const large = (index: number) => `${index}${"x".repeat(400_000)}`;
+
+            expect(await isRendered("a = 0")).toBe(true);
+            expect(await isRendered("a = 0")).toBe(false);
+
+            // A preview over the limit of one entry is not cached, and pushes out nothing.
+            const huge = "x".repeat(1_000_000);
+            expect(await isRendered(huge)).toBe(true);
+            expect(await isRendered(huge)).toBe(true);
+            expect(await isRendered("a = 0")).toBe(false);
+
+            // Ten entries of about 800,000 characters, key and preview, overrun the budget.
+            for (let index = 0; index < 10; index++) {
+                expect(await isRendered(large(index))).toBe(true);
             }
-            await renderCodeNotePreview("a = 256", "text/plain");
-            expect(renderCodePreview).toHaveBeenCalledTimes(257);
-            await renderCodeNotePreview("a = 0", "text/plain");
-            expect(renderCodePreview).toHaveBeenCalledTimes(258);
+            expect(await isRendered("a = 0")).toBe(true);
+            expect(await isRendered(large(0))).toBe(true);
+            expect(await isRendered(large(9))).toBe(false);
         } finally {
             vi.doUnmock("@triliumnext/codemirror/src/code_preview.js");
         }

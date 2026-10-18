@@ -1258,18 +1258,27 @@ describe("content_renderer", () => {
             const pythonBlock = () => buildShareNote({
                 content: `<pre><code class="language-text-x-python">def x(): pass</code></pre>`
             });
+            const pythonNote = () => {
+                const result: Result = { header: "", content: "def x(): pass" };
+                renderCode(result, "text/x-python");
+                return String(result.content);
+            };
+            const highlightedToken = /<span class="l\d+ d\d+">/;
 
             getOption.mockReturnValue(JSON.stringify([ "text/x-python" ]));
             const first = ensureShareHighlighting();
             expect(ensureShareHighlighting()).toBe(first);
             await first;
             expect(getContent(pythonBlock()).content).toContain("hljs-keyword");
+            expect(pythonNote()).toMatch(highlightedToken);
 
             getOption.mockReturnValue(JSON.stringify([ "text/x-go" ]));
             const second = ensureShareHighlighting();
             expect(second).not.toBe(first);
             await second;
             expect(getContent(pythonBlock()).content).not.toContain("hljs");
+            expect(pythonNote()).toContain("code-preview-line");
+            expect(pythonNote()).not.toMatch(highlightedToken);
 
             getOption.mockRestore();
             await ensureShareHighlighting();

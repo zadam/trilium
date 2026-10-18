@@ -307,6 +307,50 @@ describe("CodeEmbed", () => {
         });
     });
 
+    it("previews again as the code note themes or the line wrapping change", async () => {
+        const note = buildNote({
+            title: "Script", type: "code", mime: "text/x-python", content: "a", "#wrapLines": "true"
+        });
+        await mount(note, buildEditor());
+        const reload = async (loadResults: LoadResults) => {
+            await act(async () => {
+                await parent.handleEvent("entitiesReloaded", { loadResults });
+            });
+        };
+        const names = [
+            "codeNoteTheme", "codeNoteThemeMatchesApp", "codeNoteThemeLight", "codeNoteThemeDark",
+            "codeLineWrapEnabled"
+        ] as const;
+        const previous = names.map((name) => options.get(name));
+
+        try {
+            for (const name of names) {
+                options.set(name, "changed");
+                const optionChanged = new LoadResults([]);
+                optionChanged.addOption(name);
+                await reload(optionChanged);
+            }
+
+            const [ label ] = note.getOwnedLabels("wrapLines");
+            label.value = "false";
+            const labelChanged = new LoadResults([ {
+                entityName: "attributes", entityId: label.attributeId, hash: "", isSynced: true,
+                isErased: false, entity: {
+                    attributeId: label.attributeId, noteId: note.noteId, type: "label",
+                    name: "wrapLines", value: "false", isDeleted: false
+                }
+            } as never ]);
+            labelChanged.addAttribute(label.attributeId, "other");
+            await reload(labelChanged);
+
+            await vi.waitFor(() => expect(renderCodePreview).toHaveBeenCalledTimes(6));
+        } finally {
+            for (const [ index, name ] of names.entries()) {
+                options.set(name, previous[index]);
+            }
+        }
+    });
+
     it("follows each save of its note or attachment, its own included, while it has no changes", async () => {
         const note = buildCodeNote("one");
         const editor = buildEditor();

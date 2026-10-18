@@ -873,8 +873,15 @@ type CodePreviewModule = typeof import("@triliumnext/codemirror/src/code_preview
 
 let registeredMimeTypesOption: string | null = null;
 let pendingRegistration: Promise<void> | null = null;
-/** The renderer of code notes and the share themes, once `ensureShareHighlighting()` loads them. */
-let codePreviews: { module: CodePreviewModule; themes: PreviewThemeSlot[] } | null = null;
+/**
+ * The renderer of code notes, the share themes and the enabled MIME types, once
+ * `ensureShareHighlighting()` loads them.
+ */
+let codePreviews: {
+    module: CodePreviewModule;
+    themes: PreviewThemeSlot[];
+    enabledMimes: Set<string>;
+} | null = null;
 
 /**
  * Registers the highlight.js languages enabled in the `codeNotesMimeTypes` option and unregisters
@@ -912,7 +919,7 @@ async function loadCodePreviews(mimeTypes: MimeType[]) {
         }))),
         Promise.all(enabledMimes.map((mime) => module.loadPreviewLanguage(mime)))
     ]);
-    codePreviews = { module, themes };
+    codePreviews = { module, themes, enabledMimes: new Set(enabledMimes) };
 }
 
 /**
@@ -925,8 +932,8 @@ export function renderCode(result: Result, mime?: string, note?: SNote | BNote) 
     if (typeof result.content !== "string" || !result.content?.trim()) {
         result.isEmpty = true;
     } else if (codePreviews) {
-        const { module, themes } = codePreviews;
-        const language = mime && shouldSyntaxHighlight(result.content)
+        const { module, themes, enabledMimes } = codePreviews;
+        const language = mime && enabledMimes.has(mime) && shouldSyntaxHighlight(result.content)
             ? module.getLoadedPreviewLanguage(mime) ?? null
             : null;
         result.content = module.renderCodePreview(result.content, {

@@ -18,9 +18,13 @@ interface ThemeChoice {
     scope?: string;
 }
 
-const CACHE_MAX = 256;
+/** The most characters that the keys and the previews in `cache` hold together. */
+const CACHE_MAX_LENGTH = 8_000_000;
+/** The most characters of one key and preview that `cache` keeps. */
+const CACHE_MAX_ENTRY_LENGTH = 1_000_000;
 
 const cache = new Map<string, string>();
+let cacheLength = 0;
 const mountedThemes = new Set<string>();
 
 /**
@@ -87,10 +91,16 @@ function isLineWrapped(note: FNote | null | undefined) {
     return label == null ? options.is("codeLineWrapEnabled") : label !== "false";
 }
 
+/** Caches `html` under `key`, and drops the oldest previews that no longer fit the budget. */
 function remember(key: string, html: string) {
-    if (cache.size >= CACHE_MAX) {
-        const oldest = cache.keys().next().value;
-        if (oldest !== undefined) cache.delete(oldest);
+    const length = key.length + html.length;
+    if (length > CACHE_MAX_ENTRY_LENGTH) return;
+
+    for (const [ oldKey, oldHtml ] of cache) {
+        if (cacheLength + length <= CACHE_MAX_LENGTH) break;
+        cache.delete(oldKey);
+        cacheLength -= oldKey.length + oldHtml.length;
     }
     cache.set(key, html);
+    cacheLength += length;
 }
