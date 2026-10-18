@@ -19,11 +19,13 @@ import { NoteSaves } from "../text/attachment_saves";
 import { getContentEmbedTools, getEmbedFindTarget } from "../text/content_embed_tools";
 import CodeEmbed from "./CodeEmbed";
 
-const renderCodePreview = vi.hoisted(() => vi.fn(async (content: string, _mime: string) => {
-    const pre = document.createElement("pre");
-    pre.textContent = content;
-    return pre;
-}));
+const renderCodePreview = vi.hoisted(() => vi.fn(
+    async (content: string, _mime: string, _note?: unknown) => {
+        const pre = document.createElement("pre");
+        pre.textContent = content;
+        return pre;
+    }
+));
 vi.mock("../../../services/content_renderer", () => ({ renderCodePreview }));
 vi.mock("../../../services/i18n", () => ({
     t: (key: string, values?: Record<string, unknown>) =>
@@ -238,12 +240,12 @@ describe("CodeEmbed", () => {
         expect(textEditor.execute)
             .toHaveBeenLastCalledWith("setContentEmbedCodeView", { language: null });
         await vi.waitFor(() => {
-            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/x-python");
+            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/x-python", null);
         });
         await select("codeLanguage", "Plain text");
         expect(figure.getAttribute("data-code-language")).toBe("text/plain");
         await vi.waitFor(() => {
-            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/plain");
+            expect(renderCodePreview).toHaveBeenLastCalledWith("if a:\n  b", "text/plain", null);
         });
 
         // The indentation, which a re-indent sets with the content, as one change.
@@ -301,7 +303,7 @@ describe("CodeEmbed", () => {
             await Promise.resolve();
         });
         await vi.waitFor(() => {
-            expect(renderCodePreview).toHaveBeenLastCalledWith("ab", "text/x-python");
+            expect(renderCodePreview).toHaveBeenLastCalledWith("ab", "text/x-python", null);
         });
     });
 

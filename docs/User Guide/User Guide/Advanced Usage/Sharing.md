@@ -39,8 +39,8 @@ Trilium allows you to share selected notes as **publicly accessible** read-only 
         </tr>
         <tr>
             <th><a class="reference-link" href="../Note%20Types/Code.md">Code</a></th>
-            <td><ul><li>Basic support (displaying the contents of the note in a monospace font).</li></ul></td>
-            <td><ul><li>No syntax highlight.</li></ul></td>
+            <td><ul><li>Syntax highlight with line numbers, in the language of the note and in the colors of the VS Code light or dark theme, following the page's mode. A language not enabled in&nbsp;<a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a>&nbsp;→ <em>Code Notes</em> is not highlighted.</li></ul></td>
+            <td>&nbsp;</td>
         </tr>
         <tr>
             <th><a class="reference-link" href="../Note%20Types/Saved%20Search.md">Saved Search</a></th>
@@ -102,7 +102,6 @@ Trilium allows you to share selected notes as **publicly accessible** read-only 
 
 While the sharing feature is powerful, it has some limitations:
 
-*   **Code Notes**: No syntax highlighting.
 *   **Static Note Tree**
 *   **Protected Notes**: Cannot be shared.
 *   **Include Notes**: Not supported.

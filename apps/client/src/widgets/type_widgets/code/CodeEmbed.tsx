@@ -61,7 +61,7 @@ export default function CodeEmbed({
     const shownPreview = useEmbedPreview(
         preview,
         `${mime}\n${content}`,
-        () => renderCodePreview(content, mime),
+        () => renderCodePreview(content, mime, note),
         isEditing
     );
     // The editor while it is open, otherwise the content with the unsaved changes of any embed of

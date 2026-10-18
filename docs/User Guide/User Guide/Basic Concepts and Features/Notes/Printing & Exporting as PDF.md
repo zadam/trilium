@@ -96,9 +96,7 @@ It's possible to trigger both printing and export as PDF from the keyboard by go
 Not all <a class="reference-link" href="../../Note%20Types.md">Note Types</a> are supported when printing, in which case the _Print_ and _Export as PDF_ options will be disabled.
 
 *   For <a class="reference-link" href="../../Note%20Types/Text.md">Text</a> notes, font, background and table colors are printed in the shades of light themes, whatever the current theme (see <a class="reference-link" href="../../Note%20Types/Text/General%20formatting.md">General formatting</a>).
-*   For <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> notes:
-    *   Line numbers are not printed.
-    *   Syntax highlighting is enabled, however a default theme (Visual Studio) is enforced.
+*   <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> notes are printed with line numbers and syntax highlighting, in the _Light theme_ of <a class="reference-link" href="../UI%20Elements/Options.md">Options</a> → _Code Notes_ → _Appearance_, whatever the current theme.
 *   A <a class="reference-link" href="../../Note%20Types/Render%20Note.md">Render Note</a> is printed as it is displayed, without running its script again, once its `~renderNote` relation is set.
 *   For <a class="reference-link" href="../../Collections.md">Collections</a>, the following are supported:
     *   <a class="reference-link" href="../../Collections/List%20View.md">List View</a>, allowing to print multiple notes at once while preserving hierarchy (similar to a book).

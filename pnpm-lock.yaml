@@ -1156,6 +1156,9 @@ importers:
       '@codemirror/lang-xml':
         specifier: 6.1.0
         version: 6.1.0
+      '@codemirror/language':
+        specifier: 6.13.1
+        version: 6.13.1
       '@codemirror/language-data':
         specifier: 6.5.2
         version: 6.5.2
@@ -1258,6 +1261,9 @@ importers:
       '@fsegurai/codemirror-theme-vscode-light':
         specifier: 6.2.8
         version: 6.2.8(@codemirror/language@6.13.1)(@codemirror/state@6.7.6)(@codemirror/view@6.43.14)(@lezer/highlight@1.2.5)
+      '@lezer/highlight':
+        specifier: 1.2.5
+        version: 1.2.5
       '@replit/codemirror-indentation-markers':
         specifier: 6.5.3
         version: 6.5.3(@codemirror/language@6.13.1)(@codemirror/state@6.7.6)(@codemirror/view@6.43.14)
@@ -1388,6 +1394,9 @@ importers:
       '@triliumnext/client':
         specifier: workspace:*
         version: link:../../apps/client
+      '@triliumnext/codemirror':
+        specifier: workspace:*
+        version: link:../codemirror
       '@types/ejs':
         specifier: 3.1.5
         version: 3.1.5
@@ -1442,6 +1451,9 @@ importers:
       '@braintree/sanitize-url':
         specifier: 7.1.2
         version: 7.1.2
+      '@triliumnext/codemirror':
+        specifier: workspace:*
+        version: link:../codemirror
       '@triliumnext/commons':
         specifier: workspace:*
         version: link:../commons

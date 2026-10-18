@@ -70,6 +70,8 @@ When you re-indent content, the editor:
 
 Since Trilium 0.94.0 the colors of code notes can be customized by going <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → Code Notes and looking for the _Appearance_ section.
 
+A code note or a code file shown without its editor, such as in an <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>, on the cards of <a class="reference-link" href="../Collections.md">Collections</a> or in a tooltip, uses the same colors and shows line numbers, as the editor does. A printout uses the _Light theme_. A [shared page](../Advanced%20Usage/Sharing.md) uses the VS Code light or dark theme, following the mode of the page.
+
 > [!NOTE]
 > **Why are there only a few themes whereas the code block themes for text notes have a lot?**  
 > The reason is that Code notes use a different technology than the one used in Text notes, and as such there is a more limited selection of themes. If you find a CodeMirror 6 (not 5) theme that you would like to use, let us know and we might consider adding it to the set of default themes. There is no possibility of adding new themes (at least for now), since the themes are defined in JavaScript and not at CSS level.

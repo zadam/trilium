@@ -106,7 +106,7 @@ In a _Small_ or _Medium_ box, the image is scaled down to fit the height of the 
 
 ## Editing an include in place
 
-An included text note, an included code note and an embedded code file such as a `.js`, `.py` or `.txt` attachment can be edited without leaving the note that includes them. A code note or file is shown with syntax highlighting until then. Included Markdown can be edited too, see _Included Markdown_ below.
+An included text note, an included code note and an embedded code file such as a `.js`, `.py` or `.txt` attachment can be edited without leaving the note that includes them. A code note or file is shown with syntax highlighting and line numbers until then, in the colors of the code editor. Included Markdown can be edited too, see _Included Markdown_ below.
 
 *   To edit, select the include and turn on the <span class="tn-icon bx bx-edit-alt"></span> _Editable_ button at the start of its toolbar, or check _Editable_ in its <span class="tn-icon cke cke-three-vertical-dots"></span> _More actions_ menu. Turn _Editable_ off to return to the preview.
 *   While _Editable_ is on, the arrow keys move the caret into the include and back out, as through the rest of the text. Entering from above or from the left puts the caret at the start of the include, and entering from below or from the right puts it at the end. A collapsed _Expandable_ include is skipped.

@@ -1,0 +1,115 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { buildNote } from "../test/easy-froca.js";
+
+type PreviewModule = typeof import("./code_note_preview.js");
+type CodeMirrorPreviewModule = typeof import("@triliumnext/codemirror/src/code_preview.js");
+
+const CODE = "const a = 1;\nlet b = 2;";
+const DEVICE = window.glob.device;
+
+describe("renderCodeNotePreview", () => {
+    afterEach(() => {
+        window.glob.device = DEVICE;
+        for (const style of document.head.querySelectorAll("style")) style.remove();
+    });
+
+    it("colors the preview with the light and dark themes, each scoped to its scheme", async () => {
+        const { renderCodeNotePreview } = await freshModule({ codeNoteThemeMatchesApp: "true" });
+        const pre = await renderCodeNotePreview(CODE, "text/javascript");
+
+        expect({ ...pre.dataset }).toEqual({
+            codeThemeL: "vs-code-light", codeThemeD: "vs-code-dark"
+        });
+        expect(pre.querySelectorAll(".code-preview-line").length).toBe(2);
+        expect(pre.querySelector(".code-preview-line span")?.className).toMatch(/^l\d+ d\d+$/);
+        const styles = [ ...document.head.querySelectorAll("style") ].map((s) => s.textContent);
+        expect(styles.map((css) => css?.split(" .code-preview")[0])).toEqual([
+            ":where(body:not(.dark-theme))", ":where(body.dark-theme)"
+        ]);
+
+        // A second preview reuses the CSS, and the HTML of the same content.
+        const again = await renderCodeNotePreview(CODE, "text/javascript");
+        expect(again).not.toBe(pre);
+        expect(again.outerHTML).toBe(pre.outerHTML);
+        expect(document.head.querySelectorAll("style").length).toBe(2);
+    });
+
+    it("uses the one theme unless they follow the app, and the light theme to print", async () => {
+        const { renderCodeNotePreview } = await freshModule({ codeNoteThemeMatchesApp: "false" });
+
+        const single = await renderCodeNotePreview(CODE, "text/javascript");
+        expect({ ...single.dataset }).toEqual({ codeThemeT: "monokai" });
+
+        window.glob.device = "print";
+        const printed = await renderCodeNotePreview(CODE, "text/javascript");
+        expect({ ...printed.dataset }).toEqual({ codeThemeT: "vs-code-light" });
+        expect(document.head.querySelector("style")?.textContent)
+            .toMatch(/^\.code-preview\[data-code-theme-t="monokai"\]/);
+    });
+
+    it("falls back to the default style for a theme that is not a built-in one", async () => {
+        const { renderCodeNotePreview } = await freshModule({
+            codeNoteThemeMatchesApp: "false", codeNoteTheme: "custom"
+        });
+        const pre = await renderCodeNotePreview(CODE, "text/javascript");
+        expect({ ...pre.dataset }).toEqual({ codeThemeT: "default" });
+    });
+
+    it("wraps the lines by the `#wrapLines` label of the note, else by the option", async () => {
+        const { renderCodeNotePreview } = await freshModule({ codeLineWrapEnabled: "true" });
+        const isWrapped = async (note?: Parameters<PreviewModule["renderCodeNotePreview"]>[2]) =>
+            (await renderCodeNotePreview(CODE, "text/javascript", note))
+                .classList.contains("code-preview-wrap");
+
+        expect(await isWrapped()).toBe(true);
+        expect(await isWrapped(buildNote({ title: "Off", "#wrapLines": "false" }))).toBe(false);
+        expect(await isWrapped(buildNote({ title: "On", "#wrapLines": "" }))).toBe(true);
+    });
+
+    it("shows code too long to highlight plain, still numbered", async () => {
+        const { renderCodeNotePreview } = await freshModule({});
+        const long = Array.from({ length: 600 }, () => "let a = 1;").join("\n");
+        const pre = await renderCodeNotePreview(long, "text/javascript");
+
+        expect(pre.querySelectorAll(".code-preview-line").length).toBe(600);
+        expect(pre.querySelectorAll(".code-preview-line span").length).toBe(0);
+        expect(pre.getAttribute("style")).toBe("--code-preview-digits: 3");
+    });
+
+    it("renders the same content once, until 256 others push it out", async () => {
+        const renderCodePreview = vi.fn();
+        vi.doMock("@triliumnext/codemirror/src/code_preview.js", async (importOriginal) => {
+            const original = await importOriginal<CodeMirrorPreviewModule>();
+            renderCodePreview.mockImplementation(original.renderCodePreview);
+            return { ...original, renderCodePreview };
+        });
+        try {
+            const { renderCodeNotePreview } = await freshModule({});
+            for (let index = 0; index <= 256; index++) {
+                await renderCodeNotePreview(`a = ${index}`, "text/plain");
+            }
+            await renderCodeNotePreview("a = 256", "text/plain");
+            expect(renderCodePreview).toHaveBeenCalledTimes(257);
+            await renderCodeNotePreview("a = 0", "text/plain");
+            expect(renderCodePreview).toHaveBeenCalledTimes(258);
+        } finally {
+            vi.doUnmock("@triliumnext/codemirror/src/code_preview.js");
+        }
+    });
+});
+
+/** Loads the module again, so its caches start empty, with `values` over the default options. */
+async function freshModule(values: Record<string, string>): Promise<PreviewModule> {
+    vi.resetModules();
+    const options = (await import("./options.js")).default;
+    options.load({
+        codeNoteThemeMatchesApp: "true",
+        codeNoteTheme: "default:monokai",
+        codeNoteThemeLight: "default:vs-code-light",
+        codeNoteThemeDark: "default:vs-code-dark",
+        codeLineWrapEnabled: "false",
+        ...values
+    });
+    return import("./code_note_preview.js");
+}

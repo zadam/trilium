@@ -13,6 +13,7 @@
     "@ai-sdk/google": "4.0.95",
     "@ai-sdk/openai": "4.0.93",
     "@braintree/sanitize-url": "7.1.2",
+    "@triliumnext/codemirror": "workspace:*",
     "@triliumnext/commons": "workspace:*",
     "@triliumnext/highlightjs": "workspace:*",
     "@triliumnext/share-theme": "workspace:*",
