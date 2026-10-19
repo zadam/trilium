@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { EmbedHostHistory, HistoryCommand } from "../text/embed_history";
 import DrawingHistory, {
-    applyChanges, type ElementChange, getChangedKeys
+    applyChanges, type DrawingScene, type DrawingStore, type ElementChange, getChangedKeys
 } from "./drawing_history";
 
 vi.mock("@excalidraw/excalidraw", () => ({
@@ -34,7 +34,7 @@ describe("DrawingHistory", () => {
         const { host, steps } = createHost();
         const drawing = createDrawing([ RECTANGLE ]);
         const mount = new DrawingHistory(host).mount();
-        mount.attach(drawing.api, drawing.root, vi.fn());
+        mount.attach(drawing.api, drawing.root, createStore([]));
         expect([ ...drawing.actions.keys() ]).toEqual([ "undo", "redo" ]);
 
         // A drag ends once the pointer is up.
@@ -80,7 +80,7 @@ describe("DrawingHistory", () => {
         const drawing = createDrawing([]);
         drawing.files.f1 = IMAGE_FILE;
         const mount = new DrawingHistory(host).mount();
-        mount.attach(drawing.api, drawing.root, vi.fn());
+        mount.attach(drawing.api, drawing.root, createStore([]));
 
         drawing.input("drop");
         drawing.setElements([ IMAGE ]);
@@ -102,69 +102,47 @@ describe("DrawingHistory", () => {
         expect(steps).toHaveLength(2);
     });
 
-    it("changes the drawing while no Excalidraw shows it, and shows that in the next one", () => {
-        const { host, steps } = createHost();
-        const history = new DrawingHistory(host);
-        const write = vi.fn();
-        const first = createDrawing([ RECTANGLE ]);
-        const firstMount = history.mount();
-        firstMount.attach(first.api, first.root, write);
-        first.input("pointerdown");
-        first.setElements([ { ...RECTANGLE, x: 10, version: 2 } ]);
-        firstMount.record();
-        firstMount.detach();
-        expect(steps).toHaveLength(1);
+    it("changes the drawing as saved while no Excalidraw shows it, and shows that in the next one",
+        async () => {
+            const { host, steps } = createHost();
+            const history = new DrawingHistory(host);
+            const moved = { ...RECTANGLE, x: 10, version: 2 };
+            const store = createStore([ RECTANGLE ]);
+            const first = createDrawing([ RECTANGLE ]);
+            const firstMount = history.mount();
+            firstMount.attach(first.api, first.root, store);
+            first.input("pointerdown");
+            first.setElements([ moved ]);
+            firstMount.record();
+            firstMount.detach();
+            expect(steps).toHaveLength(1);
 
-        // The next Excalidraw loads the saved drawing before the step applies.
-        const nextMount = history.mount();
-        expect(steps[0].undo()).toBe(true);
-        expect(write).toHaveBeenCalledOnce();
-        expect(write.mock.calls[0][0].elements).toMatchObject([ { id: "r1", x: 0 } ]);
+            // Saved elsewhere once Excalidraw went away, and loaded by the next one.
+            store.setElements([ moved, ELLIPSE ]);
+            const nextMount = history.mount();
+            expect(steps[0].undo()).toBe(true);
+            await vi.waitFor(() => expect(store.write).toHaveBeenCalledOnce());
+            expect(store.getElements()).toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]);
 
-        const next = createDrawing([ { ...RECTANGLE, x: 10, version: 2 } ]);
-        nextMount.attach(next.api, next.root, write);
-        expect(next.getElements()).toMatchObject([ { id: "r1", x: 0 } ]);
+            const next = createDrawing([ moved, ELLIPSE ]);
+            nextMount.attach(next.api, next.root, store);
+            await vi.waitFor(() => expect(next.getElements())
+                .toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]));
 
-        const later = createDrawing([ { ...RECTANGLE, version: 3 } ]);
-        history.mount().attach(later.api, later.root, write);
-        expect(later.api.updateScene).not.toHaveBeenCalled();
-        // A step applies to every Excalidraw that shows the drawing.
-        steps[0].redo();
-        expect(next.getElements()[0]).toMatchObject({ x: 10 });
-        expect(later.getElements()[0]).toMatchObject({ x: 10 });
-        expect(write).toHaveBeenCalledOnce();
-    });
-
-    it("applies a step to the drawing as saved elsewhere while no Excalidraw shows it", () => {
-        const { host, steps } = createHost();
-        const history = new DrawingHistory(host);
-        const write = vi.fn();
-        const drawing = createDrawing([ RECTANGLE ]);
-        const mount = history.mount();
-        mount.attach(drawing.api, drawing.root, write);
-        drawing.input("pointerdown");
-        drawing.setElements([ { ...RECTANGLE, x: 10, version: 2 } ]);
-        mount.record();
-        mount.detach();
-
-        history.load()({
-            elements: [ { ...RECTANGLE, x: 10, version: 2 }, ELLIPSE ], appState: {}, files: {}
+            const later = createDrawing([ { ...RECTANGLE, version: 3 }, ELLIPSE ]);
+            history.mount().attach(later.api, later.root, store);
+            expect(later.api.updateScene).not.toHaveBeenCalled();
+            // A step applies to every Excalidraw that shows the drawing.
+            steps[0].redo();
+            expect(next.getElements()[0]).toMatchObject({ x: 10 });
+            expect(later.getElements()[0]).toMatchObject({ x: 10 });
+            expect(store.write).toHaveBeenCalledOnce();
         });
-        steps[0].undo();
-        expect(write.mock.calls[0][0].elements).toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]);
-
-        // A load that started before the step is older than the drawing the step leaves.
-        const staleLoad = history.load();
-        steps[0].redo();
-        staleLoad({ elements: [ RECTANGLE ], appState: {}, files: {} });
-        steps[0].undo();
-        expect(write.mock.calls[2][0].elements).toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]);
-    });
 
     it("undoes and redoes the note with the keys and the buttons of Excalidraw", () => {
         const { host, setEnabled } = createHost();
         const drawing = createDrawing([]);
-        new DrawingHistory(host).mount().attach(drawing.api, drawing.root, vi.fn());
+        new DrawingHistory(host).mount().attach(drawing.api, drawing.root, createStore([]));
         const undo = drawing.actions.get("undo");
         const redo = drawing.actions.get("redo");
         expect(undo && redo).toBeTruthy();
@@ -282,6 +260,24 @@ function createHost() {
         setEnabled: (name: HistoryCommand, value: boolean) => {
             enabled[name] = value;
             for (const listener of listeners) listener();
+        }
+    };
+}
+
+/** The saved drawing, which shows `elements`. */
+function createStore(elements: ExcalidrawElement[]) {
+    let saved: DrawingScene = { elements, appState: {}, files: {} };
+    const store = {
+        read: vi.fn(async () => saved),
+        write: vi.fn((scene: DrawingScene) => {
+            saved = scene;
+        })
+    } satisfies DrawingStore;
+    return {
+        ...store,
+        getElements: () => saved.elements,
+        setElements: (next: ExcalidrawElement[]) => {
+            saved = { ...saved, elements: next };
         }
     };
 }

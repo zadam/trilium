@@ -391,7 +391,7 @@ describe("useCanvasDrawingPersistence", () => {
 
     it("keeps its changes on the undo stack of the note, also once Excalidraw is gone", async () => {
         const loaded = [ { id: "r1", type: "rectangle", version: 3, x: 0 } ];
-        const { attachment } = buildAttachment({ elements: loaded });
+        const { attachment, getBlob } = buildAttachment({ elements: loaded });
         const steps: HostHistoryStep[] = [];
         const host: EmbedHostHistory = {
             push: (step) => {
@@ -418,9 +418,14 @@ describe("useCanvasDrawingPersistence", () => {
 
         act(() => render(null, container));
         editor.scheduleSave.mockClear();
+        // Saved elsewhere since Excalidraw went away.
+        const added = { id: "e1", type: "ellipse", version: 1 };
+        getBlob.mockResolvedValue({ content: JSON.stringify({ elements: [ moved, added ] }) });
         expect(steps[0].undo()).toBe(true);
+        await vi.waitFor(() => expect(editor.scheduleSave).toHaveBeenCalledOnce());
         const [ getContent ] = editor.scheduleSave.mock.calls[0];
-        expect(JSON.parse(getContent()).elements).toMatchObject([ { id: "r1", x: 0 } ]);
+        expect(JSON.parse(getContent()).elements)
+            .toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]);
     });
 
     it("loads the images it refers to from its note and saves them by reference", async () => {

@@ -23,7 +23,6 @@ import { useEditableEmbed } from "../text/editable_embed";
 import { CanvasEditor } from "./Canvas";
 import CanvasDrawingMenu from "./CanvasDrawingMenu";
 import CanvasEmbedTools, { CanvasTools } from "./CanvasEmbedTools";
-import type { DrawingScene } from "./drawing_history";
 import { type DrawingView, getBoundedView, getCenteredView, getFittedView } from "./drawing_view";
 import {
     exportDrawingPicture, loadDrawingFiles, parseContent, useCanvasDrawingPersistence
@@ -204,14 +203,12 @@ function DrawingPicture({
         let isCurrent = true;
         // Starts on the next frame, so that a drawing whose embed turns out editable renders none.
         const frame = requestAnimationFrame(async () => {
-            const loadHistoryScene = editor?.history?.drawing?.load();
             const content = editor?.getUnsavedContent()
                 ?? (await attachment.getBlob())?.content ?? "";
             const key = `${colorScheme}\n${content}`;
             if (key === renderedKeyRef.current) return;
 
             const rendered = await renderPictureScene(attachment, content, colorScheme === "dark");
-            loadHistoryScene?.(rendered.drawing);
             if (isCurrent) {
                 renderedKeyRef.current = key;
                 setScene(rendered);
@@ -269,8 +266,6 @@ interface ScenePicture {
 }
 
 interface PictureScene {
-    /** The drawing that the content saves. */
-    drawing: DrawingScene;
     /** The picture of the content, or `null` for an empty drawing. */
     picture: ScenePicture | null;
     /** The shapes that are not deleted. */
@@ -295,16 +290,14 @@ async function renderPictureScene(
     const background = viewBackgroundColor && viewBackgroundColor !== "transparent"
         ? viewBackgroundColor
         : null;
-    const files = (await loadDrawingFiles(attachment, scene)).files;
-    const drawing = { elements: scene.elements ?? [], appState: scene.appState ?? {}, files };
     if (!elements.length) {
-        return { drawing, picture: null, elements, savedView, background };
+        return { picture: null, elements, savedView, background };
     }
 
     const svg = await exportToSvg({
         elements,
         appState: { ...scene.appState, exportBackground: false, exportWithDarkMode: isDark },
-        files,
+        files: (await loadDrawingFiles(attachment, scene)).files,
         exportPadding: 0
     });
     const width = Number(svg.getAttribute("width"));
@@ -313,7 +306,6 @@ async function renderPictureScene(
     // above the frames, so it is placed by the bottom right corner of the shapes.
     const [ , , maxX, maxY ] = getCommonBounds(getRootElements(elements));
     return {
-        drawing,
         picture: { svg, x: maxX - width, y: maxY - height, width, height },
         elements,
         savedView,

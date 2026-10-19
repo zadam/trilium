@@ -21,18 +21,21 @@ export interface DrawingScene {
     files: BinaryFiles;
 }
 
+/** Reads and saves the drawing while no Excalidraw shows it. */
+export interface DrawingStore {
+    /** The drawing as saved, with the changes that wait for a save. */
+    read(): Promise<DrawingScene>;
+    write(scene: DrawingScene): void;
+}
+
 /** An Excalidraw that shows the drawing, from the moment it starts to load the drawing. */
 export interface DrawingMount {
     /**
      * Records the changes of `api` from now on, once it shows the loaded drawing. Input inside
-     * `root` marks the changes that the user makes. `write` saves the drawing once no Excalidraw
-     * shows it.
+     * `root` marks the changes that the user makes. `store` reads and saves the drawing once no
+     * Excalidraw shows it.
      */
-    attach(
-        api: ExcalidrawImperativeAPI,
-        root: HTMLElement | null,
-        write: (scene: DrawingScene) => void
-    ): void;
+    attach(api: ExcalidrawImperativeAPI, root: HTMLElement | null, store: DrawingStore): void;
     /** Records the change of the drawing that Excalidraw ended, if any. */
     record(): void;
     /** Stops recording, before Excalidraw unmounts. */
@@ -86,18 +89,15 @@ export const HISTORY_ICON_PATHS: Record<HistoryCommand, string> = {
  * The undo history of a canvas drawing, kept on the undo stack of the text note that embeds it.
  * Each Excalidraw that shows the drawing records a step once the user ends a change, and its Undo
  * and Redo act on the last change of the note. A step changes every Excalidraw that shows the
- * drawing, or the drawing through the last `write` while none does.
+ * drawing, or the drawing as saved, through the last `DrawingStore`, while none does.
  */
 export default class DrawingHistory {
     /** Counts the steps applied, so that an Excalidraw that loaded before one shows it. */
     private revision = 0;
     private readonly drawings = new Set<AttachedDrawing>();
-    /**
-     * The drawing of the last Excalidraw that went away, or as it saved since, for the steps
-     * applied without one.
-     */
-    private scene: DrawingScene | undefined;
-    private write: ((scene: DrawingScene) => void) | undefined;
+    private store: DrawingStore | undefined;
+    /** The steps applied through `store`, which read the drawing one after another. */
+    private storeUpdates = Promise.resolve();
     private lastStep: RecordedStep | undefined;
 
     constructor(private readonly host: EmbedHostHistory) {}
@@ -107,8 +107,8 @@ export default class DrawingHistory {
         const revision = this.revision;
         let drawing: AttachedDrawing | undefined;
         return {
-            attach: (api, root, write) => {
-                drawing = this.attach(api, root, write, revision);
+            attach: (api, root, store) => {
+                drawing = this.attach(api, root, store, revision);
             },
             record: () => {
                 if (drawing) this.record(drawing);
@@ -120,42 +120,18 @@ export default class DrawingHistory {
         };
     }
 
-    /**
-     * Takes the drawing as its content saves it, which loads now, for the steps applied while no
-     * Excalidraw shows it. A step applied before the returned call ends the load in vain.
-     */
-    load(): (scene: DrawingScene) => void {
-        const revision = this.revision;
-        return (scene) => {
-            if (revision === this.revision && !this.drawings.size) {
-                this.scene = scene;
-            }
-        };
-    }
-
     private attach(
         api: ExcalidrawImperativeAPI,
         root: HTMLElement | null,
-        write: (scene: DrawingScene) => void,
+        store: DrawingStore,
         revision: number
     ) {
-        const scene = revision === this.revision ? undefined : this.getLatestScene();
-        const background = scene?.appState.viewBackgroundColor
-            ?? api.getAppState().viewBackgroundColor;
-        if (scene) {
-            addMissingFiles(api, scene.files);
-            api.updateScene({
-                elements: scene.elements,
-                appState: { viewBackgroundColor: background },
-                captureUpdate: CaptureUpdateAction.NEVER
-            });
-        }
-
+        const [ other ] = this.drawings;
         const drawing: AttachedDrawing = {
             api,
             root,
             committed: new Map(),
-            background,
+            background: api.getAppState().viewBackgroundColor,
             hasInput: false,
             stopListening: () => {}
         };
@@ -179,16 +155,38 @@ export default class DrawingHistory {
         }
 
         this.drawings.add(drawing);
-        this.write = write;
+        this.store = store;
+        // Excalidraw loaded the drawing before a step changed it.
+        if (revision !== this.revision) {
+            if (other) {
+                showScene(drawing, getDrawingScene(other.api));
+            } else {
+                this.showStoredScene(drawing, store);
+            }
+        }
         return drawing;
     }
 
     private detach(drawing: AttachedDrawing) {
         drawing.stopListening();
         this.drawings.delete(drawing);
-        if (!this.drawings.size) {
-            this.scene = getDrawingScene(drawing.api);
-        }
+    }
+
+    /** Shows the drawing of `store` in `drawing` once the steps applied through it saved. */
+    private showStoredScene(drawing: AttachedDrawing, store: DrawingStore) {
+        const revision = this.revision;
+        this.queueStoreUpdate(async () => {
+            const scene = await store.read();
+            if (revision === this.revision && this.drawings.has(drawing)) {
+                showScene(drawing, scene);
+            }
+        });
+    }
+
+    private queueStoreUpdate(update: () => Promise<void>) {
+        this.storeUpdates = this.storeUpdates.then(update).catch((error: unknown) => {
+            console.error("Unable to update the canvas drawing", error);
+        });
     }
 
     /**
@@ -236,20 +234,18 @@ export default class DrawingHistory {
             queueMicrotask(() => {
                 first.root?.querySelector<HTMLElement>(".excalidraw-container")?.focus();
             });
-        } else if (this.scene) {
-            this.scene = applyToScene(this.scene, step, isUndo);
-            this.write?.(this.scene);
+        } else if (this.store) {
+            // Applies to the drawing as saved, which can have changed elsewhere since.
+            const { store } = this;
+            this.queueStoreUpdate(async () => {
+                store.write(applyToScene(await store.read(), step, isUndo));
+            });
         } else {
             return false;
         }
 
         this.revision++;
         return true;
-    }
-
-    private getLatestScene() {
-        const [ drawing ] = this.drawings;
-        return drawing ? getDrawingScene(drawing.api) : this.scene;
     }
 }
 
@@ -363,6 +359,20 @@ function applyToDrawing(drawing: AttachedDrawing, step: DrawingStep, isUndo: boo
     commitElements(drawing);
     drawing.background = background ?? drawing.background;
     drawing.hasInput = false;
+}
+
+/** Shows `scene` in `drawing`, outside the undo history. */
+function showScene(drawing: AttachedDrawing, scene: DrawingScene) {
+    const { api } = drawing;
+    const background = scene.appState.viewBackgroundColor ?? drawing.background;
+    addMissingFiles(api, scene.files);
+    api.updateScene({
+        elements: scene.elements,
+        appState: { viewBackgroundColor: background },
+        captureUpdate: CaptureUpdateAction.NEVER
+    });
+    commitElements(drawing);
+    drawing.background = background;
 }
 
 function applyToScene(scene: DrawingScene, step: DrawingStep, isUndo: boolean): DrawingScene {

@@ -435,10 +435,13 @@ export function useCanvasDrawingPersistence(
             const sceneVersion = getSceneVersion(api.getSceneElements());
             if (!isSceneShownRef.current && (isLoadedSceneEmptyRef.current || sceneVersion)) {
                 isSceneShownRef.current = true;
-                drawingMount?.attach(api, rootRef?.current ?? null, (scene) => editor?.scheduleSave(
-                    () => serializeDrawing(scene, referencedFileIds.current),
-                    (content) => saveDrawingPicture(attachment, content, scene.files)
-                ));
+                drawingMount?.attach(api, rootRef?.current ?? null, {
+                    read: () => readDrawing(attachment, editor),
+                    write: (scene) => editor?.scheduleSave(
+                        () => serializeDrawing(scene, referencedFileIds.current),
+                        (content) => saveDrawingPicture(attachment, content, scene.files)
+                    )
+                });
                 onSceneShown?.();
             }
             if (!editor) return;
@@ -639,6 +642,17 @@ function markBitmaps(picture: SVGSVGElement) {
             use.classList.add(BITMAP_CLASS);
         }
     }
+}
+
+/** The drawing that `attachment` saves, with the changes that `editor` has yet to save. */
+async function readDrawing(
+    attachment: FAttachment,
+    editor: ContentEditor | undefined
+): Promise<DrawingScene> {
+    const content = parseContent(
+        editor?.getUnsavedContent() ?? (await attachment.getBlob())?.content ?? "", attachment);
+    const { files } = await loadDrawingFiles(attachment, content);
+    return { elements: content.elements ?? [], appState: content.appState ?? {}, files };
 }
 
 /**
