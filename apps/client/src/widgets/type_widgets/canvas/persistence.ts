@@ -710,7 +710,7 @@ async function getData(api: ExcalidrawImperativeAPI, appStateToCompare: RefObjec
 /** The scene as the content of a canvas note or of a canvas drawing stores it. */
 function buildSceneContent(
     elements: readonly NonDeletedExcalidrawElement[],
-    appState: SavedAppState,
+    appState: Partial<SavedAppState>,
     files: Record<string, BinaryFileData>
 ) {
     return {
@@ -722,7 +722,8 @@ function buildSceneContent(
             scrollX: appState.scrollX,
             scrollY: appState.scrollY,
             zoom: appState.zoom,
-            ...getImportantAppState(appState)
+            gridModeEnabled: appState.gridModeEnabled,
+            viewBackgroundColor: appState.viewBackgroundColor
         }
     };
 }

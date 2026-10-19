@@ -171,6 +171,9 @@ changes. Three layers, with one recorder per editor in the middle:
   replacement button copies Excalidraw's `ToolButton` markup. Without a mounted Excalidraw, a step
   patches the scene the last one left and saves it through the `write` it attached with; a mount
   that loaded before such a step (an undone Editable toggle remounts) gets the scene at attach.
+  `DrawingPicture` passes each content it loads to `load()`, so a step patches what was saved
+  elsewhere since, not the old scene. Undo sorts by fractional index when a step sets `index`,
+  as Excalidraw renumbers an out-of-order array instead of reordering it.
   `excalidraw_contract.spec.ts` pins the Excalidraw internals this relies on.
 - **`EmbedHistories`** (`text/embed_history.ts`, one per `EditableText`) gives a `ContentHistory`
   (`host` + `write`) per note ID, attachment ID or `InlineEmbedSource`, as `ContentEditor.history`.

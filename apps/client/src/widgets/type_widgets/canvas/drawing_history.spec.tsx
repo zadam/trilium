@@ -135,6 +135,32 @@ describe("DrawingHistory", () => {
         expect(write).toHaveBeenCalledOnce();
     });
 
+    it("applies a step to the drawing as saved elsewhere while no Excalidraw shows it", () => {
+        const { host, steps } = createHost();
+        const history = new DrawingHistory(host);
+        const write = vi.fn();
+        const drawing = createDrawing([ RECTANGLE ]);
+        const mount = history.mount();
+        mount.attach(drawing.api, drawing.root, write);
+        drawing.input("pointerdown");
+        drawing.setElements([ { ...RECTANGLE, x: 10, version: 2 } ]);
+        mount.record();
+        mount.detach();
+
+        history.load()({
+            elements: [ { ...RECTANGLE, x: 10, version: 2 }, ELLIPSE ], appState: {}, files: {}
+        });
+        steps[0].undo();
+        expect(write.mock.calls[0][0].elements).toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]);
+
+        // A load that started before the step is older than the drawing the step leaves.
+        const staleLoad = history.load();
+        steps[0].redo();
+        staleLoad({ elements: [ RECTANGLE ], appState: {}, files: {} });
+        steps[0].undo();
+        expect(write.mock.calls[2][0].elements).toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]);
+    });
+
     it("undoes and redoes the note with the keys and the buttons of Excalidraw", () => {
         const { host, setEnabled } = createHost();
         const drawing = createDrawing([]);
@@ -187,6 +213,19 @@ describe("applyChanges", () => {
         expect(applyChanges(elements, deleteEllipse, true).map(({ id }) => id))
             .toEqual([ "r1", "e1", "i1" ]);
         expect(applyChanges(elements, deleteEllipse, false)).toEqual(elements);
+    });
+
+    it("puts back the z-order of the elements that a change moved", () => {
+        const sendToBack = new Map<string, ElementChange>([ [ "e1", {
+            before: ELLIPSE,
+            after: { ...ELLIPSE, index: "Zz", version: 2 } as ExcalidrawElement,
+            keys: [ "index" ]
+        } ] ]);
+        const sentToBack = [ { ...ELLIPSE, index: "Zz" } as ExcalidrawElement, RECTANGLE, IMAGE ];
+        expect(applyChanges(sentToBack, sendToBack, true).map(({ id }) => id))
+            .toEqual([ "r1", "e1", "i1" ]);
+        expect(applyChanges([ RECTANGLE, ELLIPSE, IMAGE ], sendToBack, false).map(({ id }) => id))
+            .toEqual([ "e1", "r1", "i1" ]);
     });
 });
 

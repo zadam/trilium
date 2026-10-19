@@ -14,10 +14,10 @@ export type SavedAppState = Pick<
     AppState, "scrollX" | "scrollY" | "zoom" | "gridModeEnabled" | "viewBackgroundColor"
 >;
 
-/** A drawing as Excalidraw holds it, deleted elements included. */
+/** A drawing as Excalidraw holds it, deleted elements included, or as its content saves it. */
 export interface DrawingScene {
     elements: readonly ExcalidrawElement[];
-    appState: SavedAppState;
+    appState: Partial<SavedAppState>;
     files: BinaryFiles;
 }
 
@@ -92,7 +92,10 @@ export default class DrawingHistory {
     /** Counts the steps applied, so that an Excalidraw that loaded before one shows it. */
     private revision = 0;
     private readonly drawings = new Set<AttachedDrawing>();
-    /** The drawing of the last Excalidraw that went away, for the steps applied without one. */
+    /**
+     * The drawing of the last Excalidraw that went away, or as it saved since, for the steps
+     * applied without one.
+     */
     private scene: DrawingScene | undefined;
     private write: ((scene: DrawingScene) => void) | undefined;
     private lastStep: RecordedStep | undefined;
@@ -117,6 +120,19 @@ export default class DrawingHistory {
         };
     }
 
+    /**
+     * Takes the drawing as its content saves it, which loads now, for the steps applied while no
+     * Excalidraw shows it. A step applied before the returned call ends the load in vain.
+     */
+    load(): (scene: DrawingScene) => void {
+        const revision = this.revision;
+        return (scene) => {
+            if (revision === this.revision && !this.drawings.size) {
+                this.scene = scene;
+            }
+        };
+    }
+
     private attach(
         api: ExcalidrawImperativeAPI,
         root: HTMLElement | null,
@@ -124,21 +140,22 @@ export default class DrawingHistory {
         revision: number
     ) {
         const scene = revision === this.revision ? undefined : this.getLatestScene();
+        const background = scene?.appState.viewBackgroundColor
+            ?? api.getAppState().viewBackgroundColor;
         if (scene) {
             addMissingFiles(api, scene.files);
             api.updateScene({
                 elements: scene.elements,
-                appState: { viewBackgroundColor: scene.appState.viewBackgroundColor },
+                appState: { viewBackgroundColor: background },
                 captureUpdate: CaptureUpdateAction.NEVER
             });
         }
 
-        const { viewBackgroundColor } = scene?.appState ?? api.getAppState();
         const drawing: AttachedDrawing = {
             api,
             root,
             committed: new Map(),
-            background: viewBackgroundColor,
+            background,
             hasInput: false,
             stopListening: () => {}
         };
@@ -243,8 +260,9 @@ export function getDrawingHistory(history: ContentHistory) {
 }
 
 /**
- * `elements` with the changes undone, or made again. An element that `elements` lacks, as one that
- * was deleted before the drawing saved, comes back from the change.
+ * `elements` with the changes undone, or made again, in the order of their fractional indices. An
+ * element that `elements` lacks, as one that was deleted before the drawing saved, comes back from
+ * the change.
  */
 export function applyChanges(
     elements: readonly ExcalidrawElement[],
@@ -264,6 +282,9 @@ export function applyChanges(
         if (target && !target.isDeleted) {
             insertByIndex(result, newElementWith(structuredClone(target), {}, true));
         }
+    }
+    if ([ ...changes.values() ].some(({ keys }) => keys.includes("index"))) {
+        sortByIndex(result);
     }
     return result;
 }
@@ -381,6 +402,19 @@ function insertByIndex(elements: ExcalidrawElement[], element: ExcalidrawElement
     } else {
         elements.splice(position, 0, element);
     }
+}
+
+/**
+ * Orders `elements` by their fractional indices, as Excalidraw stacks them, unless one has none.
+ * Excalidraw would otherwise give the elements new indices in the order of the array.
+ */
+function sortByIndex(elements: ExcalidrawElement[]) {
+    if (elements.some(({ index }) => index === null)) return;
+
+    elements.sort((first, second) => {
+        const [ a, b ] = [ first.index ?? "", second.index ?? "" ];
+        return a < b ? -1 : a > b ? 1 : 0;
+    });
 }
 
 /** The images of the elements in `changes` that `api` has loaded. */
