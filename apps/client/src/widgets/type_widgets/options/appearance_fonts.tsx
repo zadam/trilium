@@ -633,8 +633,6 @@ function FontPickerModal({ show, onHidden, target, onTargetChange, option: { fam
                     {target.sizeDescription && <small className="font-size-description">{target.sizeDescription}</small>}
                 </div>
 
-                {/* On mobile the list rows show each family and the change applies live, so the
-                    list gets the room instead. */}
                 {!isMobile() && (
                     <div className="font-preview">
                         <label>{t("fonts.preview")}</label>
