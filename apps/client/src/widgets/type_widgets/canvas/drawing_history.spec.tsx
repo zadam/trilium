@@ -206,6 +206,33 @@ describe("DrawingHistory", () => {
         await vi.waitFor(() => expect(next.getElements()).toMatchObject([ { x: 0, y: 0 } ]));
     });
 
+    it("applies the steps in order while one waits for the saved drawing", async () => {
+        const { host, steps } = createHost();
+        const history = new DrawingHistory(host);
+        const moved = { ...RECTANGLE, x: 10, version: 2 };
+        const store = createStore([ RECTANGLE ]);
+        const first = createDrawing([ RECTANGLE ]);
+        const firstMount = history.mount();
+        firstMount.attach(first.api, first.root, store);
+        first.input("pointerdown");
+        first.setElements([ moved ]);
+        firstMount.record();
+        firstMount.detach();
+        store.setElements([ moved ]);
+
+        const read = deferScene();
+        store.read.mockImplementationOnce(() => read.promise);
+        steps[0].undo();
+        const nextMount = history.mount();
+        const next = createDrawing([ moved ]);
+        nextMount.attach(next.api, next.root, store);
+        steps[0].redo();
+        read.resolve({ elements: [ moved ], appState: {}, files: {} });
+        await vi.waitFor(() => expect(store.write).toHaveBeenCalledOnce());
+        await vi.waitFor(() => expect(next.api.updateScene).toHaveBeenCalledTimes(2));
+        expect(next.getElements()).toMatchObject([ { x: 10 } ]);
+    });
+
     it("undoes and redoes the note with the keys and the buttons of Excalidraw", () => {
         const { host, setEnabled } = createHost();
         const drawing = createDrawing([]);

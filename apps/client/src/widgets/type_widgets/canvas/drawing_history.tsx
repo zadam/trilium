@@ -101,6 +101,7 @@ export default class DrawingHistory {
     private store: DrawingStore | undefined;
     /** The steps applied through `store`, which read the drawing one after another. */
     private storeUpdates = Promise.resolve();
+    private pendingStoreUpdates = 0;
     private lastStep: RecordedStep | undefined;
 
     constructor(private readonly host: EmbedHostHistory) {}
@@ -187,8 +188,11 @@ export default class DrawingHistory {
     }
 
     private queueStoreUpdate(update: () => Promise<void>) {
+        this.pendingStoreUpdates++;
         this.storeUpdates = this.storeUpdates.then(update).catch((error: unknown) => {
             console.error("Unable to update the canvas drawing", error);
+        }).finally(() => {
+            this.pendingStoreUpdates--;
         });
     }
 
@@ -229,22 +233,28 @@ export default class DrawingHistory {
 
     private apply(step: DrawingStep, isUndo: boolean) {
         const [ first ] = this.drawings;
-        if (first) {
+        if (!first && !this.store) {
+            return false;
+        }
+
+        if (first && !this.pendingStoreUpdates) {
             this.applyToDrawings(step, isUndo);
             // Deferred until after the Undo button of the toolbar focuses the text editor.
             queueMicrotask(() => {
                 first.root?.querySelector<HTMLElement>(".excalidraw-container")?.focus();
             });
-        } else if (this.store) {
-            // Applies to the drawing as saved, which can have changed elsewhere since.
-            const { store } = this;
+        } else {
+            // Waits for the steps before it, which read the drawing.
+            const isShown = !!first;
             this.queueStoreUpdate(async () => {
-                store.write(applyToScene(await store.read(), step, isUndo));
+                const { store } = this;
+                if (store && (!isShown || !this.drawings.size)) {
+                    // Applies to the drawing as saved, which can have changed elsewhere since.
+                    store.write(applyToScene(await store.read(), step, isUndo));
+                }
                 // An Excalidraw that attached meanwhile loaded the drawing before the step.
                 this.applyToDrawings(step, isUndo);
             });
-        } else {
-            return false;
         }
         return true;
     }

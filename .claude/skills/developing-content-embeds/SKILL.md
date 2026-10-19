@@ -171,7 +171,7 @@ changes. Three layers, with one recorder per editor in the middle:
   replacement button copies Excalidraw's `ToolButton` markup. Without a mounted Excalidraw, a step
   reads the drawing through the `DrawingStore` it attached with (the unsaved content, else the
   blob, so a save made elsewhere since stays), patches it and writes it back; the steps queue one
-  after another and count in `revision` once written. They also patch an Excalidraw that attached
+  after another and count in `revision` once written; a step on a live canvas waits behind them. They also patch an Excalidraw that attached
   during the read (patches are idempotent), and a mount that loaded before a written step (an
   undone Editable toggle remounts) reads the drawing again at attach. Undo sorts by fractional index when a step sets `index`,
   as Excalidraw renumbers an out-of-order array instead of reordering it.
