@@ -33,10 +33,6 @@ export default function CanvasDrawingMenu({ apiRef, isEditable }: CanvasDrawingM
     );
 }
 
-/**
- * The main menu of Excalidraw in a canvas note: Excalidraw's default menu without its links to
- * Excalidraw's social accounts. Renders inside `<Excalidraw>`.
- */
 export function CanvasNoteMenu() {
     return (
         <MainMenu>
