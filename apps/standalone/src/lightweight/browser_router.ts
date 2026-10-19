@@ -97,10 +97,6 @@ function pathToRegex(path: string): { pattern: RegExp; paramNames: string[] } {
     };
 }
 
-function isLocalUploadBody(body: unknown): body is LocalUploadBody {
-    return typeof body === "object" && body !== null && (body as LocalUploadBody).type === "upload";
-}
-
 /**
  * Parse query string into an object.
  */
@@ -378,4 +374,8 @@ export class BrowserRouter {
  */
 export function createRouter(): BrowserRouter {
     return new BrowserRouter();
+}
+
+function isLocalUploadBody(body: unknown): body is LocalUploadBody {
+    return typeof body === "object" && body !== null && (body as LocalUploadBody).type === "upload";
 }
