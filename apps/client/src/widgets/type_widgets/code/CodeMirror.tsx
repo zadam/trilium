@@ -52,7 +52,7 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
     // React to text changes.
     useEffect(() => {
         const codeEditor = codeEditorRef.current;
-        codeEditor?.setText(content ?? "");
+        codeEditor?.loadText(content ?? "");
         codeEditor?.setMimeType(mime);
         codeEditor?.clearHistory();
     }, [content]);

@@ -1,5 +1,3 @@
-import { AttributeEditor } from "@triliumnext/ckeditor5";
-import { _setModelData } from "ckeditor5";
 import { h, render } from "preact";
 import { act } from "preact/test-utils";
 import { describe, expect, it, vi } from "vitest";
@@ -297,38 +295,27 @@ describe("useNoteEditor", () => {
 });
 
 describe("InlineSourceSaves", () => {
-    it("makes the held writes before the text editor undoes or redoes, as a step of their own", async () => {
-        const element = document.createElement("div");
-        document.body.append(element);
-        const editor = await AttributeEditor.create(element, { licenseKey: "GPL" });
-        const type = (text: string) => editor.model.change((writer) => {
-            editor.model.insertContent(writer.createText(text));
-        });
-        const saves = new InlineSourceSaves(() => {});
-        saves.flushBeforeHistory(editor);
+    it("schedules a save for a held write, and makes the writes still held on flush", () => {
+        const scheduleUpdate = vi.fn();
+        const saves = new InlineSourceSaves(scheduleUpdate);
+        const made: string[] = [];
         // Holds a write that, like an inline source, leaves `saves` once made.
         const hold = (text: string) => {
             const write = () => {
                 saves.delete(write);
-                type(text);
+                made.push(text);
             };
             saves.add(write);
+            return write;
         };
 
-        _setModelData(editor.model, "<paragraph>a[]</paragraph>");
-        type("b");
-        hold("c");
-        editor.execute("undo");
-        expect(editor.getData()).toBe("<p>ab</p>");
+        hold("a");
+        const written = hold("b");
+        written();
+        expect(scheduleUpdate).toHaveBeenCalledTimes(2);
 
-        editor.execute("redo");
-        expect(editor.getData()).toBe("<p>abc</p>");
-
-        hold("d");
-        editor.execute("redo");
-        expect(editor.getData()).toBe("<p>abcd</p>");
-
-        await editor.destroy();
-        element.remove();
+        saves.flush();
+        saves.flush();
+        expect(made).toEqual([ "b", "a" ]);
     });
 });

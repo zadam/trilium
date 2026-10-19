@@ -44,6 +44,7 @@ import AttachmentSaves, { InlineSourceSaves, useNoteEditor } from "./attachment_
 import CKEditor, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditor";
 import { enterContentEmbed, getContentEmbedTools } from "./content_embed_tools";
 import { useEmbedEditors } from "./editable_embed";
+import EmbedHistories from "./embed_history";
 import getTemplates, { updateTemplateCache } from "./snippets.js";
 import linkEmbedService from "../../../services/link_embed";
 import { usesClassicToolbar } from "./toolbar";
@@ -103,9 +104,13 @@ export default function EditableText({
         new AttachmentSaves(() => spacedUpdate.scheduleUpdate()));
     const [ inlineSourceSaves ] = useState(() =>
         new InlineSourceSaves(() => spacedUpdate.scheduleUpdate()));
+    const [ embedHistories ] = useState(() => new EmbedHistories(() => editorRef.current));
     const noteEditor = useNoteEditor(noteContext);
-    const { noteEditor: embedNoteEditor, attachmentEditor: embedAttachmentEditor } =
-        useEmbedEditors({ noteEditor, attachmentEditor: attachmentSaves });
+    const {
+        noteEditor: embedNoteEditor, attachmentEditor: embedAttachmentEditor, histories
+    } = useEmbedEditors({
+        noteEditor, attachmentEditor: attachmentSaves, histories: embedHistories
+    });
     const spacedUpdate = useEditorSpacedUpdate({
         note,
         noteContext,
@@ -286,6 +291,7 @@ export default function EditableText({
         ) {
             return loadEmbeddedNote(noteId, $el, boxSize, {
                 noteEditor: embedNoteEditor,
+                histories,
                 block: embedBlock,
                 onBlockChange
             });
@@ -297,6 +303,7 @@ export default function EditableText({
             }
             return loadEmbeddedAttachment(attachmentId, $el, boxSize, {
                 attachmentEditor: embedAttachmentEditor,
+                histories,
                 isFocused
             });
         },
@@ -306,7 +313,9 @@ export default function EditableText({
             boxSize: string | undefined,
             options: { isFocused: boolean }
         ) {
-            return loadInlineEmbed(source, $el, boxSize, { ...options, saves: inlineSourceSaves });
+            return loadInlineEmbed(source, $el, boxSize, {
+                ...options, saves: inlineSourceSaves, histories
+            });
         },
         focusContentEmbed(attachmentId: string) {
             focusedAttachmentIdRef.current = attachmentId;
@@ -409,7 +418,9 @@ export default function EditableText({
 
     useTriliumEvent("refreshEmbeddedNote", ({ noteId }) => {
         if (!containerRef.current) return;
-        refreshEmbeddedNote(containerRef.current, noteId, { noteEditor: embedNoteEditor });
+        refreshEmbeddedNote(containerRef.current, noteId, {
+            noteEditor: embedNoteEditor, histories
+        });
     });
 
     useEffect(() => () => stopWatchingEmbedsRef.current?.(), []);
@@ -664,7 +675,6 @@ export default function EditableText({
 
                     editor.plugins.get("FileUploadEditing")
                         .on<FileUploadEvent>("upload", showFileUploadProgress);
-                    inlineSourceSaves.flushBeforeHistory(editor);
 
                     if (block !== undefined) {
                         editor.plugins.get("BlockReferenceEditing").editRange();

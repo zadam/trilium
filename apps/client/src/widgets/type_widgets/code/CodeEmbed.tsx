@@ -87,6 +87,7 @@ export default function CodeEmbed({
                             note={note}
                             ownerNote={entity instanceof FNote ? entity : entity.getNote()}
                             editor={isEditing ? editor : undefined}
+                            history={editor?.history}
                             content={content}
                             mime={mime}
                             tabWidth={settings.tabWidth}

@@ -23,6 +23,9 @@ import { t } from "../services/i18n.js";
 import { type MediaEnvironment, showsFileActions } from "../widgets/type_widgets/file/media_environment.js";
 import type { LlmChatContent, StoredMessage } from "../widgets/type_widgets/llm_chat/llm_chat_types.js";
 import type { BoxSize } from "../widgets/type_widgets/text/CKEditor.js";
+import type {
+    ContentHistory, default as EmbedHistories
+} from "../widgets/type_widgets/text/embed_history.js";
 import type { CodePreviewLines } from "./code_note_preview.js";
 import renderText, {
     postProcessRichContent, renderChildrenList, renderTextContent
@@ -123,6 +126,8 @@ export interface RenderOptions {
      * Without it, that content is read-only.
      */
     noteEditor?: NoteEditor;
+    /** Keeps the undo steps of the content on the undo stack of the text note that shows it. */
+    histories?: EmbedHistories;
     /** The component a JSX render note mounts under, by default the one of the closest `.component` element. */
     parentComponent?: Component;
 }
@@ -564,6 +569,8 @@ export interface ContentEditor {
     getSaveState?(): SaveState | undefined;
     /** Calls `listener` when `getSaveState()` changes, until the returned call. */
     subscribeSaveState?(listener: () => void): () => void;
+    /** The undo history that the content shares with the text note that shows it. */
+    history?: ContentHistory;
 }
 
 /** `editor`, saving the changes to `attachment`. */
@@ -585,7 +592,13 @@ function getContentEditor(
     options: RenderOptions
 ): ContentEditor | undefined {
     if (entity instanceof FAttachment) {
-        return options.attachmentEditor && bindAttachmentEditor(options.attachmentEditor, entity);
+        const editor = options.attachmentEditor;
+        return editor && {
+            ...bindAttachmentEditor(editor, entity),
+            history: options.histories?.get(entity.attachmentId, (text) => {
+                editor.scheduleSave(entity, () => text);
+            })
+        };
     }
 
     const editor = options.noteEditor;
@@ -595,7 +608,10 @@ function getContentEditor(
         scheduleSave: (getContent, onSaved) => editor.scheduleSave(entity, getContent, onSaved),
         release: () => editor.release(entity.noteId),
         getSaveState: () => editor.getSaveState(entity.noteId),
-        subscribeSaveState: (listener) => editor.subscribeSaveState(listener)
+        subscribeSaveState: (listener) => editor.subscribeSaveState(listener),
+        history: options.histories?.get(entity.noteId, (text) => {
+            editor.scheduleSave(entity, () => text);
+        })
     } : undefined;
 }
 

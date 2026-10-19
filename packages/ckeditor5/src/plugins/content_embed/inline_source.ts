@@ -27,13 +27,13 @@ export const INSERT_INLINE_EMBED_COMMAND = 'insertInlineEmbed';
 
 /**
  * The source of an embed that keeps its content in the note, as the host reads and changes it.
- * The editor's undo and other changes to the source reach the host through `subscribe()`.
+ * Changes to the source made outside the host reach it through `subscribe()`.
  */
 export interface InlineEmbedSource {
 	/** The language that the source is written in, such as `mermaid`. */
 	readonly language: string;
 	getSource(): string;
-	/** Replaces the source, as one step of the editor's undo. */
+	/** Replaces the source. The host keeps the undo steps of its changes in `EmbedHistory`. */
 	setSource( source: string ): void;
 	/** Calls `callback` when the source changes, until the returned function is called. */
 	subscribe( callback: () => void ): () => void;
@@ -69,6 +69,8 @@ const SIZE_PROPERTIES = [
 export default class ContentEmbedInlineSource extends Plugin {
 	/** The listeners of each embed's source, by embed. */
 	private readonly listeners = new WeakMap<ModelElement, Set<() => void>>();
+	/** The source of each embed, the same object each time the embed renders. */
+	private readonly sources = new WeakMap<ModelElement, InlineEmbedSource>();
 	/** The embeds inserted by {@link INSERT_INLINE_EMBED_COMMAND}, whose content takes the focus. */
 	private readonly focusedEmbeds = new WeakSet<ModelElement>();
 
@@ -111,6 +113,15 @@ export default class ContentEmbedInlineSource extends Plugin {
 	}
 
 	private getSource( embed: ModelElement ): InlineEmbedSource {
+		let source = this.sources.get( embed );
+		if ( !source ) {
+			source = this.createSource( embed );
+			this.sources.set( embed, source );
+		}
+		return source;
+	}
+
+	private createSource( embed: ModelElement ): InlineEmbedSource {
 		const editor = this.editor;
 		const listeners = this.listeners;
 
@@ -123,7 +134,9 @@ export default class ContentEmbedInlineSource extends Plugin {
 					|| root.rootName === '$graveyard' || embed.getAttribute( 'source' ) === source ) {
 					return;
 				}
-				editor.model.change( writer => writer.setAttribute( 'source', source, embed ) );
+				editor.model.enqueueChange( { isUndoable: false }, writer => {
+					writer.setAttribute( 'source', source, embed );
+				} );
 			},
 			subscribe: callback => {
 				let callbacks = listeners.get( embed );

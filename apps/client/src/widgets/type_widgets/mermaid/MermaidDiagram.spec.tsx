@@ -208,6 +208,28 @@ describe("MermaidDiagram", () => {
         expect(await findSourceView(figure)).toBe(view);
     });
 
+    it("keeps the edits of its source on the text note's undo stack, read-only too", async () => {
+        const host = {
+            push: vi.fn(() => ({ isLatest: () => false })), undo: vi.fn(), redo: vi.fn()
+        };
+        const editor = { ...buildEditor(), history: { host, write: vi.fn() } };
+        const { figure } = await mount({ editor, isEditable: true, displayMode: "split" });
+        const view = await findSourceView(figure);
+
+        act(() => view.dispatch({ changes: { from: 0, insert: "%% " } }));
+        expect(host.push).toHaveBeenCalledOnce();
+
+        await act(async () => {
+            delete figure.dataset.editable;
+            await Promise.resolve();
+        });
+        expect(await isSourceEditable(figure)).toBe(false);
+        view.contentDOM.dispatchEvent(new KeyboardEvent("keydown", {
+            key: "z", ctrlKey: true, bubbles: true, cancelable: true
+        }));
+        expect(host.undo).toHaveBeenCalledOnce();
+    });
+
     it("wraps and numbers the lines of the source as the menu of its embed sets", async () => {
         const { textEditor, editable } = buildCodeViewTextEditor();
         const { figure } = await mount({

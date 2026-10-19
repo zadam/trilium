@@ -2,22 +2,26 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tooltips, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
 import {
-    Compartment, EditorSelection, EditorState, Prec, StateEffect, type Extension
+    Compartment, EditorSelection, EditorState, Prec, StateEffect, Transaction, type Extension
 } from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
-import { vim } from "@replit/codemirror-vim";
+import { CodeMirror as VimEditor, vim } from "@replit/codemirror-vim";
 import { indentationMarkers } from "@replit/codemirror-indentation-markers";
 import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
 import smartIndentWithTab from "./extensions/custom_tab.js";
 import type { ThemeDefinition } from "./color_themes.js";
 import { createSearchHighlighter, SearchHighlighter, searchMatchHighlightTheme } from "./find_replace.js";
 import { isHostedCompletionShown } from "./extensions/hosted_completion.js";
+import type SharedHistory from "./shared_history.js";
 import {
     buildTypeCompletion, type ScriptApiContext, type TypeCompleter
 } from "./type_completion/index.js";
 
 export { default as ColorThemes, type ThemeDefinition, type ThemeVariant, getThemeById } from "./color_themes.js";
+export {
+    default as SharedHistory, type HostHistory, type HostHistoryStep
+} from "./shared_history.js";
 export {
     isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND,
     type TypeCompletionEntry
@@ -113,6 +117,7 @@ export default class CodeMirror extends EditorView {
     private typeCompletionCompartment: Compartment;
     private completionSourceCompartment: Compartment;
     private searchPlugin?: SearchHighlighter | null;
+    private sharedHistory: SharedHistory | null = null;
     private namedCompartments = new Map<string, Compartment>();
     /** Named completion sources aggregated into the editor's single autocompletion. */
     private completionSources = new Map<string, CompletionSource>();
@@ -218,10 +223,47 @@ export default class CodeMirror extends EditorView {
     }
 
     #onDocumentUpdated(v: ViewUpdate) {
+        for (const tr of v.transactions) {
+            this.sharedHistory?.record(tr);
+        }
         if (v.docChanged) {
             this.config.onContentChanged?.();
         }
         for (const listener of this.#updateListeners) listener(v);
+    }
+
+    /**
+     * Keeps the undo history in `history`, which the editor shares with its host, such as the text
+     * note that embeds it. With `null`, the editor keeps a history of its own.
+     */
+    setSharedHistory(history: SharedHistory | null) {
+        if (history === this.sharedHistory) return;
+
+        this.sharedHistory?.detach(this);
+        this.sharedHistory = history;
+        history?.attach(this);
+        this.dispatch({
+            effects: [ this.historyCompartment.reconfigure(this.buildHistory(this.state.readOnly)) ]
+        });
+    }
+
+    /** Undoes or redoes in the shared history. Returns `false` when the editor has none. */
+    runSharedHistory(name: "undo" | "redo") {
+        if (!this.sharedHistory) return false;
+
+        this.sharedHistory.host[name]();
+        return true;
+    }
+
+    override destroy() {
+        this.sharedHistory?.detach(this);
+        this.sharedHistory = null;
+        super.destroy();
+    }
+
+    private buildHistory(isReadOnly: boolean): Extension {
+        if (this.sharedHistory) return sharedHistoryKeys(this);
+        return isReadOnly ? [] : history();
     }
 
     #updateListeners: Array<(v: ViewUpdate) => void> = [];
@@ -254,12 +296,22 @@ export default class CodeMirror extends EditorView {
     }
 
     setText(content: string) {
+        this.replaceText(content, false);
+    }
+
+    /** Replaces the content with content loaded from elsewhere, outside the undo history. */
+    loadText(content: string) {
+        this.replaceText(content, true);
+    }
+
+    private replaceText(content: string, isLoad: boolean) {
         const transaction = this.state.update({
             changes: {
                 from: 0,
                 to: this.state.doc.length,
                 insert: content || "",
-            }
+            },
+            annotations: Transaction.addToHistory.of(!isLoad)
         });
         // Dispatching a full-document replacement maps the viewport onto the whole new document.
         // A visible editor's next measure shrinks it back, but an editor inside a display:none
@@ -299,7 +351,7 @@ export default class CodeMirror extends EditorView {
                 this.editabilityCompartment.reconfigure(
                     buildEditability(isReadOnly, this.config.placeholder)
                 ),
-                this.historyCompartment.reconfigure(isReadOnly ? [] : history())
+                this.historyCompartment.reconfigure(this.buildHistory(isReadOnly))
             ]
         });
     }
@@ -354,7 +406,7 @@ export default class CodeMirror extends EditorView {
      * Clears the history of undo/redo. Generally useful when changing to a new document.
      */
     clearHistory() {
-        if (this.state.readOnly) {
+        if (this.state.readOnly || this.sharedHistory) {
             return;
         }
 
@@ -625,6 +677,43 @@ export default class CodeMirror extends EditorView {
             )
         });
     }
+}
+
+// Vim's `u` and `Ctrl-R` run these commands, which use the shared history of an editor first.
+for (const name of [ "undo", "redo" ] as const) {
+    const run = VimEditor.commands[name];
+    VimEditor.commands[name] = (cm) => {
+        if (!(cm.cm6 instanceof CodeMirror && cm.cm6.runSharedHistory(name))) {
+            run(cm);
+        }
+    };
+}
+
+const HISTORY_INPUT_TYPES: Record<string, "undo" | "redo" | undefined> = {
+    historyUndo: "undo",
+    historyRedo: "redo"
+};
+
+/** The undo and redo keys and input events of `view`, which run its shared history. */
+function sharedHistoryKeys(view: CodeMirror): Extension {
+    const undo = () => view.runSharedHistory("undo");
+    const redo = () => view.runSharedHistory("redo");
+    return [
+        Prec.high(keymap.of([
+            { key: "Mod-z", run: undo, stopPropagation: true },
+            { key: "Mod-y", run: redo, stopPropagation: true },
+            { key: "Mod-Shift-z", run: redo, stopPropagation: true }
+        ])),
+        EditorView.domEventHandlers({
+            beforeinput(event) {
+                const name = HISTORY_INPUT_TYPES[event.inputType];
+                if (!name) return false;
+
+                event.preventDefault();
+                return view.runSharedHistory(name);
+            }
+        })
+    ];
 }
 
 /** Identifies a type-completion build by its MIME type and the context flags that are set. */

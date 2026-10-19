@@ -142,7 +142,7 @@ describe("ContentEmbedInlineSource", () => {
         expect(model).not.toContain("javascript");
     });
 
-    it("has the host render the source, and writes its changes as steps of the undo", () => {
+    it("has the host render the source, and writes its changes outside the undo stack", () => {
         editor.setData(`<pre><code class="language-mermaid">graph TD;</code></pre>`);
 
         expect(loadInlineEmbed).toHaveBeenCalledOnce();
@@ -159,14 +159,18 @@ describe("ContentEmbedInlineSource", () => {
         source.subscribe(listener);
         source.setSource("graph LR;");
         expect(getEmbed().getAttribute("source")).toBe("graph LR;");
+        expect(source.getSource()).toBe("graph LR;");
         expect(listener).toHaveBeenCalledOnce();
-
-        editor.execute("undo");
-        expect(getEmbed().getAttribute("source")).toBe("graph TD;");
-        expect(source.getSource()).toBe("graph TD;");
-        expect(listener).toHaveBeenCalledTimes(2);
+        // The host keeps the undo steps of the source in `EmbedHistory`.
+        expect(editor.commands.get("undo")?.isEnabled).toBe(false);
         // Writing the source does not draw the embed again, which would remount its editor.
         expect(loadInlineEmbed).toHaveBeenCalledOnce();
+
+        // A box drawn again gets the same source, which keys the undo steps of its editor.
+        editor.model.change((writer) => writer.setSelection(getEmbed(), "on"));
+        editor.execute(BOX_SIZE_COMMAND_NAME, { value: "full" });
+        expect(loadInlineEmbed).toHaveBeenCalledTimes(2);
+        expect(getLoadedSource(1)).toBe(source);
     });
 
     it("ignores a write of the same source, and stops calling a listener that unsubscribed", () => {

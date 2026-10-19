@@ -48,6 +48,7 @@ import ContentEmbed, {
     TinyContentEmbed,
     type TinyContentEmbedProps
 } from "./ContentEmbed";
+import EmbedHistories from "./embed_history";
 import {
     getAttachmentHref,
     loadEmbeddedAttachment,
@@ -243,9 +244,11 @@ describe("loadEmbeddedAttachment", () => {
 
     it("passes the attachment editor to the renderer, and the focus to the box", async () => {
         const attachmentEditor = { canEdit: vi.fn() } as never;
+        const histories = new EmbedHistories(() => null);
 
         await loadEmbeddedAttachment("att1", $(createWrapper()), "medium", {
             attachmentEditor,
+            histories,
             isFocused: true
         });
 
@@ -253,7 +256,8 @@ describe("loadEmbeddedAttachment", () => {
             interactive: true,
             mediaEnvironment: "embedded",
             hasDisplayModes: true,
-            attachmentEditor
+            attachmentEditor,
+            histories
         });
         expect(lastMount().props).toMatchObject({ isFocusedOnMount: true });
     });
@@ -403,8 +407,9 @@ describe("refreshEmbeddedNote", () => {
             + `<section class="include-note" data-note-id="noteY" data-block="b1"></section>`
             + `<figure class="include-note" data-note-id="other"></figure>`;
         const [ figure, section ] = [ ...container.children ];
+        const histories = new EmbedHistories(() => null);
 
-        refreshEmbeddedNote(container, "noteY");
+        refreshEmbeddedNote(container, "noteY", { histories });
 
         await vi.waitFor(() => {
             expect(content_renderer.mountInteractiveWidget).toHaveBeenCalledTimes(2);
@@ -413,7 +418,8 @@ describe("refreshEmbeddedNote", () => {
             .map(([ , wrapper ]) => wrapper.parentElement);
         expect(mountedIn).toEqual([ figure, section ]);
         expect(vi.mocked(content_renderer.getRenderedContent).mock.calls
-            .map(([ , options ]) => options?.block)).toEqual([ undefined, "b1" ]);
+            .map(([ , options ]) => [ options?.block, options?.histories ]))
+            .toEqual([ [ undefined, histories ], [ "b1", histories ] ]);
     });
 });
 

@@ -33,6 +33,7 @@ import { encodeBlockParameter, parseBlockRange } from '@triliumnext/commons';
 import { getAttachmentId, getNoteId } from '../referencelink.js';
 import ResizableWidgets, { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
 import { restoreRendererFocusOnInput } from '../widget_utils.js';
+import EmbedHistory from './embed_history.js';
 import ContentEmbedInlineSource, { isInlineSourceEmbed } from './inline_source.js';
 import './nested_editor_events.js';
 
@@ -180,7 +181,7 @@ export default class ContentEmbed extends Plugin {
 	declare public isSelectedEmbedInline: boolean;
 
 	static get requires() {
-		return [ ContentEmbedEditing, ContentEmbedUI, ContentEmbedInlineSource ];
+		return [ ContentEmbedEditing, ContentEmbedUI, ContentEmbedInlineSource, EmbedHistory ];
 	}
 
 	static get pluginName() {

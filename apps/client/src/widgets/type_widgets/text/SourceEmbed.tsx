@@ -7,6 +7,7 @@ import type FAttachment from "../../../entities/fattachment";
 import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
 import type { InlineSourceSaves } from "./attachment_saves";
+import type EmbedHistories from "./embed_history";
 import type { SourceEmbedProps } from "../../../services/source_embeds";
 import { useSavedContent } from "../code/CodeEmbed";
 
@@ -33,12 +34,17 @@ interface InlineSourceEmbedProps {
     component: ComponentType<SourceEmbedProps>;
     /** The writes that the text note saves first. */
     saves?: InlineSourceSaves;
+    /** Keeps the undo steps of the source on the undo stack of the text note. */
+    histories?: EmbedHistories;
 }
 
 /** The component of a source embed type, over a source kept inline in the text note. */
-export function InlineSourceEmbed({ source, component: Component, saves }: InlineSourceEmbedProps) {
+export function InlineSourceEmbed({
+    source, component: Component, saves, histories
+}: InlineSourceEmbedProps) {
     const content = useSyncExternalStore(source.subscribe, source.getSource);
-    const editor = useMemo(() => createInlineSourceEditor(source, saves), [ source, saves ]);
+    const editor = useMemo(
+        () => createInlineSourceEditor(source, saves, histories), [ source, saves, histories ]);
     useEffect(() => () => editor.release(), [ editor ]);
 
     return <Component content={content} editor={editor} />;
@@ -46,12 +52,13 @@ export function InlineSourceEmbed({ source, component: Component, saves }: Inlin
 
 /**
  * The editor of a source kept inline, which writes the source into the text note a moment after
- * it stops changing, each write one step of the text editor's undo. Until then `saves` holds the
- * write, so that the text note makes it before it saves.
+ * it stops changing. Until then `saves` holds the write, so that the text note makes it before it
+ * saves.
  */
 export function createInlineSourceEditor(
     source: InlineEmbedSource,
-    saves?: InlineSourceSaves
+    saves?: InlineSourceSaves,
+    histories?: EmbedHistories
 ): ContentEditor {
     let getPending: (() => string) | undefined;
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -79,7 +86,8 @@ export function createInlineSourceEditor(
                 onSaved?.(source.getSource());
             }, INLINE_SAVE_DELAY);
         },
-        release: flush
+        release: flush,
+        history: histories?.get(source, (text) => source.setSource(text))
     };
 }
 
