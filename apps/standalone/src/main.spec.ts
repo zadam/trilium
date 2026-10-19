@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
     downloadDatabase: vi.fn(),
     announceLeadership: vi.fn(),
     localFetch: vi.fn(),
+    localUpload: vi.fn(),
     capacitorHttpHandler: vi.fn(),
     saveUrlToDevice: vi.fn(),
     requestSecurityChange: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock("./local-bridge.js", () => ({
     downloadDatabase: mocks.downloadDatabase,
     announceLeadership: mocks.announceLeadership,
     localFetch: mocks.localFetch,
+    localUpload: mocks.localUpload,
     requestSecurityChange: mocks.requestSecurityChange
 }));
 vi.mock("./leader_election.js", () => ({
@@ -104,6 +106,7 @@ describe("bootstrap", () => {
         await vi.waitFor(() => expect(mocks.announceLeadership).toHaveBeenCalled());
         // The leader also answers the client's API calls directly, skipping that route.
         expect(window.standaloneApi?.localFetch).toBe(mocks.localFetch);
+        expect(window.standaloneApi?.localUpload).toBe(mocks.localUpload);
         // And its worker is the one holding the settings file, so it is the tab that can change
         // what this instance is allowed to run.
         expect(window.standaloneApi?.security).toBeDefined();
@@ -123,6 +126,7 @@ describe("bootstrap", () => {
         // A follower must keep calling through the service worker: with no worker of its own,
         // a localFetch here would answer from nothing.
         expect(window.standaloneApi?.localFetch).toBeUndefined();
+        expect(window.standaloneApi?.localUpload).toBeUndefined();
 
         // Nor can it change a security setting: the file that holds them is locked by the
         // leader's worker, which this tab has no way to reach.

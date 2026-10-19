@@ -150,4 +150,18 @@ export interface StandaloneApi {
      * would pay the XHR → service worker → page round trip to end up in the same worker.
      */
     localFetch?(request: Request): Promise<Response>;
+    /**
+     * Sends a multipart upload to the same worker as `localFetch`, passing the picked `File` by
+     * reference instead of reading it into the request body. Set alongside `localFetch`.
+     */
+    localUpload?(url: string, init: StandaloneUploadInit): Promise<Response>;
+}
+
+/** A multipart upload for {@link StandaloneApi.localUpload}: the form's text fields and its one file. */
+export interface StandaloneUploadInit {
+    method: string;
+    headers?: Record<string, string>;
+    fields: Record<string, string>;
+    /** Sent as the form's `upload` field, as multer expects on the server. */
+    file?: File;
 }

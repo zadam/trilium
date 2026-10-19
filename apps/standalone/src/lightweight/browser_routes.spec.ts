@@ -157,6 +157,7 @@ describe("registerRoutes (real wiring)", () => {
 describe("route wrapper branches (via controlled handlers)", () => {
     type RouteCtx = Parameters<typeof routes.buildSharedApiRoutes>[0];
     let ctx: RouteCtx;
+    const receivedFiles: { import?: unknown; upload?: unknown } = {};
 
     function buildRouter(): BrowserRouter {
         vi.spyOn(routes, "buildSharedApiRoutes").mockImplementation((received: RouteCtx) => {
@@ -184,6 +185,13 @@ describe("route wrapper branches (via controlled handlers)", () => {
             asyncRoute("get", "/t/async-res", [], async (_req: unknown, res: MockRes) => { res.send("async-body"); });
             asyncRoute("get", "/t/async-noresult", [], async () => ({ done: true }));
             asyncRouteWithoutTransaction("get", "/t/async-no-tx", [], async () => ({ bare: true }), apiResultHandler);
+
+            asyncRoute("post", "/t/import", [ received.importMiddlewareWithErrorHandling ], async (req: { file?: unknown }) => {
+                receivedFiles.import = req.file;
+            }, apiResultHandler);
+            route("post", "/t/upload", [ received.uploadMiddlewareWithErrorHandling ], (req: { file?: unknown }) => {
+                receivedFiles.upload = req.file;
+            }, apiResultHandler);
         });
         return createConfiguredRouter();
     }
@@ -267,6 +275,18 @@ describe("route wrapper branches (via controlled handlers)", () => {
         expect(parseJson((await router.dispatch("GET", "http://localhost/api/script/widgets")).body)).toEqual([]);
         expect(parseJson((await router.dispatch("GET", "http://localhost/api/script/startup")).body)).toEqual([]);
         expect(parseJson((await router.dispatch("GET", "http://localhost/api/system-checks")).body)).toEqual({ isCpuArchMismatch: false });
+    });
+
+    it("leaves a posted File unread for the import routes and reads it for the others", async () => {
+        const router = buildRouter();
+        const file = new File([ "abc" ], "vault.zip", { type: "application/zip" });
+        const body = { type: "upload", fields: {}, file };
+
+        await router.dispatch("POST", "http://localhost/t/import", body);
+        await router.dispatch("POST", "http://localhost/t/upload", body);
+
+        expect(receivedFiles.import).toEqual({ originalname: "vault.zip", mimetype: "application/zip", blob: file });
+        expect(receivedFiles.upload).toMatchObject({ buffer: new TextEncoder().encode("abc") });
     });
 
     it("provides no-op middleware and an init guard", async () => {
