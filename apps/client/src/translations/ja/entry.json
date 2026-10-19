@@ -134,7 +134,11 @@
         "unlock-refused": "入力された情報は受け付けられませんでした。もう一度お試しください。",
         "keep-existing": "アプリに戻る",
         "keep-existing-description": "既存のナレッジベースを引き続き使用して、アプリに戻ります。",
-        "backup-saved-to": "バックアップは {{- location}} に保存されました。 \"完了\" を押してアプリケーションに戻ってください。"
+        "backup-saved-to": "バックアップは {{- location}} に保存されました。 \"完了\" を押してアプリケーションに戻ってください。",
+        "sync-from-server-failed": "同期に失敗しました",
+        "server-totp-token": "ワンタイムパスワードまたはリカバリーコード（任意）",
+        "totp-required": "このサーバーには、ワンタイムパスワードまたはリカバリーコードが必要です。",
+        "wrong-totp": "ワンタイムパスワードまたはリカバリーコードが正しくありません。もう一度お試しください。"
     },
     "login": {
         "heading": "Trilium Notes にログイン",
