@@ -13,6 +13,11 @@
   display: block;
 }
 
+/* Outranks `body.mobile .dropdown-menu` in theme-next/menus.css, which makes it relative. */
+.excalidraw-wrapper .excalidraw .dropdown-menu {
+  position: absolute;
+}
+
 /* Excalidraw pads its toolbars by these insets, which it reads from `env()` on `:root`.
    `#root-widget` and `#mobile-bottom-bar` already keep clear of the top and bottom insets. */
 .excalidraw-wrapper {
