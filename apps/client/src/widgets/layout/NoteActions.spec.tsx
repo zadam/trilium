@@ -304,7 +304,7 @@ describe("NoteContextMenu", () => {
         expect(await isExportEnabled(buildNote({ id: "_optionsExportPage", title: "Options page" }))).toBe(false);
     });
 
-    it("puts the strip of tiles first on a phone, led by the tiles it is given", async () => {
+    it("puts the strip of tiles first on a phone, led by the tiles it is given, and leaves the attachments to the caller", async () => {
         ctrl.mobile = true;
         const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
         const noteContext = new NoteContext("ntx-phone");
@@ -327,8 +327,7 @@ describe("NoteContextMenu", () => {
 
             const first = popup()?.querySelector(".tn-menu-scroll > :first-child");
             const tiles = [ ...first?.querySelectorAll<HTMLElement>(".tn-menu-action") ?? [] ];
-            expect(tiles.map((tile) => tile.textContent?.trim())).toEqual([ "child", "note_actions.search_in_note_short",
-                "note_actions.note_attachments_short", "note_actions.note_map", "right_pane.tab_attributes" ]);
+            expect(tiles.map((tile) => tile.textContent?.trim())).toEqual([ "child", "note_actions.search_in_note_short", "note_actions.note_map" ]);
             const start = popup()?.querySelector("li.dropdown-item:has(.bx-link)");
             expect(start).toBeTruthy();
             expect(first?.compareDocumentPosition(start as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);

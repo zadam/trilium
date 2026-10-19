@@ -109,7 +109,6 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], it
     const searchInNote = useCommandTrigger("findInText");
     const showAttachments = useCommandTrigger("showAttachments");
     const showNoteMap = useCommandTrigger("toggleRibbonTabNoteMap");
-    const showNoteAttributes = useCommandTrigger("showNoteAttributes");
     /** The actions that look into the note, drawn as a strip of tiles at the top of the menu. */
     const viewActions: MenuCommandItem<CommandNames>[] = [
         ...leadingViewActions,
@@ -118,29 +117,23 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], it
             uiIcon: "bx bx-file-find", keyboardShortcut: "findInText" as const, enabled: isSearchable,
             handler: () => searchInNote?.()
         } ]),
-        {
+        // The mobile menu lists the attachments in a row of its own, beside the attributes.
+        ...(isMobile ? [] : [ {
             title: t("note_actions.note_attachments_short"), tooltip: t("note_actions.note_attachments"),
             uiIcon: "bx bx-paperclip", enabled: !isInOptionsOrHelp,
             handler: () => showAttachments?.()
-        },
+        } ]),
         ...(isInPopup ? [] : [ {
             title: t("note_actions.note_map"),
             uiIcon: "bx bxs-network-chart", keyboardShortcut: "toggleRibbonTabNoteMap" as const, enabled: !isInOptionsOrHelp,
             handler: () => showNoteMap?.()
-        } ]),
-        // The attributes panel is a right pane tab where there is a right pane; on a phone the menu
-        // is where it is reached, and a modal is where it is shown.
-        ...(isMobile ? [ {
-            title: t("right_pane.tab_attributes"), tooltip: t("note_actions.note_attributes_title"),
-            uiIcon: "bx bx-list-check", enabled: !isInOptionsOrHelp,
-            handler: () => showNoteAttributes?.()
-        } ] : [])
+        } ])
     ];
-    const viewStrip = <>
-        {viewActions.length > 1
-            ? <MenuItemRows items={[ { kind: "actions", items: viewActions } ]} />
-            // The quick edit popup leaves only the attachments, too few for a strip.
-            : <CommandItem command="showAttachments" icon="bx bx-paperclip" disabled={isInOptionsOrHelp} text={t("note_actions.note_attachments")} />}
+    const viewStrip = viewActions.length > 0 && <>
+        <MenuItemRows items={viewActions.length > 1
+            ? [ { kind: "actions", items: viewActions } ]
+            // One action, as in the quick edit popup, is too few for a strip, so it is a row under its full name.
+            : viewActions.map((item) => ({ ...item, title: item.tooltip ?? item.title }))} />
         <FormDropdownDivider />
     </>;
     // Keyboard shortcuts.

@@ -108,10 +108,11 @@ Notes deleted without erasing can be brought back, see <a class="reference-link
 
 On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the note menu opens as a sheet from the bottom of the screen. Besides the entries above, it contains the items that the desktop layout places elsewhere:
 
-*   _Backlinks_ and _Note paths_, at the top, which open the <a class="reference-link" href="../../Note%20Types/Text/Links/Backlinks.md">Backlinks</a> and the other locations of the note.
+*   <span class="tn-icon bx bx-plus"></span> _Child note_, first in the row of icons at the very top of the sheet, which creates a note under the current one.
+*   _Backlinks_ and _Note paths_, below the row of icons, which open the <a class="reference-link" href="../../Note%20Types/Text/Links/Backlinks.md">Backlinks</a> and the other locations of the note.
+*   <span class="tn-icon bx bx-paperclip"></span> _Attachments_ and <span class="tn-icon bx bx-list-check"></span> _Attributes_, under them, which open the attachments and the attributes of the note. On mobile, _Attachments_ is listed here instead of in the row of icons.
 *   The custom buttons of the note type (such as <span class="tn-icon bx bx-download"></span>_Download_ on a <a class="reference-link" href="../../Note%20Types/File.md">File</a>).
 *   _Create new split_ and _Close this pane_, to manage the <a class="reference-link" href="Split%20View.md">Split View</a>.
-*   Two more icons in the row of icons, which sits at the very top of the sheet: <span class="tn-icon bx bx-plus"></span> _Child note_, first, which creates a note under the current one, and <span class="tn-icon bx bx-list-check"></span> _Attributes_, last, which opens the attributes of the note.
 *   On <a class="reference-link" href="../../Note%20Types/Text.md">Text</a> notes, the content language (see <a class="reference-link" href="../../Note%20Types/Text/Content%20language%20%26%20Right-to-left%20support.md">Content language &amp; Right-to-left support</a>); on <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> notes, the language of the code.
 *   _Note info_ and <a class="reference-link" href="../Navigation/Similar%20Notes.md">Similar Notes</a>.
 *   _Note map_ opens the map in a popup instead of the right sidebar.

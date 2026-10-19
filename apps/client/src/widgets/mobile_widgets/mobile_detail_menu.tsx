@@ -8,7 +8,7 @@ import { t } from "../../services/i18n";
 import note_create from "../../services/note_create";
 import server from "../../services/server";
 import { useLanguageSwitcher } from "../dialogs/content_languages";
-import { NoteContextMenu } from "../layout/NoteActions";
+import { CommandItem, NoteContextMenu } from "../layout/NoteActions";
 import NoteActionsCustom from "../layout/NoteActionsCustom";
 import { codeLanguageItems, useMimeTypes } from "../layout/NoteTypeSwitcher";
 import { getLocaleName, NoteInfoContent, SimilarNotesList } from "../layout/StatusBar";
@@ -33,6 +33,7 @@ export default function MobileDetailMenu() {
     const [ similarNotesModalShown, setSimilarNotesModalShown ] = useState(false);
     const sortedNotePaths = useSortedNotePaths(note, hoistedNoteId);
     const backlinksCount = useBacklinkCount(note, viewScope?.viewMode === "default");
+    const isInOptionsOrHelp = !!note && (note.noteId.startsWith("_options") || note.noteId.startsWith("_help"));
 
     function closePane() {
         // Wait first for the context menu to be dismissed, otherwise the backdrop stays on.
@@ -67,6 +68,14 @@ export default function MobileDetailMenu() {
                                     onClick={() => setNotePathsModalShown(true)}
                                     disabled={(sortedNotePaths?.length ?? 0) <= 1}
                                 >{t("status_bar.note_paths", { count: sortedNotePaths?.length })}</FormListItem>
+                            </div>
+                            <div className="form-list-col">
+                                <CommandItem command="showAttachments" icon="bx bx-paperclip"
+                                    disabled={isInOptionsOrHelp} text={t("note_actions.note_attachments_short")} />
+                            </div>
+                            <div className="form-list-col">
+                                <CommandItem command="showNoteAttributes" icon="bx bx-list-check"
+                                    disabled={isInOptionsOrHelp} text={t("right_pane.tab_attributes")} />
                             </div>
                         </div>
                         <FormDropdownDivider />
