@@ -20,7 +20,8 @@ apps/mobile/android/app/src/main/java/org/triliumnotes/trilium/
     TriliumWebViewClient.java              # routes requests to TriliumRequestBridge and NativeHttpProxy, builds the WebResourceResponse
     TriliumFileSink.java                   # binary file-write channel (WebMessageListener + ArrayBuffer, Android only)
 apps/mobile/ios/App/App/ViewController.swift   # re-types the capacitor:// scheme handler; keyboard handling, --tn-keyboard-gap
-apps/mobile/ios/App/App/TriliumRequestBridge.swift   # TriliumAssetHandler + TriliumRequestBridge: local API requests answered by the page
+apps/mobile/ios/App/App/TriliumRequestBridge.swift   # WebKit adapter: TriliumAssetHandler, script message handler, WebKitSchemeTask
+apps/mobile/ios/RequestBroker/             # Swift package: RequestBroker.swift (request logic, no WebKit; the App target compiles it) + its tests
 apps/standalone/src/main.ts                # boot: native HTTP handler and native request bridge if `Capacitor` in window, else the SW
 apps/standalone/src/native-request-bridge.ts   # page side of both TriliumRequestBridges: localFetch() → head + chunks
 apps/standalone/src/services/capacitor_http_handler.ts   # NativeHttpHandler: Android proxy probe + CapacitorHttp fallback
@@ -175,7 +176,7 @@ pnpm --filter @triliumnext/mobile open:android   # Android Studio
 pnpm --filter @triliumnext/mobile run:ios | open:ios   # Xcode (macOS)
 ```
 
-CI: `mobile.yml` (pull requests) builds a debug APK via `.github/actions/build-mobile` and an unsigned iOS **Simulator** `.app` on macOS; `nightly.yml` calls the same action with `nightly: "true"` for the signed `assembleRelease` build under the `.nightly` app id. The action runs the Android JVM unit tests before assembling, and `mobile.yml` uploads their JaCoCo report to Codecov under the `mobile` flag; the JS unit tests live in the standalone suite.
+CI: `mobile.yml` (pull requests) builds a debug APK via `.github/actions/build-mobile` and an unsigned iOS **Simulator** `.app` on macOS; `nightly.yml` calls the same action with `nightly: "true"` for the signed `assembleRelease` build under the `.nightly` app id. The action runs the Android JVM unit tests before assembling, and `mobile.yml` uploads their JaCoCo report to Codecov under the `mobile` flag; a separate Ubuntu job runs `swift test` on `apps/mobile/ios/RequestBroker`; the JS unit tests live in the standalone suite.
 
 **Debugging on a device:** a *release*-type build (what `nightly.yml` produces) suppresses WebView
 console→logcat forwarding, so anything logged from JS is invisible to `adb logcat` and log-based
@@ -210,4 +211,13 @@ The project needs `cap sync android` (or `cap update android`) once first, for t
 - **Only Android-free classes are testable.** Unit tests compile against `android.jar`, whose classes (`Uri`, `Handler`, `Log`, `Base64`, `WebResourceResponse`) are stubs that throw "Method not mocked". Logic therefore lives in classes that import none of them (`LocalRequestBroker`, `NativeHttpProxy`, `InterceptedResponse`), with the WebView, the main thread, base64 and logging passed in; the `Trilium*` classes are thin adapters with no tests. Keep new native logic on the same side of that line.
 - **`org.json` comes from a `testImplementation` dependency**, since `android.jar`'s copy is a stub too. **`com.sun.net.httpserver` is not on the test classpath**, so `NativeHttpProxyTest` serves canned responses from a `ServerSocket` (`StubServer`).
 - **`minSdk` is 24**: `String.join` and `java.util.Base64` need API 26, so production code avoids them; tests can use them.
-- Swift has no harness in the repo; keep logic there minimal and mirror the protocol on the JS side, where it is testable.
+The iOS request logic has XCTest tests in a Swift package, `apps/mobile/ios/RequestBroker/`:
+
+```bash
+cd apps/mobile/ios/RequestBroker
+swift test                 # macOS, or Linux with the official swift.org toolchain
+```
+
+- **The App target compiles the package's source.** `RequestBroker.swift` is referenced from `project.pbxproj` by relative path (`../../RequestBroker/Sources/RequestBroker/RequestBroker.swift`), not imported as a package, so it lands in the App module next to `TriliumRequestBridge.swift`. The package sits outside `App/` so Xcode and `cap sync` never see its `Package.swift`.
+- **Same rule as Android: logic stays out of the WebKit side.** `RequestBroker` imports only Foundation (plus `FoundationNetworking` on Linux, for `HTTPURLResponse`) and talks to a `SchemeTask` protocol; script evaluation, scheduling and logging are passed in. `TriliumRequestBridge.swift` keeps only what needs WebKit and has no tests.
+- **nixpkgs' Swift cannot run `swift test` as is.** It lacks `libIndexStore.so`, which Linux test discovery reads, and its manifest runner does not find `libdispatch.so`. Copy the package elsewhere, add a `Tests/LinuxMain.swift` calling `XCTMain` with a hand-written `allTests` list, and run `swift test --disable-index-store` in `nix-shell -p swift swiftpm swiftPackages.{Foundation,XCTest,Dispatch}` with `LD_LIBRARY_PATH` pointing at those packages' libraries. Do not commit a `LinuxMain.swift`: CI's toolchain discovers tests itself.

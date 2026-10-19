@@ -17,6 +17,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		6DB328362F98030500787D66 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB328352F98030500787D66 /* ViewController.swift */; };
 		6DB328412F98050000787D66 /* TriliumRequestBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB328402F98050000787D66 /* TriliumRequestBridge.swift */; };
+		6DB328432F98050000787D66 /* RequestBroker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB328422F98050000787D66 /* RequestBroker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		6DB328352F98030500787D66 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		6DB328402F98050000787D66 /* TriliumRequestBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriliumRequestBridge.swift; sourceTree = "<group>"; };
+		6DB328422F98050000787D66 /* RequestBroker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RequestBroker.swift; path = ../../RequestBroker/Sources/RequestBroker/RequestBroker.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -68,6 +70,7 @@
 			children = (
 				6DB328352F98030500787D66 /* ViewController.swift */,
 				6DB328402F98050000787D66 /* TriliumRequestBridge.swift */,
+				6DB328422F98050000787D66 /* RequestBroker.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -163,6 +166,7 @@
 			files = (
 				6DB328362F98030500787D66 /* ViewController.swift in Sources */,
 				6DB328412F98050000787D66 /* TriliumRequestBridge.swift in Sources */,
+				6DB328432F98050000787D66 /* RequestBroker.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
