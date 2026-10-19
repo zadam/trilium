@@ -145,6 +145,15 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
         };
     }, [ "x" in anchor ? undefined : anchor, anchorX, anchorY, placement, gap, capHeight, placedByStylesheet ]);
 
+    const inWrapper = useRef(!!portalClassName);
+    inWrapper.current = !!portalClassName;
+    useLayoutEffect(() => {
+        const popup = popupRef.current;
+        return () => {
+            if (popup) playClosing(popup, inWrapper.current);
+        };
+    }, []);
+
     const dismiss = useRef(onDismiss);
     dismiss.current = onDismiss;
     const escapes = useRef(escapeDismisses);
@@ -220,6 +229,48 @@ function swallowStrayClick(pressed: Node) {
     };
     window.addEventListener("click", onClick, true);
     window.addEventListener("pointerdown", stop, true);
+}
+
+/**
+ * Leaves an inert copy of `popup`, which is being removed, to play its closing animation (see
+ * Popup.css), and removes the copy once that ends. The popup itself goes at once, so focus and
+ * presses never wait on the animation. The copy keeps the wrapper the popup stands in, which CSS
+ * rules that place it are scoped under.
+ */
+function playClosing(popup: HTMLElement, inWrapper: boolean) {
+    if (popup.dataset.reveal === undefined || popup.style.visibility !== "visible") return;
+    const root = inWrapper ? popup.parentElement : popup;
+    const container = root?.parentElement;
+    if (!root || !container) return;
+
+    const copy = root.cloneNode(true) as HTMLElement;
+    const copiedPopup = inWrapper ? copy.querySelector<HTMLElement>(":scope > .tn-popup") : copy;
+    if (!copiedPopup) return;
+    copiedPopup.dataset.closing = "";
+    copiedPopup.setAttribute("inert", "");
+    copiedPopup.setAttribute("aria-hidden", "true");
+    for (const element of [ copy, ...copy.querySelectorAll("[id]") ]) {
+        element.removeAttribute("id");
+    }
+    // A copied frame or media element would load again.
+    for (const element of copy.querySelectorAll(":scope > .tn-dropdown-backdrop, iframe, video, audio")) {
+        element.remove();
+    }
+    container.append(copy);
+
+    const scrollers = (element: HTMLElement) => [ element, ...element.querySelectorAll<HTMLElement>(".tn-menu-scroll, .tn-panel-scroll") ];
+    const copiedScrollers = scrollers(copiedPopup);
+    for (const [ index, scroller ] of scrollers(popup).entries()) {
+        const copied = copiedScrollers.at(index);
+        if (copied) copied.scrollTop = scroller.scrollTop;
+    }
+
+    const animations = copiedPopup.getAnimations();
+    if (!animations.length) {
+        copy.remove();
+        return;
+    }
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => copy.remove());
 }
 
 /** Removes what `placeFloating()` wrote on `popup`, so the stylesheet places it. */
