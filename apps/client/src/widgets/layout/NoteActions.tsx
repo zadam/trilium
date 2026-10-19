@@ -309,32 +309,44 @@ function NoteBasicProperties({ note, focus, isInPopup, settingsItems }: {
         }
     </>;
 
+    const shared = <FormListToggleableItem
+        icon="bx bx-share-alt"
+        title={t("shared_switch.shared")}
+        currentValue={isShared} onChange={switchShareState}
+        helpPage="R9pX4DGra2Vt"
+        disabled={["root", "_share", "_hidden"].includes(note?.noteId ?? "") || note?.noteId.startsWith("_options")}
+        itemRef={itemToFocusRef}
+    />;
+    const protect = <FormListToggleableItem
+        icon="bx bx-lock-alt"
+        title={t("protect_note.toggle-on")}
+        currentValue={!!isProtected} onChange={shouldProtect => protected_session.protectNote(note.noteId, shouldProtect, false)}
+    />;
+    const bookmark = <FormListToggleableItem
+        icon="bx bx-bookmark"
+        title={t("bookmark_switch.bookmark")}
+        currentValue={isBookmarked} onChange={setIsBookmarked}
+        disabled={["root", "_hidden"].includes(note?.noteId ?? "")}
+    />;
+
+    if (getIsMobile()) {
+        return <>
+            {protect}
+            <FormDropdownSubmenu icon="bx bx-slider-alt" title={t("note_actions.note_settings")}>
+                {shared}
+                {bookmark}
+                <FormDropdownDivider />
+                {settings}
+            </FormDropdownSubmenu>
+        </>;
+    }
+
     return <>
-        <FormListToggleableItem
-            icon="bx bx-share-alt"
-            title={t("shared_switch.shared")}
-            currentValue={isShared} onChange={switchShareState}
-            helpPage="R9pX4DGra2Vt"
-            disabled={["root", "_share", "_hidden"].includes(note?.noteId ?? "") || note?.noteId.startsWith("_options")}
-            itemRef={itemToFocusRef}
-        />
-        <FormListToggleableItem
-            icon="bx bx-lock-alt"
-            title={t("protect_note.toggle-on")}
-            currentValue={!!isProtected} onChange={shouldProtect => protected_session.protectNote(note.noteId, shouldProtect, false)}
-        />
-        <FormListToggleableItem
-            icon="bx bx-bookmark"
-            title={t("bookmark_switch.bookmark")}
-            currentValue={isBookmarked} onChange={setIsBookmarked}
-            disabled={["root", "_hidden"].includes(note?.noteId ?? "")}
-        />
-
+        {shared}
+        {protect}
+        {bookmark}
         <FormDropdownDivider />
-
-        {getIsMobile()
-            ? <FormDropdownSubmenu icon="bx bx-slider-alt" title={t("note_actions.note_settings")}>{settings}</FormDropdownSubmenu>
-            : settings}
+        {settings}
     </>;
 }
 

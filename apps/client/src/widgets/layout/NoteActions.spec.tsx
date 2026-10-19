@@ -335,7 +335,9 @@ describe("NoteContextMenu", () => {
             // The settings a note is given once are one row, which opens them.
             const topRows = [ ...popup()?.querySelectorAll(".tn-menu-scroll > li.dropdown-item") ?? [] ].map((row) => row.textContent ?? "");
             expect(topRows.some((text) => text.includes("note_actions.note_settings"))).toBe(true);
-            expect(topRows.some((text) => text.includes("basic_properties.note_type") || text.includes("template_switch.template"))).toBe(false);
+            expect(topRows.some((text) => [ "basic_properties.note_type", "template_switch.template", "shared_switch.shared", "bookmark_switch.bookmark" ]
+                .some((key) => text.includes(key)))).toBe(false);
+            expect(topRows.some((text) => text.includes("protect_note.toggle-on"))).toBe(true);
 
             await act(async () => tiles[0]?.click());
             expect(createChild).toHaveBeenCalledOnce();
