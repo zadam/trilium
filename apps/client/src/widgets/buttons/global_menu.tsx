@@ -49,10 +49,8 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
                 <FormDropdownDivider />
             </>}
 
-            <MenuItem command="openNewWindow" icon="bx bx-window-open" text={t("global_menu.open_new_window")} />
-            <MenuItem command="showShareSubtree" icon="bx bx-share-alt" text={t("global_menu.show_shared_notes_subtree")} />
+            {!isMobile() && <MenuItem command="openNewWindow" icon="bx bx-window-open" text={t("global_menu.open_new_window")} />}
             <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
-            <KeyboardActionMenuItem command="showSpaceUsage" icon="bx bx-pie-chart-alt-2" text={t("global_menu.show_space_usage")} />
             <FormDropdownDivider />
 
             <ZoomControls parentComponent={parentComponent} />
@@ -60,14 +58,14 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
             <KeyboardActionMenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
             <FormDropdownDivider />
 
-            <SwitchToOptions />
+            {!isMobile() && <SwitchToOptions />}
             <MenuItem command="showLaunchBarSubtree" icon={`bx ${isMobile() ? "bx-mobile" : "bx-sidebar"}`} text={t("global_menu.configure_launchbar")} />
             <AdvancedMenu />
             <MenuItem command="showOptions" icon="bx bx-cog" text={t("global_menu.options")} />
             <FormDropdownDivider />
 
             <KeyboardActionMenuItem command="showHelp" icon="bx bx-help-circle" text={t("global_menu.show_help")} />
-            <KeyboardActionMenuItem command="showCheatsheet" icon="bx bxs-keyboard" text={t("global_menu.show-cheatsheet")} />
+            {!isMobile() && <KeyboardActionMenuItem command="showCheatsheet" icon="bx bxs-keyboard" text={t("global_menu.show-cheatsheet")} />}
             <MenuItem command="openAboutDialog" icon="bx bx-info-circle" text={t("global_menu.about")} />
 
             {isUpdateAvailable &&  <>
@@ -85,6 +83,8 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
 function AdvancedMenu() {
     return (
         <FormDropdownSubmenu icon="bx bx-chip" title={t("global_menu.advanced")}>
+            <MenuItem command="showShareSubtree" icon="bx bx-share-alt" text={t("global_menu.show_shared_notes_subtree")} />
+            <KeyboardActionMenuItem command="showSpaceUsage" icon="bx bx-pie-chart-alt-2" text={t("global_menu.show_space_usage")} />
             <MenuItem command="showHiddenSubtree" icon="bx bx-hide" text={t("global_menu.show_hidden_subtree")} />
             <MenuItem command="showSearchHistory" icon="bx bx-search-alt" text={t("global_menu.open_search_history")} />
             <FormDropdownDivider />
@@ -96,6 +96,11 @@ function AdvancedMenu() {
 
             {isElectron() && <MenuItem command="openDevTools" icon="bx bx-bug-alt" text={t("global_menu.open_dev_tools")} />}
             <KeyboardActionMenuItem command="reloadFrontendApp" icon="bx bx-refresh" text={t("global_menu.reload_frontend")} title={t("global_menu.reload_hint")} />
+
+            {isMobile() && <>
+                <FormDropdownDivider />
+                <SwitchToOptions />
+            </>}
         </FormDropdownSubmenu>
     );
 }

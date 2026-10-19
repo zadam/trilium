@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Shared, mutable control state for the mocks below. `vi.hoisted` runs before the hoisted `vi.mock`
 // factories, so they can safely reference it.
-const ctrl = vi.hoisted(() => ({ standalone: false, checkForUpdates: true }));
+const ctrl = vi.hoisted(() => ({ standalone: false, checkForUpdates: true, mobile: false }));
 
 // `isStandalone` is a const in the target, read here as a live getter so each scenario can flip the
 // kind of client we are pretending to be. Partial-mock so the rest of utils stays real — in
@@ -13,8 +13,12 @@ vi.mock("../../services/utils", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../../services/utils")>()),
     get isStandalone() {
         return ctrl.standalone;
-    }
+    },
+    isMobile: () => ctrl.mobile
 }));
+
+// The rows are read by their keys.
+vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
 
 // The hook reads the user's preference through `useTriliumOptionBool`; stub just that one, so the
 // other hooks the menu pulls in keep their real implementation.
@@ -24,7 +28,7 @@ vi.mock("../react/hooks", async (importOriginal) => ({
 }));
 
 // Import AFTER the mocks (vi.mock is hoisted, but the import must resolve the mocked deps).
-import { parseLatestVersion, RELEASES_API_URL, UPDATE_CHECK_INTERVAL, useTriliumUpdateStatus } from "./global_menu";
+import GlobalMenu, { parseLatestVersion, RELEASES_API_URL, UPDATE_CHECK_INTERVAL, useTriliumUpdateStatus } from "./global_menu";
 
 let status: ReturnType<typeof useTriliumUpdateStatus> | undefined;
 let container: HTMLDivElement | undefined;
@@ -65,6 +69,7 @@ beforeEach(() => {
     vi.useFakeTimers();
     ctrl.standalone = false;
     ctrl.checkForUpdates = true;
+    ctrl.mobile = false;
     status = undefined;
 
     window.glob = { ...window.glob, triliumVersion: "0.104.0" };
@@ -147,5 +152,70 @@ describe("parseLatestVersion", () => {
         expect(parseLatestVersion({})).toBeUndefined();
         expect(parseLatestVersion(undefined)).toBeUndefined();
         expect(parseLatestVersion({ tag_name: 104 })).toBeUndefined();
+    });
+});
+
+describe("GlobalMenu", () => {
+    const popup = () => document.querySelector<HTMLElement>(".tn-popup:not([data-closing])");
+    /** The keys of the rows at the top of the menu, or of the submenu page open over it. */
+    const rows = (scope: Element | null | undefined) => [ ...scope?.querySelectorAll(":scope > li.dropdown-item, :scope > .dropdown-item") ?? [] ]
+        .map((row) => row.textContent?.trim());
+
+    async function openAdvanced() {
+        await act(async () => {
+            if (container) render(<GlobalMenu isHorizontalLayout />, container);
+        });
+        const toggle = container?.querySelector<HTMLButtonElement>("button.global-menu-button");
+        await act(async () => toggle?.click());
+        await vi.waitFor(() => expect(popup()).not.toBeNull());
+        const topLevel = rows(popup()?.querySelector(".tn-menu-scroll"));
+
+        const advanced = [ ...popup()?.querySelectorAll<HTMLElement>("li.dropdown-submenu") ?? [] ]
+            .find((row) => row.textContent?.includes("global_menu.advanced"));
+        // A phone opens a submenu as a page over the menu; a desktop beside it, on hover.
+        const opened = () => popup()?.querySelector(":scope > .tn-menu-page .tn-menu-scroll")
+            ?? popup()?.querySelector(":scope > div.dropdown-submenu > .dropdown-menu .tn-menu-scroll");
+        await act(async () => {
+            if (ctrl.mobile) advanced?.click();
+            else advanced?.dispatchEvent(new PointerEvent("pointerenter"));
+        });
+        await vi.waitFor(() => expect(opened()).toBeTruthy());
+        return { topLevel, advanced: rows(opened()) };
+    }
+
+    beforeEach(() => {
+        vi.useRealTimers();
+        container = document.body.appendChild(document.createElement("div"));
+        // Without slides, a submenu's page goes as soon as it closes.
+        document.body.classList.add("motion-disabled");
+    });
+
+    afterEach(() => {
+        document.body.classList.remove("motion-disabled");
+    });
+
+    it("keeps the shared notes and space usage views in Advanced", async () => {
+        const { topLevel, advanced } = await openAdvanced();
+
+        expect(topLevel.some((row) => row?.startsWith("global_menu.open_new_window"))).toBe(true);
+        expect(topLevel.some((row) => row?.startsWith("global_menu.show_shared_notes_subtree"))).toBe(false);
+        expect(topLevel.some((row) => row?.startsWith("global_menu.show_space_usage"))).toBe(false);
+        expect(advanced.slice(0, 2).map((row) => row?.split(/\s/)[0])).toEqual([ "global_menu.show_shared_notes_subtree", "global_menu.show_space_usage" ]);
+    });
+
+    it("moves what a phone rarely needs into Advanced, and leaves out what it cannot use", async () => {
+        ctrl.mobile = true;
+        const { topLevel, advanced } = await openAdvanced();
+
+        expect(topLevel).toContain("global_menu.show_deleted_notes");
+        for (const key of [ "global_menu.open_new_window", "global_menu.show-cheatsheet", "global_menu.show_shared_notes_subtree",
+            "global_menu.show_space_usage", "global_menu.switch_to_desktop_version" ]) {
+            expect(topLevel.some((row) => row?.startsWith(key))).toBe(false);
+        }
+        expect(advanced.some((row) => row?.startsWith("global_menu.show_shared_notes_subtree"))).toBe(true);
+        expect(advanced.some((row) => row?.startsWith("global_menu.show_space_usage"))).toBe(true);
+        expect(advanced.at(-1)).toBe("global_menu.switch_to_desktop_version");
+        expect([ ...topLevel, ...advanced ].some((row) => row?.startsWith("global_menu.open_new_window"))).toBe(false);
+        expect([ ...topLevel, ...advanced ].some((row) => row?.startsWith("global_menu.show-cheatsheet"))).toBe(false);
     });
 });
