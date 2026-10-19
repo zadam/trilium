@@ -1546,7 +1546,7 @@
     "text_snippet_description": "このテキストスニペットを挿入する際に、その横に表示される説明。",
     "execute_title": "このコードノートが実行されるタブのタイトル。",
     "clipper_inbox": "Web Clipper が収集したデータの保存先を、その日のノートではなく代わり場所に指定する。",
-    "clip_type": "Web Clipper がどのようにこのノートを作成したかを記録します。例 <code>clippings</code>。",
+    "clip_type": "このノートがどのように保存されたかを記録します: Web クリッパー経由（例: <code>clippings</code>）、またはシステムの共有メニュー経由（<code>share</code>）。",
     "sent_from_sender": "Trilium 内で作成されたものではなく、送信者を通じて取り込まれたノートであることをマークします。",
     "hide_children_overview": "このノートコンテンツの下に表示されている子ノートのリストを非表示にする。",
     "media_notes_play_mode": "トラックの再生が終了したときにメディアプレーヤーが行う動作。例 次へ進む <code>next</code>。",
@@ -1673,7 +1673,11 @@
     "show_title": "タイトルを表示",
     "show_caption": "キャプションを表示",
     "editable": "編集可能",
-    "convert_link_to_note_excerpt": "リンクをノートの抜粋に変換"
+    "convert_link_to_note_excerpt": "リンクをノートの抜粋に変換",
+    "line_numbers": "行番号",
+    "line_numbers_auto": "自動",
+    "line_numbers_on": "オン",
+    "line_numbers_off": "オフ"
   },
   "note_tooltip": {
     "quick-edit": "クイック編集",
@@ -3869,7 +3873,8 @@
       "add-a-tab-after-the-current-one": "現在のタブの後にタブを追加",
       "add-a-tab-before-the-current-one": "現在のタブの前にタブを追加",
       "scroll-to-the-previous-tabs": "前のタブエリアへスクロール",
-      "scroll-to-the-next-tabs": "次のタブエリアへスクロール"
+      "scroll-to-the-next-tabs": "次のタブエリアへスクロール",
+      "box-size-0": "ボックスサイズ: %0"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
@@ -4159,7 +4164,7 @@
     "inheritable": "継承可能: このノートとそのサブツリー全体に適用されます",
     "delete": "この属性を削除",
     "delete_confirm": "属性 \"{{name}}\" を削除しますか？",
-    "add_definition": "新しい定義を追加",
+    "add_definition": "定義を追加",
     "no_target": "対象のノートなし",
     "type_label": "ラベル",
     "type_relation": "リレーション",
@@ -4172,7 +4177,23 @@
     "system_hint": "システム: この名前には組み込みの意味があります",
     "add_attribute": "属性を追加",
     "creation_kind_label": "ラベル: ここをクリックするか、「~」と入力するとリレーションになります",
-    "creation_kind_relation": "リレーション: ここをクリックするか、「#」と入力するとラベルになります"
+    "creation_kind_relation": "リレーション: ここをクリックするか、「#」と入力するとラベルになります",
+    "section_owned": "所有",
+    "section_inherited": "継承",
+    "section_definitions": "定義",
+    "section_internal": "内部",
+    "copy_other": "{{count}} 件の属性をコピー",
+    "paste_other": "{{count}} 件の属性を貼り付け",
+    "selected_other": "{{count}} 件を選択中",
+    "copied_other": "{{count}} 件の属性をコピーしました",
+    "pasted_other": "{{count}} 件の属性を貼り付けました",
+    "nothing_to_paste": "クリップボードに属性はありません。",
+    "paste_failed": "クリップボードの内容を属性として読み込めませんでした: {{- message}}",
+    "delete_selection_other": "{{count}} 件の属性を削除",
+    "delete_selection_confirm": "選択した {{count}} 件の属性を削除しますか？",
+    "clear_clipboard": "クリップボードをクリア",
+    "to_copy_other": "コピーする属性 {{count}} 件",
+    "select_all": "すべて選択"
   },
   "attribute_names": {
     "system": "システム",
