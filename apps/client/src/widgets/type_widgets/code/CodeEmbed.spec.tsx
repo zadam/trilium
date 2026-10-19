@@ -301,13 +301,18 @@ describe("CodeEmbed", () => {
         await vi.waitFor(() => expect(closedView.state.doc.toString()).toBe("# if a:\n    b"));
     });
 
-    it("re-indents the unsaved changes that another embed of the same note made", async () => {
+    it("re-indents another embed's unsaved changes as a step of the note's undo", async () => {
         options.set("codeNoteTabWidth", "4");
         options.set("codeNoteIndentWithTabs", "false");
         options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python" ]));
         vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
+        const element = document.createElement("div");
+        document.body.append(element);
+        const textEditor = await AttributeEditor.create(element, {
+            licenseKey: "GPL", extraPlugins: [ EmbedHistory ]
+        });
         const note = buildCodeNote("if a:\n    b");
-        const editor = buildSavingEditor(note);
+        const editor = buildSavingEditor(note, new EmbedHistories(() => textEditor));
         const { figure: editing } = await mount(note, editor, { isEditable: true });
         const { figure: previewing } = await mount(note, editor);
         const view = await findView(editing);
@@ -315,6 +320,11 @@ describe("CodeEmbed", () => {
 
         await selectMenuItem(previewing, "tabWidth", "status_bar.tab_width_style_tabs", true);
         expect(editor.getUnsavedContent()).toBe("# if a:\n\tb");
+        act(() => textEditor.execute("undo"));
+        expect(editor.getUnsavedContent()).toBe("# if a:\n    b");
+
+        await textEditor.destroy();
+        element.remove();
     });
 
     it("keeps the language and indentation of a file in its embed, set from its toolbar", async () => {

@@ -164,8 +164,11 @@ text editor's undo stack, in order with the text's own changes. Three layers:
   attaches it while mounted, read-only included.
 
 Content loaded from elsewhere goes through `view.loadText()`, which stays out of the history; a
-`setText()` (re-indent) is a step. Another editor joins by pushing its own steps to `EmbedHistory`
-through the same `host`. Included text notes and drawing canvases keep their own history.
+`setText()` (re-indent) is a step. The `content` prop of `CodeEmbedEditor` loads, so a change made
+while read-only (the re-indent stand-in in `CodeEmbed.tsx`) calls `setText()` on the read-only view,
+after loading the unsaved content of the other embeds into it, or Undo skips it or reverts their
+edits. Another editor joins by pushing its own steps to `EmbedHistory` through the same `host`.
+Included text notes and drawing canvases keep their own history.
 
 ## Recipe: a new source embed (a diagram language)
 
