@@ -65,6 +65,8 @@ body#trilium-app.backdrop-effects-disabled *::after {
     --submenu-opening-delay: 150ms;
     --launcher-pane-size: 53px;
     --bs-body-color: var(--main-text-color);
+    /* What a menu, the sidebar or a dialog dims the page behind it with in the phone layout. */
+    --mobile-backdrop-color: rgba(0, 0, 0, 0.5);
 }
 
 html {
@@ -1899,7 +1901,17 @@ pre.code-embed-editor.read-only .cm-activeLine {
     }
 
     body.mobile .modal.show {
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: var(--mobile-backdrop-color);
+    }
+
+    body.mobile .modal-backdrop {
+        background-color: transparent !important;
+    }
+
+    body.mobile > .tn-dropdown-portal > .tn-dropdown-backdrop,
+    body.mobile .tn-popover-backdrop {
+        background-color: var(--mobile-backdrop-color);
+        opacity: 1;
     }
 
     body.mobile .modal-dialog {

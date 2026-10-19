@@ -252,7 +252,7 @@ body.mobile #context-menu-cover {
     transition: background-color 150ms ease-in;
 
     &.show {
-        background: rgba(0, 0, 0, 0.32);
+        background: var(--mobile-backdrop-color);
 
         /* A tablet's menus open beside what opened them, undimmed; the cover only takes the tap
            that closes them. */
