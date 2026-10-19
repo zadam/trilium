@@ -513,6 +513,8 @@ export default function EditableText({
         };
 
         const scrollCaretIntoView = () => {
+            if (!isCaretInFocus(document.activeElement, window.getSelection())) return;
+
             const caretRect = getCaretRect();
             if (!caretRect) return;
             const scroller = findScrollableAncestor(window.getSelection()?.focusNode);
@@ -735,6 +737,16 @@ export function revealLinkTargetWhenReady(
     if (viewScope?.bookmark || viewScope?.block) {
         void ready.then(() => requestAnimationFrame(reveal));
     }
+}
+
+/**
+ * Whether focus is in an editable element that holds the selection. Focus taken by something else,
+ * such as a menu, leaves the selection behind in the editor, which is then no caret to scroll to.
+ */
+export function isCaretInFocus(focused: Element | null, selection: Selection | null) {
+    const focusNode = selection?.focusNode;
+    return focused instanceof HTMLElement && focused.isContentEditable
+        && !!focusNode && focused.contains(focusNode);
 }
 
 /** The blocks that an editor of the blocks `block` holds, preferring the ids of `block`. */
