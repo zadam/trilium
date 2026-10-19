@@ -377,6 +377,10 @@ Ní bheadh Trilium indéanta gan na teicneolaíochtaí atá taobh thiar de:
   atá taobh thiar de nótaí téacs.
 * [CodeMirror](https://github.com/codemirror/CodeMirror) - eagarthóir cóid le
   tacaíocht do líon ollmhór teangacha.
+* [Mermaid](https://github.com/mermaid-js/mermaid) - renders the diagrams of
+  Mermaid notes; its parsers are the model for their syntax highlighting.
+* [codemirror-lang-mermaid](https://github.com/inspirnathan/codemirror-lang-mermaid)
+  - the base of the Mermaid syntax highlighting.
 * [Excalidraw](https://github.com/excalidraw/excalidraw) - an clár bán gan
   teorainn a úsáidtear i nótaí Canvas.
 * [Intinn Elixir](https://github.com/SSShooter/mind-elixir-core) - ag soláthar

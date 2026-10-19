@@ -603,7 +603,6 @@
     "import_files": "ファイルをインポート...",
     "export_note": "ノートをエクスポート...",
     "delete_note": "ノートを削除...",
-    "print_note": "ノートを印刷...",
     "print_pdf": "PDFとしてエクスポート...",
     "convert_into_attachment": "添付ファイルに変換...",
     "save_revision": "変更履歴を保存",
@@ -836,7 +835,8 @@
     "open_all_in_tabs_tooltip": "すべての結果を新しいタブで開く",
     "open_all_confirm_other": "{{count}} 件のノートを新しいタブで開きます。続行しますか？",
     "dashboard": "ダッシュボード",
-    "open_all_limit_exceeded": "一度に開こうとしているノートが多すぎます（{{count}}）。上限は {{max}} です。先に検索結果を絞り込んでください。"
+    "open_all_limit_exceeded": "一度に開こうとしているノートが多すぎます（{{count}}）。上限は {{max}} です。先に検索結果を絞り込んでください。",
+    "included_notes": "含まれるノート"
   },
   "note_types": {
     "geo-map": "ジオマップ",
@@ -1010,7 +1010,9 @@
     "delete_column_confirmation": "この列を本当に削除してもよろしいですか？対応する属性はすべてのノートから削除されます。",
     "delete-column": "列を削除...",
     "new-column-label": "ラベル...",
-    "new-column-relation": "リレーション..."
+    "new-column-relation": "リレーション...",
+    "properties": "表 プロパティ...",
+    "properties-title": "表 プロパティ"
   },
   "search_script": {
     "title": "検索スクリプト:",
@@ -1413,9 +1415,9 @@
     "run_on_instance": "どの Trilium インスタンスでこれを実行するかを定義します。デフォルトはすべてのインスタンスです。",
     "run_at_hour": "何時に実行するかを指定します。 <code>#run=hourly</code> と併用してください。1日に複数回実行したい場合は、複数回定義できます。",
     "disable_inclusion": "このラベルが付いたスクリプトは親スクリプトの実行には含まれません。",
-    "sorted": "子ノートをタイトルのアルファベット順に並べ替えます。値を指定すると、別の基準で並べ替えられます: その際、<code>title</code>、<code>dateCreated</code>、<code>dateModified</code>、またはラベル名をカンマで区切って指定し、必要に応じてそれぞれに <code>asc</code>（昇順）または <code>desc</code>（降順）を続けます（例: <code>priority desc, dueDate</code>）。",
-    "sort_direction": "<code>#sorted</code> ディレクティブ(指示)は子ノートの順序を指定します: <code>desc</code> なら降順、それ以外なら昇順となります。レベル(階層)指定の直後に <code>asc</code> や <code>desc</code> を記述しても無視されます。また、<code>#sorted</code> が設定されていない場合も無視されます。",
-    "sort_folders_first": "フォルダ（子を持つノート）を上にして並べる。",
+    "sorted": "子ノートをタイトルのアルファベット順で並べ替えます。値を指定すると、別の基準で並べ替えることも可能です: その場合、カンマ区切りのレベルで指定します。各レベルには、<code>#name</code> 形式のラベル、あるいは <code>title</code>,<code>dateCreated</code>,<code>dateModified</code> のいずれかを指定し、必要に応じて <code>asc</code>（昇順）または <code>desc</code>（降順）を付け加えます（例: <code>#priority desc, title</code>）。ラベルや <code>folders</code> の後に <code>first</code> または <code>last</code> を指定すると、それらに該当するノートをまとめて配置できます（例: <code>#archived last, folders first, title</code>）。<code>#</code> を付けずに名前だけを指定した場合は、そのプロパティ、あるいはその名前のラベルに基づいて並べ替えが行われます。",
+    "sort_direction": "ディレクション（方向指定）の <code>#sorted</code> は、子ノートを次の順序に並び替えます: <code>desc</code> を指定すると降順になり、それ以外の値を指定すると昇順になります。レベルの後に <code>asc</code>,<code>desc</code>,<code>first</code>,または <code>last</code> が指定された場合、それらは無視されます。なお、<code>#sorted</code> が設定されていない限り、これらの指定はすべて無視されます。",
+    "sort_folders_first": "フォルダ（子を持つノート）は最上部に並べ替えられます。ただし、<code>#sorted</code> で <code>folders</code> 自体の配置が指定されている場合（例: <code>folders last</code>）は、このルールは無視されます。",
     "top": "指定されたノートをその親ノートの一番上に表示します（並べ替えらた親ノートにのみ適用されます）。",
     "hide_promoted_attributes": "このノートのプロモート属性を非表示にする。",
     "read_only": "エディターは読み取り専用モードです。テキストとコードノートのみ機能します。",
@@ -1543,7 +1545,7 @@
     "text_snippet_description": "このテキストスニペットを挿入する際に、その横に表示される説明。",
     "execute_title": "このコードノートが実行されるタブのタイトル。",
     "clipper_inbox": "Web Clipper が収集したデータの保存先を、その日のノートではなく代わり場所に指定する。",
-    "clip_type": "Web Clipper がどのようにこのノートを作成したかを記録します。例 <code>clippings</code>。",
+    "clip_type": "このノートがどのように保存されたかを記録します: Web クリッパー経由（例: <code>clippings</code>）、またはシステムの共有メニュー経由（<code>share</code>）。",
     "sent_from_sender": "Trilium 内で作成されたものではなく、送信者を通じて取り込まれたノートであることをマークします。",
     "hide_children_overview": "このノートコンテンツの下に表示されている子ノートのリストを非表示にする。",
     "media_notes_play_mode": "トラックの再生が終了したときにメディアプレーヤーが行う動作。例 次へ進む <code>next</code>。",
@@ -1652,7 +1654,9 @@
     "modified_date": "クリップしたページの最終更新日。ノートの \"Web クリップ\" バッジの詳細に表示されます。",
     "calendar_title_template": "カレンダー上でのイベントの表示名（繰り返しイベントの場合は各回に適用されます）。<code>${title}</code>, <code>${years}</code>（開始日からの年数）、そして日付 <code>${date}</code> と <code>${startDate}</code> が表示されます。例: 毎年の誕生日であれば <code>${title} (${years})</code> と表示されます。",
     "board_hide_add_column": "ボードコレクションで、最後の列の後に表示される <em>列を追加</em> ボタンを非表示にします。ボードや列のコンテキストメニューから列を追加することは引き続き可能です。",
-    "meeting_recording": "ランチャーバーの \"ミーティングの文字起こし\" ボタンから作成されたノートを示します。このノートには、ミーティングの文字起こし内容が記録されます。"
+    "meeting_recording": "ランチャーバーの \"ミーティングの文字起こし\" ボタンから作成されたノートを示します。このノートには、ミーティングの文字起こし内容が記録されます。",
+    "template_title_template": "テンプレートノートに設定: このテンプレートから作成されるノートのデフォルトタイトルとして使用され、親ノート <code>#titleTemplate</code> の代わりに使用されます。<code>#titleTemplate</code> と同様に評価（変換）され、<code>now</code> と <code>parentNote</code> の変数が利用可能です。例: <code>Meeting ${now.format('YYYY-MM-DD')}</code>。",
+    "calendar_hide_routine_events": "週に {{days}} 日以上繰り返される予定を、月、年、リスト、の各表示から非表示にします。設定した値に応じて適用されます。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
@@ -1668,7 +1672,11 @@
     "show_title": "タイトルを表示",
     "show_caption": "キャプションを表示",
     "editable": "編集可能",
-    "convert_link_to_note_excerpt": "リンクをノートの抜粋に変換"
+    "convert_link_to_note_excerpt": "リンクをノートの抜粋に変換",
+    "line_numbers": "行番号",
+    "line_numbers_auto": "自動",
+    "line_numbers_on": "オン",
+    "line_numbers_off": "オフ"
   },
   "note_tooltip": {
     "quick-edit": "クイック編集",
@@ -1918,7 +1926,9 @@
     "html_support_enabled": "サポートされていない HTML タグを保持する",
     "html_support_description": "「オプション」→「その他」→「HTMLインポートタグ」に記載されている、エディタが独自機能を持たないHTMLタグを保持します。これらは直接編集できないブロックとして表示されますが、認識されないタグは編集画面上で全く表示されない場合もあります。この設定を無効にすると、該当するタグは、ノートを最初に編集・保存した時点で削除されます（インポート処理自体には影響しません）。",
     "mathlive_enabled": "MathLive ビジュアルエディター",
-    "mathlive_description": "ビジュアルエディターを使用して数式を編集できます。"
+    "mathlive_description": "ビジュアルエディターを使用して数式を編集できます。",
+    "sticky_table_headers_enabled": "表のヘッダー行を固定",
+    "sticky_table_headers_description": "表の残りの部分をスクロールしている間も、ヘッダー行がノートの上部に表示されたままになるようにします。"
   },
   "table_context_menu": {
     "delete_row": "行を削除...",
@@ -2016,7 +2026,6 @@
   "mobile_detail_menu": {
     "delete_this_note": "このノートを削除",
     "error_unrecognized_command": "認識されないコマンド {{command}}",
-    "insert_child_note": "子ノートを挿入",
     "error_cannot_get_branch_id": "ノートパス 「{{notePath}} のbranchIdを取得できません",
     "note_revisions": "ノートの変更履歴",
     "backlinks": "バックリンク",
@@ -2507,7 +2516,38 @@
     "draw-circle-toast-title": "円を描画",
     "draw-circle-instruction": "マップ上の中心をクリックし、円の半径となる位置を再度クリックします。中心からドラッグして描画することもできます。Esc キーを押すとキャンセルされます。",
     "image-unavailable": "このマップの画像を読み込めませんでした。map:image のリレーションが指し示しているノートが画像であることを確認してください。",
-    "image-svg-unsupported": "SVG 画像はマップとして使用できません。代わりに PNG、JPEG、または WebP 形式に変換してください。"
+    "image-svg-unsupported": "SVG 画像はマップとして使用できません。代わりに PNG、JPEG、または WebP 形式に変換してください。",
+    "properties": "ジオマップ プロパティ...",
+    "properties-title": "ジオマップ プロパティ",
+    "general": "一般",
+    "image-note": "画像ノート",
+    "image-note-description": "PNG、JPEG、WebP、または GIF 形式の画像。SVG形式の画像は使用できません。",
+    "image-note-placeholder": "画像ノートを検索",
+    "image-too-large": "この画像のサイズは {{width}} × {{height}} ピクセルです。一部のデバイスでは、長辺が {{limit}} ピクセルを超える画像を表示できません。その場合、マーカーや図形は表示されますが、画像自体は表示されません。",
+    "coordinates": "座標",
+    "coordinates-description": "画像上の位置の測定方法: 左上隅を起点とするピクセル単位、またはビデオゲームなどで使われるような独自の座標系で測定されます。",
+    "coordinates-pixels": "画像ピクセル",
+    "coordinates-custom": "カスタム",
+    "coordinates-inherited": "これらの角は親ノートまたはテンプレートから引き継がれているため、そちらでしか削除できません。",
+    "top-left-corner": "左上の角",
+    "bottom-right-corner": "右下の角",
+    "coordinates-invalid": "2 つの角は x 座標と y 座標の双方が異なっている必要があるため、この変更は保存されませんでした。",
+    "dark-image": "暗い画像",
+    "dark-image-description": "マーカーのタイトルを明るい色で表示し、暗い画像の上からでも読み取れるようにします。",
+    "background": "背景",
+    "background-type": "タイプ",
+    "background-map": "ベクター＆ラスター",
+    "background-image": "カスタム画像",
+    "background-map-description": "ベクターまたはラスター形式のいずれかのスタイルによる世界地図。",
+    "background-image-description": "間取り図やファンタジー地図など、自分で作成した画像に、マーカーや図形を配置できます。",
+    "background-image-inherited": "このマップの画像は親ノートまたはテンプレートから引き継がれているため、そちらでしか無効にできません。",
+    "background-tiles": "カスタムタイルセット",
+    "background-tiles-description": "任意のサーバーから取得したラスタータイルを使用して描画される世界地図。",
+    "tiles-url": "タイル URL",
+    "tiles-url-description": "タイル 1 枚のアドレスです。ズームレベルとタイルの位置が入る箇所には、それぞれ {z}、{x}、{y} を指定します。高解像度タイルを提供するサーバーの場合は {r} を指定できます（この場合、サーバー側では @2x が想定されます）。",
+    "tiles-url-invalid": "タイル URL は http:// または https:// で始まり、{z}、{x}、{y} を含んでいる必要があります。そのため、今回の変更は保存されませんでした。",
+    "dark-tiles": "ダークタイルセット",
+    "dark-tiles-description": "マーカーのタイトルを明るい色で表示します。これにより、暗いタイル上でもタイトルを読み取ることができます。"
   },
   "geo-map-context": {
     "open-location": "現在位置を表示",
@@ -2532,7 +2572,7 @@
     "hide-weekends": "週末を非表示",
     "display-week-numbers": "週番号を表示",
     "map-style": "マップスタイル",
-    "max-nesting-depth": "最大階層の深さ:",
+    "max-nesting-depth": "最大ネスト深度",
     "show-scale": "スケールを表示",
     "raster": "Raster",
     "vector_light": "Vector（ライト）",
@@ -2542,7 +2582,10 @@
     "presentation-theme": "テーマ",
     "board-inbox-column": "インボックス列を表示",
     "board-inbox-column-help": "インボックス列を表示します。この列には、どの列にも割り当てられていない子ノートが一覧表示されます。",
-    "vector_auto": "Vector (自動)"
+    "vector_auto": "Vector (自動)",
+    "max-nesting-depth-description": "コレクションの子要素から何階層下まで表示するかを指定: 0 は子要素のみを表示し、1 はその子要素のさらに下の階層まで表示され、空欄にすると、すべての階層が表示されます。",
+    "hide-routine-events": "定期的な予定を非表示",
+    "hide-routine-events-help": "週に {{days}} 日以上繰り返される予定を、月、年、リスト、の各表示から非表示にします。日、および、週 の表示では、引き続きこれらの予定が表示されます。"
   },
   "call_to_action": {
     "next_theme_title": "新しいTriliumテーマをお試しください",
@@ -2805,7 +2848,16 @@
     "clipped_note_details": "このノートは Web ページから作成されました。クリックすると、ページの説明、作成者、日付を確認できます。",
     "clipped_note_author": "作成者",
     "clipped_note_published": "公開日",
-    "clipped_note_modified": "更新日"
+    "clipped_note_modified": "更新日",
+    "read_only_locked": "読み取り専用",
+    "read_only_locked_description": "このノートは Trilium によって提供されており、編集できません。",
+    "template": "テンプレート",
+    "template_description": "このノートはテンプレートです。このテンプレートから作成されたノートは、その属性を引き継ぎます。そのため、ここで属性を変更すると、それらのノートすべてにその変更が反映されます。",
+    "template_scope_global": "どこでも利用可能",
+    "template_scope_workspace": "ワークスペース内のみ",
+    "template_scope_workspace_unavailable": "このテンプレートはワークスペース内にありません。",
+    "workspace_template": "ワークスペース テンプレート",
+    "template_properties": "テンプレート プロパティ..."
   },
   "status_bar": {
     "language_title": "コンテンツの言語を変更",
@@ -3004,7 +3056,11 @@
     "sample_wardley": "ウォードリーマップ",
     "sample_cynefin": "クネビン（Cynefin）",
     "sample_swimlane": "スイムレーン",
-    "sample_railroad": "レイルロード図"
+    "sample_railroad": "レイルロード図",
+    "syntax_help": "マーメイド構文に関するヘルプ",
+    "sample_event_modeling": "イベントモデリング",
+    "sample_use_case": "ユースケース",
+    "sample_agentflow": "エージェントフロー"
   },
   "llm_chat": {
     "placeholder": "メッセージを入力してください…",
@@ -3091,7 +3147,6 @@
     "tool_call_no_result": "まだ結果はありません。",
     "search_notes_count_other": "（{{count}} 件のノート）",
     "search_notes_limited_other": "合計 {{count}} 件の結果、{{limit}} 件まで表示",
-    "search_notes_scope": "<Note/> 内を検索",
     "child_notes_count_other": "（{{count}} 件の子ノート）",
     "child_count_other": "{{count}} 件の子ノート",
     "search_help_count_other": "（{{count}} ページ）",
@@ -3119,7 +3174,21 @@
     "manage_search_providers": "検索プロバイダーの管理…",
     "web_search_builtin_unsupported": "このモデルには組み込みのウェブ検索機能がありません。代わりに検索プロバイダーを選択してください。",
     "web_search_provider_unsupported": "このモデルのプロバイダーは、独自のツールを使用してウェブ検索を行います。",
-    "searched_with": "{{name}} で検索しました"
+    "searched_with": "{{name}} で検索しました",
+    "tool_approval_prompt": "このツール呼び出しを許可しますか？",
+    "tool_approval_allow": "許可",
+    "tool_approval_deny": "拒否",
+    "tool_approval_declined": "拒否されました",
+    "tool_approval_allow_for_chat": "このチャットでは常に {{tool}} を許可",
+    "allowed_tools": "このチャットで許可済み",
+    "allowed_tools_count_other": "{{count}} 個のツール",
+    "permissions": "権限",
+    "permission_mode_always_ask": "常に確認",
+    "permission_mode_always_ask_description": "読み取りを含め、すべてのアクションの前に確認",
+    "permission_mode_ask_before_changes": "変更の前に確認",
+    "permission_mode_ask_before_changes_description": "ノートを変更する前のみ確認",
+    "permission_mode_dont_ask": "確認しない",
+    "permission_mode_dont_ask_description": "変更を含め、すべてを自動的に実行"
   },
   "sidebar_chat": {
     "title": "AI チャット",
@@ -3244,7 +3313,8 @@
       "read_web_page": "Web ページの読み込み",
       "note_moved_from": "<Note/> from <From/> to <To/>",
       "note_moved": "<Note/> to <To/>",
-      "attachment_in_note": "<Title/> in <Note/>"
+      "attachment_in_note": "<Title/> in <Note/>",
+      "search_in_subtree": "<Query/> in <Subtree/>"
     },
     "base_url": "ベース URL",
     "base_url_description": "オプション。プロキシやゲートウェイ経由で同じ API に接続します。モデルを自前で実行したい場合は、代わりに Ollama または LM Studio のプロバイダーを追加してください。",
@@ -3329,7 +3399,9 @@
     "view_extracted_text": "抽出されたテキスト（OCR）を表示",
     "processing_complete": "OCR 処理が完了しました。",
     "text_filtered_low_confidence": "OCR は {{confidence}}% の信頼度でテキストを検出しましたが、最小しきい値が {{threshold}}% であるため、破棄されました。",
-    "open_media_settings": "設定を開く"
+    "open_media_settings": "設定を開く",
+    "no_text_recognized": "OCR で認識できるテキストは見つかりませんでした。",
+    "pages_failed_other": "{{count}} ページで OCR 処理に失敗したため、それらのページのテキストは欠落しています。理由はログに記載されています。"
   },
   "database": {
     "title": "データベース",
@@ -3645,7 +3717,6 @@
       "insert-a-table": "表を挿入。",
       "insert-date-time": "日付 / 時刻を挿入",
       "insert-footnote-0": "脚注を挿入 %0",
-      "insert-mermaid-source-code": "マーメイド図ソースコードを挿入",
       "insert-paragraph-after-code-block": "コードブロックの後に段落を挿入",
       "insert-paragraph-before-code-block": "コードブロックの前に段落を挿入",
       "insert-text-snippet": "テキストスニペットを挿入",
@@ -3661,8 +3732,6 @@
       "medium": "中",
       "mermaid-diagram": "マーメイド図",
       "mermaid-diagram-0": "マーメイド図: %0",
-      "mermaid-toolbar": "マーメイドツールバー",
-      "mermaid-widget": "マーメイドウィジェット",
       "new-footnote": "新しい脚注",
       "no-anchors-available": "利用可能なアンカーはありません。",
       "no-text-snippets-available": "テキストスニペットはありません。",
@@ -3672,7 +3741,6 @@
       "outdent": "インデント解除",
       "preview": "プレビュー",
       "quote-a-passage-from-another-source": "他のソースから一節を引用。",
-      "read-more-about-mermaid-diagram-syntax": "マーメイド図の構文について詳しく読む",
       "remove-anchor": "アンカーを削除",
       "scroll-to-anchor": "アンカーまでスクロール",
       "search-text-snippet": "テキストスニペットを検索",
@@ -3779,7 +3847,32 @@
       "type-the-content-of-the-third-column": "3 列目の内容を入力",
       "type-the-content-of-the-fourth-column": "4 列目の内容を入力",
       "table-columns": "表の列",
-      "column-0-width-1": "列 %0 幅: %1%"
+      "column-0-width-1": "列 %0 幅: %1%",
+      "keystrokes-that-can-be-used-in-a-multicolumn-layout": "マルチカラムレイアウトで使用できるキー操作",
+      "move-the-selected-content-to-the-column-on-the-left": "選択したコンテンツを左の列に移動",
+      "move-the-selected-content-to-the-column-on-the-right": "選択したコンテンツを右の列に移動",
+      "move-the-selected-content-to-the-first-column": "選択したコンテンツを最初の列に移動",
+      "move-the-selected-content-to-the-last-column": "選択したコンテンツを最後の列に移動",
+      "move-the-column-to-the-left": "列を左に移動",
+      "move-the-column-to-the-right": "列を右に移動",
+      "make-the-column-the-first-one": "列を最初の位置に",
+      "make-the-column-the-last-one": "列を最後の位置に",
+      "add-a-column-after-the-current-one": "現在の列の後に列を追加",
+      "add-a-column-before-the-current-one": "現在の列の前に列を追加",
+      "keystrokes-that-can-be-used-in-a-tabs-block": "タブブロックで使用できるキー操作",
+      "move-the-selected-content-to-the-tab-on-the-left": "選択したコンテンツを左のタブに移動",
+      "move-the-selected-content-to-the-tab-on-the-right": "選択したコンテンツを右のタブに移動",
+      "move-the-selected-content-to-the-first-tab": "選択したコンテンツを最初のタブに移動",
+      "move-the-selected-content-to-the-last-tab": "選択したコンテンツを最後のタブに移動",
+      "move-the-tab-to-the-left": "タブを左に移動",
+      "move-the-tab-to-the-right": "タブを右に移動",
+      "make-the-tab-the-first-one": "タブを最初の位置に",
+      "make-the-tab-the-last-one": "タブを最後の位置に",
+      "add-a-tab-after-the-current-one": "現在のタブの後にタブを追加",
+      "add-a-tab-before-the-current-one": "現在のタブの前にタブを追加",
+      "scroll-to-the-previous-tabs": "前のタブエリアへスクロール",
+      "scroll-to-the-next-tabs": "次のタブエリアへスクロール",
+      "box-size-0": "ボックスサイズ: %0"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
@@ -4066,19 +4159,15 @@
   "show-help": "ヘルプを表示",
   "attribute_list_panel": {
     "no_attributes": "属性なし",
-    "owned_other": "所有する属性 {{count}}",
-    "inherited_other": "継承された属性 {{count}}",
-    "definitions_other": "定義 {{count}}",
     "inheritable": "継承可能: このノートとそのサブツリー全体に適用されます",
     "delete": "この属性を削除",
     "delete_confirm": "属性 \"{{name}}\" を削除しますか？",
-    "add_definition": "新しい定義を追加",
+    "add_definition": "定義を追加",
     "no_target": "対象のノートなし",
     "type_label": "ラベル",
     "type_relation": "リレーション",
     "type_label_definition": "ラベルの定義",
     "type_relation_definition": "リレーションの定義",
-    "internal_other": "{{count}} 件の内部システム属性",
     "back": "属性一覧に戻る",
     "no_value": "値なし",
     "change_target": "対象のノートを変更",
@@ -4086,7 +4175,23 @@
     "system_hint": "システム: この名前には組み込みの意味があります",
     "add_attribute": "属性を追加",
     "creation_kind_label": "ラベル: ここをクリックするか、「~」と入力するとリレーションになります",
-    "creation_kind_relation": "リレーション: ここをクリックするか、「#」と入力するとラベルになります"
+    "creation_kind_relation": "リレーション: ここをクリックするか、「#」と入力するとラベルになります",
+    "section_owned": "所有",
+    "section_inherited": "継承",
+    "section_definitions": "定義",
+    "section_internal": "内部",
+    "copy_other": "{{count}} 件の属性をコピー",
+    "paste_other": "{{count}} 件の属性を貼り付け",
+    "selected_other": "{{count}} 件を選択中",
+    "copied_other": "{{count}} 件の属性をコピーしました",
+    "pasted_other": "{{count}} 件の属性を貼り付けました",
+    "nothing_to_paste": "クリップボードに属性はありません。",
+    "paste_failed": "クリップボードの内容を属性として読み込めませんでした: {{- message}}",
+    "delete_selection_other": "{{count}} 件の属性を削除",
+    "delete_selection_confirm": "選択した {{count}} 件の属性を削除しますか？",
+    "clear_clipboard": "クリップボードをクリア",
+    "to_copy_other": "コピーする属性 {{count}} 件",
+    "select_all": "すべて選択"
   },
   "attribute_names": {
     "system": "システム",
@@ -4618,5 +4723,31 @@
     "member_get_label_value": "指定された名前のラベルの値",
     "member_get_relation_value": "指定された名前のリレーションが指すノートの ID",
     "member_format": "指定された形式の日付（YYYY-MM-DDなど）"
+  },
+  "doc_notes": {
+    "hidden": "<p>非表示ツリー（Hidden tree）は、通常、ユーザーの目には触れない状態でアプリケーションレベルのさまざまなデータを記録するために使用されます。</p><p>操作には十分ご注意ください。このサブツリーを誤って変更すると、アプリケーションがクラッシュする可能性があります。</p>",
+    "launchbar_command_launcher": "<p>このランチャー アクションのキーボードショートカットは、オプション &gt; ショートカット から設定できます。</p>",
+    "launchbar_history_navigation": "<p>戻る ボタンと 進む ボタンを使用すると、ナビゲーション履歴を移動できます。</p><p>これらのランチャーはデスクトップ版でのみ有効です。サーバー版では無視されますので、代わりにブラウザー標準のナビゲーションボタンを使用してください。</p>",
+    "launchbar_intro": "<p>ランチャーバーの設定へようこそ。</p><p>ここでは、以下の操作を行うことができます:</p><ul><li>利用可能なランチャーをドラッグして、表示リストへ移動させる（ランチャーバーに追加されます）</li><li>表示されているランチャーをドラッグして、利用可能なリストに移動させる（これにより、ランチャーバーから非表示になります）</li><li>リスト内の項目をドラッグして、順序を変更できます</li><li>\"可視化されたランチャー\" フォルダーを右クリックして、新しいランチャーを作成できます</li><li>デフォルトの設定に戻したい場合は、コンテキストメニューから \"リセット\" を選択してください</li></ul>",
+    "launchbar_note_launcher": "<p>以下の属性を定義できます:</p><ol><li><code>target</code> - ランチャーを起動した際に開くノートを指定します。</li><li><code>hoistedNote</code> - オプション。対象ノートを開く前に、ホイストされたノートを変更します。</li><li><code>keyboardShortcut</code> - オプション。キーボードショートカットを押すことで、そのノートを開くことができます。</li></ol><p>ランチャーバーにはランチャーのタイトルやアイコンが表示されますが、これらは対象となるノートのタイトルやアイコンと必ずしも一致するとは限りません。</p>",
+    "launchbar_quick_search": "<p><a href=\"#root/_help_Ms1nauBra7gq\" target=\"_blank\">クイック検索バー</a>は、水平レイアウトでのみ表示されます。垂直レイアウトでは、デフォルトで表示されているためです。</p><p>詳細については、「<a href=\"#root/_help_x0JgW8UqGXvq\" target=\"_blank\">垂直レイアウトと水平レイアウト</a>」を参照してください。</p>",
+    "launchbar_script_launcher": "<p>スクリプトランチャーは、<code>~script</code>リレーションで接続されたスクリプト（コードノート）を実行できます。</p><ol><li><code>script</code> - ランチャーの起動時に実行されるスクリプトノートへのリレーション</li><li><code>keyboardShortcut</code> - オプション。キーボードショートカットを押すことで、ランチャーを起動できます</li></ol><h4>スクリプトの例</h4><pre>{{sample}}</pre>",
+    "launchbar_spacer": "<p>スペーサーを使用すると、ランチャーを視覚的にグループ化できます。設定はプロモート属性から行えます:</p><ul><li><code>baseSize</code> - サイズをピクセル単位で指定します（十分なスペースがある場合）</li><li><code>growthFactor</code> - スペーサーのサイズを <code>baseSize</code> のままにしたい場合は 0 に設定します。正の値を指定すると、スペーサーは拡大するようになります。</li></ul>",
+    "launchbar_widget_launcher": "<p>プロモート属性で対象のウィジェットノートを指定してください。このウィジェットは、ランチャーバーアイコンを表示するために使用されます。</p><h4>ランチャーバーウィジェットの例</h4><pre>{{sample}}</pre>",
+    "share": "<p>こちらで共有されているすべてのノートをご覧いただけます。</p>",
+    "system_state": "<p>これは組み込みのタスク状態であり、編集や削除はできません。</p><p>変更できるのは位置のみで、この位置によって、チェックボックスツールバーと、キーボードサイクルによる切り替え順序が決まります。</p>",
+    "task_state": "<p>このノートは、to-do タスクの状態を定義します。この状態を示すアイコンがチェックボックス内に表示され、ノートのタイトルがその状態の表示名として使用されます。</p><p>状態の設定は、以下のプロモート属性を通じて行います:</p><ul><li><code>Identifier</code> — 必須。ノートのマークアップ内にメタデータとして保存される内部名称。使用できるのは英数字、<code>-</code>と<code>_</code>のみです。<p class=\"admonition warning\">Trilium の将来のバージョンで追加される可能性のあるタスク状態との競合を避けるため、カスタムタスク状態の識別子には、先頭にアンダースコア<code>_</code>またはハイフン<code>-</code>を付けてください。</p>例: <code>_postponed</code>, <code>_awaiting-feedback</code>, <code>_validated</code>。</li><li><code>Markdown symbol</code> — Markdown 形式でエクスポートする際に、その状態を表すために使用される 1 文字です。例えば、<code>/</code> は <code>- [/]</code> のように出力されます。</li><li><code>Counts as completed</code> — 有効にすると、この状態にあるタスクは「完了」したものとして扱われます。</li><li><code>Color</code> — この状態におけるチェックボックスの色です。</li><li><code>Hidden from toolbar</code> — 有効にすると、この状態は状態リストやキーボード操作による切り替え対象から除外されます。なお、すでにこの状態が適用されているノートについては、引き続き正しく表示されます。</li></ul><p class=\"admonition warning\">設定を変更した場合は、アプリケーションを再読み込みすると反映されます。</p>",
+    "task_states": "<p>このノートには、テキストエディタ内の ToDo チェックボックスで使用できるタスクの状態が記載されています。各子ノートが、それぞれ 1 つの状態に対応しています。</p><p>状態の追加、変更、並べ替え、削除が可能です。新しい状態を追加するには、子ノートを作成し、そのプロモート属性を設定してください。</p><p class=\"admonition warning\">変更を反映させるには、アプリケーションを再読み込みする必要があります。</p>",
+    "user_hidden": "<p>このノートは、ユーザー・スクリプトによって生成されるデータを格納するための専用サブツリーとして機能します。ユーザー・スクリプトは、本来、隠しサブツリー内に自由にデータを作成すべきではありません。</p>"
+  },
+  "template_properties": {
+    "title": "テンプレート プロパティ",
+    "title_template": "作成されるノートのデフォルトのタイトル",
+    "title_template_description": "作成時刻（now）や、ノートが作成される親ノート（parentNote）の情報を参照できます。",
+    "title_template_placeholder": "ミーティング ${now.format('YYYY-MM-DD')}",
+    "new_notes": "新しいノート",
+    "default_parent": "作成されるノートのデフォルトの保存場所",
+    "default_parent_description": "テキストノート内で @ による補完機能を使って作成された場合など、他の場所が選択されなかった場合に配置される場所です。",
+    "default_parent_placeholder": "作成される場所"
   }
 }

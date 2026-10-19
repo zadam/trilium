@@ -643,7 +643,6 @@
     "import_files": "फ़ाइलें इम्पोर्ट करें",
     "export_note": "नोट एक्सपोर्ट करें",
     "delete_note": "नोट डिलीट करें",
-    "print_note": "नोट प्रिंट करें",
     "view_revisions": "नोट रिविज़न..।",
     "save_revision": "रिविज़न सेव करें",
     "advanced": "एडवांस्ड (Advanced)",
@@ -678,7 +677,6 @@
     "create_child_note_title": "सब-नोट बनाएं और मैप में जोड़ें"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "सब-नोट डालें",
     "delete_this_note": "यह नोट डिलीट करें",
     "note_revisions": "नोट रिविज़न",
     "error_cannot_get_branch_id": "notePath '{{notePath}}' के लिए branchId नहीं मिला",

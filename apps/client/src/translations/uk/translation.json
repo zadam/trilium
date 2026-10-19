@@ -678,7 +678,6 @@
     "import_files": "Імпорт файлів",
     "export_note": "Експорт нотатки",
     "delete_note": "Видалити нотатку",
-    "print_note": "Друк нотатки",
     "save_revision": "Зберегти версію",
     "convert_into_attachment_failed": "Не вдалося конвертувати нотатку '{{title}}'.",
     "convert_into_attachment_successful": "Нотатку '{{title}}' перетворено на вкладення.",
@@ -716,7 +715,6 @@
     "create_child_note_title": "Створити нову дочірню нотатку та додати її до цієї Карти зв'язків"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Вставити дочірню нотатку",
     "delete_this_note": "Видалити цю нотатку",
     "error_cannot_get_branch_id": "Не вдається отримати branchId для notePath '{{notePath}}'",
     "error_unrecognized_command": "Нерозпізнана команда {{command}}",

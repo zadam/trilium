@@ -387,7 +387,9 @@
     "previous": "前へ",
     "next": "次へ",
     "page-navigation": "前後のページ",
-    "hidden-subpages_other": "ツリーから非表示になっているサブページ {{count}} 個"
+    "hidden-subpages_other": "ツリーから非表示になっているサブページ {{count}} 個",
+    "previous-tabs": "前のタブエリアへスクロール",
+    "next-tabs": "次のタブエリアへスクロール"
   },
   "hidden_subtree_templates": {
     "text-snippet": "テキストスニペット",
@@ -587,5 +589,11 @@
     "delete-while-downloading": "{{- title}} は現在ダウンロード中です。削除する前にダウンロードをキャンセルしてください。",
     "not-foreign": "{{- name}} はリソースフォルダ内の未使用エントリーではありません。",
     "stalled": "{{name}} のダウンロードが停止しました: {{seconds}} 秒間データを受信できませんでした。接続状況を確認してから、再度お試しください。"
+  },
+  "share_target": {
+    "default-title": "共有コンテンツ",
+    "nothing-to-share": "共有するものがありません: テキスト、リンク、またはファイルが受信されていません。",
+    "rejected": "共有が拒否されました: {{- reason}}",
+    "other-page": "このアドレスにコンテンツを送信できるのはシステムの共有メニューからのみです。"
   }
 }

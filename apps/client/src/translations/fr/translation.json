@@ -94,7 +94,11 @@
     "labels": "Labels",
     "relations": "Relations",
     "notes": "Notes",
-    "other": "Autre"
+    "other": "Autre",
+    "selected_notes": "Notes sélectionnées",
+    "remove_from_selection": "Retirer de la sélection",
+    "remove_action": "Retirer cette action",
+    "add_action": "Ajouter une action"
   },
   "clone_to": {
     "clone_notes_to": "Cloner les notes dans...",
@@ -161,7 +165,8 @@
     "format_html_name": "HTML",
     "result_subtree_html": "Une archive ZIP où les notes de texte sont enregistrées en HTML. Le code, les images et les autres fichiers conservent leur format d'origine.",
     "result_single_html": "Un fichier HTML unique. Les images et pièces jointes y sont intégrées.",
-    "export_in_progress_with_total": "{{progressCount}} notes exportées sur {{totalCount}}"
+    "export_in_progress_with_total": "{{progressCount}} notes exportées sur {{totalCount}}",
+    "preparing_export": "Préparation de l'exportation…"
   },
   "help": {
     "noteNavigation": "Navigation dans les notes",
@@ -665,7 +670,6 @@
     "import_files": "Importer des fichiers",
     "export_note": "Exporter la note",
     "delete_note": "Supprimer la note",
-    "print_note": "Imprimer la note...",
     "save_revision": "Enregistrer une révision",
     "convert_into_attachment_failed": "La conversion de la note '{{title}}' a échoué.",
     "convert_into_attachment_successful": "La note '{{title}}' a été convertie en pièce jointe.",
@@ -712,7 +716,6 @@
     "create_child_note_title": "Créer une note enfant et l'ajouter à la carte"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Insérer une note enfant",
     "delete_this_note": "Supprimer cette note",
     "error_cannot_get_branch_id": "Impossible d'obtenir branchId pour notePath '{{notePath}}'",
     "error_unrecognized_command": "Commande non reconnue {{command}}",

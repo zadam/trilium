@@ -659,7 +659,6 @@
     "import_files": "ھۆججەتلەرنى ئەكىرىش",
     "export_note": "خاتىرىنى چىقىرىش",
     "delete_note": "خاتىرىنى ئۆچۈرۈش",
-    "print_note": "خاتىرىنى بېسىپ چىقىرىش",
     "view_revisions": "خاتىرە نۇسخىلىرى...",
     "save_revision": "نۇسخىنى ساقلاش",
     "save_named_revision": "نام بېرىپ نۇسخىنى ساقلاش...",
@@ -690,7 +689,6 @@
     "create_child_note_title": "تارماق خاتىرە قۇرۇش ۋە خەرىتىگە قوشۇش"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "تارماق خاتىرە قىستۇرۇش",
     "delete_this_note": "بۇ خاتىرىنى ئۆچۈرۈش",
     "note_revisions": "خاتىرە نۇسخىلىرى",
     "error_cannot_get_branch_id": "'{{notePath}}' يولىنىڭ تارماق كىملىكى (branchId) نى ئالغىلى بولمىدى",

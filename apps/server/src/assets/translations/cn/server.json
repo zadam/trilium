@@ -399,7 +399,9 @@
     "previous": "上一页",
     "next": "下一页",
     "page-navigation": "上一页和下一页",
-    "hidden-subpages_other": "{{count}} 个已从树中隐藏的子页面"
+    "hidden-subpages_other": "{{count}} 个已从树中隐藏的子页面",
+    "previous-tabs": "滚动到前面的标签页",
+    "next-tabs": "滚动到后面的标签页"
   },
   "hidden_subtree_templates": {
     "text-snippet": "文本片段",
@@ -587,5 +589,11 @@
     "delete-while-downloading": "{{- title}} 正在下载中。请先取消下载，再删除它。",
     "not-foreign": "{{- name}} 不是资源文件夹中未使用的条目。",
     "stalled": "下载 {{name}} 已停止：{{seconds}} 秒内没有收到任何数据。请检查网络连接，然后重试。"
+  },
+  "share_target": {
+    "default-title": "分享内容",
+    "nothing-to-share": "没有可分享的内容：未收到任何文本、链接或文件。",
+    "rejected": "分享被拒绝：{{- reason}}",
+    "other-page": "只有系统分享菜单才能向此地址发送内容。"
   }
 }
