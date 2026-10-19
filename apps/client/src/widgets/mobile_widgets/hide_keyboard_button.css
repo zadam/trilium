@@ -7,7 +7,9 @@ body.mobile .hide-keyboard-button {
     position: fixed;
     bottom: 0;
     inset-inline-end: 0;
-    z-index: 1000;
+    /* Above every dialog (2000, plus 10 per stacked one in `dialog.ts`) and menu,
+       below tooltips (9999). */
+    z-index: 5000;
     transform: translateY(var(--tn-keyboard-gap, 0px));
 
     .icon-action {

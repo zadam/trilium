@@ -31,7 +31,9 @@ export default function HideKeyboardButton() {
     }, [ enabled ]);
 
     return (
-        <div className="hide-keyboard-button">
+        // Keeps the press from moving the focus onto the button: an open dialog's focus trap would
+        // send it back into the dialog and bring the keyboard up again.
+        <div className="hide-keyboard-button" onMouseDown={(e) => e.preventDefault()}>
             {enabled && editableFocused && (
                 <ActionButton
                     icon="bx bx-chevron-down"

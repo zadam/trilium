@@ -57,6 +57,10 @@ describe("HideKeyboardButton", () => {
         const button = container.querySelector("button");
         expect(button).not.toBeNull();
 
+        const press = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
+        button?.dispatchEvent(press);
+        expect(press.defaultPrevented).toBe(true);
+
         act(() => button?.click());
         expect(document.activeElement).not.toBe(input);
         expect(container.querySelector("button")).toBeNull();
