@@ -1310,7 +1310,8 @@
     "error_unrecognized_command": "Unrecognized command {{command}}",
     "backlinks": "Backlinks",
     "content_language_switcher": "Content language: {{language}}",
-    "insert_child_note_short": "Child note"
+    "insert_child_note_short": "Child note",
+    "create_new_split_short": "New split"
   },
   "note_icon": {
     "change_note_icon": "Change note icon",
