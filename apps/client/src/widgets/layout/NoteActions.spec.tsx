@@ -11,6 +11,12 @@ import { NoteContextContext, ParentComponent } from "../react/react_utils";
 import { buildNote } from "../../test/easy-froca";
 import { CommandItem, NoteContextMenu } from "./NoteActions";
 
+const ctrl = vi.hoisted(() => ({ mobile: false }));
+vi.mock("../../services/utils", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../services/utils")>()),
+    isMobile: () => ctrl.mobile
+}));
+
 // A dialog's focus trap would pull focus out of a menu portaled over it.
 vi.mock("../react/modal_focustrap", () => ({ suspendModalFocusTraps: () => () => {} }));
 
@@ -296,6 +302,42 @@ describe("NoteContextMenu", () => {
 
         expect(await isExportEnabled(buildNote({ id: "_helpExportPage", title: "Help page" }))).toBe(true);
         expect(await isExportEnabled(buildNote({ id: "_optionsExportPage", title: "Options page" }))).toBe(false);
+    });
+
+    it("puts the strip of tiles first on a phone, led by the tiles it is given", async () => {
+        ctrl.mobile = true;
+        const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
+        const noteContext = new NoteContext("ntx-phone");
+        noteContext.noteId = note.noteId;
+        noteContext.viewScope = { viewMode: "default" };
+        const createChild = vi.fn();
+        try {
+            render((
+                <ParentComponent.Provider value={new Component()}>
+                    <NoteContextContext.Provider value={noteContext}>
+                        <NoteContextMenu note={note} noteContext={noteContext}
+                            leadingViewActions={[ { title: "child", uiIcon: "bx bx-plus", handler: createChild } ]}
+                            itemsAtStart={<CommandItem icon="bx bx-link" text="start" command={() => {}} />} />
+                    </NoteContextContext.Provider>
+                </ParentComponent.Provider>
+            ), host);
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            const popup = () => document.querySelector<HTMLElement>(".tn-popup");
+            await vi.waitFor(() => expect(popup()?.querySelector("li.dropdown-item")).toBeTruthy());
+
+            const first = popup()?.querySelector(".tn-menu-scroll > :first-child");
+            const tiles = [ ...first?.querySelectorAll<HTMLElement>(".tn-menu-action") ?? [] ];
+            expect(tiles.map((tile) => tile.textContent?.trim())).toEqual([ "child", "note_actions.search_in_note_short",
+                "note_actions.note_attachments_short", "note_actions.note_map", "right_pane.tab_attributes" ]);
+            const start = popup()?.querySelector("li.dropdown-item:has(.bx-link)");
+            expect(start).toBeTruthy();
+            expect(first?.compareDocumentPosition(start as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+            await act(async () => tiles[0]?.click());
+            expect(createChild).toHaveBeenCalledOnce();
+        } finally {
+            ctrl.mobile = false;
+        }
     });
 
     it("opens on the Basic Properties shortcut only for its own note context", async () => {

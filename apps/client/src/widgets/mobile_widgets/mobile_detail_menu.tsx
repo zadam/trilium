@@ -47,6 +47,11 @@ export default function MobileDetailMenu() {
                 <NoteContextMenu
                     dropdownRef={dropdownRef}
                     note={note} noteContext={noteContext}
+                    leadingViewActions={[ {
+                        title: t("mobile_detail_menu.insert_child_note_short"),
+                        uiIcon: "bx bx-plus",
+                        handler: () => void (noteContext?.notePath && note_create.createNote(noteContext.notePath))
+                    } ]}
                     itemsAtStart={<>
                         <div className="form-list-row">
                             <div className="form-list-col">
@@ -67,29 +72,19 @@ export default function MobileDetailMenu() {
                         <FormDropdownDivider />
 
                         {noteContext && ntxId && <NoteActionsCustom note={note} noteContext={noteContext} ntxId={ntxId} />}
-                        <FormListItem
-                            onClick={() => noteContext?.notePath && note_create.createNote(noteContext.notePath)}
-                            icon="bx bx-plus"
-                        >{t("mobile_detail_menu.insert_child_note")}</FormListItem>
-                        {subContexts.length < 2 && <>
-                            <FormDropdownDivider />
-                            <FormListItem
-                                onClick={(e) => {
-                                    // We have to manually manage the hide because otherwise the old note context gets activated.
-                                    e.stopPropagation();
-                                    dropdownRef.current?.hide();
-                                    parentComponent.triggerCommand("openNewNoteSplit", { ntxId });
-                                }}
-                                icon="bx bx-dock-right"
-                            >{t("create_pane_button.create_new_split")}</FormListItem>
-                        </>}
-                        {!isMainContext && <>
-                            <FormDropdownDivider />
-                            <FormListItem
-                                icon="bx bx-x"
-                                onClick={closePane}
-                            >{t("close_pane_button.close_this_pane")}</FormListItem>
-                        </>}
+                        {subContexts.length < 2 && <FormListItem
+                            onClick={(e) => {
+                                // We have to manually manage the hide because otherwise the old note context gets activated.
+                                e.stopPropagation();
+                                dropdownRef.current?.hide();
+                                parentComponent.triggerCommand("openNewNoteSplit", { ntxId });
+                            }}
+                            icon="bx bx-dock-right"
+                        >{t("create_pane_button.create_new_split")}</FormListItem>}
+                        {!isMainContext && <FormListItem
+                            icon="bx bx-x"
+                            onClick={closePane}
+                        >{t("close_pane_button.close_this_pane")}</FormListItem>}
                         <FormDropdownDivider />
                     </>}
                     itemsNearNoteSettings={<>

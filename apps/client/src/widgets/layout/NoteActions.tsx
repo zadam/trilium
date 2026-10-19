@@ -53,9 +53,11 @@ export default function NoteActions({ paneButtons = true }: {
 
 type ItemToFocus = "basic-properties";
 
-export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNoteSettings, dropdownRef: externalDropdownRef }: {
+export function NoteContextMenu({ note, noteContext, leadingViewActions = [], itemsAtStart, itemsNearNoteSettings, dropdownRef: externalDropdownRef }: {
     note: FNote,
     noteContext?: NoteContext,
+    /** Tiles placed before the note's own in the strip of tiles. */
+    leadingViewActions?: MenuCommandItem<CommandNames>[];
     itemsAtStart?: ComponentChildren;
     itemsNearNoteSettings?: ComponentChildren;
     dropdownRef?: RefObject<DropdownHandle | null>;
@@ -110,6 +112,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const showNoteAttributes = useCommandTrigger("showNoteAttributes");
     /** The actions that look into the note, drawn as a strip of tiles at the top of the menu. */
     const viewActions: MenuCommandItem<CommandNames>[] = [
+        ...leadingViewActions,
         ...(isInPopup ? [] : [ {
             title: t("note_actions.search_in_note_short"), tooltip: t("note_actions.search_in_note"),
             uiIcon: "bx bx-file-find", keyboardShortcut: "findInText" as const, enabled: isSearchable,
@@ -133,6 +136,13 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
             handler: () => showNoteAttributes?.()
         } ] : [])
     ];
+    const viewStrip = <>
+        {viewActions.length > 1
+            ? <MenuItemRows items={[ { kind: "actions", items: viewActions } ]} />
+            // The quick edit popup leaves only the attachments, too few for a strip.
+            : <CommandItem command="showAttachments" icon="bx bx-paperclip" disabled={isInOptionsOrHelp} text={t("note_actions.note_attachments")} />}
+        <FormDropdownDivider />
+    </>;
     // Keyboard shortcuts.
     useTriliumEvent("toggleRibbonTabBasicProperties", ({ ntxId }) => {
         if (!noteContext || ntxId !== noteContext.ntxId) return;
@@ -152,7 +162,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                 iconAction
                 onHidden={() => itemToFocusRef.current = null }
             >
-                {itemsAtStart}
+                {isMobile && viewStrip}
 
                 {(note.type === "code" || note.noteId === "_backendLog") && <CodeProperties note={note} />}
 
@@ -162,12 +172,9 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                     <FormDropdownDivider />
                 </>}
 
-                {viewActions.length > 1
-                    ? <MenuItemRows items={[ { kind: "actions", items: viewActions } ]} />
-                    // The quick edit popup leaves only the attachments, too few for a strip.
-                    : <CommandItem command="showAttachments" icon="bx bx-paperclip" disabled={isInOptionsOrHelp} text={t("note_actions.note_attachments")} />}
+                {itemsAtStart}
 
-                <FormDropdownDivider />
+                {!isMobile && viewStrip}
 
                 {isNormalViewMode && !isHelpPage && <>
                     <NoteBasicProperties note={note} focus={itemToFocusRef} isInPopup={isInPopup} />
