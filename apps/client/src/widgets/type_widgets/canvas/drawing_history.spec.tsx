@@ -160,9 +160,16 @@ describe("DrawingHistory", () => {
         const nextMount = history.mount();
         const next = createDrawing([ moved ]);
         nextMount.attach(next.api, next.root, store);
+        // The user goes on in the text before the step applies.
+        const text = document.createElement("input");
+        document.body.append(text);
+        text.focus();
+        text.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
         read.resolve({ elements: [ moved ], appState: {}, files: {} });
         await vi.waitFor(() => expect(next.getElements()).toMatchObject([ { x: 0 } ]));
         expect(store.getElements()).toMatchObject([ { x: 0 } ]);
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(document.activeElement).toBe(text);
         nextMount.detach();
 
         // Loaded while the step reads the drawing, attached once it saved.

@@ -79,6 +79,8 @@ interface AttachedDrawing {
 const UNRECORDED_KEYS = new Set([ "version", "versionNonce", "updated", "status" ]);
 /** The events with which the user changes a drawing. */
 const INPUT_EVENTS = [ "pointerdown", "keydown", "paste", "drop" ] as const;
+/** The events with which the user moves on while a step waits, which keep the focus in place. */
+const WATCHED_INPUT_EVENTS = [ "keydown", "pointerdown" ] as const;
 /** The paths of Excalidraw's icons of undo and redo. */
 export const HISTORY_ICON_PATHS: Record<HistoryCommand, string> = {
     undo: "M7.5 10.833 4.167 7.5 7.5 4.167M4.167 7.5h9.166a3.333 3.333 0 0 1 0 6.667H12.5",
@@ -242,28 +244,37 @@ export default class DrawingHistory {
         } else {
             // Waits for the steps before it, which read the drawing.
             const isShown = !!first;
+            const stopWatchingInput = watchInput();
             this.queueStoreUpdate(async () => {
-                const { store } = this;
-                if (store && (!isShown || !this.drawings.size)) {
-                    // Applies to the drawing as saved, which can have changed elsewhere since.
-                    store.write(applyToScene(await store.read(), step, isUndo));
+                try {
+                    const { store } = this;
+                    if (store && (!isShown || !this.drawings.size)) {
+                        // Applies to the drawing as saved, which can have changed elsewhere since.
+                        store.write(applyToScene(await store.read(), step, isUndo));
+                    }
+                    // An Excalidraw that attached meanwhile loaded the drawing before the step.
+                    // Focus stays where the user went meanwhile.
+                    this.applyToDrawings(step, isUndo, !stopWatchingInput());
+                } finally {
+                    stopWatchingInput();
                 }
-                // An Excalidraw that attached meanwhile loaded the drawing before the step.
-                this.applyToDrawings(step, isUndo);
             });
         }
         return true;
     }
 
-    /** Applies `step` to every Excalidraw that shows the drawing, and focuses the first. */
-    private applyToDrawings(step: DrawingStep, isUndo: boolean) {
+    /**
+     * Applies `step` to every Excalidraw that shows the drawing, and focuses the first unless
+     * `isFocusing` is false.
+     */
+    private applyToDrawings(step: DrawingStep, isUndo: boolean, isFocusing = true) {
         for (const drawing of this.drawings) {
             applyToDrawing(drawing, step, isUndo);
         }
         this.revision++;
 
         const [ first ] = this.drawings;
-        if (first) {
+        if (first && isFocusing) {
             // Deferred until after the Undo button of the toolbar focuses the text editor.
             queueMicrotask(() => {
                 first.root?.querySelector<HTMLElement>(".excalidraw-container")?.focus();
@@ -382,6 +393,26 @@ function applyToDrawing(drawing: AttachedDrawing, step: DrawingStep, isUndo: boo
     commitElements(drawing);
     drawing.background = background ?? drawing.background;
     drawing.hasInput = false;
+}
+
+/**
+ * Watches for keys and pointers pressed anywhere in the page, until the returned call, which tells
+ * whether the user pressed any.
+ */
+function watchInput() {
+    let hasInput = false;
+    const onInput = () => {
+        hasInput = true;
+    };
+    for (const type of WATCHED_INPUT_EVENTS) {
+        document.addEventListener(type, onInput, { capture: true });
+    }
+    return () => {
+        for (const type of WATCHED_INPUT_EVENTS) {
+            document.removeEventListener(type, onInput, { capture: true });
+        }
+        return hasInput;
+    };
 }
 
 /** Shows `scene` in `drawing`, outside the undo history. */
