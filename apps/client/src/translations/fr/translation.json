@@ -94,7 +94,11 @@
     "labels": "Labels",
     "relations": "Relations",
     "notes": "Notes",
-    "other": "Autre"
+    "other": "Autre",
+    "selected_notes": "Notes sélectionnées",
+    "remove_from_selection": "Retirer de la sélection",
+    "remove_action": "Retirer cette action",
+    "add_action": "Ajouter une action"
   },
   "clone_to": {
     "clone_notes_to": "Cloner les notes dans...",
@@ -161,7 +165,8 @@
     "format_html_name": "HTML",
     "result_subtree_html": "Une archive ZIP où les notes de texte sont enregistrées en HTML. Le code, les images et les autres fichiers conservent leur format d'origine.",
     "result_single_html": "Un fichier HTML unique. Les images et pièces jointes y sont intégrées.",
-    "export_in_progress_with_total": "{{progressCount}} notes exportées sur {{totalCount}}"
+    "export_in_progress_with_total": "{{progressCount}} notes exportées sur {{totalCount}}",
+    "preparing_export": "Préparation de l'exportation…"
   },
   "help": {
     "noteNavigation": "Navigation dans les notes",
