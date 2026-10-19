@@ -1245,7 +1245,7 @@
     "export_as_image_png": "PNG (raster)",
     "export_as_image_svg": "SVG (vector)",
     "note_map": "Note map",
-    "search_in_note_short": "Search",
+    "search_in_note_short": "Find",
     "note_attachments_short": "Attachments"
   },
   "onclick_button": {

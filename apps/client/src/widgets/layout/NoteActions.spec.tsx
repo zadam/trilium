@@ -112,7 +112,7 @@ describe("NoteContextMenu", () => {
             const items = [ ...document.querySelectorAll<HTMLElement>(".tn-popup li.dropdown-item, .tn-popup .tn-menu-action") ];
             const hasIcon = (icon: string) => items.some((li) => li.querySelector(`.${icon}`));
             const state = {
-                search: hasIcon("bx-search"),
+                search: hasIcon("bx-file-find"),
                 noteMap: hasIcon("bxs-network-chart"),
                 fullWidth: hasIcon("bx-expand-horizontal"),
                 // The attachments item carries the same icon, above the convert item.
@@ -216,7 +216,7 @@ describe("NoteContextMenu", () => {
         await openIn("ntx-tiles");
         const tiles = [ ...popup()?.querySelectorAll<HTMLElement>(".tn-menu-scroll > li.tn-menu-actions:first-child .tn-menu-action") ?? [] ];
         expect(tiles.map((tile) => tile.textContent?.trim())).toEqual([ "note_actions.search_in_note_short", "note_actions.note_attachments_short", "note_actions.note_map" ]);
-        expect(popup()?.querySelector("li.dropdown-item:has(.bx-search)")).toBeNull();
+        expect(popup()?.querySelector("li.dropdown-item:has(.bx-file-find)")).toBeNull();
 
         await act(async () => tiles[0]?.click());
         expect(triggerCommand).toHaveBeenCalledWith("findInText", expect.objectContaining({ ntxId: "ntx-tiles" }));

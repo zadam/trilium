@@ -112,7 +112,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const viewActions: MenuCommandItem<CommandNames>[] = [
         ...(isInPopup ? [] : [ {
             title: t("note_actions.search_in_note_short"), tooltip: t("note_actions.search_in_note"),
-            uiIcon: "bx bx-search", keyboardShortcut: "findInText" as const, enabled: isSearchable,
+            uiIcon: "bx bx-file-find", keyboardShortcut: "findInText" as const, enabled: isSearchable,
             handler: () => searchInNote?.()
         } ]),
         {
