@@ -11,11 +11,11 @@ import { useLanguageSwitcher } from "../dialogs/content_languages";
 import { CommandItem, NoteContextMenu } from "../layout/NoteActions";
 import NoteActionsCustom from "../layout/NoteActionsCustom";
 import { codeLanguageItems, useMimeTypes } from "../layout/NoteTypeSwitcher";
-import { getLocaleName, NoteInfoContent, SimilarNotesList } from "../layout/StatusBar";
+import { getLocaleName, NoteInfoContent, SimilarNotesList, useAttributeCount } from "../layout/StatusBar";
 import ActionButton from "../react/ActionButton";
 import type { DropdownHandle } from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../react/FormList";
-import { useNoteContext, useNoteProperty } from "../react/hooks";
+import { useAttachments, useNoteContext, useNoteProperty } from "../react/hooks";
 import { MenuItemRows } from "../react/Menu";
 import Modal from "../react/Modal";
 import { BacklinksWidget, useBacklinkCount } from "../sidebar/Backlinks";
@@ -69,14 +69,7 @@ export default function MobileDetailMenu() {
                                     disabled={(sortedNotePaths?.length ?? 0) <= 1}
                                 >{t("status_bar.note_paths", { count: sortedNotePaths?.length })}</FormListItem>
                             </div>
-                            <div className="form-list-col">
-                                <CommandItem command="showAttachments" icon="bx bx-paperclip"
-                                    disabled={isInOptionsOrHelp} text={t("note_actions.note_attachments_short")} />
-                            </div>
-                            <div className="form-list-col">
-                                <CommandItem command="showNoteAttributes" icon="bx bx-list-check"
-                                    disabled={isInOptionsOrHelp} text={t("right_pane.tab_attributes")} />
-                            </div>
+                            <AttachmentsAndAttributes note={note} disabled={isInOptionsOrHelp} />
                         </div>
                         <FormDropdownDivider />
 
@@ -121,6 +114,26 @@ export default function MobileDetailMenu() {
                 </>
             ), document.body)}
         </div>
+    );
+}
+
+/** The cells that open the attachments and the attributes, counted as in the status bar. */
+function AttachmentsAndAttributes({ note, disabled }: { note: FNote, disabled: boolean }) {
+    const attachmentCount = useAttachments(note).length;
+    const attributeCount = useAttributeCount(note);
+
+    return (
+        <>
+            <div className="form-list-col">
+                <CommandItem command="showAttachments" icon="bx bx-paperclip" disabled={disabled}
+                    text={t("status_bar.attachments", { count: attachmentCount })} />
+            </div>
+            <div className="form-list-col">
+                <CommandItem command="showNoteAttributes" icon="bx bx-list-check"
+                    disabled={disabled || note.isContentWritable === false}
+                    text={t("status_bar.attributes", { count: attributeCount })} />
+            </div>
+        </>
     );
 }
 

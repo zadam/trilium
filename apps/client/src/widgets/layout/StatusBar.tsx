@@ -3,7 +3,7 @@ import "./StatusBar.css";
 import { Locale, NOTE_TYPE_ICONS, NoteType, SimilarNoteResponse } from "@triliumnext/commons";
 import clsx from "clsx";
 import { type ComponentChildren, createPortal, RefObject } from "preact";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import appContext, { CommandNames } from "../../components/app_context";
 import NoteContext from "../../components/note_context";
@@ -426,23 +426,7 @@ interface AttributesProps extends StatusBarContext {
 }
 
 function AttributesButton({ note, attributesShown, setAttributesShown }: AttributesProps) {
-    const [ count, setCount ] = useState(note.attributes.length);
-
-    const getAttributeCount = useCallback((note: FNote) => {
-        return note.getAttributes().filter(a => !a.isAutoLink).length;
-    }, []);
-
-    // React to note changes.
-    useEffect(() => {
-        setCount(getAttributeCount(note));
-    }, [ note, getAttributeCount ]);
-
-    // React to changes in count.
-    useTriliumEvent("entitiesReloaded", (({loadResults}) => {
-        if (loadResults.getAttributeRows().some(attr => attributes.isAffecting(attr, note))) {
-            setCount(getAttributeCount(note));
-        }
-    }));
+    const count = useAttributeCount(note);
 
     return (
         <StatusBarButton
@@ -454,6 +438,24 @@ function AttributesButton({ note, attributesShown, setAttributesShown }: Attribu
             onClick={() => setAttributesShown(!attributesShown)}
         />
     );
+}
+
+/** The number of attributes of the note, owned and inherited, leaving out the links its content makes. */
+export function useAttributeCount(note: FNote) {
+    const [ count, setCount ] = useState(() => getAttributeCount(note));
+
+    useEffect(() => setCount(getAttributeCount(note)), [ note ]);
+    useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
+        if (loadResults.getAttributeRows().some(attr => attributes.isAffecting(attr, note))) {
+            setCount(getAttributeCount(note));
+        }
+    });
+
+    return count;
+}
+
+function getAttributeCount(note: FNote) {
+    return note.getAttributes().filter(a => !a.isAutoLink).length;
 }
 
 function AttributesPane({ note, noteContext, attributesShown, setAttributesShown }: AttributesProps) {

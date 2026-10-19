@@ -35,7 +35,7 @@ import type Component from "../../components/component";
 import server from "../../services/server";
 import { buildNote } from "../../test/easy-froca";
 import { ParentComponent } from "../react/react_utils";
-import StatusBar from "./StatusBar";
+import StatusBar, { useAttributeCount } from "./StatusBar";
 
 describe("StatusBar panels", () => {
     let container: HTMLElement;
@@ -141,6 +141,17 @@ describe("StatusBar panels", () => {
             container
         ));
     }
+
+    it("counts the attributes of a note, leaving out the links its content makes", () => {
+        const target = buildNote({ title: "Target" });
+        const note = buildNote({ title: "Counted", "#color": "red", "~template": target.noteId, "~internalLink": target.noteId });
+        function Count() {
+            return <span className="count">{useAttributeCount(note)}</span>;
+        }
+        const parent = { registerHandler: () => {}, removeHandler: () => {} } as unknown as Component;
+        act(() => render(<ParentComponent.Provider value={parent}><Count /></ParentComponent.Provider>, container));
+        expect(container.querySelector(".count")?.textContent).toBe("2");
+    });
 
     /** Hands the bar one of the keyboard actions it listens for, as the app's event bus would. */
     function fire(eventName: string) {
