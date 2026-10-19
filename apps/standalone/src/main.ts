@@ -4,9 +4,8 @@ import {
     initSplashProgress, reportSplashPhase, type SplashPhase
 } from "../../client/src/services/splash.js";
 import { showErrorOverlay } from "./error-overlay.js";
-import { installIosInterceptors } from "./ios-interceptors.js";
 import { claimLeadership } from "./leader_election.js";
-import { announceLeadership, attachServiceWorkerBridge, downloadDatabase, localFetch, registerNativeHttpHandler, restoreBackup, saveDatabase, startLocalServerWorker } from "./local-bridge.js";
+import { announceLeadership, attachServiceWorkerBridge, downloadDatabase, localFetch, localUpload, registerNativeHttpHandler, restoreBackup, saveDatabase, startLocalServerWorker } from "./local-bridge.js";
 import { createSecurityApi } from "./security_gate.js";
 
 /**
@@ -121,19 +120,19 @@ async function bootstrap() {
             // The leader answers API requests from its own worker, so the client's server.ts
             // can skip the service-worker round trip.
             standaloneApi.localFetch = localFetch;
+            standaloneApi.localUpload = localUpload;
             // Its worker is also the one holding the lock on the security settings file, so it is
             // the only tab that can change what this instance is allowed to run. See security_gate.ts.
             standaloneApi.security = createSecurityApi();
             announceLeadership();
         });
 
-        // iOS Capacitor loads on the capacitor:// scheme, where WebKit rejects
-        // service worker registration. Fall back to in-page request interceptors
-        // that route API calls straight to the local SQLite worker; everywhere
-        // else (Android https, web) the service worker handles this.
-        if (location.protocol === "capacitor:") {
-            installIosInterceptors();
-        } else {
+        // The mobile shells answer local API requests natively (TriliumRequestBridge on Android
+        // and iOS, where WebKit rejects a service worker on capacitor://); on the web, or on an
+        // Android WebView without message listeners, the service worker does.
+        const answeredNatively = "Capacitor" in window
+            && (await import("./native-request-bridge.js")).installNativeRequestBridge();
+        if (!answeredNatively) {
             attachServiceWorkerBridge();
             await waitForServiceWorkerControl();
         }

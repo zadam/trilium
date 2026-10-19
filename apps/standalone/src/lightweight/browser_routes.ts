@@ -10,7 +10,7 @@ import type { ShareReply } from '@triliumnext/core/src/share/handlers.js';
 import { SHARE_ROUTE_PATHS, type ShareRoutePath } from '@triliumnext/core/src/share/route_paths.js';
 
 import packageJson from '../../package.json' with { type: 'json' };
-import { type BrowserRequest, BrowserRouter } from './browser_router';
+import { type BrowserRequest, BrowserRouter, type RouteOptions } from './browser_router';
 import { dbLock } from './db_lock';
 
 /** Minimal response object used by apiResultHandler to capture the processed result. */
@@ -41,7 +41,9 @@ function toCoreRequest(req: BrowserRequest): Request {
         body: req.body,
         headers,
         method: req.method,
-        file: req.file,
+        // A file posted for an import route has no `buffer` until an importer that needs one calls
+        // `loadUploadedBytes()`, as on the server when multer leaves a zip on disk.
+        file: req.file as Request["file"],
         get originalUrl() { return req.url; },
         // `fetch` lower-cases the header names it sends, which is the form BrowserRouter stores them in.
         get: (name: string) => headers[name.toLowerCase()]
@@ -99,7 +101,7 @@ function createApiRoute(router: BrowserRouter, transactional: boolean) {
  * - The resultHandler is applied to post-process the result (entity conversion, status codes).
  */
 function createRoute(router: BrowserRouter) {
-    return (method: HttpMethod, path: string, _middleware: any[], handler: (req: Request, res: Response) => unknown, resultHandler?: ((req: Request, res: ResultHandlerResponse, result: unknown) => unknown) | null) => {
+    return (method: HttpMethod, path: string, middleware: any[], handler: (req: Request, res: Response) => unknown, resultHandler?: ((req: Request, res: ResultHandlerResponse, result: unknown) => unknown) | null) => {
         router.register(method, path, (req: BrowserRequest) => {
             return dbLock.runShared(() => getContext().init(() => {
                 setContextFromHeaders(req);
@@ -122,7 +124,7 @@ function createRoute(router: BrowserRouter) {
 
                 return result;
             }));
-        });
+        }, routeOptions(middleware));
     };
 }
 
@@ -133,7 +135,7 @@ function createRoute(router: BrowserRouter) {
  * passed an async callback.
  */
 function createAsyncRoute(router: BrowserRouter, { transactional = true } = {}) {
-    return (method: HttpMethod, path: string, _middleware: any[], handler: (req: Request, res: Response) => Promise<unknown>, resultHandler?: ((req: Request, res: ResultHandlerResponse, result: unknown) => unknown) | null) => {
+    return (method: HttpMethod, path: string, middleware: any[], handler: (req: Request, res: Response) => Promise<unknown>, resultHandler?: ((req: Request, res: ResultHandlerResponse, result: unknown) => unknown) | null) => {
         router.register(method, path, (req: BrowserRequest) => {
             // Exclusive: this transaction stays open across awaits, so no other
             // route may touch the connection until it commits. See db_lock.ts.
@@ -159,7 +161,7 @@ function createAsyncRoute(router: BrowserRouter, { transactional = true } = {}) 
 
                 return result;
             }) as Promise<unknown>);
-        });
+        }, routeOptions(middleware));
     };
 }
 
@@ -282,6 +284,18 @@ function noopMiddleware() {
     // No-op.
 }
 
+/**
+ * Marks a route whose importer reads a posted `File` in place, which `routeOptions()` turns into
+ * `readsUploadsInPlace`. The server's counterpart keeps a zip import on disk for the same reason.
+ */
+function importUploadMiddleware() {
+    // No-op.
+}
+
+function routeOptions(middleware: unknown[]): RouteOptions {
+    return { readsUploadsInPlace: middleware.includes(importUploadMiddleware) };
+}
+
 function checkAppNotInitialized() {
     if (sql_init.isDbInitialized()) {
         throw new Error("App already initialized.");
@@ -325,9 +339,7 @@ export function registerRoutes(router: BrowserRouter): void {
         checkCredentials: noopMiddleware,
         loginRateLimiter: noopMiddleware,
         uploadMiddlewareWithErrorHandling: noopMiddleware,
-        // The browser variant has no disk; uploads already arrive as a buffer (see browser_router.ts), so
-        // imports use the same no-op middleware rather than the server's disk-storage one.
-        importMiddlewareWithErrorHandling: noopMiddleware,
+        importMiddlewareWithErrorHandling: importUploadMiddleware,
         csrfMiddleware: noopMiddleware
     });
     apiRoute('get', '/bootstrap', bootstrapRoute);

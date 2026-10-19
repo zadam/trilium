@@ -671,7 +671,7 @@ body[dir=rtl] :is(#left-pane, .tree-popup-sidebar) span.fancytree-node.protected
 
 @media (max-width: 991px) {
     body.mobile #mobile-sidebar-container {
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: var(--mobile-backdrop-color);
     }
 
     body.mobile #mobile-sidebar-wrapper {

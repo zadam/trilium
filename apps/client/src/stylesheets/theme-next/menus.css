@@ -252,7 +252,7 @@ body.mobile #context-menu-cover {
     transition: background-color 150ms ease-in;
 
     &.show {
-        background: rgba(0, 0, 0, 0.32);
+        background: var(--mobile-backdrop-color);
 
         /* A tablet's menus open beside what opened them, undimmed; the cover only takes the tap
            that closes them. */
@@ -262,7 +262,7 @@ body.mobile #context-menu-cover {
     }
 
     &.global-menu-cover {
-        bottom: calc(var(--mobile-bottom-offset) + var(--launcher-pane-size));
+        bottom: calc(var(--mobile-bottom-offset) + var(--launcher-pane-horiz-size, var(--launcher-pane-size)));
 
         @media (min-width: 992px) {
             bottom: 0;
@@ -350,6 +350,10 @@ body.mobile .dropdown-menu:where(:not(.note-autocomplete-menu)) {
 
     .dropdown-divider {
         visibility: hidden;
+    }
+
+    h6::before {
+        inset-inline: 0;
     }
 
     .dropdown-custom-item:has(.note-color-picker) {

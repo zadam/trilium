@@ -16,9 +16,11 @@ Here is a non-exhaustive list of differences between the desktop version and the
     *   Press and hold a note to display the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree/Note%20tree%20contextual%20menu.md">Note tree contextual menu</a>.
 *   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Navigation/Quick%20search.md">Quick search</a> bar is also displayed at the top of the note tree.
 *   The full <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Navigation/Search.md">Search</a> function can be triggered either from either the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a> or from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>, if configured.
+*   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a> is shorter: _Open new window_ and _Show cheatsheet_ are left out, and _Switch to desktop version_ is under _Advanced_.
 *   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a> is displayed at the bottom of the screen.
     *   The launch bar uses a different configuration for icons than the desktop version. See the dedicated page for more information on how to configure it.
 *   Most of the note-related actions are grouped in the horizontal dots icon on the top-right of the note.
+*   In the iOS app, the keyboard has no _Done_ button. While you type, press the <span class="tn-icon bx bx-chevron-down"></span> button in the bottom-right corner, just above the keyboard, to hide it. This works in every note type and in every text field.
 *   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Tabs.md">Tabs</a> are grouped under a tab switcher in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>, where the tabs are displayed in a full-screen grid with preview for easy switching, as well as additional options such as reopening closed tabs.
 *   Since v0.100.0, <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Split%20View.md">Split View</a> can also be used in mobile view, but with a maximum of two panes at once. The splits are displayed vertically instead of horizontally.
 
@@ -86,7 +88,7 @@ If you are running Trilium without a dedicated [server installation](Server%20In
 
 Trilium decides automatically whether to use mobile or desktop front-end. If this is not appropriate, you can use `?mobile` or `?desktop` query param on **login** page (Note: you might need to log out).
 
-Alternatively, simply select _Switch to Mobile/Desktop Version_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>.
+Alternatively, simply select _Switch to mobile version_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>. In the mobile version, select _Advanced_ → _Switch to desktop version_ there instead.
 
 ## Scripting
 

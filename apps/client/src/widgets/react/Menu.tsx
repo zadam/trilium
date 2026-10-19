@@ -24,7 +24,7 @@ import Popup, { type PopupProps } from "./Popup";
  * `FormDropdownSubmenu`, `FormDropdownDivider`, `FormListHeader` and `FormListCustomItem`.
  */
 export interface MenuProps<T> extends Pick<PopupProps, "anchor" | "offset" | "container" | "portalClassName"
-        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby"> {
+        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby" | "placedByStylesheet"> {
     id?: string;
     className?: string;
     /** The side of its anchor it prefers: beside a point towards the right, or below an element. */
@@ -388,7 +388,8 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
                 {...popupProps}
                 anchor={anchor}
                 placement={placement ?? (anchor instanceof HTMLElement ? "bottom-start" : "right-start")}
-                placedByStylesheet={bottomSheet || inline}
+                placedByStylesheet={popupProps.placedByStylesheet || bottomSheet || inline}
+                reveal={!inline}
                 onPlaced={() => {
                     const menu = menuRef.current;
                     if (menu) {
@@ -516,7 +517,7 @@ function MenuItemRow<T>({ row, onSelect }: { row: MenuItem<T>, onSelect: MenuPro
         if (row.kind === "separator") return <FormDropdownDivider />;
         // Its title is text, as it can be a name the user wrote.
         if (row.kind === "header") return <FormListHeader text={row.title} />;
-        if (row.kind === "actions") return <MenuActions items={row.items} onSelect={onSelect} />;
+        if (row.kind === "actions") return <MenuActions items={row.items} className={row.className} onSelect={onSelect} />;
         return <FormListCustomItem><row.componentFn /></FormListCustomItem>;
     }
 
@@ -556,9 +557,9 @@ function MenuItemRow<T>({ row, onSelect }: { row: MenuItem<T>, onSelect: MenuPro
  * A row of items side by side, each its icon over its title. Each registers with the menu as a row
  * of its own, so the keys step through them in order.
  */
-function MenuActions<T>({ items, onSelect }: { items: MenuCommandItem<T>[], onSelect: MenuProps<T>["onSelect"] }) {
+function MenuActions<T>({ items, className, onSelect }: { items: MenuCommandItem<T>[], className?: string, onSelect: MenuProps<T>["onSelect"] }) {
     return (
-        <li className="tn-menu-actions" role="group">
+        <li className={clsx("tn-menu-actions", className)} role="group">
             {items.map((item, index) => <MenuAction key={index} item={item} onSelect={onSelect} />)}
         </li>
     );

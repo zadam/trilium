@@ -49,6 +49,12 @@ export interface PopupProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | 
      * the screen fullscreen, or else the page's body.
      */
     container?: HTMLElement;
+    /**
+     * Animates it in once it is placed: from the side facing its anchor, or out of the bottom of the
+     * screen where the stylesheet places it (see Popup.css). For a menu or a panel, not for a list
+     * of suggestions that changes as the user types.
+     */
+    reveal?: boolean;
     /** Called once it is first placed and shown: a browser focuses nothing inside it before. */
     onPlaced?(): void;
     /**
@@ -70,7 +76,7 @@ export interface PopupProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | 
 /** How many pixels it keeps from the edges of the viewport. */
 const VIEWPORT_PADDING = 5;
 
-export default function Popup({ anchor, placement = "bottom-start", offset: gap = 0, capHeight = true, portalClassName, placedByStylesheet, backdropClassName, elementRef, container, onPlaced, onDismiss, escapeDismisses = true, keepOpenSelector, className, children, ...elementProps }: PopupProps) {
+export default function Popup({ anchor, placement = "bottom-start", offset: gap = 0, capHeight = true, portalClassName, placedByStylesheet, reveal, backdropClassName, elementRef, container, onPlaced, onDismiss, escapeDismisses = true, keepOpenSelector, className, children, ...elementProps }: PopupProps) {
     const popupRef = useRef<HTMLDivElement | null>(null);
     // Stable, so the element is handed on once rather than taken back and given again each render.
     const setElement = useCallback((element: HTMLDivElement | null) => {
@@ -82,9 +88,13 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
     placed.current = onPlaced;
     /** Whether it has said it is placed, which it says once, however often it is placed again. */
     const hasPlaced = useRef(false);
-    const reportPlaced = () => {
+    const reveals = useRef(reveal);
+    reveals.current = reveal;
+    /** Says it is placed, and names the side it reveals itself from, which CSS animates once. */
+    const reportPlaced = (side: string) => {
         if (hasPlaced.current) return;
         hasPlaced.current = true;
+        if (reveals.current && popupRef.current) popupRef.current.dataset.reveal = side;
         placed.current?.();
     };
     // A popup opened inside this one stands in the page's body too, so it registers here to
@@ -114,7 +124,7 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
         if (placedByStylesheet) {
             clearPlacement(popup);
             popup.style.visibility = "visible";
-            reportPlaced();
+            reportPlaced("stylesheet");
             return;
         }
         const reference = "x" in anchor ? pointAt(anchor.x, anchor.y) : anchor;
@@ -124,8 +134,8 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
         // Only a menu at a point moves over it. A rect, such as a caret, marks text the popup must not
         // cover, so the popup keeps to one side and its height is capped to the room there.
         const options = { placement, offset: gap, capHeight, shiftAcross: "x" in anchor };
-        const stopUpdating = autoUpdate(reference, popup, () => void placeFloating(popup, reference, options).then(() => {
-            if (!closed) reportPlaced();
+        const stopUpdating = autoUpdate(reference, popup, () => void placeFloating(popup, reference, options).then((side) => {
+            if (!closed) reportPlaced(side);
             // Resolved after the stylesheet took over, so what it wrote goes again.
             else if (stylesheetPlaces.current) clearPlacement(popup);
         }));
@@ -134,6 +144,15 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
             stopUpdating();
         };
     }, [ "x" in anchor ? undefined : anchor, anchorX, anchorY, placement, gap, capHeight, placedByStylesheet ]);
+
+    const inWrapper = useRef(!!portalClassName);
+    inWrapper.current = !!portalClassName;
+    useLayoutEffect(() => {
+        const popup = popupRef.current;
+        return () => {
+            if (popup) playClosing(popup, inWrapper.current);
+        };
+    }, []);
 
     const dismiss = useRef(onDismiss);
     dismiss.current = onDismiss;
@@ -210,6 +229,48 @@ function swallowStrayClick(pressed: Node) {
     };
     window.addEventListener("click", onClick, true);
     window.addEventListener("pointerdown", stop, true);
+}
+
+/**
+ * Leaves an inert copy of `popup`, which is being removed, to play its closing animation (see
+ * Popup.css), and removes the copy once that ends. The popup itself goes at once, so focus and
+ * presses never wait on the animation. The copy keeps the wrapper the popup stands in, which CSS
+ * rules that place it are scoped under.
+ */
+function playClosing(popup: HTMLElement, inWrapper: boolean) {
+    if (popup.dataset.reveal === undefined || popup.style.visibility !== "visible") return;
+    const root = inWrapper ? popup.parentElement : popup;
+    const container = root?.parentElement;
+    if (!root || !container) return;
+
+    const copy = root.cloneNode(true) as HTMLElement;
+    const copiedPopup = inWrapper ? copy.querySelector<HTMLElement>(":scope > .tn-popup") : copy;
+    if (!copiedPopup) return;
+    copiedPopup.dataset.closing = "";
+    copiedPopup.setAttribute("inert", "");
+    copiedPopup.setAttribute("aria-hidden", "true");
+    for (const element of [ copy, ...copy.querySelectorAll("[id]") ]) {
+        element.removeAttribute("id");
+    }
+    // A copied frame or media element would load again.
+    for (const element of copy.querySelectorAll(":scope > .tn-dropdown-backdrop, iframe, video, audio")) {
+        element.remove();
+    }
+    container.append(copy);
+
+    const scrollers = (element: HTMLElement) => [ element, ...element.querySelectorAll<HTMLElement>(".tn-menu-scroll, .tn-panel-scroll") ];
+    const copiedScrollers = scrollers(copiedPopup);
+    for (const [ index, scroller ] of scrollers(popup).entries()) {
+        const copied = copiedScrollers.at(index);
+        if (copied) copied.scrollTop = scroller.scrollTop;
+    }
+
+    const animations = copiedPopup.getAnimations();
+    if (!animations.length) {
+        copy.remove();
+        return;
+    }
+    void Promise.allSettled(animations.map((animation) => animation.finished)).then(() => copy.remove());
 }
 
 /** Removes what `placeFloating()` wrote on `popup`, so the stylesheet places it. */

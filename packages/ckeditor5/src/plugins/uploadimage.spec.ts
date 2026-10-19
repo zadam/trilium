@@ -338,6 +338,73 @@ describe("UploadimagePlugin", () => {
         await expect(uploadPromise).resolves.toEqual({ default: "http://example.com/pic.png" });
     });
 
+    describe("with a local server", () => {
+        let localUpload: ReturnType<typeof vi.fn>;
+
+        function answerWith(body: string, status = 200, contentType = "application/json") {
+            localUpload.mockResolvedValue(new Response(body, { status, headers: { "content-type": contentType } }));
+        }
+
+        beforeEach(() => {
+            localUpload = vi.fn();
+            installGlobMock({
+                getHeaders,
+                getActiveContextNote: () => ({ noteId: "noteAbc" }),
+                getComponentByEl: () => ({}),
+                getLocalUpload: () => localUpload
+            });
+        });
+
+        it("hands the file to the local server instead of sending a request", async () => {
+            answerWith(JSON.stringify({ uploaded: true, url: "api/attachments/att1/image/pic.png" }));
+            const file = new File(["content"], "pic.png", { type: "image/png" });
+
+            await expect(createAdapter(file).upload())
+                .resolves.toEqual({ default: "api/attachments/att1/image/pic.png" });
+            expect(FakeXHR.last).toBeUndefined();
+            expect(localUpload).toHaveBeenCalledExactlyOnceWith("api/notes/noteAbc/attachments/upload", {
+                method: "POST",
+                headers: { Authorization: "Bearer token", "x-csrf": "abc" },
+                fields: {},
+                file
+            });
+        });
+
+        it("reports a failed upload as the request path does", async () => {
+            const file = new File(["content"], "pic.png", { type: "image/png" });
+
+            answerWith(JSON.stringify({ uploaded: false, error: { message: "Disk full" } }), 500);
+            await expect(createAdapter(file).upload()).rejects.toBe("Cannot upload file: pic.png. Disk full");
+
+            answerWith("<html>Too large</html>", 413, "text/html");
+            await expect(createAdapter(file).upload()).rejects.toBe(
+                "Cannot upload file: pic.png. The file is too large to be uploaded (HTTP 413). If Trilium is behind a reverse proxy, raise its request body size limit.");
+
+            localUpload.mockRejectedValue(new Error("Worker gone"));
+            await expect(createAdapter(file).upload()).rejects.toBe("Cannot upload file: pic.png.");
+        });
+
+        it("rejects with no reason when aborted, and ignores the late answer", async () => {
+            let answer: (response: Response) => void = () => {};
+            localUpload.mockReturnValue(new Promise<Response>(resolve => {
+                answer = resolve;
+            }));
+            const adapter = createAdapter(new File(["content"], "pic.png", { type: "image/png" }));
+
+            const uploadPromise = adapter.upload();
+            await vi.waitFor(() => expect(localUpload).toHaveBeenCalledOnce());
+            adapter.abort();
+            answer(new Response(JSON.stringify({ uploaded: true, url: "late" })));
+
+            await expect(uploadPromise).rejects.toBeUndefined();
+        });
+
+        it("rejects when the loader has no file", async () => {
+            await expect(createAdapter(null).upload()).rejects.toBe("Missing file");
+            expect(localUpload).not.toHaveBeenCalled();
+        });
+    });
+
     it("rejects when the loader has no file", async () => {
         const adapter = createAdapter(null);
 

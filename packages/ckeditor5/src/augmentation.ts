@@ -1,5 +1,7 @@
 import "ckeditor5";
 
+import type { StandaloneApi } from "@triliumnext/commons";
+
 import type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
 
 declare global {
@@ -195,6 +197,8 @@ declare global {
         renderLinkMention(container: HTMLElement, metadata: Pick<LinkEmbedMetadata, "url" | "title" | "favicon">, editable?: boolean): void;
     }
 
+    type LocalUpload = NonNullable<StandaloneApi["localUpload"]>;
+
     var glob: {
         getComponentByEl<T extends Component>(el: unknown): T;
         getActiveContextNote(): {
@@ -202,6 +206,11 @@ declare global {
         };
         /** The headers of a request to the server, with `headers` added to them. */
         getHeaders(headers?: Record<string, string | undefined>): Promise<Record<string, string>>;
+        /**
+         * The host's in-page upload to its local server, when it has one. Uploads go through it
+         * because a raw request with a body cannot reach that server from every platform.
+         */
+        getLocalUpload?(): LocalUpload | undefined;
         getReferenceLinkTitle(href: string): Promise<string>;
         getReferenceLinkTitleSync(href: string, storedTitle?: string): string;
     };

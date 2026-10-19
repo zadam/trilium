@@ -40,6 +40,8 @@ export interface MenuHeader {
 export interface MenuActionRow<T> {
     kind: "actions";
     items: MenuCommandItem<T>[];
+    /** Classes added to the row, for a menu that styles its own. */
+    className?: string;
 }
 
 export interface MenuItemBadge {

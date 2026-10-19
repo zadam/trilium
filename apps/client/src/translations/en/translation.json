@@ -1155,34 +1155,34 @@
   "global_menu": {
     "menu": "Menu",
     "options": "Options",
-    "open_new_window": "Open New Window",
-    "switch_to_mobile_version": "Switch to Mobile Version",
-    "switch_to_desktop_version": "Switch to Desktop Version",
+    "open_new_window": "Open new window",
+    "switch_to_mobile_version": "Switch to mobile version",
+    "switch_to_desktop_version": "Switch to desktop version",
     "zoom": "Zoom",
-    "toggle_fullscreen": "Toggle Fullscreen",
-    "zoom_out": "Zoom Out",
-    "reset_zoom_level": "Reset Zoom Level",
-    "zoom_in": "Zoom In",
-    "configure_launchbar": "Configure Launchbar...",
-    "show_shared_notes_subtree": "Show Shared Notes Subtree",
-    "show_deleted_notes": "Show Deleted Notes",
-    "show_space_usage": "Show Space Usage",
+    "toggle_fullscreen": "Toggle fullscreen",
+    "zoom_out": "Zoom out",
+    "reset_zoom_level": "Reset zoom level",
+    "zoom_in": "Zoom in",
+    "configure_launchbar": "Configure launch bar...",
+    "show_shared_notes_subtree": "Show shared notes subtree",
+    "show_deleted_notes": "Show deleted notes",
+    "show_space_usage": "Show space usage",
     "advanced": "Advanced",
-    "open_dev_tools": "Open Dev Tools",
-    "open_sql_console": "Open SQL Console",
-    "open_sql_console_history": "Open SQL Console History",
-    "open_search_history": "Open Search History",
-    "show_backend_log": "Show Backend Log",
+    "open_dev_tools": "Open dev tools",
+    "open_sql_console": "Open SQL console",
+    "open_sql_console_history": "Open SQL console history",
+    "open_search_history": "Open search history",
+    "show_backend_log": "Show backend log",
     "reload_hint": "Reload can help with some visual glitches without restarting the whole app.",
-    "reload_frontend": "Reload Frontend",
-    "show_hidden_subtree": "Show Hidden Subtree",
-    "show_help": "Show Help",
+    "reload_frontend": "Reload frontend",
+    "show_hidden_subtree": "Show hidden subtree",
+    "show_help": "Show help",
     "about": "About Trilium Notes",
     "logout": "Logout",
-    "show-cheatsheet": "Show Cheatsheet",
-    "toggle-zen-mode": "Zen Mode",
-    "new-version-available": "New Update Available",
-    "download-update": "Get Version {{latestVersion}}",
+    "show-cheatsheet": "Show cheatsheet",
+    "toggle-zen-mode": "Zen mode",
+    "new-version-available": "New update available",
+    "download-update": "Get version {{latestVersion}}",
     "search_notes": "Search notes"
   },
   "zen_mode": {
@@ -1225,7 +1225,6 @@
     "import_files": "Import files...",
     "export_note": "Export note...",
     "delete_note": "Delete note...",
-    "print_note": "Print note...",
     "print_or_export_to_pdf": "Print/export to PDF...",
     "view_revisions": "Note revisions...",
     "save_revision": "Save revision",
@@ -1234,8 +1233,8 @@
     "convert_into_attachment_failed": "Converting note '{{title}}' failed.",
     "convert_into_attachment_successful": "Note '{{title}}' has been converted to attachment.",
     "convert_into_attachment_prompt": "Are you sure you want to convert note '{{title}}' into an attachment of the parent note?",
-    "convert_to_markdown": "Convert to Markdown Note...",
-    "convert_to_text": "Convert to Text Note...",
+    "convert_to_markdown": "Convert to Markdown note...",
+    "convert_to_text": "Convert to text note...",
     "convert_format_warning": "Some formatting may be lost during the conversion and you may need to fix a few things afterwards. A revision of the current note will be saved beforehand so you can restore it. Do you want to continue?",
     "convert_format_warning_risky": "You are converting between two formats that don't have identical capabilities, so some formatting may be lost and some unsupported elements may be dropped.<br><br>Do you fully assume this risk and want to proceed with the conversion?<br><br>A revision of the current note will be saved beforehand, so you can revert to the original format.",
     "convert_to_markdown_successful": "Note has been converted to Markdown.",
@@ -1244,7 +1243,10 @@
     "export_as_image": "Export as image",
     "export_as_image_png": "PNG (raster)",
     "export_as_image_svg": "SVG (vector)",
-    "note_map": "Note map"
+    "note_map": "Note map",
+    "search_in_note_short": "Find",
+    "note_attachments_short": "Attachments",
+    "note_settings": "Note settings"
   },
   "onclick_button": {
     "no_click_handler": "Button widget '{{componentId}}' has no defined click handler"
@@ -1301,13 +1303,14 @@
     "no_backlinks": "No notes link to this one."
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Insert child note",
     "delete_this_note": "Delete this note",
     "note_revisions": "Note revisions",
     "error_cannot_get_branch_id": "Cannot get branchId for notePath '{{notePath}}'",
     "error_unrecognized_command": "Unrecognized command {{command}}",
     "backlinks": "Backlinks",
-    "content_language_switcher": "Content language: {{language}}"
+    "content_language_switcher": "Content language: {{language}}",
+    "insert_child_note_short": "Child note",
+    "create_new_split_short": "New split"
   },
   "note_icon": {
     "change_note_icon": "Change note icon",
@@ -1387,7 +1390,7 @@
     "calculate": "calculate",
     "subtree_size_one": "(subtree size: {{size}} in {{count}} note)",
     "subtree_size_other": "(subtree size: {{size}} in {{count}} notes)",
-    "title": "Note Info",
+    "title": "Note info",
     "show_similar_notes": "Show similar notes"
   },
   "note_map": {
@@ -2497,7 +2500,7 @@
   "editability_select": {
     "auto": "Auto",
     "read_only": "Read-only",
-    "always_editable": "Always Editable",
+    "always_editable": "Always editable",
     "note_is_editable": "Note is editable if it's not too long.",
     "note_is_read_only": "Note is read-only, but can be edited with a button click.",
     "note_is_always_editable": "Note is always editable, regardless of its length."
@@ -2839,7 +2842,7 @@
     "more_actions": "More actions"
   },
   "title_bar_buttons": {
-    "window-on-top": "Keep Window on Top"
+    "window-on-top": "Keep window on top"
   },
   "note_detail": {
     "content_load_error": "The note's content could not be loaded.",
@@ -4834,5 +4837,8 @@
     "default_parent": "Default location of created notes",
     "default_parent_description": "Where they are placed when no other location is picked, such as when created through @-completion in a text note.",
     "default_parent_placeholder": "Where they are created"
+  },
+  "hide_keyboard_button": {
+    "title": "Hide keyboard"
   }
 }

@@ -20,8 +20,10 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Streaming HTTP proxy for the sync worker (see TriliumWebViewClient).
-        getBridge().setWebViewClient(new TriliumWebViewClient(getBridge()));
+        // Local API requests answered by the page's SQLite worker (see TriliumRequestBridge),
+        // and the streaming HTTP proxy for the sync worker (see TriliumWebViewClient).
+        TriliumRequestBridge requestBridge = TriliumRequestBridge.install(getBridge());
+        getBridge().setWebViewClient(new TriliumWebViewClient(getBridge(), requestBridge));
         // Binary write channel for downloads and backups (see TriliumFileSink).
         TriliumFileSink.install(getBridge());
         enableEdgeToEdge();

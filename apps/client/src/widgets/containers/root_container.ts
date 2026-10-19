@@ -64,7 +64,7 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         // are fetched here, once froca can be asked which notes hold them.
         void applyCustomFontsFromOptions();
         this.#setExperimentalFeatures();
-        this.#initPWATopbarColor();
+        this.#initThemeColor();
 
         return super.render();
     }
@@ -195,8 +195,7 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         }
     }
 
-    #initPWATopbarColor() {
-        if (!utils.isPWA()) return;
+    #initThemeColor() {
         const tracker = $("#background-color-tracker");
 
         if (tracker.length) {

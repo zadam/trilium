@@ -17,7 +17,7 @@ A note's read-only behavior can be changed via <a class="reference-link" href="
     This is the default behavior in which the note will be editable by default, unless it becomes large enough to trigger read-only mode.
 *   **Read-only**  
     The note will be always marked as read-only, regardless of its size. Nevertheless, it's still possible to temporarily edit the note if needed. This is generally useful for notes that are not prone to change.
-*   **Always Editable**  
+*   **Always editable**  
     This option will bypass the automatic read-only activation for this particular note. It's useful for large notes that are frequently edited.
 
 If the _Editable_ section is missing from the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a>, then the note type does not support read-only mode.

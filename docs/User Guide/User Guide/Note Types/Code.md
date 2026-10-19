@@ -23,7 +23,7 @@ In the [Note Tree](../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tre
 
 To change the language of a code note, look for the <span class="tn-icon bx bx-code"></span> icon in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a>. When clicked it will reveal the list of available languages (which can be customized according to the section below). The menu also features a search bar to quickly filter, and icons to visually distinguish some of the programming languages.
 
-On the <a class="reference-link" href="../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the same list is available in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Change language mode_.
+On the <a class="reference-link" href="../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the same list is available in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20menu.md">Note menu</a> → _Note settings_ → _Change language mode_.
 
 ## Adjusting the list of languages
 

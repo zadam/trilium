@@ -386,6 +386,26 @@ describe("Dropdown", () => {
             await vi.waitFor(() => expect(popup()).toBeNull());
             expect(restore).toHaveBeenCalledTimes(1);
         });
+
+        it("suspends the focus traps before a bottom sheet, placed at once, takes focus", async () => {
+            layout.onMobile = true;
+            const order: string[] = [];
+            focusTraps.suspend.mockImplementation(() => {
+                order.push("suspend");
+                return () => {};
+            });
+            const focus = HTMLElement.prototype.focus;
+            vi.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (this: HTMLElement, options) {
+                if (this.closest(".tn-popup")) order.push("popup focus");
+                focus.call(this, options);
+            });
+            const { toggle } = renderDropdown({ mobileBottomSheet: true });
+
+            click(toggle);
+            await vi.waitFor(() => expect(popup()?.contains(document.activeElement)).toBe(true));
+            expect(order.at(0)).toBe("suspend");
+            expect(order).toContain("popup focus");
+        });
     });
 
     describe("as a menu", () => {
@@ -519,6 +539,25 @@ describe("Dropdown", () => {
             expect(popup()?.style.maxHeight).not.toBe("");
             expect([ ...cover.classList ]).toEqual([ "show", "global-menu-cover" ]);
             cover.remove();
+        });
+
+        it("leaves a launcher bar menu to the stylesheet on a phone, and beside its toggle on a tablet", async () => {
+            layout.onMobile = true;
+            const { toggle } = renderDropdown({ mobileBackdrop: true });
+
+            click(toggle);
+            await vi.waitFor(() => expect(popup()?.style.visibility).toBe("visible"));
+            expect(popup()?.classList.contains("mobile-bottom-menu")).toBe(false);
+            const { left, top, maxHeight } = popup()?.style ?? {};
+            expect([ left, top, maxHeight ]).toEqual([ "", "", "" ]);
+
+            click(toggle);
+            await vi.waitFor(() => expect(popup()).toBeNull());
+            layout.narrow = false;
+            for (const listener of layout.onChange) listener();
+            click(toggle);
+            await vi.waitFor(() => expect(popup()?.style.top).toBe("82px"));
+            expect(popup()?.style.maxHeight).not.toBe("");
         });
 
         it("turns into a placed menu and back as a tablet turns while it is open", async () => {

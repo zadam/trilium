@@ -33,6 +33,7 @@ vi.mock("@triliumnext/ckeditor5", () => ({}));
 const {
     applyPendingAttachmentChanges,
     getBlockData,
+    isCaretInFocus,
     notifyAttachmentChanges,
     onNotificationInfo,
     onNotificationWarning,
@@ -347,5 +348,30 @@ describe("revealLinkTargetWhenReady", () => {
         await ready;
         await Promise.resolve();
         expect(reveal).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe("isCaretInFocus", () => {
+    it("holds while focus stays in the editable element with the selection, not once a menu takes it", () => {
+        const editable = document.createElement("div");
+        editable.contentEditable = "true";
+        editable.innerHTML = "<p>First paragraph</p>";
+        const menu = document.createElement("div");
+        menu.tabIndex = -1;
+        document.body.append(editable, menu);
+        const paragraph = editable.querySelector("p");
+        expect(paragraph).toBeTruthy();
+
+        editable.focus();
+        window.getSelection()?.collapse(paragraph, 0);
+        expect(isCaretInFocus(document.activeElement, window.getSelection())).toBe(true);
+
+        // The selection stays in the editor while the menu holds focus.
+        menu.focus();
+        expect(window.getSelection()?.focusNode).toBe(paragraph);
+        expect(isCaretInFocus(document.activeElement, window.getSelection())).toBe(false);
+
+        editable.remove();
+        menu.remove();
     });
 });

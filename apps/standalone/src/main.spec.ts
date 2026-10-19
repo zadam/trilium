@@ -6,11 +6,14 @@ const mocks = vi.hoisted(() => ({
     registerNativeHttpHandler: vi.fn(),
     restoreBackup: vi.fn(),
     downloadDatabase: vi.fn(),
+    saveDatabase: vi.fn(),
     announceLeadership: vi.fn(),
     localFetch: vi.fn(),
+    localUpload: vi.fn(),
     capacitorHttpHandler: vi.fn(),
     saveUrlToDevice: vi.fn(),
-    requestSecurityChange: vi.fn()
+    requestSecurityChange: vi.fn(),
+    installNativeRequestBridge: vi.fn()
 }));
 
 // Whether this tab wins the database lock. Only the leader may start a worker;
@@ -23,8 +26,10 @@ vi.mock("./local-bridge.js", () => ({
     registerNativeHttpHandler: mocks.registerNativeHttpHandler,
     restoreBackup: mocks.restoreBackup,
     downloadDatabase: mocks.downloadDatabase,
+    saveDatabase: mocks.saveDatabase,
     announceLeadership: mocks.announceLeadership,
     localFetch: mocks.localFetch,
+    localUpload: mocks.localUpload,
     requestSecurityChange: mocks.requestSecurityChange
 }));
 vi.mock("./leader_election.js", () => ({
@@ -36,6 +41,7 @@ vi.mock("./leader_election.js", () => ({
 }));
 vi.mock("./services/capacitor_http_handler.js", () => ({ capacitorHttpHandler: mocks.capacitorHttpHandler }));
 vi.mock("./services/capacitor_download.js", () => ({ saveUrlToDevice: mocks.saveUrlToDevice }));
+vi.mock("./native-request-bridge.js", () => ({ installNativeRequestBridge: mocks.installNativeRequestBridge }));
 // Avoid pulling the entire client bundle when loadScripts() runs.
 vi.mock("../../client/src/index.js", () => ({}));
 
@@ -102,6 +108,7 @@ describe("bootstrap", () => {
         await vi.waitFor(() => expect(mocks.announceLeadership).toHaveBeenCalled());
         // The leader also answers the client's API calls directly, skipping that route.
         expect(window.standaloneApi?.localFetch).toBe(mocks.localFetch);
+        expect(window.standaloneApi?.localUpload).toBe(mocks.localUpload);
         // And its worker is the one holding the settings file, so it is the tab that can change
         // what this instance is allowed to run.
         expect(window.standaloneApi?.security).toBeDefined();
@@ -121,6 +128,7 @@ describe("bootstrap", () => {
         // A follower must keep calling through the service worker: with no worker of its own,
         // a localFetch here would answer from nothing.
         expect(window.standaloneApi?.localFetch).toBeUndefined();
+        expect(window.standaloneApi?.localUpload).toBeUndefined();
 
         // Nor can it change a security setting: the file that holds them is locked by the
         // leader's worker, which this tab has no way to reach.
@@ -180,6 +188,35 @@ describe("bootstrap", () => {
         await runBootstrap();
         await vi.waitFor(() => expect(mocks.registerNativeHttpHandler).toHaveBeenCalledWith(mocks.capacitorHttpHandler));
         await vi.waitFor(() => expect(win.standaloneApi?.save?.saveUrl).toBe(mocks.saveUrlToDevice));
+    });
+
+    it("answers through the native request bridge without a SW when the shell provides one", async () => {
+        const sw: ServiceWorkerLike = { controller: null, register: vi.fn(), ready: Promise.resolve() };
+        setServiceWorker(sw);
+        const win = window as unknown as WindowWithCapacitor;
+        win.Capacitor = {};
+        mocks.installNativeRequestBridge.mockReturnValue(true);
+
+        await runBootstrap();
+        await vi.waitFor(() => expect(mocks.installNativeRequestBridge).toHaveBeenCalled());
+        expect(mocks.startLocalServerWorker).toHaveBeenCalled();
+        expect(mocks.attachServiceWorkerBridge).not.toHaveBeenCalled();
+        expect(sw.register).not.toHaveBeenCalled();
+        expect(document.body.innerHTML).toBe("");
+    });
+
+    it("falls back to the SW when the shell has no native request bridge, and never asks on the web", async () => {
+        setServiceWorker({ controller: {}, register: vi.fn(), ready: Promise.resolve() });
+        await runBootstrap();
+        await vi.waitFor(() => expect(mocks.attachServiceWorkerBridge).toHaveBeenCalled());
+        expect(mocks.installNativeRequestBridge).not.toHaveBeenCalled();
+
+        mocks.attachServiceWorkerBridge.mockClear();
+        (window as unknown as WindowWithCapacitor).Capacitor = {};
+        mocks.installNativeRequestBridge.mockReturnValue(false);
+        await runBootstrap();
+        await vi.waitFor(() => expect(mocks.attachServiceWorkerBridge).toHaveBeenCalled());
+        expect(mocks.installNativeRequestBridge).toHaveBeenCalled();
     });
 
     it("registers and waits for the SW, then loads scripts once it controls", async () => {
