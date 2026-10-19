@@ -139,6 +139,73 @@ describe("DrawingHistory", () => {
             expect(store.write).toHaveBeenCalledOnce();
         });
 
+    it("shows a step that saves while an Excalidraw loads in that Excalidraw", async () => {
+        const { host, steps } = createHost();
+        const history = new DrawingHistory(host);
+        const moved = { ...RECTANGLE, x: 10, version: 2 };
+        const store = createStore([ RECTANGLE ]);
+        const first = createDrawing([ RECTANGLE ]);
+        const firstMount = history.mount();
+        firstMount.attach(first.api, first.root, store);
+        first.input("pointerdown");
+        first.setElements([ moved ]);
+        firstMount.record();
+        firstMount.detach();
+        store.setElements([ moved ]);
+
+        // Attached while the step reads the drawing.
+        const read = deferScene();
+        store.read.mockImplementationOnce(() => read.promise);
+        steps[0].undo();
+        const nextMount = history.mount();
+        const next = createDrawing([ moved ]);
+        nextMount.attach(next.api, next.root, store);
+        read.resolve({ elements: [ moved ], appState: {}, files: {} });
+        await vi.waitFor(() => expect(next.getElements()).toMatchObject([ { x: 0 } ]));
+        expect(store.getElements()).toMatchObject([ { x: 0 } ]);
+        nextMount.detach();
+
+        // Loaded while the step reads the drawing, attached once it saved.
+        const nextRead = deferScene();
+        store.read.mockImplementationOnce(() => nextRead.promise);
+        steps[0].redo();
+        const laterMount = history.mount();
+        nextRead.resolve({ elements: next.getElements(), appState: {}, files: {} });
+        await vi.waitFor(() => expect(store.write).toHaveBeenCalledTimes(2));
+        const later = createDrawing(next.getElements());
+        laterMount.attach(later.api, later.root, store);
+        await vi.waitFor(() => expect(later.getElements()).toMatchObject([ { x: 10 } ]));
+    });
+
+    it("shows the steps saved since an Excalidraw loaded, also while another one saves", async () => {
+        const { host, steps } = createHost();
+        const history = new DrawingHistory(host);
+        const shape = { ...RECTANGLE, y: 0 };
+        const store = createStore([ shape ]);
+        const first = createDrawing([ shape ]);
+        const firstMount = history.mount();
+        firstMount.attach(first.api, first.root, store);
+        first.input("pointerdown");
+        first.setElements([ { ...shape, x: 10, version: 2 } ]);
+        firstMount.record();
+        first.input("pointerdown");
+        first.setElements([ { ...shape, x: 10, y: 5, version: 3 } ]);
+        firstMount.record();
+        firstMount.detach();
+        store.setElements(first.getElements());
+
+        const nextMount = history.mount();
+        steps[1].undo();
+        await vi.waitFor(() => expect(store.write).toHaveBeenCalledOnce());
+        const read = deferScene();
+        store.read.mockImplementationOnce(() => read.promise);
+        steps[0].undo();
+        const next = createDrawing(first.getElements());
+        nextMount.attach(next.api, next.root, store);
+        read.resolve({ elements: store.getElements(), appState: {}, files: {} });
+        await vi.waitFor(() => expect(next.getElements()).toMatchObject([ { x: 0, y: 0 } ]));
+    });
+
     it("undoes and redoes the note with the keys and the buttons of Excalidraw", () => {
         const { host, setEnabled } = createHost();
         const drawing = createDrawing([]);
@@ -262,6 +329,15 @@ function createHost() {
             for (const listener of listeners) listener();
         }
     };
+}
+
+/** A read of the saved drawing, which the spec resolves. */
+function deferScene() {
+    let resolve: (scene: DrawingScene) => void = () => {};
+    const promise = new Promise<DrawingScene>((done) => {
+        resolve = done;
+    });
+    return { promise, resolve };
 }
 
 /** The saved drawing, which shows `elements`. */

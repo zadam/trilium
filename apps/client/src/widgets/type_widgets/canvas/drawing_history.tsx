@@ -92,7 +92,10 @@ export const HISTORY_ICON_PATHS: Record<HistoryCommand, string> = {
  * drawing, or the drawing as saved, through the last `DrawingStore`, while none does.
  */
 export default class DrawingHistory {
-    /** Counts the steps applied, so that an Excalidraw that loaded before one shows it. */
+    /**
+     * Counts the steps applied, as they reach the drawing, so that an Excalidraw that loaded
+     * before one shows it.
+     */
     private revision = 0;
     private readonly drawings = new Set<AttachedDrawing>();
     private store: DrawingStore | undefined;
@@ -174,8 +177,8 @@ export default class DrawingHistory {
 
     /** Shows the drawing of `store` in `drawing` once the steps applied through it saved. */
     private showStoredScene(drawing: AttachedDrawing, store: DrawingStore) {
-        const revision = this.revision;
         this.queueStoreUpdate(async () => {
+            const revision = this.revision;
             const scene = await store.read();
             if (revision === this.revision && this.drawings.has(drawing)) {
                 showScene(drawing, scene);
@@ -227,9 +230,7 @@ export default class DrawingHistory {
     private apply(step: DrawingStep, isUndo: boolean) {
         const [ first ] = this.drawings;
         if (first) {
-            for (const drawing of this.drawings) {
-                applyToDrawing(drawing, step, isUndo);
-            }
+            this.applyToDrawings(step, isUndo);
             // Deferred until after the Undo button of the toolbar focuses the text editor.
             queueMicrotask(() => {
                 first.root?.querySelector<HTMLElement>(".excalidraw-container")?.focus();
@@ -239,13 +240,20 @@ export default class DrawingHistory {
             const { store } = this;
             this.queueStoreUpdate(async () => {
                 store.write(applyToScene(await store.read(), step, isUndo));
+                // An Excalidraw that attached meanwhile loaded the drawing before the step.
+                this.applyToDrawings(step, isUndo);
             });
         } else {
             return false;
         }
-
-        this.revision++;
         return true;
+    }
+
+    private applyToDrawings(step: DrawingStep, isUndo: boolean) {
+        for (const drawing of this.drawings) {
+            applyToDrawing(drawing, step, isUndo);
+        }
+        this.revision++;
     }
 }
 

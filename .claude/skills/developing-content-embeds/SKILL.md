@@ -171,8 +171,9 @@ changes. Three layers, with one recorder per editor in the middle:
   replacement button copies Excalidraw's `ToolButton` markup. Without a mounted Excalidraw, a step
   reads the drawing through the `DrawingStore` it attached with (the unsaved content, else the
   blob, so a save made elsewhere since stays), patches it and writes it back; the steps queue one
-  after another. A mount that loaded before such a step (an undone Editable toggle remounts) reads
-  it again at attach. Undo sorts by fractional index when a step sets `index`,
+  after another and count in `revision` once written. They also patch an Excalidraw that attached
+  during the read (patches are idempotent), and a mount that loaded before a written step (an
+  undone Editable toggle remounts) reads the drawing again at attach. Undo sorts by fractional index when a step sets `index`,
   as Excalidraw renumbers an out-of-order array instead of reordering it.
   `excalidraw_contract.spec.ts` pins the Excalidraw internals this relies on.
 - **`EmbedHistories`** (`text/embed_history.ts`, one per `EditableText`) gives a `ContentHistory`
