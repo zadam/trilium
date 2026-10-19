@@ -386,6 +386,26 @@ describe("Dropdown", () => {
             await vi.waitFor(() => expect(popup()).toBeNull());
             expect(restore).toHaveBeenCalledTimes(1);
         });
+
+        it("suspends the focus traps before a bottom sheet, placed at once, takes focus", async () => {
+            layout.onMobile = true;
+            const order: string[] = [];
+            focusTraps.suspend.mockImplementation(() => {
+                order.push("suspend");
+                return () => {};
+            });
+            const focus = HTMLElement.prototype.focus;
+            vi.spyOn(HTMLElement.prototype, "focus").mockImplementation(function (this: HTMLElement, options) {
+                if (this.closest(".tn-popup")) order.push("popup focus");
+                focus.call(this, options);
+            });
+            const { toggle } = renderDropdown({ mobileBottomSheet: true });
+
+            click(toggle);
+            await vi.waitFor(() => expect(popup()?.contains(document.activeElement)).toBe(true));
+            expect(order.at(0)).toBe("suspend");
+            expect(order).toContain("popup focus");
+        });
     });
 
     describe("as a menu", () => {

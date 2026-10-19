@@ -210,12 +210,22 @@ function DropdownToggle({ id, className, buttonClassName, title, text, dropdownC
     const shownRef = useRef(shown);
     const callbacks = useRef({ onShown, onHidden, hideTooltip });
     callbacks.current = { onShown, onHidden, hideTooltip };
+    const restoreFocusTraps = useRef<(() => void) | null>(null);
     const setOpen = useCallback((open: boolean) => {
         if (shownRef.current === open) return;
         shownRef.current = open;
+        // A dialog's focus trap would pull focus out of a popup that stands outside the dialog. The
+        // traps go before the render, since a bottom sheet takes focus in the effect that places it.
+        if (open) {
+            restoreFocusTraps.current = suspendModalFocusTraps();
+        }
         // Focus that the popup holds goes back to the toggle, as a native menu button's does; a
         // command that moved it elsewhere keeps it there.
         if (!open && popupRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
+        if (!open) {
+            restoreFocusTraps.current?.();
+            restoreFocusTraps.current = null;
+        }
         if (!open) setStartAt(undefined);
         setShown(open);
         if (open) {
@@ -260,11 +270,7 @@ function DropdownToggle({ id, className, buttonClassName, title, text, dropdownC
         return () => cover?.classList.remove("show", "global-menu-cover");
     }, [ shown, mobileBackdrop ]);
 
-    // A dialog's focus trap would pull focus out of a popup that stands outside the dialog.
-    useLayoutEffect(() => {
-        if (!shown) return;
-        return suspendModalFocusTraps();
-    }, [ shown ]);
+    useEffect(() => () => restoreFocusTraps.current?.(), []);
 
     const ariaId = useUniqueName("button");
     const toggleId = id ?? ariaId;
