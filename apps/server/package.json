@@ -41,7 +41,7 @@
     "i18next": "26.4.5",
     "ipaddr.js": "^2.4.0",
     "js-yaml": "5.4.3",
-    "unpdf": "1.8.1"
+    "unpdf": "1.9.0"
   },
   "devDependencies": {
     "@braintree/sanitize-url": "7.1.2",
