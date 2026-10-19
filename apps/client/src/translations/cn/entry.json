@@ -134,7 +134,11 @@
         "unlock-refused": "这些信息未被接受。请重试。",
         "keep-existing": "返回应用",
         "keep-existing-description": "继续使用现有知识库并返回应用。",
-        "backup-saved-to": "备份已保存到 {{- location}}。按「完成」返回应用程序。"
+        "backup-saved-to": "备份已保存到 {{- location}}。按「完成」返回应用程序。",
+        "sync-from-server-failed": "同步失败",
+        "server-totp-token": "一次性密码或恢复码（可选）",
+        "totp-required": "此服务器要求提供一次性密码或恢复码。",
+        "wrong-totp": "一次性密码或恢复码不正确，请重试。"
     },
     "login": {
         "heading": "登录 Trilium Notes",
