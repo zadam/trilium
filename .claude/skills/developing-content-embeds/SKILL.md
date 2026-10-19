@@ -47,8 +47,10 @@ All three carry `boxSize`, `hideTitle`, `editable`, `displayMode` (`data-box-siz
 
 - **Inline source** (`inline_source.ts`, `ContentEmbedInlineSource`) keeps the document readable
   elsewhere: the note exports to Markdown as a fenced `mermaid` block, other apps render it, and
-  undo in the note undoes source edits (`setSource()` is one step of the editor's undo and does
-  **not** redraw the embed, which would remount its editor). It is converted only for languages in
+  undo in the note undoes source edits through the shared undo history (see _Undo history_ below).
+  `setSource()` writes outside the undo stack and does **not** redraw the embed, which would
+  remount its editor. The plugin hands out one `InlineEmbedSource` per embed element, which keys
+  its history. It is converted only for languages in
   `contentEmbed.inlineLanguages` (from `SOURCE_EMBED_TYPES` in `text/config.ts`); a code block of
   another language stays a code block.
 - **Legacy blocks** — a `<pre>` without `data-box-size` predates the embed (the old Mermaid
@@ -138,6 +140,57 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
   the content to offer one: a toolbar tool while it can be edited, an `OverlayFullscreenButton`
   after the zoom buttons while read-only (no toolbar then). A read-only drawing still has none.
 
+## Undo history
+
+The edits made in an embed's CodeMirror (code, Markdown, Mermaid, inline or not) and in a drawing
+canvas's Excalidraw are steps of the text editor's undo stack, in order with the text's own
+changes. Three layers, with one recorder per editor in the middle:
+
+- **`EmbedHistory`** (`packages/ckeditor5/src/plugins/content_embed/embed_history.ts`, required by
+  `ContentEmbed`) is editor-agnostic. `push({ undo, redo })` adds a batch that only adds or removes
+  the `embedHistoryStep` marker (`affectsData: false`): it fires `change`, which resets the typing
+  buffer, but not `change:data`. The `revert` events of `undo`/`redo` run the step; a step that
+  returns `false` is skipped and the command runs again. `isLatest()` tells the content whether
+  its step can still grow. `undo()`/`redo()` are for keys pressed inside an embed: they focus the
+  text editor when the reverted change was its own.
+- **`SharedHistory`** (`packages/codemirror/src/shared_history.ts`) records the transactions of
+  every view of one document, grouped as `history()` groups them, and applies a step to the view
+  whose document matches, else through `write` while no view shows it (a remount in progress). A
+  step whose document changed since does not apply. `view.setSharedHistory()` replaces the view's
+  own `history()` and routes Mod-Z/Mod-Y/Mod-Shift-Z, the `historyUndo`/`historyRedo` input
+  events and Vim's `u`/`Ctrl-R` to the host.
+- **`DrawingHistory`** (`canvas/drawing_history.tsx`) does the same for Excalidraw, whose 0.18
+  history is private. `useCanvasDrawingPersistence()` takes a `DrawingMount` when it reads the
+  content, attaches it once the scene shows, calls `record()` on each `onChange` and `detach()` in
+  a layout cleanup. A step is an element delta (before/after clones and the changed keys, never
+  `version`/`versionNonce`/`updated`/`status`) plus the background, recorded once
+  `isInteracting()` is false (pointer up, text submitted, line finished). A change with no input
+  inside the root since the last record (an image that finished loading) joins the last step while it
+  `isLatest()`. `api.registerAction()` replaces Excalidraw's `undo`/`redo` by name, so its keys,
+  its footer buttons and `CanvasTools` (which clicks `button-undo`) reach the host; the
+  replacement button copies Excalidraw's `ToolButton` markup. Without a mounted Excalidraw, a step
+  reads the drawing through the `DrawingStore` it attached with (the unsaved content, else the
+  blob, so a save made elsewhere since stays), patches it and writes it back; the steps queue one
+  after another and count in `revision` once written; a step on a live canvas waits behind them. They also patch an Excalidraw that attached
+  during the read (patches are idempotent), and a mount that loaded before a written step (an
+  undone Editable toggle remounts) reads the drawing again at attach. Undo sorts by fractional index when a step sets `index`,
+  as Excalidraw renumbers an out-of-order array instead of reordering it.
+  `excalidraw_contract.spec.ts` pins the Excalidraw internals this relies on.
+- **`EmbedHistories`** (`text/embed_history.ts`, one per `EditableText`) gives a `ContentHistory`
+  (`host` + `write`) per note ID, attachment ID or `InlineEmbedSource`, as `ContentEditor.history`.
+  Its `host` also tells whether the note can undo or redo (`isEnabled()`, `subscribe()`), for the
+  drawing's buttons. It imports no CodeMirror or Excalidraw at runtime: `CodeEmbedEditor` creates
+  the `SharedHistory` on it and `getDrawingHistory()` the `DrawingHistory`, each attached while
+  mounted, read-only included.
+
+Content loaded from elsewhere goes through `view.loadText()`, which stays out of the history; a
+`setText()` (re-indent) is a step. The `content` prop of `CodeEmbedEditor` loads, so a change made
+while read-only (the re-indent stand-in in `CodeEmbed.tsx`) calls `setText()` on the read-only view,
+after loading the unsaved content of the other embeds into it, or Undo skips it or reverts their
+edits. Another editor joins by pushing its own steps to `EmbedHistory` through the same `host`.
+Included text notes keep their own history. Testing it live: open the note in one tab only, as
+editors of one note in several tabs reload each other's saves and mix up the result.
+
 ## Recipe: a new source embed (a diagram language)
 
 1. Add a `SourceEmbedType` to `SOURCE_EMBED_TYPES` in `apps/client/src/services/source_embeds.ts`:
@@ -148,10 +201,11 @@ embeds receive `SourceEmbedProps` (`content`, `editor`) whichever storage the so
    attachment icon map next to it; add the content type to the list in `content_renderer.ts`.
 3. Write the component on the note type's parts (see the rule above). For a split source/preview
    view, `SplitLayout` + `useMountedPanes()` + `EmbedSourcePane` (in `code/CodeEmbedEditor.tsx`)
-   give the layout, the divider, the error card, the stale badge and a source pane that keeps its
-   undo history behind the preview. Delay re-rendering with `useDebouncedValue()`. Give the root
+   give the layout, the divider, the error card, the stale badge and a source pane that stays
+   mounted behind the preview and shares the note's undo history. Delay re-rendering with `useDebouncedValue()`. Give the root
    the `include-note-box-height` class for the 10/20/50em heights per box size and full height in
-   fullscreen, and round it with `--_include-note-content-*-radius` (edge to edge) or
+   fullscreen (content with a height of its own can fit it at Full instead, as
+   `MarkdownEmbed.css` sets `height: auto` down to the split's columns), and round it with `--_include-note-content-*-radius` (edge to edge) or
    `--_include-note-framed-*-radius` (inside the 2px frame), all in `style.css`.
 4. An insert command: `INSERT_INLINE_EMBED_COMMAND` with `{ language, source }` (see
    `mermaid_ui.ts` and `slash_commands.ts`). New embeds are editable, untitled and Medium.
@@ -194,13 +248,17 @@ in-place drawings replaced the code blocks the boxes need.
   source and `setData()` then dropped the embed, whose later write went to the graveyard. The
   editor hands each held write to `InlineSourceSaves` (`text/attachment_saves.ts`), which marks the
   note changed, and `getData()` in `EditableText` flushes it first — as `AttachmentSaves` does for
-  attachments. The text editor's Undo and Redo flush it too (`flushBeforeHistory()`): otherwise
-  Undo reverted the write before it, the embed ignored that while it held newer text, and the held
-  write then landed after the Undo and cleared Redo.
+  attachments. The write is outside the undo stack, so it can land after an undo without clearing
+  Redo; the undo step itself is recorded when the source changes (see _Undo history_).
 - **Non-interactive rendering must be finished when it returns.** A presentation slide snapshots
   `getRenderedContent()` and disposes it at once, so a mounted component that draws in an effect
   leaves it blank. Without `options.interactive`, draw a picture before returning
   (`SourceEmbedType.renderPreview()`, `renderCanvasDrawingPicture()`).
+- **Draw a level's diagrams before its embeds render.** `applyInlineMermaid()` reads the source
+  from the text of each `.rendered-mermaid-diagram`, so a pass over a container whose embeds are
+  already drawn renders their SVG text and replaces the drawing with an error.
+  `postProcessRichContent()` draws its own diagrams before `renderContentEmbeds()`, and printing
+  adds no pass of its own. `trim` keeps the `<style>` inside each SVG.
 - **Keep the block ID.** A read-only view that swaps the saved element for a box copies
   `data-trilium-block-id` onto it (on the `<pre>`, or the `<code>` of older diagrams), or links to
   the block stop resolving.
@@ -211,21 +269,32 @@ in-place drawings replaced the code blocks the boxes need.
   element to join the page. `registerContentEmbedTools()` likewise notifies the toolbar only once
   the content is in the page — otherwise an embed auto-selected on load shows the toolbar of an
   included note.
-- **CodeMirror's `readOnly` is fixed at creation.** Remount the editor when editability changes
-  (`key={isEditing ? "editing" : "read-only"}` on `CodeEmbedEditor`). Test with
-  `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`. A read-only
-  `CodeEmbedEditor` carries the `read-only` class, which hides the active-line highlight.
+- **Switch editability in place, never by remounting.** `CodeMirror.tsx` follows its `readOnly`
+  prop through `setReadOnly()`, which keeps the view, its scroll and selection, and starts a new
+  undo history unless the view has a shared one. A `key` that remounted `CodeEmbedEditor` on the toggle painted an empty `<pre>` (a
+  Full box collapsed) and then CodeMirror's light default until `setTheme()` loaded the theme. An
+  embed renders read-only before it finds its figure, so this runs on every editable load too.
+  `CodeMirror` keeps the `onContentChanged` it was created with, so `CodeEmbedEditor` reads the
+  current `editor` through a ref, and releases it in a layout cleanup as `editor` goes away. Test
+  with `EditorView.state.readOnly`, not `contenteditable`, which CodeMirror leaves `true`, and
+  assert the view is the same one after the toggle. A read-only `CodeEmbedEditor` carries the
+  `read-only` class, which hides the active-line highlight.
 - **A parent render can run effects ahead of CodeMirror's.** Preact runs a component's pending
-  effects when it renders again before they flush, so the `setContent` that `onClose` causes as
-  Editable goes off ran the new `CodeEmbedEditor`'s effects before `CodeMirror` created the view:
-  no find target, no `onReady`. Its effects wait for the `view` state that `onInitialized` sets;
-  the content loads in a layout effect, so it paints with the editor.
+  effects when it renders again before they flush, which once ran `CodeEmbedEditor`'s effects
+  before `CodeMirror` created the view: no find target, no `onReady`. Its effects wait for the
+  `view` state that `onInitialized` sets; the content loads in a layout effect, so it paints with
+  the editor.
 - **Box sizes need a title row.** Tiny and Expandable show only the title, so an untitled inline
   embed was invisible at Tiny. `INLINE_BOX_SIZES` (Small, Medium, Full) limits the dropdown, the
   command and the ⋮ menu (`getBoxSizes(domElement)`), and other sizes load as Medium. Give each
   size a height in the component's CSS (`[data-box-size="small"]`, `"full"`) and `100%` under
   `.include-note-content:fullscreen`, and size the wrapper too (`.source-embed`), or fullscreen
   fills only part of the screen.
+- **Embeds nest, so scope box rules with `>`.** `.include-note[data-box-size="full"] .x` or
+  `.include-note-content:not(:fullscreen) .x` also matches the content of an embed inside that
+  box: a nested Medium box took the Full height, and a nested box in fullscreen lost its height.
+  Chain the embed's own elements, as `MarkdownEmbed.css` does: `.include-note >
+  .include-note-wrapper > .include-note-body > .include-note-content > .rendered-content`.
 - **CKEditor hides a toolbar separator that is `:first-child`.** The leading separator of the
   content tools needs an override in `packages/ckeditor5/src/theme/content_embed_tools.css`.
   `CONTENT_EMBED_DISPLAY_MODE_SEPARATOR` separates Editable from the view buttons.

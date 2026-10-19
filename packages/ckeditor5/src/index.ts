@@ -22,6 +22,10 @@ export type {
     ContentEmbedCodeView, ContentEmbedState
 } from "./plugins/content_embed/content_embed.js";
 export type { EmbedEdge } from "./plugins/content_embed/content_embed_caret.js";
+export { default as EmbedHistory } from "./plugins/content_embed/embed_history.js";
+export type {
+    EmbedHistoryEntry, EmbedHistoryStep
+} from "./plugins/content_embed/embed_history.js";
 export type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
 export type { AttachmentLinkChange } from "./plugins/referencelink.js";
 export type { default as TriliumEmojiMention, EmojiSuggestion } from "./plugins/mention/emoji_mention.js";

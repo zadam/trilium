@@ -389,7 +389,10 @@ export class CanvasTools implements ContentEmbedToolProvider {
         }
     }
 
-    /** Undo or redo, enabled while Excalidraw's own button is: Excalidraw keeps the history. */
+    /**
+     * Undo or redo, enabled while Excalidraw's button is. In a text note, the button undoes and
+     * redoes the changes of the note (`DrawingHistory`).
+     */
     private getHistoryTool(id: HistoryAction, icon: string): ContentEmbedTool {
         const button = this.getHistoryButton(id);
         return {

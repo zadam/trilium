@@ -15,10 +15,13 @@ import utils from "../../../services/utils";
 import type { InlineSourceSaves } from "./attachment_saves";
 import { watchContentEmbedTools } from "./content_embed_tools";
 import ContentEmbed, { getNoteActions, TinyContentEmbed } from "./ContentEmbed";
+import type EmbedHistories from "./embed_history";
 
 interface EmbeddedNoteOptions {
     /** Saves the changes that the content makes to the note, such as a code note. */
     noteEditor?: NoteEditor;
+    /** Keeps the undo steps of the content on the undo stack of the text note. */
+    histories?: EmbedHistories;
     /** The blocks of the note to show, a `block` link parameter. The whole note when left out. */
     block?: string;
     /** Points the embed at the blocks that its editor holds, once they change. */
@@ -33,7 +36,7 @@ export async function loadEmbeddedNote(
     noteId: string,
     $el: JQuery<HTMLElement>,
     boxSize?: string,
-    { noteEditor, block, onBlockChange }: EmbeddedNoteOptions = {}
+    { noteEditor, histories, block, onBlockChange }: EmbeddedNoteOptions = {}
 ) {
     const note = await froca.getNote(noteId);
     if (!note) return;
@@ -73,6 +76,7 @@ export async function loadEmbeddedNote(
         mediaEnvironment: "embedded",
         hasDisplayModes: true,
         noteEditor,
+        histories,
         block,
         onBlockChange,
         hasCodeLineNumbers: getEmbedCodeView(el.closest(".include-note")).hasCodeLineNumbers
@@ -93,6 +97,8 @@ export async function loadEmbeddedNote(
 interface EmbeddedAttachmentOptions {
     /** Saves the changes that the content makes to the attachment, such as a canvas drawing. */
     attachmentEditor?: AttachmentEditor;
+    /** Keeps the undo steps of the content on the undo stack of the text note. */
+    histories?: EmbedHistories;
     /** Whether the content takes the focus once the box is mounted. */
     isFocused?: boolean;
 }
@@ -105,7 +111,7 @@ export async function loadEmbeddedAttachment(
     attachmentId: string,
     $el: JQuery<HTMLElement>,
     boxSize?: string,
-    { attachmentEditor, isFocused }: EmbeddedAttachmentOptions = {}
+    { attachmentEditor, histories, isFocused }: EmbeddedAttachmentOptions = {}
 ) {
     const attachment = await froca.getAttachment(attachmentId, true);
     if (!attachment) return;
@@ -141,6 +147,7 @@ export async function loadEmbeddedAttachment(
         mediaEnvironment: "embedded",
         hasDisplayModes: true,
         attachmentEditor,
+        histories,
         ...getEmbedCodeView(el.closest(".include-note"))
     });
 
@@ -156,6 +163,15 @@ export async function loadEmbeddedAttachment(
     await mountEmbedBox(el, box, $renderedContent);
 }
 
+interface InlineEmbedOptions {
+    /** Whether the content takes the focus once the box is mounted. */
+    isFocused: boolean;
+    /** The writes that the text note saves first. */
+    saves?: InlineSourceSaves;
+    /** Keeps the undo steps of the source on the undo stack of the text note. */
+    histories?: EmbedHistories;
+}
+
 /**
  * Fills an embed box with what an embed that keeps its source in the note shows, through the
  * component of the `SourceEmbedType` of its language. The box has no title row.
@@ -164,7 +180,7 @@ export async function loadInlineEmbed(
     source: InlineEmbedSource,
     $el: JQuery<HTMLElement>,
     boxSize: string | undefined,
-    { isFocused, saves }: { isFocused: boolean; saves?: InlineSourceSaves }
+    { isFocused, saves, histories }: InlineEmbedOptions
 ) {
     const type = getSourceEmbedTypeByLanguage(source.language);
     if (!type) return;
@@ -176,7 +192,8 @@ export async function loadInlineEmbed(
     ]);
     const $renderedContent = $('<div class="rendered-content">');
     const container = $('<div class="source-embed">').appendTo($renderedContent)[0];
-    await content_renderer.mountInteractiveWidget(h(InlineSourceEmbed, { source, component, saves }), container);
+    await content_renderer.mountInteractiveWidget(
+        h(InlineSourceEmbed, { source, component, saves, histories }), container);
 
     const box = h(ContentEmbed, {
         boxSize: boxSize ?? getEmbedBoxSize(el),

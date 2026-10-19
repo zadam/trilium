@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { SourceEmbedProps } from "../../../services/source_embeds";
 import { InlineSourceSaves } from "./attachment_saves";
+import EmbedHistories from "./embed_history";
 import { createInlineSourceEditor, InlineSourceEmbed } from "./SourceEmbed";
 
 /** An inline source as the text editor hands it over, which notifies its listeners on writes. */
@@ -95,6 +96,19 @@ describe("createInlineSourceEditor", () => {
 
     it("cannot edit the source of a read-only text editor", () => {
         expect(createInlineSourceEditor(createSource("a", true)).canEdit()).toBe(false);
+    });
+
+    it("shares the undo history of a source with the text note, which writes it at once", () => {
+        const source = createSource("a");
+        const histories = new EmbedHistories(() => null);
+        const history = createInlineSourceEditor(source, undefined, histories).history;
+
+        expect(history).toBe(createInlineSourceEditor(source, undefined, histories).history);
+        expect(createInlineSourceEditor(createSource("a"), undefined, histories).history)
+            .not.toBe(history);
+        expect(createInlineSourceEditor(source).history).toBeUndefined();
+        history?.write("b");
+        expect(source.setSource).toHaveBeenCalledExactlyOnceWith("b");
     });
 });
 

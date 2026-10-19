@@ -1,6 +1,6 @@
 import { EditorConfig, default as VanillaCodeMirror } from "@triliumnext/codemirror";
 import { Ref } from "preact";
-import { useEffect, useRef } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
 
 import { useSyncedRef } from "../../react/hooks";
 import { codeCompletions } from "./code_completions";
@@ -52,7 +52,7 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
     // React to text changes.
     useEffect(() => {
         const codeEditor = codeEditorRef.current;
-        codeEditor?.setText(content ?? "");
+        codeEditor?.loadText(content ?? "");
         codeEditor?.setMimeType(mime);
         codeEditor?.clearHistory();
     }, [content]);
@@ -73,6 +73,11 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
     // React to the language switching between prose and code, which decides whether the
     // on-screen keyboard is allowed to suggest words.
     useEffect(() => codeEditorRef.current?.setAllowKeyboardSuggestions(!!allowKeyboardSuggestions), [ allowKeyboardSuggestions ]);
+
+    // React to editability, in the same commit as the change.
+    useLayoutEffect(() => {
+        codeEditorRef.current?.setReadOnly(!!extraOpts.readOnly);
+    }, [ extraOpts.readOnly ]);
 
     // React to line wrapping.
     useEffect(() => codeEditorRef.current?.setLineWrapping(!!lineWrapping), [ lineWrapping ]);

@@ -76,6 +76,10 @@ export async function renderTextContent(
 export async function postProcessRichContent(note: FNote | FAttachment, $renderedContent: JQuery<HTMLElement>, options: RenderOptions = {}) {
     const seenNoteIds = options.seenNoteIds ?? new Set<string>();
     seenNoteIds.add(getEmbedKey("noteId" in note ? note.noteId : note.attachmentId, options.block));
+    // Runs before the embeds render, as each embed draws its own diagrams.
+    await rewriteMermaidDiagramsInContainer($renderedContent[0] as HTMLDivElement);
+    await applyInlineMermaid($renderedContent[0] as HTMLDivElement);
+
     if (options.noContentEmbeds) {
         $renderedContent.find(".include-note").remove();
     } else {
@@ -110,11 +114,10 @@ export async function postProcessRichContent(note: FNote | FAttachment, $rendere
     }));
 
     applyLinkEmbeds($renderedContent[0]);
-    await rewriteMermaidDiagramsInContainer($renderedContent[0] as HTMLDivElement);
     await formatCodeBlocks($renderedContent);
 
     if (options.trim) {
-        $renderedContent.find("style").remove();
+        $renderedContent.find("style").not("svg style").remove();
     }
 }
 

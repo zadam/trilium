@@ -13,6 +13,7 @@ const {
 const { MAX_ZOOM, MIN_ZOOM } = await import("./drawing_view");
 const { FITTED_MENU_STYLES } = await import("./CanvasDrawing");
 const { DRAWING_DARK_FILTER, IMAGE_DARK_FILTER } = await import("./persistence");
+const { HISTORY_ICON_PATHS, isInteracting } = await import("./drawing_history");
 
 /** The classes of Trilium that `CanvasDrawing.css` selects. Every other class is Excalidraw's. */
 const TRILIUM_CLASSES = new Set([
@@ -168,6 +169,32 @@ describe("Excalidraw contract of the canvas drawing", () => {
             ?.split("__publicField(this, ")[0] ?? "";
         expect(handleWheel.match(/this\.translateCanvas\(/g)).toHaveLength(3);
         expect(handleWheel).not.toContain("this.setState(");
+    });
+
+    it("lets the undo history of the note replace Excalidraw's undo and redo", () => {
+        const source = readBundle(developmentDir, [ ".js" ]).replace(/\s+/g, "");
+
+        // `registerAction()` replaces the action of the name, which the keys and the buttons run.
+        expect(source).toContain(
+            "registerAction:(action)=>{this.actionManager.registerAction(action);}");
+        expect(source).toContain("registerAction(action){this.actions[action.name]=action;}");
+        for (const name of HISTORY_ACTIONS) {
+            const create = `create${name[0].toUpperCase()}${name.slice(1)}Action`;
+            expect(source).toContain(
+                `this.actionManager.registerAction(${create}(this.history,this.store));`);
+            expect(source).toContain(`renderAction("${name}")`);
+            expect(source).toContain(`d:"${HISTORY_ICON_PATHS[name].replace(/\s+/g, "")}"`);
+        }
+        // The store ends a change before `onChange`, which records it.
+        expect(source).toContain("this.store.commit(elementsMap,this.state);"
+            + "if(!this.state.isLoading){this.props.onChange?.(elements,this.state,this.files);");
+
+        // `isInteracting()` holds a change back at least while Excalidraw's undo would wait.
+        const guard = source
+            .match(/varexecuteHistoryAction=\(app,appState,updater\)=>\{if\((.*?)\)\{/)?.[1];
+        const flags = [ ...guard?.matchAll(/!appState\.(\w+)/g) ?? [] ].map((match) => match[1]);
+        expect(flags).toHaveLength(6);
+        expect(flags.filter((flag) => !isInteracting({ [flag]: true } as never))).toEqual([]);
     });
 
     it("takes the wheel on its container, after `useNoteScrollingWheel()` on the drawing", () => {

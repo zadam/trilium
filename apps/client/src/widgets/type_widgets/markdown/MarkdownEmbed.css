@@ -22,13 +22,25 @@
     }
 }
 
-.include-note-content:fullscreen .markdown-embed {
+.include-note-content:fullscreen > .rendered-content > .markdown-embed {
     height: 100%;
 }
 
-.include-note-content:not(:fullscreen) .markdown-embed-content.with-source {
+.include-note-content:not(:fullscreen) > .rendered-content > .markdown-embed
+    > .markdown-embed-content.with-source {
     border-radius: var(--_include-note-framed-top-radius) var(--_include-note-framed-top-radius)
                    var(--_include-note-framed-bottom-radius)
                    var(--_include-note-framed-bottom-radius);
     overflow: hidden;
+}
+
+.include-note[data-box-size="full"] > .include-note-wrapper > .include-note-body
+    > .include-note-content:not(:fullscreen) > .rendered-content > .markdown-embed
+    > .markdown-embed-content.with-source {
+    height: auto;
+
+    > .note-detail-split,
+    > .note-detail-split > :is(.note-detail-split-editor-col, .note-detail-split-preview-col) {
+        height: auto;
+    }
 }

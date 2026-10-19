@@ -158,6 +158,7 @@ import Component from "../components/component.js";
 import type { SaveState } from "../components/note_context.js";
 import FAttachment from "../entities/fattachment.js";
 import { buildNote } from "../test/easy-froca.js";
+import EmbedHistories from "../widgets/type_widgets/text/embed_history.js";
 import {
     addContentDisposer,
     CONTENT_RENDERERS,
@@ -545,6 +546,32 @@ describe("getRenderedContent editable code", () => {
         expect(attachmentEditor.scheduleSave)
             .toHaveBeenCalledWith(att, expect.any(Function), onSaved);
         expect(attachmentEditor.release).toHaveBeenCalledWith(att.attachmentId);
+    });
+
+    it("gives the editor of a note or a file its undo history in the text note", async () => {
+        const note = buildNote({
+            title: "Script", type: "code", mime: "text/javascript", content: ""
+        });
+        const att = buildAttachment({ role: "file", mime: "application/json" });
+        att.getBlob = (async () => ({ content: "{}" })) as any;
+        const noteEditor = buildEditor();
+        const attachmentEditor = buildEditor();
+        const histories = new EmbedHistories(() => null);
+
+        await getRenderedContent(note, { interactive: true, noteEditor, histories });
+        await getRenderedContent(att, { interactive: true, attachmentEditor, histories });
+        const [ noteHistory, fileHistory ] = codeEmbedComponent.mock.calls
+            .map(([ props ]) => props.editor.history);
+        expect(noteHistory).toBe(histories.get(note.noteId, vi.fn()));
+        expect(fileHistory).toBe(histories.get(att.attachmentId, vi.fn()));
+
+        // Content that no editor shows saves through the editor of the embed.
+        noteHistory.write("a");
+        fileHistory.write("b");
+        expect(noteEditor.scheduleSave.mock.lastCall?.[0]).toBe(note);
+        expect(noteEditor.scheduleSave.mock.lastCall?.[1]()).toBe("a");
+        expect(attachmentEditor.scheduleSave.mock.lastCall?.[0]).toBe(att);
+        expect(attachmentEditor.scheduleSave.mock.lastCall?.[1]()).toBe("b");
     });
 
     it("highlights a code file in the language that its embed sets, for CodeEmbed too", async () => {

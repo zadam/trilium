@@ -914,6 +914,49 @@ describe("applyInlineMermaid", () => {
     });
 });
 
+describe("Mermaid diagrams in rendered content", () => {
+    it("draws the diagrams of the content and of each embed once", async () => {
+        const renderedSources: string[] = [];
+        mermaidRenderImpl = (_id, source) => {
+            renderedSources.push(source);
+            return { svg: `<svg><text>drawn ${source}</text></svg>` };
+        };
+        const embeddedNote = buildNote({
+            title: "Embedded diagram",
+            content: `<pre><code class="language-mermaid">graph B</code></pre>`
+        });
+        const note = buildNote({
+            title: "Host diagram",
+            content: `<pre><code class="language-mermaid">graph A</code></pre>`
+                + `<section class="include-note" data-note-id="${embeddedNote.noteId}"`
+                + ` data-box-size="medium">&nbsp;</section>`
+        });
+        const contentEl = document.createElement("div");
+        await renderText(note, $(contentEl));
+
+        const diagrams = [ ...contentEl.querySelectorAll("div.rendered-mermaid-diagram") ];
+        expect(diagrams.map((diagram) => diagram.innerHTML)).toEqual([
+            "<svg><text>drawn graph A</text></svg>",
+            "<svg><text>drawn graph B</text></svg>"
+        ]);
+        expect(renderedSources.sort()).toEqual([ "graph A", "graph B" ]);
+    });
+
+    it("keeps the styles of a diagram in a trimmed preview", async () => {
+        mermaidRenderImpl = () => ({ svg: "<svg><style>.node { fill: red; }</style></svg>" });
+        const note = buildNote({ title: "Trimmed diagram" });
+        const $renderedContent = $("<div>").append($("<div class=\"ck-content\">").html(
+            `<pre><code class="language-mermaid">graph S</code></pre><style>li { }</style>`
+        ));
+
+        await postProcessRichContent(note, $renderedContent, { trim: true });
+
+        const styles = [ ...$renderedContent[0].querySelectorAll("style") ];
+        const styleParents = styles.map((style) => style.parentElement?.tagName.toLowerCase());
+        expect(styleParents).toEqual([ "svg" ]);
+    });
+});
+
 describe("Block embeds", () => {
     const blockEmbed = (noteId: string, block: string, boxSize = "medium", blockId?: string) =>
         `<figure class="include-note"${blockId ? ` data-trilium-block-id="${blockId}"` : ""}`

@@ -73,6 +73,13 @@ export default function CodeEmbed({
     const getCodeText = (): CodeText => (isEditing ? viewRef.current : null) ?? {
         getText: () => editor?.getUnsavedContent() ?? content,
         setText: (text) => {
+            // Through the read-only editor, the change is a step of the shared undo history.
+            const view = viewRef.current;
+            const unsavedContent = editor?.getUnsavedContent() ?? content;
+            if (view && view.getText() !== unsavedContent) {
+                view.loadText(unsavedContent);
+            }
+            view?.setText(text);
             editor?.scheduleSave(() => text);
             setContent(text);
         }
@@ -84,10 +91,10 @@ export default function CodeEmbed({
                 <CaretNavigationContext.Provider value={isEditing ? rootRef : null}>
                     <Suspense fallback={null}>
                         <CodeEmbedEditor
-                            key={isEditing ? "editing" : "read-only"}
                             note={note}
                             ownerNote={entity instanceof FNote ? entity : entity.getNote()}
                             editor={isEditing ? editor : undefined}
+                            history={editor?.history}
                             content={content}
                             mime={mime}
                             tabWidth={settings.tabWidth}

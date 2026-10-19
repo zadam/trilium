@@ -15,6 +15,7 @@ import type { ContentEditor } from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import server from "../../../services/server";
 import { SavedData, useEditorSpacedUpdate } from "../../react/hooks";
+import { type DrawingScene, getDrawingHistory, type SavedAppState } from "./drawing_history";
 import { type DrawingView, getBoundedView, getFittedView } from "./drawing_view";
 import {
     buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments, loadImageFiles
@@ -356,6 +357,8 @@ interface DrawingPersistenceOptions {
     initialView?: DrawingView | null;
     /** Called once Excalidraw shows the loaded scene. */
     onSceneShown?: () => void;
+    /** The element that holds Excalidraw, in which the undo history of the note watches input. */
+    rootRef?: RefObject<HTMLElement | null>;
 }
 
 /**
@@ -367,7 +370,7 @@ export function useCanvasDrawingPersistence(
     editor: ContentEditor | undefined,
     apiRef: RefObject<ExcalidrawImperativeAPI | null>,
     theme: AppState["theme"],
-    { initialView, onSceneShown }: DrawingPersistenceOptions = {}
+    { initialView, onSceneShown, rootRef }: DrawingPersistenceOptions = {}
 ): Partial<ExcalidrawProps> {
     const currentSceneVersion = useRef(0);
     /** The saved part of the app state, read from the editor at the first change. */
@@ -405,9 +408,13 @@ export function useCanvasDrawingPersistence(
             files: loaded.files
         };
     });
+    // Created with the load above, so that a step applied while Excalidraw loads reaches it.
+    const [ drawingMount ] = useState(() =>
+        editor?.history && getDrawingHistory(editor.history).mount());
 
     // A layout cleanup runs during the unmount, before Excalidraw's `componentWillUnmount()` empties
-    // the scene that `release()` reads; a passive one runs after paint.
+    // the scene that `detach()` and `release()` read; a passive one runs after paint.
+    useLayoutEffect(() => () => drawingMount?.detach(), [ drawingMount ]);
     useLayoutEffect(() => () => editor?.release(), [ editor ]);
 
     return {
@@ -428,6 +435,13 @@ export function useCanvasDrawingPersistence(
             const sceneVersion = getSceneVersion(api.getSceneElements());
             if (!isSceneShownRef.current && (isLoadedSceneEmptyRef.current || sceneVersion)) {
                 isSceneShownRef.current = true;
+                drawingMount?.attach(api, rootRef?.current ?? null, {
+                    read: () => readDrawing(attachment, editor),
+                    write: (scene) => editor?.scheduleSave(
+                        () => serializeDrawing(scene, referencedFileIds.current),
+                        (content) => saveDrawingPicture(attachment, content, scene.files)
+                    )
+                });
                 onSceneShown?.();
             }
             if (!editor) return;
@@ -436,6 +450,7 @@ export function useCanvasDrawingPersistence(
                 if (sceneVersion === 0) return;
                 initialSceneAppliedRef.current = true;
             }
+            drawingMount?.record();
 
             const appState = getImportantAppState(api.getAppState());
             const previousAppState = appStateToCompare.current;
@@ -447,7 +462,11 @@ export function useCanvasDrawingPersistence(
 
             currentSceneVersion.current = sceneVersion;
             editor.scheduleSave(
-                () => serializeDrawing(api, referencedFileIds.current),
+                () => serializeDrawing({
+                    elements: api.getSceneElements(),
+                    appState: api.getAppState(),
+                    files: api.getFiles()
+                }, referencedFileIds.current),
                 (content) => saveDrawingPicture(attachment, content, api.getFiles())
             );
         }
@@ -625,17 +644,29 @@ function markBitmaps(picture: SVGSVGElement) {
     }
 }
 
+/** The drawing that `attachment` saves, with the changes that `editor` has yet to save. */
+async function readDrawing(
+    attachment: FAttachment,
+    editor: ContentEditor | undefined
+): Promise<DrawingScene> {
+    const content = parseContent(
+        editor?.getUnsavedContent() ?? (await attachment.getBlob())?.content ?? "", attachment);
+    const { files } = await loadDrawingFiles(attachment, content);
+    return { elements: content.elements ?? [], appState: content.appState ?? {}, files };
+}
+
 /**
  * The content of a canvas drawing. Unlike a canvas note, a drawing keeps its images inline, except
  * the ones it refers to by file ID.
  */
-function serializeDrawing(api: ExcalidrawImperativeAPI, referencedFileIds: ReadonlySet<string>) {
-    const elements = api.getSceneElements();
-    const files = getActiveFiles(elements, api.getFiles());
+function serializeDrawing(scene: DrawingScene, referencedFileIds: ReadonlySet<string>) {
+    const elements = scene.elements.filter(
+        (element): element is NonDeletedExcalidrawElement => !element.isDeleted);
+    const files = getActiveFiles(elements, scene.files);
     for (const fileId of referencedFileIds) {
         delete files[fileId];
     }
-    return JSON.stringify(buildSceneContent(elements, api.getAppState(), files));
+    return JSON.stringify(buildSceneContent(elements, scene.appState, files));
 }
 
 export function parseContent(newContent: string, entity: FNote | FAttachment): CanvasContent {
@@ -693,7 +724,7 @@ async function getData(api: ExcalidrawImperativeAPI, appStateToCompare: RefObjec
 /** The scene as the content of a canvas note or of a canvas drawing stores it. */
 function buildSceneContent(
     elements: readonly NonDeletedExcalidrawElement[],
-    appState: AppState,
+    appState: Partial<SavedAppState>,
     files: Record<string, BinaryFileData>
 ) {
     return {
@@ -705,7 +736,8 @@ function buildSceneContent(
             scrollX: appState.scrollX,
             scrollY: appState.scrollY,
             zoom: appState.zoom,
-            ...getImportantAppState(appState)
+            gridModeEnabled: appState.gridModeEnabled,
+            viewBackgroundColor: appState.viewBackgroundColor
         }
     };
 }
@@ -721,7 +753,7 @@ function getActiveFiles(elements: readonly NonDeletedExcalidrawElement[], files:
     return activeFiles;
 }
 
-function getImportantAppState(appState: AppState): ImportantAppState {
+function getImportantAppState(appState: ImportantAppState): ImportantAppState {
     return {
         gridModeEnabled: appState.gridModeEnabled,
         viewBackgroundColor: appState.viewBackgroundColor

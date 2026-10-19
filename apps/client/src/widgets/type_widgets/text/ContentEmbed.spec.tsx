@@ -522,6 +522,23 @@ describe("ContentEmbed", () => {
         expect(embed.hasAttribute("data-display-mode")).toBe(false);
     });
 
+    it("shows the display mode buttons of an expandable box only while it is open", () => {
+        placeInEmbed();
+        const { content } = renderBox({ boxSize: "expandable", contentType: "markdown" });
+        act(() => {
+            onTestFinished(registerContentEmbedTools(content, DISPLAY_MODE_TOOLS));
+        });
+        expect(titleRow()).toEqual([ "toggle", "title-label", "badges", "open", "menu" ]
+            .map((name) => `include-note-${name}`));
+
+        click(button("include-note-toggle"));
+        expect(titleRow()).toContain("include-note-display-modes");
+        expect(shownDisplayMode()).toBe("preview");
+
+        click(button("include-note-toggle"));
+        expect(container.querySelector(".include-note-display-modes")).toBeNull();
+    });
+
     it("keeps the edit button of an excerpt disabled without an editor around it", () => {
         const { content } = renderBox({ boxSize: "medium", isExcerpt: true });
         act(() => {

@@ -1,4 +1,5 @@
 import type VanillaCodeMirror from "@triliumnext/codemirror";
+import { SharedHistory } from "@triliumnext/codemirror";
 import clsx from "clsx";
 import type { RefObject } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
@@ -9,6 +10,7 @@ import { CodeMirrorFindTarget } from "../../find_in_code";
 import { useNoteLabelOptionalBool, useTriliumOptionBool } from "../../react/hooks";
 import { registerEmbedFindTarget } from "../text/content_embed_tools";
 import { CaretNavigationContext, useEmbedCaretNavigation } from "../text/editable_embed";
+import type { ContentHistory } from "../text/embed_history";
 import { CodeEditor } from "./Code";
 
 export interface CodeEmbedEditorProps {
@@ -17,6 +19,8 @@ export interface CodeEmbedEditorProps {
     ownerNote?: FNote | null;
     /** Saves the edits, or `undefined` to show the content read-only. */
     editor: ContentEditor | undefined;
+    /** The undo history that the content shares with the text note, also while read-only. */
+    history?: ContentHistory;
     content: string;
     mime: string;
     /** The tab width, or `undefined` to follow the global option. */
@@ -44,8 +48,8 @@ export interface CodeEmbedEditorProps {
  * `editor`, the content is read-only.
  */
 export default function CodeEmbedEditor({
-    note, ownerNote, editor, content, mime, tabWidth, useTabs, wrapLines, hasLineNumbers, viewRef,
-    isShown = true, onClose, onChange, onReady
+    note, ownerNote, editor, history, content, mime, tabWidth, useTabs, wrapLines, hasLineNumbers,
+    viewRef, isShown = true, onClose, onChange, onReady
 }: CodeEmbedEditorProps) {
     const isLoadingRef = useRef(false);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
@@ -82,21 +86,46 @@ export default function CodeEmbedEditor({
 
         // Loading changes the document as well, which must not schedule a save.
         isLoadingRef.current = true;
-        view.setText(content);
+        view.loadText(content);
         isLoadingRef.current = false;
         view.clearHistory();
     }, [ view, content ]);
 
-    // A layout cleanup runs during the unmount, before CodeMirror is destroyed.
-    useLayoutEffect(() => () => {
-        const text = viewRef.current?.getText();
-        // `release()` reads the pending content through `viewRef`, so the ref clears after it.
-        editor?.release();
-        viewRef.current = null;
-        if (editor && text !== undefined) {
-            onClose(text);
-        }
+    useLayoutEffect(() => {
+        if (!view || !history) return;
+
+        history.shared ??= new SharedHistory(history.host, history.write);
+        view.setSharedHistory(history.shared);
+        return () => view.setSharedHistory(null);
+    }, [ view, history ]);
+
+    // Layout cleanups run as `editor` goes away and during the unmount, before CodeMirror is
+    // destroyed, in the order of these hooks.
+    useLayoutEffect(() => {
+        if (!editor) return;
+
+        return () => {
+            const text = viewRef.current?.getText();
+            // `release()` reads the pending content through `viewRef`, so the ref clears after it.
+            editor.release();
+            if (text !== undefined) {
+                onClose(text);
+            }
+        };
     }, [ editor, onClose ]);
+
+    useLayoutEffect(() => () => {
+        viewRef.current = null;
+    }, []);
+
+    // `CodeMirror` keeps the `onContentChanged` it is created with, which calls the latest one.
+    const handleChangeRef = useRef<() => void>(() => {});
+    handleChangeRef.current = () => {
+        if (editor && !isLoadingRef.current) {
+            editor.scheduleSave(() => viewRef.current?.getText() ?? "");
+            onChange?.(viewRef.current?.getText() ?? "");
+        }
+    };
 
     return (
         <CodeEditor
@@ -109,12 +138,7 @@ export default function CodeEmbedEditor({
             readOnly={!editor}
             lineNumbers={hasLineNumbers}
             onInitialized={() => setView(viewRef.current)}
-            onContentChanged={() => {
-                if (editor && !isLoadingRef.current) {
-                    editor.scheduleSave(() => viewRef.current?.getText() ?? "");
-                    onChange?.(viewRef.current?.getText() ?? "");
-                }
-            }}
+            onContentChanged={() => handleChangeRef.current()}
             {...(tabWidth !== undefined && { indentSize: tabWidth })}
             {...(useTabs !== undefined && { useTabs })}
             {...(lineWrapping != null && { lineWrapping })}
@@ -150,8 +174,8 @@ export function EmbedSourcePane({
                     value={isEditing && isSourceShown ? rootRef : null}
                 >
                     <CodeEmbedEditor
-                        key={isEditing ? "editing" : "read-only"}
                         editor={isEditing ? editor : undefined}
+                        history={editor?.history}
                         isShown={isSourceShown}
                         onClose={onContentChange}
                         onChange={onContentChange}

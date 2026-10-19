@@ -12,6 +12,7 @@
  */
 import { exportToSvg } from "@excalidraw/excalidraw";
 import { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from "@excalidraw/excalidraw/types";
+import type { HostHistoryStep } from "@triliumnext/codemirror";
 import { type RefObject, render } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,6 +22,7 @@ import type FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
 import server from "../../../services/server";
 import { buildNote } from "../../../test/easy-froca";
+import type { EmbedHostHistory } from "../text/embed_history";
 import useCanvasPersistence, {
     saveDrawingPicture, useCanvasDrawingPersistence
 } from "./persistence";
@@ -50,7 +52,9 @@ vi.mock("@excalidraw/excalidraw", () => ({
         Math.max(...elements.map(({ x, width }) => x + width)),
         Math.max(...elements.map(({ y, height }) => y + height))
     ],
-    CaptureUpdateAction: { IMMEDIATELY: "IMMEDIATELY", NEVER: "NEVER", EVENTUALLY: "EVENTUALLY" }
+    CaptureUpdateAction: { IMMEDIATELY: "IMMEDIATELY", NEVER: "NEVER", EVENTUALLY: "EVENTUALLY" },
+    newElementWith: (element: FakeElement, updates: object) =>
+        ({ ...element, ...updates, version: element.version + 1 })
 }));
 
 vi.stubGlobal("logError", vi.fn());
@@ -284,9 +288,13 @@ describe("useCanvasDrawingPersistence", () => {
     ) {
         const api = {
             getSceneElements: () => sceneElements,
+            getSceneElementsIncludingDeleted: () => sceneElements,
             getAppState: () => appState,
             getFiles: () => sceneFiles,
-            updateScene
+            updateScene,
+            addFiles: vi.fn(),
+            history: { clear: vi.fn() },
+            registerAction: vi.fn()
         } as unknown as ExcalidrawImperativeAPI;
         const apiRef = { current: api } as RefObject<ExcalidrawImperativeAPI | null>;
         await act(async () => {
@@ -379,6 +387,45 @@ describe("useCanvasDrawingPersistence", () => {
 
         act(() => render(null, container));
         expect(editor.release).toHaveBeenCalledOnce();
+    });
+
+    it("keeps its changes on the undo stack of the note, also once Excalidraw is gone", async () => {
+        const loaded = [ { id: "r1", type: "rectangle", version: 3, x: 0 } ];
+        const { attachment, getBlob } = buildAttachment({ elements: loaded });
+        const steps: HostHistoryStep[] = [];
+        const host: EmbedHostHistory = {
+            push: (step) => {
+                steps.push(step);
+                return { isLatest: () => true };
+            },
+            undo: vi.fn(),
+            redo: vi.fn(),
+            isEnabled: () => false,
+            subscribe: () => () => {}
+        };
+        const editor = { ...buildEditor(), history: { host, write: vi.fn() } };
+        const root = document.createElement("div");
+        await mount(attachment, editor, { rootRef: { current: root } });
+
+        change();
+        sceneElements = loaded;
+        change();
+        root.dispatchEvent(new Event("pointerdown"));
+        const moved = { ...loaded[0], x: 10, version: 4 };
+        sceneElements = [ moved ];
+        change();
+        expect(steps).toHaveLength(1);
+
+        act(() => render(null, container));
+        editor.scheduleSave.mockClear();
+        // Saved elsewhere since Excalidraw went away.
+        const added = { id: "e1", type: "ellipse", version: 1 };
+        getBlob.mockResolvedValue({ content: JSON.stringify({ elements: [ moved, added ] }) });
+        expect(steps[0].undo()).toBe(true);
+        await vi.waitFor(() => expect(editor.scheduleSave).toHaveBeenCalledOnce());
+        const [ getContent ] = editor.scheduleSave.mock.calls[0];
+        expect(JSON.parse(getContent()).elements)
+            .toMatchObject([ { id: "r1", x: 0 }, { id: "e1" } ]);
     });
 
     it("loads the images it refers to from its note and saves them by reference", async () => {

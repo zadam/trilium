@@ -1,7 +1,9 @@
 import { closeCompletion, completionStatus, startCompletion } from "@codemirror/autocomplete";
+import { undo } from "@codemirror/commands";
 import { indentUnit } from "@codemirror/language";
 import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
+import { CodeMirror as VimEditor, getCM } from "@replit/codemirror-vim";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./type_completion/index.js", async (importOriginal) => {
@@ -10,7 +12,9 @@ vi.mock("./type_completion/index.js", async (importOriginal) => {
 });
 
 import { hostedCompletion } from "./extensions/hosted_completion.js";
-import CodeMirror, { type EditorConfig, getThemeById, SCRIPT_MIME_BACKEND } from "./index.js";
+import CodeMirror, {
+    type EditorConfig, getThemeById, type HostHistory, SCRIPT_MIME_BACKEND, SharedHistory
+} from "./index.js";
 import { buildTypeCompletion } from "./type_completion/index.js";
 
 let editor: CodeMirror | undefined;
@@ -267,6 +271,59 @@ describe("CodeMirror", () => {
             expect(editor.getText()).toBe("");
         });
 
+        it("applies a theme it has loaded before without waiting", async () => {
+            const theme = getThemeById("github-light");
+            expect(theme).not.toBeNull();
+            if (!theme) return;
+            editor = build();
+            await editor.setTheme(theme);
+            editor.destroy();
+
+            editor = build();
+            void editor.setTheme(theme);
+            expect(getGutterRules(editor).join("\n")).toContain("background-color: #f6f8fa;");
+        });
+
+        it("switches between read-only and editable in place, with a new history", () => {
+            editor = build({ readOnly: true, placeholder: "Type here" });
+            const hasPlaceholder = () => !!editor?.dom.querySelector(".cm-placeholder");
+            expect(hasPlaceholder()).toBe(false);
+            expect(getHiddenCaretRules(editor)).toHaveLength(2);
+
+            editor.setReadOnly(false);
+            expect([ editor.state.readOnly, hasPlaceholder() ]).toEqual([ false, true ]);
+            expect(getHiddenCaretRules(editor)).toEqual([]);
+            editor.dispatch({ changes: { from: 0, insert: "a" } });
+            expect(undo(editor)).toBe(true);
+            expect(editor.getText()).toBe("");
+            editor.dispatch({ changes: { from: 0, insert: "b" } });
+
+            editor.setReadOnly(true);
+            editor.setReadOnly(true);
+            expect(editor.state.readOnly).toBe(true);
+            expect(getHiddenCaretRules(editor)).toHaveLength(2);
+            editor.insertBlankLineAtTop();
+            expect(editor.getText()).toBe("b");
+
+            editor.setReadOnly(false);
+            expect(undo(editor)).toBe(false);
+            expect(editor.getText()).toBe("b");
+        });
+
+        it("hides the caret of a read-only editor over that of the color theme", async () => {
+            const theme = getThemeById("github-dark");
+            expect(theme).not.toBeNull();
+            if (!theme) return;
+            editor = build({ readOnly: true });
+            await editor.setTheme(theme);
+
+            const caretRules = editor.state.facet(EditorView.styleModule)
+                .flatMap((module) => module.getRules().split("\n"))
+                .filter((rule) => / \.cm-content \{[^}]*caret-color/.test(rule));
+            expect(caretRules.length).toBeGreaterThan(1);
+            expect(caretRules[0]).toContain("caret-color: transparent;");
+        });
+
         it("toggles line wrapping both ways", () => {
             editor = build();
             editor.setLineWrapping(true);
@@ -369,9 +426,105 @@ describe("CodeMirror", () => {
         });
 
         it("does nothing for a read-only editor", () => {
-            // A read-only editor has no history compartment to reconfigure.
+            // A read-only editor keeps no history.
             editor = build({ readOnly: true });
             expect(() => editor?.clearHistory()).not.toThrow();
+        });
+
+        it("loads content outside the undo history", () => {
+            editor = build();
+            editor.loadText("loaded");
+            expect(editor.getText()).toBe("loaded");
+            expect(undo(editor)).toBe(false);
+        });
+    });
+
+    describe("shared history", () => {
+        it("records into the shared history and leaves its own, until it is detached", () => {
+            editor = build();
+            const { host, history } = createSharedHistory();
+            editor.setText("own");
+
+            editor.setSharedHistory(history);
+            editor.setSharedHistory(history);
+            editor.setText("shared");
+            expect(host.push).toHaveBeenCalledOnce();
+            expect(undo(editor)).toBe(false);
+            editor.clearHistory();
+            expect(pressKey(editor, "z", { ctrlKey: true })).toBe(true);
+            expect(host.undo).toHaveBeenCalledOnce();
+
+            // A read-only editor still runs the shared history.
+            editor.setReadOnly(true);
+            expect(pressKey(editor, "z", { ctrlKey: true })).toBe(true);
+            expect(host.undo).toHaveBeenCalledTimes(2);
+            editor.setReadOnly(false);
+
+            const detach = vi.spyOn(history, "detach");
+            editor.setSharedHistory(null);
+            expect(detach).toHaveBeenCalledWith(editor);
+            expect(editor.runSharedHistory("undo")).toBe(false);
+            editor.setText("own again");
+            expect(undo(editor)).toBe(true);
+            expect(host.push).toHaveBeenCalledOnce();
+        });
+
+        it("runs the shared history from the undo and redo keys and input events", () => {
+            editor = build();
+            const { host, history } = createSharedHistory();
+            editor.setSharedHistory(history);
+            const outside = vi.fn();
+            editor.dom.parentElement?.addEventListener("keydown", outside);
+
+            expect(pressKey(editor, "z", { ctrlKey: true })).toBe(true);
+            expect(pressKey(editor, "y", { ctrlKey: true })).toBe(true);
+            const redoKey = { ctrlKey: true, shiftKey: true, keyCode: 90 };
+            expect(pressKey(editor, "Z", redoKey)).toBe(true);
+            expect(host.undo).toHaveBeenCalledOnce();
+            expect(host.redo).toHaveBeenCalledTimes(2);
+            expect(outside).not.toHaveBeenCalled();
+
+            for (const inputType of [ "historyUndo", "historyRedo", "insertText" ]) {
+                editor.contentDOM.dispatchEvent(
+                    new InputEvent("beforeinput", { inputType, bubbles: true, cancelable: true }));
+            }
+            expect(host.undo).toHaveBeenCalledTimes(2);
+            expect(host.redo).toHaveBeenCalledTimes(3);
+        });
+
+        it("runs the shared history from Vim, and the editor's own without one", () => {
+            editor = build({ vimKeybindings: true });
+            const cm = getCM(editor);
+            expect(cm).not.toBeNull();
+            if (!cm) return;
+            editor.setText("typed");
+
+            VimEditor.commands.undo(cm);
+            expect(editor.getText()).toBe("");
+            VimEditor.commands.redo(cm);
+            expect(editor.getText()).toBe("typed");
+
+            const { host, history } = createSharedHistory();
+            editor.setSharedHistory(history);
+            VimEditor.commands.undo(cm);
+            VimEditor.commands.redo(cm);
+            expect(host.undo).toHaveBeenCalledOnce();
+            expect(host.redo).toHaveBeenCalledOnce();
+            expect(editor.getText()).toBe("typed");
+        });
+
+        it("leaves the shared history as it is destroyed, with the document it shows", () => {
+            editor = build();
+            const { host, history, write } = createSharedHistory();
+            editor.setSharedHistory(history);
+            editor.setText("a");
+            const dispatch = vi.spyOn(editor, "dispatch");
+            editor.destroy();
+            editor = undefined;
+
+            host.undo();
+            expect(dispatch).not.toHaveBeenCalled();
+            expect(write).toHaveBeenCalledWith("");
         });
     });
 
@@ -770,11 +923,40 @@ function build(config: Partial<EditorConfig> = {}): CodeMirror {
     return new CodeMirror({ parent, ...config });
 }
 
+/** A shared history over a host that undoes the last step it was given. */
+function createSharedHistory() {
+    const steps: Parameters<HostHistory["push"]>[0][] = [];
+    const host = {
+        push: vi.fn((step: Parameters<HostHistory["push"]>[0]) => {
+            steps.push(step);
+            return { isLatest: () => false };
+        }),
+        undo: vi.fn(() => steps.pop()?.undo()),
+        redo: vi.fn()
+    };
+    const write = vi.fn();
+    return { host, history: new SharedHistory(host, write), write };
+}
+
+/** Presses `key` in `view`. Returns whether the editor handled it. */
+function pressKey(view: CodeMirror, key: string, init: KeyboardEventInit = {}) {
+    return !view.contentDOM.dispatchEvent(
+        new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true, ...init }));
+}
+
 /** The `.cm-gutters` rules of `view`, the one that takes effect first. */
 function getGutterRules(view: CodeMirror) {
     return view.state.facet(EditorView.styleModule)
         .flatMap((module) => module.getRules().split("\n"))
         .filter((rule) => / \.cm-gutters \{/.test(rule));
+}
+
+/** The rules of `view` that hide the caret and the block cursor of Vim. */
+function getHiddenCaretRules(view: CodeMirror) {
+    return view.state.facet(EditorView.styleModule)
+        .flatMap((module) => module.getRules().split("\n"))
+        .filter((rule) => / \.cm-content \{caret-color: transparent;\}/.test(rule)
+            || / \.cm-vimCursorLayer \{display: none;\}/.test(rule));
 }
 
 /** A keydown of `key` from `target`, which the editor does not handle, as it is not dispatched. */

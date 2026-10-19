@@ -1,3 +1,4 @@
+import { AttributeEditor, EmbedHistory } from "@triliumnext/ckeditor5";
 import VanillaCodeMirror from "@triliumnext/codemirror";
 import moveVerticalIcon from "boxicons/svg/regular/bx-move-vertical.svg?raw";
 import { render } from "preact";
@@ -24,6 +25,7 @@ import { ParentComponent } from "../../react/react_utils";
 import { CodeMirrorFindTarget } from "../../find_in_code";
 import { NoteSaves } from "../text/attachment_saves";
 import { getContentEmbedTools, getEmbedFindTarget } from "../text/content_embed_tools";
+import EmbedHistories from "../text/embed_history";
 import CodeEmbed from "./CodeEmbed";
 
 vi.mock("../../../services/i18n", async (importOriginal) => ({
@@ -121,7 +123,7 @@ describe("CodeEmbed", () => {
         await vi.waitFor(() => expect(view.state.doc.toString()).toBe("print('hi')"));
     });
 
-    it("lets the find search both editors and replace only in the editable one", async () => {
+    it("lets the find search the editor, and replace only while it edits", async () => {
         const { figure } = await mount(buildCodeNote("print(1)\nprint(2)"), buildEditor(), {
             isEditable: true
         });
@@ -154,37 +156,92 @@ describe("CodeEmbed", () => {
             delete figure.dataset.editable;
             await Promise.resolve();
         });
-        const readOnlyView = await findView(figure, true);
-        const readOnlyTarget = getEmbedFindTarget(figure);
-        if (!(readOnlyTarget instanceof CodeMirrorFindTarget)) {
-            throw new Error("Expected a code target.");
-        }
-        expect(readOnlyTarget).not.toBe(target);
-        expect(await readOnlyTarget.find("print", { matchCase: false, wholeWord: false })).toBe(1);
-        expect(await target.find("print", { matchCase: false, wholeWord: false })).toBe(0);
-        expect(readOnlyTarget.canReplace()).toBe(false);
-        expect(await readOnlyTarget.replace(0, "log")).toBe(1);
-        expect(await readOnlyTarget.replaceAll("log")).toBe(1);
-        expect(readOnlyView.state.doc.toString()).toBe("#print(1)\nlog(2)");
+        expect(await findView(figure, true)).toBe(view);
+        expect(getEmbedFindTarget(figure)).toBe(target);
+        expect(await target.find("print", { matchCase: false, wholeWord: false })).toBe(1);
+        expect(target.canReplace()).toBe(false);
+        expect(await target.replace(0, "log")).toBe(1);
+        expect(await target.replaceAll("log")).toBe(1);
+        expect(view.state.doc.toString()).toBe("#print(1)\nlog(2)");
     });
 
-    it("releases the edited content and shows it read-only once the toggle goes off", async () => {
+    it("keeps its edits on the text note's undo stack, read-only and remounted too", async () => {
+        const element = document.createElement("div");
+        document.body.append(element);
+        const textEditor = await AttributeEditor.create(element, {
+            licenseKey: "GPL", extraPlugins: [ EmbedHistory ]
+        });
+        const histories = new EmbedHistories(() => textEditor);
+        const note = buildCodeNote("x");
+        const editor = buildSavingEditor(note, histories);
+        const { figure } = await mount(note, editor, { isEditable: true });
+        let view = await findView(figure);
+        const outside = vi.fn();
+        figure.addEventListener("keydown", outside);
+
+        // Content saved elsewhere loads outside the undo stack.
+        note.getBlob = async () => buildBlob("a");
+        const noteSaved = new LoadResults([]);
+        noteSaved.addNoteContent(note.noteId, "any-component");
+        await act(async () => {
+            await parent.handleEvent("entitiesReloaded", { loadResults: noteSaved });
+        });
+        await vi.waitFor(() => expect(view.state.doc.toString()).toBe("a"));
+        expect(textEditor.commands.get("undo")?.isEnabled).toBe(false);
+
+        act(() => view.dispatch({ changes: { from: 1, insert: "b" }, userEvent: "input.type" }));
+        act(() => textEditor.execute("undo"));
+        expect([ view.state.doc.toString(), editor.getUnsavedContent() ]).toEqual([ "a", "a" ]);
+        act(() => textEditor.execute("redo"));
+        expect([ view.state.doc.toString(), editor.getUnsavedContent() ]).toEqual([ "ab", "ab" ]);
+
+        // The undo keys of the embed undo the note, while read-only as well.
+        await act(async () => {
+            delete figure.dataset.editable;
+            await Promise.resolve();
+        });
+        view = await findView(figure, true);
+        act(() => pressKey(view.contentDOM, "z"));
+        expect(view.state.doc.toString()).toBe("a");
+        expect(outside).not.toHaveBeenCalled();
+
+        // The next step applies to a remounted editor.
+        const box = figure.querySelector(".include-note-content");
+        if (box) act(() => render(null, box));
+        figure.remove();
+        const { figure: remounted } = await mount(note, editor, {
+            isEditable: true, content: editor.getUnsavedContent()
+        });
+        view = await findView(remounted);
+        act(() => pressKey(view.contentDOM, "y"));
+        expect([ view.state.doc.toString(), editor.getUnsavedContent() ]).toEqual([ "ab", "ab" ]);
+
+        await textEditor.destroy();
+        element.remove();
+    });
+
+    it("switches the same CodeMirror to editing and back, and releases the edits", async () => {
         const note = buildCodeNote("a");
         const editor = buildSavingEditor(note);
-        const { figure } = await mount(note, editor, { isEditable: true });
-        const view = await findView(figure);
+        const { figure } = await mount(note, editor);
+        const view = await findView(figure, true);
+
+        await act(async () => {
+            figure.dataset.editable = "true";
+            await Promise.resolve();
+        });
+        expect(await findView(figure)).toBe(view);
+        expect(view.state.readOnly).toBe(false);
         act(() => view.dispatch({ changes: { from: 1, insert: "b" } }));
+        expect(editor.getUnsavedContent()).toBe("ab");
 
         await act(async () => {
             delete figure.dataset.editable;
             await Promise.resolve();
         });
-
         expect(editor.getUnsavedContent()).toBe("ab");
-        const readOnlyView = await findView(figure, true);
-        expect(readOnlyView).not.toBe(view);
-        expect([ readOnlyView.state.doc.toString(), readOnlyView.state.readOnly ])
-            .toEqual([ "ab", true ]);
+        expect(await findView(figure, true)).toBe(view);
+        expect([ view.state.doc.toString(), view.state.readOnly ]).toEqual([ "ab", true ]);
         expect(figure.querySelectorAll(".cm-editor")).toHaveLength(1);
     });
 
@@ -244,13 +301,18 @@ describe("CodeEmbed", () => {
         await vi.waitFor(() => expect(closedView.state.doc.toString()).toBe("# if a:\n    b"));
     });
 
-    it("re-indents the unsaved changes that another embed of the same note made", async () => {
+    it("re-indents another embed's unsaved changes as a step of the note's undo", async () => {
         options.set("codeNoteTabWidth", "4");
         options.set("codeNoteIndentWithTabs", "false");
         options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python" ]));
         vi.spyOn(contextMenu, "show").mockResolvedValue(undefined);
+        const element = document.createElement("div");
+        document.body.append(element);
+        const textEditor = await AttributeEditor.create(element, {
+            licenseKey: "GPL", extraPlugins: [ EmbedHistory ]
+        });
         const note = buildCodeNote("if a:\n    b");
-        const editor = buildSavingEditor(note);
+        const editor = buildSavingEditor(note, new EmbedHistories(() => textEditor));
         const { figure: editing } = await mount(note, editor, { isEditable: true });
         const { figure: previewing } = await mount(note, editor);
         const view = await findView(editing);
@@ -258,6 +320,11 @@ describe("CodeEmbed", () => {
 
         await selectMenuItem(previewing, "tabWidth", "status_bar.tab_width_style_tabs", true);
         expect(editor.getUnsavedContent()).toBe("# if a:\n\tb");
+        act(() => textEditor.execute("undo"));
+        expect(editor.getUnsavedContent()).toBe("# if a:\n    b");
+
+        await textEditor.destroy();
+        element.remove();
     });
 
     it("keeps the language and indentation of a file in its embed, set from its toolbar", async () => {
@@ -683,14 +750,22 @@ function buildEditor(overrides: Partial<ContentEditor> = {}): ContentEditor {
 }
 
 /** An editor of `note` over real `NoteSaves`, which the embeds given it share as a host's do. */
-function buildSavingEditor(note: FNote): ContentEditor {
+function buildSavingEditor(note: FNote, histories?: EmbedHistories): ContentEditor {
     const saves = new NoteSaves(() => {}, undefined);
     return {
         canEdit: () => true,
         getUnsavedContent: () => saves.getUnsavedContent(note.noteId),
         scheduleSave: (getContent, onSaved) => saves.scheduleSave(note, getContent, onSaved),
-        release: () => saves.release(note.noteId)
+        release: () => saves.release(note.noteId),
+        history: histories?.get(note.noteId, (text) => saves.scheduleSave(note, () => text))
     };
+}
+
+/** Presses Ctrl and `key` in `target`. */
+function pressKey(target: HTMLElement, key: string) {
+    target.dispatchEvent(new KeyboardEvent("keydown", {
+        key, ctrlKey: true, bubbles: true, cancelable: true
+    }));
 }
 
 /**
