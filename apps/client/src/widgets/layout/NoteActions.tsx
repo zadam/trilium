@@ -205,7 +205,7 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
                     </>
                 )}
                 <CommandItem command="printActiveNote" icon="bx bx-printer" disabled={!isPrintable}
-                    text={isElectron ? t("note_actions.print_or_export_to_pdf") : t("note_actions.print_note")}
+                    text={t("note_actions.print_or_export_to_pdf")}
                 />
 
                 <FormDropdownDivider />

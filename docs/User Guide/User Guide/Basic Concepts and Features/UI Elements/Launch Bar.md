@@ -17,8 +17,8 @@ If there are too many items in the launch bar to fit the screen, it will become 
 
 There are two ways to configure the launch bar:
 
-*   Right click in the empty space between launchers on the launch bar and select _Configure Launchbar…_
-*   Click on the <a class="reference-link" href="Global%20menu.md">Global menu</a> and select _Configure Launchbar_.
+*   Right click in the empty space between launchers on the launch bar and select _Configure launch bar…_
+*   Click on the <a class="reference-link" href="Global%20menu.md">Global menu</a> and select _Configure launch bar_.
 
 This will open a new tab with the <a class="reference-link" href="Note%20Tree.md">Note Tree</a> listing the launchers.
 
@@ -30,9 +30,9 @@ Expanding _Available Launchers_ section will show the list of launchers that are
 
 The launch bar on mobile uses a different configuration from the desktop one. The reasoning is that not all desktop icons are available on mobile, and fewer icons fit on a mobile screen.
 
-To configure the launch bar on mobile, go to <a class="reference-link" href="Global%20menu.md">Global menu</a> and select _Configure Launchbar_.
+To configure the launch bar on mobile, go to <a class="reference-link" href="Global%20menu.md">Global menu</a> and select _Configure launch bar_.
 
-The configure the mobile launch bar while on the desktop (especially useful to configure more complicated launchers such as scripts or custom widgets), go to <a class="reference-link" href="Global%20menu.md">Global menu</a> → Advanced → Show Hidden Subtree and look for the _Mobile Launch Bar_ section. While in the hidden subtree, it's also possible to drag launchers between the _Mobile Launch Bar_ and (Desktop) _Launch Bar_ sections.
+The configure the mobile launch bar while on the desktop (especially useful to configure more complicated launchers such as scripts or custom widgets), go to <a class="reference-link" href="Global%20menu.md">Global menu</a> → Advanced → Show hidden subtree and look for the _Mobile Launch Bar_ section. While in the hidden subtree, it's also possible to drag launchers between the _Mobile Launch Bar_ and (Desktop) _Launch Bar_ sections.
 
 ### Adding/removing and reordering launchers
 

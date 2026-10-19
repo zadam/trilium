@@ -33,13 +33,13 @@ The two submenus in this section:
 *   <span class="tn-icon bx bx-edit-alt"></span> _Editable_ controls when the note opens as read-only (see <a class="reference-link" href="../Notes/Read-Only%20Notes.md">Read-Only Notes</a>):
     *   _Auto_ (the default): the note is editable, unless it is long enough to be opened as read-only automatically.
     *   _Read-only_: the note always opens as read-only, but can still be edited after pressing _Edit note_.
-    *   _Always Editable_: the note is always editable, regardless of its length.
+    *   _Always editable_: the note is always editable, regardless of its length.
 
 ## Importing, exporting and printing
 
 *   <span class="tn-icon bx bx-import"></span> _Import files_ opens the import dialog, which imports files as children of the current note. See <a class="reference-link" href="../Import%20%26%20Export.md">Import &amp; Export</a>. It is unavailable on <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a> notes.
 *   <span class="tn-icon bx bx-export"></span> _Export note_ opens the export dialog with _Only this note_ selected; select _This note & all descendants_ there to export the whole subtree.
-*   <span class="tn-icon bx bx-printer"></span>_Print note…_ prints the note. On the desktop application this entry reads _Print/export to PDF…_ and can also save the note as a PDF file. See <a class="reference-link" href="../Notes/Printing%20%26%20Exporting%20as%20PDF.md">Printing &amp; Exporting as PDF</a>, including which note types and collections can be printed.
+*   <span class="tn-icon bx bx-printer"></span>_Print/export to PDF…_ prints the note or saves it as a PDF file. See <a class="reference-link" href="../Notes/Printing%20%26%20Exporting%20as%20PDF.md">Printing &amp; Exporting as PDF</a>, including which note types and collections can be printed.
 
 Some note types add their own export formats right below _Export note_:
 
@@ -76,7 +76,7 @@ The <span class="tn-icon bx bx-wrench"></span>_Advanced_ submenu groups the acti
 *   <span class="tn-icon bx bx-file-find"></span>_Open note externally_ (desktop application only) saves the note to a temporary file and opens it in the application that the operating system associates with it. Trilium watches the file, and offers to upload the modified version back into the note. It is unavailable on <a class="reference-link" href="../../Collections.md">Collections</a> and <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a> notes.
 *   <span class="tn-icon bx bx-customize"></span>_Open note custom_ (desktop application only, Windows and Linux) works like _Open note externally_, but lets you pick the application to open the file with.
 *   <span class="tn-icon bx bx-code"></span>_Note source_ shows the <a class="reference-link" href="../../Advanced%20Usage/Note%20source.md">Note source</a>, the content of the note exactly as it is stored.
-*   <span class="tn-icon bx bxl-markdown"></span>_Convert to Markdown Note_ (on text notes) and _Convert to Text Note_ (on Markdown notes) switch the note between rich text and Markdown. After a confirmation, Trilium saves a revision and converts the content; the revision allows going back if some formatting was lost. See <a class="reference-link" href="../../Note%20Types/Converting%20between%20note%20types.md">Converting between note types</a>.
+*   <span class="tn-icon bx bxl-markdown"></span>_Convert to Markdown note_ (on text notes) and _Convert to text note_ (on Markdown notes) switch the note between rich text and Markdown. After a confirmation, Trilium saves a revision and converts the content; the revision allows going back if some formatting was lost. See <a class="reference-link" href="../../Note%20Types/Converting%20between%20note%20types.md">Converting between note types</a>.
 *   <span class="tn-icon bx bx-collapse-alt"></span>_Compress images_ opens a dialog that reduces the size of the images in the note. It lists the images found and how much space they take, and offers to:
     
     *   Resize the images larger than a chosen size.
