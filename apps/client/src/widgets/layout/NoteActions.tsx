@@ -102,6 +102,7 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     // The quick edit popup has no find bar, and the note map and a converted attachment open in the tab behind it.
     const isInPopup = !!noteContext?.ntxId?.startsWith(POPUP_EDITOR_NTX_ID);
     const itemToFocusRef = useRef<ItemToFocus>(null);
+    const showRevisions = useCommandTrigger("showRevisions");
     // Keyboard shortcuts.
     useTriliumEvent("toggleRibbonTabBasicProperties", ({ ntxId }) => {
         if (!noteContext || ntxId !== noteContext.ntxId) return;
@@ -175,12 +176,17 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
 
                 <FormDropdownDivider />
 
-                <CommandItem command="showRevisions" icon="bx bx-history" text={t("note_actions.view_revisions")} />
-                <CommandItem command="forceSaveRevision" icon="bx bx-save" disabled={isInOptionsOrHelp} text={t("note_actions.save_revision")} />
-                <CommandItem command="saveNamedRevision" icon="bx bx-purchase-tag" disabled={isInOptionsOrHelp} text={t("note_actions.save_named_revision")} />
-
-                <FormDropdownDivider />
-
+                {/* A split row's own action runs only on the desktop, so a phone's page lists it too. */}
+                <FormDropdownSubmenu icon="bx bx-history" title={t("note_actions.view_revisions")}
+                    onDropdownToggleClicked={() => {
+                        dropdownRef.current?.hide();
+                        showRevisions?.();
+                    }}
+                >
+                    {isMobile && <CommandItem command="showRevisions" icon="bx bx-history" text={t("note_actions.view_revisions")} />}
+                    <CommandItem command="forceSaveRevision" icon="bx bx-save" disabled={isInOptionsOrHelp} text={t("note_actions.save_revision")} />
+                    <CommandItem command="saveNamedRevision" icon="bx bx-purchase-tag" disabled={isInOptionsOrHelp} text={t("note_actions.save_named_revision")} />
+                </FormDropdownSubmenu>
                 {canBeConvertedToAttachment && !isInPopup && <ConvertToAttachment note={note} />}
                 {note.type === "render" && <CommandItem command="renderActiveNote" icon="bx bx-extension" text={t("note_actions.re_render_note")}
                 />}

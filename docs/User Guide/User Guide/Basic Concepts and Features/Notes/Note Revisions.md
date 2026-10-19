@@ -36,7 +36,7 @@ In the list of note revisions:
 
 To create a named revision, either:
 
-*   Go to the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a>, select _Save named revision…_ (<span class="tn-icon bx bx-purchase-tag"></span>), enter the name of revision and confirm.
+*   Go to the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a>, select _Note revisions…_ → _Save named revision…_ (<span class="tn-icon bx bx-purchase-tag"></span>), enter the name of revision and confirm.
 *   Use the corresponding [keyboard shortcut](../Keyboard%20Shortcuts.md) or the <a class="reference-link" href="../Navigation/Jump%20to%20%26%20command%20palette.md">Jump to &amp; command palette</a> command with the same name.
 *   Save a revision normally, and adjust the name afterwards from the note revision list.
 
@@ -46,7 +46,7 @@ Revisions are saved:
 
 *   Automatically at a fixed interval. This behavior can be configured (see below).
 *   Manually, by:
-    *   Going to the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a> and selecting _Save revision_ (<span class="tn-icon bx bx-save"></span>).
+    *   Going to the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a> and selecting _Note revisions…_ → _Save revision_ (<span class="tn-icon bx bx-save"></span>).
     *   Using the _Force Save Revision_ [keyboard shortcut](../Keyboard%20Shortcuts.md).
     *   In the _Note Revisions_ dialog, pressing the <span class="tn-icon bx bx-dots-horizontal-rounded"></span> button in the top-right and selecting _Save a revision now_.
 

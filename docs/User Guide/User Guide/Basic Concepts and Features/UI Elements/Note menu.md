@@ -48,9 +48,9 @@ Some note types add their own export formats right below _Export note_:
 
 These entries manage the <a class="reference-link" href="../Notes/Note%20Revisions.md">Note Revisions</a> of the note:
 
-*   <span class="tn-icon bx bx-history"></span>_Note revisions…_ opens the revisions dialog, where previous versions can be previewed, compared with the current one, downloaded or restored.
-*   <span class="tn-icon bx bx-save"></span>_Save revision_ saves a revision of the note right away, instead of waiting for the next automatic snapshot.
-*   <span class="tn-icon bx bx-purchase-tag"></span>_Save named revision…_ also saves a revision right away, but first asks for a short description of the changes, which is shown in the revisions dialog.
+*   <span class="tn-icon bx bx-history"></span>_Note revisions…_ opens the revisions dialog, where previous versions can be previewed, compared with the current one, downloaded or restored. The arrow beside it opens the entries that save a revision right away. On mobile, tapping it opens those entries, with _Note revisions…_ as the first one.
+    *   <span class="tn-icon bx bx-save"></span>_Save revision_ saves a revision of the note right away, instead of waiting for the next automatic snapshot.
+    *   <span class="tn-icon bx bx-purchase-tag"></span>_Save named revision…_ also saves a revision right away, but first asks for a short description of the changes, which is shown in the revisions dialog.
 
 ## Note-specific entries
 

@@ -183,6 +183,48 @@ describe("NoteContextMenu", () => {
         expect(await isPrintEnabled(buildNote({ title: "Disabled", type: "render", "~disabled:renderNote": script.noteId }))).toBe(false);
     });
 
+    it("folds the revisions into one row that opens them, with the saving actions beside it", async () => {
+        const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
+        const noteContext = new NoteContext("ntx-revisions");
+        noteContext.noteId = note.noteId;
+        noteContext.viewScope = { viewMode: "default" };
+        const parentComponent = new Component();
+        const triggerCommand = vi.spyOn(parentComponent, "triggerCommand").mockImplementation(() => Promise.resolve());
+        const popup = () => document.querySelector<HTMLElement>(".tn-popup");
+        const open = async () => {
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            await vi.waitFor(() => expect(popup()?.querySelector("li.dropdown-item")).toBeTruthy());
+            return popup()?.querySelector<HTMLElement>(".tn-menu-scroll > li.dropdown-item:has(.bx-history)");
+        };
+        render((
+            <ParentComponent.Provider value={parentComponent}>
+                <NoteContextContext.Provider value={noteContext}>
+                    <NoteContextMenu note={note} noteContext={noteContext} />
+                </NoteContextContext.Provider>
+            </ParentComponent.Provider>
+        ), host);
+
+        const row = await open();
+        expect(row?.classList.contains("tn-menu-split")).toBe(true);
+        expect(popup()?.querySelectorAll(".tn-menu-scroll > li.dropdown-item:is(:has(.bx-save), :has(.bx-purchase-tag))")).toHaveLength(0);
+
+        await act(async () => row?.querySelector<HTMLElement>(".dropdown-toggle")?.click());
+        expect(triggerCommand).toHaveBeenCalledWith("showRevisions", expect.objectContaining({ ntxId: "ntx-revisions" }));
+        await vi.waitFor(() => expect(popup()).toBeNull());
+
+        const reopened = await open();
+        await act(async () => {
+            reopened?.dispatchEvent(new PointerEvent("pointerenter"));
+        });
+        const submenu = await vi.waitFor(() => {
+            const layer = popup()?.querySelector(":scope > div.dropdown-submenu > .dropdown-menu");
+            expect(layer).toBeTruthy();
+            return layer;
+        });
+        expect(submenu?.querySelector("li.dropdown-item:has(.bx-save)")).toBeTruthy();
+        expect(submenu?.querySelector("li.dropdown-item:has(.bx-purchase-tag)")).toBeTruthy();
+    });
+
     it("offers to export a help page, but not an options page", async () => {
         const isExportEnabled = async (note: FNote) => {
             const noteContext = new NoteContext("ntx-export");
