@@ -352,6 +352,10 @@ body.mobile .dropdown-menu:where(:not(.note-autocomplete-menu)) {
         visibility: hidden;
     }
 
+    h6::before {
+        inset-inline: 0;
+    }
+
     .dropdown-custom-item:has(.note-color-picker) {
         overflow-x: auto;
     }
