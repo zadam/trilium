@@ -235,6 +235,16 @@ describe("FormListToggleableItem", () => {
         return { row, pageHeard };
     }
 
+    it("marks its row as a switch row, alongside a class it is given", () => {
+        const container = mount(
+            <menu role="none">
+                <FormListToggleableItem title="Shared" currentValue={false} onChange={() => {}} className="share-row" />
+            </menu>
+        );
+        const row = container.querySelector<HTMLElement>("li.dropdown-item");
+        expect([ row?.classList.contains("tn-menu-toggle"), row?.classList.contains("share-row") ]).toEqual([ true, true ]);
+    });
+
     it("flips its value once per click, ignoring clicks while the change is still running", async () => {
         let finish = () => {};
         const onChange = vi.fn(() => new Promise<void>((resolve) => finish = resolve));

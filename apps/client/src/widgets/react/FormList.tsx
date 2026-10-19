@@ -316,7 +316,7 @@ export function menuItemTooltipSide(_tooltip?: unknown, tip?: HTMLElement, row?:
 }
 
 export function FormListToggleableItem({
-    title, currentValue, onChange, disabled, helpPage, helpTooltip, ...props
+    title, currentValue, onChange, disabled, helpPage, helpTooltip, className, ...props
 }: Omit<FormListItemOpts, "onClick" | "children"> & {
     title: string;
     currentValue: boolean;
@@ -330,6 +330,7 @@ export function FormListToggleableItem({
     return (
         <FormListItem
             {...props}
+            className={clsx("tn-menu-toggle", className)}
             title={helpTooltip}
             disabled={disabled}
             onClick={async (e) => {

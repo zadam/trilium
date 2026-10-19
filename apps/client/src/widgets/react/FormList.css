@@ -45,6 +45,12 @@
     }
 }
 
+/* Ends the switch where a submenu row's arrow ends (see `.dropdown-submenu .dropdown-toggle::after`
+   in theme-next/menus.css), rather than at the padding kept for that arrow. */
+.dropdown-item.tn-menu-toggle {
+    --menu-item-end-padding: 10px;
+}
+
 .form-list-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
