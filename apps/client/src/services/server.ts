@@ -154,7 +154,7 @@ async function uploadForm(url: string, options: UploadFormOptions): Promise<any>
         }
     }
 
-    const localUpload = USE_LOCAL_FETCH ? window.standaloneApi?.localUpload : undefined;
+    const localUpload = getLocalUpload();
     if (localUpload) {
         return await localUploadForm(localUpload, url, headers, options);
     }
@@ -175,6 +175,11 @@ async function uploadForm(url: string, options: UploadFormOptions): Promise<any>
         contentType: false, // NEEDED, DON'T REMOVE THIS
         processData: false // NEEDED, DON'T REMOVE THIS
     });
+}
+
+/** The standalone leader tab's in-page upload to its worker, or `undefined` elsewhere. */
+function getLocalUpload() {
+    return USE_LOCAL_FETCH ? window.standaloneApi?.localUpload : undefined;
 }
 
 async function localUploadForm(
@@ -552,5 +557,6 @@ export default {
     uploadForm,
     // don't remove, used from CKEditor image upload!
     getHeaders,
+    getLocalUpload,
     getMaxKnownEntityChangeId: () => maxKnownEntityChangeId
 };
