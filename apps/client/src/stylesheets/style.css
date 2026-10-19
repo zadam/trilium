@@ -72,6 +72,8 @@ body#trilium-app.backdrop-effects-disabled *::after {
 html {
     /* this fixes FF filter vs. position fixed bug: https://github.com/zadam/trilium/issues/233 */
     height: 100vh;
+    /* Chrome on Android sizes `vh` without its toolbar, which leaves the page that much to scroll. */
+    height: 100dvh;
     overscroll-behavior: none;
 }
 
