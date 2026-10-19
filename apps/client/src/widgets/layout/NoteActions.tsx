@@ -63,6 +63,7 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
     itemsAtStart?: ComponentChildren;
     /** Rows placed among the note settings, after the note type and its editability. */
     noteSettingsItems?: ComponentChildren;
+    /** Rows that join the group of the note's properties. */
     itemsNearNoteSettings?: ComponentChildren;
     dropdownRef?: RefObject<DropdownHandle | null>;
 }) {
@@ -106,6 +107,7 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
     const hasCollectionProperties = isBoard
         || (!isViewReadOnly && (isEventCalendar || isGeoMap || isTable));
     const isNormalViewMode = noteContext?.viewScope?.viewMode === "default";
+    const hasBasicProperties = isNormalViewMode && !isHelpPage;
     // The quick edit popup has no find bar, and the note map and a converted attachment open in the tab behind it.
     const isInPopup = !!noteContext?.ntxId?.startsWith(POPUP_EDITOR_NTX_ID);
     const itemToFocusRef = useRef<ItemToFocus>(null);
@@ -176,12 +178,9 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
 
                 {!isMobile && viewStrip}
 
-                {isNormalViewMode && !isHelpPage && <>
-                    <NoteBasicProperties note={note} focus={itemToFocusRef} isInPopup={isInPopup} settingsItems={noteSettingsItems} />
-                    <FormDropdownDivider />
-                </>}
-
+                {hasBasicProperties && <NoteBasicProperties note={note} focus={itemToFocusRef} isInPopup={isInPopup} settingsItems={noteSettingsItems} />}
                 {itemsNearNoteSettings}
+                {(hasBasicProperties || itemsNearNoteSettings) && <FormDropdownDivider />}
 
                 <CommandItem icon="bx bx-import" text={t("note_actions.import_files")}
                     disabled={isInOptionsOrHelp || note.type === "search"}

@@ -318,7 +318,8 @@ describe("NoteContextMenu", () => {
                         <NoteContextMenu note={note} noteContext={noteContext}
                             leadingViewActions={[ { title: "split", uiIcon: "bx bx-dock-right", handler: () => {} } ]}
                             trailingViewActions={[ { title: "child", uiIcon: "bx bx-plus", handler: createChild } ]}
-                            itemsAtStart={<CommandItem icon="bx bx-link" text="start" command={() => {}} />} />
+                            itemsAtStart={<CommandItem icon="bx bx-link" text="start" command={() => {}} />}
+                            itemsNearNoteSettings={<CommandItem icon="bx bx-info-circle" text="near" command={() => {}} />} />
                     </NoteContextContext.Provider>
                 </ParentComponent.Provider>
             ), host);
@@ -340,6 +341,10 @@ describe("NoteContextMenu", () => {
             expect(topRows.some((text) => [ "basic_properties.note_type", "template_switch.template", "shared_switch.shared", "bookmark_switch.bookmark" ]
                 .some((key) => text.includes(key)))).toBe(false);
             expect(topRows.some((text) => text.includes("protect_note.toggle-on"))).toBe(true);
+            // The rows given to sit near the settings join their group, with a divider only after them.
+            const near = popup()?.querySelector("li.dropdown-item:has(.bx-info-circle)");
+            expect(near?.previousElementSibling?.textContent).toContain("note_actions.note_settings");
+            expect(near?.nextElementSibling?.classList.contains("dropdown-divider")).toBe(true);
 
             // Its page lists the editability choices under a heading, not behind a further row.
             await act(async () => [ ...popup()?.querySelectorAll<HTMLElement>(".tn-menu-scroll > li.dropdown-item") ?? [] ]

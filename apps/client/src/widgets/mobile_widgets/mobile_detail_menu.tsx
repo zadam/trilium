@@ -14,7 +14,7 @@ import { codeLanguageItems, useMimeTypes } from "../layout/NoteTypeSwitcher";
 import { getLocaleName, NoteInfoContent, SimilarNotesList, useAttributeCount } from "../layout/StatusBar";
 import ActionButton from "../react/ActionButton";
 import type { DropdownHandle } from "../react/Dropdown";
-import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../react/FormList";
+import { FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListItem } from "../react/FormList";
 import { useAttachments, useNoteContext, useNoteProperty } from "../react/hooks";
 import { MenuItemRows } from "../react/Menu";
 import Modal from "../react/Modal";
@@ -29,7 +29,6 @@ export default function MobileDetailMenu() {
     const isMainContext = noteContext?.isMainContext();
     const [ backlinksModalShown, setBacklinksModalShown ] = useState(false);
     const [ notePathsModalShown, setNotePathsModalShown ] = useState(false);
-    const [ noteInfoModalShown, setNoteInfoModalShown ] = useState(false);
     const [ similarNotesModalShown, setSimilarNotesModalShown ] = useState(false);
     const sortedNotePaths = useSortedNotePaths(note, hoistedNoteId);
     const backlinksCount = useBacklinkCount(note, viewScope?.viewMode === "default");
@@ -93,11 +92,18 @@ export default function MobileDetailMenu() {
                         {note.type === "text" && <ContentLanguageSelector note={note} />}
                         {note.type === "code" && <CodeLanguageSelector note={note} />}
                     </>}
-                    itemsNearNoteSettings={<>
-                        <FormListItem icon="bx bx-info-circle" onClick={() => setNoteInfoModalShown(true)}>{t("note_info_widget.title")}</FormListItem>
-                        <FormListItem icon="bx bx-bar-chart" onClick={() => setSimilarNotesModalShown(true)}>{t("similar_notes.title")}</FormListItem>
-                        <FormDropdownDivider />
-                    </>}
+                    itemsNearNoteSettings={
+                        <FormDropdownSubmenu icon="bx bx-info-circle" title={t("note_info_widget.title")}>
+                            <FormListCustomItem>
+                                {/* Calculating the size or selecting a value keeps the menu open; the
+                                    similar notes link closes it through `dropdownRef`. */}
+                                <div onClick={(e) => e.stopPropagation()}>
+                                    <NoteInfoContent note={note} noteType={note.type} dropdownRef={dropdownRef}
+                                        setSimilarNotesShown={setSimilarNotesModalShown} />
+                                </div>
+                            </FormListCustomItem>
+                        </FormDropdownSubmenu>
+                    }
                 />
             ) : (
                 <ActionButton
@@ -111,7 +117,6 @@ export default function MobileDetailMenu() {
                 <>
                     <BacklinksModal note={note} modalShown={backlinksModalShown} setModalShown={setBacklinksModalShown} />
                     <NotePathsModal note={note} modalShown={notePathsModalShown} notePath={noteContext?.notePath} sortedNotePaths={sortedNotePaths} setModalShown={setNotePathsModalShown} />
-                    <NoteInfoModal note={note}  modalShown={noteInfoModalShown} setModalShown={setNoteInfoModalShown} />
                     <SimilarNotesModal note={note} modalShown={similarNotesModalShown} setModalShown={setSimilarNotesModalShown} />
                 </>
             ), document.body)}
@@ -214,20 +219,6 @@ function NotePathsModal({ note, modalShown, notePath, sortedNotePaths, setModalS
                     currentNotePath={notePath}
                 />
             )}
-        </Modal>
-    );
-}
-
-function NoteInfoModal({ note, modalShown, setModalShown }: { note: FNote | null | undefined } & WithModal) {
-    return (
-        <Modal
-            className="note-info-modal"
-            size="md"
-            title={t("note_info_widget.title")}
-            show={modalShown}
-            onHidden={() => setModalShown(false)}
-        >
-            {note && <NoteInfoContent note={note} noteType={note.type} />}
         </Modal>
     );
 }
