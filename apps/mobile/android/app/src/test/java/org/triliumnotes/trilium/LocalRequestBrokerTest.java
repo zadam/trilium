@@ -105,6 +105,48 @@ public class LocalRequestBrokerTest {
     }
 
     @Test
+    public void letsWebViewSkipToARangeThePageAlreadyCut() throws Exception {
+        LocalRequestBroker broker = readyBroker();
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Range", "bytes=1000-");
+        Future<InterceptedResponse> pending = request(broker, null, "https://localhost/api/notes/v/open-partial", headers);
+        int id = idOf(awaitScript(0));
+
+        broker.onMessage("{\"type\":\"head\",\"id\":" + id + ",\"status\":206,\"headers\":{"
+                + "\"content-range\":\"bytes 1000-1004/5000\"}}");
+        InterceptedResponse response = pending.get(WAIT_MS, TimeUnit.MILLISECONDS);
+        broker.onFrame(frame(id, "slice"));
+        broker.onMessage("{\"type\":\"end\",\"id\":" + id + "}");
+
+        // WebView treats the stream as the whole resource and skips to the range start itself,
+        // in a loop, as SkipToRequestedRange in Chromium's input_stream_reader.cc does.
+        assertEquals(0, response.body.available());
+        long toSkip = 1000;
+        while (toSkip > 0) {
+            long skipped = response.body.skip(toSkip);
+            assertTrue("the skip must make progress", skipped > 0);
+            toSkip -= skipped;
+        }
+        assertEquals("slice", read(response.body));
+    }
+
+    @Test
+    public void skipsRealBytesWhenTheResponseIsNotARange() throws Exception {
+        LocalRequestBroker broker = readyBroker();
+        Future<InterceptedResponse> pending = request(broker, null, "https://localhost/api/notes/x", new HashMap<>());
+        int id = idOf(awaitScript(0));
+
+        broker.onMessage("{\"type\":\"head\",\"id\":" + id + ",\"status\":200,\"headers\":{"
+                + "\"Content-Range\":\"bytes 0-4/5\"}}");
+        InterceptedResponse response = pending.get(WAIT_MS, TimeUnit.MILLISECONDS);
+        broker.onFrame(frame(id, "whole"));
+        broker.onMessage("{\"type\":\"end\",\"id\":" + id + "}");
+
+        assertEquals(2, response.body.skip(2));
+        assertEquals("ole", read(response.body));
+    }
+
+    @Test
     public void dispatchesAtOnceWhenReadyAndDecodesBase64Chunks() throws Exception {
         LocalRequestBroker broker = broker(WAIT_MS, false);
         broker.onMessage("{\"type\":\"ready\"}");

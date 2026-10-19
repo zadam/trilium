@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Tracks the local API requests {@link TriliumRequestBridge} forwards to the page, from dispatch
@@ -164,6 +166,9 @@ final class LocalRequestBroker {
             if ("content-type".equals(name)) {
                 contentType = header.getValue();
             }
+            if ("content-range".equals(name) && request.status == 206) {
+                request.body.startAt(rangeStart(header.getValue()));
+            }
             responseHeaders.put(header.getKey(), header.getValue());
         }
         return new InterceptedResponse(request.status, reasonPhrase(request.status), contentType,
@@ -272,6 +277,14 @@ final class LocalRequestBroker {
         return json.replace("\u2028", "\\u2028").replace("\u2029", "\\u2029");
     }
 
+    /** The first byte position of a {@code Content-Range: bytes S-E/T} value, or 0 if it has none. */
+    static long rangeStart(String contentRange) {
+        Matcher matcher = CONTENT_RANGE.matcher(contentRange.trim());
+        return matcher.find() ? Long.parseLong(matcher.group(1)) : 0;
+    }
+
+    private static final Pattern CONTENT_RANGE = Pattern.compile("^bytes\\s+(\\d+)-\\d+/");
+
     /** WebResourceResponse requires a non-empty reason phrase. */
     static String reasonPhrase(int status) {
         switch (status) {
@@ -335,6 +348,28 @@ final class LocalRequestBroker {
         private byte[] current;
         private int position;
         private boolean finished;
+        /** Bytes before the first queued one, which {@link #skip} passes over without reading. */
+        private volatile long skippablePrefix;
+
+        /**
+         * Marks the body as starting at {@code offset} of the resource. WebView's loader treats an
+         * intercepted stream as the whole resource and skips to the requested range start itself,
+         * so for a 206 the page already cut, that skip must land on the first queued byte.
+         */
+        void startAt(long offset) {
+            skippablePrefix = offset;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long prefix = skippablePrefix;
+            if (prefix > 0 && n > 0) {
+                long skipped = Math.min(n, prefix);
+                skippablePrefix = prefix - skipped;
+                return skipped;
+            }
+            return super.skip(n);
+        }
 
         void append(byte[] chunk) {
             if (chunk.length > 0) {
