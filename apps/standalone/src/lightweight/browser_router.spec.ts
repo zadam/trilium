@@ -181,6 +181,14 @@ describe("BrowserRouter body parsing", () => {
 
         await router.dispatch("POST", "http://localhost/upload", body);
         expect(buffered?.file?.buffer && Array.from(buffered.file.buffer)).toEqual([ 4, 5, 6 ]);
+
+        const untyped = new File([ new Uint8Array([ 7 ]) ], "blob");
+        await router.dispatch("POST", "http://localhost/import", { type: "upload", fields: {}, file: untyped });
+        expect(inPlace?.file?.mimetype).toBe("application/octet-stream");
+
+        await router.dispatch("POST", "http://localhost/upload", { type: "upload", fields: { taskId: "t2" } });
+        expect(buffered?.body).toEqual({ taskId: "t2" });
+        expect(buffered?.file).toBeUndefined();
     });
 
     it("warns when multipart parsing fails", async () => {

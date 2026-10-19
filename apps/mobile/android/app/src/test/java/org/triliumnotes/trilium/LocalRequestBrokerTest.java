@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -123,6 +124,7 @@ public class LocalRequestBrokerTest {
         // WebView treats the stream as the whole resource and skips to the range start itself,
         // in a loop, as SkipToRequestedRange in Chromium's input_stream_reader.cc does.
         assertEquals(0, response.body.available());
+        assertEquals(0, response.body.skip(0));
         long toSkip = 1000;
         while (toSkip > 0) {
             long skipped = response.body.skip(toSkip);
@@ -146,6 +148,17 @@ public class LocalRequestBrokerTest {
 
         assertEquals(2, response.body.skip(2));
         assertEquals("ole", read(response.body));
+
+        Future<InterceptedResponse> unsatisfiable = request(broker, null, "https://localhost/api/notes/y", new HashMap<>());
+        int rangeId = idOf(awaitScript(1));
+        broker.onMessage("{\"type\":\"head\",\"id\":" + rangeId + ",\"status\":206,\"headers\":{"
+                + "\"content-range\":\"bytes */5\"}}");
+        InterceptedResponse range = unsatisfiable.get(WAIT_MS, TimeUnit.MILLISECONDS);
+        broker.onFrame(frame(rangeId, "whole"));
+        broker.onMessage("{\"type\":\"end\",\"id\":" + rangeId + "}");
+
+        assertEquals(2, range.body.skip(2));
+        assertEquals("ole", read(range.body));
     }
 
     @Test
@@ -215,6 +228,29 @@ public class LocalRequestBrokerTest {
     }
 
     @Test
+    public void ignoresARejectionThatArrivesAfterTheRequestFailed() throws Exception {
+        List<Consumer<Boolean>> verdicts = Collections.synchronizedList(new ArrayList<>());
+        LocalRequestBroker broker = new LocalRequestBroker(
+            (script, accepted) -> verdicts.add(accepted),
+            Runnable::run,
+            data -> Base64.getDecoder().decode(data),
+            warnings::add,
+            WAIT_MS,
+            true);
+        broker.onMessage("{\"type\":\"ready\"}");
+        Future<InterceptedResponse> pending = request(broker, "GET", "https://localhost/api/x", new HashMap<>());
+        long deadline = System.currentTimeMillis() + WAIT_MS;
+        while (verdicts.isEmpty() && System.currentTimeMillis() < deadline) {
+            Thread.sleep(5);
+        }
+
+        broker.onPageStarted();
+        verdicts.get(0).accept(false);
+
+        assertEquals("The page reloaded before answering", read(pending.get(WAIT_MS, TimeUnit.MILLISECONDS).body));
+    }
+
+    @Test
     public void failsPendingRequestsOnReloadAndWaitsForTheNewPage() throws Exception {
         LocalRequestBroker broker = readyBroker();
         Future<InterceptedResponse> first = request(broker, "GET", "https://localhost/api/a", new HashMap<>());
@@ -278,6 +314,12 @@ public class LocalRequestBrokerTest {
             assertEquals(502, response.status);
             assertEquals("The local worker answered with status " + status, read(response.body));
         }
+
+        Future<InterceptedResponse> pending = request(broker, "GET", "https://localhost/api/missing", new HashMap<>());
+        int id = idOf(awaitScript(statuses.length));
+        broker.onMessage("{\"type\":\"head\",\"id\":" + id + ",\"status\":404}");
+        broker.onMessage("{\"type\":\"end\",\"id\":" + id + "}");
+        assertEquals(404, pending.get(WAIT_MS, TimeUnit.MILLISECONDS).status);
     }
 
     @Test

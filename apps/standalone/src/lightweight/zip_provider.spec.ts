@@ -335,6 +335,9 @@ describe("BrowserZipProvider entry formats", () => {
     it("reads a stored (uncompressed) entry", async () => {
         const zip = zipSync({ "plain.txt": [ strToU8("as is"), { level: 0 } ] });
         expect(await readAll(zip)).toEqual({ "plain.txt": "as is" });
+
+        const withExtraField = zipSync({ "plain.txt": [ strToU8("as is"), { level: 0, extra: { 0x5455: new Uint8Array([ 1 ]) } } ] });
+        expect(await readAll(withExtraField)).toEqual({ "plain.txt": "as is" });
     });
 
     it("reads a ZIP64 archive, whose sizes and offsets are in 64-bit records", async () => {
@@ -356,6 +359,37 @@ describe("BrowserZipProvider entry formats", () => {
         view.setUint32(headers[1] ?? 0, 0, true);
 
         await expect(readNames(zip)).rejects.toThrow("Corrupt ZIP: the central directory ends in an unreadable record.");
+    });
+
+    it("rejects an archive whose directory records point outside the file", async () => {
+        const zip64 = makeZip64("big.txt", "sixty-four");
+        const zip64View = new DataView(zip64.buffer);
+        zip64View.setUint32(zip64.length - 22 - 20 - 56, 0, true);
+        await expect(readNames(zip64)).rejects.toThrow("the ZIP64 end-of-central-directory record is missing");
+
+        const directoryPastEnd = makeZip({ "a.txt": "x" });
+        new DataView(directoryPastEnd.buffer).setUint32(directoryPastEnd.length - 22 + 16, 0x7fffffff, true);
+        await expect(readNames(directoryPastEnd)).rejects.toThrow("the central directory lies past the end of the file");
+
+        const recordPastDirectory = patchCentralHeader(makeZip({ "a.txt": "x" }), (view, at) => view.setUint16(at + 30, 0xffff, true));
+        await expect(readNames(recordPastDirectory)).rejects.toThrow("a central directory record runs past the directory");
+
+        await expect(readNames(new Uint8Array(64))).rejects.toThrow("Truncated ZIP: no end-of-central-directory record.");
+    });
+
+    it("rejects entry content that lies outside the file", async () => {
+        const shortZip64Extra = makeZip64("big.txt", "sixty-four");
+        const extraSizeField = 30 + 7 + 10 + 46 + 7 + 2;
+        new DataView(shortZip64Extra.buffer).setUint16(extraSizeField, 8, true);
+        await expect(readAll(shortZip64Extra)).rejects.toThrow("Corrupt ZIP: an entry's local header is missing.");
+
+        const truncated = patchCentralHeader(makeZip({ "a.txt": "x" }), (view, at) => view.setUint32(at + 20, 0xffff, true));
+        await expect(readAll(truncated)).rejects.toThrow("Truncated ZIP: an entry's data runs past the end of the file.");
+    });
+
+    it("keeps an unflagged name that decodes in no encoding as one character per byte", async () => {
+        const zip = makeLegacyZip([{ placeholder: "A", nameBytes: [0xfe] }]);
+        expect(await readNames(zip, "x-unknown-encoding")).toEqual([ "þ" ]);
     });
 
     it("rejects an entry it cannot read, but only when its content is asked for", async () => {

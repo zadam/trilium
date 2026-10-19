@@ -635,6 +635,17 @@ describe("uploadForm", () => {
         });
     });
 
+    it("answers an empty JSON reply with null and any other reply with its text", async () => {
+        const reply = (response: Response) => {
+            (window as any).standaloneApi = { localUpload: vi.fn(async () => response) };
+            return server.uploadForm("notes/root/notes-import", options);
+        };
+
+        expect(await reply(new Response("", { headers: { "content-type": "application/json" } }))).toBeNull();
+        expect(await reply(new Response("<p>done</p>", { headers: { "content-type": "text/html" } }))).toBe("<p>done</p>");
+        expect(await reply(new Response(new Blob([ "plain" ])))).toBe("plain");
+    });
+
     it("rejects with the status and text of an error reply, the fields a jqXHR carries", async () => {
         (window as any).standaloneApi = {
             localUpload: vi.fn(async () => new Response("Import failed", { status: 500 }))
