@@ -1,0 +1,31 @@
+:root {
+    --hide-keyboard-button-size: 38px;
+}
+
+body.mobile .hide-keyboard-button {
+    contain: none;
+    position: fixed;
+    bottom: 0;
+    inset-inline-end: 0;
+    z-index: 1000;
+    transform: translateY(var(--tn-keyboard-gap, 0px));
+
+    .icon-action {
+        --icon-button-size: var(--hide-keyboard-button-size);
+        width: var(--hide-keyboard-button-size);
+        height: var(--hide-keyboard-button-size);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--main-border-color);
+        border-inline-end: none;
+        border-bottom: none;
+        border-radius: 0;
+        border-start-start-radius: 8px;
+        background-color: var(--main-background-color);
+    }
+}
+
+body.mobile:has(.hide-keyboard-button .icon-action) .classic-toolbar-widget {
+    padding-inline-end: var(--hide-keyboard-button-size);
+}

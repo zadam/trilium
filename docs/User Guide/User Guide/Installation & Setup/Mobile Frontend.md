@@ -20,6 +20,7 @@ Here is a non-exhaustive list of differences between the desktop version and the
 *   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a> is displayed at the bottom of the screen.
     *   The launch bar uses a different configuration for icons than the desktop version. See the dedicated page for more information on how to configure it.
 *   Most of the note-related actions are grouped in the horizontal dots icon on the top-right of the note.
+*   In the iOS app, the keyboard has no _Done_ button. While you type, press the <span class="tn-icon bx bx-chevron-down"></span> button in the bottom-right corner, just above the keyboard, to hide it. This works in every note type and in every text field.
 *   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Tabs.md">Tabs</a> are grouped under a tab switcher in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>, where the tabs are displayed in a full-screen grid with preview for easy switching, as well as additional options such as reopening closed tabs.
 *   Since v0.100.0, <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Split%20View.md">Split View</a> can also be used in mobile view, but with a maximum of two panes at once. The splits are displayed vertically instead of horizontally.
 

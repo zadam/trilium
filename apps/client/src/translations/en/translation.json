@@ -4837,5 +4837,8 @@
     "default_parent": "Default location of created notes",
     "default_parent_description": "Where they are placed when no other location is picked, such as when created through @-completion in a text note.",
     "default_parent_placeholder": "Where they are created"
+  },
+  "hide_keyboard_button": {
+    "title": "Hide keyboard"
   }
 }
