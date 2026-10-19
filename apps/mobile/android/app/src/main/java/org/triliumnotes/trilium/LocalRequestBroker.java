@@ -348,6 +348,8 @@ final class LocalRequestBroker {
         private byte[] current;
         private int position;
         private boolean finished;
+        /** Set when WebView stops reading, for instance on a canceled media load; later chunks are dropped. */
+        private volatile boolean closed;
         /** Bytes before the first queued one, which {@link #skip} passes over without reading. */
         private volatile long skippablePrefix;
 
@@ -372,7 +374,7 @@ final class LocalRequestBroker {
         }
 
         void append(byte[] chunk) {
-            if (chunk.length > 0) {
+            if (chunk.length > 0 && !closed) {
                 chunks.add(chunk);
             }
         }
@@ -425,6 +427,7 @@ final class LocalRequestBroker {
 
         @Override
         public void close() {
+            closed = true;
             chunks.clear();
             finished = true;
         }

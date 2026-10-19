@@ -12,10 +12,12 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -333,6 +335,13 @@ public class LocalRequestBrokerTest {
         closed.append(new byte[] { 1 });
         closed.close();
         assertEquals(-1, closed.read());
+
+        // WebView closes the stream when a media load is canceled, while the page keeps sending.
+        closed.append(new byte[] { 2 });
+        Field chunks = LocalRequestBroker.ChunkStream.class.getDeclaredField("chunks");
+        chunks.setAccessible(true);
+        assertTrue("a closed stream must not buffer what the page sends after it",
+                ((Collection<?>) chunks.get(closed)).isEmpty());
     }
 
     @Test
