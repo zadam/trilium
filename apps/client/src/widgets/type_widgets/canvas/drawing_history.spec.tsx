@@ -231,6 +231,7 @@ describe("DrawingHistory", () => {
         await vi.waitFor(() => expect(store.write).toHaveBeenCalledOnce());
         await vi.waitFor(() => expect(next.api.updateScene).toHaveBeenCalledTimes(2));
         expect(next.getElements()).toMatchObject([ { x: 10 } ]);
+        await vi.waitFor(() => expect(document.activeElement).toBe(next.container));
     });
 
     it("undoes and redoes the note with the keys and the buttons of Excalidraw", () => {

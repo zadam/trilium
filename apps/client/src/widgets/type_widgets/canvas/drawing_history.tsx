@@ -239,10 +239,6 @@ export default class DrawingHistory {
 
         if (first && !this.pendingStoreUpdates) {
             this.applyToDrawings(step, isUndo);
-            // Deferred until after the Undo button of the toolbar focuses the text editor.
-            queueMicrotask(() => {
-                first.root?.querySelector<HTMLElement>(".excalidraw-container")?.focus();
-            });
         } else {
             // Waits for the steps before it, which read the drawing.
             const isShown = !!first;
@@ -259,11 +255,20 @@ export default class DrawingHistory {
         return true;
     }
 
+    /** Applies `step` to every Excalidraw that shows the drawing, and focuses the first. */
     private applyToDrawings(step: DrawingStep, isUndo: boolean) {
         for (const drawing of this.drawings) {
             applyToDrawing(drawing, step, isUndo);
         }
         this.revision++;
+
+        const [ first ] = this.drawings;
+        if (first) {
+            // Deferred until after the Undo button of the toolbar focuses the text editor.
+            queueMicrotask(() => {
+                first.root?.querySelector<HTMLElement>(".excalidraw-container")?.focus();
+            });
+        }
     }
 }
 
