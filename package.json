@@ -76,7 +76,7 @@
     "happy-dom": "21.0.1",
     "http-server": "14.1.1",
     "jiti": "2.7.0",
-    "js-yaml": "5.4.3",
+    "js-yaml": "5.5.0",
     "playwright": "1.64.1",
     "tslib": "2.8.1",
     "tsx": "4.23.15",
