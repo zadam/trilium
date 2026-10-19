@@ -123,5 +123,9 @@ describe("installAndroidRequestBridge", () => {
         mocks.localFetch.mockRejectedValue(new Error("worker gone"));
         const failed = await forward({ id: 6, url: "https://localhost/api/notes" });
         expect(failed).toEqual([{ type: "error", id: 6, message: "worker gone" }]);
+
+        mocks.localFetch.mockRejectedValue("closed");
+        const rejected = await forward({ id: 7, url: "https://localhost/api/notes" });
+        expect(rejected).toEqual([{ type: "error", id: 7, message: "closed" }]);
     });
 });

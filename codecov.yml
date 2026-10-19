@@ -42,6 +42,10 @@ flags:
     paths:
       - apps/desktop/src/
     carryforward: true
+  mobile:
+    paths:
+      - apps/mobile/android/app/src/main/java/
+    carryforward: true
   commons:
     paths:
       - packages/commons/src/

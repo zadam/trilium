@@ -13,8 +13,11 @@ Key files:
 apps/mobile/capacitor.config.json          # appId org.triliumnotes.trilium, androidScheme https, hostname localhost, plugins
 apps/mobile/android/app/src/main/java/org/triliumnotes/trilium/
     MainActivity.java                      # installs TriliumRequestBridge, TriliumWebViewClient, TriliumFileSink; edge-to-edge + insets, system bars
-    TriliumRequestBridge.java              # answers local API requests from the page's worker in place of a service worker (Android only)
-    TriliumWebViewClient.java              # routes local API requests to TriliumRequestBridge; streaming HTTP proxy for the sync worker
+    TriliumRequestBridge.java              # Android adapter for LocalRequestBroker: message listener, evaluateJavascript, page reloads
+    LocalRequestBroker.java                # local API request logic in place of a service worker; no Android classes, unit-tested
+    NativeHttpProxy.java                   # the sync worker's streaming HTTP proxy; no Android classes, unit-tested
+    InterceptedResponse.java               # Android-free form of WebResourceResponse, returned by both
+    TriliumWebViewClient.java              # routes requests to TriliumRequestBridge and NativeHttpProxy, builds the WebResourceResponse
     TriliumFileSink.java                   # binary file-write channel (WebMessageListener + ArrayBuffer, Android only)
 apps/mobile/ios/App/App/ViewController.swift   # keyboard handling: pins outer scroll, drives --tn-keyboard-gap
 apps/standalone/src/main.ts                # boot: registers native HTTP handler if `Capacitor` in window; iOS interceptors or Android request bridge
@@ -175,7 +178,7 @@ pnpm --filter @triliumnext/mobile open:android   # Android Studio
 pnpm --filter @triliumnext/mobile run:ios | open:ios   # Xcode (macOS)
 ```
 
-CI: `mobile.yml` (pull requests) builds a debug APK via `.github/actions/build-mobile` and an unsigned iOS **Simulator** `.app` on macOS; `nightly.yml` calls the same action with `nightly: "true"` for the signed `assembleRelease` build under the `.nightly` app id. Neither runs unit tests — those live in the standalone suite.
+CI: `mobile.yml` (pull requests) builds a debug APK via `.github/actions/build-mobile` and an unsigned iOS **Simulator** `.app` on macOS; `nightly.yml` calls the same action with `nightly: "true"` for the signed `assembleRelease` build under the `.nightly` app id. The action runs the Android JVM unit tests before assembling, and `mobile.yml` uploads their JaCoCo report to Codecov under the `mobile` flag; the JS unit tests live in the standalone suite.
 
 **Debugging on a device:** a *release*-type build (what `nightly.yml` produces) suppresses WebView
 console→logcat forwarding, so anything logged from JS is invisible to `adb logcat` and log-based
@@ -196,4 +199,19 @@ pnpm --filter standalone test android-request-bridge  # Android request bridge: 
 pnpm --filter standalone test main                    # boot wiring (native handler, iOS interceptors, Android bridge instead of the SW)
 ```
 
-Simulate the platform in a spec by stubbing `location.protocol` / `window.Capacitor` (`getPlatform`, `isNativePlatform`, `Plugins.CapacitorHttp`) — see the existing specs for the fixtures. Native Java/Swift has no test harness in the repo; keep logic there minimal and mirror the protocol on the JS side where it is testable.
+Simulate the platform in a spec by stubbing `location.protocol` / `window.Capacitor` (`getPlatform`, `isNativePlatform`, `Plugins.CapacitorHttp`) — see the existing specs for the fixtures.
+
+The Android Java has JVM unit tests (JUnit 4) under `apps/mobile/android/app/src/test/`:
+
+```bash
+cd apps/mobile/android
+./gradlew testDebugUnitTest                                    # needs a JDK 21 and ANDROID_HOME
+./gradlew testDebugUnitTest createDebugUnitTestCoverageReport  # + app/build/reports/coverage/test/debug/
+```
+
+The project needs `cap sync android` (or `cap update android`) once first, for the generated `capacitor-cordova-android-plugins/`.
+
+- **Only Android-free classes are testable.** Unit tests compile against `android.jar`, whose classes (`Uri`, `Handler`, `Log`, `Base64`, `WebResourceResponse`) are stubs that throw "Method not mocked". Logic therefore lives in classes that import none of them (`LocalRequestBroker`, `NativeHttpProxy`, `InterceptedResponse`), with the WebView, the main thread, base64 and logging passed in; the `Trilium*` classes are thin adapters with no tests. Keep new native logic on the same side of that line.
+- **`org.json` comes from a `testImplementation` dependency**, since `android.jar`'s copy is a stub too. **`com.sun.net.httpserver` is not on the test classpath**, so `NativeHttpProxyTest` serves canned responses from a `ServerSocket` (`StubServer`).
+- **`minSdk` is 24**: `String.join` and `java.util.Base64` need API 26, so production code avoids them; tests can use them.
+- Swift has no harness in the repo; keep logic there minimal and mirror the protocol on the JS side, where it is testable.

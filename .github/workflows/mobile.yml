@@ -30,6 +30,14 @@ jobs:
       - name: Build mobile APK
         uses: ./.github/actions/build-mobile
 
+      - name: Upload Android coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          files: apps/mobile/android/app/build/reports/coverage/test/debug/report.xml
+          flags: mobile
+          disable_search: true
+          fail_ci_if_error: false
+
   build_ios:
     name: Build iOS App
     # iOS builds require Xcode, which is only available on macOS runners.
