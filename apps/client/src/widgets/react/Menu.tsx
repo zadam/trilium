@@ -24,7 +24,7 @@ import Popup, { type PopupProps } from "./Popup";
  * `FormDropdownSubmenu`, `FormDropdownDivider`, `FormListHeader` and `FormListCustomItem`.
  */
 export interface MenuProps<T> extends Pick<PopupProps, "anchor" | "offset" | "container" | "portalClassName"
-        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby"> {
+        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby" | "placedByStylesheet"> {
     id?: string;
     className?: string;
     /** The side of its anchor it prefers: beside a point towards the right, or below an element. */
@@ -388,7 +388,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
                 {...popupProps}
                 anchor={anchor}
                 placement={placement ?? (anchor instanceof HTMLElement ? "bottom-start" : "right-start")}
-                placedByStylesheet={bottomSheet || inline}
+                placedByStylesheet={popupProps.placedByStylesheet || bottomSheet || inline}
                 onPlaced={() => {
                     const menu = menuRef.current;
                     if (menu) {

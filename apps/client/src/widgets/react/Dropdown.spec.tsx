@@ -541,6 +541,25 @@ describe("Dropdown", () => {
             cover.remove();
         });
 
+        it("leaves a launcher bar menu to the stylesheet on a phone, and beside its toggle on a tablet", async () => {
+            layout.onMobile = true;
+            const { toggle } = renderDropdown({ mobileBackdrop: true });
+
+            click(toggle);
+            await vi.waitFor(() => expect(popup()?.style.visibility).toBe("visible"));
+            expect(popup()?.classList.contains("mobile-bottom-menu")).toBe(false);
+            const { left, top, maxHeight } = popup()?.style ?? {};
+            expect([ left, top, maxHeight ]).toEqual([ "", "", "" ]);
+
+            click(toggle);
+            await vi.waitFor(() => expect(popup()).toBeNull());
+            layout.narrow = false;
+            for (const listener of layout.onChange) listener();
+            click(toggle);
+            await vi.waitFor(() => expect(popup()?.style.top).toBe("82px"));
+            expect(popup()?.style.maxHeight).not.toBe("");
+        });
+
         it("turns into a placed menu and back as a tablet turns while it is open", async () => {
             layout.onMobile = true;
             const turn = (narrow: boolean) => {
