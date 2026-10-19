@@ -89,9 +89,11 @@ export default function MobileDetailMenu() {
                         >{t("close_pane_button.close_this_pane")}</FormListItem>}
                         <FormDropdownDivider />
                     </>}
-                    itemsNearNoteSettings={<>
+                    noteSettingsItems={<>
                         {note.type === "text" && <ContentLanguageSelector note={note} />}
                         {note.type === "code" && <CodeLanguageSelector note={note} />}
+                    </>}
+                    itemsNearNoteSettings={<>
                         <FormListItem icon="bx bx-info-circle" onClick={() => setNoteInfoModalShown(true)}>{t("note_info_widget.title")}</FormListItem>
                         <FormListItem icon="bx bx-bar-chart" onClick={() => setSimilarNotesModalShown(true)}>{t("similar_notes.title")}</FormListItem>
                         <FormDropdownDivider />

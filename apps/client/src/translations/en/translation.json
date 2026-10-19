@@ -1246,7 +1246,8 @@
     "export_as_image_svg": "SVG (vector)",
     "note_map": "Note map",
     "search_in_note_short": "Find",
-    "note_attachments_short": "Attachments"
+    "note_attachments_short": "Attachments",
+    "note_settings": "Note settings"
   },
   "onclick_button": {
     "no_click_handler": "Button widget '{{componentId}}' has no defined click handler"

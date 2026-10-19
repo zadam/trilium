@@ -304,7 +304,7 @@ describe("NoteContextMenu", () => {
         expect(await isExportEnabled(buildNote({ id: "_optionsExportPage", title: "Options page" }))).toBe(false);
     });
 
-    it("puts the strip of tiles first on a phone, led by the tiles it is given, and leaves the attachments to the caller", async () => {
+    it("puts the strip of tiles first on a phone, led by the tiles it is given, and folds the note settings into one row", async () => {
         ctrl.mobile = true;
         const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
         const noteContext = new NoteContext("ntx-phone");
@@ -331,6 +331,11 @@ describe("NoteContextMenu", () => {
             const start = popup()?.querySelector("li.dropdown-item:has(.bx-link)");
             expect(start).toBeTruthy();
             expect(first?.compareDocumentPosition(start as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+            // The settings a note is given once are one row, which opens them.
+            const topRows = [ ...popup()?.querySelectorAll(".tn-menu-scroll > li.dropdown-item") ?? [] ].map((row) => row.textContent ?? "");
+            expect(topRows.some((text) => text.includes("note_actions.note_settings"))).toBe(true);
+            expect(topRows.some((text) => text.includes("basic_properties.note_type") || text.includes("template_switch.template"))).toBe(false);
 
             await act(async () => tiles[0]?.click());
             expect(createChild).toHaveBeenCalledOnce();

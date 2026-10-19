@@ -53,12 +53,14 @@ export default function NoteActions({ paneButtons = true }: {
 
 type ItemToFocus = "basic-properties";
 
-export function NoteContextMenu({ note, noteContext, leadingViewActions = [], itemsAtStart, itemsNearNoteSettings, dropdownRef: externalDropdownRef }: {
+export function NoteContextMenu({ note, noteContext, leadingViewActions = [], itemsAtStart, noteSettingsItems, itemsNearNoteSettings, dropdownRef: externalDropdownRef }: {
     note: FNote,
     noteContext?: NoteContext,
     /** Tiles placed before the note's own in the strip of tiles. */
     leadingViewActions?: MenuCommandItem<CommandNames>[];
     itemsAtStart?: ComponentChildren;
+    /** Rows placed among the note settings, after the note type and its editability. */
+    noteSettingsItems?: ComponentChildren;
     itemsNearNoteSettings?: ComponentChildren;
     dropdownRef?: RefObject<DropdownHandle | null>;
 }) {
@@ -170,7 +172,7 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], it
                 {!isMobile && viewStrip}
 
                 {isNormalViewMode && !isHelpPage && <>
-                    <NoteBasicProperties note={note} focus={itemToFocusRef} isInPopup={isInPopup} />
+                    <NoteBasicProperties note={note} focus={itemToFocusRef} isInPopup={isInPopup} settingsItems={noteSettingsItems} />
                     <FormDropdownDivider />
                 </>}
 
@@ -266,8 +268,9 @@ function CodeProperties({ note }: { note: FNote }) {
     );
 }
 
-function NoteBasicProperties({ note, focus, isInPopup }: {
+function NoteBasicProperties({ note, focus, isInPopup, settingsItems }: {
     note: FNote;
+    settingsItems?: ComponentChildren;
     focus: RefObject<ItemToFocus | null>;
     /** Whether the menu is in the quick edit popup, whose width the full content width label does not change. */
     isInPopup: boolean;
@@ -284,6 +287,27 @@ function NoteBasicProperties({ note, focus, isInPopup }: {
             itemToFocusRef.current?.focus();
         }
     }, [ focus ]);
+
+    const settings = <>
+        <NoteTypeDropdown note={note} />
+        <EditabilityDropdown note={note} />
+        {settingsItems}
+
+        <FormListToggleableItem
+            icon="bx bx-copy-alt"
+            title={t("template_switch.template")}
+            currentValue={isTemplate} onChange={setIsTemplate}
+            helpPage="KC1HB96bqqHX"
+            disabled={note?.noteId.startsWith("_options")}
+        />
+        {!isAlwaysFullWidthByType(note) && !isInPopup &&
+            <FormListToggleableItem
+                icon="bx bx-expand-horizontal"
+                title={t("full_content_width_switch.title")}
+                currentValue={isFullContentWidth} onChange={setIsFullContentWidth}
+            />
+        }
+    </>;
 
     return <>
         <FormListToggleableItem
@@ -308,23 +332,9 @@ function NoteBasicProperties({ note, focus, isInPopup }: {
 
         <FormDropdownDivider />
 
-        <NoteTypeDropdown note={note} />
-        <EditabilityDropdown note={note} />
-
-        <FormListToggleableItem
-            icon="bx bx-copy-alt"
-            title={t("template_switch.template")}
-            currentValue={isTemplate} onChange={setIsTemplate}
-            helpPage="KC1HB96bqqHX"
-            disabled={note?.noteId.startsWith("_options")}
-        />
-        {!isAlwaysFullWidthByType(note) && !isInPopup &&
-            <FormListToggleableItem
-                icon="bx bx-expand-horizontal"
-                title={t("full_content_width_switch.title")}
-                currentValue={isFullContentWidth} onChange={setIsFullContentWidth}
-            />
-        }
+        {getIsMobile()
+            ? <FormDropdownSubmenu icon="bx bx-slider-alt" title={t("note_actions.note_settings")}>{settings}</FormDropdownSubmenu>
+            : settings}
     </>;
 }
 
