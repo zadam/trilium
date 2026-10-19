@@ -8,6 +8,7 @@ import appContext, { CommandNames } from "../../components/app_context";
 import Component from "../../components/component";
 import NoteContext from "../../components/note_context";
 import FNote from "../../entities/fnote";
+import type { MenuCommandItem } from "../../menus/context_menu";
 import branches from "../../services/branches";
 import dialog from "../../services/dialog";
 import { t } from "../../services/i18n";
@@ -103,6 +104,35 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
     const isInPopup = !!noteContext?.ntxId?.startsWith(POPUP_EDITOR_NTX_ID);
     const itemToFocusRef = useRef<ItemToFocus>(null);
     const showRevisions = useCommandTrigger("showRevisions");
+    const searchInNote = useCommandTrigger("findInText");
+    const showAttachments = useCommandTrigger("showAttachments");
+    const showNoteMap = useCommandTrigger("toggleRibbonTabNoteMap");
+    const showNoteAttributes = useCommandTrigger("showNoteAttributes");
+    /** The actions that look into the note, drawn as a strip of tiles at the top of the menu. */
+    const viewActions: MenuCommandItem<CommandNames>[] = [
+        ...(isInPopup ? [] : [ {
+            title: t("note_actions.search_in_note_short"), tooltip: t("note_actions.search_in_note"),
+            uiIcon: "bx bx-search", keyboardShortcut: "findInText" as const, enabled: isSearchable,
+            handler: () => searchInNote?.()
+        } ]),
+        {
+            title: t("note_actions.note_attachments_short"), tooltip: t("note_actions.note_attachments"),
+            uiIcon: "bx bx-paperclip", enabled: !isInOptionsOrHelp,
+            handler: () => showAttachments?.()
+        },
+        ...(isInPopup ? [] : [ {
+            title: t("note_actions.note_map"),
+            uiIcon: "bx bxs-network-chart", keyboardShortcut: "toggleRibbonTabNoteMap" as const, enabled: !isInOptionsOrHelp,
+            handler: () => showNoteMap?.()
+        } ]),
+        // The attributes panel is a right pane tab where there is a right pane; on a phone the menu
+        // is where it is reached, and a modal is where it is shown.
+        ...(isMobile ? [ {
+            title: t("right_pane.tab_attributes"), tooltip: t("note_actions.note_attributes_title"),
+            uiIcon: "bx bx-list-check", enabled: !isInOptionsOrHelp,
+            handler: () => showNoteAttributes?.()
+        } ] : [])
+    ];
     // Keyboard shortcuts.
     useTriliumEvent("toggleRibbonTabBasicProperties", ({ ntxId }) => {
         if (!noteContext || ntxId !== noteContext.ntxId) return;
@@ -132,12 +162,10 @@ export function NoteContextMenu({ note, noteContext, itemsAtStart, itemsNearNote
                     <FormDropdownDivider />
                 </>}
 
-                {!isInPopup && <CommandItem command="findInText" icon="bx bx-search" disabled={!isSearchable} text={t("note_actions.search_in_note")} />}
-                <CommandItem command="showAttachments" icon="bx bx-paperclip" disabled={isInOptionsOrHelp} text={t("note_actions.note_attachments")} />
-                {!isInPopup && <CommandItem command="toggleRibbonTabNoteMap" icon="bx bxs-network-chart" disabled={isInOptionsOrHelp} text={t("note_actions.note_map")} />}
-                {/* The attributes panel is a right pane tab where there is a right pane; on a phone the
-                    menu is where it is reached, and a modal is where it is shown. */}
-                {isMobile && <CommandItem command="showNoteAttributes" icon="bx bx-list-check" disabled={isInOptionsOrHelp} text={t("note_actions.note_attributes")} />}
+                {viewActions.length > 1
+                    ? <MenuItemRows items={[ { kind: "actions", items: viewActions } ]} />
+                    // The quick edit popup leaves only the attachments, too few for a strip.
+                    : <CommandItem command="showAttachments" icon="bx bx-paperclip" disabled={isInOptionsOrHelp} text={t("note_actions.note_attachments")} />}
 
                 <FormDropdownDivider />
 

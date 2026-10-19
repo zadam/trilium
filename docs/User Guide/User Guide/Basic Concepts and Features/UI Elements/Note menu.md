@@ -7,9 +7,11 @@ Every split has a note menu of its own, which acts on the note displayed in that
 
 ## Navigating the note
 
-*   <span class="tn-icon bx bx-search"></span> _Search in note_ opens the <a class="reference-link" href="../Navigation/Search%20in%20note.md">Search in note</a> bar, to find and replace text inside the current note. On the desktop application, the same bar opens with <kbd>Ctrl</kbd>+<kbd>F</kbd>.
+These entries are the row of icons at the top of the menu, each with a short title. Hovering one shows its full name and its keyboard shortcut. In Quick edit, where only the attachments are left, it is listed as an ordinary entry instead.
+
+*   <span class="tn-icon bx bx-search"></span> _Search_ opens the <a class="reference-link" href="../Navigation/Search%20in%20note.md">Search in note</a> bar, to find and replace text inside the current note. On the desktop application, the same bar opens with <kbd>Ctrl</kbd>+<kbd>F</kbd>.
     *   It is available on <a class="reference-link" href="../../Note%20Types/Text.md">Text</a>, <a class="reference-link" href="../../Note%20Types/Code.md">Code</a>, <a class="reference-link" href="../../Note%20Types/Mind%20Map.md">Mind Map</a> and <a class="reference-link" href="../../Note%20Types/Spreadsheets.md">Spreadsheets</a> notes, <a class="reference-link" href="../../Collections.md">Collections</a>, PDF files, and any note displayed as <a class="reference-link" href="../../Advanced%20Usage/Note%20source.md">Note source</a>.
-*   <span class="tn-icon bx bx-paperclip"></span> _Note attachments_ switches the note to the list of its <a class="reference-link" href="../Notes/Attachments.md">Attachments</a>, where they can be uploaded, opened, downloaded, renamed or deleted.
+*   <span class="tn-icon bx bx-paperclip"></span> _Attachments_ switches the note to the list of its <a class="reference-link" href="../Notes/Attachments.md">Attachments</a>, where they can be uploaded, opened, downloaded, renamed or deleted.
 *   <span class="tn-icon bx bxs-network-chart"></span> _Note map_ opens the <a class="reference-link" href="Right%20Sidebar/Connections%20tab.md">Connections tab</a> of the <a class="reference-link" href="Right%20Sidebar.md">Right Sidebar</a>, which shows the <a class="reference-link" href="../../Advanced%20Usage/Note%20Map%20(Link%20map%2C%20Tree%20map).md">Note Map (Link map, Tree map)</a> centered on the current note.
 
 ## Note properties
@@ -100,7 +102,7 @@ Notes deleted without erasing can be brought back, see <a class="reference-link
 *   The note menu is not available on launchers.
 *   On the notes of <a class="reference-link" href="Options.md">Options</a> and of the in-app help, most entries are grayed out, since these notes cannot be imported into, deleted or have revisions. Of the two, only the in-app help can be exported, see <a class="reference-link" href="../Import%20%26%20Export.md">Import &amp; Export</a>.
 *   The [Note properties](#note-properties) section is only listed when the note itself is displayed, not its <a class="reference-link" href="../Notes/Attachments.md">Attachments</a> or its <a class="reference-link" href="../../Advanced%20Usage/Note%20source.md">Note source</a>.
-*   In <a class="reference-link" href="../Navigation/Quick%20edit.md">Quick edit</a>, _Search in note_, _Note map_, _Full width_ and _Convert into attachment_ are not listed.
+*   In <a class="reference-link" href="../Navigation/Quick%20edit.md">Quick edit</a>, _Search_, _Note map_, _Full width_ and _Convert into attachment_ are not listed.
 
 ## Mobile support
 
@@ -110,7 +112,7 @@ On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%
 *   The custom buttons of the note type (such as <span class="tn-icon bx bx-download"></span>_Download_ on a <a class="reference-link" href="../../Note%20Types/File.md">File</a>).
 *   _Insert child note_, which creates a note under the current one.
 *   _Create new split_ and _Close this pane_, to manage the <a class="reference-link" href="Split%20View.md">Split View</a>.
-*   _Note attributes_, which opens the attributes of the note.
+*   _Attributes_, a fourth icon in the row at the top, which opens the attributes of the note.
 *   On <a class="reference-link" href="../../Note%20Types/Text.md">Text</a> notes, the content language (see <a class="reference-link" href="../../Note%20Types/Text/Content%20language%20%26%20Right-to-left%20support.md">Content language &amp; Right-to-left support</a>); on <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> notes, the language of the code.
 *   _Note info_ and <a class="reference-link" href="../Navigation/Similar%20Notes.md">Similar Notes</a>.
 *   _Note map_ opens the map in a popup instead of the right sidebar.

@@ -114,7 +114,7 @@ When pasting, the attributes become owned attributes of the current note, even i
 
 ## Mobile
 
-The attributes can also be edited visually on mobile, but not as part of the sidebar. Go to <a class="reference-link" href="../Note%20menu.md">Note menu</a> and select _Note attributes_, which opens the attributes in a sheet at the bottom of the screen.
+The attributes can also be edited visually on mobile, but not as part of the sidebar. Go to <a class="reference-link" href="../Note%20menu.md">Note menu</a> and select _Attributes_ in the row of icons at the top, which opens the attributes in a sheet at the bottom of the screen.
 
 On mobile, each section is displayed as a separate card:
 

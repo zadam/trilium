@@ -15,7 +15,7 @@ This feature is also well integrated with <a class="reference-link" href="../..
 *   The title and the note and the icon are editable, just like a normal tab.
 *   The note's actions and its menu are shown in the header of the popup, as in the title row of a tab.
     *   When other notes link to the note, a button with a link icon lists the <a class="reference-link" href="../../Note%20Types/Text/Links/Backlinks.md">Backlinks</a>. Pressing one opens that note in the popup.
-    *   The menu items that only work in a tab are not shown: _Search in note_, _Note map_, _Full width_ and _Convert into attachment_.
+    *   The menu items that only work in a tab are not shown: _Search_, _Note map_, _Full width_ and _Convert into attachment_.
     *   A help page opened from the popup, such as through the help button of the note type, opens in a second popup on top of it. Closing that popup returns to the note being edited.
 *   The <a class="reference-link" href="../../Advanced%20Usage/Attributes/Promoted%20Attributes.md">Promoted Attributes</a> are also displayed.
     *   This integrates well with <a class="reference-link" href="../../Collections.md">Collections</a> where there are predefined attributes such as the _Start date_ and _End date_, allowing for easy editing.

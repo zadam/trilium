@@ -14,6 +14,15 @@ import { CommandItem, NoteContextMenu } from "./NoteActions";
 // A dialog's focus trap would pull focus out of a menu portaled over it.
 vi.mock("../react/modal_focustrap", () => ({ suspendModalFocusTraps: () => () => {} }));
 
+// The rows are read by their keys.
+vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
+
+// The tiles look up their shortcuts for their tooltips; a spec loads no keyboard actions.
+vi.mock("../../services/keyboard_actions", async (importOriginal) => {
+    const original = await importOriginal<typeof import("../../services/keyboard_actions")>();
+    return { ...original, default: { ...original.default, getAction: async () => ({ effectiveShortcuts: [] }) } };
+});
+
 describe("CommandItem", () => {
     const host = document.createElement("div");
     document.body.append(host);
@@ -99,7 +108,8 @@ describe("NoteContextMenu", () => {
             ), host);
             host.querySelector<HTMLButtonElement>("button")?.click();
             await vi.waitFor(() => expect(document.querySelector(".tn-popup li.dropdown-item")).toBeTruthy());
-            const items = [ ...document.querySelectorAll<HTMLElement>(".tn-popup li.dropdown-item") ];
+            // A row, or a tile in the strip at the top.
+            const items = [ ...document.querySelectorAll<HTMLElement>(".tn-popup li.dropdown-item, .tn-popup .tn-menu-action") ];
             const hasIcon = (icon: string) => items.some((li) => li.querySelector(`.${icon}`));
             const state = {
                 search: hasIcon("bx-search"),
@@ -181,6 +191,42 @@ describe("NoteContextMenu", () => {
         expect(await isPrintEnabled(buildNote({ title: "Render", type: "render", "~renderNote": script.noteId }))).toBe(true);
         expect(await isPrintEnabled(buildNote({ title: "Unset", type: "render" }))).toBe(false);
         expect(await isPrintEnabled(buildNote({ title: "Disabled", type: "render", "~disabled:renderNote": script.noteId }))).toBe(false);
+    });
+
+    it("draws the actions that look into the note as a strip of tiles, or a row where one is left", async () => {
+        const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
+        const parentComponent = new Component();
+        const triggerCommand = vi.spyOn(parentComponent, "triggerCommand").mockImplementation(() => Promise.resolve());
+        const popup = () => document.querySelector<HTMLElement>(".tn-popup");
+        const openIn = async (ntxId: string) => {
+            const noteContext = new NoteContext(ntxId);
+            noteContext.noteId = note.noteId;
+            noteContext.viewScope = { viewMode: "default" };
+            render((
+                <ParentComponent.Provider value={parentComponent}>
+                    <NoteContextContext.Provider value={noteContext}>
+                        <NoteContextMenu note={note} noteContext={noteContext} />
+                    </NoteContextContext.Provider>
+                </ParentComponent.Provider>
+            ), host);
+            host.querySelector<HTMLButtonElement>("button")?.click();
+            await vi.waitFor(() => expect(popup()?.querySelector("li.dropdown-item")).toBeTruthy());
+        };
+
+        await openIn("ntx-tiles");
+        const tiles = [ ...popup()?.querySelectorAll<HTMLElement>(".tn-menu-scroll > li.tn-menu-actions:first-child .tn-menu-action") ?? [] ];
+        expect(tiles.map((tile) => tile.textContent?.trim())).toEqual([ "note_actions.search_in_note_short", "note_actions.note_attachments_short", "note_actions.note_map" ]);
+        expect(popup()?.querySelector("li.dropdown-item:has(.bx-search)")).toBeNull();
+
+        await act(async () => tiles[0]?.click());
+        expect(triggerCommand).toHaveBeenCalledWith("findInText", expect.objectContaining({ ntxId: "ntx-tiles" }));
+        await vi.waitFor(() => expect(popup()).toBeNull());
+        render(null, host);
+
+        // The quick edit popup leaves only the attachments, which a strip of one would not suit.
+        await openIn("_popup-editor");
+        expect(popup()?.querySelector(".tn-menu-actions")).toBeNull();
+        expect(popup()?.querySelector("li.dropdown-item:has(.bx-paperclip)")?.textContent?.trim()).toBe("note_actions.note_attachments");
     });
 
     it("folds the revisions into one row that opens them, with the saving actions beside it", async () => {
