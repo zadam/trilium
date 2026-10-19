@@ -497,7 +497,7 @@ function take(parts: Uint8Array[], size: number): Uint8Array {
  * overflows the call stack. The crypto provider's `encodeBase64` is not reachable from here: it
  * lives in the worker, and this runs on the page.
  */
-function toBase64(bytes: Uint8Array): string {
+export function toBase64(bytes: Uint8Array): string {
     const native = (bytes as Uint8Array & { toBase64?: () => string }).toBase64;
     if (typeof native === "function") {
         return native.call(bytes);

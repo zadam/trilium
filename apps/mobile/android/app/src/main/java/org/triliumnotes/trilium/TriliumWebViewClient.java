@@ -61,13 +61,21 @@ public class TriliumWebViewClient extends BridgeWebViewClient {
     // dead connection cannot pin a WebView IO thread forever.
     private static final int READ_TIMEOUT_MS = 600_000;
 
-    public TriliumWebViewClient(Bridge bridge) {
+    /** Null when the WebView cannot host it; the page then uses its service worker. */
+    private final TriliumRequestBridge requestBridge;
+
+    public TriliumWebViewClient(Bridge bridge, TriliumRequestBridge requestBridge) {
         super(bridge);
+        this.requestBridge = requestBridge;
     }
 
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
         Uri uri = request.getUrl();
+        if (requestBridge != null && requestBridge.handles(uri)) {
+            return requestBridge.handle(request);
+        }
+
         String path = uri.getPath();
         if (path == null || !path.startsWith(INTERCEPT_PREFIX)) {
             return super.shouldInterceptRequest(view, request);

@@ -129,10 +129,14 @@ async function bootstrap() {
 
         // iOS Capacitor loads on the capacitor:// scheme, where WebKit rejects
         // service worker registration. Fall back to in-page request interceptors
-        // that route API calls straight to the local SQLite worker; everywhere
-        // else (Android https, web) the service worker handles this.
+        // that route API calls straight to the local SQLite worker. The Android
+        // shell answers them natively (TriliumRequestBridge.java) and injects
+        // `triliumRequestBridge` to say so; on the web the service worker does.
         if (location.protocol === "capacitor:") {
             installIosInterceptors();
+        } else if ("triliumRequestBridge" in window) {
+            const { installAndroidRequestBridge } = await import("./android-request-bridge.js");
+            installAndroidRequestBridge();
         } else {
             attachServiceWorkerBridge();
             await waitForServiceWorkerControl();

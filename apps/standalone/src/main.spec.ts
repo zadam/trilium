@@ -10,7 +10,8 @@ const mocks = vi.hoisted(() => ({
     localFetch: vi.fn(),
     capacitorHttpHandler: vi.fn(),
     saveUrlToDevice: vi.fn(),
-    requestSecurityChange: vi.fn()
+    requestSecurityChange: vi.fn(),
+    installAndroidRequestBridge: vi.fn()
 }));
 
 // Whether this tab wins the database lock. Only the leader may start a worker;
@@ -36,6 +37,7 @@ vi.mock("./leader_election.js", () => ({
 }));
 vi.mock("./services/capacitor_http_handler.js", () => ({ capacitorHttpHandler: mocks.capacitorHttpHandler }));
 vi.mock("./services/capacitor_download.js", () => ({ saveUrlToDevice: mocks.saveUrlToDevice }));
+vi.mock("./android-request-bridge.js", () => ({ installAndroidRequestBridge: mocks.installAndroidRequestBridge }));
 // Avoid pulling the entire client bundle when loadScripts() runs.
 vi.mock("../../client/src/index.js", () => ({}));
 
@@ -180,6 +182,23 @@ describe("bootstrap", () => {
         await runBootstrap();
         await vi.waitFor(() => expect(mocks.registerNativeHttpHandler).toHaveBeenCalledWith(mocks.capacitorHttpHandler));
         await vi.waitFor(() => expect(win.standaloneApi?.save?.saveUrl).toBe(mocks.saveUrlToDevice));
+    });
+
+    it("answers through the Android request bridge without a SW when the shell injects it", async () => {
+        const sw: ServiceWorkerLike = { controller: null, register: vi.fn(), ready: Promise.resolve() };
+        setServiceWorker(sw);
+        const win = window as unknown as { triliumRequestBridge?: unknown };
+        win.triliumRequestBridge = {};
+        try {
+            await runBootstrap();
+            await vi.waitFor(() => expect(mocks.installAndroidRequestBridge).toHaveBeenCalled());
+            expect(mocks.startLocalServerWorker).toHaveBeenCalled();
+            expect(mocks.attachServiceWorkerBridge).not.toHaveBeenCalled();
+            expect(sw.register).not.toHaveBeenCalled();
+            expect(document.body.innerHTML).toBe("");
+        } finally {
+            delete win.triliumRequestBridge;
+        }
     });
 
     it("registers and waits for the SW, then loads scripts once it controls", async () => {

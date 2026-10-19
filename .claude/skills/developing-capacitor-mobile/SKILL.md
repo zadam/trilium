@@ -1,6 +1,6 @@
 ---
 name: developing-capacitor-mobile
-description: Use when working on the Trilium mobile app (`apps/mobile`, Capacitor for Android/iOS) or on the standalone code paths that only run inside it — request routing on `capacitor://` vs `https://localhost`, the iOS fetch/XHR/image/stylesheet interceptors, the Android native streaming HTTP proxy (`TriliumWebViewClient`), the `NativeHttpHandler` sync transport, downloads and exports (the WebView saves none itself — `capacitor_download.ts` writes them and opens the share sheet), `MainActivity`/`ViewController` WebView tweaks (edge-to-edge, keyboard), `isMobileApp()` gating in the client, adding a Capacitor plugin, or the mobile CI/nightly builds. Also load it when reviewing a diff that touches these files, so working iOS-only code is not flagged as dead.
+description: Use when working on the Trilium mobile app (`apps/mobile`, Capacitor for Android/iOS) or on the standalone code paths that only run inside it — request routing on `capacitor://` vs `https://localhost`, the iOS fetch/XHR/image/stylesheet interceptors, the Android request bridge (`TriliumRequestBridge`, which replaces the service worker there), the Android native streaming HTTP proxy (`TriliumWebViewClient`), the `NativeHttpHandler` sync transport, downloads and exports (the WebView saves none itself — `capacitor_download.ts` writes them and opens the share sheet), `MainActivity`/`ViewController` WebView tweaks (edge-to-edge, keyboard), `isMobileApp()` gating in the client, adding a Capacitor plugin, or the mobile CI/nightly builds. Also load it when reviewing a diff that touches these files, so working iOS-only code is not flagged as dead.
 ---
 
 # Developing the Capacitor mobile app
@@ -12,16 +12,18 @@ Key files:
 ```
 apps/mobile/capacitor.config.json          # appId org.triliumnotes.trilium, androidScheme https, hostname localhost, plugins
 apps/mobile/android/app/src/main/java/org/triliumnotes/trilium/
-    MainActivity.java                      # installs TriliumWebViewClient + TriliumFileSink, edge-to-edge + insets, system bars
-    TriliumWebViewClient.java              # streaming same-origin HTTP proxy for the sync worker (Android only)
+    MainActivity.java                      # installs TriliumRequestBridge, TriliumWebViewClient, TriliumFileSink; edge-to-edge + insets, system bars
+    TriliumRequestBridge.java              # answers local API requests from the page's worker in place of a service worker (Android only)
+    TriliumWebViewClient.java              # routes local API requests to TriliumRequestBridge; streaming HTTP proxy for the sync worker
     TriliumFileSink.java                   # binary file-write channel (WebMessageListener + ArrayBuffer, Android only)
 apps/mobile/ios/App/App/ViewController.swift   # keyboard handling: pins outer scroll, drives --tn-keyboard-gap
-apps/standalone/src/main.ts                # boot: registers native HTTP handler if `Capacitor` in window; iOS interceptors
+apps/standalone/src/main.ts                # boot: registers native HTTP handler if `Capacitor` in window; iOS interceptors or Android request bridge
+apps/standalone/src/android-request-bridge.ts   # page side of TriliumRequestBridge: localFetch() → head + chunk frames
 apps/standalone/src/ios-interceptors.ts    # fetch / XHR / <img> / stylesheet interceptors, iOS only
 apps/standalone/src/services/capacitor_http_handler.ts   # NativeHttpHandler: Android proxy probe + CapacitorHttp fallback
 apps/standalone/src/services/capacitor_download.ts       # saveUrlToDevice(): fetch → Filesystem cache → share sheet
 apps/standalone/src/local-bridge.ts        # LOCAL_API_PREFIXES, localFetch(), registerNativeHttpHandler()
-apps/standalone/src/sw.ts                  # service worker routing (Android + web); guards for capacitor:// and the native proxy
+apps/standalone/src/sw.ts                  # service worker routing (web; Android only on a WebView without message listeners)
 apps/client/src/services/utils.ts          # isMobileApp() — running inside the native wrapper
 .github/workflows/mobile.yml, .github/actions/build-mobile   # APK + iOS simulator builds, nightly signing
 ```
@@ -34,7 +36,7 @@ The client's `/api`, `/sync`, `/bootstrap`, `/search` requests (`LOCAL_API_PREFI
 
 What still leaves the page — engine-initiated loads (`<img src="api/images/…">`, `@font-face`, themes), `upload()`/`chunked_upload.ts`, the LLM stream — is where the platforms diverge, because their WebViews resolve `*Scheme: "https"` differently:
 
-- **Android** — `androidScheme: "https"` works, the app runs at `https://localhost`, a real secure origin, so the **service worker** (`sw.ts`) intercepts those requests and forwards them to the worker — the same path as the web build.
+- **Android** — the app runs at `https://localhost` and registers **no service worker**. `TriliumWebViewClient.shouldInterceptRequest` sees every request the engine issues, whichever subsystem issued it, and hands local API paths to **`TriliumRequestBridge`**. That bridge calls `window.__triliumNativeRequest()`, `android-request-bridge.ts` answers from `localFetch()`, and the reply comes back over the injected `window.triliumRequestBridge` WebMessageListener: a JSON `head`, then the body as ArrayBuffer frames (4-byte request id + bytes; base64 `chunk` messages on a WebView without ArrayBuffer messages), then `end`/`error`. The IO thread blocks until the head arrives (270 s cap, as in `sw.ts`), then the body streams through a queue-backed `InputStream`. `main.ts` takes this path when `triliumRequestBridge` is on `window`; a WebView without `WEB_MESSAGE_LISTENER` never gets it, so it falls back to the service worker.
 - **iOS** — the app runs at **`capacitor://localhost`**, and WebKit refuses to register a service worker on a non-HTTP(S) origin. `main.ts` therefore installs **in-page interceptors** (`installIosInterceptors()`, gated on `location.protocol === "capacitor:"`), one per way a request can leave the page: `window.fetch`, `XMLHttpRequest` (jQuery `$.ajax` never touches fetch), `<img src="api/images/…">` (the image loader issues its own requests) and CSS-initiated loads (`@font-face url()` in injected styles, custom themes via `<link href="api/…">`). Each rewrites a local-API request into `localFetch()`.
 
 Consequences that keep tripping people up:
@@ -42,6 +44,9 @@ Consequences that keep tripping people up:
 - **`iosScheme: "https"` is a no-op — do not re-add it.** Capacitor rejects it: `CAPInstanceDescriptor.normalize()` checks `WKWebView.handlesURLScheme(scheme) == false`, and WKWebView reserves `http`/`https`, so the scheme resets to `capacitor`. The config line only implies an https origin that never exists on iOS.
 - **Do not delete the iOS interceptor path as "dead code"**, and do not gate anything on "there is always a service worker". A reviewer assuming `iosScheme: https` ⇒ https origin will wrongly flag it.
 - A **new way for the page to issue a request** (a new element type loading `api/…`, a `new Worker` fetching, `EventSource`, `sendBeacon`) needs a fourth/fifth interceptor in `ios-interceptors.ts`, or it will silently 404 on iOS while working everywhere else. Test it in `ios-interceptors.spec.ts`.
+- **The Android bridge answers GET and HEAD only.** `shouldInterceptRequest` exposes no request body, so any other method gets a 405 with `x-trilium-bridge-error`. A request with a body has to go through `standaloneApi.localFetch` (as `server.ts`'s `ajax()` does); a raw `fetch`/`$.ajax` POST to `api/` fails on Android.
+- **`WebResourceResponse` rejects 3xx statuses**, so `android-request-bridge.ts` turns a redirect (the share pages issue them) into a 200 page with a `<meta http-equiv="refresh">`. The Java prefix list in `TriliumRequestBridge.handles()` must match `isLocalApiRequest()` in `local-bridge.ts`, including the `/share` rule.
+- **A service worker registered by an older build still controls the page.** Its fetches never reach `shouldInterceptRequest`, and with no `attachServiceWorkerBridge()` nothing answers them. Clearing the app's data or reinstalling removes it.
 - `sw.ts` has a defensive `self.location.protocol === "capacitor:"` guard and must **let `/_trilium_native_http/` requests fall through** to the WebView (see below); keep both when editing its fetch handler.
 - Image blob URLs created by the interceptor are revoked (`5332cee3fb`); if you add another `URL.createObjectURL`, revoke it.
 
@@ -70,7 +75,7 @@ worker never sees and where no server exists.
 
 So the page does the saving: `open.download()` (`apps/client/src/services/open.ts`) routes through
 `window.standaloneApi.save.saveUrl()` when that exists, which `main.ts` defines only inside the shell.
-`capacitor_download.ts` fetches the URL — still routed to the worker by the service worker on Android
+`capacitor_download.ts` fetches the URL — still routed to the worker by `TriliumRequestBridge` on Android
 and the interceptors on iOS — writes it into `Directory.Cache` and hands the file to the system share
 sheet.
 
@@ -119,7 +124,7 @@ sheet.
 
 ## Native shells
 
-- **Android `MainActivity`**: sets `TriliumWebViewClient`, draws edge-to-edge with transparent system bars, forwards window insets to the WebView (so the client can pad for the status/navigation bars) and re-applies system bar appearance on configuration change. Nightly and debug builds get a distinct `applicationId` suffix (`.nightly`, `.debug`) and launcher icon so they install side by side (`android/app/build.gradle`).
+- **Android `MainActivity`**: installs `TriliumRequestBridge` and sets `TriliumWebViewClient`, draws edge-to-edge with transparent system bars, forwards window insets to the WebView (so the client can pad for the status/navigation bars) and re-applies system bar appearance on configuration change. Nightly and debug builds get a distinct `applicationId` suffix (`.nightly`, `.debug`) and launcher icon so they install side by side (`android/app/build.gradle`).
 - **iOS `ViewController`**: the layout is `body { position: fixed; height: 100vh }` with an inner scrolling container, so WKWebView's reflexive scroll-to-focused-element would drag the toolbar off-screen; the controller pins the outer scroll offset while the keyboard animates and samples the keyboard's top edge every frame into the `--tn-keyboard-gap` CSS variable so the editor toolbar follows an interactive swipe-dismiss. `Keyboard.resize: "native"` in the config is part of the same contract. Change the keyboard/toolbar CSS on the client and this controller together.
 - `limitsNavigationsToAppBoundDomains: true` on iOS.
 
@@ -187,7 +192,8 @@ pnpm --filter standalone test ios-interceptors        # iOS interceptors
 pnpm --filter standalone test capacitor_http_handler  # Android proxy probe / plugin fallback
 pnpm --filter standalone test capacitor_download      # chunked base64 write, filename parsing, share sheet
 pnpm --filter standalone test sw                      # service-worker routing incl. capacitor:// guard
-pnpm --filter standalone test main                    # boot wiring (native handler registered, interceptors installed on capacitor:)
+pnpm --filter standalone test android-request-bridge  # Android request bridge: framing, base64 fallback, redirects
+pnpm --filter standalone test main                    # boot wiring (native handler, iOS interceptors, Android bridge instead of the SW)
 ```
 
 Simulate the platform in a spec by stubbing `location.protocol` / `window.Capacitor` (`getPlatform`, `isNativePlatform`, `Plugins.CapacitorHttp`) — see the existing specs for the fixtures. Native Java/Swift has no test harness in the repo; keep logic there minimal and mirror the protocol on the JS side where it is testable.
