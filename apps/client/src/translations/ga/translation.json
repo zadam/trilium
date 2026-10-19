@@ -940,7 +940,6 @@
     "import_files": "Iompórtáil comhaid...",
     "export_note": "Nóta onnmhairithe...",
     "delete_note": "Scrios nóta...",
-    "print_note": "Priontáil nóta...",
     "view_revisions": "Tabhair faoi deara athbhreithnithe...",
     "save_revision": "Sábháil athbhreithniú",
     "advanced": "Ardleibhéil",
@@ -1000,7 +999,6 @@
     "no_backlinks": "Níl aon nasc nótaí leis an gceann seo."
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Cuir nóta linbh isteach",
     "delete_this_note": "Scrios an nóta seo",
     "note_revisions": "Athbhreithnithe nóta",
     "error_cannot_get_branch_id": "Ní féidir aitheantas brainse a fháil do NotePad '{{notePath}}'",

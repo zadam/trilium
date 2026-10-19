@@ -937,7 +937,6 @@
     "import_files": "导入文件...",
     "export_note": "导出笔记...",
     "delete_note": "删除笔记...",
-    "print_note": "打印笔记...",
     "save_revision": "保存笔记修订",
     "convert_into_attachment_failed": "笔记 '{{title}}' 转换失败。",
     "convert_into_attachment_successful": "笔记 '{{title}}' 已成功转换为附件。",
@@ -998,7 +997,6 @@
     "no_backlinks": "没有笔记链接到这篇笔记。"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "插入子笔记",
     "delete_this_note": "删除此笔记",
     "error_cannot_get_branch_id": "无法获取 notePath '{{notePath}}' 的 branchId",
     "error_unrecognized_command": "无法识别的命令 {{command}}",

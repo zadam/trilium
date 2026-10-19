@@ -1099,7 +1099,6 @@
     "delete_this_note": "Șterge această notiță",
     "error_cannot_get_branch_id": "Nu s-a putut obține branchId-ul pentru calea „{{notePath}}”",
     "error_unrecognized_command": "Comandă nerecunoscută „{{command}}”",
-    "insert_child_note": "Inserează subnotiță",
     "note_revisions": "Revizuiri ale notițelor",
     "backlinks": "Legături inverse",
     "content_language_switcher": "Limba conținutului: {{language}}"
@@ -1141,7 +1140,6 @@
     "open_note_custom": "Deschide notiță personalizată",
     "open_note_externally": "Deschide notița extern",
     "open_note_externally_title": "Fișierul va fi deschis într-o aplicație externă și urmărită pentru modificări. Ulterior se va putea încărca versiunea modificată înapoi în Trilium.",
-    "print_note": "Imprimare notiță",
     "re_render_note": "Reinterpretare notiță",
     "save_revision": "Salvează o nouă revizie",
     "advanced": "Avansat",

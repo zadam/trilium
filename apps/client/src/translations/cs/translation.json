@@ -633,7 +633,6 @@
     "import_files": "Importovat soubory",
     "export_note": "Exportovat poznámku",
     "delete_note": "Smazat poznámku",
-    "print_note": "Vytisknout poznámku",
     "view_revisions": "Revize poznámky...",
     "save_revision": "Uložit revizi",
     "advanced": "Pokročilé",
@@ -670,7 +669,6 @@
     "create_child_note_title": "Vytvořit dceřinou poznámku a přidat ji na mapu"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Vložit dceřinou poznámku",
     "delete_this_note": "Smazat tuto poznámku",
     "note_revisions": "Revize poznámky",
     "error_cannot_get_branch_id": "Nelze získat branchId pro cestu k poznámce '{{notePath}}'",

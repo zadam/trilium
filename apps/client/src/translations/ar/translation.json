@@ -1320,7 +1320,6 @@
     "import_files": "استيراد الملفات",
     "export_note": "تصدير الملاحظة",
     "delete_note": "حذف الملاحظة",
-    "print_note": "طباعة الملاحظة...",
     "save_revision": "حفظ المراجعة",
     "convert_into_attachment": "تحويل الى مرفق",
     "search_in_note": "بحث في الملاحظة",
@@ -1653,7 +1652,6 @@
   },
   "mobile_detail_menu": {
     "note_revisions": "مراجعات الملاحظة",
-    "insert_child_note": "ادراج ملاحظة فرعية",
     "delete_this_note": "حذف هذه الملاحظة",
     "error_unrecognized_command": "امر غير معروف {{command}}",
     "backlinks": "الروابط الخلفية",

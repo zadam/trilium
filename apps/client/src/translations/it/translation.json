@@ -1594,7 +1594,6 @@
     "import_files": "Importa file",
     "export_note": "Nota di esportazione",
     "delete_note": "Elimina nota",
-    "print_note": "Stampa nota...",
     "save_revision": "Salva la revisione",
     "convert_into_attachment_failed": "Conversione della nota '{{title}}' fallita.",
     "convert_into_attachment_successful": "Nota '{{title}}' è stato convertito in allegato.",
@@ -1652,7 +1651,6 @@
     "no_backlinks": "A questo elemento non è associato alcun collegamento con delle note."
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Inserisci nota secondaria",
     "delete_this_note": "Elimina questa nota",
     "note_revisions": "Revisioni delle note",
     "error_cannot_get_branch_id": "Impossibile ottenere branchId per notePath '{{notePath}}'",

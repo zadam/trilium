@@ -1167,7 +1167,6 @@
     "import_files": "Nhập tệp",
     "export_note": "Xuất ghi chú",
     "delete_note": "Xóa ghi chú",
-    "print_note": "In ghi chú...",
     "print_or_export_to_pdf": "In/xuất sang PDF...",
     "view_revisions": "Các phiên bản lịch sử ghi chú...",
     "save_revision": "Lưu phiên bản lịch sử",
@@ -1243,7 +1242,6 @@
     "no_backlinks": "Không có ghi chú nào liên kết đến ghi chú này."
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Chèn ghi chú con",
     "delete_this_note": "Xóa ghi chú này",
     "note_revisions": "Các phiên bản lịch sử ghi chú",
     "error_cannot_get_branch_id": "Không thể lấy branchId cho notePath '{{notePath}}'",

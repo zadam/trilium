@@ -603,7 +603,6 @@
     "import_files": "ファイルをインポート...",
     "export_note": "ノートをエクスポート...",
     "delete_note": "ノートを削除...",
-    "print_note": "ノートを印刷...",
     "print_pdf": "PDFとしてエクスポート...",
     "convert_into_attachment": "添付ファイルに変換...",
     "save_revision": "変更履歴を保存",
@@ -2027,7 +2026,6 @@
   "mobile_detail_menu": {
     "delete_this_note": "このノートを削除",
     "error_unrecognized_command": "認識されないコマンド {{command}}",
-    "insert_child_note": "子ノートを挿入",
     "error_cannot_get_branch_id": "ノートパス 「{{notePath}} のbranchIdを取得できません",
     "note_revisions": "ノートの変更履歴",
     "backlinks": "バックリンク",

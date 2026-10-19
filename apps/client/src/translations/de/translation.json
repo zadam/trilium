@@ -867,7 +867,6 @@
     "import_files": "Dateien importieren",
     "export_note": "Notiz exportieren",
     "delete_note": "Notiz löschen",
-    "print_note": "Notiz drucken...",
     "save_revision": "Revision speichern",
     "convert_into_attachment_failed": "Konvertierung der Notiz „{{title}}“ fehlgeschlagen.",
     "convert_into_attachment_successful": "Notiz „{{title}}“ wurde als Anhang konvertiert.",
@@ -925,7 +924,6 @@
     "no_backlinks": "Keine Notizen verlinken auf diese Notiz."
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Untergeordnete Notiz einfügen",
     "delete_this_note": "Diese Notiz löschen",
     "error_cannot_get_branch_id": "BranchId für notePath „{{notePath}}“ kann nicht abgerufen werden",
     "error_unrecognized_command": "Unbekannter Befehl {{command}}",

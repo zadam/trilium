@@ -96,6 +96,7 @@
     "selected_notes": "已選取的筆記",
     "remove_from_selection": "從選取範圍中移除",
     "affected_note_count_one": "這些操作將應用於 {{count}} 篇筆記。",
+    "affected_note_count_other": "",
     "add_action": "新增動作",
     "remove_action": "移除此動作",
     "no_actions_to_execute": "請先新增一個動作。",
@@ -506,6 +507,7 @@
     "custom_font": "標記在 Trilium 選項中字型選擇器內的字型檔案，置於筆記標題下方。",
     "template_new_note_default_parent": "設定於模板筆記：從模板建立的筆記（例如透過 @ 自動補全功能），會被放置在目標筆記之下，除非明確指定了其他位置。",
     "other_notes_count_one": "{{count}}篇其他筆記",
+    "other_notes_count_other": "",
     "no_other_notes": "僅此筆記",
     "no_other_notes_title": "沒有其他筆記具有 {{attributeType}} : \"{{attributeName}}\"。",
     "show_all_in_search": "顯示所有搜尋結果",
@@ -714,7 +716,6 @@
     "import_files": "匯入檔案",
     "export_note": "匯出筆記",
     "delete_note": "刪除筆記",
-    "print_note": "列印筆記……",
     "save_revision": "儲存筆記修訂",
     "convert_into_attachment_failed": "筆記 '{{title}}' 轉換失敗。",
     "convert_into_attachment_successful": "筆記 '{{title}}' 已成功轉換為附件。",
@@ -767,7 +768,6 @@
     "create_child_note_title": "新增子筆記並添加至關聯圖"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "插入子筆記",
     "delete_this_note": "刪除此筆記",
     "error_cannot_get_branch_id": "無法獲取 notePath '{{notePath}}' 的 branchId",
     "error_unrecognized_command": "無法識別的命令 {{command}}",

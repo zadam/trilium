@@ -596,7 +596,6 @@
     "import_files": "Importar ficheiros",
     "export_note": "Exportar nota",
     "delete_note": "Apagar nota",
-    "print_note": "Imprimir nota",
     "save_revision": "Gravar revisão",
     "convert_into_attachment_failed": "A conversão da nota '{{title}}' falhou.",
     "convert_into_attachment_successful": "A nota '{{title}}' foi convertida para anexo.",
@@ -634,7 +633,6 @@
     "create_child_note_title": "Criar nota filha e adicione neste mapa de relação"
   },
   "mobile_detail_menu": {
-    "insert_child_note": "Inserir nota filha",
     "delete_this_note": "Apagar esta nota",
     "error_cannot_get_branch_id": "Não foi possível obter o branchId para o notePath '{{notePath}} '",
     "error_unrecognized_command": "Comando não reconhecido {{command}}",

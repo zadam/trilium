@@ -2197,7 +2197,6 @@
     "import_files": "Импорт файлов...",
     "export_note": "Экспортировать заметку...",
     "delete_note": "Удалить заметку...",
-    "print_note": "Печать заметки...",
     "save_revision": "Сохранить версию",
     "convert_into_attachment": "Конвертировать во вложение...",
     "search_in_note": "Поиск в заметке",
@@ -2419,7 +2418,6 @@
     "error_unrecognized_command": "Нераспознанная команда {{command}}",
     "error_cannot_get_branch_id": "Невозможно получить branchId для notePath '{{notePath}}'",
     "delete_this_note": "Удалить эту заметку",
-    "insert_child_note": "Вставить дочернюю заметку",
     "note_revisions": "История изменений",
     "content_language_switcher": "Язык содержимого: {{language}}",
     "backlinks": "Обратные ссылки"

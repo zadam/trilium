@@ -1192,7 +1192,6 @@
     "import_files": "파일 가져오기...",
     "export_note": "노트 내보내기...",
     "delete_note": "노트 삭제...",
-    "print_note": "노트 인쇄...",
     "print_or_export_to_pdf": "PDF로 출력/내보내기...",
     "view_revisions": "노트 수정본...",
     "save_revision": "수정본 저장",
@@ -1264,7 +1263,6 @@
     "no_backlinks": "이 노트로 연결되는 노트가 없습니다."
   },
   "mobile_detail_menu": {
-    "insert_child_note": "하위 노트 삽입",
     "delete_this_note": "이 노트 삭제",
     "note_revisions": "노트 수정본",
     "error_cannot_get_branch_id": "노트 경로 '{{notePath}}'의 branchId를 가져올 수 없습니다",
