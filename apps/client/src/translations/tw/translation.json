@@ -65,7 +65,9 @@
     "anchor": "錨點（可選）",
     "anchor_none": "無（連結至筆記）",
     "edit_link": "編輯連結",
-    "button_edit_link": "儲存連結"
+    "button_edit_link": "儲存連結",
+    "fix_link": "修復連結",
+    "button_fix_link": "修復連結"
   },
   "branch_prefix": {
     "edit_branch_prefix": "編輯分支前綴",
@@ -90,7 +92,14 @@
     "labels": "標籤",
     "relations": "關聯",
     "notes": "筆記",
-    "other": "其他"
+    "other": "其他",
+    "selected_notes": "已選取的筆記",
+    "remove_from_selection": "從選取範圍中移除",
+    "affected_note_count_one": "這些操作將應用於 {{count}} 篇筆記。",
+    "add_action": "新增動作",
+    "remove_action": "移除此動作",
+    "no_actions_to_execute": "請先新增一個動作。",
+    "no_notes_to_execute_on": "所選的筆記均已不存在。"
   },
   "clone_to": {
     "clone_notes_to": "克隆筆記至…",
@@ -267,7 +276,8 @@
     "box_size_medium": "中型 (顯示大約30行)",
     "box_size_full": "完整顯示（完整文字框）",
     "button_include": "內嵌筆記",
-    "box_size_expandable": "可展開（預設為摺疊狀態）"
+    "box_size_expandable": "可展開（預設為摺疊狀態）",
+    "box_size_tiny": "緊湊（僅有一行，包含標題和操作選項）"
   },
   "info": {
     "modalTitle": "資訊消息",
@@ -348,7 +358,15 @@
     "sort_with_respect_to_different_character_sorting": "根據不同語言或地區的字符排序和排序規則排序。",
     "natural_sort_language": "自然排序語言",
     "the_language_code_for_natural_sort": "自然排序的語言程式碼，例如繁體中文的 \"zh-TW\"。",
-    "sort": "排序"
+    "sort": "排序",
+    "sorting_criteria_description": "筆記是根據第一層級進行排序；下一層級僅用於區分前一層級中排序相同的筆記。",
+    "label": "標籤",
+    "label_name": "標籤名稱",
+    "add_level": "新增層級",
+    "remove_level": "移除層級",
+    "move_level_up": "上移層級",
+    "move_level_down": "下移層級",
+    "folders_follow_first_level": "當第一層級為降序時，則排在底部。"
   },
   "upload_attachments": {
     "upload_attachments_to_note": "上傳附件至筆記",
@@ -484,7 +502,14 @@
     "add_option": "新增此選項",
     "remove_option": "移除此選項",
     "save_and_close_button": "儲存並關閉",
-    "definition": "屬性定義"
+    "definition": "屬性定義",
+    "custom_font": "標記在 Trilium 選項中字型選擇器內的字型檔案，置於筆記標題下方。",
+    "template_new_note_default_parent": "設定於模板筆記：從模板建立的筆記（例如透過 @ 自動補全功能），會被放置在目標筆記之下，除非明確指定了其他位置。",
+    "other_notes_count_one": "{{count}}篇其他筆記",
+    "no_other_notes": "僅此筆記",
+    "no_other_notes_title": "沒有其他筆記具有 {{attributeType}} : \"{{attributeName}}\"。",
+    "show_all_in_search": "顯示所有搜尋結果",
+    "relation_type": "關聯"
   },
   "attribute_editor": {
     "help_text_body1": "要新增標籤，只需輸入例如 <code>#rock</code> 或者如果您還想新增值，則例如 <code>#year = 2020</code>",
@@ -2502,7 +2527,30 @@
       "math": "方程式",
       "collapsible_summary": "摘要",
       "collapsible_details": "內容",
-      "table_column": "第 {{number}} 欄"
+      "table_column": "第 {{number}} 欄",
+      "tab_title": "分頁{{number}}",
+      "tab_content": "內容"
+    },
+    "tabs": "插入帶有標題的分頁，每次僅顯示一個面板",
+    "titles": {
+      "date": "插入日期／時間",
+      "include": "包含筆記",
+      "image": "上傳圖片",
+      "link": "內部連結",
+      "math": "數學方程式",
+      "footnote": "註腳",
+      "mermaid": "美人魚圖",
+      "mermaid_template": "美人魚圖：{{name}}",
+      "collapsible": "可摺疊區塊",
+      "tabs": "分頁",
+      "page_break": "分頁符號",
+      "table": "表格",
+      "note": "備註",
+      "tip": "提示",
+      "important": "重要",
+      "caution": "注意",
+      "warning": "警告",
+      "todo": "任務：{{title}}"
     }
   },
   "file_upload": {
@@ -2652,5 +2700,24 @@
       "insert-an-anchor-for-internal-linking": "插入一個錨點以建立內部連結",
       "justify-text-alignment": "將文字左右對齊"
     }
+  },
+  "note_chips": {
+    "more": "+{{count}} 個"
+  },
+  "doc_notes": {
+    "hidden": "<p>隱藏樹用於記錄各種應用層資料，這些資料在大多數情況下不會顯示給使用者看。</p><p>請務必確認您清楚自己在做什麼。若在此子樹中進行不當的變更，可能會導致應用程式當機。</p>",
+    "launchbar_command_launcher": "<p>此啟動器動作的鍵盤快捷鍵可於「選項」-&gt; 「快捷鍵」中進行設定。</p>",
+    "launchbar_history_navigation": "<p>「上一頁」和「下一頁」按鈕可讓您在瀏覽歷史紀錄中移動。</p><p>這些啟動器僅在桌面版中有效，在伺服器版中將被忽略；在伺服器版中，您可以改用瀏覽器的原生導覽按鈕。</p>",
+    "launchbar_intro": "<p>歡迎來到啟動欄設定介面。</p><p>您可以在這裡執行以下操作：</p><ul><li>透過拖曳，將「可用」清單中的啟動器移至「可見」清單（從而將其放入啟動欄）</li><li>透過拖曳，將「可見」清單中的啟動器移至「可用」清單 （從而將它們從啟動欄中隱藏）</li><li>您可以透過拖曳來重新排列清單中的項目</li><li>您可以透過在「可見啟動器」資料夾上按右鍵來建立新的啟動器</li><li>若要恢復預設設定，請在快顯選單中尋找「重設」選項。</li></ul>",
+    "launchbar_note_launcher": "<p>您可以定義以下屬性：</p><ol><li><code>target</code> — 啟動啟動器時應開啟的筆記</li><li><code>hoistedNote</code> — 可選，將在開啟目標筆記前變更當前顯示的筆記</li><li><code>keyboardShortcut</code> - 可選，按下鍵盤快捷鍵將開啟該筆記</li></ol><p>Launchbar 會顯示啟動器中的標題／圖示，這些內容未必與目標筆記的標題／圖示相同。</p>",
+    "launchbar_quick_search": "<p><a href=\"#root/_help_Ms1nauBra7gq\" target=\"_blank\">快速搜尋列</a> 僅在橫向佈局中顯示，因為在縱向佈局中它預設即為可見。</p><p>如需更多資訊，請參閱 <a href=\"#root/_help_x0JgW8UqGXvq\" target=\"_blank\">垂直與水平佈局</a>。</p>",
+    "launchbar_script_launcher": "<p>腳本啟動器可執行透過 <code>~script</code> 關聯連結的腳本（程式碼筆記）。</p><ol><li><code>script</code> — 指向應在啟動器啟動時執行的腳本註解的關聯</li><li><code>keyboardShortcut</code> — 可選，按下鍵盤快捷鍵將啟動啟動器</li></ol><h4>範例腳本</h4><pre>{{sample}}</pre>",
+    "launchbar_spacer": "<p>間隔器可讓您以視覺化方式將啟動器分組。您可以在以下推薦屬性中進行設定：</p><ul><li><code>baseSize</code> — 定義以像素為單位的大小（若空間充足時）</li><li><code>growthFactor</code> — 若希望間隔保持恆定為 <code>baseSize</code>，請設定為 0；若設定為正數，則會隨空間擴大而增長。</li></ul>",
+    "launchbar_widget_launcher": "<p>請在提升屬性中定義目標小工具筆記。該小工具將用於渲染啟動列圖示。</p><h4>啟動列小工具範例</h4><pre>{{sample}}</pre>",
+    "share": "<p>您可以在這裡找到所有已分享的筆記。</p>",
+    "system_state": "<p>這是內建的任務狀態，無法編輯或移除。</p><p>僅能變更其位置，這將決定它在核取方塊工具列及鍵盤循環中的順序。</p>",
+    "task_state": "<p>此筆記定義了一種待辦事項狀態。該狀態透過在核取方塊內顯示筆記圖示來呈現，而筆記標題則作為其顯示名稱。</p><p>此狀態可透過以下提升屬性進行設定：</p><ul><li><code>識別碼</code> — 必填。儲存於筆記標記中作為元資料的內部名稱。僅允許使用字母、數字、<code>-</code> 及 <code>_</code>。<p class=\"admonition warning\">請在自訂任務狀態的識別碼前加上底線 <code>_</code> 或連字號 <code>-</code>，以避免與 Trilium 未來版本中可能引入的任務狀態發生衝突。</p>範例：<code>_postponed</code>、<code>_awaiting-feedback</code>、<code>_validated</code>。</li><li><code>Markdown 符號</code> — 用於在匯出至 Markdown 時代表該狀態的單一字元；例如，<code>/</code> 會產生 <code>- [/]</code>。</li><li><code>視為已完成</code> — 啟用後，處於此狀態的任務將被視為已完成。</li><li><code>顏色</code> — 此狀態的核取方塊顏色。</li><li><code>從工具列隱藏</code> — 啟用後，該狀態將從狀態清單及鍵盤循環中排除。已使用該狀態的筆記仍會正確顯示。</li></ul><p class=\"admonition warning\">變更將在應用程式重新載入後生效。</p>",
+    "task_states": "<p>此筆記列出了文字編輯器中待辦事項核取方塊可用的狀態。每個子筆記代表一個狀態。</p><p>您可以新增、修改、重新排序或移除狀態。若要新增狀態，請建立一個子筆記並設定其提升屬性。</p><p class=\"admonition warning\">變更將在應用程式重新載入後生效。</p>",
+    "user_hidden": "<p>此筆記用作一個子樹，專門用於存放由使用者腳本產生的資料；否則，這些腳本不應在隱藏子樹中隨意建立資料。</p>"
   }
 }
