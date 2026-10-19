@@ -339,6 +339,12 @@ describe("NoteContextMenu", () => {
                 .some((key) => text.includes(key)))).toBe(false);
             expect(topRows.some((text) => text.includes("protect_note.toggle-on"))).toBe(true);
 
+            // Its page lists the editability choices under a heading, not behind a further row.
+            await act(async () => [ ...popup()?.querySelectorAll<HTMLElement>(".tn-menu-scroll > li.dropdown-item") ?? [] ]
+                .find((row) => row.textContent?.includes("note_actions.note_settings"))?.click());
+            await vi.waitFor(() => expect(document.body.textContent).toContain("editability_select.auto"));
+            expect([ ...document.querySelectorAll(".tn-popup .dropdown-header") ].map((header) => header.textContent)).toContain("basic_properties.editable");
+
             await act(async () => tiles[0]?.click());
             expect(createChild).toHaveBeenCalledOnce();
         } finally {

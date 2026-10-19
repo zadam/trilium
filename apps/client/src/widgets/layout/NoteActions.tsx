@@ -288,9 +288,10 @@ function NoteBasicProperties({ note, focus, isInPopup, settingsItems }: {
         }
     }, [ focus ]);
 
+    const isMobile = getIsMobile();
     const settings = <>
         <NoteTypeDropdown note={note} />
-        <EditabilityDropdown note={note} />
+        {!isMobile && <EditabilityDropdown note={note} />}
         {settingsItems}
 
         <FormListToggleableItem
@@ -307,6 +308,11 @@ function NoteBasicProperties({ note, focus, isInPopup, settingsItems }: {
                 currentValue={isFullContentWidth} onChange={setIsFullContentWidth}
             />
         }
+        {isMobile && <>
+            <FormDropdownDivider />
+            <FormListHeader text={t("basic_properties.editable")} />
+            <EditabilityOptions note={note} />
+        </>}
     </>;
 
     const shared = <FormListToggleableItem
@@ -329,7 +335,7 @@ function NoteBasicProperties({ note, focus, isInPopup, settingsItems }: {
         disabled={["root", "_hidden"].includes(note?.noteId ?? "")}
     />;
 
-    if (getIsMobile()) {
+    if (isMobile) {
         return <>
             {protect}
             <FormDropdownSubmenu icon="bx bx-slider-alt" title={t("note_actions.note_settings")}>
@@ -351,6 +357,14 @@ function NoteBasicProperties({ note, focus, isInPopup, settingsItems }: {
 }
 
 function EditabilityDropdown({ note }: { note: FNote }) {
+    return (
+        <FormDropdownSubmenu title={t("basic_properties.editable")} icon="bx bx-edit-alt">
+            <EditabilityOptions note={note} />
+        </FormDropdownSubmenu>
+    );
+}
+
+function EditabilityOptions({ note }: { note: FNote }) {
     const [ readOnly, setReadOnly ] = useNoteLabelBoolean(note, "readOnly");
     const [ autoReadOnlyDisabled, setAutoReadOnlyDisabled ] = useNoteLabelBoolean(note, "autoReadOnlyDisabled");
 
@@ -359,13 +373,11 @@ function EditabilityDropdown({ note }: { note: FNote }) {
         setAutoReadOnlyDisabled(autoReadOnlyDisabled);
     }
 
-    return (
-        <FormDropdownSubmenu title={t("basic_properties.editable")} icon="bx bx-edit-alt">
-            <FormListItem checked={!readOnly && !autoReadOnlyDisabled} onClick={() => setState(false, false)} description={t("editability_select.note_is_editable")}>{t("editability_select.auto")}</FormListItem>
-            <FormListItem checked={readOnly && !autoReadOnlyDisabled} onClick={() => setState(true, false)} description={t("editability_select.note_is_read_only")}>{t("editability_select.read_only")}</FormListItem>
-            <FormListItem checked={!readOnly && autoReadOnlyDisabled} onClick={() => setState(false, true)} description={t("editability_select.note_is_always_editable")}>{t("editability_select.always_editable")}</FormListItem>
-        </FormDropdownSubmenu>
-    );
+    return <>
+        <FormListItem checked={!readOnly && !autoReadOnlyDisabled} onClick={() => setState(false, false)} description={t("editability_select.note_is_editable")}>{t("editability_select.auto")}</FormListItem>
+        <FormListItem checked={readOnly && !autoReadOnlyDisabled} onClick={() => setState(true, false)} description={t("editability_select.note_is_read_only")}>{t("editability_select.read_only")}</FormListItem>
+        <FormListItem checked={!readOnly && autoReadOnlyDisabled} onClick={() => setState(false, true)} description={t("editability_select.note_is_always_editable")}>{t("editability_select.always_editable")}</FormListItem>
+    </>;
 }
 
 function NoteTypeDropdown({ note }: { note: FNote }) {
