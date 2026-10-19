@@ -53,11 +53,13 @@ export default function NoteActions({ paneButtons = true }: {
 
 type ItemToFocus = "basic-properties";
 
-export function NoteContextMenu({ note, noteContext, leadingViewActions = [], itemsAtStart, noteSettingsItems, itemsNearNoteSettings, dropdownRef: externalDropdownRef }: {
+export function NoteContextMenu({ note, noteContext, leadingViewActions = [], trailingViewActions = [], itemsAtStart, noteSettingsItems, itemsNearNoteSettings, dropdownRef: externalDropdownRef }: {
     note: FNote,
     noteContext?: NoteContext,
     /** Tiles placed before the note's own in the strip of tiles. */
     leadingViewActions?: MenuCommandItem<CommandNames>[];
+    /** Tiles placed after the note's own in the strip of tiles. */
+    trailingViewActions?: MenuCommandItem<CommandNames>[];
     itemsAtStart?: ComponentChildren;
     /** Rows placed among the note settings, after the note type and its editability. */
     noteSettingsItems?: ComponentChildren;
@@ -111,32 +113,35 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], it
     const searchInNote = useCommandTrigger("findInText");
     const showAttachments = useCommandTrigger("showAttachments");
     const showNoteMap = useCommandTrigger("toggleRibbonTabNoteMap");
+    const findAction: MenuCommandItem<CommandNames>[] = isInPopup ? [] : [ {
+        title: t("note_actions.search_in_note_short"), tooltip: t("note_actions.search_in_note"),
+        uiIcon: "bx bx-file-find", keyboardShortcut: "findInText" as const, enabled: isSearchable,
+        handler: () => searchInNote?.()
+    } ];
+    // The mobile menu lists the attachments in a row of its own, beside the attributes.
+    const attachmentsAction: MenuCommandItem<CommandNames>[] = isMobile ? [] : [ {
+        title: t("note_actions.note_attachments_short"), tooltip: t("note_actions.note_attachments"),
+        uiIcon: "bx bx-paperclip", enabled: !isInOptionsOrHelp,
+        handler: () => showAttachments?.()
+    } ];
+    const noteMapAction: MenuCommandItem<CommandNames>[] = isInPopup ? [] : [ {
+        title: t("note_actions.note_map"),
+        uiIcon: "bx bxs-network-chart", keyboardShortcut: "toggleRibbonTabNoteMap" as const, enabled: !isInOptionsOrHelp,
+        handler: () => showNoteMap?.()
+    } ];
     /** The actions that look into the note, drawn as a strip of tiles at the top of the menu. */
     const viewActions: MenuCommandItem<CommandNames>[] = [
         ...leadingViewActions,
-        ...(isInPopup ? [] : [ {
-            title: t("note_actions.search_in_note_short"), tooltip: t("note_actions.search_in_note"),
-            uiIcon: "bx bx-file-find", keyboardShortcut: "findInText" as const, enabled: isSearchable,
-            handler: () => searchInNote?.()
-        } ]),
-        // The mobile menu lists the attachments in a row of its own, beside the attributes.
-        ...(isMobile ? [] : [ {
-            title: t("note_actions.note_attachments_short"), tooltip: t("note_actions.note_attachments"),
-            uiIcon: "bx bx-paperclip", enabled: !isInOptionsOrHelp,
-            handler: () => showAttachments?.()
-        } ]),
-        ...(isInPopup ? [] : [ {
-            title: t("note_actions.note_map"),
-            uiIcon: "bx bxs-network-chart", keyboardShortcut: "toggleRibbonTabNoteMap" as const, enabled: !isInOptionsOrHelp,
-            handler: () => showNoteMap?.()
-        } ])
+        // A phone's thumb reaches the right end most easily, so Find goes nearer it.
+        ...(isMobile ? [ ...noteMapAction, ...findAction ] : [ ...findAction, ...attachmentsAction, ...noteMapAction ]),
+        ...trailingViewActions
     ];
     const viewStrip = viewActions.length > 0 && <>
         <MenuItemRows items={viewActions.length > 1
-            ? [ { kind: "actions", items: viewActions } ]
+            ? [ { kind: "actions", items: viewActions, className: "note-actions-strip" } ]
             // One action, as in the quick edit popup, is too few for a strip, so it is a row under its full name.
             : viewActions.map((item) => ({ ...item, title: item.tooltip ?? item.title }))} />
-        <FormDropdownDivider />
+        {(!isMobile || viewActions.length === 1) && <FormDropdownDivider />}
     </>;
     // Keyboard shortcuts.
     useTriliumEvent("toggleRibbonTabBasicProperties", ({ ntxId }) => {

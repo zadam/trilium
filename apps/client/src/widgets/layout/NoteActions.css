@@ -43,3 +43,25 @@
     background-color: transparent !important;
     pointer-events: none; /* makes it unclickable */
 }
+
+.tn-menu-actions.note-actions-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+}
+
+/* The gaps and the card background match `.form-list-row` and the mobile `.dropdown-item` in theme-next/menus.css. */
+body.mobile .tn-menu-actions.note-actions-strip {
+    gap: 1em;
+    margin-bottom: 1em;
+
+    & > .tn-menu-action {
+        padding-block: var(--dropdown-menu-padding-vertical);
+        background: var(--card-background-color);
+        border-radius: 6px;
+
+        &::before {
+            content: none;
+        }
+    }
+}

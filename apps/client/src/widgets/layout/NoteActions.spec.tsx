@@ -304,7 +304,7 @@ describe("NoteContextMenu", () => {
         expect(await isExportEnabled(buildNote({ id: "_optionsExportPage", title: "Options page" }))).toBe(false);
     });
 
-    it("puts the strip of tiles first on a phone, led by the tiles it is given, and folds the note settings into one row", async () => {
+    it("puts the strip of tiles first on a phone, around the tiles it is given, and folds the note settings into one row", async () => {
         ctrl.mobile = true;
         const note = buildNote({ title: "Text", type: "text", content: "<p>Hi</p>" });
         const noteContext = new NoteContext("ntx-phone");
@@ -316,7 +316,8 @@ describe("NoteContextMenu", () => {
                 <ParentComponent.Provider value={new Component()}>
                     <NoteContextContext.Provider value={noteContext}>
                         <NoteContextMenu note={note} noteContext={noteContext}
-                            leadingViewActions={[ { title: "child", uiIcon: "bx bx-plus", handler: createChild } ]}
+                            leadingViewActions={[ { title: "split", uiIcon: "bx bx-dock-right", handler: () => {} } ]}
+                            trailingViewActions={[ { title: "child", uiIcon: "bx bx-plus", handler: createChild } ]}
                             itemsAtStart={<CommandItem icon="bx bx-link" text="start" command={() => {}} />} />
                     </NoteContextContext.Provider>
                 </ParentComponent.Provider>
@@ -327,7 +328,8 @@ describe("NoteContextMenu", () => {
 
             const first = popup()?.querySelector(".tn-menu-scroll > :first-child");
             const tiles = [ ...first?.querySelectorAll<HTMLElement>(".tn-menu-action") ?? [] ];
-            expect(tiles.map((tile) => tile.textContent?.trim())).toEqual([ "child", "note_actions.search_in_note_short", "note_actions.note_map" ]);
+            expect(tiles.map((tile) => tile.textContent?.trim())).toEqual([ "split", "note_actions.note_map", "note_actions.search_in_note_short", "child" ]);
+            expect(first?.classList.contains("note-actions-strip")).toBe(true);
             const start = popup()?.querySelector("li.dropdown-item:has(.bx-link)");
             expect(start).toBeTruthy();
             expect(first?.compareDocumentPosition(start as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
@@ -345,7 +347,7 @@ describe("NoteContextMenu", () => {
             await vi.waitFor(() => expect(document.body.textContent).toContain("editability_select.auto"));
             expect([ ...document.querySelectorAll(".tn-popup .dropdown-header") ].map((header) => header.textContent)).toContain("basic_properties.editable");
 
-            await act(async () => tiles[0]?.click());
+            await act(async () => tiles[3]?.click());
             expect(createChild).toHaveBeenCalledOnce();
         } finally {
             ctrl.mobile = false;
