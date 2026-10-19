@@ -21,22 +21,32 @@ describe("EmbedHistories", () => {
         let editor: AttributeEditor | null = null;
         const { host } = new EmbedHistories(() => editor).get("note1", vi.fn());
         const step = { undo: vi.fn(() => true), redo: vi.fn(() => true) };
+        const listener = vi.fn();
 
         expect(host.push(step).isLatest()).toBe(false);
         host.undo();
         host.redo();
         expect(step.undo).not.toHaveBeenCalled();
+        expect(host.isEnabled("undo")).toBe(false);
+        host.subscribe(listener)();
 
         const element = document.createElement("div");
         document.body.append(element);
         editor = await AttributeEditor.create(element, {
             licenseKey: "GPL", extraPlugins: [ EmbedHistory ]
         });
+        const unsubscribe = host.subscribe(listener);
         expect(host.push(step).isLatest()).toBe(true);
+        expect(host.isEnabled("undo")).toBe(true);
+        expect(listener).toHaveBeenCalled();
         host.undo();
         expect(step.undo).toHaveBeenCalledOnce();
+        expect(host.isEnabled("redo")).toBe(true);
+        unsubscribe();
+        listener.mockClear();
         host.redo();
         expect(step.redo).toHaveBeenCalledOnce();
+        expect(listener).not.toHaveBeenCalled();
 
         await editor.destroy();
         element.remove();

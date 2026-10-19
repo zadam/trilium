@@ -210,7 +210,8 @@ describe("MermaidDiagram", () => {
 
     it("keeps the edits of its source on the text note's undo stack, read-only too", async () => {
         const host = {
-            push: vi.fn(() => ({ isLatest: () => false })), undo: vi.fn(), redo: vi.fn()
+            push: vi.fn(() => ({ isLatest: () => false })), undo: vi.fn(), redo: vi.fn(),
+            isEnabled: () => false, subscribe: () => () => {}
         };
         const editor = { ...buildEditor(), history: { host, write: vi.fn() } };
         const { figure } = await mount({ editor, isEditable: true, displayMode: "split" });

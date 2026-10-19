@@ -125,6 +125,7 @@ function LiveDrawing({
     const frameRef = useRef(0);
     const persistence = useCanvasDrawingPersistence(attachment, editor, apiRef, colorScheme, {
         initialView: viewRef.current,
+        rootRef,
         onSceneShown: () => {
             isShownRef.current = true;
             frameRef.current = requestAnimationFrame(onDrawn);
