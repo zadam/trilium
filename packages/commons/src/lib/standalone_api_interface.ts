@@ -116,8 +116,8 @@ export interface StandaloneSaveApi {
      *
      * The Capacitor WebView has no download manager: a navigation that resolves to an
      * `attachment` response is dropped, silently. So the bytes are fetched by the page instead —
-     * where the service worker (Android) or the iOS interceptors still route them to the local
-     * worker — written to the app's cache directory, and handed to the share sheet, which is
+     * where the shell's native request bridge still routes them to the local worker — written
+     * to the app's cache directory, and handed to the share sheet, which is
      * where the user picks what the file becomes: a file in Downloads, a Drive upload, a mail
      * attachment.
      *

@@ -6,13 +6,14 @@ const mocks = vi.hoisted(() => ({
     registerNativeHttpHandler: vi.fn(),
     restoreBackup: vi.fn(),
     downloadDatabase: vi.fn(),
+    saveDatabase: vi.fn(),
     announceLeadership: vi.fn(),
     localFetch: vi.fn(),
     localUpload: vi.fn(),
     capacitorHttpHandler: vi.fn(),
     saveUrlToDevice: vi.fn(),
     requestSecurityChange: vi.fn(),
-    installAndroidRequestBridge: vi.fn()
+    installNativeRequestBridge: vi.fn()
 }));
 
 // Whether this tab wins the database lock. Only the leader may start a worker;
@@ -25,6 +26,7 @@ vi.mock("./local-bridge.js", () => ({
     registerNativeHttpHandler: mocks.registerNativeHttpHandler,
     restoreBackup: mocks.restoreBackup,
     downloadDatabase: mocks.downloadDatabase,
+    saveDatabase: mocks.saveDatabase,
     announceLeadership: mocks.announceLeadership,
     localFetch: mocks.localFetch,
     localUpload: mocks.localUpload,
@@ -39,7 +41,7 @@ vi.mock("./leader_election.js", () => ({
 }));
 vi.mock("./services/capacitor_http_handler.js", () => ({ capacitorHttpHandler: mocks.capacitorHttpHandler }));
 vi.mock("./services/capacitor_download.js", () => ({ saveUrlToDevice: mocks.saveUrlToDevice }));
-vi.mock("./android-request-bridge.js", () => ({ installAndroidRequestBridge: mocks.installAndroidRequestBridge }));
+vi.mock("./native-request-bridge.js", () => ({ installNativeRequestBridge: mocks.installNativeRequestBridge }));
 // Avoid pulling the entire client bundle when loadScripts() runs.
 vi.mock("../../client/src/index.js", () => ({}));
 
@@ -188,21 +190,33 @@ describe("bootstrap", () => {
         await vi.waitFor(() => expect(win.standaloneApi?.save?.saveUrl).toBe(mocks.saveUrlToDevice));
     });
 
-    it("answers through the Android request bridge without a SW when the shell injects it", async () => {
+    it("answers through the native request bridge without a SW when the shell provides one", async () => {
         const sw: ServiceWorkerLike = { controller: null, register: vi.fn(), ready: Promise.resolve() };
         setServiceWorker(sw);
-        const win = window as unknown as { triliumRequestBridge?: unknown };
-        win.triliumRequestBridge = {};
-        try {
-            await runBootstrap();
-            await vi.waitFor(() => expect(mocks.installAndroidRequestBridge).toHaveBeenCalled());
-            expect(mocks.startLocalServerWorker).toHaveBeenCalled();
-            expect(mocks.attachServiceWorkerBridge).not.toHaveBeenCalled();
-            expect(sw.register).not.toHaveBeenCalled();
-            expect(document.body.innerHTML).toBe("");
-        } finally {
-            delete win.triliumRequestBridge;
-        }
+        const win = window as unknown as WindowWithCapacitor;
+        win.Capacitor = {};
+        mocks.installNativeRequestBridge.mockReturnValue(true);
+
+        await runBootstrap();
+        await vi.waitFor(() => expect(mocks.installNativeRequestBridge).toHaveBeenCalled());
+        expect(mocks.startLocalServerWorker).toHaveBeenCalled();
+        expect(mocks.attachServiceWorkerBridge).not.toHaveBeenCalled();
+        expect(sw.register).not.toHaveBeenCalled();
+        expect(document.body.innerHTML).toBe("");
+    });
+
+    it("falls back to the SW when the shell has no native request bridge, and never asks on the web", async () => {
+        setServiceWorker({ controller: {}, register: vi.fn(), ready: Promise.resolve() });
+        await runBootstrap();
+        await vi.waitFor(() => expect(mocks.attachServiceWorkerBridge).toHaveBeenCalled());
+        expect(mocks.installNativeRequestBridge).not.toHaveBeenCalled();
+
+        mocks.attachServiceWorkerBridge.mockClear();
+        (window as unknown as WindowWithCapacitor).Capacitor = {};
+        mocks.installNativeRequestBridge.mockReturnValue(false);
+        await runBootstrap();
+        await vi.waitFor(() => expect(mocks.attachServiceWorkerBridge).toHaveBeenCalled());
+        expect(mocks.installNativeRequestBridge).toHaveBeenCalled();
     });
 
     it("registers and waits for the SW, then loads scripts once it controls", async () => {

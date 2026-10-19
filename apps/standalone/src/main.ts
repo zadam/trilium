@@ -4,7 +4,6 @@ import {
     initSplashProgress, reportSplashPhase, type SplashPhase
 } from "../../client/src/services/splash.js";
 import { showErrorOverlay } from "./error-overlay.js";
-import { installIosInterceptors } from "./ios-interceptors.js";
 import { claimLeadership } from "./leader_election.js";
 import { announceLeadership, attachServiceWorkerBridge, downloadDatabase, localFetch, localUpload, registerNativeHttpHandler, restoreBackup, saveDatabase, startLocalServerWorker } from "./local-bridge.js";
 import { createSecurityApi } from "./security_gate.js";
@@ -128,17 +127,12 @@ async function bootstrap() {
             announceLeadership();
         });
 
-        // iOS Capacitor loads on the capacitor:// scheme, where WebKit rejects
-        // service worker registration. Fall back to in-page request interceptors
-        // that route API calls straight to the local SQLite worker. The Android
-        // shell answers them natively (TriliumRequestBridge.java) and injects
-        // `triliumRequestBridge` to say so; on the web the service worker does.
-        if (location.protocol === "capacitor:") {
-            installIosInterceptors();
-        } else if ("triliumRequestBridge" in window) {
-            const { installAndroidRequestBridge } = await import("./android-request-bridge.js");
-            installAndroidRequestBridge();
-        } else {
+        // The mobile shells answer local API requests natively (TriliumRequestBridge on Android
+        // and iOS, where WebKit rejects a service worker on capacitor://); on the web, or on an
+        // Android WebView without message listeners, the service worker does.
+        const answeredNatively = "Capacitor" in window
+            && (await import("./native-request-bridge.js")).installNativeRequestBridge();
+        if (!answeredNatively) {
             attachServiceWorkerBridge();
             await waitForServiceWorkerControl();
         }

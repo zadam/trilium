@@ -17,7 +17,7 @@ apps/standalone/
   src/leader_election.ts          # Web Lock decides which tab owns the database worker
   src/local-bridge.ts             # page ⇄ worker protocol (LOCAL_REQUEST/RESPONSE, WS_MESSAGE, HTTP_REQUEST, backup/restore)
   src/local-server-worker.ts      # the worker: opens SQLite, initializeCore(), routes requests
-  src/ios-interceptors.ts         # iOS Capacitor only (see mobile skill)
+  src/native-request-bridge.ts    # mobile shells only: answers native-intercepted requests (see mobile skill)
   src/error-overlay.ts            # full-screen surface for fatal startup failures
   src/lightweight/                # browser implementations of every core provider + standalone-only routes
   src/services/                   # image provider, Capacitor HTTP handler

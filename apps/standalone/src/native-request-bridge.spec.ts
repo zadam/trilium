@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { installAndroidRequestBridge } from "./android-request-bridge.js";
+import { installNativeRequestBridge } from "./native-request-bridge.js";
 
 const mocks = vi.hoisted(() => ({
     localFetch: vi.fn()
@@ -11,8 +11,13 @@ vi.mock("./local-bridge.js", () => ({
     isLocalApiRequest: (url: URL) => url.pathname.startsWith("/api/") || url.pathname.startsWith("/share/")
 }));
 
+interface Channel {
+    postMessage: ReturnType<typeof vi.fn>;
+}
+
 interface BridgeWindow {
-    triliumRequestBridge?: { postMessage: ReturnType<typeof vi.fn> };
+    triliumRequestBridge?: Channel;
+    webkit?: { messageHandlers?: { triliumRequestBridge?: Channel } };
     __triliumNativeRequest?: (request: Record<string, unknown>) => void;
 }
 
@@ -28,13 +33,14 @@ beforeEach(() => {
 
 afterEach(() => {
     delete bridgeWindow.triliumRequestBridge;
+    delete bridgeWindow.webkit;
     delete bridgeWindow.__triliumNativeRequest;
     vi.restoreAllMocks();
 });
 
 /** Installs the bridge, forwards one request, and returns every message the page sent back. */
 async function forward(request: Record<string, unknown>) {
-    installAndroidRequestBridge();
+    installNativeRequestBridge();
     postMessage.mockClear();
     bridgeWindow.__triliumNativeRequest?.({
         method: "GET",
@@ -50,16 +56,22 @@ async function forward(request: Record<string, unknown>) {
         typeof message === "string" ? JSON.parse(message) : message as ArrayBuffer);
 }
 
-describe("installAndroidRequestBridge", () => {
-    it("does nothing without the native channel, and announces readiness with it", () => {
+describe("installNativeRequestBridge", () => {
+    it("finds the Android or the iOS channel, and reports when there is neither", () => {
         delete bridgeWindow.triliumRequestBridge;
-        installAndroidRequestBridge();
+        expect(installNativeRequestBridge()).toBe(false);
         expect(bridgeWindow.__triliumNativeRequest).toBeUndefined();
 
-        bridgeWindow.triliumRequestBridge = { postMessage };
-        installAndroidRequestBridge();
+        bridgeWindow.webkit = { messageHandlers: { triliumRequestBridge: { postMessage } } };
+        expect(installNativeRequestBridge()).toBe(true);
         expect(bridgeWindow.__triliumNativeRequest).toBeTypeOf("function");
         expect(postMessage).toHaveBeenCalledWith(JSON.stringify({ type: "ready" }));
+
+        delete bridgeWindow.webkit;
+        const android = vi.fn();
+        bridgeWindow.triliumRequestBridge = { postMessage: android };
+        expect(installNativeRequestBridge()).toBe(true);
+        expect(android).toHaveBeenCalledWith(JSON.stringify({ type: "ready" }));
     });
 
     it("answers from localFetch with a head, id-framed binary chunks and an end", async () => {
@@ -67,7 +79,7 @@ describe("installAndroidRequestBridge", () => {
         const body = new Uint8Array(256 * 1024 * 2 + 3).map((_, i) => i % 251);
         mocks.localFetch.mockResolvedValue(new Response(body, {
             status: 206,
-            headers: { "content-type": "image/png" }
+            headers: { "content-type": "image/png", "content-length": "1" }
         }));
 
         const messages = await forward({ id: 7, url: "https://localhost/api/images/x", headers: { range: "bytes=0-" } });
@@ -77,7 +89,10 @@ describe("installAndroidRequestBridge", () => {
         expect(request.method).toBe("GET");
         expect(request.headers.get("range")).toBe("bytes=0-");
 
-        expect(messages[0]).toEqual({ type: "head", id: 7, status: 206, headers: { "content-type": "image/png" } });
+        expect(messages[0]).toEqual({
+            type: "head", id: 7, status: 206,
+            headers: { "content-type": "image/png", "content-length": String(body.length) }
+        });
         const frames = messages.slice(1, -1) as ArrayBuffer[];
         expect(frames.map((frame) => frame.byteLength)).toEqual([4 + 256 * 1024, 4 + 256 * 1024, 4 + 3]);
         for (const frame of frames) {
@@ -88,30 +103,41 @@ describe("installAndroidRequestBridge", () => {
         expect(messages.at(-1)).toEqual({ type: "end", id: 7 });
     });
 
-    it("sends base64 chunks when the WebView cannot carry ArrayBuffers, and none for an empty body", async () => {
+    it("sends base64 chunks over the iOS channel, and none for an empty body", async () => {
+        delete bridgeWindow.triliumRequestBridge;
+        bridgeWindow.webkit = { messageHandlers: { triliumRequestBridge: { postMessage } } };
+
         mocks.localFetch.mockResolvedValue(new Response("hello"));
-        const messages = await forward({ id: 3, url: "https://localhost/api/notes", binary: false });
+        const messages = await forward({ id: 3, url: "capacitor://localhost/api/notes", binary: false });
         expect(messages.slice(1)).toEqual([
             { type: "chunk", id: 3, data: btoa("hello") },
             { type: "end", id: 3 }
         ]);
 
         mocks.localFetch.mockResolvedValue(new Response(null, { status: 204 }));
-        const empty = await forward({ id: 4, url: "https://localhost/api/notes" });
+        const empty = await forward({ id: 4, url: "capacitor://localhost/api/notes", binary: false });
         expect(empty.map((message) => (message as { type: string }).type)).toEqual(["head", "end"]);
     });
 
-    it("turns a redirect into a page that navigates, since WebResourceResponse rejects 3xx", async () => {
+    it("leaves the length of a HEAD answer to the worker", async () => {
+        mocks.localFetch.mockResolvedValue(new Response(null, { headers: { "content-length": "42" } }));
+        const messages = await forward({ id: 2, method: "HEAD", url: "https://localhost/api/notes" });
+
+        expect((messages[0] as { headers: Record<string, string> }).headers["content-length"]).toBe("42");
+    });
+
+    it("turns a redirect into a page that navigates, since neither native response carries a 3xx", async () => {
         mocks.localFetch.mockResolvedValue(new Response(null, {
             status: 302,
             headers: { location: "../share/?a=1&b=\"2\"" }
         }));
         const messages = await forward({ id: 1, url: "https://localhost/share/x", binary: false });
+        const html = atob((messages[1] as { data: string }).data);
 
         expect(messages[0]).toEqual({
-            type: "head", id: 1, status: 200, headers: { "content-type": "text/html; charset=utf-8" }
+            type: "head", id: 1, status: 200,
+            headers: { "content-type": "text/html; charset=utf-8", "content-length": String(html.length) }
         });
-        const html = atob((messages[1] as { data: string }).data);
         expect(html).toBe("<!DOCTYPE html><meta http-equiv=\"refresh\" content=\"0;url=../share/?a=1&amp;b=&quot;2&quot;\">");
     });
 

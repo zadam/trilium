@@ -31,7 +31,7 @@ import java.util.function.Function;
  * {@code window.__triliumNativeRequest()} and blocks until the head of the reply arrives. The
  * body then streams through a {@link ChunkStream}. The page's messages arrive through
  * {@link #onMessage} and {@link #onFrame}; the protocol is described in
- * {@code apps/standalone/src/android-request-bridge.ts}.
+ * {@code apps/standalone/src/native-request-bridge.ts}.
  *
  * <p>Requests that arrive before the page sends {@code ready} are queued, and
  * {@link #onPageStarted} fails whatever the previous page left unanswered.

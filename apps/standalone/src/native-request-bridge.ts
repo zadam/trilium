@@ -2,27 +2,32 @@ import { isLocalApiRequest, localFetch } from "./local-bridge.js";
 import { toBase64 } from "./services/capacitor_download.js";
 
 /**
- * Page side of `TriliumRequestBridge.java`, which answers local API requests in the Android shell
- * in place of the service worker.
+ * Page side of the mobile shells' native request bridges, which answer local API requests in
+ * place of a service worker: `TriliumRequestBridge.java` on Android and
+ * `TriliumRequestBridge.swift` on iOS.
  *
- * `WebViewClient.shouldInterceptRequest` sees every request the WebView issues, whichever part of
- * the engine issued it (`fetch`, XHR, `<img>`, `@font-face`, iframes, media). For a local API path
- * the native side calls `window.__triliumNativeRequest()`, this module answers it from
- * `localFetch()`, and the reply travels back over the `window.triliumRequestBridge` message
- * channel:
+ * The native side sees every request the WebView issues, whichever part of the engine issued it
+ * (`fetch`, XHR, `<img>`, `@font-face`, iframes, media): `WebViewClient.shouldInterceptRequest`
+ * on Android, the `WKURLSchemeHandler` of `capacitor://` on iOS. For a local API path it calls
+ * `window.__triliumNativeRequest()`, this module answers it from `localFetch()`, and the reply
+ * travels back over the native channel as JSON strings:
  *
  * - `{"type":"head","id","status","headers"}`, then the body as ArrayBuffer frames, each a 4-byte
- *   big-endian request id followed by the bytes — or, when the WebView cannot carry ArrayBuffers,
- *   `{"type":"chunk","id","data"}` with the bytes in base64.
+ *   big-endian request id followed by the bytes, or as `{"type":"chunk","id","data"}` with the
+ *   bytes in base64 when the channel cannot carry ArrayBuffers (iOS, older Android WebViews).
  * - `{"type":"end","id"}` once the body is complete, or `{"type":"error","id","message"}`.
  *
- * `shouldInterceptRequest` exposes no request body, so the native side forwards only GET and HEAD.
+ * Android's `shouldInterceptRequest` exposes no request body, so both platforms forward only GET
+ * and HEAD; a request with a body goes through `standaloneApi.localFetch`.
+ *
+ * Returns whether a native channel was found; without one the page registers its service worker.
  */
-export function installAndroidRequestBridge() {
+export function installNativeRequestBridge(): boolean {
     const bridgeWindow = window as RequestBridgeWindow;
-    const channel = bridgeWindow.triliumRequestBridge;
+    const channel = bridgeWindow.triliumRequestBridge
+        ?? bridgeWindow.webkit?.messageHandlers?.triliumRequestBridge;
     if (!channel) {
-        return;
+        return false;
     }
 
     bridgeWindow.__triliumNativeRequest = (request) => {
@@ -30,15 +35,16 @@ export function installAndroidRequestBridge() {
     };
     // The native side holds every request it intercepted until this arrives.
     channel.postMessage(JSON.stringify({ type: "ready" }));
+    return true;
 }
 
-/** Request forwarded by `TriliumRequestBridge.java`. */
+/** Request forwarded by the native bridge. */
 interface NativeRequest {
     id: number;
     method: string;
     url: string;
     headers: Record<string, string>;
-    /** Whether the WebView carries ArrayBuffer messages; base64 chunks are sent otherwise. */
+    /** Whether the channel carries ArrayBuffer messages; base64 chunks are sent otherwise. */
     binary: boolean;
 }
 
@@ -47,7 +53,10 @@ interface RequestChannel {
 }
 
 interface RequestBridgeWindow {
+    /** Android: the `WebMessageListener` that `TriliumRequestBridge.java` injects. */
     triliumRequestBridge?: RequestChannel;
+    /** iOS: the script message handler that `TriliumRequestBridge.swift` registers. */
+    webkit?: { messageHandlers?: { triliumRequestBridge?: RequestChannel } };
     __triliumNativeRequest?: (request: NativeRequest) => void;
 }
 
@@ -63,7 +72,7 @@ async function answer(channel: RequestChannel, request: NativeRequest) {
     try {
         const url = new URL(request.url, location.href);
         if (!isLocalApiRequest(url)) {
-            // The prefix list in TriliumRequestBridge.java must match `isLocalApiRequest()`.
+            // The native prefix lists must match `isLocalApiRequest()`.
             throw new Error(`Path is not routed to the local worker: ${url.pathname}`);
         }
 
@@ -73,7 +82,13 @@ async function answer(channel: RequestChannel, request: NativeRequest) {
         })));
         const body = new Uint8Array(await response.arrayBuffer());
 
-        send({ type: "head", status: response.status, headers: Object.fromEntries(response.headers) });
+        const headers = Object.fromEntries(response.headers);
+        if (request.method !== "HEAD") {
+            // The worker's value can count characters rather than bytes; WebKit's media loader
+            // needs the exact length.
+            headers["content-length"] = String(body.length);
+        }
+        send({ type: "head", status: response.status, headers });
         for (let offset = 0; offset < body.length; offset += CHUNK_SIZE) {
             const chunk = body.subarray(offset, offset + CHUNK_SIZE);
             if (request.binary) {
@@ -90,9 +105,10 @@ async function answer(channel: RequestChannel, request: NativeRequest) {
 }
 
 /**
- * `WebResourceResponse` rejects 3xx statuses, so a redirect (the share pages issue them) becomes a
- * page that navigates to its target. A relative target resolves against the request URL, as it
- * would for a real redirect.
+ * Neither native response type carries a 3xx (`WebResourceResponse` rejects one, a
+ * `WKURLSchemeTask` cannot redirect), so a redirect (the share pages issue them) becomes a page
+ * that navigates to its target. A relative target resolves against the request URL, as it would
+ * for a real redirect.
  */
 function toNativeResponse(response: Response): Response {
     const location = response.headers.get("location");
