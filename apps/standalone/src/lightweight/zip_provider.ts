@@ -129,6 +129,8 @@ interface CentralDirectoryRecord {
 
 const LOCAL_HEADER_SIGNATURE = 0x04034b50;
 const CENTRAL_HEADER_SIGNATURE = 0x02014b50;
+/** The optional record that closes a central directory and is counted in its size. */
+const DIGITAL_SIGNATURE_SIGNATURE = 0x05054b50;
 const END_OF_CENTRAL_DIRECTORY_SIGNATURE = 0x06054b50;
 const ZIP64_END_OF_CENTRAL_DIRECTORY_SIGNATURE = 0x06064b50;
 const ZIP64_LOCATOR_SIGNATURE = 0x07064b50;
@@ -158,7 +160,11 @@ async function readCentralDirectory(source: ByteSource): Promise<CentralDirector
         throw new Error("Truncated ZIP: no end-of-central-directory record.");
     }
 
-    const tailStart = Math.max(0, source.size - END_OF_CENTRAL_DIRECTORY_LENGTH - MAX_COMMENT_LENGTH);
+    // The ZIP64 locator sits right before the end record, so the tail covers it at any comment length.
+    const tailStart = Math.max(
+        0,
+        source.size - ZIP64_LOCATOR_LENGTH - END_OF_CENTRAL_DIRECTORY_LENGTH - MAX_COMMENT_LENGTH
+    );
     const tail = await source.read(tailStart, source.size - tailStart);
     const tailView = viewOf(tail);
 
@@ -223,6 +229,12 @@ async function readCentralDirectory(source: ByteSource): Promise<CentralDirector
         records.push(record);
 
         offset = extraStart + extraLength + commentLength;
+    }
+
+    // The entries are imported from this list, so a directory that stops early must not pass as complete.
+    if (offset < directory.byteLength
+        && (offset + 4 > directory.byteLength || view.getUint32(offset, true) !== DIGITAL_SIGNATURE_SIGNATURE)) {
+        throw new Error("Corrupt ZIP: the central directory ends in an unreadable record.");
     }
 
     return records;

@@ -340,6 +340,22 @@ describe("BrowserZipProvider entry formats", () => {
     it("reads a ZIP64 archive, whose sizes and offsets are in 64-bit records", async () => {
         expect(await readAll(makeZip64("big.txt", "sixty-four"))).toEqual({ "big.txt": "sixty-four" });
         expect(await readAll({ blob: new Blob([ makeZip64("big.txt", "sixty-four") ]) })).toEqual({ "big.txt": "sixty-four" });
+        expect(await readAll(makeZip64("big.txt", "sixty-four", 0xffff))).toEqual({ "big.txt": "sixty-four" });
+    });
+
+    it("rejects a central directory that stops short instead of importing the entries before the damage", async () => {
+        const zip = makeZip({ "a.txt": "x", "b.txt": "y" });
+        const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+        const headers: number[] = [];
+        for (let i = 0; i + 4 <= zip.length; i++) {
+            if (view.getUint32(i, true) === 0x02014b50) {
+                headers.push(i);
+            }
+        }
+        expect(headers).toHaveLength(2);
+        view.setUint32(headers[1] ?? 0, 0, true);
+
+        await expect(readNames(zip)).rejects.toThrow("Corrupt ZIP: the central directory ends in an unreadable record.");
     });
 
     it("rejects an entry it cannot read, but only when its content is asked for", async () => {
@@ -381,8 +397,9 @@ function patchCentralHeader(zip: Uint8Array, patch: (view: DataView, offset: num
 /**
  * Builds a one-entry stored archive in ZIP64 form: every size and offset in the classic records is
  * saturated, and the real values sit in the entry's ZIP64 extra field and the ZIP64 end record.
+ * The archive comment is `commentLength` spaces.
  */
-function makeZip64(name: string, content: string): Uint8Array {
+function makeZip64(name: string, content: string, commentLength = 0): Uint8Array {
     const nameBytes = strToU8(name);
     const data = strToU8(content);
     const SATURATED = 0xffffffff;
@@ -434,8 +451,10 @@ function makeZip64(name: string, content: string): Uint8Array {
     end.setUint16(10, 0xffff, true);
     end.setUint32(12, SATURATED, true);
     end.setUint32(16, SATURATED, true);
+    end.setUint16(20, commentLength, true);
 
-    const parts = [ local, nameBytes, data, central, nameBytes, extra, zip64End, locator, end ]
+    const comment = new Uint8Array(commentLength).fill(0x20);
+    const parts = [ local, nameBytes, data, central, nameBytes, extra, zip64End, locator, end, comment ]
         .map((part) => part instanceof DataView ? new Uint8Array(part.buffer) : part);
     const zip = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
     let offset = 0;
