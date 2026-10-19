@@ -14,7 +14,8 @@ import froca from "../services/froca";
 vi.mock("./note_tree", () => ({ default: class {} }));
 
 import {
-    getExtendedWidgetType, NoteDetailWrapper, useDeferredDetailFocus, useNoteInfo
+    getExtendedWidgetType, NoteDetailWrapper, shouldFocusOnNoteChange, useDeferredDetailFocus,
+    useNoteInfo
 } from "./NoteDetail";
 import { isContextInActiveTab, useLegacyImperativeHandlers, useTriliumEvent } from "./react/hooks";
 import {
@@ -310,5 +311,21 @@ describe("NoteDetailWrapper", () => {
         // Keyboard shortcuts trigger their command on `props.parentComponent`.
         typeWidgetProps?.parentComponent?.triggerCommand("addLinkToText", {});
         expect(addLinkToText).toHaveBeenCalledOnce();
+    });
+});
+
+describe("shouldFocusOnNoteChange", () => {
+    it("focuses the editor of a note opened elsewhere, but not on a phone, nor while the tree or the split has focus", () => {
+        const split = document.createElement("div");
+        const title = document.createElement("input");
+        split.append(title);
+        const treeTitle = document.createElement("span");
+        treeTitle.className = "fancytree-title";
+        const elsewhere = document.createElement("button");
+
+        expect(shouldFocusOnNoteChange(elsewhere, split, false)).toBe(true);
+        expect(shouldFocusOnNoteChange(elsewhere, split, true)).toBe(false);
+        expect(shouldFocusOnNoteChange(treeTitle, split, false)).toBe(false);
+        expect(shouldFocusOnNoteChange(title, split, false)).toBe(false);
     });
 });

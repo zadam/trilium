@@ -20,7 +20,7 @@ import { endLivePrint, getLivePrintTarget, printLiveInBrowser } from "../service
 import { stopBackgroundMedia } from "../services/media_playback";
 import protected_session_holder from "../services/protected_session_holder";
 import toast from "../services/toast.js";
-import { isElectron } from "../services/utils";
+import { isElectron, isMobile } from "../services/utils";
 import { ExtendedNoteType, TYPE_MAPPINGS, TypeWidget } from "./note_types";
 import Button from "./react/Button";
 import {
@@ -144,9 +144,8 @@ export default function NoteDetail() {
     // Automatically focus the editor.
     useTriliumEvent("activeNoteChanged", ({ ntxId: eventNtxId }) => {
         if (eventNtxId != ntxId) return;
-        // Restore focus to the editor when switching tabs,
-        // but only if the note tree and the note panel (e.g., note title or note detail) are not focused.
-        if (!document.activeElement?.classList.contains("fancytree-title") && !parentComponent.$widget[0].closest(".note-split")?.contains(document.activeElement)) {
+        const noteSplit = parentComponent.$widget[0].closest(".note-split");
+        if (shouldFocusOnNoteChange(document.activeElement, noteSplit, isMobile())) {
             parentComponent.triggerCommand("focusOnDetail", { ntxId });
         }
     });
@@ -252,6 +251,18 @@ export default function NoteDetail() {
             <NoteDetailLoadingOverlay noteContext={noteContext} />
         </div>
     );
+}
+
+/**
+ * Whether a note opened in a split focuses its editor, as when switching tabs: not while the note
+ * tree or the split itself (its title or detail) has focus, and never on a phone, where focusing
+ * the editor brings up the keyboard over the note just opened from the tree.
+ */
+export function shouldFocusOnNoteChange(
+    focused: Element | null, noteSplit: Element | null | undefined, mobile: boolean
+) {
+    if (mobile) return false;
+    return !focused?.classList.contains("fancytree-title") && !noteSplit?.contains(focused);
 }
 
 /**
