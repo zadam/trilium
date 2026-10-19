@@ -140,6 +140,7 @@ export function DropdownPanel({ scrollable, ...props }: DropdownPanelProps) {
                     // Otherwise it grows with its content, as Bootstrap's dropdowns did.
                     capHeight={!!scrollable}
                     placedByStylesheet={popupProps.placedByStylesheet}
+                    reveal
                     className={clsx("dropdown-menu show", className, bottomSheet && "mobile-bottom-menu")}
                     startAt={startAt}
                     onDismiss={dismiss}

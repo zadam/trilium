@@ -389,6 +389,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
                 anchor={anchor}
                 placement={placement ?? (anchor instanceof HTMLElement ? "bottom-start" : "right-start")}
                 placedByStylesheet={popupProps.placedByStylesheet || bottomSheet || inline}
+                reveal={!inline}
                 onPlaced={() => {
                     const menu = menuRef.current;
                     if (menu) {

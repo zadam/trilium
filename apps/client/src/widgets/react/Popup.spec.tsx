@@ -158,6 +158,21 @@ describe("Popup", () => {
         expect(onPlaced).toHaveBeenCalledTimes(1);
     });
 
+    it("names the side it reveals itself from once placed, when it is asked to reveal itself", async () => {
+        anchorAt(100, 50);
+        expect((await open({ reveal: true })).dataset.reveal).toBe("bottom-start");
+
+        render(null, host);
+        anchorAt(100, 740);
+        expect((await open({ reveal: true })).dataset.reveal).toBe("top-start");
+
+        render(null, host);
+        expect((await open({ reveal: true, placedByStylesheet: true })).dataset.reveal).toBe("stylesheet");
+
+        render(null, host);
+        expect((await open()).dataset.reveal).toBeUndefined();
+    });
+
     it("says nothing of a placement that settles once it has closed", async () => {
         anchorAt(100, 50);
         const onPlaced = vi.fn();

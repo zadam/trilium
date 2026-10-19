@@ -49,6 +49,12 @@ export interface PopupProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | 
      * the screen fullscreen, or else the page's body.
      */
     container?: HTMLElement;
+    /**
+     * Animates it in once it is placed: from the side facing its anchor, or out of the bottom of the
+     * screen where the stylesheet places it (see Popup.css). For a menu or a panel, not for a list
+     * of suggestions that changes as the user types.
+     */
+    reveal?: boolean;
     /** Called once it is first placed and shown: a browser focuses nothing inside it before. */
     onPlaced?(): void;
     /**
@@ -70,7 +76,7 @@ export interface PopupProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | 
 /** How many pixels it keeps from the edges of the viewport. */
 const VIEWPORT_PADDING = 5;
 
-export default function Popup({ anchor, placement = "bottom-start", offset: gap = 0, capHeight = true, portalClassName, placedByStylesheet, backdropClassName, elementRef, container, onPlaced, onDismiss, escapeDismisses = true, keepOpenSelector, className, children, ...elementProps }: PopupProps) {
+export default function Popup({ anchor, placement = "bottom-start", offset: gap = 0, capHeight = true, portalClassName, placedByStylesheet, reveal, backdropClassName, elementRef, container, onPlaced, onDismiss, escapeDismisses = true, keepOpenSelector, className, children, ...elementProps }: PopupProps) {
     const popupRef = useRef<HTMLDivElement | null>(null);
     // Stable, so the element is handed on once rather than taken back and given again each render.
     const setElement = useCallback((element: HTMLDivElement | null) => {
@@ -82,9 +88,13 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
     placed.current = onPlaced;
     /** Whether it has said it is placed, which it says once, however often it is placed again. */
     const hasPlaced = useRef(false);
-    const reportPlaced = () => {
+    const reveals = useRef(reveal);
+    reveals.current = reveal;
+    /** Says it is placed, and names the side it reveals itself from, which CSS animates once. */
+    const reportPlaced = (side: string) => {
         if (hasPlaced.current) return;
         hasPlaced.current = true;
+        if (reveals.current && popupRef.current) popupRef.current.dataset.reveal = side;
         placed.current?.();
     };
     // A popup opened inside this one stands in the page's body too, so it registers here to
@@ -114,7 +124,7 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
         if (placedByStylesheet) {
             clearPlacement(popup);
             popup.style.visibility = "visible";
-            reportPlaced();
+            reportPlaced("stylesheet");
             return;
         }
         const reference = "x" in anchor ? pointAt(anchor.x, anchor.y) : anchor;
@@ -124,8 +134,8 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
         // Only a menu at a point moves over it. A rect, such as a caret, marks text the popup must not
         // cover, so the popup keeps to one side and its height is capped to the room there.
         const options = { placement, offset: gap, capHeight, shiftAcross: "x" in anchor };
-        const stopUpdating = autoUpdate(reference, popup, () => void placeFloating(popup, reference, options).then(() => {
-            if (!closed) reportPlaced();
+        const stopUpdating = autoUpdate(reference, popup, () => void placeFloating(popup, reference, options).then((side) => {
+            if (!closed) reportPlaced(side);
             // Resolved after the stylesheet took over, so what it wrote goes again.
             else if (stylesheetPlaces.current) clearPlacement(popup);
         }));
