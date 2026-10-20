@@ -1528,7 +1528,7 @@
     "date_modified": "Date of last modification",
     "content_size": "Note content size",
     "content_and_attachments_size": "Note content size including attachments",
-    "content_and_attachments_and_revisions_size": "Note content size including attachments and revisions",
+    "content_and_attachments_and_revisions_size": "Note size with attachments & revisions",
     "revision_count": "Number of revisions",
     "children_count": "Number of children notes",
     "parent_count": "Number of clones",
@@ -1536,7 +1536,7 @@
     "owned_relation_count": "Number of relations",
     "target_relation_count": "Number of relations targeting the note",
     "random": "Random order",
-    "asc": "Ascending (default)",
+    "asc": "Ascending",
     "desc": "Descending"
   },
   "search_script": {

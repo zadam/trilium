@@ -61,6 +61,14 @@
         padding-block: 0.25rem;
     }
 
+    .search-option.orderBy .search-option-fields {
+        flex-wrap: nowrap;
+    }
+
+    .search-option.orderBy .form-select:first-of-type {
+        flex: 1 1 auto;
+    }
+
     .search-option-fields > :is(.search-string, .input-group, .search-option-row) {
         flex: 1 1 16rem;
     }
