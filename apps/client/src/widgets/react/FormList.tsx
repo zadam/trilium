@@ -297,11 +297,14 @@ export function FormListItem({ className, icon, iconSvg, iconClassName, value, t
 /** Bootstrap's default `--bs-tooltip-max-width`, for a tooltip whose inner carries no cap of its own. */
 const TOOLTIP_MAX_WIDTH = 200;
 const TOOLTIP_OFFSET = 6;
+/** The narrowest a tooltip is squeezed to. Below it the text is unreadable, so it is let to overflow. */
+const MIN_TOOLTIP_WIDTH = 160;
 
 /**
  * Puts a row's tooltip on the reading-direction end of the menu, or on the other side when the
  * viewport has no room there for a tooltip at its widest. The room is measured against that widest
- * tooltip rather than this one, so every row of a menu gets the same side whatever its text.
+ * tooltip rather than this one, so every row of a menu gets the same side whatever its text. A
+ * window too narrow for either side gets the roomier one, with the tooltip wrapped to fit it.
  *
  * Bootstrap calls this with the tip first and the row it stands beside second, `this` being the
  * `Tooltip`.
@@ -310,11 +313,26 @@ export function menuItemTooltipSide(tip?: HTMLElement, row?: Element): "left" | 
     const preferred = handleRightToLeftPlacement("right");
     if (!tip || !row) return preferred;
 
-    const needed = tooltipWidth(tip) + TOOLTIP_OFFSET;
+    // A tooltip shown before may have been narrowed to the room it had then.
+    tip.style.maxWidth = "";
+
     const { left, right } = row.getBoundingClientRect();
-    const room = preferred === "right" ? window.innerWidth - right : left;
-    if (room >= needed) return preferred;
-    return preferred === "right" ? "left" : "right";
+    const roomOn = (side: "left" | "right") => side === "right"
+        ? window.innerWidth - right - TOOLTIP_OFFSET
+        : left - TOOLTIP_OFFSET;
+    const needed = tooltipWidth(tip) + TOOLTIP_OFFSET;
+    const other = preferred === "right" ? "left" : "right";
+    const room = roomOn(preferred);
+    const side = room >= needed || roomOn(other) <= room ? preferred : other;
+    const roomOnSide = roomOn(side);
+
+    // Neither side may hold a tooltip at its widest, as a menu row on a narrow window leaves little
+    // room either way: it wraps into what its side has rather than being cut by the window.
+    if (roomOnSide < needed) {
+        tip.style.maxWidth = `${Math.max(roomOnSide, MIN_TOOLTIP_WIDTH)}px`;
+    }
+
+    return side;
 }
 
 /**

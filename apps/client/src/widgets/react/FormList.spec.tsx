@@ -450,4 +450,35 @@ describe("menuItemTooltipSide", () => {
             window.innerWidth = innerWidth;
         }
     });
+
+    it("wraps a tooltip into the room its side has when the window is too narrow for it", () => {
+        const { innerWidth } = window;
+        window.innerWidth = 700;
+        try {
+            const row = document.createElement("li");
+            row.getBoundingClientRect = () => ({ left: 300, right: 500 } as DOMRect);
+            const tip = document.createElement("div");
+            const inner = document.createElement("div");
+            inner.className = "tooltip-inner";
+            inner.style.maxWidth = "500px";
+            tip.append(inner);
+            document.body.append(tip);
+
+            try {
+                // 194px to the right against 294 to the left: the roomier side, narrowed to fit it.
+                expect(menuItemTooltipSide(tip, row)).toBe("left");
+                expect(tip.style.maxWidth).toBe("294px");
+
+                // A later show with room to spare is not held to the width of the one before.
+                window.innerWidth = 1000;
+                row.getBoundingClientRect = () => ({ left: 0, right: 200 } as DOMRect);
+                expect(menuItemTooltipSide(tip, row)).toBe("right");
+                expect(tip.style.maxWidth).toBe("");
+            } finally {
+                tip.remove();
+            }
+        } finally {
+            window.innerWidth = innerWidth;
+        }
+    });
 });
