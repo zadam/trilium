@@ -174,6 +174,8 @@ export function isKeyboardPanelOpen() {
 
 /** How long a closed panel keeps the keyboard's place for a keyboard that does not come back. */
 const KEYBOARD_RETURN_TIMEOUT = 1000;
+/** How long a closed panel waits for the click of the press that closed it, which can scroll. */
+const PRESS_TIMEOUT = 500;
 
 /** The hand-back of a closed panel's place, while it waits for the keyboard. */
 let pendingHandBack: { cancel(): void } | undefined;
@@ -196,7 +198,10 @@ function takeKeyboardPlace() {
  * Gives a closed panel's place back. When the text has the focus once the menu has closed, as
  * after an entry runs or the menu's own button closes it, the keyboard is on its way, so the
  * layout stays until `RootContainer` reports it up; laying out for no keyboard in between drops
- * the toolbar and brings the launcher bar back for some 250ms.
+ * the toolbar and brings the launcher bar back for some 250ms. A menu that a press closes, which
+ * `Popup` does as the press starts, keeps the layout until the press's click: that click can open
+ * the menu of another button of the toolbar, or focus the text, and the button must not move from
+ * under it.
  */
 function handBackKeyboardPlace() {
     let isCancelled = false;
@@ -215,11 +220,9 @@ function handBackKeyboardPlace() {
         holdVisibleBottom(false);
     };
 
-    // The plugin focuses the text after the menu has unmounted, in the same task.
-    queueMicrotask(() => {
-        if (isCancelled) return;
+    const waitForKeyboard = () => {
         const root = document.getElementById("root-widget");
-        if (!root || !document.activeElement?.closest(".ck-editor__editable")) {
+        if (!root || root.classList.contains("virtual-keyboard-opened")) {
             release();
             return;
         }
@@ -232,7 +235,42 @@ function handBackKeyboardPlace() {
             observer.disconnect();
             clearTimeout(timer);
         };
+    };
+    const settle = () => {
+        if (isCancelled) return;
+        if (isTextFocused()) {
+            waitForKeyboard();
+        } else {
+            release();
+        }
+    };
+
+    // The plugin focuses the text after the menu has unmounted, in the same task.
+    queueMicrotask(() => {
+        if (isCancelled) return;
+        if (isTextFocused()) {
+            waitForKeyboard();
+            return;
+        }
+        // What the click runs, such as opening another menu, runs before `settle`.
+        const onClick = () => {
+            stopWaiting();
+            setTimeout(settle);
+        };
+        window.addEventListener("click", onClick, true);
+        const timer = setTimeout(() => {
+            stopWaiting();
+            settle();
+        }, PRESS_TIMEOUT);
+        stopWaiting = () => {
+            window.removeEventListener("click", onClick, true);
+            clearTimeout(timer);
+        };
     });
+}
+
+function isTextFocused() {
+    return !!document.activeElement?.closest(".ck-editor__editable");
 }
 
 /** The editors whose toolbar dropdowns open upwards already. */

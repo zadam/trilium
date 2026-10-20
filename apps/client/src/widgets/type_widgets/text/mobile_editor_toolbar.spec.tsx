@@ -83,6 +83,7 @@ describe("useKeyboardPanel", () => {
         expect(isMarked()).toBe(true);
 
         await act(async () => render(null, host));
+        await endPress();
         expect(isMarked()).toBe(false);
     });
 
@@ -113,13 +114,51 @@ describe("useKeyboardPanel", () => {
         expect(isKeyboardPanelOpen()).toBe(false);
     });
 
-    it("gives the place up at once when focus goes elsewhere, or after 1s", async () => {
+    it("keeps the place through the press that closes a menu, for the menu it opens", async () => {
+        const { root, host, Harness, seen } = buildPanelFixture();
+
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        root.classList.remove("virtual-keyboard-opened");
+
+        // A press on another button of the toolbar closes the menu as it starts, and its click
+        // opens the button's own menu; the button must not move from under it in between.
+        await act(async () => render(null, host));
+        expect(isKeyboardPanelOpen()).toBe(true);
+        await act(async () => {
+            window.dispatchEvent(new MouseEvent("click"));
+            render(<Harness />, host);
+            await new Promise((resolve) => setTimeout(resolve));
+        });
+        expect(seen.at(-1)).toBe(true);
+        expect(isKeyboardPanelOpen()).toBe(true);
+
+        await act(async () => render(null, host));
+        await endPress();
+        expect(isKeyboardPanelOpen()).toBe(false);
+    });
+
+    it("gives the place up after its press when focus goes elsewhere, or after 1s", async () => {
         const { root, editable, host, Harness } = buildPanelFixture();
 
         root.classList.add("virtual-keyboard-opened");
         act(() => render(<Harness />, host));
         root.classList.remove("virtual-keyboard-opened");
         await act(async () => render(null, host));
+        expect(isKeyboardPanelOpen()).toBe(true);
+        await endPress();
+        expect(isKeyboardPanelOpen()).toBe(false);
+
+        // A press with no click, as one that scrolls.
+        vi.useFakeTimers({ toFake: [ "setTimeout", "clearTimeout" ] });
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        root.classList.remove("virtual-keyboard-opened");
+        await act(async () => render(null, host));
+        expect(isKeyboardPanelOpen()).toBe(true);
+        act(() => {
+            vi.advanceTimersByTime(500);
+        });
         expect(isKeyboardPanelOpen()).toBe(false);
 
         // A keyboard that never comes back, as with a hardware keyboard.
@@ -138,6 +177,14 @@ describe("useKeyboardPanel", () => {
         expect(isKeyboardPanelOpen()).toBe(false);
     });
 });
+
+/** Ends the press that closed a menu with its click, and lets what the click runs settle. */
+async function endPress() {
+    await act(async () => {
+        window.dispatchEvent(new MouseEvent("click"));
+        await new Promise((resolve) => setTimeout(resolve));
+    });
+}
 
 function buildPanelFixture() {
     const root = document.createElement("div");
