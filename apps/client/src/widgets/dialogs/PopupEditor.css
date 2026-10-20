@@ -94,6 +94,14 @@ body.mobile .modal.popup-editor-dialog .modal-dialog {
 .modal.popup-editor-dialog .modal-body {
     padding: 0;
     height: 75vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal.popup-editor-dialog .popup-editor-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: auto;
     display: flex;
     flex-direction: column;
@@ -138,13 +146,13 @@ body.mobile .modal.popup-editor-dialog .modal-dialog {
     margin-block: 0;
 }
 
-/* The body is a fixed-height column, and the mobile rule that lets the fields shrink (to give the
-   editor room under the keyboard) collapses them to nothing on a note taller than the dialog. */
+/* The scrolling column is fixed-height, and the mobile rule that lets the fields shrink (to give
+   the editor room under the keyboard) collapses them to nothing on a note taller than the dialog. */
 body.mobile #root-widget:not(.virtual-keyboard-opened) .modal.popup-editor-dialog .promoted-attributes-widget {
     flex-shrink: 0;
 }
 
-.modal.popup-editor-dialog .classic-toolbar-widget {
+body.desktop .modal.popup-editor-dialog .classic-toolbar-widget {
     position: sticky;
     margin-inline: 8px;
     top: 0;
@@ -153,6 +161,30 @@ body.mobile #root-widget:not(.virtual-keyboard-opened) .modal.popup-editor-dialo
     background: var(--modal-background-color);
     z-index: 998;
     align-items: flex-start;
+}
+
+body.mobile .modal.popup-editor-dialog .modal-content:has(.classic-toolbar-outer-container.visible) .note-type-switcher {
+    inset-block-end: calc(12px + 38px);
+}
+
+body.mobile .modal.popup-editor-dialog .modal-body {
+    height: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+@media (max-width: 991px) {
+    body.mobile .modal.popup-editor-dialog .classic-toolbar-outer-container.visible {
+        height: calc(38px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+    }
+
+    body.mobile .modal.popup-editor-dialog .classic-toolbar-widget {
+        bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
+    }
+
+    body.mobile .modal.popup-editor-dialog .modal-content:has(.classic-toolbar-outer-container.visible) .note-type-switcher {
+        inset-block-end: calc(12px + 38px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+    }
 }
 
 .modal.popup-editor-dialog .note-detail {
