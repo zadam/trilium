@@ -53,14 +53,23 @@
         user-select: text;
     }
 
+    /* The grid's press effect belongs to its grid layout, not to a full-width row. */
+    .note-list-container.search-results .search-result-card.note-book-card:active {
+        transform: none;
+    }
+
     .search-result-card-title {
         font-weight: 500;
         overflow-wrap: anywhere;
+        color: inherit;
+        text-decoration: none;
     }
 
     .search-result-card-content {
         padding: .5rem 1rem 1rem;
         font-size: 0.85rem;
+        cursor: text;
+        user-select: text;
     }
 
     .search-result-card-snippet {

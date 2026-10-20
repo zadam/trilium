@@ -82,7 +82,7 @@ describe("SearchResultCard", () => {
             <SearchResultCard noteId={note.noteId} details={makeDetails()} loading={false} highlightedTokens={["sync"]} />
         );
 
-        const link = container.querySelector("a.search-result-card");
+        const link = container.querySelector("a.search-result-card-title");
         // The card's href carries the highlighted plain tokens as `searchTerms` so the destination
         // type widget can highlight/jump to them via ViewScope.searchTerms.
         expect(link?.getAttribute("href")).toBe(`#${note.noteId}?searchTerms=sync`);
@@ -111,13 +111,13 @@ describe("SearchResultCard", () => {
         await mount(
             <SearchResultCard noteId={note.noteId} details={makeDetails({ matchedTerms: [ "Ktorý" ] })} loading={false} highlightedTokens={[ "ktory" ]} />
         );
-        expect(container.querySelector("a.search-result-card")?.getAttribute("href"))
+        expect(container.querySelector("a.search-result-card-title")?.getAttribute("href"))
             .toBe(calculateHash({ notePath: note.noteId, viewScope: { searchTerms: [ "Ktorý" ] } }));
 
         await mount(
             <SearchResultCard noteId={note.noteId} details={makeDetails({ matchedTerms: [] })} loading={false} highlightedTokens={[ "ktory" ]} />
         );
-        expect(container.querySelector("a.search-result-card")?.getAttribute("href")).toBe(`#${note.noteId}?searchTerms=ktory`);
+        expect(container.querySelector("a.search-result-card-title")?.getAttribute("href")).toBe(`#${note.noteId}?searchTerms=ktory`);
     });
 
     it("shows a snippet skeleton while the page's details are still loading", async () => {
@@ -147,6 +147,18 @@ describe("SearchResultCard", () => {
         expect(snippet?.textContent).toBe("search_result.snippet_unavailable");
         expect(container.querySelector(".search-result-card-snippet.skeleton")).toBeNull();
         expect(container.querySelector(".search-result-card-badges")).toBeNull();
+    });
+
+    it("links only the title, leaving the snippet outside the link", async () => {
+        const note = buildNote({ id: "note1", title: "Meeting notes", type: "text" });
+        await mount(
+            <SearchResultCard noteId={note.noteId} details={makeDetails()} loading={false} highlightedTokens={null} />
+        );
+
+        expect(container.querySelector("a.search-result-card")).toBeNull();
+        expect(container.querySelector("a.search-result-card-title")).not.toBeNull();
+        expect(container.querySelector(".search-result-card-content a")).toBeNull();
+        expect(container.querySelector(".search-result-card-content")?.textContent).toContain("calendar");
     });
 });
 
@@ -186,7 +198,7 @@ describe("SearchResultsList", () => {
     }
 
     function cardHrefs() {
-        return [ ...container.querySelectorAll("a.search-result-card") ].map((card) => card.getAttribute("href"));
+        return [ ...container.querySelectorAll("a.search-result-card-title") ].map((card) => card.getAttribute("href"));
     }
 });
 

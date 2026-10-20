@@ -39,21 +39,18 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
     const hasDetails = !!details || loading;
 
     return (
-        <a
+        <div
             className={clsx("tn-card-frame", "note-book-card", "search-result-card", "no-tooltip-preview",
                 note?.getColorClass(), note?.isArchived && "archived")}
-            href={href}
             data-note-id={noteId}
         >
             <h5 className="note-book-header">
                 <Icon className="note-icon" icon={icon} />
                 <span className="note-book-title">
                     <span>
-                        <HighlightedText
-                            className="search-result-card-title"
-                            text={title}
-                            highlightedTokens={highlightedTokens}
-                        />
+                        <a className="search-result-card-title no-tooltip-preview" href={href}>
+                            <HighlightedText text={title} highlightedTokens={highlightedTokens} />
+                        </a>
                         {breadcrumb && <NotePath path={breadcrumb} />}
                     </span>
                 </span>
@@ -68,7 +65,7 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
                     />
                 </div>
             )}
-        </a>
+        </div>
     );
 }
 
