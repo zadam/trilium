@@ -63,8 +63,8 @@ body.mobile {
         position: absolute;
         border: none;
     }
+}
 
-    .classic-toolbar-widget .ck.ck-button.ck-disabled {
-        opacity: 0.3;
-    }
+.classic-toolbar-widget .ck.ck-button.ck-disabled {
+    opacity: 0.3;
 }
