@@ -1243,6 +1243,18 @@ describe("Search", () => {
         expect(snippet.split("\n")).toEqual([ "First line", "second line", "third line", "Next paragraph" ]);
     });
 
+    it("keeps a code note's indentation in the snippet", () => {
+        // Collapsing the whitespace of a line, as prose snippets do, would run the source together
+        // and lose the nesting the code is read by.
+        const noteBuilder = note("script.ts", { type: "code", mime: "text/typescript" });
+        noteBuilder.note.getContent = () => "function main() {\n\tif (ready) {\n\t\trun();\n\t}\n}";
+        rootNote.child(noteBuilder);
+
+        const snippet = searchService.extractContentSnippet(noteBuilder.note.noteId, [ "run" ]);
+        // Tabs are widened to the four spaces the code editor draws them as.
+        expect(snippet.split("\n")).toEqual([ "    if (ready) {", "        run();", "    }", "}..." ]);
+    });
+
     it("escapes angle brackets in the note title instead of dropping them", () => {
         // The title is interpolated into the autocomplete dropdown as raw HTML, so a title
         // containing markup-like text must come back escaped. Stripping only "<" would render

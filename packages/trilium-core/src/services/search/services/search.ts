@@ -644,13 +644,26 @@ function extractContentSnippet(noteId: string, searchTokens: HighlightedTokenInf
             }
         }
 
-        // Normalize whitespace while preserving paragraph breaks
-        // First, normalize multiple newlines to double newlines (paragraph breaks)
-        content = content.replace(/\n\s*\n/g, "\n\n");
-        // Then normalize spaces within lines
-        content = content.split('\n').map(line => line.replace(/\s+/g, " ").trim()).join('\n');
-        // Finally trim the whole content
-        content = content.trim();
+        if (note.type === "code") {
+            // Code keeps its indentation and the spacing inside a line: collapsing them would show
+            // the source as running prose rather than as the code it is.
+            content = content
+                .replace(/\r\n?/g, "\n")
+                .replace(/\t/g, "    ")
+                .split("\n")
+                .map((line) => line.trimEnd())
+                .join("\n")
+                .replace(/\n{3,}/g, "\n\n")
+                .trim();
+        } else {
+            // Normalize whitespace while preserving paragraph breaks
+            // First, normalize multiple newlines to double newlines (paragraph breaks)
+            content = content.replace(/\n\s*\n/g, "\n\n");
+            // Then normalize spaces within lines
+            content = content.split('\n').map(line => line.replace(/\s+/g, " ").trim()).join('\n');
+            // Finally trim the whole content
+            content = content.trim();
+        }
 
         if (!content) {
             return "";

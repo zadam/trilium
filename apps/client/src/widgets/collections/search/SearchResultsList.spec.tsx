@@ -184,6 +184,15 @@ describe("SearchResultCard", () => {
         expect(container.querySelector(".search-result-card-content")?.textContent).toContain("calendar");
     });
 
+    it("renders a code note's excerpt in a code font", async () => {
+        const note = buildNote({ id: "note1", title: "script.ts", type: "code" });
+        await mount(
+            <SearchResultCard noteId={note.noteId} details={makeDetails()} loading={false} highlightedTokens={null} />
+        );
+
+        expect(container.querySelector(".search-result-card-snippet")?.classList.contains("type-code")).toBe(true);
+    });
+
     it("keeps the excerpt while the note it expands to is still rendering", async () => {
         noteContentState.ready = false;
         const note = buildNote({ id: "note1", title: "Meeting notes", type: "text" });

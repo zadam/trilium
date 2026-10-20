@@ -41,6 +41,7 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
     const href = calculateHash({ notePath: noteId, viewScope });
     const hasDetails = !!details || loading;
     const canExpand = !!details?.contentSnippetTruncated;
+    const noteType = note?.type;
     const [ expanded, setExpanded ] = useState(false);
     const [ contentReady, setContentReady ] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -101,7 +102,7 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
                 <div className="search-result-card-content" ref={contentRef}>
                     {expanded && note ? (
                         <>
-                            {!contentReady && <SearchResultSnippet details={details} loading={loading} />}
+                            {!contentReady && <SearchResultSnippet details={details} loading={loading} noteType={noteType} />}
                             <NoteContent
                                 note={note}
                                 noChildrenList
@@ -112,7 +113,7 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
                             />
                         </>
                     ) : (
-                        <SearchResultSnippet details={details} loading={loading} />
+                        <SearchResultSnippet details={details} loading={loading} noteType={noteType} />
                     )}
                     {canExpand && (
                         <LinkButton
@@ -165,7 +166,7 @@ function animateHeight(element: HTMLElement, from: number, to: number) {
     animation.oncancel = settle;
 }
 
-function SearchResultSnippet({ details, loading }: { details: SearchResultDetails | undefined; loading: boolean }) {
+function SearchResultSnippet({ details, loading, noteType }: { details: SearchResultDetails | undefined; loading: boolean; noteType?: string }) {
     if (!details) {
         // Details for this page haven't arrived yet: show a skeleton, or nothing once settled.
         return loading ? <div className="search-result-card-snippet skeleton" /> : null;
@@ -177,7 +178,7 @@ function SearchResultSnippet({ details, loading }: { details: SearchResultDetail
     }
 
     // Server snippet is pre-escaped with only <b>/<br> injected (same trust level as quick search).
-    return <RawHtmlBlock className="search-result-card-snippet" html={details.highlightedContentSnippet ?? ""} />;
+    return <RawHtmlBlock className={clsx("search-result-card-snippet", noteType && `type-${noteType}`)} html={details.highlightedContentSnippet ?? ""} />;
 }
 
 /**

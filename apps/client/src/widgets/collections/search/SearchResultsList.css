@@ -105,6 +105,11 @@
         overflow-wrap: anywhere;
     }
 
+    .search-result-card-snippet.type-code {
+        font-family: var(--monospace-font-family);
+        white-space: pre-wrap;
+    }
+
     .search-result-card-snippet.unavailable {
         font-style: italic;
         opacity: 0.7;
