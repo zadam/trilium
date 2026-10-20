@@ -42,7 +42,6 @@
         min-width: 0;
     }
 
-    /* A grid card laid out one per row: the list keeps its frame and header, but has no expander. */
     .search-result-card.note-book-card {
         flex: 0 0 auto;
         max-height: none;
@@ -53,7 +52,6 @@
         user-select: text;
     }
 
-    /* The grid's press effect belongs to its grid layout, not to a full-width row. */
     .note-list-container.search-results .search-result-card.note-book-card:active {
         transform: none;
     }
@@ -72,7 +70,6 @@
         user-select: text;
     }
 
-    /* The expanded render supplies its own content wrapper; the card's padding keeps it aligned. */
     .search-result-card-content .note-book-content {
         font-size: inherit;
         animation: none;
