@@ -12,7 +12,7 @@ Right click on an existing note in the <a class="reference-link" href="../Basic
 ## Interaction
 
 *   Each note can be expanded or collapsed by clicking on the <span class="tn-icon bx bx-chevron-right"></span> arrow to the left of the title.
-*   In the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a>, there are buttons to expand (<span class="tn-icon bx bx-move-vertical"></span>) and to collapse (<span class="tn-icon bx bx-layer-minus"></span>) all notes easily.
+*   In the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> toolbar, the buttons at the right end expand (<span class="tn-icon bx bx-move-vertical"></span>) and collapse (<span class="tn-icon bx bx-layer-minus"></span>) all notes easily.
 
 ## Printing and exporting to PDF
 
@@ -27,9 +27,9 @@ If exported to PDF within the desktop application, there is additional functiona
 
 ## Expanding and collapsing multiple notes at once
 
-Apart from individually expanding or collapsing notes, it's also possible to expand or collapse them all at once. To do so, go to the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> and look for the corresponding button.
+Apart from individually expanding or collapsing notes, it's also possible to expand or collapse them all at once. To do so, go to the <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> toolbar and look for the buttons at its right end.
 
-By default, the _Expand_ (<span class="tn-icon bx bx-move-vertical"></span>) button will only expand the direct children (first level) of the collection. Starting with v0.100.0, it's possible to expand multiple levels of notes using the arrow button next to the button.
+By default, the <span class="tn-icon bx bx-move-vertical"></span> button expands only the direct children (first level) of the collection. Starting with v0.100.0, it's possible to expand multiple levels of notes using the <span class="tn-icon bx bx-chevron-down"></span> button next to it.
 
 Manually expanded notes will reset if the application/tab is closed and then the collection is visited again. However notes automatically expanded/collapsed via the buttons in <a class="reference-link" href="Collection%20Properties.md">Collection Properties</a> will persist.
 
