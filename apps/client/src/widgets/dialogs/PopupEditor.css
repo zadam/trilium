@@ -24,9 +24,16 @@ body.desktop .modal.popup-editor-dialog .modal-dialog .modal-content {
 }
 
 body.mobile .modal.popup-editor-dialog .modal-dialog {
-    max-width: min(var(--preferred-max-content-width), 95vw);
     max-height: var(--tn-modal-max-height);
     height: 100%;
+}
+
+/* Bootstrap caps every `.modal-dialog` at 500px from 576px up; the quick editor is a sheet, so it
+   takes the whole width on phones and leaves the tablet rule (80%) to apply above 992px. */
+@media (max-width: 991px) {
+    body.mobile .modal.popup-editor-dialog .modal-dialog {
+        max-width: none;
+    }
 }
 
 .modal.popup-editor-dialog .modal-content {
