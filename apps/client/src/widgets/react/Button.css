@@ -3,3 +3,33 @@
 .tn-disabled-reason {
     display: inline-flex;
 }
+
+/*
+ * A split button is one button cut in two: both halves share the surface and the shadow the theme
+ * gives a button, and a hairline marks the cut. The theme's button group instead lays its buttons
+ * out as separate chips on a recessed surface.
+ */
+:root .btn-group.tn-split-button {
+    gap: 0;
+    padding: 0;
+    border-radius: var(--button-border-radius, 6px);
+    background: var(--cmd-button-background-color);
+    box-shadow: 1px 1px 1px var(--cmd-button-shadow-color);
+
+    button.btn {
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    > .btn:first-child {
+        border-start-start-radius: inherit;
+        border-end-start-radius: inherit;
+    }
+
+    > .dropdown > .btn.dropdown-toggle-split {
+        border-start-end-radius: inherit;
+        border-end-end-radius: inherit;
+        border-inline-start: 1px solid var(--main-border-color);
+        padding-inline: 0.45em;
+    }
+}

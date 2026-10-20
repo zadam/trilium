@@ -135,16 +135,16 @@ export function SplitButton({ text, icon, kind = "secondary", size = "normal", c
     /** The icon's full class, as `"bx bx-search"`. */
     icon?: string;
     kind?: "primary" | "secondary";
-    size?: "normal" | "small";
+    size?: "normal" | "small" | "micro";
     title?: string;
     /** Click handler for the main button component (not the split). */
     onClick?: () => void;
     /** The menu's rows: `FormListItem`s and the other `FormList` rows. */
     children: ComponentChildren;
 }) {
-    const look = `btn-${kind}${size === "small" ? " btn-sm" : ""}`;
+    const look = `btn-${kind}${size === "small" ? " btn-sm" : size === "micro" ? " btn-micro" : ""}`;
     return (
-        <ButtonGroup size={size === "small" ? "sm" : undefined}>
+        <ButtonGroup className="tn-split-button" size={size === "small" ? "sm" : undefined}>
             <button type="button" class={`btn ${look}`} {...restProps}>
                 {icon && <Icon icon={icon} />}
                 {text}
