@@ -964,7 +964,10 @@
     "convert_to_markdown_successful": "笔记已转换为 Markdown。",
     "convert_to_text_successful": "笔记已转换为文本笔记。",
     "note_attributes": "笔记属性...",
-    "note_attributes_title": "笔记属性"
+    "note_attributes_title": "笔记属性",
+    "search_in_note_short": "查找",
+    "note_attachments_short": "附件",
+    "note_settings": "笔记设置"
   },
   "onclick_button": {
     "no_click_handler": "按钮组件'{{componentId}}'没有定义点击处理程序"
@@ -1002,7 +1005,9 @@
     "error_unrecognized_command": "无法识别的命令 {{command}}",
     "note_revisions": "笔记历史版本",
     "backlinks": "反链",
-    "content_language_switcher": "内容语言: {{language}}"
+    "content_language_switcher": "内容语言: {{language}}",
+    "insert_child_note_short": "子笔记",
+    "create_new_split_short": "新建分屏"
   },
   "note_icon": {
     "change_note_icon": "更改笔记图标",
@@ -2191,7 +2196,7 @@
     "theme_group_light": "浅色主题",
     "theme_group_dark": "深色主题",
     "copy_title": "复制到剪贴板",
-    "click_to_copy": "点击已复制",
+    "click_to_copy": "点击以复制",
     "tab_width": "Tab 宽度",
     "tab_width_unit": "空格"
   },
@@ -4749,5 +4754,8 @@
     "default_parent": "新建笔记的默认位置",
     "default_parent_description": "未另选位置时新建笔记的放置位置，例如在文本笔记中通过 @ 补全创建时。",
     "default_parent_placeholder": "它们的创建位置"
+  },
+  "hide_keyboard_button": {
+    "title": "隐藏键盘"
   }
 }
