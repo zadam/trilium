@@ -46,10 +46,13 @@ describe("HideKeyboardButton", () => {
 describe("usePositioningOniOS", () => {
     const originalViewport = Object.getOwnPropertyDescriptor(window, "visualViewport");
     const originalInnerHeight = Object.getOwnPropertyDescriptor(window, "innerHeight");
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, "scrollY");
 
     afterEach(() => {
         for (const [ key, descriptor ] of [
-            [ "visualViewport", originalViewport ], [ "innerHeight", originalInnerHeight ]
+            [ "visualViewport", originalViewport ],
+            [ "innerHeight", originalInnerHeight ],
+            [ "scrollY", originalScrollY ]
         ] as const) {
             if (descriptor) {
                 Object.defineProperty(window, key, descriptor);
@@ -92,12 +95,24 @@ describe("usePositioningOniOS", () => {
         act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
         expect(element().style.bottom).toBe("247px");
     });
+
+    it("lifts to the visible bottom while Safari scrolls the fixed page for the keyboard", () => {
+        // As logged in Safari: the page scrolls by 118px, `innerHeight` shrinks by as much, and
+        // the visual viewport starts where the scroll does, at the top of the client area.
+        const viewport = fakeViewport(754);
+        const { element, anchor } = renderPositioned(true);
+        anchor().getBoundingClientRect = () => new DOMRect(0, -118, 400, 754);
+        Object.defineProperty(window, "innerHeight", { configurable: true, value: 636 });
+        Object.defineProperty(window, "scrollY", { configurable: true, value: 118 });
+        act(() => viewport.set({ height: 405, offsetTop: 118, pageTop: 118 }, "scroll"));
+        expect(element().style.bottom).toBe("231px");
+    });
 });
 
 function fakeViewport(innerHeight: number) {
     const target = new EventTarget();
     let listeners = 0;
-    const viewport = Object.assign(target, { height: innerHeight, offsetTop: 0 });
+    const viewport = Object.assign(target, { height: innerHeight, offsetTop: 0, pageTop: 0 });
     const add = target.addEventListener.bind(target);
     const remove = target.removeEventListener.bind(target);
     viewport.addEventListener = (...args: Parameters<typeof add>) => {
@@ -111,8 +126,12 @@ function fakeViewport(innerHeight: number) {
     Object.defineProperty(window, "innerHeight", { configurable: true, value: innerHeight });
     Object.defineProperty(window, "visualViewport", { configurable: true, value: viewport });
     return {
-        set(values: { height: number; offsetTop: number }, event: "resize" | "scroll") {
-            Object.assign(viewport, values);
+        set(
+            values: { height: number; offsetTop: number; pageTop?: number },
+            event: "resize" | "scroll"
+        ) {
+            // Outside Safari's keyboard scrolling, the visual viewport's page offset is its offset.
+            Object.assign(viewport, { pageTop: values.offsetTop }, values);
             viewport.dispatchEvent(new Event(event));
         },
         listenerCount: () => listeners

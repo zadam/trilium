@@ -53,10 +53,12 @@ export function usePositioningOniOS(
     wrapperRef: RefObject<HTMLDivElement | null>,
     anchorRef?: RefObject<HTMLElement | null>
 ) {
-    // Safari shrinks `visualViewport` and pans it (`offsetTop`) inside the unchanged layout
-    // viewport, so the element rises by how far its anchor reaches below the visible bottom. Under
-    // Capacitor `resize: native` the layout viewport shrinks too, so `obscured` is 0 and CSS stays
-    // in charge.
+    // Safari shrinks `visualViewport` for the keyboard but not the layout, so the element rises by
+    // how far its anchor reaches below the visible bottom. With the keyboard up Safari scrolls the
+    // fixed page itself, and client coordinates move with that scroll, so the visible bottom is
+    // `pageTop - scrollY + height`: `offsetTop + height` elsewhere, `height` in Safari. Under
+    // Capacitor `resize: native` the layout shrinks too, so `obscured` is 0 and CSS stays in
+    // charge.
     const adjustPosition = useCallback(() => {
         if (!wrapperRef.current) return;
         const viewport = window.visualViewport;
@@ -64,9 +66,8 @@ export function usePositioningOniOS(
 
         const anchorBottom = anchorRef?.current?.getBoundingClientRect().bottom
             ?? window.innerHeight;
-        const obscured = Math.max(0, Math.round(
-            anchorBottom - viewport.height - viewport.offsetTop
-        ));
+        const visibleBottom = viewport.pageTop - window.scrollY + viewport.height;
+        const obscured = Math.max(0, Math.round(anchorBottom - visibleBottom));
 
         if (obscured <= 1) {
             wrapperRef.current.style.removeProperty("bottom");
