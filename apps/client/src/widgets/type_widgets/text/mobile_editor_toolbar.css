@@ -80,6 +80,28 @@ body.mobile {
         border-start-end-radius: 0;
     }
 
+    /* A menu of the toolbar in the place of the keyboard (see `useKeyboardPanel`). */
+    &.keyboard-panel-open {
+        --mobile-toolbar-clearance: calc(
+            var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap)
+            + var(--tn-keyboard-height, 0px)
+        );
+
+        #mobile-bottom-bar {
+            display: none !important;
+        }
+
+        .classic-toolbar-island {
+            bottom: var(--tn-keyboard-height, 0px);
+        }
+    }
+
+    .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
+        height: var(--tn-keyboard-height);
+        max-height: var(--tn-keyboard-height);
+    }
+
+    &.keyboard-panel-open .classic-toolbar-island,
     .virtual-keyboard-opened .classic-toolbar-island {
         --mobile-toolbar-fade: 24px;
 

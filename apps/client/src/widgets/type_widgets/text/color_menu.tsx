@@ -7,6 +7,7 @@ import ColorPicker from "../../react/ColorPicker";
 import { FormListCustomItem, FormListHeader } from "../../react/FormList";
 import Menu from "../../react/Menu";
 import { buildFontColorConfig } from "./color_palette";
+import { useKeyboardPanel } from "./mobile_editor_toolbar";
 
 /** The gap between the button and the menu, as a `Dropdown` leaves under its toggle. */
 const ANCHOR_GAP = 2;
@@ -43,13 +44,16 @@ function ColorMenu({ request, onClose }: {
     request: ColorMenuRequest;
     onClose(returnFocus: boolean): void;
 }) {
+    const bottomSheet = isMobile() && isNarrowLayout();
+    const keyboardPanel = useKeyboardPanel(bottomSheet);
+
     return (
         <Menu
             anchor={request.anchor}
             offset={ANCHOR_GAP}
             portalClassName="tn-dropdown-portal"
-            className="tn-dropdown-menu"
-            bottomSheet={isMobile() && isNarrowLayout()}
+            className={keyboardPanel ? "tn-dropdown-menu keyboard-panel" : "tn-dropdown-menu"}
+            bottomSheet={bottomSheet}
             elementRef={request.setElement}
             onDismiss={() => onClose(false)}
             onClose={() => onClose(true)}

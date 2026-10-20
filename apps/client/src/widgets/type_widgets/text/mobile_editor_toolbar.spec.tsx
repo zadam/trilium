@@ -3,7 +3,9 @@ import { render } from "preact";
 import { act } from "preact/test-utils";
 import { describe, expect, it } from "vitest";
 
-import { useEditorsFocused, useShownToolbarElement } from "./mobile_editor_toolbar";
+import {
+    useEditorsFocused, useKeyboardPanel, useShownToolbarElement
+} from "./mobile_editor_toolbar";
 
 describe("useEditorsFocused", () => {
     it("follows the focus trackers of both editors, and stops once unmounted", () => {
@@ -37,6 +39,46 @@ describe("useEditorsFocused", () => {
         act(() => render(null, host));
         expect(noteEditor.listenerCount()).toBe(0);
         expect(nestedEditor.listenerCount()).toBe(0);
+    });
+});
+
+describe("useKeyboardPanel", () => {
+    it("takes the keyboard's place while mounted, only for a menu opened over the keyboard", () => {
+        const root = document.createElement("div");
+        root.id = "root-widget";
+        document.body.append(root);
+        const isMarked = () => document.body.classList.contains("keyboard-panel-open");
+        const seen: boolean[] = [];
+        const host = document.createElement("div");
+        function Harness({ enabled }: { enabled: boolean }) {
+            seen.push(useKeyboardPanel(enabled));
+            return null;
+        }
+
+        act(() => render(<Harness enabled />, host));
+        expect(seen.at(-1)).toBe(false);
+        expect(isMarked()).toBe(false);
+        act(() => render(null, host));
+
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness enabled={false} />, host));
+        expect(seen.at(-1)).toBe(false);
+        expect(isMarked()).toBe(false);
+        act(() => render(null, host));
+
+        act(() => render(<Harness enabled />, host));
+        expect(seen.at(-1)).toBe(true);
+        expect(isMarked()).toBe(true);
+
+        // The keyboard closes as the menu takes focus, and the menu keeps its place.
+        root.classList.remove("virtual-keyboard-opened");
+        act(() => render(<Harness enabled />, host));
+        expect(seen.at(-1)).toBe(true);
+        expect(isMarked()).toBe(true);
+
+        act(() => render(null, host));
+        expect(isMarked()).toBe(false);
+        root.remove();
     });
 });
 

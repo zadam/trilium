@@ -8,6 +8,7 @@ import { render } from "preact";
 import { isMobile, isNarrowLayout } from "../../../services/utils";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../../react/FormList";
 import Menu from "../../react/Menu";
+import { useKeyboardPanel } from "./mobile_editor_toolbar";
 
 /** The gap between the group's button and the menu, as a `Dropdown` leaves under its toggle. */
 const ANCHOR_GAP = 2;
@@ -44,13 +45,16 @@ function ToolbarGroupMenu({ request, onClose }: {
     request: ToolbarGroupMenuRequest;
     onClose(returnFocus: boolean): void;
 }) {
+    const bottomSheet = isMobile() && isNarrowLayout();
+    const keyboardPanel = useKeyboardPanel(bottomSheet);
+
     return (
         <Menu
             anchor={request.anchor}
             offset={ANCHOR_GAP}
             portalClassName="tn-dropdown-portal"
-            className="tn-dropdown-menu"
-            bottomSheet={isMobile() && isNarrowLayout()}
+            className={keyboardPanel ? "tn-dropdown-menu keyboard-panel" : "tn-dropdown-menu"}
+            bottomSheet={bottomSheet}
             aria-labelledby={request.anchor.getAttribute("aria-labelledby") ?? undefined}
             elementRef={request.setElement}
             onDismiss={() => onClose(false)}

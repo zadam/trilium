@@ -2,7 +2,7 @@ import "./mobile_editor_toolbar.css";
 
 import type { CKTextEditor, ClassicEditor } from "@triliumnext/ckeditor5";
 import clsx from "clsx";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import { isIOS } from "../../../services/utils";
 import { HideKeyboardAction, usePositioningOniOS } from "../../mobile_widgets/hide_keyboard_button";
@@ -141,6 +141,25 @@ export function useShownToolbarElement(editor: CKTextEditor | undefined) {
         ? formatting.toolbarView.element
         : editor?.ui.view.toolbar?.element;
     return element ?? undefined;
+}
+
+/**
+ * Whether a menu of the formatting toolbar opens in the place of the keyboard, as it does when the
+ * keyboard is up as it opens: the keyboard closes as the menu takes focus, and the menu fills its
+ * `--tn-keyboard-height`. While such a menu is mounted, `keyboard-panel-open` on the body keeps
+ * the layout of an open keyboard.
+ */
+export function useKeyboardPanel(enabled: boolean) {
+    const [ isPanel ] = useState(() => enabled
+        && !!document.getElementById("root-widget")?.classList.contains("virtual-keyboard-opened"));
+
+    useLayoutEffect(() => {
+        if (!isPanel) return;
+        document.body.classList.add("keyboard-panel-open");
+        return () => document.body.classList.remove("keyboard-panel-open");
+    }, [ isPanel ]);
+
+    return isPanel;
 }
 
 /** The editors whose toolbar dropdowns open upwards already. */
