@@ -141,6 +141,42 @@ describe("useKeyboardPanel", () => {
         expect(isKeyboardPanelOpen()).toBe(false);
     });
 
+    it("keeps the editor counted as focused while a closed panel holds the place", async () => {
+        const { root, host, Harness } = buildPanelFixture();
+        const editor = buildEditor();
+        const focused: boolean[] = [];
+        const focusHost = document.createElement("div");
+        function Focus() {
+            focused.push(useEditorsFocused(editor.editor, null));
+            return null;
+        }
+        act(() => render(<Focus />, focusHost));
+        act(() => editor.setFocused(true));
+
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        root.classList.remove("virtual-keyboard-opened");
+
+        // The press that closes the panel blurs the editor until its click focuses the toolbar.
+        await act(async () => {
+            render(null, host);
+            editor.setFocused(false);
+        });
+        expect(focused.at(-1)).toBe(true);
+
+        await endPress();
+        expect(isKeyboardPanelOpen()).toBe(false);
+        expect(focused.at(-1)).toBe(false);
+
+        // An editor that had no focus as the place was taken does not gain it.
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        expect(focused.at(-1)).toBe(false);
+        await act(async () => render(null, host));
+        await endPress();
+        act(() => render(null, focusHost));
+    });
+
     it("gives the place up after its press when focus goes elsewhere, or after 1s", async () => {
         const { root, editable, host, Harness } = buildPanelFixture();
 

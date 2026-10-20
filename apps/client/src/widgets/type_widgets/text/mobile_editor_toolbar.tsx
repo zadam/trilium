@@ -92,7 +92,8 @@ export default function MobileEditorToolbar() {
 /**
  * Whether either editor has the focus, as its `focusTracker` reports it. The tracker of a classic
  * editor covers its toolbar and the panels of the toolbar's dropdowns too, wherever the toolbar is
- * placed.
+ * placed. An editor focused as a closed panel keeps the keyboard's place counts as focused until
+ * the place is given back: the press that closes the panel blurs the editor until its click lands.
  */
 export function useEditorsFocused(
     noteEditor: CKTextEditor | null | undefined,
@@ -103,15 +104,18 @@ export function useEditorsFocused(
     useEffect(() => {
         const trackers = [ noteEditor, nestedEditor ]
             .flatMap((editor) => editor ? [ editor.ui.focusTracker ] : []);
-        const update = () => setFocused(trackers.some((tracker) => tracker.isFocused));
+        const update = () => setFocused((wasFocused) =>
+            trackers.some((tracker) => tracker.isFocused) || (wasFocused && isKeyboardPanelOpen()));
         update();
         for (const tracker of trackers) {
             tracker.on("change:isFocused", update);
         }
+        keyboardPanelListeners.add(update);
         return () => {
             for (const tracker of trackers) {
                 tracker.off("change:isFocused", update);
             }
+            keyboardPanelListeners.delete(update);
         };
     }, [ noteEditor, nestedEditor ]);
 
@@ -181,6 +185,8 @@ const PRESS_TIMEOUT = 500;
 
 /** The hand-back of a closed panel's place, while it waits for the keyboard. */
 let pendingHandBack: { cancel(): void } | undefined;
+/** Called as `keyboard-panel-open` is set on the body or cleared. */
+const keyboardPanelListeners = new Set<() => void>();
 
 /**
  * Lays the page out as for an open keyboard, or keeps the layout a closed panel still holds for
@@ -192,7 +198,7 @@ function takeKeyboardPlace() {
         pendingHandBack = undefined;
         return;
     }
-    document.body.classList.add("keyboard-panel-open");
+    setKeyboardPanelOpen(true);
     holdVisibleBottom(true);
 }
 
@@ -218,7 +224,7 @@ function handBackKeyboardPlace() {
     const release = () => {
         stopWaiting();
         if (pendingHandBack === handBack) pendingHandBack = undefined;
-        document.body.classList.remove("keyboard-panel-open");
+        setKeyboardPanelOpen(false);
         holdVisibleBottom(false);
     };
 
@@ -273,6 +279,13 @@ function handBackKeyboardPlace() {
 
 function isTextFocused() {
     return !!document.activeElement?.closest(".ck-editor__editable");
+}
+
+function setKeyboardPanelOpen(isOpen: boolean) {
+    document.body.classList.toggle("keyboard-panel-open", isOpen);
+    for (const listener of keyboardPanelListeners) {
+        listener();
+    }
 }
 
 /** The editors whose toolbar dropdowns open upwards already. */
