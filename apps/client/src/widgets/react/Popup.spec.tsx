@@ -311,6 +311,13 @@ describe("Popup", () => {
         press(popup);
         click(icon);
         expect(iconClicked).toHaveBeenCalledTimes(3);
+
+        // A tap that starts on the button's glyph and ends on its padding clicks the button.
+        const glyph = document.createElement("span");
+        icon.append(glyph);
+        press(glyph);
+        click(icon);
+        expect(iconClicked).toHaveBeenCalledTimes(4);
         cover.remove();
         icon.remove();
     });

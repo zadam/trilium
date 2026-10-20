@@ -211,13 +211,16 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
 
 /**
  * Drops the click that follows a press dismissing a popup when it lands on something other than
- * `pressed`. A cover or backdrop is removed with the popup before a tap's click, so the click lands
- * on the element under it, such as an icon under the icon picker's menu.
+ * `pressed` or an element containing it. A cover or backdrop is removed with the popup before a
+ * tap's click, so the click lands on the element under it, such as an icon under the icon picker's
+ * menu. A tap that ends outside `pressed` clicks the element that contains both ends of the tap.
  */
 function swallowStrayClick(pressed: Node) {
     const onClick = (e: MouseEvent) => {
         stop();
-        if (e.target instanceof Node && pressed.contains(e.target)) return;
+        if (e.target instanceof Node && (pressed.contains(e.target) || e.target.contains(pressed))) {
+            return;
+        }
         e.preventDefault();
         e.stopPropagation();
     };
