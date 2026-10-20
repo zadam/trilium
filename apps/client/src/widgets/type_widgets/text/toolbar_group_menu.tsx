@@ -8,7 +8,7 @@ import { render } from "preact";
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../../react/FormList";
 import Menu, { MenuTile } from "../../react/Menu";
-import { useKeyboardPanel } from "./mobile_editor_toolbar";
+import { isKeyboardPanelOpen, useKeyboardPanel } from "./mobile_editor_toolbar";
 
 /** The gap between the group's button and the menu, as a `Dropdown` leaves under its toggle. */
 const ANCHOR_GAP = 2;
@@ -37,7 +37,8 @@ export function createToolbarGroupMenuHost(): ToolbarGroupMenuHost {
             render(<ToolbarGroupMenu request={request} onClose={close} />, container);
         },
         hide: unmount,
-        destroy: unmount
+        destroy: unmount,
+        isInPlaceOfKeyboard: isKeyboardPanelOpen
     };
 }
 

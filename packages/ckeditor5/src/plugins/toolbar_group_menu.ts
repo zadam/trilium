@@ -20,6 +20,12 @@ export interface ToolbarGroupMenuHost {
     show(request: ToolbarGroupMenuRequest): void;
     hide(): void;
     destroy(): void;
+    /**
+     * Whether the shown menu takes the place of the on-screen keyboard. Its button then gives that
+     * place back as it closes the menu, focusing the text in the same press, as a mobile browser
+     * raises the keyboard only for a focus a press makes.
+     */
+    isInPlaceOfKeyboard?(): boolean;
 }
 
 /** What a {@link ToolbarGroupMenuHost} shows a menu for. */
@@ -186,7 +192,11 @@ export default class ToolbarGroupMenu extends Plugin {
 
             evt.return = false;
             if (this.shown?.dropdown === item) {
+                const toKeyboard = this.host?.isInPlaceOfKeyboard?.() ?? false;
                 this.hideMenu();
+                if (toKeyboard) {
+                    this.editor.editing.view.focus();
+                }
             } else {
                 this.showMenu(toolbar, item, createHost);
             }

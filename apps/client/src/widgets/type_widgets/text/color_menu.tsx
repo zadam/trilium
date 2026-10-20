@@ -7,7 +7,7 @@ import ColorPicker from "../../react/ColorPicker";
 import { FormListCustomItem, FormListHeader } from "../../react/FormList";
 import Menu from "../../react/Menu";
 import { buildFontColorConfig } from "./color_palette";
-import { useKeyboardPanel } from "./mobile_editor_toolbar";
+import { isKeyboardPanelOpen, useKeyboardPanel } from "./mobile_editor_toolbar";
 
 /** The gap between the button and the menu, as a `Dropdown` leaves under its toggle. */
 const ANCHOR_GAP = 2;
@@ -36,7 +36,8 @@ export function createColorMenuHost(): ColorMenuHost {
             render(<ColorMenu request={request} onClose={close} />, container);
         },
         hide: unmount,
-        destroy: unmount
+        destroy: unmount,
+        isInPlaceOfKeyboard: isKeyboardPanelOpen
     };
 }
 

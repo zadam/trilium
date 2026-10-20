@@ -299,6 +299,31 @@ describe("ToolbarGroupMenu", () => {
         expect(host.hide).toHaveBeenCalledTimes(3);
     });
 
+    it("gives the text the focus as its button closes a menu in the keyboard's place", async () => {
+        const { host } = createHost();
+        const inPlaceOfKeyboard = vi.fn(() => false);
+        const editor = await createTestEditor(PLUGINS, {
+            toolbarGroupMenu: {
+                host: () => Object.assign(host, { isInPlaceOfKeyboard: inPlaceOfKeyboard })
+            },
+            toolbar: { items: [MENU_GROUP] }
+        });
+        const focusText = vi.spyOn(editor.editing.view, "focus");
+        const dropdown = groupDropdown(getToolbar(editor), "Insert");
+
+        dropdown.buttonView.fire("open");
+        dropdown.buttonView.fire("open");
+        expect(host.hide).toHaveBeenCalledTimes(1);
+        expect(focusText).not.toHaveBeenCalled();
+
+        // The press that closes it brings the keyboard back, which a later focus would not.
+        inPlaceOfKeyboard.mockReturnValue(true);
+        dropdown.buttonView.fire("open");
+        dropdown.buttonView.fire("open");
+        expect(host.hide).toHaveBeenCalledTimes(2);
+        expect(focusText).toHaveBeenCalledOnce();
+    });
+
     it("counts the menu's element as the editor's own while it is shown", async () => {
         const { config, last } = createHost();
         const editor = await createTestEditor(PLUGINS, {

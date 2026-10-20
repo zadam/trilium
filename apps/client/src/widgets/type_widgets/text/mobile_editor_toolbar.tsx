@@ -168,6 +168,11 @@ export function useKeyboardPanel(enabled: boolean) {
     return isPanel;
 }
 
+/** Whether a menu of the toolbar is in the keyboard's place, for its host to tell the editor. */
+export function isKeyboardPanelOpen() {
+    return document.body.classList.contains("keyboard-panel-open");
+}
+
 /** The editors whose toolbar dropdowns open upwards already. */
 const repositionedEditors = new WeakSet<CKTextEditor>();
 

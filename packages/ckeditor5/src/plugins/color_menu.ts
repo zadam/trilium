@@ -6,6 +6,12 @@ export interface ColorMenuHost {
     show(request: ColorMenuRequest): void;
     hide(): void;
     destroy(): void;
+    /**
+     * Whether the shown menu takes the place of the on-screen keyboard. Its button then gives that
+     * place back as it closes the menu, focusing the text in the same press, as a mobile browser
+     * raises the keyboard only for a focus a press makes.
+     */
+    isInPlaceOfKeyboard?(): boolean;
 }
 
 /** The command a color of the menu runs: the color of the text, or its background. */
@@ -70,7 +76,11 @@ export default class ColorMenu extends Plugin {
             );
             button.on("execute", () => {
                 if (this.shown) {
+                    const toKeyboard = this.shown.host.isInPlaceOfKeyboard?.() ?? false;
                     this.hideMenu();
+                    if (toKeyboard) {
+                        editor.editing.view.focus();
+                    }
                 } else {
                     this.showMenu(button, () => config.host(editor));
                 }

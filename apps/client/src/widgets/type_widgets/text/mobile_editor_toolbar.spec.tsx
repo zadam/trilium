@@ -4,7 +4,7 @@ import { act } from "preact/test-utils";
 import { describe, expect, it } from "vitest";
 
 import {
-    useEditorsFocused, useKeyboardPanel, useShownToolbarElement
+    isKeyboardPanelOpen, useEditorsFocused, useKeyboardPanel, useShownToolbarElement
 } from "./mobile_editor_toolbar";
 
 describe("useEditorsFocused", () => {
@@ -47,7 +47,7 @@ describe("useKeyboardPanel", () => {
         const root = document.createElement("div");
         root.id = "root-widget";
         document.body.append(root);
-        const isMarked = () => document.body.classList.contains("keyboard-panel-open");
+        const isMarked = isKeyboardPanelOpen;
         const seen: boolean[] = [];
         const host = document.createElement("div");
         function Harness({ enabled }: { enabled: boolean }) {

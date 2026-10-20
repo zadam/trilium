@@ -129,6 +129,25 @@ describe("ColorMenu", () => {
         expect(host.show).toHaveBeenCalledTimes(4);
     });
 
+    it("gives the text the focus as its button closes a menu in the keyboard's place", async () => {
+        const { editor, host, button } = await createEditor();
+        const inPlaceOfKeyboard = vi.fn(() => false);
+        Object.assign(host, { isInPlaceOfKeyboard: inPlaceOfKeyboard });
+        const focusText = vi.spyOn(editor.editing.view, "focus");
+
+        button.fire("execute");
+        button.fire("execute");
+        expect(host.hide).toHaveBeenCalledTimes(1);
+        expect(focusText).not.toHaveBeenCalled();
+
+        // The press that closes it brings the keyboard back, which a later focus would not.
+        inPlaceOfKeyboard.mockReturnValue(true);
+        button.fire("execute");
+        button.fire("execute");
+        expect(host.hide).toHaveBeenCalledTimes(2);
+        expect(focusText).toHaveBeenCalledOnce();
+    });
+
     it("is enabled while either color can be set, and destroys the host with the editor", async () => {
         const { editor, host, button } = await createEditor();
         expect(button.isEnabled).toBe(true);
