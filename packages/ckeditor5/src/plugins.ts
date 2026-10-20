@@ -79,7 +79,7 @@ import TableStickyHeader from "./plugins/table_sticky_header.js";
 import TableColumnBar from "./plugins/table_column_bar/table_column_bar.js";
 import TableTouchSelection from "./plugins/table_touch_selection/table_touch_selection.js";
 import ToolbarGroupMenu from "./plugins/toolbar_group_menu.js";
-import HeadingCompactUI from "./plugins/heading_compact.js";
+import MobileToolbarItems from "./plugins/mobile_toolbar_items.js";
 import TextFormattingToolbar from "./plugins/text_formatting_toolbar.js";
 import BlockDragHandle from "./plugins/block_drag_handle.js";
 
@@ -130,7 +130,7 @@ const TRILIUM_PLUGINS: typeof Plugin[] = [
     TableColumnBar,
     TableTouchSelection,
     ToolbarGroupMenu,
-    HeadingCompactUI,
+    MobileToolbarItems,
     TextFormattingToolbar,
     CopyAnchorLinkButton,
     CopyLinkUrlButton,

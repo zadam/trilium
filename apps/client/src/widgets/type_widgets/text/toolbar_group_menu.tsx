@@ -1,3 +1,5 @@
+import "./toolbar_group_menu.css";
+
 import type {
     ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest
 } from "@triliumnext/ckeditor5";
@@ -67,7 +69,7 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                     return <FormDropdownDivider key={index} />;
                 }
 
-                const { label, icon, isEnabled, isOn, run, children } = item;
+                const { label, icon, isEnabled, isOn, className, run, children } = item;
                 if (children) {
                     return (
                         <FormDropdownSubmenu
@@ -82,9 +84,9 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                 return (
                     <FormListItem
                         key={index} iconSvg={icon} disabled={!isEnabled} onClick={() => run?.()}
-                        checkable={isOn !== undefined} checked={isOn}
+                        checkable={isOn !== undefined} checked={isOn} className={className}
                     >
-                        {label}
+                        <span className="toolbar-group-menu-label">{label}</span>
                     </FormListItem>
                 );
             })}

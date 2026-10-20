@@ -114,7 +114,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "subscript",
             "kbd",
             "|",
-            "fontSize",
+            "fontSizeMenu",
             "fontColor",
             "fontBackgroundColor",
             "|",

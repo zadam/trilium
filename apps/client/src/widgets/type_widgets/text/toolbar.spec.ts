@@ -141,7 +141,7 @@ describe("buildMobileToolbar", () => {
             "|",
             "superscript", "subscript", "kbd",
             "|",
-            "fontSize", "fontColor", "fontBackgroundColor",
+            "fontSizeMenu", "fontColor", "fontBackgroundColor",
             "|",
             "removeFormat", "formatPainter"
         ]);
@@ -165,7 +165,8 @@ describe("buildMobileToolbar", () => {
         // Variants of an item that suit a touch screen.
         const MOBILE_VARIANTS: Record<string, string> = {
             insertTable: "insertTableForm",
-            heading: "headingCompact"
+            heading: "headingCompact",
+            fontSize: "fontSizeMenu"
         };
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })

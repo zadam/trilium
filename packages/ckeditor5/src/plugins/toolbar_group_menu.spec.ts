@@ -123,7 +123,8 @@ class SampleDropdown extends Plugin {
             const items = new Collection<ListDropdownItemDefinition>();
             for (const name of ["Low", "High"]) {
                 items.add({ type: "button", model: new UIModel({
-                    label: name, withText: true, role: "menuitemradio", isOn: name === level
+                    label: name, withText: true, role: "menuitemradio", isOn: name === level,
+                    class: `level-${name.toLowerCase()}`
                 }) });
             }
             addListToDropdown(dropdown, items);
@@ -433,6 +434,7 @@ describe("ToolbarGroupMenu", () => {
         expect(labels(last().items)).toStrictEqual(["Low", "High"]);
         expect(entry(last().items, "Low").isOn).toBe(false);
         expect(entry(last().items, "High").isOn).toBe(true);
+        expect(entry(last().items, "High").className).toBe("level-high");
 
         entry(last().items, "Low").run?.();
         expect(level).toBe("Low");

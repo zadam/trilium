@@ -53,6 +53,8 @@ export interface ToolbarGroupMenuEntry {
      * `heading` list. Left out for any other.
      */
     isOn?: boolean;
+    /** The classes CKEditor gives the item, such as `ck-fontsize-option text-tiny`, for the host to style. */
+    className?: string;
     /** Runs the toolbar item. An entry with `children` and no action only opens them. */
     run?(): void;
     children?: ToolbarGroupMenuItem[];
@@ -385,6 +387,9 @@ function describeButton(view: ButtonView, run: () => void): ToolbarGroupMenuEntr
     };
     if (view.isToggleable || view.role === "menuitemradio" || view.role === "menuitemcheckbox") {
         entry.isOn = view.isOn;
+    }
+    if (view.class) {
+        entry.className = view.class;
     }
     return entry;
 }

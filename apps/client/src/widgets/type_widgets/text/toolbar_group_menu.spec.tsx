@@ -73,7 +73,7 @@ describe("createToolbarGroupMenuHost", () => {
     it("checks the entry that is on, and marks only those that can be on as checkable", () => {
         const items: ToolbarGroupMenuItem[] = [
             { kind: "entry", label: "Paragraph", icon: ICON, isEnabled: true, isOn: false },
-            { kind: "entry", label: "Heading 2", icon: ICON, isEnabled: true, isOn: true },
+            { kind: "entry", label: "Heading 2", icon: ICON, isEnabled: true, isOn: true, className: "ck-heading_heading2" },
             { kind: "entry", label: "Link", icon: ICON, isEnabled: true }
         ];
         host.show({ anchor, items, setElement: vi.fn(), onClose: vi.fn() });
@@ -87,6 +87,9 @@ describe("createToolbarGroupMenuHost", () => {
             [ "menuitem", null ]
         ]);
         expect(heading.querySelector(".bx-check")).not.toBeNull();
+        expect(heading.classList).toContain("ck-heading_heading2");
+        // A class sizing the label, as the font size rows do, leaves the check and the gap as they are.
+        expect(heading.querySelector(".toolbar-group-menu-label")?.textContent).toBe("Heading 2");
         expect(paragraph.querySelector(".bx-check")).toBeNull();
     });
 

@@ -4,6 +4,7 @@ import {
     CodeBlock,
     DropdownView,
     Essentials,
+    FontSize,
     Heading,
     IconHeading2,
     IconHeading3,
@@ -14,7 +15,7 @@ import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import HeadingCompactUI from "./heading_compact.js";
+import MobileToolbarItems from "./mobile_toolbar_items.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuEntry, type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
 const HEADING_OPTIONS = [
@@ -23,7 +24,7 @@ const HEADING_OPTIONS = [
     { model: "heading3", view: "h3", title: "Heading 3", class: "ck-heading_heading3" }
 ] as const;
 
-describe("HeadingCompactUI", () => {
+describe("MobileToolbarItems", () => {
     let editor: ClassicEditor;
 
     // The width of the dropdown button needs the editor's stylesheet.
@@ -37,7 +38,7 @@ describe("HeadingCompactUI", () => {
     }));
 
     beforeEach(async () => {
-        editor = await createTestEditor([Essentials, Paragraph, Heading, CodeBlock, HeadingCompactUI], {
+        editor = await createTestEditor([Essentials, Paragraph, Heading, CodeBlock, MobileToolbarItems], {
             toolbar: ["heading", "headingCompact"],
             heading: { options: [...HEADING_OPTIONS] }
         });
@@ -82,7 +83,7 @@ describe("HeadingCompactUI", () => {
     it("opens as a menu of the app, each row with the icon of its block and the current one on", async () => {
         const requests: ToolbarGroupMenuRequest[] = [];
         const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
-        const menuEditor = await createTestEditor([Essentials, Paragraph, Heading, HeadingCompactUI, ToolbarGroupMenu], {
+        const menuEditor = await createTestEditor([Essentials, Paragraph, Heading, MobileToolbarItems, ToolbarGroupMenu], {
             toolbar: ["headingCompact"],
             heading: { options: [...HEADING_OPTIONS] },
             toolbarGroupMenu: { host: () => host }
@@ -102,6 +103,33 @@ describe("HeadingCompactUI", () => {
 
         rows[2]?.run?.();
         expect(menuEditor.getData()).toBe("<h3>foo</h3>");
+    });
+
+    it("opens the font size list as a menu of the app, each row naming its size class and the current one on", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const menuEditor = await createTestEditor([Essentials, Paragraph, FontSize, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["fontSizeMenu"],
+            toolbarGroupMenu: { host: () => host }
+        });
+        setModelData(menuEditor.model, "<paragraph>[<$text fontSize=\"big\">foo</$text>]</paragraph>");
+
+        const dropdown = getDropdown(menuEditor, 0);
+        dropdown.buttonView.fire("open");
+        expect(dropdown.isOpen).toBe(false);
+
+        const rows = (requests.at(-1)?.items ?? []) as ToolbarGroupMenuEntry[];
+        expect(rows.map(({ label, isOn }) => ({ label, isOn }))).toStrictEqual([
+            { label: "Tiny", isOn: false },
+            { label: "Small", isOn: false },
+            { label: "Default", isOn: false },
+            { label: "Big", isOn: true },
+            { label: "Huge", isOn: false }
+        ]);
+        expect(rows[0]?.className).toBe("ck-fontsize-option text-tiny");
+
+        rows[4]?.run?.();
+        expect(menuEditor.getData()).toBe("<p><span class=\"text-huge\">foo</span></p>");
     });
 
     it("is narrower than the heading dropdown", () => {

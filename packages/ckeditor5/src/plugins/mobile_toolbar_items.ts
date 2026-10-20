@@ -1,4 +1,5 @@
 import {
+    FontSize,
     Heading,
     IconHeading1,
     IconHeading2,
@@ -25,19 +26,22 @@ const HEADING_ICONS: Record<string, string> = {
 };
 
 /**
- * Registers `headingCompact`, the `heading` dropdown with an icon of the current block in place of
- * its name, for a toolbar too narrow for the name's 8em. The name stays in the accessible label.
- * Each row of its list carries the icon of its block, and `ToolbarGroupMenu` opens the list as
- * the host application's menu when a host is configured.
+ * Registers variants of toolbar items for the narrow toolbar of a phone. When a host is configured,
+ * `ToolbarGroupMenu` opens the lists of both as the host application's menu.
+ *
+ * - `headingCompact`: the `heading` dropdown with an icon of the current block in place of its
+ *   name, which takes 8em. The name stays in the accessible label, and each row of the list
+ *   carries the icon of its block.
+ * - `fontSizeMenu`: the `fontSize` dropdown.
  */
-export default class HeadingCompactUI extends Plugin {
+export default class MobileToolbarItems extends Plugin {
 
     static get requires() {
-        return [Heading] as const;
+        return [Heading, FontSize] as const;
     }
 
     static get pluginName() {
-        return "HeadingCompactUI" as const;
+        return "MobileToolbarItems" as const;
     }
 
     init() {
@@ -61,6 +65,12 @@ export default class HeadingCompactUI extends Plugin {
                     row.icon = HEADING_ICONS[row.commandValue ?? ""] ?? IconParagraph;
                 }
             });
+            openListAsMenu(dropdown);
+            return dropdown;
+        });
+
+        editor.ui.componentFactory.add("fontSizeMenu", () => {
+            const dropdown = editor.ui.componentFactory.create("fontSize") as DropdownView;
             openListAsMenu(dropdown);
             return dropdown;
         });
