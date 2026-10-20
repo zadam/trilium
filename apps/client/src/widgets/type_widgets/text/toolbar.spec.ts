@@ -141,7 +141,7 @@ describe("buildMobileToolbar", () => {
             "|",
             "superscript", "subscript", "kbd",
             "|",
-            "fontSizeMenu", "fontColor", "fontBackgroundColor",
+            "fontSizeMenu", "colorMenu",
             "|",
             "removeFormat", "formatPainter"
         ]);
@@ -166,7 +166,9 @@ describe("buildMobileToolbar", () => {
         const MOBILE_VARIANTS: Record<string, string> = {
             insertTable: "insertTableForm",
             heading: "headingCompact",
-            fontSize: "fontSizeMenu"
+            fontSize: "fontSizeMenu",
+            fontColor: "colorMenu",
+            fontBackgroundColor: "colorMenu"
         };
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
@@ -174,7 +176,7 @@ describe("buildMobileToolbar", () => {
             const { toolbar, textFormattingToolbar } = buildMobileToolbar(aiAssistant);
             const mobileItems = collectItems({ items: [ ...toolbar.items, ...textFormattingToolbar ] })
                 .filter((item) => item !== "textFormatting");
-            expect(mobileItems.toSorted()).toStrictEqual(classicItems.toSorted());
+            expect([ ...new Set(mobileItems) ].toSorted()).toStrictEqual([ ...new Set(classicItems) ].toSorted());
         }
     });
 

@@ -4618,6 +4618,10 @@
     },
     "colors": {
       "pink": "Pink"
+    },
+    "color-menu": {
+      "text-color": "Text color",
+      "background-color": "Background color"
     }
   },
   "collection_filter": {

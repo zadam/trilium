@@ -115,8 +115,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "kbd",
             "|",
             "fontSizeMenu",
-            "fontColor",
-            "fontBackgroundColor",
+            "colorMenu",
             "|",
             "removeFormat",
             "formatPainter"
