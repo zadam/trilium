@@ -37,6 +37,11 @@ body[data-note-type="text"] .ck-content {
     text-align: justify;
 }
 
+.ck-content img {
+    max-width: 100%;
+    height: auto;
+}
+
 .ck-content figcaption {
     font-style: italic;
 }
