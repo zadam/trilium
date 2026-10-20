@@ -70,8 +70,25 @@ body.mobile {
         border-start-end-radius: 0;
     }
 
-    .virtual-keyboard-opened .classic-toolbar-island .classic-toolbar-widget {
-        inset-inline-end: var(--hide-keyboard-button-size);
+    .virtual-keyboard-opened .classic-toolbar-island {
+        --mobile-toolbar-fade: 24px;
+
+        .classic-toolbar-widget {
+            inset-inline-end: var(--hide-keyboard-button-size);
+            mask-image: linear-gradient(to left, transparent, #000 var(--mobile-toolbar-fade));
+        }
+
+        .classic-toolbar-widget:dir(rtl) {
+            mask-image: linear-gradient(to right, transparent, #000 var(--mobile-toolbar-fade));
+        }
+
+        .classic-toolbar-widget.dropdown-active {
+            mask-image: none;
+        }
+
+        .ck-toolbar__items {
+            padding-inline-end: var(--mobile-toolbar-fade);
+        }
     }
 
     .classic-toolbar-island .hide-keyboard-action {
