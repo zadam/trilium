@@ -765,11 +765,13 @@ const loadedThemes = new WeakMap<ThemeDefinition, Extension>();
 
 /**
  * Merges the gutter, which still holds the fold markers, into the code area while the line
- * numbers are off. `Prec.highest` outranks the `.cm-gutters` rule of the color theme.
+ * numbers are off, and keeps the markers off the edge of the editor. `Prec.highest` outranks the
+ * `.cm-gutters` rule of the color theme.
  */
 const hiddenLineNumbersTheme = Prec.highest(EditorView.theme({
     ".cm-gutters": {
         border: "none",
+        paddingInlineStart: "8px",
         backgroundColor: "transparent"
     }
 }));

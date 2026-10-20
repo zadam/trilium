@@ -349,7 +349,7 @@ describe("CodeMirror", () => {
             expect(hasLineNumbers(editor)).toBe(false);
         });
 
-        it("blends the gutter into the code while the line numbers are off", async () => {
+        it("blends an inset gutter into the code while the line numbers are off", async () => {
             const theme = getThemeById("github-light");
             expect(theme).not.toBeNull();
             if (!theme) return;
@@ -360,11 +360,13 @@ describe("CodeMirror", () => {
             expect(hidden).toContain("background-color: transparent;");
             expect(hidden).toContain("border: none;");
             expect(hidden).not.toContain("border-right");
+            expect(hidden).toContain("padding-inline-start: 8px;");
 
             editor.setLineNumbers(true);
             const [ shown ] = getGutterRules(editor);
             expect(shown).toContain("background-color: #f6f8fa;");
             expect(shown).toContain("border-right: 1px solid");
+            expect(getGutterRules(editor).join("\n")).not.toContain("padding-inline-start");
         });
 
         it("clamps the indent size to a sane range", () => {
