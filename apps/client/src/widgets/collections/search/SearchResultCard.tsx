@@ -8,6 +8,7 @@ import { t } from "../../../services/i18n";
 import { calculateHash, type ViewScope } from "../../../services/link";
 import tree from "../../../services/tree";
 import { AttributeSnippetBadges } from "../../react/Badge";
+import { CardFrame } from "../../react/Card";
 import { useNote, useNoteTitle } from "../../react/hooks";
 import Icon from "../../react/Icon";
 import LinkButton from "../../react/LinkButton";
@@ -81,8 +82,8 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
     }
 
     return (
-        <div
-            className={clsx("tn-card-frame", "note-book-card", "search-result-card", "no-tooltip-preview",
+        <CardFrame
+            className={clsx("note-book-card", "search-result-card", "no-tooltip-preview",
                 note?.getColorClass(), note?.isArchived && "archived")}
             data-note-id={noteId}
         >
@@ -133,7 +134,7 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
                     />
                 </div>
             )}
-        </div>
+        </CardFrame>
     );
 }
 
