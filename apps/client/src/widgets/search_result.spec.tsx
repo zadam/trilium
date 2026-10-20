@@ -24,7 +24,11 @@ vi.mock("./react/hooks", async (importOriginal) => {
                 // Several components call this; notify them all, so the top-level widget re-renders too.
                 const listener = () => setNote(shownNote.current);
                 shownNote.listeners.add(listener);
-                shownNote.notify = () => shownNote.listeners.forEach((notify) => notify());
+                shownNote.notify = () => {
+                    for (const notify of shownNote.listeners) {
+                        notify();
+                    }
+                };
                 return () => {
                     shownNote.listeners.delete(listener);
                 };
