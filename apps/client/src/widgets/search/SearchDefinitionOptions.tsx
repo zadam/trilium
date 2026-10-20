@@ -130,20 +130,20 @@ function SearchOption({ note, className, title, titleIcon, children, help, attri
         >
             <div className="search-option-fields">
                 {children}
-                <HelpRemoveButtons
-                    className="search-option-actions"
-                    help={help}
-                    removeText={t("abstract_search_option.remove_this_search_option")}
-                    onRemove={() => {
-                        removeOwnedAttributesByNameOrType(note, attributeType, attributeName);
-                        if (additionalAttributesToDelete) {
-                            for (const { type, name } of additionalAttributesToDelete) {
-                                removeOwnedAttributesByNameOrType(note, type, name);
-                            }
-                        }
-                    }}
-                />
             </div>
+            <HelpRemoveButtons
+                className="search-option-actions"
+                help={help}
+                removeText={t("abstract_search_option.remove_this_search_option")}
+                onRemove={() => {
+                    removeOwnedAttributesByNameOrType(note, attributeType, attributeName);
+                    if (additionalAttributesToDelete) {
+                        for (const { type, name } of additionalAttributesToDelete) {
+                            removeOwnedAttributesByNameOrType(note, type, name);
+                        }
+                    }
+                }}
+            />
         </OptionCardSection>
     );
 }
@@ -194,6 +194,7 @@ function SearchStringOption({ note, refreshResults, flushRef, error, ...restProp
 
     return <>
         <SearchOption
+            titleIcon="bx bx-text"
             title={t("search_string.title_column")}
             className={clsx({ "has-error": !!error })}
             help={<>
@@ -244,6 +245,7 @@ function SearchScriptOption({ note, ...restProps }: SearchOptionProps) {
     const [ searchScript, setSearchScript ] = useNoteRelation(note, "searchScript");
 
     return <SearchOption
+        titleIcon="bx bx-code"
         title={t("search_script.title")}
         help={<>
             <p>{t("search_script.description1")}</p>
@@ -280,6 +282,7 @@ function AncestorOption({ note, ...restProps}: SearchOptionProps) {
     }, []);
 
     return <SearchOption
+        titleIcon="bx bx-filter-alt"
         title={t("ancestor.label")}
         note={note} {...restProps}
     >
@@ -290,7 +293,7 @@ function AncestorOption({ note, ...restProps}: SearchOptionProps) {
                 placeholder={t("ancestor.placeholder")}
             />
 
-            <span className="search-option-row-label">{t("ancestor.depth_label")}:</span>
+            <span className="search-option-row-label">{t("ancestor.depth_label")}</span>
             <FormSelect
                 values={options}
                 keyProperty="value" titleProperty="label"

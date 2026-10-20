@@ -7,19 +7,32 @@
         gap: 8px;
     }
 
-    /* An option's controls take the room its label leaves, with the help and remove buttons last. */
-    .search-option.tn-card-option > .tn-card-option-label {
-        flex: 0 1 auto;
-    }
-
-    .search-option.tn-card-option > .search-option-fields {
-        display: flex;
-        flex: 1 1 auto;
-        flex-wrap: wrap;
+    /* An option row lines up like the bulk actions below it: a title column, the controls, and the
+       row's buttons at the trailing edge. */
+    .search-option.tn-card-option {
+        display: grid;
+        grid-template-columns: 12em minmax(0, 1fr) auto;
         align-items: center;
-        justify-content: flex-end;
-        gap: 8px;
-        min-width: 0;
+        column-gap: 12px;
+        row-gap: 4px;
+
+        > .tn-card-option-label {
+            grid-column: 1;
+            min-width: 0;
+        }
+
+        > .search-option-fields {
+            grid-column: 2;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        > .search-option-actions {
+            grid-column: 3;
+        }
     }
 
     .search-option-fields > * {
@@ -28,6 +41,12 @@
 
     .search-option-fields > :is(.search-string, .input-group, .search-option-row) {
         flex: 1 1 16rem;
+    }
+
+    /* The bulk action rows share the option rows' title column. */
+    .bulk-existing-action-list .title-column {
+        width: calc(12em + 12px);
+        white-space: normal;
     }
 
     .search-option-row {
@@ -74,6 +93,31 @@
 
 body.mobile .search-definition-widget {
     contain: none;
+}
+
+@container (width < 560px) {
+    .search-option.tn-card-option {
+        grid-template-columns: minmax(0, 1fr) auto;
+
+        > .tn-card-option-label {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        > .search-option-actions {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        > .search-option-fields {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+    }
+
+    .search-definition-widget .bulk-existing-action-list .title-column {
+        width: auto;
+    }
 }
 
 @media (max-width: 720px) {

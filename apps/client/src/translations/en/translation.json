@@ -1540,7 +1540,7 @@
     "desc": "Descending"
   },
   "search_script": {
-    "title": "Search script:",
+    "title": "Search script",
     "placeholder": "search for note by its name",
     "description1": "Search script allows to define search results by running a script. This provides maximal flexibility when standard search doesn't suffice.",
     "description2": "Search script must be of type \"code\" and subtype \"JavaScript backend\". The script needs to return an array of noteIds or notes.",
@@ -1549,7 +1549,7 @@
     "note": "Note that search script and search string can't be combined with each other."
   },
   "search_string": {
-    "title_column": "Search string:",
+    "title_column": "Search string",
     "placeholder": "Ctrl+Space for suggestions, @ for a note, Shift+Enter for a new line, Enter to search",
     "search_syntax": "Search syntax",
     "also_see": "also see",
