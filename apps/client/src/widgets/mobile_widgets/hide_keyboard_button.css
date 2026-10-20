@@ -50,6 +50,7 @@ body.mobile .hide-keyboard-button {
     }
 }
 
-body.mobile:has(.classic-toolbar-outer-container.active) .hide-keyboard-button {
+body.mobile:has(.classic-toolbar-outer-container.active) .hide-keyboard-button,
+body.mobile:not(:has(:focus)) .hide-keyboard-button {
     display: none;
 }
