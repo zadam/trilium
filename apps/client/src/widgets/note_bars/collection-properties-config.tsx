@@ -24,6 +24,9 @@ export const bookPropertiesConfig: Record<ViewTypeOptions, BookConfig> = {
     grid: {
         properties: []
     },
+    searchPreview: {
+        properties: []
+    },
     list: {
         properties: [
             {

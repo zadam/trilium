@@ -119,14 +119,16 @@ The options available are:
 
 ## Viewing search results
 
-Results appear below the search pane as a list of **snippet cards**. Each card shows the note title and a short excerpt of the text that matched.
+Results appear below the search pane. By default they are shown in the _List_ view, one row per note with the note's title and content preview.
+
+To show a short excerpt of the text that matched instead, choose _Search preview_ from the <a class="reference-link" href="../../Collections/Collection%20Properties.md">Collection Properties</a> bar. Each result is then drawn as a **snippet card** with the note title, the path to it, a short excerpt of the matching text, and the attributes that matched.
 
 The search will also highlight the words from the title or content that matched:
 
 *   With a solid underlined green for a direct match;
 *   With a dotted underline orange for a partial match (matched by the fuzzy search).
 
-In addition: 
+In addition, the _Search preview_ view offers:
 
 *   The **total number of results** is always shown, so you can immediately tell how broad a query is.
 *   A **page-size selector** lets you choose how many results to display per page. Your choice is remembered and synced across your devices (stored in the `searchResultsPageSize` option), so you do not have to reset it on every device.

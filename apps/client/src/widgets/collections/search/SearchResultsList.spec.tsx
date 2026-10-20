@@ -20,10 +20,12 @@ vi.mock("../../../services/i18n", () => ({
 }));
 
 import Component from "../../../components/component";
+import type FNote from "../../../entities/fnote";
 import { calculateHash } from "../../../services/link";
 import server from "../../../services/server";
 import { buildNote, buildNotes } from "../../../test/easy-froca";
 import { ParentComponent } from "../../react/react_utils";
+import { useNoteIds } from "../NoteList";
 import SearchResultCard, { getBreadcrumbTitle, searchTermsFor, toPlainSearchTerms } from "./SearchResultCard";
 import SearchResultsList, { SearchResultsToolbar } from "./SearchResultsList";
 
@@ -153,7 +155,7 @@ describe("SearchResultsList", () => {
         const note = buildNote({ id: "search", title: "Search", type: "search" });
         note.children = firstResults;
 
-        await mount(<SearchResultsList note={note} notePath="search" ntxId="ntx1" media="screen" />);
+        await mount(<Harness note={note} ntxId="ntx1" />);
         await settle();
         const secondPageButton = [ ...container.querySelectorAll(".note-list-pager-page-button") ]
             .find((button) => button.textContent?.trim() === "2");
@@ -183,6 +185,12 @@ describe("SearchResultsList", () => {
         return [ ...container.querySelectorAll("a.search-result-card") ].map((card) => card.getAttribute("href"));
     }
 });
+
+/** Mirrors the collection pipeline, which supplies the ids and refreshes them on `searchRefreshed`. */
+function Harness({ note, ntxId }: { note: FNote; ntxId: string }) {
+    const noteIds = useNoteIds(note, "searchPreview", ntxId);
+    return <SearchResultsList note={note} noteIds={noteIds} ntxId={ntxId} />;
+}
 
 describe("SearchResultsToolbar", () => {
     it("always renders the result count, including for a single page", async () => {

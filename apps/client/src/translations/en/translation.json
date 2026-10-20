@@ -1335,6 +1335,7 @@
     "view_type": "View type",
     "grid": "Grid",
     "list": "List",
+    "search-preview": "Search preview",
     "collapse_all_notes": "Collapse all notes",
     "expand_tooltip": "Expands the direct children of this collection (one level deep). For more options, press the arrow on the right.",
     "collapse": "Collapse",

@@ -1,6 +1,5 @@
 import "./search_result.css";
 
-import type { HighlightedTokenInfo } from "@triliumnext/commons";
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "preact/hooks";
 
@@ -8,8 +7,7 @@ import type FNote from "../entities/fnote";
 import { t } from "../services/i18n";
 import search from "../services/search";
 import toast from "../services/toast";
-import { SearchNoteList, useNoteViewType } from "./collections/NoteList";
-import SearchResultsList from "./collections/search/SearchResultsList";
+import { SearchNoteList } from "./collections/NoteList";
 import Button from "./react/Button";
 import { useHasTabBeenShown, useNoteContext, useTriliumEvent } from "./react/hooks";
 import NoItems from "./react/NoItems";
@@ -22,7 +20,6 @@ enum SearchResultState {
 
 export default function SearchResult() {
     const { note, notePath, ntxId, noteContext, parentComponent } = useNoteContext();
-    const viewType = useNoteViewType(note);
     const [ , setRefreshCount ] = useState(0);
     const state = getSearchResultState(note);
     const { isSearching, runSearch } = useSavedSearchRun(
@@ -65,25 +62,13 @@ export default function SearchResult() {
             )}
 
             {state === SearchResultState.GOT_RESULTS && (
-                viewType === "list"
-                    ? (
-                        <SearchResultsList
-                            media="screen"
-                            note={note}
-                            notePath={notePath}
-                            highlightedTokens={highlightedTokens}
-                            ntxId={ntxId}
-                        />
-                    )
-                    : (
-                        <SearchNoteList
-                            media="screen"
-                            note={note}
-                            notePath={notePath}
-                            highlightedTokens={highlightedTokens}
-                            ntxId={ntxId}
-                        />
-                    )
+                <SearchNoteList
+                    media="screen"
+                    note={note}
+                    notePath={notePath}
+                    highlightedTokens={highlightedTokens}
+                    ntxId={ntxId}
+                />
             )}
         </div>
     );
