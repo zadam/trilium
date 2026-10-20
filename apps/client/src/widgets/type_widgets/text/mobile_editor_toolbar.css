@@ -106,6 +106,13 @@ body.mobile {
         animation: none;
     }
 
+    /* `playClosing()` in Popup.tsx removes the copy once this animation ends or is replaced, as
+       it is when `keyboard-panel-open` goes; 1.5s covers `PRESS_TIMEOUT` plus
+       `KEYBOARD_RETURN_TIMEOUT` in mobile_editor_toolbar.tsx. */
+    &.keyboard-panel-open .dropdown-menu.mobile-bottom-menu.keyboard-panel[data-closing] {
+        animation: tn-keyboard-panel-hold 1.5s;
+    }
+
     &.keyboard-panel-open .classic-toolbar-island,
     .virtual-keyboard-opened .classic-toolbar-island {
         --mobile-toolbar-fade: 24px;
@@ -219,4 +226,10 @@ body.mobile {
 
 .classic-toolbar-widget .ck.ck-button.ck-disabled {
     opacity: 0.3;
+}
+
+@keyframes tn-keyboard-panel-hold {
+    to {
+        translate: 0 0;
+    }
 }
