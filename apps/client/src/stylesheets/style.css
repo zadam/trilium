@@ -2694,14 +2694,15 @@ footer.webview-footer button {
     text-decoration: line-through;
 }
 
+/* Content that sizes itself from its container while rendering (a Mermaid gantt chart) needs a
+   real width: A4 minus the 2cm `@page` margins that `print.tsx` sets for the browser. */
 iframe.print-iframe {
     position: absolute;
     top: 0;
-    left: -600px;
-    right: -600px;
-    bottom: 0;
-    width: 0;
+    left: -10000px;
+    width: 170mm;
     height: 0;
+    border: 0;
 }
 
 .excalidraw.theme--dark canvas {
