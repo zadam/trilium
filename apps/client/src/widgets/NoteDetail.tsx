@@ -201,30 +201,50 @@ export default function NoteDetail() {
         }
 
         // Browser fallback: render the print page in a hidden iframe and use window.print().
+        console.debug("[print] Opening the print page for", noteContext.notePath);
         showToast("printing");
         const iframe = document.createElement('iframe');
         iframe.src = `?print#${noteContext.notePath}`;
         iframe.className = "print-iframe";
         document.body.appendChild(iframe);
         iframe.onload = () => {
-            if (!iframe.contentWindow) {
+            const printWindow = iframe.contentWindow;
+            console.debug("[print] The print page loaded", printWindow ? "" : "without a window");
+            if (!printWindow) {
                 toast.closePersistent("printing");
                 document.body.removeChild(iframe);
                 return;
             }
 
-            iframe.contentWindow.addEventListener("note-load-progress", (e) => {
-                showToast("printing", e.detail.progress);
+            printWindow.addEventListener("error", (e) => {
+                console.error("[print] Uncaught error in the print page:", e.error ?? e.message);
+            });
+            printWindow.addEventListener("unhandledrejection", (e) => {
+                console.error("[print] Unhandled rejection in the print page:", e.reason);
             });
 
-            iframe.contentWindow.addEventListener("note-ready", (e) => {
+            // A print page that never reports leaves the toast up and prints nothing.
+            const watchdog = setTimeout(() => console.warn(
+                "[print] The print page has not reported ready; it may have failed to render.",
+                { src: iframe.src, noteType: printWindow.document.body.dataset.noteType }
+            ), 20_000);
+
+            printWindow.addEventListener("note-load-progress", (e) => {
+                console.debug("[print] Progress:", (e as CustomEvent<{ progress: number }>).detail.progress);
+                showToast("printing", (e as CustomEvent<{ progress: number }>).detail.progress);
+            });
+
+            printWindow.addEventListener("note-ready", (e) => {
+                clearTimeout(watchdog);
                 toast.closePersistent("printing");
 
-                if ("detail" in e) {
-                    handlePrintReport(e.detail as PrintReport);
-                }
+                const report = "detail" in e ? e.detail as PrintReport : undefined;
+                console.debug("[print] The print page is ready:", report);
+                handlePrintReport(report);
 
-                iframe.contentWindow?.print();
+                if (report?.type !== "error") {
+                    printWindow.print();
+                }
                 document.body.removeChild(iframe);
             });
         };

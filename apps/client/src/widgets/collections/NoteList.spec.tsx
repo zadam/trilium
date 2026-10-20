@@ -21,7 +21,7 @@ import LoadResults from "../../services/load_results";
 import { buildNote, buildNotes } from "../../test/easy-froca";
 import { ParentComponent } from "../react/react_utils";
 import type { ViewTypeOptions } from "./interface";
-import { CustomNoteList, useNoteIds, useViewModeConfig } from "./NoteList";
+import { CustomNoteList, shouldRenderNoteList, useNoteIds, useViewModeConfig } from "./NoteList";
 
 const wsHandlers = vi.hoisted(() => new Set<(message: unknown) => void>());
 vi.mock("../../services/ws", () => {
@@ -66,6 +66,22 @@ function branchEntitiesReloaded(parentNoteId: string, childNoteId: string) {
     loadResults.addBranch(branchId, "comp-1");
     return loadResults;
 }
+
+describe("shouldRenderNoteList", () => {
+    const searchNote = buildNote({ title: "Search", type: "search" });
+
+    it("draws a saved search's results for the printer, though nothing on screen scrolled to them", () => {
+        expect(shouldRenderNoteList(searchNote, "searchPreview", false, "screen")).toBe(false);
+        expect(shouldRenderNoteList(searchNote, "searchPreview", false, "print")).toBe(true);
+        expect(shouldRenderNoteList(searchNote, "searchPreview", true, "screen")).toBe(true);
+    });
+
+    it("draws a book and a full-height view without waiting to be scrolled to", () => {
+        const book = buildNote({ title: "Book", type: "book" });
+        expect(shouldRenderNoteList(book, "list", false, "screen")).toBe(true);
+        expect(shouldRenderNoteList(searchNote, "calendar", false, "screen")).toBe(true);
+    });
+});
 
 describe("useNoteIds refresh race", () => {
     let container: HTMLElement | undefined;

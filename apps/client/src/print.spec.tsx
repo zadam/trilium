@@ -138,6 +138,18 @@ describe("App", () => {
         expect(readyListener).toHaveBeenCalledTimes(1);
         window.removeEventListener("note-ready", readyListener);
     });
+
+    it("renders CollectionRenderer for a search note, whose results print as a list", async () => {
+        const loadSearchNote = vi.spyOn(froca, "loadSearchNote").mockResolvedValue(undefined);
+        buildNote({ id: "root", title: "root", children: [{ id: "app-search", title: "Search", type: "search" }] });
+        const note = await froca.getNote("app-search");
+        const container = renderInto(<App note={note} noteId="app-search" />);
+
+        await vi.waitFor(() => expect(container.textContent).toContain("NOTELIST"));
+        expect(loadSearchNote).toHaveBeenCalledWith("app-search");
+        expect(document.body.dataset.noteType).toBe("search");
+        loadSearchNote.mockRestore();
+    });
 });
 
 describe("SingleNoteRenderer", () => {

@@ -95,12 +95,12 @@ export function EmbeddedNoteList(props: Omit<NoteListProps, "isEnabled" | "viewT
     return <CustomNoteList {...props} isEnabled={true} viewType={viewType} />;
 }
 
-export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, contentReady = true, notePath, highlightedTokens, displayOnlyCollections, ntxId, onReady, onProgressChanged, ...restProps }: NoteListProps) {
+export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, contentReady = true, notePath, highlightedTokens, displayOnlyCollections, ntxId, onReady, onProgressChanged, media, ...restProps }: NoteListProps) {
     const widgetRef = useRef<HTMLDivElement>(null);
     const noteIds = useNoteIds(shouldEnable ? note : null, viewType, ntxId);
     const isFullHeight = (viewType && viewType !== "list" && viewType !== "grid" && viewType !== "searchPreview");
     const [ isIntersecting, setIsIntersecting ] = useState(false);
-    const shouldRender = (isFullHeight || isIntersecting || note?.type === "book");
+    const shouldRender = shouldRenderNoteList(note, viewType, isIntersecting, media);
     const isEnabled = (note && shouldEnable && !!viewType && shouldRender);
 
     useEffect(() => {
@@ -148,6 +148,7 @@ export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, conten
         props = {
             note, noteIds, notePath, ntxId,
             highlightedTokens,
+            media,
             viewConfig: viewModeConfig.config,
             saveConfig: viewModeConfig.storeFn,
             onReady: onReady ?? (() => {}),
@@ -179,6 +180,21 @@ export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, conten
 export function useNoteViewType(note?: FNote | null): ViewTypeOptions | undefined {
     const [ viewType ] = useNoteLabel(note, "viewType");
     return resolveViewType(note, viewType);
+}
+
+/**
+ * Whether a view is drawn yet. A full-height view, or a book's, is drawn at once; a list waits until
+ * it scrolls into view. A print page has nothing on screen to scroll into, so it draws its results
+ * for the paper.
+ */
+export function shouldRenderNoteList(
+    note: FNote | null | undefined,
+    viewType: ViewTypeOptions | undefined,
+    isIntersecting: boolean,
+    media: ViewModeMedia
+) {
+    const isFullHeight = viewType && viewType !== "list" && viewType !== "grid" && viewType !== "searchPreview";
+    return !!(isFullHeight || isIntersecting || note?.type === "book" || media === "print");
 }
 
 export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOptions | undefined, ntxId: string | null | undefined) {
