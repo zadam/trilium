@@ -53,7 +53,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "undo",
                 "redo",
                 "|",
-                "heading",
+                "headingCompact",
                 "fontSize",
                 "|",
                 "bold",

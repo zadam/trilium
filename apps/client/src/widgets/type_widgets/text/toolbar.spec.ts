@@ -143,9 +143,14 @@ describe("buildMobileToolbar", () => {
     });
 
     it("offers every item of the classic toolbar", () => {
+        // Variants of an item that suit a touch screen.
+        const MOBILE_VARIANTS: Record<string, string> = {
+            insertTable: "insertTableForm",
+            heading: "headingCompact"
+        };
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
-                .map((item) => item === "insertTable" ? "insertTableForm" : item);
+                .map((item) => MOBILE_VARIANTS[item] ?? item);
             const mobileItems = collectItems({ items: buildMobileToolbar(aiAssistant).toolbar.items });
             expect(mobileItems.toSorted()).toStrictEqual(classicItems.toSorted());
         }
