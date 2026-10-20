@@ -23,6 +23,9 @@ export {
     default as SharedHistory, type HostHistory, type HostHistoryStep
 } from "./shared_history.js";
 export {
+    hasSelectedText, runLineOperation, runTextTransform, type TextToolTarget
+} from "./text_tools.js";
+export {
     isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND,
     type TypeCompletionEntry
 } from "./type_completion/index.js";

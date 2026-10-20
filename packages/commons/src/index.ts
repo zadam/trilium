@@ -24,6 +24,7 @@ export * from "./lib/attribute_names.js";
 export * from "./lib/search_syntax.js";
 export * from "./lib/sort_criteria.js";
 export * from "./lib/auto_sort.js";
+export * from "./lib/text_transforms.js";
 export * from "./lib/note_type_ids.js";
 export * from "./lib/promoted_attribute_definition_parser.js";
 export { default as promotedAttributeDefinitionParser } from "./lib/promoted_attribute_definition_parser.js";

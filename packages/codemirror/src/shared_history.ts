@@ -1,3 +1,4 @@
+import { isolateHistory } from "@codemirror/commands";
 import { type ChangeSet, type EditorSelection, type Text, Transaction } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
 
@@ -69,9 +70,11 @@ export default class SharedHistory {
         }
 
         const time = Date.now();
+        const isolate = tr.annotation(isolateHistory);
         if (tr.annotation(Transaction.addToHistory) === false) {
             this.open = undefined;
-        } else if (this.open && canJoin(this.open, tr, time)) {
+        } else if (this.open && isolate !== "before" && isolate !== "full"
+                && canJoin(this.open, tr, time)) {
             const { step } = this.open;
             step.changes = step.changes.compose(tr.changes);
             step.after = tr.newDoc;
@@ -90,6 +93,10 @@ export default class SharedHistory {
                 redo: () => this.apply(step, false)
             });
             this.open = { step, entry, time };
+        }
+
+        if (isolate === "after" || isolate === "full") {
+            this.open = undefined;
         }
     }
 

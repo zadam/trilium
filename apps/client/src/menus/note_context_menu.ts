@@ -7,6 +7,7 @@ import { t } from "../services/i18n.js";
 import options from "../services/options.js";
 import server from "../services/server.js";
 import utils from "../services/utils.js";
+import { buildCodeEditorContextMenuItems } from "./code_editor_context_menu.js";
 import contextMenu, { type MenuItem } from "./context_menu.js";
 import { splitMenuItem } from "./context_menu_utils.js";
 import { buildTableContextMenuSections, hasTableCellSelection } from "./table_context_menu.js";
@@ -139,6 +140,9 @@ export async function buildNoteContextMenuItems(
     const blockReferenceItems = target.isEditable
         ? await buildBlockReferenceMenuItems(target.element, host.paste)
         : null;
+    const codeEditorItems = target.isEditable
+        ? await buildCodeEditorContextMenuItems(target.element)
+        : null;
     const hasText = !hasCellSelection && target.selectionText.trim().length > 0;
     const hasClipboardContent = hasText || hasCellSelection;
 
@@ -248,6 +252,10 @@ export async function buildNoteContextMenuItems(
     if (tableSections) {
         items.push({ kind: "separator" }, tableSections.sort, { kind: "separator" },
             ...tableSections.delete, { kind: "separator" }, tableSections.select);
+    }
+
+    if (codeEditorItems) {
+        items.push({ kind: "separator" }, ...codeEditorItems);
     }
 
     if (hasText) {

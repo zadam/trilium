@@ -23,6 +23,9 @@ vi.mock("../services/utils.js", () => ({
     reuseAcrossHotReloads: <T>(_hot: unknown, create: () => T) => create()
 }));
 vi.mock("./context_menu.js", () => ({ default: { show: vi.fn() } }));
+vi.mock("./code_editor_context_menu.js", () => ({
+    buildCodeEditorContextMenuItems: vi.fn(async () => null)
+}));
 vi.mock("./table_context_menu.js", () => ({
     buildTableContextMenuSections: vi.fn(async () => null),
     hasTableCellSelection: vi.fn(async () => false)
@@ -32,6 +35,7 @@ import { buildBlockReferenceMenuItems } from "../services/block_reference.js";
 import { copyHtml, copyTextWithToast } from "../services/clipboard_ext.js";
 import server from "../services/server.js";
 import { setEditorNoteId } from "../widgets/react/NoteStore.js";
+import { buildCodeEditorContextMenuItems } from "./code_editor_context_menu.js";
 import contextMenu, { type MenuCommandItem, type MenuItem } from "./context_menu.js";
 import {
     buildTableContextMenuSections,
@@ -259,6 +263,36 @@ describe("buildNoteContextMenuItems", () => {
         expect(h.triggerCommand).toHaveBeenCalledWith("searchNotes", {
             searchString: "trilium notes"
         });
+    });
+
+    it("puts the text tools of a code editor below the clipboard rows", async () => {
+        const line = document.createElement("div");
+        vi.mocked(buildCodeEditorContextMenuItems).mockResolvedValueOnce([
+            { title: "LINES" }, { title: "CASE" }
+        ]);
+        const host = browserLikeHost({
+            paste: { enabled: true, run: vi.fn(), runAsPlainText: vi.fn(), read: vi.fn() }
+        });
+
+        const items = await build({ isEditable: true, element: line }, host);
+
+        expect(buildCodeEditorContextMenuItems).toHaveBeenCalledWith(line);
+        expect(titles(items)).toEqual([
+            "electron_context_menu.cut",
+            "electron_context_menu.copy",
+            "electron_context_menu.paste",
+            "---",
+            "LINES",
+            "CASE",
+            "---",
+            "electron_context_menu.search_online",
+            "electron_context_menu.search_in_trilium"
+        ]);
+    });
+
+    it("looks for text tools only over an element that takes typing", async () => {
+        await build({ isEditable: false, element: document.createElement("div") });
+        expect(buildCodeEditorContextMenuItems).not.toHaveBeenCalled();
     });
 
     it("puts the table sections around the clipboard rows and hands them the element", async () => {
