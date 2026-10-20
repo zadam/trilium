@@ -29,7 +29,7 @@ export interface CodeEmbedEditorProps {
     useTabs: boolean | undefined;
     /** Whether to wrap the lines, over the `#wrapLines` label of `note` and the global option. */
     wrapLines?: boolean;
-    /** Whether to show the line numbers. Shown by default. */
+    /** Whether to show the line numbers, or `undefined` to follow the global option. */
     hasLineNumbers?: boolean;
     /** Holds the CodeMirror view while the editor is open, and `null` once it goes away. */
     viewRef: RefObject<VanillaCodeMirror | null>;

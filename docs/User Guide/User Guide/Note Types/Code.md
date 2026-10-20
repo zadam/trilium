@@ -45,6 +45,12 @@ Long lines can be displayed on multiple lines:
 > [!NOTE]
 > Word wrapping can also be adjusted at note level through the `#wrapLines` [label](../Advanced%20Usage/Attributes/Labels.md), which can also be inherited.
 
+## Line numbers
+
+The numbers at the start of each line can be hidden from <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Code Notes_ → _Editor_ → _Line numbers_. The setting applies to every code editor, such as the source of a [Markdown](Markdown.md) note, and to code shown without its editor (see _Color schemes_ below).
+
+An included code note or an embedded code file can show or hide them on its own through the _Line numbers_ submenu of its _More actions_ menu, see <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>. Its _Auto_ entry follows the setting.
+
 ## Adjusting options using the status bar
 
 The status bar at the bottom of the editor shows the current indentation settings and language. Clicking on the indentation indicator opens a menu with three sections:
@@ -70,7 +76,7 @@ When you re-indent content, the editor:
 
 Since Trilium 0.94.0 the colors of code notes can be customized by going <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → Code Notes and looking for the _Appearance_ section.
 
-A code note or a code file shown without its editor, such as in an <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>, on the cards of <a class="reference-link" href="../Collections.md">Collections</a> or in a tooltip, uses the same colors and shows line numbers, as the editor does. A printout uses the _Light theme_. A [shared page](../Advanced%20Usage/Sharing.md) uses the VS Code light or dark theme, following the mode of the page.
+A code note or a code file shown without its editor, such as in an <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>, on the cards of <a class="reference-link" href="../Collections.md">Collections</a> or in a tooltip, uses the same colors and line numbers as the editor does. A printout uses the _Light theme_. A [shared page](../Advanced%20Usage/Sharing.md) uses the VS Code light or dark theme, following the mode of the page.
 
 > [!NOTE]
 > **Why are there only a few themes whereas the code block themes for text notes have a lot?**  

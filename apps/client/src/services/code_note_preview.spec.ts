@@ -78,6 +78,16 @@ describe("renderCodeNotePreview", () => {
             .toBe("code-preview code-preview-no-line-numbers");
     });
 
+    it("numbers the lines by the option, unless an embed sets them", async () => {
+        const { renderCodeNotePreview } = await freshModule({ codeLineNumbersEnabled: "false" });
+        const isNumbered = async (hasLineNumbers?: boolean) =>
+            !(await renderCodeNotePreview(CODE, "text/javascript", null, { hasLineNumbers }))
+                .classList.contains("code-preview-no-line-numbers");
+
+        expect(await isNumbered()).toBe(false);
+        expect(await isNumbered(true)).toBe(true);
+    });
+
     it("shows code too long to highlight plain, still numbered", async () => {
         const { renderCodeNotePreview } = await freshModule({});
         const long = Array.from({ length: 600 }, () => "let a = 1;").join("\n");
@@ -136,6 +146,7 @@ async function freshModule(values: Record<string, string>): Promise<PreviewModul
         codeNoteThemeLight: "default:vs-code-light",
         codeNoteThemeDark: "default:vs-code-dark",
         codeLineWrapEnabled: "false",
+        codeLineNumbersEnabled: "true",
         ...values
     });
     return import("./code_note_preview.js");

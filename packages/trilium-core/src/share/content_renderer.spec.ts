@@ -712,7 +712,7 @@ describe("content_renderer", () => {
             expect(result.content).not.toContain("hljs");
         });
 
-        it("numbers the lines of an embedded code note unless its embed turns them off", async () => {
+        it("numbers the lines of a code embed as it sets, else by the option", async () => {
             await ensureShareHighlighting();
             buildShareNotes([
                 { id: "pylines", type: "code", mime: "text/x-python", content: "x = 1" }
@@ -731,6 +731,13 @@ describe("content_renderer", () => {
             expect(hasLineNumbers("")).toBe(true);
             expect(hasLineNumbers(' data-code-line-numbers="true"')).toBe(true);
             expect(hasLineNumbers(' data-code-line-numbers="false"')).toBe(false);
+            mockOptions({ codeLineNumbersEnabled: "false" });
+            try {
+                expect(hasLineNumbers("")).toBe(false);
+                expect(hasLineNumbers(' data-code-line-numbers="true"')).toBe(true);
+            } finally {
+                vi.restoreAllMocks();
+            }
         });
 
         it("renders a picture or drawing embed as an image, any other embed as a download", () => {

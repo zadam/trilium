@@ -83,7 +83,7 @@ export interface RenderOptions {
     codeLanguage?: string;
     /** Whether the embed of a code file wraps its lines, over the option. */
     isCodeWrapped?: boolean;
-    /** Whether the embed of a code note or file numbers its lines. Defaults to true. */
+    /** Whether the embed of a code note or file numbers its lines, over the option. */
     hasCodeLineNumbers?: boolean;
     /**
      * Lets content that has a source and a rendering, such as Markdown, show either or both, as

@@ -1971,7 +1971,8 @@
   "code-editor-options": {
     "title": "Editor",
     "tab_width": "Tab width",
-    "tab_width_unit": "spaces"
+    "tab_width_unit": "spaces",
+    "line_numbers": "Line numbers"
   },
   "code_mime_types": {
     "title": "Available MIME types in the dropdown",
@@ -3099,7 +3100,8 @@
     "line_numbers": "Line numbers",
     "line_numbers_auto": "Auto",
     "line_numbers_on": "On",
-    "line_numbers_off": "Off"
+    "line_numbers_off": "Off",
+    "line_numbers_auto_description": "Follow the global setting"
   },
   "electron_integration": {
     "desktop-application": "Desktop Application",

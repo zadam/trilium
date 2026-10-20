@@ -185,7 +185,7 @@ export interface CodeEditorProps
 
 export function CodeEditor({
     ntxId, containerRef: externalContainerRef, editorRef: externalEditorRef, mime, onInitialized,
-    lineWrapping, allowKeyboardSuggestions, completions, ...editorProps
+    lineWrapping, lineNumbers, allowKeyboardSuggestions, completions, ...editorProps
 }: CodeEditorProps) {
     const codeEditorRef = useRef<VanillaCodeMirror>(null);
     const [ view, setView ] = useState<VanillaCodeMirror | null>(null);
@@ -193,6 +193,7 @@ export function CodeEditor({
     const initialized = useRef($.Deferred());
     const getSnippets = useEditorCompletions(view, mime, completions);
     const [ codeLineWrapEnabled ] = useTriliumOptionBool("codeLineWrapEnabled");
+    const [ codeLineNumbersEnabled ] = useTriliumOptionBool("codeLineNumbersEnabled");
     const [ codeNoteTheme ] = useTriliumOption("codeNoteTheme");
     const [ codeNoteTabWidth ] = useTriliumOption("codeNoteTabWidth");
     const [ codeNoteIndentWithTabs ] = useTriliumOptionBool("codeNoteIndentWithTabs");
@@ -252,6 +253,7 @@ export function CodeEditor({
         editorRef={codeEditorRef}
         containerRef={containerRef}
         lineWrapping={lineWrapping ?? codeLineWrapEnabled}
+        lineNumbers={lineNumbers ?? codeLineNumbersEnabled}
         allowKeyboardSuggestions={allowKeyboardSuggestions ?? mime === "text/plain"}
         indentSize={editorProps.indentSize ?? (parseInt(codeNoteTabWidth) || 4)}
         useTabs={editorProps.useTabs ?? codeNoteIndentWithTabs}

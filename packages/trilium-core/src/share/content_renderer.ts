@@ -500,7 +500,10 @@ export interface ShareRenderOptions {
      * out, and a missing block renders as a broken reference.
      */
     block?: string;
-    /** Whether a code note numbers its lines, as its embed's `data-code-line-numbers` sets. */
+    /**
+     * Whether a code note numbers its lines, as its embed's `data-code-line-numbers` sets, over
+     * the option.
+     */
     hasCodeLineNumbers?: boolean;
 }
 
@@ -654,10 +657,11 @@ function renderText(result: Result, note: SNote | BNote, options: ShareRenderOpt
             continue;
         }
 
+        const lineNumbers = embedEl.getAttribute("data-code-line-numbers");
         const embeddedResult = getContent(embeddedNote, {
             ...getNestedEmbedOptions(embedContext, embed.block),
             canAccessEmbed: options.canAccessEmbed,
-            hasCodeLineNumbers: embedEl.getAttribute("data-code-line-numbers") !== "false"
+            hasCodeLineNumbers: lineNumbers == null ? undefined : lineNumbers !== "false"
         });
         if (typeof embeddedResult.content !== "string") continue;
 
@@ -926,14 +930,14 @@ async function loadCodePreviews(mimeTypes: MimeType[]) {
 }
 
 /**
- * Renders a code note as CodeMirror shows it, with line numbers, once `ensureShareHighlighting()`
- * has loaded the renderer. Until then the code is escaped in a `<pre><code>`.
+ * Renders a code note as CodeMirror shows it, once `ensureShareHighlighting()` has loaded the
+ * renderer. Until then the code is escaped in a `<pre><code>`.
  *
  * @param note the note whose `#wrapLines` label sets the line wrapping, over the option.
- * @param hasLineNumbers whether the lines are numbered.
+ * @param hasLineNumbers whether the lines are numbered, over the option.
  */
 export function renderCode(
-    result: Result, mime?: string, note?: SNote | BNote, hasLineNumbers = true
+    result: Result, mime?: string, note?: SNote | BNote, hasLineNumbers?: boolean
 ) {
     if (typeof result.content !== "string" || !result.content?.trim()) {
         result.isEmpty = true;
@@ -943,7 +947,9 @@ export function renderCode(
             ? module.getLoadedPreviewLanguage(mime) ?? null
             : null;
         result.content = module.renderCodePreview(result.content, {
-            themes, language, isWrapped: isLineWrapped(note), hasLineNumbers
+            themes, language, isWrapped: isLineWrapped(note),
+            hasLineNumbers: hasLineNumbers
+                ?? options.getOptionOrNull("codeLineNumbersEnabled") !== "false"
         });
     } else {
         // Escape the raw code so that any `<`/`>` it contains are not later re-parsed as HTML.
@@ -1091,8 +1097,8 @@ function buildExportRows(note: BNote, exportHosting: ExportHosting | undefined) 
 const SHARED_OPTIONS = [
     "locale", "formattingLocale", "firstDayOfWeek",
     "codeNoteTheme", "codeNoteThemeLight", "codeNoteThemeDark", "codeNoteThemeMatchesApp",
-    "codeLineWrapEnabled", "codeNoteTabWidth", "codeNoteIndentWithTabs",
-    "splitEditorOrientation"
+    "codeLineWrapEnabled", "codeLineNumbersEnabled", "codeNoteTabWidth",
+    "codeNoteIndentWithTabs", "splitEditorOrientation"
 ] as const;
 
 function renderImage(result: Result, note: SNote | BNote) {

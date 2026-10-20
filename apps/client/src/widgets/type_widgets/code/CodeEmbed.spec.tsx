@@ -34,8 +34,9 @@ vi.mock("../../../services/i18n", async (importOriginal) => ({
         values ? `${key} ${Object.values(values).join(" ")}` : key
 }));
 
-// `CodeEditor` reads the theme as a string.
+// `CodeEditor` reads the theme as a string, and the line numbers set to Auto from the option.
 options.set("codeNoteTheme", "");
+options.set("codeLineNumbersEnabled", "true");
 
 const parent = new Component();
 const figures: HTMLElement[] = [];
@@ -495,6 +496,24 @@ describe("CodeEmbed", () => {
         expect(figure.querySelector(".cm-lineNumbers")).toBeNull();
         await runEmbedMenuItem(figure, 1, 1);
         await vi.waitFor(() => expect(figure.querySelector(".cm-lineNumbers")).not.toBeNull());
+    });
+
+    it("numbers the lines of an embed set to Auto as the global option does", async () => {
+        options.set("codeLineNumbersEnabled", "false");
+        try {
+            const { figure } = await mount(buildCodeNote("a"), buildEditor());
+            await findView(figure, true);
+            expect(figure.querySelector(".cm-lineNumbers")).toBeNull();
+
+            const { figure: numbered } = await mount(buildCodeNote("a"), buildEditor(), {
+                hasCodeLineNumbers: true,
+                embedAttributes: { "data-code-line-numbers": "true" }
+            });
+            await findView(numbered, true);
+            expect(numbered.querySelector(".cm-lineNumbers")).not.toBeNull();
+        } finally {
+            options.set("codeLineNumbersEnabled", "true");
+        }
     });
 
     it("highlights an attachment with the MIME type it is given", async () => {
