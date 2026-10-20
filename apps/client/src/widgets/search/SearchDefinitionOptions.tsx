@@ -289,21 +289,19 @@ function AncestorOption({ note, ...restProps}: SearchOptionProps) {
         title={t("ancestor.label")}
         note={note} {...restProps}
     >
-        <div className="search-option-row">
-            <NoteAutocomplete
-                noteId={ancestor !== "root" ? ancestor ?? undefined : undefined}
-                noteIdChanged={noteId => setAncestor(noteId ?? "root")}
-                placeholder={t("ancestor.placeholder")}
-            />
+        <NoteAutocomplete
+            noteId={ancestor !== "root" ? ancestor ?? undefined : undefined}
+            noteIdChanged={noteId => setAncestor(noteId ?? "root")}
+            placeholder={t("ancestor.placeholder")}
+        />
 
-            <span className="search-option-row-label">{t("ancestor.depth_label")}</span>
-            <FormSelect
-                className="w-auto"
-                values={options}
-                keyProperty="value" titleProperty="label"
-                currentValue={depth ?? ""} onChange={(value) => setDepth(value ? value : null)}
-            />
-        </div>
+        <span className="search-option-field-label">{t("ancestor.depth_label")}</span>
+        <FormSelect
+            className="w-auto"
+            values={options}
+            keyProperty="value" titleProperty="label"
+            currentValue={depth ?? ""} onChange={(value) => setDepth(value ? value : null)}
+        />
     </SearchOption>;
 }
 
@@ -381,12 +379,10 @@ function LimitOption({ note, defaultValue, ...restProps }: SearchOptionProps) {
         title={t("limit.limit")}
         note={note} {...restProps}
     >
-        <div className="search-option-row">
-            <FormTextBox
-                type="number" min="1" step="1"
-                currentValue={limit ?? defaultValue} onChange={setLimit}
-            />
-            <span className="search-option-row-label">{t("limit.max_results")}</span>
-        </div>
+        <FormTextBox
+            type="number" min="1" step="1"
+            currentValue={limit ?? defaultValue} onChange={setLimit}
+        />
+        <span className="search-option-field-label">{t("limit.max_results")}</span>
     </SearchOption>;
 }

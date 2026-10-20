@@ -1,4 +1,6 @@
 .search-definition-widget {
+    --search-title-column: 12em;
+
     .search-definition-add {
         display: flex;
         flex-wrap: wrap;
@@ -18,7 +20,7 @@
 
     .search-option {
         display: grid;
-        grid-template-columns: 12em minmax(0, 1fr) auto;
+        grid-template-columns: var(--search-title-column) minmax(0, 1fr) auto;
         align-items: center;
         column-gap: 12px;
         row-gap: 4px;
@@ -69,32 +71,25 @@
         flex: 1 1 auto;
     }
 
-    .search-option-fields > :is(.search-string, .input-group, .search-option-row) {
+    .search-option.orderBy .form-select:last-of-type {
+        flex: 0 0 auto;
+    }
+
+    .search-option-fields > :is(.search-string, .input-group) {
         flex: 1 1 16rem;
     }
 
     /* The bulk action rows share the option rows' title column. */
     .bulk-existing-action-list .title-column {
-        width: calc(12em + 12px);
+        width: calc(var(--search-title-column) + 12px);
         white-space: normal;
     }
 
-    .search-option-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .search-option-row .input-group {
-        flex: 1 1 auto;
-    }
-
-    .search-option-row-label {
+    .search-option-field-label {
         white-space: nowrap;
     }
 
-    .search-option.limit .search-option-row .form-control {
+    .search-option.limit .form-control {
         flex: 0 0 6em;
     }
 
@@ -130,7 +125,7 @@ body.mobile .search-definition-widget {
 }
 
 @container (width < 560px) {
-    .search-option {
+    .search-definition-widget .search-option {
         grid-template-columns: minmax(0, 1fr) auto;
 
         > .search-option-label {
