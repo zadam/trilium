@@ -1506,12 +1506,12 @@
   },
   "debug": {
     "debug": "Debug",
-    "debug_info": "Debug will print extra debugging information into the console to aid in debugging complex queries.",
-    "access_info": "To access the debug information, execute query and click on \"Show backend log\" in top left corner."
+    "debug_info": "Prints extra debugging information into the console to aid in debugging complex queries.",
+    "access_info": "Run the search, then click \"Show backend log\" in the global menu."
   },
   "fast_search": {
     "fast_search": "Fast search",
-    "description": "Fast search option disables full text search of note contents which might speed up searching in large databases."
+    "description": "Disables full text search of note contents, which speeds up searching in large databases."
   },
   "include_archived_notes": {
     "include_archived_notes": "Include archived notes"
