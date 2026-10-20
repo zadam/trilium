@@ -4594,7 +4594,8 @@
       "add-a-tab-after-the-current-one": "Add a tab after the current one",
       "add-a-tab-before-the-current-one": "Add a tab before the current one",
       "scroll-to-the-previous-tabs": "Scroll to the previous tabs",
-      "scroll-to-the-next-tabs": "Scroll to the next tabs"
+      "scroll-to-the-next-tabs": "Scroll to the next tabs",
+      "text-formatting": "Text formatting"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

@@ -43,8 +43,9 @@ export function buildToolbarConfig(isClassicToolbar: boolean, aiAssistant: boole
 }
 
 /**
- * The bar above the virtual keyboard: one scrolling row without nested groups. Undo and redo lead
- * it, since a virtual keyboard has no key for either.
+ * The bar above the virtual keyboard: scrolling rows without nested groups. Undo and redo lead the
+ * main row, since a virtual keyboard has no key for either. The `textFormatting` button swaps in a
+ * second row of the formatting applied to text, which `TextFormattingToolbar` builds.
  */
 export function buildMobileToolbar(aiAssistant: boolean) {
     return {
@@ -54,27 +55,15 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "redo",
                 "|",
                 "headingCompact",
-                "fontSize",
-                "|",
-                "bold",
-                "italic",
-                "underline",
-                "strikethrough",
-                "|",
-                "superscript",
-                "subscript",
-                "|",
-                "kbd",
-                "formatPainter",
-                "|",
-                "fontColor",
-                "fontBackgroundColor",
-                "removeFormat",
+                "textFormatting",
                 "|",
                 "bulletedList",
                 "numberedList",
                 "todoList",
+                "outdent",
+                "indent",
                 "|",
+                "link",
                 ...(aiAssistant ? ["aiAssistant"] : []),
                 "imageUpload",
                 "fileUpload",
@@ -82,12 +71,9 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "admonition",
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.
                 "insertTableForm",
-                "|",
-                "code",
                 "codeBlock",
                 "|",
                 "footnote",
-                "link",
                 "linkEmbed",
                 "bookmark",
                 "internallink",
@@ -111,14 +97,30 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "alignment:center",
                 "alignment:right",
                 "alignment:justify",
-                "outdent",
-                "indent",
                 "|",
                 "insertTemplate",
                 "markdownImport",
                 "cuttonote"
             ]
-        }
+        },
+        textFormattingToolbar: [
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "code",
+            "|",
+            "superscript",
+            "subscript",
+            "kbd",
+            "|",
+            "fontSize",
+            "fontColor",
+            "fontBackgroundColor",
+            "|",
+            "removeFormat",
+            "formatPainter"
+        ]
     };
 }
 

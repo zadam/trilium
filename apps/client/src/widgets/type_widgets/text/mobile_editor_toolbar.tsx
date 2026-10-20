@@ -26,6 +26,7 @@ export default function MobileEditorToolbar() {
     const [ noteEditor, setNoteEditor ] = useState<CKTextEditor>();
     const nestedEditor = useNestedEditor(ntxId);
     const editor = nestedEditor?.ui.view.toolbar ? nestedEditor : noteEditor;
+    const toolbarElement = useShownToolbarElement(editor);
     const isActive = useEditorsFocused(noteEditor, nestedEditor) || dropdownActive;
 
     usePositioningOniOS(islandRef);
@@ -45,13 +46,12 @@ export default function MobileEditorToolbar() {
     }, [ nestedEditor ]);
 
     useEffect(() => {
-        const toolbar = editor?.ui.view.toolbar?.element;
-        if (toolbar) {
-            containerRef.current?.replaceChildren(toolbar);
+        if (toolbarElement) {
+            containerRef.current?.replaceChildren(toolbarElement);
         } else {
             containerRef.current?.replaceChildren();
         }
-    }, [ editor ]);
+    }, [ toolbarElement ]);
 
     // Observe when a dropdown is expanded to apply a style that allows the dropdown to be visible, since we can't have the element both visible and the toolbar scrollable.
     useEffect(() => {
@@ -111,6 +111,33 @@ export function useEditorsFocused(
     return focused;
 }
 
+/**
+ * The element of the toolbar `editor` shows: the `TextFormattingToolbar` while it is active, and
+ * the editor's own toolbar otherwise.
+ */
+export function useShownToolbarElement(editor: CKTextEditor | undefined) {
+    const formatting = editor?.plugins.has("TextFormattingToolbar")
+        ? editor.plugins.get("TextFormattingToolbar")
+        : undefined;
+    const [ formattingActive, setFormattingActive ] = useState(false);
+
+    useEffect(() => {
+        if (!formatting) {
+            setFormattingActive(false);
+            return;
+        }
+        const update = () => setFormattingActive(formatting.isActive);
+        update();
+        formatting.on("change:isActive", update);
+        return () => formatting.off("change:isActive", update);
+    }, [ formatting ]);
+
+    const element = formatting && formattingActive
+        ? formatting.toolbarView.element
+        : editor?.ui.view.toolbar?.element;
+    return element ?? undefined;
+}
+
 /** The editors whose toolbar dropdowns open upwards already. */
 const repositionedEditors = new WeakSet<CKTextEditor>();
 
@@ -123,8 +150,11 @@ function repositionDropdowns(editor: CKTextEditor) {
     if (repositionedEditors.has(editor)) return;
     repositionedEditors.add(editor);
 
-    const toolbarView = (editor as ClassicEditor).ui.view.toolbar;
-    for (const item of toolbarView.items) {
+    const toolbarViews = [ (editor as ClassicEditor).ui.view.toolbar ];
+    if (editor.plugins.has("TextFormattingToolbar")) {
+        toolbarViews.push(editor.plugins.get("TextFormattingToolbar").toolbarView);
+    }
+    for (const item of toolbarViews.flatMap((toolbarView) => [ ...toolbarView.items ])) {
         if (!("panelView" in item)) continue;
 
         item.on("change:isOpen", () => {

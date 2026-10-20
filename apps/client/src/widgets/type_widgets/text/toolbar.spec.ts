@@ -124,9 +124,28 @@ describe("group labels", () => {
 });
 
 describe("buildMobileToolbar", () => {
-    it("holds no nested groups", () => {
-        const items: unknown[] = buildMobileToolbar(true).toolbar.items;
-        expect(items.every((item) => typeof item === "string")).toBe(true);
+    it("holds no nested groups, on either row", () => {
+        const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
+        for (const items of [ toolbar.items, textFormattingToolbar ] as unknown[][]) {
+            expect(items.every((item) => typeof item === "string")).toBe(true);
+        }
+    });
+
+    it("keeps text formatting on a row of its own, opened from the main row", () => {
+        const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
+        expect(toolbar.items.slice(0, 7)).toStrictEqual([
+            "undo", "redo", "|", "headingCompact", "textFormatting", "|", "bulletedList"
+        ]);
+        expect(textFormattingToolbar).toStrictEqual([
+            "bold", "italic", "underline", "strikethrough", "code",
+            "|",
+            "superscript", "subscript", "kbd",
+            "|",
+            "fontSize", "fontColor", "fontBackgroundColor",
+            "|",
+            "removeFormat", "formatPainter"
+        ]);
+        expect(toolbar.items.filter((item) => item !== "|" && textFormattingToolbar.includes(item))).toStrictEqual([]);
     });
 
     it("opens the table form instead of the size grid", () => {
@@ -151,17 +170,21 @@ describe("buildMobileToolbar", () => {
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
                 .map((item) => MOBILE_VARIANTS[item] ?? item);
-            const mobileItems = collectItems({ items: buildMobileToolbar(aiAssistant).toolbar.items });
+            const { toolbar, textFormattingToolbar } = buildMobileToolbar(aiAssistant);
+            const mobileItems = collectItems({ items: [ ...toolbar.items, ...textFormattingToolbar ] })
+                .filter((item) => item !== "textFormatting");
             expect(mobileItems.toSorted()).toStrictEqual(classicItems.toSorted());
         }
     });
 
-    it("neither starts nor ends on a separator, nor doubles one", () => {
+    it("neither starts nor ends on a separator, nor doubles one, on either row", () => {
         for (const aiAssistant of [ true, false ]) {
-            const items = buildMobileToolbar(aiAssistant).toolbar.items;
-            expect(items[0]).not.toBe("|");
-            expect(items.at(-1)).not.toBe("|");
-            expect(items.some((item, index) => item === "|" && items[index + 1] === "|")).toBe(false);
+            const { toolbar, textFormattingToolbar } = buildMobileToolbar(aiAssistant);
+            for (const items of [ toolbar.items, textFormattingToolbar ]) {
+                expect(items[0]).not.toBe("|");
+                expect(items.at(-1)).not.toBe("|");
+                expect(items.some((item, index) => item === "|" && items[index + 1] === "|")).toBe(false);
+            }
         }
     });
 });
