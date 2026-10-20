@@ -42,27 +42,73 @@ export function buildToolbarConfig(isClassicToolbar: boolean, aiAssistant: boole
     }
 }
 
+/**
+ * The bar above the virtual keyboard: scrolling rows whose only nested group is the insert menu,
+ * which holds the least used insertions. Undo and redo lead the main row, since a virtual keyboard
+ * has no key for either. The `textFormatting` button swaps in a second row of the formatting
+ * applied to text, which `TextFormattingToolbar` builds.
+ */
 export function buildMobileToolbar(aiAssistant: boolean) {
-    const classicConfig = buildClassicToolbar(false, aiAssistant);
-    const items: string[] = [];
-
-    for (const item of classicConfig.toolbar.items) {
-        if (typeof item === "object" && "items" in item) {
-            for (const subitem of item.items) {
-                items.push(subitem);
-            }
-        } else {
-            // The size grid of `insertTable` needs a pointer that hovers over its cells.
-            items.push(item === "insertTable" ? "insertTableForm" : item);
-        }
-    }
-
     return {
-        ...classicConfig,
         toolbar: {
-            ...classicConfig.toolbar,
-            items
-        }
+            items: [
+                "undo",
+                "redo",
+                "|",
+                {
+                    ...buildInsertGroup(),
+                    // Groups of three fill the rows of tiles.
+                    asMenu: { layout: "tiles" },
+                    items: [
+                        "collapsible", "tabs", "multicolumnLayout",
+                        "|",
+                        "horizontalLine", "pageBreak", "footnote",
+                        "|",
+                        "math", "drawingCanvas", "mermaid",
+                        "|",
+                        "bookmark", "linkEmbed", "contentEmbed",
+                        "|",
+                        "specialCharacters", "emoji", "insertIcon",
+                        "|",
+                        "dateTime", "insertTemplate", "markdownImport"
+                    ]
+                },
+                "blockType",
+                "textFormatting",
+                "|",
+                "outdent",
+                "indent",
+                "|",
+                "link",
+                "internallink",
+                ...(aiAssistant ? ["aiAssistantMenu"] : []),
+                "attachMenu",
+                // The size grid of `insertTable` needs a pointer that hovers over its cells.
+                "insertTableForm",
+                "|",
+                "alignmentMenu"
+            ]
+        },
+        textFormattingToolbar: [
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "code",
+            "|",
+            "superscript",
+            "subscript",
+            "kbd",
+            "|",
+            "fontSizeMenu",
+            "colorMenu",
+            "|",
+            "removeFormat",
+            "formatPainter",
+            "|",
+            // Acts on the selection, which brings this row up.
+            "cuttonote"
+        ]
     };
 }
 

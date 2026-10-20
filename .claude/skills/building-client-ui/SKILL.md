@@ -260,6 +260,7 @@ use parameter defaults.
 - **A `useEffect` cleanup that must run during the unmount** — it runs after paint; reporting to a host or reading a child instance belongs in a `useLayoutEffect` cleanup (see "Preact 11 conventions").
 - **Importing core names through `preact/compat`** — `createPortal`, hooks and types come from `preact` / `preact/hooks`; compat is for `memo`, `lazy`, `Suspense`, `flushSync`, `useSyncExternalStore`.
 - **Diagnosing a style or placement bug from the stylesheets** — the load order in a hand-built test page does not match the app's, so the bug can fail to reproduce and send you after the wrong cause. Measure computed styles in a running instance: [references/inspecting-the-running-app.md](references/inspecting-the-running-app.md).
+- **Reasoning about what a device's browser reports instead of measuring it** — a bug that lives in mobile Safari's keyboard or viewport cannot be reproduced here, and the specs do not predict WebKit's behavior. Log readings from the device into the dev server's log and replay them: [references/measuring-on-a-device.md](references/measuring-on-a-device.md).
 
 > Not a footgun here: `isElectron()` / `isMac()` from `apps/client/src/services/utils.ts` are runtime checks safe at module load. The "call only after init" trap is a **trilium-core** concern (`utils/index.ts` → `getPlatform()`), not client UI.
 
@@ -269,6 +270,7 @@ use parameter defaults.
 |---|---|
 | [references/hooks-catalog.md](references/hooks-catalog.md) | All 60 `use*` hooks grouped by purpose, one line each with the `loadResults` filter it wires — the anti-re-derivation asset. |
 | [references/dialogs.md](references/dialogs.md) | Full `Modal` prop reference, the 5-step summon→register recipe, `LazyDialog` mechanics, the four eager exceptions, the `sort_child_notes.tsx` walkthrough. |
+| [references/measuring-on-a-device.md](references/measuring-on-a-device.md) | Diagnosing a bug that exists only on the user's device (mobile Safari's keyboard, the visual viewport): temporary `window.logInfo` readings into the dev server's log, what to log, and replaying the readings offline to verify a fix. |
 | [references/inspecting-the-running-app.md](references/inspecting-the-running-app.md) | Booting a login-free instance on the e2e fixture document (in memory, no build, no password) to measure real computed styles, plus how to read a cascade or stacking problem in the running app. Reach for it whenever the answer depends on what actually won, not on what the stylesheets say. |
 
 Related skills: **writing-unit-tests** (rendering these components and testing hooks with the easy-froca fixtures), **analyzing-coverage** (measuring client coverage), **working-with-translations** (adding the English strings these components display).

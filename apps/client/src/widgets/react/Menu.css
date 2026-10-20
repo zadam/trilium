@@ -288,6 +288,22 @@ body.desktop .dropdown-item.dropdown-submenu.submenu-open,
     }
 }
 
+/* The gaps and the card background match `.form-list-row` and the mobile `.dropdown-item` in theme-next/menus.css. */
+body.mobile .tn-menu-actions.tn-menu-actions-cards {
+    gap: 1em;
+    margin-bottom: 1em;
+
+    & > .tn-menu-action {
+        padding-block: var(--dropdown-menu-padding-vertical);
+        background: var(--card-background-color);
+        border-radius: 6px;
+
+        &::before {
+            content: none;
+        }
+    }
+}
+
 .tn-menu-action-icon {
     position: relative;
     display: inline-flex;
@@ -304,6 +320,18 @@ body.desktop .dropdown-item.dropdown-submenu.submenu-open,
     right: -0.08em;
     bottom: -0.08em;
     font-size: 0.6em;
+}
+
+.tn-menu-action-more {
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-end: 2px;
+    color: var(--menu-item-icon-color);
+    opacity: 0.6;
+
+    &:dir(rtl) {
+        transform: scaleX(-1);
+    }
 }
 
 .tn-menu-action-title {

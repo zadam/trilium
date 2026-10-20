@@ -11,6 +11,7 @@ import { isMobile } from "../../services/utils";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListHeader, FormListItem } from "./FormList";
 import FormTextBox from "./FormTextBox";
 import { useStaticTooltipWithKeyboardShortcut, useUniqueName } from "./hooks";
+import { SvgIcon } from "./Icon";
 import { type ActiveRow, isRightToLeft, MenuContext, type MenuContextValue, type MenuFilter, MenuFilterContext, MenuLevelContext, type OpenSubmenu, pointerMoved, type RowEntry, shouldDropStart, useMenu } from "./menu_context";
 import Popup, { type PopupProps } from "./Popup";
 
@@ -24,7 +25,8 @@ import Popup, { type PopupProps } from "./Popup";
  * `FormDropdownSubmenu`, `FormDropdownDivider`, `FormListHeader` and `FormListCustomItem`.
  */
 export interface MenuProps<T> extends Pick<PopupProps, "anchor" | "offset" | "container" | "portalClassName"
-        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby" | "placedByStylesheet"> {
+        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby" | "placedByStylesheet"
+        | "keepOpenSelector"> {
     id?: string;
     className?: string;
     /** The side of its anchor it prefers: beside a point towards the right, or below an element. */
@@ -566,27 +568,59 @@ function MenuActions<T>({ items, className, onSelect }: { items: MenuCommandItem
 }
 
 function MenuAction<T>({ item, onSelect }: { item: MenuCommandItem<T>, onSelect: MenuProps<T>["onSelect"] }) {
+    return (
+        <MenuTile
+            icon={item.uiIcon} iconBadge={item.uiIconBadge} title={item.title}
+            tooltip={item.tooltip ?? textOf(item.title)} keyboardShortcut={item.keyboardShortcut}
+            disabled={item.enabled === false} onSelect={(e) => onSelect?.(item, e)}
+        />
+    );
+}
+
+interface MenuTileProps {
+    /** The classes of the icon, such as `bx bx-copy`. */
+    icon?: string;
+    /** An SVG icon, in place of {@link icon}. */
+    iconSvg?: string;
+    /** The classes of a small icon over the corner of the icon. */
+    iconBadge?: string;
+    /** The title as HTML, as for a row's. */
+    title: string;
+    /** The full title, which a narrow tile can cut short. */
+    tooltip: string;
+    keyboardShortcut?: MenuCommandItem<unknown>["keyboardShortcut"];
+    disabled?: boolean;
+    /** Makes the tile one that is checked or not, which a menu tells assistive technology. */
+    checked?: boolean;
+    onSelect(e: MouseEvent | KeyboardEvent): void;
+}
+
+/**
+ * An item drawn as a tile, its icon over its title, as a `MenuActions` strip lays them out. It
+ * registers with the menu as a row of its own, so the keys step through the tiles in order.
+ */
+export function MenuTile({ icon, iconSvg, iconBadge, title, tooltip, keyboardShortcut, disabled = false, checked, onSelect }: MenuTileProps) {
     const menu = useContext(MenuContext);
     const level = useContext(MenuLevelContext);
     const id = useUniqueName("menu-row");
-    const disabled = item.enabled === false;
-    const select = (e: MouseEvent | KeyboardEvent) => onSelect?.(item, e);
     const buttonRef = useRef<HTMLButtonElement | null>(null);
     // The full title, which a narrow menu can cut short, and the shortcut a row would show. A phone
     // has no pointer to hover with and no keyboard, so it gets neither; an empty title shows none.
     const mobile = isMobile();
-    useStaticTooltipWithKeyboardShortcut(buttonRef, mobile ? "" : item.tooltip ?? textOf(item.title),
-        mobile ? undefined : item.keyboardShortcut, ACTION_TOOLTIP);
+    useStaticTooltipWithKeyboardShortcut(buttonRef, mobile ? "" : tooltip,
+        mobile ? undefined : keyboardShortcut, ACTION_TOOLTIP);
 
     return (
         <button
             ref={(element) => {
                 buttonRef.current = element;
                 menu?.registerRow(id, element
-                    ? { level, element, custom: false, disabled, hasSubmenu: false, inline: true, select }
+                    ? { level, element, custom: false, disabled, hasSubmenu: false, inline: true, select: onSelect }
                     : undefined);
             }}
-            id={menu ? id : undefined} type="button" role="menuitem"
+            id={menu ? id : undefined} type="button"
+            role={checked === undefined ? "menuitem" : "menuitemcheckbox"}
+            aria-checked={checked}
             className={clsx("tn-menu-action", menu?.active?.id === id && "tn-menu-active")}
             disabled={disabled} tabIndex={menu ? -1 : undefined}
             // The keyboard goes on from the action the pointer last pointed at, as from a row.
@@ -595,14 +629,15 @@ function MenuAction<T>({ item, onSelect }: { item: MenuCommandItem<T>, onSelect:
             }}
             // A press keeps focus where it was, as on a row.
             onMouseDown={(e) => e.preventDefault()}
-            onClick={select}
+            onClick={onSelect}
         >
             <span className="tn-menu-action-icon" aria-hidden="true">
-                <span className={clsx("tn-icon", item.uiIcon ?? "bx bx-empty", item.uiIconBadge && "tn-menu-action-badged")} />
-                {item.uiIconBadge && <span className={clsx("tn-menu-action-badge", item.uiIconBadge)} />}
+                {iconSvg
+                    ? <SvgIcon svg={iconSvg} />
+                    : <span className={clsx("tn-icon", icon ?? "bx bx-empty", iconBadge && "tn-menu-action-badged")} />}
+                {iconBadge && <span className={clsx("tn-menu-action-badge", iconBadge)} />}
             </span>
-            {/* Callers pass HTML, as for a row's title. */}
-            <span className="tn-menu-action-title" dangerouslySetInnerHTML={{ __html: item.title }} />
+            <span className="tn-menu-action-title" dangerouslySetInnerHTML={{ __html: title }} />
         </button>
     );
 }

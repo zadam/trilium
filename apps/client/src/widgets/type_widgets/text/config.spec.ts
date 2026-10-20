@@ -622,6 +622,15 @@ describe("CK config - disabled plugins", () => {
         expect(enabled.removePlugins).not.toContain("TriliumSlashCommands");
     });
 
+    it("hands the toolbar's group menus and the color menu to the app's own menu", async () => {
+        const config = await buildConfig(baseOpts());
+        const editor = {} as Parameters<NonNullable<typeof config.colorMenu>["host"]>[0];
+        for (const host of [ config.toolbarGroupMenu?.host(editor), config.colorMenu?.host(editor) ]) {
+            expect(host).toMatchObject({ show: expect.any(Function), hide: expect.any(Function) });
+            host?.destroy();
+        }
+    });
+
     it("removes the block drag handle in the mobile layout", async () => {
         const originalDevice = window.glob.device;
         try {

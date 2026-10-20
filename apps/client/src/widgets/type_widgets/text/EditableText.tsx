@@ -538,7 +538,9 @@ export default function EditableText({
             const visibleBottom = Math.min(containerRect.bottom, viewportBottom);
             const visibleTop = Math.max(containerRect.top, viewportTop);
 
-            const overshoot = caretRect.bottom - (visibleBottom - CARET_BOTTOM_MARGIN_PX);
+            // The mobile formatting toolbar floats over the scroller and reserves its height here.
+            const toolbarClearance = parseFloat(getComputedStyle(scroller).scrollPaddingBottom) || 0;
+            const overshoot = caretRect.bottom - (visibleBottom - toolbarClearance - CARET_BOTTOM_MARGIN_PX);
             if (overshoot > 0) {
                 scroller.scrollTop += overshoot;
                 return;

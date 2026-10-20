@@ -1,66 +1,132 @@
 import "./hide_keyboard_button.css";
 
-import { useEffect, useState } from "preact/hooks";
+import clsx from "clsx";
+import { RefObject } from "preact";
+import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import { t } from "../../services/i18n";
-import { isIOS, isMobileApp } from "../../services/utils";
+import { isIOS } from "../../services/utils";
 import ActionButton from "../react/ActionButton";
 
 /**
- * Closes the keyboard in the iOS app, which hides the keyboard's input accessory bar and with it the
- * "Done" button (see `ViewController.hideKeyboardInputAccessoryView()`). The button stands at the
- * bottom-end corner, just above the keyboard, while an editable element has the focus, whatever the
- * note type. Android needs none: the system Back closes the keyboard.
+ * Closes the virtual keyboard by blurring the focused element. The button stands at the bottom-end
+ * corner, just above the keyboard, while `RootContainer` marks the keyboard as open with
+ * `virtual-keyboard-opened`. While `MobileEditorToolbar` is shown, which it is while its editor has
+ * the focus, the toolbar carries the button instead (see `hide_keyboard_button.css`).
+ * In the iOS app, blurring also hides the keyboard's input accessory bar (see
+ * `ViewController.hideKeyboardInputAccessoryView()`).
  */
 export default function HideKeyboardButton() {
-    const enabled = isMobileApp() && isIOS();
-    const [ editableFocused, setEditableFocused ] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    usePositioningOniOS(containerRef);
 
-    useEffect(() => {
-        if (!enabled) return;
+    return <HideKeyboardAction className="hide-keyboard-button" containerRef={containerRef} />;
+}
 
-        const onFocusIn = (e: FocusEvent) => setEditableFocused(isEditable(e.target));
-        const onFocusOut = (e: FocusEvent) => setEditableFocused(isEditable(e.relatedTarget));
-        setEditableFocused(isEditable(document.activeElement));
-        document.addEventListener("focusin", onFocusIn);
-        document.addEventListener("focusout", onFocusOut);
-        return () => {
-            document.removeEventListener("focusin", onFocusIn);
-            document.removeEventListener("focusout", onFocusOut);
-        };
-    }, [ enabled ]);
-
+/**
+ * The button alone, which `MobileEditorToolbar` places at the end of its island. Given
+ * `closeMenu`, as while a menu of the toolbar is in the keyboard's place, it is an X that calls
+ * `closeMenu` instead of hiding the keyboard.
+ */
+export function HideKeyboardAction({ className, containerRef, closeMenu }: {
+    className: string;
+    containerRef?: RefObject<HTMLDivElement | null>;
+    closeMenu?: () => void;
+}) {
     return (
         // Keeps the press from moving the focus onto the button: an open dialog's focus trap would
         // send it back into the dialog and bring the keyboard up again.
-        <div className="hide-keyboard-button" onMouseDown={(e) => e.preventDefault()}>
-            {enabled && editableFocused && (
-                <ActionButton
-                    icon="bx bx-chevron-down"
-                    text={t("hide_keyboard_button.title")}
-                    noTooltipOnTouch
-                    onClick={() => {
-                        if (document.activeElement instanceof HTMLElement) {
-                            document.activeElement.blur();
-                        }
-                    }}
-                />
-            )}
+        <div
+            ref={containerRef}
+            className={clsx(className, closeMenu && "closes-menu")}
+            onMouseDown={(e) => e.preventDefault()}
+        >
+            <ActionButton
+                icon={closeMenu ? "bx bx-x" : "bx bxs-keyboard"}
+                text={closeMenu
+                    ? t("hide_keyboard_button.close_menu")
+                    : t("hide_keyboard_button.title")}
+                noTooltipOnTouch
+                onClick={() => {
+                    if (closeMenu) {
+                        closeMenu();
+                    } else if (document.activeElement instanceof HTMLElement) {
+                        document.activeElement.blur();
+                    }
+                }}
+            />
         </div>
     );
 }
 
-/** Input types that take no typed text, so focusing them opens no keyboard. */
-const NON_TEXT_INPUT_TYPES = new Set([
-    "button", "checkbox", "color", "file", "hidden", "image", "radio", "range", "reset", "submit"
-]);
+/**
+ * Lifts an element at the bottom of its `anchorRef`, or of the screen for a fixed element, above
+ * the keyboard in plain mobile Safari, which does not resize the page for the keyboard.
+ */
+export function usePositioningOniOS(
+    wrapperRef: RefObject<HTMLDivElement | null>,
+    anchorRef?: RefObject<HTMLElement | null>
+) {
+    // Safari shrinks `visualViewport` for the keyboard but not the layout, so the element rises by
+    // how far its anchor reaches below the visible bottom. With the keyboard up Safari scrolls the
+    // fixed page itself, and client coordinates move with that scroll, so the visible bottom is
+    // `pageTop - scrollY + height`: `offsetTop + height` elsewhere, `height` in Safari. Under
+    // Capacitor `resize: native` the layout shrinks too, so `obscured` is 0 and CSS stays in
+    // charge.
+    const adjustPosition = useCallback(() => {
+        if (!wrapperRef.current) return;
+        const viewport = window.visualViewport;
+        if (!viewport) return;
 
-export function isEditable(element: EventTarget | null) {
-    if (element instanceof HTMLInputElement) {
-        return !element.readOnly && !element.disabled && !NON_TEXT_INPUT_TYPES.has(element.type);
+        const anchorBottom = anchorRef?.current?.getBoundingClientRect().bottom
+            ?? window.innerHeight;
+        const visibleBottom = heldVisibleBottom ?? measureVisibleBottom(viewport);
+        const obscured = Math.max(0, Math.round(anchorBottom - visibleBottom));
+
+        if (obscured <= 1) {
+            wrapperRef.current.style.removeProperty("bottom");
+        } else {
+            wrapperRef.current.style.bottom = `${obscured}px`;
+        }
+    }, [ wrapperRef ]);
+
+    useEffect(() => {
+        if (!isIOS()) return;
+        // Run once in case the keyboard is already up when mounting
+        // (e.g. returning from a dialog).
+        adjustPosition();
+        const viewport = window.visualViewport;
+        viewport?.addEventListener("resize", adjustPosition);
+        viewport?.addEventListener("scroll", adjustPosition);
+        // Safari undoes its keyboard scroll before `visualViewport` reports the keyboard gone.
+        window.addEventListener("scroll", adjustPosition);
+        visibleBottomListeners.add(adjustPosition);
+        return () => {
+            viewport?.removeEventListener("resize", adjustPosition);
+            viewport?.removeEventListener("scroll", adjustPosition);
+            window.removeEventListener("scroll", adjustPosition);
+            visibleBottomListeners.delete(adjustPosition);
+        };
+    }, [ adjustPosition ]);
+}
+
+/**
+ * Holds the visible bottom that `usePositioningOniOS` lifts elements to at its current value, for
+ * a menu that takes the place of the keyboard (see `useKeyboardPanel`). As the keyboard closes,
+ * Safari undoes its scroll at once but reports the keyboard's `visualViewport` for some 300ms
+ * more, which would drop the toolbar into the menu's place meanwhile.
+ */
+export function holdVisibleBottom(isHeld: boolean) {
+    const viewport = window.visualViewport;
+    heldVisibleBottom = isHeld && viewport ? measureVisibleBottom(viewport) : undefined;
+    for (const listener of visibleBottomListeners) {
+        listener();
     }
-    if (element instanceof HTMLTextAreaElement) {
-        return !element.readOnly && !element.disabled;
-    }
-    return element instanceof HTMLElement && element.isContentEditable;
+}
+
+let heldVisibleBottom: number | undefined;
+const visibleBottomListeners = new Set<() => void>();
+
+function measureVisibleBottom(viewport: VisualViewport) {
+    return viewport.pageTop - window.scrollY + viewport.height;
 }

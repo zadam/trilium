@@ -71,6 +71,19 @@ describe("RootContainer", () => {
         expect($widget.hasClass("virtual-keyboard-opened")).toBe(true);
     });
 
+    it("keeps the height of the last keyboard for a menu to take its place", () => {
+        renderInPortrait();
+        const keyboardHeight = () => document.body.style.getPropertyValue("--tn-keyboard-height");
+
+        resizeTo({ width: 400, height: 800, viewportHeight: 450 });
+        expect(keyboardHeight()).toBe("350px");
+
+        // Closing the keyboard leaves the height for a menu that replaces it as it closes.
+        resizeTo({ width: 400, height: 800 });
+        expect(keyboardHeight()).toBe("350px");
+        document.body.style.removeProperty("--tn-keyboard-height");
+    });
+
     it("marks the body while sticky table headers are off, and follows a change", () => {
         const isMarked = () => document.body.classList.contains("sticky-table-headers-disabled");
         options.set("textNoteStickyTableHeadersEnabled", "true");

@@ -213,6 +213,8 @@ The project needs `cap sync android` (or `cap update android`) once first, for t
 - **Only Android-free classes are testable.** Unit tests compile against `android.jar`, whose classes (`Uri`, `Handler`, `Log`, `Base64`, `WebResourceResponse`) are stubs that throw "Method not mocked". Logic therefore lives in classes that import none of them (`LocalRequestBroker`, `NativeHttpProxy`, `InterceptedResponse`), with the WebView, the main thread, base64 and logging passed in; the `Trilium*` classes and `MainActivity` are thin adapters with no tests, and the request-path ones (`TriliumRequestBridge`, `TriliumWebViewClient`, `MainActivity`) are listed under `ignore:` in `codecov.yml` so the patch check does not count them. Keep new native logic on the same side of that line, and a new adapter goes on that list.
 - **`org.json` comes from a `testImplementation` dependency**, since `android.jar`'s copy is a stub too. **`com.sun.net.httpserver` is not on the test classpath**, so `NativeHttpProxyTest` serves canned responses from a `ServerSocket` (`StubServer`).
 - **`minSdk` is 24**: `String.join` and `java.util.Base64` need API 26, so production code avoids them; tests can use them.
+
+Client behavior that differs on the device itself (the keyboard, the visual viewport, touch scrolling) can't be reproduced by these suites or by Playwright. When the device's browser shows it against `pnpm server:start`, log readings into the dev server's log and replay them: the `building-client-ui` skill, `references/measuring-on-a-device.md`.
 The iOS request logic has XCTest tests in a Swift package, `apps/mobile/ios/RequestBroker/`:
 
 ```bash
