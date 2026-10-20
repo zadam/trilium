@@ -1,11 +1,14 @@
 import {
     _getLocalizedHeadingOptions as getLocalizedHeadingOptions,
     addListToDropdown,
+    BlockQuote,
+    CodeBlock,
     Collection,
     createDropdown,
     FontSize,
     Heading,
     IconBulletedList,
+    IconCodeBlock,
     IconHeading1,
     IconHeading2,
     IconHeading3,
@@ -14,6 +17,7 @@ import {
     IconHeading6,
     IconNumberedList,
     IconParagraph,
+    IconQuote,
     IconTodoList,
     List,
     Plugin,
@@ -22,6 +26,8 @@ import {
 } from "ckeditor5";
 import type { ButtonView, Command, DropdownView, ListDropdownItemDefinition, Locale } from "ckeditor5";
 
+import admonitionIcon from "../icons/admonition.svg?raw";
+import AdmonitionEditing from "./admonition/admonition_editing.js";
 import { openListAsMenu } from "./toolbar_group_menu.js";
 
 const HEADING_ICONS: Record<string, string> = {
@@ -47,14 +53,15 @@ interface BlockType {
  * `ToolbarGroupMenu` opens the lists of both as the host application's menu.
  *
  * - `blockType`: what Notion calls "Turn into". The paragraph, the headings of the `heading`
- *   configuration, and the bulleted, numbered and to-do lists, as one dropdown whose button shows
- *   an icon of the current block rather than its name, which takes 8em.
+ *   configuration, the bulleted, numbered and to-do lists and the code block, which replace each
+ *   other, and the block quote and the admonition, which wrap the block. One dropdown, whose
+ *   button shows an icon of the current block rather than its name, which takes 8em.
  * - `fontSizeMenu`: the `fontSize` dropdown.
  */
 export default class MobileToolbarItems extends Plugin {
 
     static get requires() {
-        return [Heading, List, TodoList, FontSize] as const;
+        return [Heading, List, TodoList, CodeBlock, BlockQuote, AdmonitionEditing, FontSize] as const;
     }
 
     static get pluginName() {
@@ -87,24 +94,37 @@ export default class MobileToolbarItems extends Plugin {
             { label: t("Numbered List"), icon: IconNumberedList, command: "numberedList" },
             { label: t("To-do List"), icon: IconTodoList, command: "todoList" }
         ];
-        const commands = [...new Set([...blocks, ...lists].map((type) => type.command))].map(command);
+        const code: BlockType = { label: t("Code block"), icon: IconCodeBlock, command: "codeBlock" };
+        const wrappers: BlockType[] = [
+            { label: t("Block quote"), icon: IconQuote, command: "blockQuote" },
+            { label: t("Admonition"), icon: admonitionIcon, command: "admonition" }
+        ];
+        const groups = [blocks, lists, [code, ...wrappers]];
+        const commands = [...new Set(groups.flat().map((type) => type.command))].map(command);
 
-        // A list item is a paragraph too, so the lists are asked first.
+        // A list item is a paragraph too, so the lists are asked first. A wrapper is not a type of
+        // the block, which keeps its own.
         const current = () => lists.find((type) => command(type.command).value === true)
+            ?? (command("codeBlock").value ? code : undefined)
             ?? blocks.find((type) => (type.value
                 ? command("heading").value === type.value
                 : command("paragraph").value === true));
+        const isOn = (type: BlockType) => (wrappers.includes(type)
+            ? Boolean(command(type.command).value)
+            : current() === type);
 
         const items = new Collection<ListDropdownItemDefinition>();
-        for (const [index, type] of [...blocks, ...lists].entries()) {
-            if (index === blocks.length) {
+        for (const [index, group] of groups.entries()) {
+            if (index > 0) {
                 items.add({ type: "separator" });
             }
-            const model = new UIModel({
-                label: type.label, icon: type.icon, role: "menuitemradio", withText: true, blockType: type
-            });
-            model.bind("isOn").toMany(commands, "value", () => current() === type);
-            items.add({ type: "button", model });
+            for (const type of group) {
+                const model = new UIModel({
+                    label: type.label, icon: type.icon, role: "menuitemradio", withText: true, blockType: type
+                });
+                model.bind("isOn").toMany(commands, "value", () => isOn(type));
+                items.add({ type: "button", model });
+            }
         }
 
         const dropdown = createDropdown(locale);
@@ -120,29 +140,50 @@ export default class MobileToolbarItems extends Plugin {
 
         dropdown.on("execute", (evt) => {
             const { blockType } = evt.source as ButtonView & { blockType: BlockType };
-            this.setBlockType(blockType, lists.find((type) => command(type.command).value === true));
+            this.setBlockType(blockType, { lists, code, wrappers });
         });
         openListAsMenu(dropdown, { layout: "tiles" });
         return dropdown;
     }
 
     /**
-     * Turns the selected blocks into `type` as one undo step. A list is made of paragraphs, and a
-     * paragraph or a heading picked in a list leaves the list, as Notion's "Turn into" does.
+     * Turns the selected blocks into `type` as one undo step, as Notion's "Turn into" does: a list
+     * is made of paragraphs, a paragraph, a heading or a code block picked in a list leaves the
+     * list, and anything but a code block picked in one leaves it. A wrapper toggles around the
+     * blocks instead.
      */
-    private setBlockType(type: BlockType, currentList: BlockType | undefined) {
+    private setBlockType(type: BlockType, { lists, code, wrappers }: {
+        lists: BlockType[];
+        code: BlockType;
+        wrappers: BlockType[];
+    }) {
         const editor = this.editor;
+        const isOn = (name: string) => Boolean(editor.commands.get(name)?.value);
 
         editor.model.change(() => {
-            if (type.command.endsWith("List")) {
-                if (editor.commands.get("paragraph")?.value !== true) {
+            if (wrappers.includes(type)) {
+                editor.execute(type.command);
+                return;
+            }
+
+            const currentList = lists.find((list) => isOn(list.command));
+            if (isOn("codeBlock") && type !== code) {
+                editor.execute("codeBlock", { forceValue: false });
+            }
+            if (lists.includes(type)) {
+                if (!isOn("paragraph")) {
                     editor.execute("paragraph");
                 }
                 editor.execute(type.command, { forceValue: true });
+                return;
+            }
+
+            if (currentList) {
+                editor.execute(currentList.command, { forceValue: false });
+            }
+            if (type === code) {
+                editor.execute(type.command, { forceValue: true });
             } else {
-                if (currentList) {
-                    editor.execute(currentList.command, { forceValue: false });
-                }
                 editor.execute(type.command, type.value ? { value: type.value } : undefined);
             }
         });

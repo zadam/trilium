@@ -64,11 +64,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 ...(aiAssistant ? ["aiAssistant"] : []),
                 "imageUpload",
                 "fileUpload",
-                "blockQuote",
-                "admonition",
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.
                 "insertTableForm",
-                "codeBlock",
                 "|",
                 "footnote",
                 "linkEmbed",

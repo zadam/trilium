@@ -1,17 +1,21 @@
 import {
     _getModelData as getModelData,
     _setModelData as setModelData,
+    BlockQuote,
     ClassicEditor,
     CodeBlock,
     DropdownView,
     Essentials,
     FontSize,
     Heading,
+    HorizontalLine,
     IconBulletedList,
+    IconCodeBlock,
     IconHeading2,
     IconHeading3,
     IconNumberedList,
     IconParagraph,
+    IconQuote,
     IconTodoList,
     List,
     Paragraph,
@@ -21,6 +25,8 @@ import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
+import admonitionIcon from "../icons/admonition.svg?raw";
+import AdmonitionEditing from "./admonition/admonition_editing.js";
 import MobileToolbarItems from "./mobile_toolbar_items.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuEntry, type ToolbarGroupMenuItem, type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
@@ -46,7 +52,7 @@ describe("MobileToolbarItems", () => {
     }));
 
     beforeEach(async () => {
-        editor = await createTestEditor([Essentials, Paragraph, Heading, List, TodoList, CodeBlock, MobileToolbarItems], {
+        editor = await createTestEditor([Essentials, Paragraph, Heading, List, TodoList, HorizontalLine, MobileToolbarItems], {
             toolbar: ["heading", "blockType"],
             heading: { options: [...HEADING_OPTIONS] }
         });
@@ -63,7 +69,10 @@ describe("MobileToolbarItems", () => {
                 ["<heading2>foo[]</heading2>", IconHeading2, "Heading 2"],
                 [BULLETED, IconBulletedList, "Bulleted List"],
                 [BULLETED.replace("bulleted", "numbered"), IconNumberedList, "Numbered List"],
-                [BULLETED.replace("bulleted", "todo"), IconTodoList, "To-do List"]
+                [BULLETED.replace("bulleted", "todo"), IconTodoList, "To-do List"],
+                ["<codeBlock language=\"plaintext\">foo[]</codeBlock>", IconCodeBlock, "Code block"],
+                // A wrapper leaves the button to the block inside it.
+                ["<blockQuote><heading2>foo[]</heading2></blockQuote>", IconHeading2, "Heading 2"]
             ];
             for (const [data, icon, name] of icons) {
                 setModelData(editor.model, data);
@@ -72,13 +81,13 @@ describe("MobileToolbarItems", () => {
             }
             expect(buttonView.element?.querySelector(".ck-button__icon")).not.toBeNull();
 
-            // A block that is none of them, such as a code block.
-            setModelData(editor.model, "<codeBlock language=\"plaintext\">foo[]</codeBlock>");
+            // A block that is none of them, such as a horizontal line.
+            setModelData(editor.model, "<paragraph>foo</paragraph>[<horizontalLine></horizontalLine>]");
             expect(buttonView.icon).toBe(IconParagraph);
             expect(buttonView.ariaLabel).toBe("Block type");
         });
 
-        it("lists the headings, then the lists, each with its icon and the current block on", async () => {
+        it("lists the headings, the lists, then code and the wrappers, each with its icon and the current block on", async () => {
             const { request, editor: menuEditor } = await createMenuEditor();
             setModelData(menuEditor.model, BULLETED);
 
@@ -86,11 +95,21 @@ describe("MobileToolbarItems", () => {
             expect(shown.layout).toBe("tiles");
             const rows = shown.items;
             expect(rows.map(rowText)).toStrictEqual([
-                "Paragraph", "Heading 2", "Heading 3", "—", "Bulleted List ✓", "Numbered List", "To-do List"
+                "Paragraph", "Heading 2", "Heading 3", "—", "Bulleted List ✓", "Numbered List", "To-do List",
+                "—", "Code block", "Block quote", "Admonition"
             ]);
             expect(icons(rows)).toStrictEqual([
-                IconParagraph, IconHeading2, IconHeading3, IconBulletedList, IconNumberedList, IconTodoList
+                IconParagraph, IconHeading2, IconHeading3, IconBulletedList, IconNumberedList, IconTodoList,
+                IconCodeBlock, IconQuote, admonitionIcon
             ]);
+
+            // A wrapper is on alongside the block inside it.
+            setModelData(menuEditor.model, `<blockQuote>${BULLETED}</blockQuote>`);
+            expect(request().items.map(rowText).filter((row) => row.endsWith("✓")))
+                .toStrictEqual(["Bulleted List ✓", "Block quote ✓"]);
+            setModelData(menuEditor.model, "<aside admonitionType=\"tip\"><paragraph>foo[]</paragraph></aside>");
+            expect(request().items.map(rowText).filter((row) => row.endsWith("✓")))
+                .toStrictEqual(["Paragraph ✓", "Admonition ✓"]);
 
             setModelData(menuEditor.model, "<heading2>foo[]</heading2>");
             expect(request().items.map(rowText).filter((row) => row.endsWith("✓"))).toStrictEqual(["Heading 2 ✓"]);
@@ -119,6 +138,28 @@ describe("MobileToolbarItems", () => {
             run("Paragraph");
             expect(model()).toBe("<paragraph>foo</paragraph>");
 
+            // A code block is a block type of its own, which a list or a heading leaves.
+            run("Numbered List");
+            run("Code block");
+            expect(model()).toBe("<codeBlock language=\"plaintext\">foo</codeBlock>");
+            run("Code block");
+            expect(model()).toBe("<codeBlock language=\"plaintext\">foo</codeBlock>");
+            run("Bulleted List");
+            expect(model()).toMatch(listOf("bulleted"));
+            run("Code block");
+            run("Heading 2");
+            expect(model()).toBe("<heading2>foo</heading2>");
+
+            // The wrappers wrap the block, and unwrap it when picked again.
+            run("Block quote");
+            expect(model()).toBe("<blockQuote><heading2>foo</heading2></blockQuote>");
+            run("Block quote");
+            expect(model()).toBe("<heading2>foo</heading2>");
+            run("Admonition");
+            expect(model()).toBe("<aside admonitionType=\"note\"><heading2>foo</heading2></aside>");
+            run("Admonition");
+            expect(model()).toBe("<heading2>foo</heading2>");
+
             run("Heading 3");
             run("Bulleted List");
             menuEditor.execute("undo");
@@ -132,7 +173,8 @@ describe("MobileToolbarItems", () => {
 
             const labels = [...dropdown.element?.querySelectorAll(".ck-list__item .ck-button__label") ?? []];
             expect(labels.map((label) => label.textContent)).toStrictEqual([
-                "Paragraph", "Heading 2", "Heading 3", "Bulleted List", "Numbered List", "To-do List"
+                "Paragraph", "Heading 2", "Heading 3", "Bulleted List", "Numbered List", "To-do List",
+                "Code block", "Block quote", "Admonition"
             ]);
 
             dropdown.element?.querySelectorAll<HTMLElement>(".ck-list__item .ck-button")[1]?.click();

@@ -146,6 +146,10 @@ describe("buildMobileToolbar", () => {
             "removeFormat", "formatPainter"
         ]);
         expect(toolbar.items.filter((item) => item !== "|" && textFormattingToolbar.includes(item))).toStrictEqual([]);
+        // Turned into from the block type menu instead.
+        for (const item of [ "bulletedList", "numberedList", "todoList", "codeBlock", "blockQuote", "admonition" ]) {
+            expect(toolbar.items).not.toContain(item);
+        }
     });
 
     it("opens the table form instead of the size grid", () => {
@@ -169,6 +173,9 @@ describe("buildMobileToolbar", () => {
             bulletedList: "blockType",
             numberedList: "blockType",
             todoList: "blockType",
+            codeBlock: "blockType",
+            blockQuote: "blockType",
+            admonition: "blockType",
             fontSize: "fontSizeMenu",
             fontColor: "colorMenu",
             fontBackgroundColor: "colorMenu"
