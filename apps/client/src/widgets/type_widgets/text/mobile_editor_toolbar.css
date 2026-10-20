@@ -41,6 +41,7 @@ body.mobile {
                 var(--card-background-color, var(--accented-background-color))
             ),
             var(--mobile-toolbar-backdrop, var(--main-background-color));
+        box-shadow: 0 2px 8px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity, 0.2) / 2));
         /* On iOS, `--tn-keyboard-gap` is updated continuously by the
            ViewController (Swift) as the keyboard frame changes, so the
            toolbar follows a finger-dragged keyboard during interactive
