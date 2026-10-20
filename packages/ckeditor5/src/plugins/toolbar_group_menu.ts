@@ -82,7 +82,8 @@ const listMenuDropdowns = new WeakMap<DropdownView, ListMenuOptions>();
 
 /**
  * Has {@link ToolbarGroupMenu} open the list of `dropdown` as a menu of its rows, as it does a
- * group marked `asMenu`. Without the plugin or a host, the dropdown opens its own panel.
+ * group marked `asMenu`, or the buttons of its toolbar for a dropdown that holds one, as
+ * `alignment` does. Without the plugin or a host, the dropdown opens its own panel.
  */
 export function openListAsMenu(dropdown: DropdownView, options: ListMenuOptions = {}) {
     listMenuDropdowns.set(dropdown, options);
@@ -282,7 +283,14 @@ export default class ToolbarGroupMenu extends Plugin {
     /** The rows of a dropdown handed to {@link openListAsMenu}. */
     private describeList(dropdown: DropdownView, run: (view: View) => () => void) {
         this.building = true;
-        const rows = describeListEntries(dropdown, run) ?? [];
+        // The dropdown builds its list or its toolbar the first time it opens.
+        if (!dropdown.listView && !dropdown.toolbarView) {
+            dropdown.isOpen = true;
+            dropdown.isOpen = false;
+        }
+        const rows = dropdown.toolbarView
+            ? describeItems([...dropdown.toolbarView.items], run)
+            : describeListEntries(dropdown, run) ?? [];
         this.building = false;
         return rows;
     }

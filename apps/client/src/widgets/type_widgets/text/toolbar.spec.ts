@@ -150,7 +150,7 @@ describe("buildMobileToolbar", () => {
             "|",
             "link", "internallink", "aiAssistant", "imageUpload", "fileUpload", "insertTableForm",
             "|",
-            "alignment:left", "alignment:center", "alignment:right", "alignment:justify",
+            "alignmentMenu",
             "|",
             "cuttonote"
         ]);
@@ -203,7 +203,11 @@ describe("buildMobileToolbar", () => {
             admonition: "blockType",
             fontSize: "fontSizeMenu",
             fontColor: "colorMenu",
-            fontBackgroundColor: "colorMenu"
+            fontBackgroundColor: "colorMenu",
+            "alignment:left": "alignmentMenu",
+            "alignment:center": "alignmentMenu",
+            "alignment:right": "alignmentMenu",
+            "alignment:justify": "alignmentMenu"
         };
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })

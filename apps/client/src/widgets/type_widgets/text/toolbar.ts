@@ -87,10 +87,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.
                 "insertTableForm",
                 "|",
-                "alignment:left",
-                "alignment:center",
-                "alignment:right",
-                "alignment:justify",
+                "alignmentMenu",
                 "|",
                 "cuttonote"
             ]

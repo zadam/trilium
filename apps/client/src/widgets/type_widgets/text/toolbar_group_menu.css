@@ -7,6 +7,10 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
 
+    &:has(> .tn-menu-action:nth-child(4):last-child) {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
     & > .tn-menu-action > .tn-menu-action-title {
         display: -webkit-box;
         -webkit-box-orient: vertical;

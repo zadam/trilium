@@ -170,7 +170,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             }
         },
         alignment: {
-            options: [ "left", "right", "center", "justify"]
+            options: [ "left", "center", "right", "justify" ]
         },
         ...buildFontColorConfig(),
         link: {

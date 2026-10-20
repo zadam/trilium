@@ -1,6 +1,7 @@
 import {
     _getLocalizedHeadingOptions as getLocalizedHeadingOptions,
     addListToDropdown,
+    Alignment,
     BlockQuote,
     CodeBlock,
     Collection,
@@ -57,11 +58,13 @@ interface BlockType {
  *   other, and the block quote and the admonition, which wrap the block. One dropdown, whose
  *   button shows an icon of the current block rather than its name, which takes 8em.
  * - `fontSizeMenu`: the `fontSize` dropdown.
+ * - `alignmentMenu`: the `alignment` dropdown, whose button shows the current alignment, with the
+ *   alignments as a row of tiles.
  */
 export default class MobileToolbarItems extends Plugin {
 
     static get requires() {
-        return [Heading, List, TodoList, CodeBlock, BlockQuote, AdmonitionEditing, FontSize] as const;
+        return [Heading, List, TodoList, CodeBlock, BlockQuote, AdmonitionEditing, FontSize, Alignment] as const;
     }
 
     static get pluginName() {
@@ -76,6 +79,12 @@ export default class MobileToolbarItems extends Plugin {
         editor.ui.componentFactory.add("fontSizeMenu", () => {
             const dropdown = editor.ui.componentFactory.create("fontSize") as DropdownView;
             openListAsMenu(dropdown);
+            return dropdown;
+        });
+
+        editor.ui.componentFactory.add("alignmentMenu", () => {
+            const dropdown = editor.ui.componentFactory.create("alignment") as DropdownView;
+            openListAsMenu(dropdown, { layout: "tiles" });
             return dropdown;
         });
     }

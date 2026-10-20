@@ -1,6 +1,7 @@
 import {
     _getModelData as getModelData,
     _setModelData as setModelData,
+    Alignment,
     BlockQuote,
     ClassicEditor,
     CodeBlock,
@@ -9,6 +10,10 @@ import {
     FontSize,
     Heading,
     HorizontalLine,
+    IconAlignCenter,
+    IconAlignJustify,
+    IconAlignLeft,
+    IconAlignRight,
     IconBulletedList,
     IconCodeBlock,
     IconHeading2,
@@ -224,6 +229,33 @@ describe("MobileToolbarItems", () => {
 
         rows[4]?.run?.();
         expect(menuEditor.getData()).toBe("<p><span class=\"text-huge\">foo</span></p>");
+    });
+
+    it("opens the alignments as a row of tiles, its button showing the current one", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const menuEditor = await createTestEditor([Essentials, Paragraph, Alignment, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["alignmentMenu"],
+            // The order of the app's configuration, which the tiles follow.
+            alignment: { options: ["left", "center", "right", "justify"] },
+            toolbarGroupMenu: { host: () => host }
+        });
+        setModelData(menuEditor.model, "<paragraph alignment=\"center\">foo[]</paragraph>");
+
+        const dropdown = getDropdown(menuEditor, 0);
+        expect(dropdown.buttonView.icon).toBe(IconAlignCenter);
+        dropdown.buttonView.fire("open");
+        expect(dropdown.isOpen).toBe(false);
+
+        const request = requests.at(-1);
+        expect(request?.layout).toBe("tiles");
+        const tiles = request?.items ?? [];
+        expect(tiles.map(rowText)).toStrictEqual(["Align left", "Align center ✓", "Align right", "Justify"]);
+        expect(icons(tiles)).toStrictEqual([IconAlignLeft, IconAlignCenter, IconAlignRight, IconAlignJustify]);
+
+        entry(tiles, "Align right").run?.();
+        expect(menuEditor.getData()).toBe("<p style=\"text-align:right;\">foo</p>");
+        expect(dropdown.buttonView.icon).toBe(IconAlignRight);
     });
 });
 
