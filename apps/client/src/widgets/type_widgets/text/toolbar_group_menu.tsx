@@ -9,7 +9,7 @@ import { render } from "preact";
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../../react/FormList";
 import Menu, { MenuTile } from "../../react/Menu";
-import { isKeyboardPanelOpen, logMenuHost, useKeyboardPanel } from "./mobile_editor_toolbar";
+import { isKeyboardPanelOpen, useKeyboardPanel } from "./mobile_editor_toolbar";
 
 /** The gap between the group's button and the menu, as a `Dropdown` leaves under its toggle. */
 const ANCHOR_GAP = 2;
@@ -28,8 +28,6 @@ export function createToolbarGroupMenuHost(): ToolbarGroupMenuHost {
 
     return {
         show(request) {
-            // TEMPORARY: press diagnostics.
-            logMenuHost(`show ${request.anchor.getAttribute("aria-labelledby") ?? ""}`);
             shown = request;
             // An entry that runs hides the menu first, so a close that follows finds it gone.
             const close = (returnFocus: boolean) => {
@@ -39,11 +37,7 @@ export function createToolbarGroupMenuHost(): ToolbarGroupMenuHost {
             };
             render(<ToolbarGroupMenu request={request} onClose={close} />, container);
         },
-        hide: () => {
-            // TEMPORARY: press diagnostics.
-            logMenuHost("hide");
-            unmount();
-        },
+        hide: unmount,
         destroy: unmount,
         isInPlaceOfKeyboard: isKeyboardPanelOpen
     };
