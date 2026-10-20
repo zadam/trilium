@@ -94,6 +94,10 @@
         white-space: nowrap;
     }
 
+    .search-option.limit .search-option-row .form-control {
+        flex: 0 0 6em;
+    }
+
     .search-definition-error .admonition {
         margin: 0;
     }

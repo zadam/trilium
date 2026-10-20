@@ -1518,7 +1518,7 @@
   },
   "limit": {
     "limit": "Limit",
-    "take_first_x_results": "Take only first X specified results."
+    "max_results": "max results"
   },
   "order_by": {
     "order_by": "Order by",

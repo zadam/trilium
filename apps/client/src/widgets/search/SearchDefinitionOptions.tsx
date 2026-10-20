@@ -379,12 +379,14 @@ function LimitOption({ note, defaultValue, ...restProps }: SearchOptionProps) {
     return <SearchOption
         titleIcon="bx bx-stop"
         title={t("limit.limit")}
-        help={t("limit.take_first_x_results")}
         note={note} {...restProps}
     >
-        <FormTextBox
-            type="number" min="1" step="1"
-            currentValue={limit ?? defaultValue} onChange={setLimit}
-        />
+        <div className="search-option-row">
+            <FormTextBox
+                type="number" min="1" step="1"
+                currentValue={limit ?? defaultValue} onChange={setLimit}
+            />
+            <span className="search-option-row-label">{t("limit.max_results")}</span>
+        </div>
     </SearchOption>;
 }
