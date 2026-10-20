@@ -130,24 +130,27 @@ export function ButtonGroup({ size, className, children }: { size?: "sm" | "lg";
 }
 
 /** A button with the related actions in a menu beside it. */
-export function SplitButton({ text, icon, kind = "secondary", size = "normal", children, ...restProps }: {
+export function SplitButton({ text, icon, kind = "secondary", size = "normal", keyboardShortcut, children, ...restProps }: {
     text: string;
     /** The icon's full class, as `"bx bx-search"`. */
     icon?: string;
     kind?: "primary" | "secondary";
     size?: "normal" | "small" | "micro";
     title?: string;
+    /** The keys that run the main action, shown after its label as a button shows them. */
+    keyboardShortcut?: string;
     /** Click handler for the main button component (not the split). */
     onClick?: () => void;
     /** The menu's rows: `FormListItem`s and the other `FormList` rows. */
     children: ComponentChildren;
 }) {
     const look = `btn-${kind}${size === "small" ? " btn-sm" : size === "micro" ? " btn-micro" : ""}`;
+    const shortcutElements = !keyboardShortcut || cachedIsMobile ? null : renderShortcutKbds(keyboardShortcut);
     return (
         <ButtonGroup className="tn-split-button" size={size === "small" ? "sm" : undefined}>
             <button type="button" class={`btn ${look}`} {...restProps}>
                 {icon && <Icon icon={icon} />}
-                {text}
+                {text} {shortcutElements}
             </button>
             <Dropdown
                 buttonClassName={`${look} dropdown-toggle-split`}

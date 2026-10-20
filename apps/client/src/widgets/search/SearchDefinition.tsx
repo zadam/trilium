@@ -142,6 +142,7 @@ function SearchButtonBar({ note, refreshResults, savePendingOptions }: {
         <SplitButton
             text={t("search_definition.search_button")} icon="bx bx-search"
             size="micro"
+            keyboardShortcut="Enter"
             onClick={refreshResults}
         >
             <FormListItem icon="bx bxs-zap" onClick={searchAndExecuteActions}>{t("search_definition.search_execute")}</FormListItem>
