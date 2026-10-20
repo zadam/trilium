@@ -210,8 +210,8 @@ function ViewTypeSwitcher({ noteType, viewType, setViewType }: {
         <FormListItem
             key={key}
             onClick={() => setViewType(key)}
-            selected={viewType === key}
-            disabled={viewType === key}
+            checked={viewType === key}
+            checkable
             icon={ICON_MAPPINGS[key]}
             badges={key === "dashboard" ? [{ text: t("note_types.beta-feature") }] : undefined}
         >{VIEW_TYPE_MAPPINGS[key]}</FormListItem>
