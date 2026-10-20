@@ -43,6 +43,12 @@ body.mobile {
            toolbar follows a finger-dragged keyboard during interactive
            dismiss. Zero elsewhere — no effect on Android or non-Capacitor. */
         transform: translateY(var(--tn-keyboard-gap, 0px));
+        transition: opacity 100ms linear, visibility 100ms;
+    }
+
+    .classic-toolbar-outer-container:not(.active) .classic-toolbar-island {
+        opacity: 0;
+        visibility: hidden;
     }
 
     .classic-toolbar-widget {

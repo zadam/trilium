@@ -1,6 +1,7 @@
 import "./mobile_editor_toolbar.css";
 
 import type { CKTextEditor, ClassicEditor } from "@triliumnext/ckeditor5";
+import clsx from "clsx";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import { isIOS } from "../../../services/utils";
@@ -25,6 +26,7 @@ export default function MobileEditorToolbar() {
     const [ noteEditor, setNoteEditor ] = useState<CKTextEditor>();
     const nestedEditor = useNestedEditor(ntxId);
     const editor = nestedEditor?.ui.view.toolbar ? nestedEditor : noteEditor;
+    const isActive = useEditorsFocused(noteEditor, nestedEditor) || dropdownActive;
 
     usePositioningOniOS(islandRef);
 
@@ -68,13 +70,45 @@ export default function MobileEditorToolbar() {
     }, []);
 
     return (
-        <div className={`classic-toolbar-outer-container ${!shouldDisplay ? "hidden-ext" : "visible"} ${isIOS() ? "ios" : ""}`}>
+        <div className={clsx("classic-toolbar-outer-container", shouldDisplay ? "visible" : "hidden-ext", {
+            active: shouldDisplay && isActive,
+            ios: isIOS()
+        })}>
             <div ref={islandRef} className="classic-toolbar-island">
                 <div ref={containerRef} className={`classic-toolbar-widget ${dropdownActive ? "dropdown-active" : ""}`} />
                 <HideKeyboardAction className="hide-keyboard-action" />
             </div>
         </div>
     );
+}
+
+/**
+ * Whether either editor has the focus, as its `focusTracker` reports it. The tracker of a classic
+ * editor covers its toolbar and the panels of the toolbar's dropdowns too, wherever the toolbar is
+ * placed.
+ */
+export function useEditorsFocused(
+    noteEditor: CKTextEditor | null | undefined,
+    nestedEditor: CKTextEditor | null | undefined
+) {
+    const [ focused, setFocused ] = useState(false);
+
+    useEffect(() => {
+        const trackers = [ noteEditor, nestedEditor ]
+            .flatMap((editor) => editor ? [ editor.ui.focusTracker ] : []);
+        const update = () => setFocused(trackers.some((tracker) => tracker.isFocused));
+        update();
+        for (const tracker of trackers) {
+            tracker.on("change:isFocused", update);
+        }
+        return () => {
+            for (const tracker of trackers) {
+                tracker.off("change:isFocused", update);
+            }
+        };
+    }, [ noteEditor, nestedEditor ]);
+
+    return focused;
 }
 
 /** The editors whose toolbar dropdowns open upwards already. */

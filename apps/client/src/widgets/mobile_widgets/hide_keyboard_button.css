@@ -38,6 +38,6 @@ body.mobile .hide-keyboard-button {
     }
 }
 
-body.mobile:has(:is(.note-split, .modal):focus-within .classic-toolbar-outer-container.visible) .hide-keyboard-button {
+body.mobile:has(.classic-toolbar-outer-container.active) .hide-keyboard-button {
     display: none;
 }

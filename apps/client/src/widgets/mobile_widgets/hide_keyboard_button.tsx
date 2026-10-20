@@ -10,8 +10,8 @@ import ActionButton from "../react/ActionButton";
 /**
  * Closes the virtual keyboard by blurring the focused element. The button stands at the bottom-end
  * corner, just above the keyboard, while `RootContainer` marks the keyboard as open with
- * `virtual-keyboard-opened`. While the focus is in a note split or dialog that shows
- * `MobileEditorToolbar`, the toolbar carries the button instead (see `hide_keyboard_button.css`).
+ * `virtual-keyboard-opened`. While `MobileEditorToolbar` is shown, which it is while its editor has
+ * the focus, the toolbar carries the button instead (see `hide_keyboard_button.css`).
  * In the iOS app, blurring also hides the keyboard's input accessory bar (see
  * `ViewController.hideKeyboardInputAccessoryView()`).
  */
