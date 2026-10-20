@@ -70,6 +70,26 @@ describe("createToolbarGroupMenuHost", () => {
         expect(rowTitled("Date/time").querySelector(".tn-svg-icon > svg")).not.toBeNull();
     });
 
+    it("checks the entry that is on, and marks only those that can be on as checkable", () => {
+        const items: ToolbarGroupMenuItem[] = [
+            { kind: "entry", label: "Paragraph", icon: ICON, isEnabled: true, isOn: false },
+            { kind: "entry", label: "Heading 2", icon: ICON, isEnabled: true, isOn: true },
+            { kind: "entry", label: "Link", icon: ICON, isEnabled: true }
+        ];
+        host.show({ anchor, items, setElement: vi.fn(), onClose: vi.fn() });
+
+        const paragraph = rowTitled("Paragraph");
+        const heading = rowTitled("Heading 2");
+        const link = rowTitled("Link");
+        expect([ paragraph, heading, link ].map((row) => [ row.role, row.getAttribute("aria-checked") ])).toEqual([
+            [ "menuitemcheckbox", "false" ],
+            [ "menuitemcheckbox", "true" ],
+            [ "menuitem", null ]
+        ]);
+        expect(heading.querySelector(".bx-check")).not.toBeNull();
+        expect(paragraph.querySelector(".bx-check")).toBeNull();
+    });
+
     it("runs an entry without closing a second time, and leaves a disabled one alone", () => {
         const { menu, runs, setElement, onClose } = show();
 

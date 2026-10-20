@@ -67,7 +67,7 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                     return <FormDropdownDivider key={index} />;
                 }
 
-                const { label, icon, isEnabled, run, children } = item;
+                const { label, icon, isEnabled, isOn, run, children } = item;
                 if (children) {
                     return (
                         <FormDropdownSubmenu
@@ -82,6 +82,7 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                 return (
                     <FormListItem
                         key={index} iconSvg={icon} disabled={!isEnabled} onClick={() => run?.()}
+                        checkable={isOn !== undefined} checked={isOn}
                     >
                         {label}
                     </FormListItem>

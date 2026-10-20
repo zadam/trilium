@@ -46,9 +46,25 @@ export interface ToolbarGroupMenuEntry {
     /** The SVG of the icon of the toolbar item. */
     icon?: string;
     isEnabled: boolean;
+    /**
+     * Whether the item is on, for a button that is on or off, as `bold` is or a row of the
+     * `heading` list. Left out for any other.
+     */
+    isOn?: boolean;
     /** Runs the toolbar item. An entry with `children` and no action only opens them. */
     run?(): void;
     children?: ToolbarGroupMenuItem[];
+}
+
+/** The dropdowns handed to {@link openListAsMenu}. */
+const listMenuDropdowns = new WeakSet<DropdownView>();
+
+/**
+ * Has {@link ToolbarGroupMenu} open the list of `dropdown` as a menu of its rows, as it does a
+ * group marked `asMenu`. Without the plugin or a host, the dropdown opens its own panel.
+ */
+export function openListAsMenu(dropdown: DropdownView) {
+    listMenuDropdowns.add(dropdown);
 }
 
 /**
@@ -60,7 +76,8 @@ export interface ToolbarGroupMenuEntry {
  * definition each came from, so the labels of the opted-in groups are read from the configuration
  * and matched against the dropdown buttons. The dropdown never opens its own panel: the views
  * CKEditor lays out in it are described to the host each time it would, and a row runs its view.
- * A group holds buttons and dropdowns that list rows.
+ * A group holds buttons and dropdowns that list rows. A dropdown handed to {@link openListAsMenu}
+ * opens as a menu of its own list's rows.
  */
 export default class ToolbarGroupMenu extends Plugin {
 
@@ -83,7 +100,7 @@ export default class ToolbarGroupMenu extends Plugin {
             editor.config.get("blockToolbar")
         );
         const menuConfig = editor.config.get("toolbarGroupMenu");
-        if (!labels.size || !menuConfig) {
+        if (!menuConfig) {
             return;
         }
         const createHost = () => menuConfig.host(editor);
@@ -134,7 +151,7 @@ export default class ToolbarGroupMenu extends Plugin {
         }
 
         const label = item.buttonView.label;
-        if (!label || !labels.has(label)) {
+        if (!listMenuDropdowns.has(item) && (!label || !labels.has(label))) {
             return;
         }
 
@@ -188,7 +205,9 @@ export default class ToolbarGroupMenu extends Plugin {
         let element: HTMLElement | null = null;
         const request: ToolbarGroupMenuRequest = {
             anchor,
-            items: describeItems(this.sourceItems(dropdown), run),
+            items: listMenuDropdowns.has(dropdown)
+                ? this.describeList(dropdown, run)
+                : describeItems(this.sourceItems(dropdown), run),
             setElement: (next) => {
                 if (element) {
                     untrackElement(element, trackers);
@@ -218,6 +237,14 @@ export default class ToolbarGroupMenu extends Plugin {
             this.shown = null;
             this.host?.hide();
         }
+    }
+
+    /** The rows of a dropdown handed to {@link openListAsMenu}. */
+    private describeList(dropdown: DropdownView, run: (view: View) => () => void) {
+        this.building = true;
+        const rows = describeListEntries(dropdown, run);
+        this.building = false;
+        return rows;
     }
 
     /** The views CKEditor lays out in the group, which it builds the first time it is opened. */
@@ -297,15 +324,7 @@ function describeItems(items: View[], run: (view: View) => () => void) {
         } else if (item instanceof ButtonView) {
             described.push(describeButton(item, run(item)));
         } else if (item instanceof DropdownView) {
-            const children: ToolbarGroupMenuItem[] = [];
-            for (const entry of listEntriesOf(item)) {
-                if (entry instanceof ListSeparatorView) {
-                    addRule(children);
-                } else {
-                    children.push(describeButton(entry, run(entry)));
-                }
-            }
-            trimRule(children);
+            const children = describeListEntries(item, run);
             if (!children.length) {
                 continue;
             }
@@ -326,6 +345,20 @@ function describeItems(items: View[], run: (view: View) => () => void) {
     return described;
 }
 
+/** The rows of the list `dropdown` holds, with a rule wherever the list has a separator. */
+function describeListEntries(dropdown: DropdownView, run: (view: View) => () => void) {
+    const rows: ToolbarGroupMenuItem[] = [];
+    for (const entry of listEntriesOf(dropdown)) {
+        if (entry instanceof ListSeparatorView) {
+            addRule(rows);
+        } else {
+            rows.push(describeButton(entry, run(entry)));
+        }
+    }
+    trimRule(rows);
+    return rows;
+}
+
 /** Adds a rule after the entries `items` holds, unless it would lead or double one. */
 function addRule(items: ToolbarGroupMenuItem[]) {
     if (items.length && items.at(-1)?.kind !== "separator") {
@@ -340,9 +373,13 @@ function trimRule(items: ToolbarGroupMenuItem[]) {
 }
 
 function describeButton(view: ButtonView, run: () => void): ToolbarGroupMenuEntry {
-    return {
+    const entry: ToolbarGroupMenuEntry = {
         kind: "entry", label: view.label ?? "", icon: view.icon, isEnabled: view.isEnabled, run
     };
+    if (view.isToggleable || view.role === "menuitemradio" || view.role === "menuitemcheckbox") {
+        entry.isOn = view.isOn;
+    }
+    return entry;
 }
 
 /** The rows a dropdown's own list holds, which it builds the first time it is opened. */

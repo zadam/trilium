@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor, createTestEditorOf } from "../../test/editor-kit.js";
 import ToolbarGroupMenu, {
-    type ToolbarGroupMenuEntry, type ToolbarGroupMenuHost, type ToolbarGroupMenuItem,
+    openListAsMenu, type ToolbarGroupMenuEntry, type ToolbarGroupMenuHost, type ToolbarGroupMenuItem,
     type ToolbarGroupMenuRequest
 } from "./toolbar_group_menu.js";
 
@@ -15,11 +15,14 @@ const insertedSamples: string[] = [];
 const blankInserts = vi.fn();
 /** What the `clock` entry below writes into its list, standing in for `dateTime`'s previews. */
 let now = "";
+/** The row of the `level` list that is on, and the one its `execute` picks. */
+let level = "";
 
 beforeEach(() => {
     insertedSamples.length = 0;
     blankInserts.mockClear();
     now = "noon";
+    level = "High";
 });
 
 /** A toolbar item that is neither a button nor a dropdown, focusable as a toolbar wants. */
@@ -108,6 +111,26 @@ class SampleDropdown extends Plugin {
             const items = new Collection<ListDropdownItemDefinition>();
             items.add({ type: "button", model: new UIModel({ label: "Row", withText: true }) });
             addListToDropdown(dropdown, items);
+
+            return dropdown;
+        });
+
+        // Like `headingCompact`: a list of exclusive rows, opened as a menu of its own.
+        this.editor.ui.componentFactory.add("level", (locale: Locale) => {
+            const dropdown = createDropdown(locale);
+            dropdown.buttonView.set({ label: "Level", icon: "<svg />" });
+
+            const items = new Collection<ListDropdownItemDefinition>();
+            for (const name of ["Low", "High"]) {
+                items.add({ type: "button", model: new UIModel({
+                    label: name, withText: true, role: "menuitemradio", isOn: name === level
+                }) });
+            }
+            addListToDropdown(dropdown, items);
+            dropdown.on("execute", (evt) => {
+                level = (evt.source as ButtonView).label ?? "";
+            });
+            openListAsMenu(dropdown);
 
             return dropdown;
         });
@@ -392,6 +415,50 @@ describe("ToolbarGroupMenu", () => {
 
         await editor.destroy();
         expect(host.destroy).toHaveBeenCalled();
+    });
+
+    it("opens a dropdown handed to openListAsMenu as a menu of its rows, with the one on checked", async () => {
+        const { host, config, last } = createHost();
+        const editor = await createTestEditor(PLUGINS, {
+            ...config,
+            toolbar: { items: ["bold", "level"] }
+        });
+
+        const dropdown = groupDropdown(getToolbar(editor), "Level");
+        dropdown.buttonView.fire("open");
+
+        expect(dropdown.isOpen).toBe(false);
+        expect(host.show).toHaveBeenCalledTimes(1);
+        expect(last().anchor).toBe(dropdown.buttonView.element);
+        expect(labels(last().items)).toStrictEqual(["Low", "High"]);
+        expect(entry(last().items, "Low").isOn).toBe(false);
+        expect(entry(last().items, "High").isOn).toBe(true);
+
+        entry(last().items, "Low").run?.();
+        expect(level).toBe("Low");
+        expect(host.hide).toHaveBeenCalled();
+
+        // A button that is neither toggled nor a choice in a list says nothing of being on.
+        const { config: groupConfig, last: lastGroup } = createHost();
+        const other = await createTestEditor(PLUGINS, {
+            ...groupConfig,
+            toolbar: { items: [{ ...MENU_GROUP, items: ["bold", "samples"] }] }
+        });
+        groupDropdown(getToolbar(other), "Insert").isOpen = true;
+        expect(entry(lastGroup().items, "Bold").isOn).toBe(false);
+        const samples = entry(lastGroup().items, "Insert sample");
+        expect(samples.isOn).toBeUndefined();
+        expect(samples.children?.map((child) => child.kind === "entry" && child.isOn)).toStrictEqual([undefined, undefined]);
+    });
+
+    it("leaves a dropdown handed to openListAsMenu to CKEditor when no host is configured", async () => {
+        const editor = await createTestEditor(PLUGINS, {
+            toolbar: { items: ["level"] }
+        });
+
+        const dropdown = groupDropdown(getToolbar(editor), "Level");
+        dropdown.isOpen = true;
+        expect(dropdown.isOpen).toBe(true);
     });
 
     it("leaves a group marked with asMenu to CKEditor when no host is configured", async () => {

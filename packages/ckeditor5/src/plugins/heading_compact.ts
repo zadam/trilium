@@ -9,7 +9,11 @@ import {
     IconParagraph,
     Plugin
 } from "ckeditor5";
-import type { DropdownView, HeadingCommand, ParagraphCommand } from "ckeditor5";
+import type {
+    ButtonView, DropdownView, HeadingCommand, ListItemView, ListView, ParagraphCommand
+} from "ckeditor5";
+
+import { openListAsMenu } from "./toolbar_group_menu.js";
 
 const HEADING_ICONS: Record<string, string> = {
     heading1: IconHeading1,
@@ -23,6 +27,8 @@ const HEADING_ICONS: Record<string, string> = {
 /**
  * Registers `headingCompact`, the `heading` dropdown with an icon of the current block in place of
  * its name, for a toolbar too narrow for the name's 8em. The name stays in the accessible label.
+ * Each row of its list carries the icon of its block, and `ToolbarGroupMenu` opens the list as
+ * the host application's menu when a host is configured.
  */
 export default class HeadingCompactUI extends Plugin {
 
@@ -47,7 +53,19 @@ export default class HeadingCompactUI extends Plugin {
                 headingCommand, "value", paragraphCommand, "value",
                 (heading, paragraph) => (paragraph ? IconParagraph : HEADING_ICONS[heading || ""] ?? IconParagraph)
             );
+
+            // CKEditor builds the list as the dropdown first opens, at the highest priority.
+            dropdown.once("change:isOpen", () => {
+                for (const item of (dropdown.listView as ListView).items) {
+                    const row = (item as ListItemView).children.first as HeadingRow;
+                    row.icon = HEADING_ICONS[row.commandValue ?? ""] ?? IconParagraph;
+                }
+            });
+            openListAsMenu(dropdown);
             return dropdown;
         });
     }
 }
+
+/** A row of the `heading` list, which `HeadingUI` binds to the command it runs. */
+type HeadingRow = ButtonView & { commandName?: string; commandValue?: string };
