@@ -24,13 +24,15 @@ const BROWSER_ACCESS_HEADER = { "anthropic-dangerous-direct-browser-access": "tr
 const CACHE_CONTROL = { anthropic: { cacheControl: { type: "ephemeral" as const } } };
 
 /**
- * Models that support adaptive extended thinking. Opus 4.7 / 4.8 and Sonnet 5
- * reject the manual `{ type: "enabled", budgetTokens }` form with a 400 and
- * accept adaptive only; Opus 4.6 and Sonnet 4.6 accept both but prefer adaptive.
- * Everything else (older Opus/Sonnet, Haiku 4.5) only supports the manual budget
+ * Models that support adaptive extended thinking. Opus 4.7 / 4.8 and the whole
+ * Claude 5 generation (Opus, Sonnet, Haiku, Fable, Mythos 5+) reject the manual
+ * `{ type: "enabled", budgetTokens }` form with a 400 and accept adaptive only;
+ * Opus 4.6 and Sonnet 4.6 accept both but prefer adaptive. Everything else
+ * (older Opus/Sonnet, Haiku 4.5, Mythos Preview) only supports the manual budget
  * form.
  */
-const ADAPTIVE_THINKING_MODELS = /^claude-(?:opus-4-[678]|sonnet-(?:4-6|5))/;
+const ADAPTIVE_THINKING_MODELS =
+    /^claude-(?:opus-4-[678]|sonnet-4-6|(?:opus|sonnet|haiku|mythos)-[5-9]|fable-)/;
 
 export class AnthropicProvider extends BaseProvider {
     name = "anthropic";

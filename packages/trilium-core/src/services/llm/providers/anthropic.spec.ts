@@ -234,6 +234,44 @@ describe("AnthropicProvider tool handling", () => {
             });
         }
     });
+
+    it("uses adaptive thinking on the Claude 5 generation, which rejects manual budgets", () => {
+        const provider = new AnthropicProvider("sk-ant-test");
+
+        const models = [
+            "claude-opus-5", "claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5",
+            "claude-fable-5", "claude-fable-5-1", "claude-mythos-5-1"
+        ];
+        for (const model of models) {
+            streamTextMock.mockClear();
+            provider.chat([{ role: "user", content: "hi" }], { model, enableExtendedThinking: true });
+
+            const opts = streamTextMock.mock.calls[0][0] as any;
+            expect(opts.providerOptions.anthropic.thinking).toEqual({
+                type: "adaptive",
+                display: "summarized"
+            });
+        }
+    });
+
+    it("keeps the manual budget on models that require it", () => {
+        const provider = new AnthropicProvider("sk-ant-test");
+
+        const models = [
+            "claude-haiku-4-5-20251001", "claude-opus-4-5", "claude-sonnet-4-5-20250929",
+            "claude-mythos-preview"
+        ];
+        for (const model of models) {
+            streamTextMock.mockClear();
+            provider.chat([{ role: "user", content: "hi" }], { model, enableExtendedThinking: true });
+
+            const opts = streamTextMock.mock.calls[0][0] as any;
+            expect(opts.providerOptions.anthropic.thinking).toEqual({
+                type: "enabled",
+                budgetTokens: 10000
+            });
+        }
+    });
 });
 
 /**
