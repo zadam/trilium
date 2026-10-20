@@ -150,6 +150,23 @@ describe("App", () => {
         expect(document.body.dataset.noteType).toBe("search");
         loadSearchNote.mockRestore();
     });
+
+    it("reports a failed saved search instead of printing an empty list", async () => {
+        const loadSearchNote = vi.spyOn(froca, "loadSearchNote").mockResolvedValue({ error: "Unknown label 'year'" });
+        buildNote({ id: "root", title: "root", children: [{ id: "app-search-failed", title: "Broken", type: "search" }] });
+        const note = await froca.getNote("app-search-failed");
+
+        const readyListener = vi.fn();
+        window.addEventListener("note-ready", readyListener);
+        const container = renderInto(<App note={note} noteId="app-search-failed" />);
+
+        await vi.waitFor(() => expect(readyListener).toHaveBeenCalledOnce());
+        expect((readyListener.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({ type: "error", message: "Unknown label 'year'" });
+        expect(container.textContent).not.toContain("NOTELIST");
+
+        window.removeEventListener("note-ready", readyListener);
+        loadSearchNote.mockRestore();
+    });
 });
 
 describe("SingleNoteRenderer", () => {

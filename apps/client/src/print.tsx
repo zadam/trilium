@@ -194,15 +194,33 @@ export function CollectionRenderer({ note, onReady, onProgressChanged }: Rendere
         let cancelled = false;
         console.debug("[print] Running the saved search…");
         void froca.loadSearchNote(note.noteId)
-            .catch((e: unknown) => console.warn("[print] Unable to run the saved search being printed:", e))
-            .finally(() => {
+            .then((result) => {
+                if (cancelled) return;
+
+                // The query's own errors come back resolved, in `error`.
+                if (result?.error) {
+                    console.warn("[print] The saved search failed:", result.error);
+                    onReady({ type: "error", message: result.error });
+                    return;
+                }
+
                 console.debug("[print] The saved search run finished.");
-                if (!cancelled) setReady(true);
+                setReady(true);
+            })
+            .catch((e: unknown) => {
+                if (cancelled) return;
+
+                console.warn("[print] Unable to run the saved search being printed:", e);
+                onReady({
+                    type: "error",
+                    message: e instanceof Error ? e.message : String(e),
+                    stack: e instanceof Error ? e.stack : undefined
+                });
             });
         return () => {
             cancelled = true;
         };
-    }, [ note ]);
+    }, [ note, onReady ]);
 
     if (!ready) return null;
 
