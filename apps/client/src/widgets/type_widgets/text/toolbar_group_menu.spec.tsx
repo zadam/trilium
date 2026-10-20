@@ -93,6 +93,38 @@ describe("createToolbarGroupMenuHost", () => {
         expect(paragraph.querySelector(".bx-check")).toBeNull();
     });
 
+    it("draws the tiles layout as a grid of tiles per group, the one on checked", () => {
+        const runs: string[] = [];
+        const run = (name: string) => () => {
+            host.hide();
+            runs.push(name);
+        };
+        const items: ToolbarGroupMenuItem[] = [
+            { kind: "entry", label: "Paragraph", icon: ICON, isEnabled: true, isOn: false, run: run("paragraph") },
+            { kind: "entry", label: "Heading 2", icon: ICON, isEnabled: true, isOn: true, run: run("heading") },
+            { kind: "separator" },
+            { kind: "entry", label: "Bulleted List", icon: ICON, isEnabled: false, isOn: false, run: run("list") }
+        ];
+        host.show({ anchor, items, layout: "tiles", setElement: vi.fn(), onClose: vi.fn() });
+
+        const menu = document.querySelector<HTMLElement>(".tn-popup.tn-menu");
+        const groups = [ ...menu?.querySelectorAll(".toolbar-group-menu-tiles") ?? [] ];
+        expect(groups.map((group) => [ ...group.querySelectorAll(".tn-menu-action") ].map((tile) => tile.textContent)))
+            .toEqual([ [ "Paragraph", "Heading 2" ], [ "Bulleted List" ] ]);
+
+        const tiles = [ ...menu?.querySelectorAll<HTMLButtonElement>(".tn-menu-action") ?? [] ];
+        expect(tiles.map((tile) => [ tile.role, tile.getAttribute("aria-checked"), tile.disabled ])).toEqual([
+            [ "menuitemcheckbox", "false", false ],
+            [ "menuitemcheckbox", "true", false ],
+            [ "menuitemcheckbox", "false", true ]
+        ]);
+        expect(tiles[0]?.querySelector(".tn-svg-icon > svg")).not.toBeNull();
+
+        tiles[0]?.click();
+        expect(runs).toEqual([ "paragraph" ]);
+        expect(menu?.isConnected).toBe(false);
+    });
+
     it("runs an entry without closing a second time, and leaves a disabled one alone", () => {
         const { menu, runs, setElement, onClose } = show();
 

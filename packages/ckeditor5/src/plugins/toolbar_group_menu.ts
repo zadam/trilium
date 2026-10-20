@@ -28,6 +28,11 @@ export interface ToolbarGroupMenuRequest {
     anchor: HTMLElement;
     items: ToolbarGroupMenuItem[];
     /**
+     * `tiles` draws the entries as tiles, each its icon over its label, for a list of choices that
+     * a phone shows better side by side. Left out for rows.
+     */
+    layout?: "tiles";
+    /**
      * Receives the menu's element once it is in the page, and `null` as it leaves. The editor
      * counts focus and presses inside that element as its own, so the toolbar holding the group
      * stays open.
@@ -60,15 +65,21 @@ export interface ToolbarGroupMenuEntry {
     children?: ToolbarGroupMenuItem[];
 }
 
-/** The dropdowns handed to {@link openListAsMenu}. */
-const listMenuDropdowns = new WeakSet<DropdownView>();
+/** How a dropdown handed to {@link openListAsMenu} is shown. */
+export interface ListMenuOptions {
+    /** See {@link ToolbarGroupMenuRequest.layout}. */
+    layout?: "tiles";
+}
+
+/** The dropdowns handed to {@link openListAsMenu}, with their options. */
+const listMenuDropdowns = new WeakMap<DropdownView, ListMenuOptions>();
 
 /**
  * Has {@link ToolbarGroupMenu} open the list of `dropdown` as a menu of its rows, as it does a
  * group marked `asMenu`. Without the plugin or a host, the dropdown opens its own panel.
  */
-export function openListAsMenu(dropdown: DropdownView) {
-    listMenuDropdowns.add(dropdown);
+export function openListAsMenu(dropdown: DropdownView, options: ListMenuOptions = {}) {
+    listMenuDropdowns.set(dropdown, options);
 }
 
 /**
@@ -212,11 +223,13 @@ export default class ToolbarGroupMenu extends Plugin {
         };
 
         let element: HTMLElement | null = null;
+        const listOptions = listMenuDropdowns.get(dropdown);
         const request: ToolbarGroupMenuRequest = {
             anchor,
-            items: listMenuDropdowns.has(dropdown)
+            items: listOptions
                 ? this.describeList(dropdown, run)
                 : describeItems(this.sourceItems(dropdown), run),
+            ...listOptions,
             setElement: (next) => {
                 if (element) {
                     untrackElement(element, trackers);

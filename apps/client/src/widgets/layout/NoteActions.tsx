@@ -142,7 +142,7 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
     ];
     const viewStrip = viewActions.length > 0 && <>
         <MenuItemRows items={viewActions.length > 1
-            ? [ { kind: "actions", items: viewActions, className: "note-actions-strip" } ]
+            ? [ { kind: "actions", items: viewActions, className: "note-actions-strip tn-menu-actions-cards" } ]
             // One action, as in the quick edit popup, is too few for a strip, so it is a row under its full name.
             : viewActions.map((item) => ({ ...item, title: item.tooltip ?? item.title }))} />
         {(!isMobile || viewActions.length === 1) && <FormDropdownDivider />}

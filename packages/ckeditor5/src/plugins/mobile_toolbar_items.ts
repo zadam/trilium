@@ -122,7 +122,7 @@ export default class MobileToolbarItems extends Plugin {
             const { blockType } = evt.source as ButtonView & { blockType: BlockType };
             this.setBlockType(blockType, lists.find((type) => command(type.command).value === true));
         });
-        openListAsMenu(dropdown);
+        openListAsMenu(dropdown, { layout: "tiles" });
         return dropdown;
     }
 

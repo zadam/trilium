@@ -131,7 +131,7 @@ class SampleDropdown extends Plugin {
             dropdown.on("execute", (evt) => {
                 level = (evt.source as ButtonView).label ?? "";
             });
-            openListAsMenu(dropdown);
+            openListAsMenu(dropdown, { layout: "tiles" });
 
             return dropdown;
         });
@@ -196,6 +196,7 @@ describe("ToolbarGroupMenu", () => {
         expect(host.show).toHaveBeenCalledTimes(1);
         expect(last().anchor).toBe(dropdown.buttonView.element);
         expect(labels(last().items)).toStrictEqual(["Bold", "—", "Italic", "Insert sample"]);
+        expect(last().layout).toBeUndefined();
 
         // Each entry carries the icon and the enabled state of the toolbar item it stands for, as
         // they are when the menu opens: `bold` is disabled while the editor is read-only.
@@ -432,6 +433,7 @@ describe("ToolbarGroupMenu", () => {
         expect(host.show).toHaveBeenCalledTimes(1);
         expect(last().anchor).toBe(dropdown.buttonView.element);
         expect(labels(last().items)).toStrictEqual(["Low", "High"]);
+        expect(last().layout).toBe("tiles");
         expect(entry(last().items, "Low").isOn).toBe(false);
         expect(entry(last().items, "High").isOn).toBe(true);
         expect(entry(last().items, "High").className).toBe("level-high");

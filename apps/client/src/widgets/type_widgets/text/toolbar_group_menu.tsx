@@ -1,13 +1,13 @@
 import "./toolbar_group_menu.css";
 
 import type {
-    ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest
+    ToolbarGroupMenuEntry, ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest
 } from "@triliumnext/ckeditor5";
 import { render } from "preact";
 
-import { isMobile, isNarrowLayout } from "../../../services/utils";
+import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../../react/FormList";
-import Menu from "../../react/Menu";
+import Menu, { MenuTile } from "../../react/Menu";
 import { useKeyboardPanel } from "./mobile_editor_toolbar";
 
 /** The gap between the group's button and the menu, as a `Dropdown` leaves under its toggle. */
@@ -60,7 +60,9 @@ function ToolbarGroupMenu({ request, onClose }: {
             onDismiss={() => onClose(false)}
             onClose={() => onClose(true)}
         >
-            <MenuRows items={request.items} />
+            {request.layout === "tiles"
+                ? <MenuTileGroups items={request.items} />
+                : <MenuRows items={request.items} />}
         </Menu>
     );
 }
@@ -94,6 +96,33 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                     </FormListItem>
                 );
             })}
+        </>
+    );
+}
+
+/** The entries as tiles, a grid of them for each group between separators. */
+function MenuTileGroups({ items }: { items: ToolbarGroupMenuItem[] }) {
+    const groups: ToolbarGroupMenuEntry[][] = [ [] ];
+    for (const item of items) {
+        if (item.kind === "separator") {
+            groups.push([]);
+        } else {
+            groups[groups.length - 1].push(item);
+        }
+    }
+
+    return (
+        <>
+            {groups.map((group, index) => (
+                <li key={index} className="tn-menu-actions tn-menu-actions-cards toolbar-group-menu-tiles" role="group">
+                    {group.map(({ label, icon, isEnabled, isOn, run }, tileIndex) => (
+                        <MenuTile
+                            key={tileIndex} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
+                            disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
+                        />
+                    ))}
+                </li>
+            ))}
         </>
     );
 }

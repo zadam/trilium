@@ -82,7 +82,9 @@ describe("MobileToolbarItems", () => {
             const { request, editor: menuEditor } = await createMenuEditor();
             setModelData(menuEditor.model, BULLETED);
 
-            const rows = request().items;
+            const shown = request();
+            expect(shown.layout).toBe("tiles");
+            const rows = shown.items;
             expect(rows.map(rowText)).toStrictEqual([
                 "Paragraph", "Heading 2", "Heading 3", "—", "Bulleted List ✓", "Numbered List", "To-do List"
             ]);
