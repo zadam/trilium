@@ -28,6 +28,6 @@ body.mobile .hide-keyboard-button {
     }
 }
 
-body.mobile:has(.hide-keyboard-button .icon-action) .classic-toolbar-widget {
-    padding-inline-end: var(--hide-keyboard-button-size);
+body.mobile:has(.hide-keyboard-button .icon-action) .classic-toolbar-island {
+    margin-inline-end: calc(var(--hide-keyboard-button-size) + var(--mobile-toolbar-gap));
 }

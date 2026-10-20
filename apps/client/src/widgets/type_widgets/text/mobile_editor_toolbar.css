@@ -1,13 +1,34 @@
 body.mobile {
+    /* Read by `PopupEditor.css` to clear the toolbar. */
+    --mobile-toolbar-height: 40px;
+    --mobile-toolbar-gap: 6px;
+
     .classic-toolbar-outer-container {
         contain: none !important;
     }
 
     .classic-toolbar-outer-container.visible {
-        height: 38px;
+        height: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap));
         position: relative;
         overflow: visible;
         flex-shrink: 0;
+    }
+
+    .classic-toolbar-island {
+        position: absolute;
+        bottom: 0;
+        inset-inline-start: 0;
+        inset-inline-end: 0;
+        height: var(--mobile-toolbar-height);
+        margin: 0 var(--mobile-toolbar-gap) var(--mobile-toolbar-gap);
+        border: 1px solid var(--card-border-color, var(--main-border-color));
+        border-radius: 6px;
+        background: var(--card-background-color, var(--accented-background-color));
+        /* On iOS, `--tn-keyboard-gap` is updated continuously by the
+           ViewController (Swift) as the keyboard frame changes, so the
+           toolbar follows a finger-dragged keyboard during interactive
+           dismiss. Zero elsewhere — no effect on Android or non-Capacitor. */
+        transform: translateY(var(--tn-keyboard-gap, 0px));
     }
 
     .classic-toolbar-widget {
@@ -15,18 +36,14 @@ body.mobile {
         bottom: 0;
         inset-inline-start: 0;
         inset-inline-end: 0;
-        height: 38px;
+        height: 100%;
+        border-radius: 5px;
         overflow: scroll;
         display: flex;
         align-items: flex-end;
         user-select: none;
         touch-action: pan-x;
         scrollbar-width: 0 !important;
-        /* On iOS, `--tn-keyboard-gap` is updated continuously by the
-           ViewController (Swift) as the keyboard frame changes, so the
-           toolbar follows a finger-dragged keyboard during interactive
-           dismiss. Zero elsewhere — no effect on Android or non-Capacitor. */
-        transform: translateY(var(--tn-keyboard-gap, 0px));
     }
 
     .classic-toolbar-widget::-webkit-scrollbar:horizontal {
@@ -35,10 +52,12 @@ body.mobile {
 
     .classic-toolbar-widget.dropdown-active {
         height: 50vh;
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
     }
 
     .classic-toolbar-widget .ck.ck-toolbar {
-        --ck-color-toolbar-background: var(--main-background-color);
+        --ck-color-toolbar-background: transparent;
         --ck-color-button-default-background: transparent;
         --ck-color-button-default-disabled-background: transparent;
         position: absolute;

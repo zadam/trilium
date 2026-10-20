@@ -15,6 +15,7 @@ import { useNestedEditor } from "./editable_embed";
  * - On Android, the viewport change makes the keyboard resize the content area, all we have to do is to hide the tab bar and global menu (handled in the global style).
  */
 export default function MobileEditorToolbar() {
+    const islandRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const { note, noteContext, ntxId } = useNoteContext();
     const noteType = useNoteProperty(note, "type");
@@ -25,7 +26,7 @@ export default function MobileEditorToolbar() {
     const nestedEditor = useNestedEditor(ntxId);
     const editor = nestedEditor?.ui.view.toolbar ? nestedEditor : noteEditor;
 
-    usePositioningOniOS(containerRef);
+    usePositioningOniOS(islandRef);
 
     // Attach the toolbar from the CKEditor.
     useTriliumEvent("textEditorRefreshed", ({ ntxId: eventNtxId, editor }) => {
@@ -68,7 +69,9 @@ export default function MobileEditorToolbar() {
 
     return (
         <div className={`classic-toolbar-outer-container ${!shouldDisplay ? "hidden-ext" : "visible"} ${isIOS() ? "ios" : ""}`}>
-            <div ref={containerRef} className={`classic-toolbar-widget ${dropdownActive ? "dropdown-active" : ""}`} />
+            <div ref={islandRef} className="classic-toolbar-island">
+                <div ref={containerRef} className={`classic-toolbar-widget ${dropdownActive ? "dropdown-active" : ""}`} />
+            </div>
         </div>
     );
 }
