@@ -14,7 +14,7 @@ vi.mock("../../services/utils", async (importOriginal) => ({
     isIOS: () => true
 }));
 
-import HideKeyboardButton, { usePositioningOniOS } from "./hide_keyboard_button";
+import HideKeyboardButton, { holdVisibleBottom, usePositioningOniOS } from "./hide_keyboard_button";
 
 describe("HideKeyboardButton", () => {
     let input: HTMLInputElement | undefined;
@@ -106,6 +106,37 @@ describe("usePositioningOniOS", () => {
         Object.defineProperty(window, "scrollY", { configurable: true, value: 118 });
         act(() => viewport.set({ height: 405, offsetTop: 118, pageTop: 118 }, "scroll"));
         expect(element().style.bottom).toBe("231px");
+    });
+
+    it("holds the visible bottom while a menu takes the keyboard's place", () => {
+        // As logged in Safari: the keyboard is up and the page scrolled by 139px.
+        const viewport = fakeViewport(754);
+        const { element, anchor } = renderPositioned(true);
+        const layout = (innerHeight: number, scrollY: number) => {
+            Object.defineProperty(window, "innerHeight", {
+                configurable: true, value: innerHeight
+            });
+            Object.defineProperty(window, "scrollY", { configurable: true, value: scrollY });
+            anchor().getBoundingClientRect = () => new DOMRect(0, innerHeight - 754, 400, 754);
+        };
+        layout(615, 139);
+        act(() => viewport.set({ height: 405, offsetTop: 138.7, pageTop: 138.7 }, "resize"));
+        expect(element().style.bottom).toBe("210px");
+
+        // A menu takes the keyboard's place. Safari undoes the scroll at once, but reports the
+        // visual viewport of the keyboard for another 300ms or so, with no event of its own.
+        act(() => holdVisibleBottom(true));
+        layout(754, 0);
+        act(() => {
+            window.dispatchEvent(new Event("scroll"));
+        });
+        expect(element().style.bottom).toBe("349px");
+
+        act(() => viewport.set({ height: 754, offsetTop: 0, pageTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("349px");
+
+        act(() => holdVisibleBottom(false));
+        expect(element().style.bottom).toBe("");
     });
 });
 

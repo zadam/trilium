@@ -5,7 +5,9 @@ import clsx from "clsx";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import { isIOS } from "../../../services/utils";
-import { HideKeyboardAction, usePositioningOniOS } from "../../mobile_widgets/hide_keyboard_button";
+import {
+    HideKeyboardAction, holdVisibleBottom, usePositioningOniOS
+} from "../../mobile_widgets/hide_keyboard_button";
 import { useIsNoteReadOnly, useNoteContext, useNoteProperty, useTriliumEvent } from "../../react/hooks";
 import { useNestedEditor } from "./editable_embed";
 
@@ -156,7 +158,11 @@ export function useKeyboardPanel(enabled: boolean) {
     useLayoutEffect(() => {
         if (!isPanel) return;
         document.body.classList.add("keyboard-panel-open");
-        return () => document.body.classList.remove("keyboard-panel-open");
+        holdVisibleBottom(true);
+        return () => {
+            document.body.classList.remove("keyboard-panel-open");
+            holdVisibleBottom(false);
+        };
     }, [ isPanel ]);
 
     return isPanel;

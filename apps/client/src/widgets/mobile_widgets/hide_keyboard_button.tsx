@@ -66,7 +66,7 @@ export function usePositioningOniOS(
 
         const anchorBottom = anchorRef?.current?.getBoundingClientRect().bottom
             ?? window.innerHeight;
-        const visibleBottom = viewport.pageTop - window.scrollY + viewport.height;
+        const visibleBottom = heldVisibleBottom ?? measureVisibleBottom(viewport);
         const obscured = Math.max(0, Math.round(anchorBottom - visibleBottom));
 
         if (obscured <= 1) {
@@ -84,9 +84,35 @@ export function usePositioningOniOS(
         const viewport = window.visualViewport;
         viewport?.addEventListener("resize", adjustPosition);
         viewport?.addEventListener("scroll", adjustPosition);
+        // Safari undoes its keyboard scroll before `visualViewport` reports the keyboard gone.
+        window.addEventListener("scroll", adjustPosition);
+        visibleBottomListeners.add(adjustPosition);
         return () => {
             viewport?.removeEventListener("resize", adjustPosition);
             viewport?.removeEventListener("scroll", adjustPosition);
+            window.removeEventListener("scroll", adjustPosition);
+            visibleBottomListeners.delete(adjustPosition);
         };
     }, [ adjustPosition ]);
+}
+
+/**
+ * Holds the visible bottom that `usePositioningOniOS` lifts elements to at its current value, for
+ * a menu that takes the place of the keyboard (see `useKeyboardPanel`). As the keyboard closes,
+ * Safari undoes its scroll at once but reports the keyboard's `visualViewport` for some 300ms
+ * more, which would drop the toolbar into the menu's place meanwhile.
+ */
+export function holdVisibleBottom(isHeld: boolean) {
+    const viewport = window.visualViewport;
+    heldVisibleBottom = isHeld && viewport ? measureVisibleBottom(viewport) : undefined;
+    for (const listener of visibleBottomListeners) {
+        listener();
+    }
+}
+
+let heldVisibleBottom: number | undefined;
+const visibleBottomListeners = new Set<() => void>();
+
+function measureVisibleBottom(viewport: VisualViewport) {
+    return viewport.pageTop - window.scrollY + viewport.height;
 }
