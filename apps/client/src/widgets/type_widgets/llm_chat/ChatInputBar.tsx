@@ -1,13 +1,12 @@
 import "./ChatInputBar.css";
 
-import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, MentionFeed } from "@triliumnext/ckeditor5";
-import type { DISPLAYABLE_LOCALE_IDS, LlmReasoningEffort } from "@triliumnext/commons";
+import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, MentionHostedFeed } from "@triliumnext/ckeditor5";
+import type { DISPLAYABLE_LOCALE_IDS, LlmPermissionMode, LlmReasoningEffort } from "@triliumnext/commons";
 import { Fragment } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { t } from "../../../services/i18n.js";
 import link from "../../../services/link.js";
-import note_autocomplete, { type Suggestion } from "../../../services/note_autocomplete.js";
 import options from "../../../services/options.js";
 import ActionButton from "../../react/ActionButton.js";
 import Button from "../../react/Button.js";
@@ -15,14 +14,16 @@ import CKEditor, { type CKEditorApi } from "../../react/CKEditor.js";
 import Dropdown from "../../react/Dropdown.js";
 import { FormListHeader, FormListItem } from "../../react/FormList.js";
 import { useLegacyImperativeHandlers, useTriliumOption } from "../../react/hooks.js";
+import Icon from "../../react/Icon.js";
 import LightboxLink from "../../react/LightboxLink.js";
-import MaskedIcon from "../../react/MaskedIcon.js";
 import AddProviderModal, { type LlmProviderConfig, type ProviderStep } from "../options/llm/AddProviderModal.js";
-import { providerIconUrl } from "../options/llm/provider_icons.js";
+import { providerIcon } from "../options/llm/provider_icons.js";
+import { createNoteMentionList } from "../text/mention_list_view.js";
 import { computeContextUsage } from "./chat_context_usage.js";
 import { insertNewBlock as insertNewBlockCommand, isSelectionInCodeBlock, outdentListItemAtStart } from "./chat_input_editing.js";
 import { editorHtmlToMarkdown } from "./chat_input_markdown.js";
 import { shortModelName } from "./model_name.js";
+import ChatToolsDropdown, { useChatWebSearch } from "./ChatToolsDropdown.js";
 import ReasoningEffortDropdown from "./ReasoningEffortDropdown.js";
 import { SafeImage } from "./retry_image.js";
 import { getAttachmentLightbox, getUnreadableReasons, useChatAttachments } from "./useChatAttachments.js";
@@ -31,27 +32,13 @@ import { type AttachmentBlock, type UseLlmChatReturn } from "./useLlmChat.js";
 
 const READ_ONLY_LOCK = "llm-chat-streaming";
 
-const mentionFeeds: MentionFeed[] = [
+const hostedMentions: MentionHostedFeed[] = [
     {
         marker: "@",
-        feed: (queryText) => note_autocomplete.autocompleteSourceForCKEditor(queryText, false),
-        itemRenderer: (rawItem) => {
-            const item = rawItem as Suggestion;
-            const itemElement = document.createElement("button");
-
-            const iconElement = document.createElement("span");
-            iconElement.className = item.icon ?? "bx bx-note";
-
-            itemElement.append(iconElement, document.createTextNode(" "));
-            const titleContainer = document.createElement("span");
-            titleContainer.innerHTML = item.highlightedNotePathTitle ?? "";
-            itemElement.append(...titleContainer.childNodes, document.createTextNode(" "));
-
-            return itemElement;
-        },
         minimumCharacters: 0,
         // Note titles contain spaces, so the query must be allowed to as well.
-        allowSpaces: true
+        allowSpaces: true,
+        list: () => createNoteMentionList()
     }
 ];
 
@@ -81,6 +68,8 @@ interface ChatInputBarProps {
     onNoteToolsChange?: () => void;
     /** Callback when the extended thinking switch or the reasoning effort changes */
     onExtendedThinkingChange?: () => void;
+    /** Callback when the permission mode changes or a tool allowed for the chat is revoked */
+    onPermissionsChange?: () => void;
     /** Callback when model changes */
     onModelChange?: (model: string) => void;
 }
@@ -93,6 +82,7 @@ export default function ChatInputBar({
     onWebSearchChange,
     onNoteToolsChange,
     onExtendedThinkingChange,
+    onPermissionsChange,
     onModelChange
 }: ChatInputBarProps) {
     // Provider add/edit modal. `modalProvider` undefined = adding; a config = editing.
@@ -101,8 +91,8 @@ export default function ChatInputBar({
     const [modalStep, setModalStep] = useState<ProviderStep | undefined>();
     const [modalOpen, setModalOpen] = useState(false);
     const [openToken, setOpenToken] = useState(0);
-    const editorApiRef = useRef<CKEditorApi>();
-    const editorInstanceRef = useRef<CKTextEditor>();
+    const editorApiRef = useRef<CKEditorApi | undefined>(undefined);
+    const editorInstanceRef = useRef<CKTextEditor | undefined>(undefined);
     const [ uiLanguage ] = useTriliumOption("locale");
     // CKEditor is the heaviest module the client has, and importing it statically here put it
     // on the startup critical path: the right panel mounts SidebarChat, which pulls this bar,
@@ -128,8 +118,10 @@ export default function ChatInputBar({
     // CKEditor's ReferenceLink plugin calls back into the parent component to
     // resolve a note's title from its href.
     useLegacyImperativeHandlers({
-        async loadReferenceLinkTitle($el: JQuery<HTMLElement>, href: string | null = null) {
-            await link.loadReferenceLinkTitle($el, href);
+        async loadReferenceLinkTitle(
+            $el: JQuery<HTMLElement>, href: string | null = null, storedTitle?: string
+        ) {
+            await link.loadReferenceLinkTitle($el, href, undefined, storedTitle);
         }
     });
 
@@ -176,14 +168,19 @@ export default function ChatInputBar({
         }
     }, [chat.isStreaming]);
 
-    const handleWebSearchToggle = (newValue: boolean) => {
-        chat.setEnableWebSearch(newValue);
-        onWebSearchChange?.();
-    };
-
     const handleNoteToolsToggle = (newValue: boolean) => {
         chat.setEnableNoteTools(newValue);
         onNoteToolsChange?.();
+    };
+
+    const handleRevokeAllowedTool = (toolName: string) => {
+        chat.revokeAllowedTool(toolName);
+        onPermissionsChange?.();
+    };
+
+    const handlePermissionModeChange = (mode: LlmPermissionMode) => {
+        chat.setPermissionMode(mode);
+        onPermissionsChange?.();
     };
 
     const handleExtendedThinkingToggle = (newValue: boolean) => {
@@ -242,11 +239,7 @@ export default function ChatInputBar({
     const currentModel = resolveSelectedModel(chat.availableModels, chat.selectedModel, chat.selectedProvider, chat.selectedProviderId);
     const isSelectedModel = (m: ModelOption) => m === currentModel;
     const unreadableReasons = getUnreadableReasons(currentModel, chat.pendingAttachments);
-    // Gemini 2.x cannot combine googleSearch with function tools in a single
-    // request. When note tools are enabled on a Gemini model we silently drop
-    // web search server-side; reflect that here by disabling the toggle so the
-    // user understands the trade-off instead of seeing it mysteriously ignored.
-    const webSearchUnavailable = currentModel?.provider === "google" && chat.enableNoteTools;
+    const { webSearch, searchProviders, chooseWebSearch } = useChatWebSearch(chat, currentModel?.provider, onWebSearchChange);
     // Null until the window is close enough to matter, and null (rather than a guess) when
     // the model advertises no window at all. See chat_context_usage.
     const contextUsage = computeContextUsage({
@@ -325,7 +318,7 @@ export default function ChatInputBar({
                             extraPlugins: ckEditor.plugins,
                             toolbar: { items: [] },
                             placeholder: t("llm_chat.placeholder"),
-                            mention: { feeds: mentionFeeds },
+                            mention: { feeds: [], hostedFeeds: hostedMentions },
                             licenseKey: "GPL"
                         }}
                         // The strings the box shows of its own — the link balloon it raises on Ctrl+K —
@@ -422,7 +415,7 @@ export default function ChatInputBar({
                             // of a word's, and the only provider signal the collapsed button has.
                             text={currentModel
                                 ? <>
-                                    <MaskedIcon url={providerIconUrl(currentModel.provider)} className="llm-chat-model-icon" />
+                                    <Icon icon={providerIcon(currentModel.provider)} className="llm-chat-model-icon" />
                                     <span className="llm-chat-model-select-name">{shortModelName(currentModel.name, currentModel.provider)}</span>
                                 </>
                                 : <span className="llm-chat-model-select-name llm-chat-model-placeholder">{t("llm_chat.no_model_selected")}</span>}
@@ -452,7 +445,7 @@ export default function ChatInputBar({
                                             onClick={() => handleModelSelect(model)}
                                             checked={isSelectedModel(model)}
                                         >
-                                            <MaskedIcon url={providerIconUrl(model.provider)} className="llm-chat-model-icon" />
+                                            <Icon icon={providerIcon(model.provider)} className="llm-chat-model-icon" />
                                             {shortModelName(model.name, model.provider)}{model.costDescription && <> <small>({model.costDescription})</small></>}
                                         </FormListItem>
                                     )) : (
@@ -474,24 +467,20 @@ export default function ChatInputBar({
                             />
                         ) : null}
                     </div>
-                    {/* What the model can reach this turn. Lifted out of the model dropdown so
-                        their state reads at a glance and flipping one is a single click — the
-                        system prompt currently has to tell the user where these live, which is
-                        a fair sign a menu was the wrong home. Grouped so they stay together. */}
+                    {/* What the model can reach this turn (the Tools menu) and how it answers
+                        (extended thinking), grouped so they stay together. */}
                     <div className="llm-chat-capabilities">
-                        <CapabilityToggle
-                            icon="bx bx-globe"
-                            label={t("llm_chat.web_search")}
-                            active={chat.enableWebSearch && !webSearchUnavailable}
-                            onToggle={handleWebSearchToggle}
-                            disabled={chat.isStreaming}
-                            unavailableReason={webSearchUnavailable ? t("llm_chat.web_search_unavailable_gemini") : undefined}
-                        />
-                        <CapabilityToggle
-                            icon="bx bx-note"
-                            label={t("llm_chat.note_tools")}
-                            active={chat.enableNoteTools}
-                            onToggle={handleNoteToolsToggle}
+                        <ChatToolsDropdown
+                            enableNoteTools={chat.enableNoteTools}
+                            onNoteToolsChange={handleNoteToolsToggle}
+                            modelProvider={currentModel?.provider}
+                            webSearch={webSearch}
+                            searchProviders={searchProviders}
+                            onWebSearchChoose={chooseWebSearch}
+                            allowedTools={chat.allowedTools}
+                            onRevokeAllowedTool={handleRevokeAllowedTool}
+                            permissionMode={chat.permissionMode}
+                            onPermissionModeChange={handlePermissionModeChange}
                             disabled={chat.isStreaming}
                         />
                         {!currentModel?.reasoningEfforts?.length && (
@@ -630,31 +619,22 @@ function AttachmentChipPreview({ att }: { att: AttachmentBlock }) {
  * One of the model's per-conversation capability switches, as an icon toggle whose state
  * reads without opening anything. The label is the tooltip.
  */
-function CapabilityToggle({ icon, label, active, onToggle, disabled, unavailableReason }: {
+function CapabilityToggle({ icon, label, active, onToggle, disabled }: {
     icon: string;
     label: string;
     active: boolean;
     onToggle: (newValue: boolean) => void;
     disabled?: boolean;
-    /** Why this capability can't be used with the current model, if it can't. */
-    unavailableReason?: string;
 }) {
-    const button = (
+    return (
         <ActionButton
             icon={icon}
-            text={unavailableReason ?? label}
+            text={label}
             active={active}
-            disabled={disabled || !!unavailableReason}
+            disabled={disabled}
             onClick={() => onToggle(!active)}
             className="llm-chat-capability"
         />
     );
-
-    // A disabled <button> receives no mouse events, so its own tooltip never fires — which is
-    // why the dropdown this replaced had to put the explanation on a separate info icon. The
-    // wrapper carries it instead, and only exists when there is something to explain.
-    return unavailableReason
-        ? <span className="llm-chat-capability-unavailable" title={unavailableReason}>{button}</span>
-        : button;
 }
 

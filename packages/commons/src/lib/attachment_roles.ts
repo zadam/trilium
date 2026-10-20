@@ -108,7 +108,9 @@ export const ATTACHMENT_ROLES = {
      * runtime that imports a package never reads them and the editor that completes from them never
      * reads its source. Managed by the same install, and not embedded for the same reason.
      */
-    scriptModuleTypes: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-code-alt" }
+    scriptModuleTypes: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-code-alt" },
+    /** A meeting recording's transcript, which the recording rewrites as it transcribes. */
+    transcript: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-microphone" }
 } as const satisfies Record<string, AttachmentRoleTraits>;
 
 /** A role the app itself creates. Arbitrary strings reach the same fields — see {@link ATTACHMENT_ROLES}. */

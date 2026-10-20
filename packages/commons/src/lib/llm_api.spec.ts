@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isToolErrorResult, LLM_REASONING_EFFORTS } from "./llm_api.js";
+import { isProviderOfKind, isToolErrorResult, LLM_REASONING_EFFORTS } from "./llm_api.js";
 
 describe("LLM_REASONING_EFFORTS", () => {
     it("lists the levels weakest first, since providers pick the nearest level by position", () => {
@@ -17,5 +17,14 @@ describe("isToolErrorResult", () => {
         expect(isToolErrorResult("Sunny")).toBe(false);
         expect(isToolErrorResult(null)).toBe(false);
         expect(isToolErrorResult(undefined)).toBe(false);
+    });
+});
+
+describe("isProviderOfKind", () => {
+    it("matches the stored kind, and treats a missing kind as a chat provider", () => {
+        expect(isProviderOfKind({ kind: "search" }, "search")).toBe(true);
+        expect(isProviderOfKind({ kind: "search" }, "llm")).toBe(false);
+        expect(isProviderOfKind({}, "llm")).toBe(true);
+        expect(isProviderOfKind({}, "search")).toBe(false);
     });
 });

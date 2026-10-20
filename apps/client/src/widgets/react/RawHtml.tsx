@@ -1,24 +1,24 @@
 import type { HighlightedTokenInfo } from "@triliumnext/commons";
 import DOMPurify from "dompurify";
-import type { CSSProperties, HTMLProps, RefObject } from "preact/compat";
+import type { CSSProperties, HTMLAttributes, RefObject } from "preact";
 import { useLayoutEffect, useRef } from "preact/hooks";
 
 import { useImperativeSearchHighlighlighting } from "./hooks";
 
 type HTMLElementLike = string | HTMLElement | JQuery<HTMLElement>;
 
-interface RawHtmlProps extends Pick<HTMLProps<HTMLElement>, "tabindex" | "dir"> {
+interface RawHtmlProps extends Pick<HTMLAttributes<HTMLElement>, "tabindex" | "dir"> {
     className?: string;
     html?: HTMLElementLike;
     style?: CSSProperties;
     onClick?: (e: MouseEvent) => void;
 }
 
-export default function RawHtml({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLSpanElement>}) {
+export default function RawHtml({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLSpanElement | null>}) {
     return <span ref={containerRef} {...getProps(props)} />;
 }
 
-export function RawHtmlBlock({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLDivElement>}) {
+export function RawHtmlBlock({containerRef, ...props}: RawHtmlProps & { containerRef?: RefObject<HTMLDivElement | null>}) {
     return <div ref={containerRef} {...getProps(props)} />;
 }
 

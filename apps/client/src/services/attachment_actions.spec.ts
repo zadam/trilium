@@ -79,7 +79,7 @@ describe("getAttachmentActionGroups", () => {
         const image = titles(attachmentOf("image", "image/png"));
         expect(image[0]).toContain("ocr.view_extracted_text");
         expect(image[2]).toEqual([
-            "compress-image",
+            "compress-image-menu",
             "attachments_actions.convert_attachment_into_note"
         ]);
 
@@ -105,7 +105,7 @@ describe("getAttachmentActionGroups", () => {
         await actions["attachments_actions.open_custom"].run();
         await actions["attachments_actions.download"].run();
         await actions["ocr.view_extracted_text"].run();
-        await actions["compress-image"].run();
+        await actions["compress-image-menu"].run();
 
         expect(mocks.open.openAttachmentExternally).toHaveBeenCalledWith("att1", "image/png");
         expect(mocks.open.openAttachmentCustom).toHaveBeenCalledWith("att1", "image/png");
@@ -135,6 +135,18 @@ describe("getAttachmentActionGroups", () => {
 
         await first[3].run();
         expect(copyReference).toHaveBeenCalledOnce();
+    });
+
+    it("offers only the actions leaving the attachment unchanged for a read-only note", () => {
+        const image = attachmentOf("image", "image/png");
+        const groups = getAttachmentActionGroups(image, { isReadOnly: true });
+
+        expect(groups.map((group) => group.map((action) => action.title))).toEqual([ [
+            "attachments_actions.open_externally",
+            "attachments_actions.open_custom",
+            "attachments_actions.download",
+            "ocr.view_extracted_text"
+        ] ]);
     });
 
     it("renames, deletes and converts only once the user has agreed", async () => {

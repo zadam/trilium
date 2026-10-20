@@ -474,13 +474,6 @@ export function renderBookmark(bookmark: NonNullable<AnytypeBlock["bookmark"]>):
 // #endregion
 
 // #region Code blocks
-// PrismJS language ids Anytype uses that don't line up with a Trilium markdown language code. Most ids
-// (javascript, python, go, rust, …) match directly; only the mismatches need listing here. `clike` is
-// PrismJS's generic C-family base, mapped to plain C as the closest concrete language.
-const LANGUAGE_ALIASES: Record<string, string> = {
-    clike: "c"
-};
-
 /**
  * Renders an Anytype `Code`-style block as a Trilium/CKEditor code block. Anytype tags the block with a
  * PrismJS language id in `fields.lang`; we map that to a Trilium MIME and emit it as the CKEditor
@@ -495,7 +488,7 @@ export function renderCodeBlock(text: string, lang: string | undefined): string 
 /** The CKEditor code-block language class value for an Anytype language id, or auto-detect when unknown. */
 function codeLanguage(lang: string | undefined): string {
     if (lang) {
-        const mimeDefinition = getMimeTypeFromMarkdownName(LANGUAGE_ALIASES[lang] ?? lang);
+        const mimeDefinition = getMimeTypeFromMarkdownName(lang);
         if (mimeDefinition) {
             return normalizeMimeTypeForCKEditor(mimeDefinition.mime);
         }

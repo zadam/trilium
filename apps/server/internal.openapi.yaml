@@ -1918,17 +1918,18 @@ paths:
                   $ref: '#/components/schemas/Note'
 
   # Search
-  /api/search/{searchString}:
+  /api/search:
     get:
       tags: [Search]
       summary: Full text search
       operationId: search
       parameters:
         - name: searchString
-          in: path
+          in: query
           required: true
           schema:
             type: string
+            minLength: 1
       responses:
         '200':
           description: Search results
@@ -1938,18 +1939,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResult'
-                  
-  /api/quick-search/{searchString}:
+        '400':
+          description: Missing or empty search string
+
+  /api/quick-search:
     get:
       tags: [Search]
       summary: Quick search with highlighting
       operationId: quickSearch
       parameters:
         - name: searchString
-          in: path
+          in: query
           required: true
           schema:
             type: string
+            minLength: 1
       responses:
         '200':
           description: Quick search results
@@ -1959,7 +1963,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchResult'
-                  
+        '400':
+          description: Missing or empty search string
+
   /api/search-note/{noteId}:
     get:
       tags: [Search]

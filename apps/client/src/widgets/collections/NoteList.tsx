@@ -7,9 +7,8 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import FNote from "../../entities/fnote";
 import type { PrintReport } from "../../print";
-import froca from "../../services/froca";
 import { subscribeToMessages, unsubscribeToMessage as unsubscribeFromMessage } from "../../services/ws";
-import { useGetContextDataFrom, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteProperty, useTriliumEvent } from "../react/hooks";
+import { useGetContextDataFrom, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelInt, useNoteProperty, useTriliumEvent } from "../react/hooks";
 import { allViewTypes, ViewModeMedia, ViewModeProps, ViewTypeOptions } from "./interface";
 import ViewModeStorage, { type ViewModeStorageType } from "./view_mode_storage";
 
@@ -32,6 +31,7 @@ interface NoteListProps {
     onReady?: (data: PrintReport) => void;
     onProgressChanged?(progress: number): void;
     showTextRepresentation?: boolean;
+    onOpenNote?: (noteId: string) => void;
 }
 
 type LazyLoadedComponent = ((props: ViewModeProps<any>) => VNode<any> | undefined);
@@ -189,6 +189,9 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
     const [ noteIds, setNoteIds ] = useState<string[]>([]);
     const [ includeArchived ] = useNoteLabelBoolean(note, "includeArchived");
     const directChildrenOnly = (viewType === "list" || viewType === "grid" || viewType === "table" || viewType === "dashboard" || note?.type === "search");
+    const [ labelMaxDepth ] = useNoteLabelInt(note, "maxNestingDepth");
+    const maxDepth = (viewType === "calendar" || viewType === "geoMap" || viewType === "board")
+        ? labelMaxDepth : undefined;
     // getNoteIds can do a server round-trip (archive filtering), so concurrent refreshes may resolve
     // out of order. Track the latest issued refresh so a stale one can't clobber a newer result.
     const refreshSeqRef = useRef(0);
@@ -210,14 +213,14 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
         if (directChildrenOnly) {
             return await note.getChildNoteIdsWithArchiveFiltering(includeArchived);
         }
-        return await note.getSubtreeNoteIds(includeArchived);
+        return await note.getSubtreeNoteIds(includeArchived, maxDepth);
 
     }
 
     // Refresh on note switch.
     useEffect(() => {
         refreshNoteIds();
-    }, [ note, includeArchived, directChildrenOnly ]);
+    }, [ note, includeArchived, directChildrenOnly, maxDepth ]);
 
     // Refresh on alterations to the note subtree.
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
@@ -240,24 +243,19 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
 
     // Refresh on import.
     useEffect(() => {
-        async function onImport(message: WebSocketMessage) {
+        function onImport(message: WebSocketMessage) {
             if (!("taskType" in message) || message.taskType !== "importNotes" || message.type !== "taskSucceeded") return;
             const { parentNoteId, importedNoteId } = message.result;
             if (!parentNoteId || !importedNoteId) return;
-            if (importedNoteId && (parentNoteId === note?.noteId || noteIds.includes(parentNoteId))) {
-                const importedNote = await froca.getNote(importedNoteId);
-                if (!importedNote) return;
-                setNoteIds([
-                    ...noteIds,
-                    ...await getNoteIds(importedNote),
-                    importedNoteId
-                ]);
+            // Walked again from the collection, so that `maxDepth` counts from there.
+            if (parentNoteId === note?.noteId || noteIds.includes(parentNoteId)) {
+                void refreshNoteIds();
             }
         }
 
         subscribeToMessages(onImport);
         return () => unsubscribeFromMessage(onImport);
-    }, [ note, noteIds, setNoteIds ]);
+    }, [ note, noteIds, includeArchived, directChildrenOnly, maxDepth ]);
 
     return noteIds;
 }
@@ -272,20 +270,25 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
         config: T | undefined;
         storeFn: (data: T) => void;
         note: FNote;
+        viewType: ViewModeStorageType;
     }>();
-    const storageRef = useRef<{ storage: ViewModeStorage<T>, storeFn: (data: T) => void, note: FNote }>();
+    const storageRef = useRef<{ storage: ViewModeStorage<T>, storeFn: (data: T) => void, note: FNote, viewType: ViewModeStorageType } | undefined>(undefined);
 
     useEffect(() => {
         if (!note || !viewType) return;
         setViewConfig(undefined);
         const viewStorage = new ViewModeStorage<T>(note, viewType);
         const storeFn = (config: T) => {
-            setViewConfig({ note, config, storeFn });
+            setViewConfig({ note, viewType, config, storeFn });
             viewStorage.store(config);
         };
-        storageRef.current = { storage: viewStorage, storeFn, note };
+        const current = { storage: viewStorage, storeFn, note, viewType };
+        storageRef.current = current;
         viewStorage.restore().then(config => {
-            setViewConfig({ note, config, storeFn });
+            // A restore that resolves after the note or view type changed would replace the newer
+            // config.
+            if (storageRef.current !== current) return;
+            setViewConfig({ note, viewType, config, storeFn });
         });
     }, [ note, viewType ]);
 
@@ -300,12 +303,13 @@ export function useViewModeConfig<T extends object>(note: FNote | null | undefin
             return;
         }
         current.storage.restoreIfChanged().then(config => {
-            if (config === undefined) return;
-            setViewConfig({ note: current.note, config, storeFn: current.storeFn });
+            if (config === undefined || storageRef.current !== current) return;
+            setViewConfig({ note: current.note, viewType: current.viewType, config, storeFn: current.storeFn });
         });
     });
 
-    // Only expose config for the current note, avoid leaking notes when switching between them.
-    if (viewConfig?.note !== note) return undefined;
+    // Only expose the config of the current note and view type, so a view never receives the config
+    // or `storeFn` of the one it replaced before the effect above resets them.
+    if (viewConfig?.note !== note || viewConfig?.viewType !== viewType) return undefined;
     return viewConfig;
 }

@@ -39,6 +39,7 @@ class Adapter implements UploadAdapter {
     private editor: Editor;
     private t: LocaleTranslate;
     private xhr?: XMLHttpRequest;
+    private rejectLocal?: () => void;
 
 	/**
 	 * Creates a new adapter instance.
@@ -58,6 +59,11 @@ class Adapter implements UploadAdapter {
 	 * @see module:upload/filerepository~Adapter#upload
 	 */
 	upload() {
+		const localUpload = glob.getLocalUpload?.();
+		if (localUpload) {
+			return this._uploadLocally(localUpload) as Promise<any>;
+		}
+
 		return this.loader.file
 			.then( file => new Promise<File | null>( ( resolve, reject ) => {
 				this._initRequest().then(() => {
@@ -77,6 +83,45 @@ class Adapter implements UploadAdapter {
 		if (this.xhr) {
 			this.xhr.abort();
 		}
+		this.rejectLocal?.();
+	}
+
+	/**
+	 * Hands the file to the host's local server. A raw request with a body cannot reach it: the
+	 * mobile app's native request bridges answer GET and HEAD only.
+	 */
+	private async _uploadLocally(localUpload: LocalUpload) {
+		const file = await this.loader.file;
+		if (!file) {
+			throw "Missing file";
+		}
+
+		const genericError = this.t('Cannot upload file:') + ` ${file.name}.`;
+		const { url, headers } = await this._getRequestTarget();
+		const aborted = new Promise<never>((_, reject) => {
+			this.rejectLocal = () => reject();
+		});
+
+		const upload = (async () => {
+			let resp: Response;
+			try {
+				resp = await localUpload(url, { method: 'POST', headers, fields: {}, file });
+			} catch {
+				throw genericError;
+			}
+
+			const response = await resp.json().catch(() => null);
+			if (!response?.uploaded) {
+				throw `${genericError} ${describeUploadFailure(this.t, resp.status, response)}`.trim();
+			}
+			return { default: response.url };
+		})();
+
+		try {
+			return await Promise.race([ upload, aborted ]);
+		} finally {
+			this.rejectLocal = undefined;
+		}
 	}
 
 	/**
@@ -85,18 +130,8 @@ class Adapter implements UploadAdapter {
 	 * @private
 	 */
 	_initRequest() {
-		return glob.getHeaders().then(headers => {
+		return this._getRequestTarget().then(({ url, headers }) => {
 			const xhr = this.xhr = new XMLHttpRequest();
-
-			// The note the editor holds, which is not the active tab's in a split or the quick edit
-			// popup. A host that does not say falls back to the active tab's.
-			const domRoot = this.editor.editing.view.getDomRoot();
-			const component = glob.getComponentByEl<EditorComponent>( domRoot );
-			const noteId = component?.getNoteId?.() ?? glob.getActiveContextNote().noteId;
-			const query = isUploadAsLink(this.loader) ? "?link=true" : "";
-
-			// this must be a relative path
-			const url = `api/notes/${noteId}/attachments/upload${query}`;
 
 			xhr.open('POST', url, true);
 			xhr.responseType = 'json';
@@ -105,6 +140,23 @@ class Adapter implements UploadAdapter {
 				xhr.setRequestHeader(headerName, headers[headerName]);
 			}
 		});
+	}
+
+	/** The relative URL of the upload route for the editor's note, and the request headers. */
+	private async _getRequestTarget() {
+		const domRoot = this.editor.editing.view.getDomRoot();
+		const component = glob.getComponentByEl<EditorComponent>( domRoot );
+
+		// Sent as a change of the host, which then does not redraw the links and embeds it shows.
+		const headers = await glob.getHeaders({ "trilium-component-id": component?.componentId });
+
+		// The note the editor holds, which is not the active tab's in a split or the quick edit
+		// popup. A host that does not say falls back to the active tab's.
+		const noteId = component?.getNoteId?.() ?? glob.getActiveContextNote().noteId;
+		const query = isUploadAsLink(this.loader) ? "?link=true" : "";
+
+		// this must be a relative path
+		return { url: `api/notes/${noteId}/attachments/upload${query}`, headers };
 	}
 
 	/**

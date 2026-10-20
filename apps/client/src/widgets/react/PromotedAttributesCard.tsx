@@ -1,8 +1,9 @@
 import "./PromotedAttributesCard.css";
 
-import { createPortal } from "preact/compat";
+import { createPortal } from "preact";
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
 
+import { extractAttributeDefinitionTypeAndName } from "@triliumnext/commons";
 import type FNote from "../../entities/fnote";
 import type { Attribute } from "../../services/attribute_parser";
 import attributes, { removeOwnedAttributesByNameOrType } from "../../services/attributes";
@@ -20,7 +21,7 @@ import ActionButton from "./ActionButton";
 import { Badge } from "./Badge";
 import FormToggle from "./FormToggle";
 import { useTriliumEvent } from "./hooks";
-import Icon from "./Icon";
+import { TooltipIcon } from "./Icon";
 import { type SortableItem, SortableCard } from "./SortableCard";
 
 /** Each kind of definition by name, holding the title and icon `AttributeDetail` lists it with. */
@@ -55,8 +56,25 @@ export interface PromotedAttributesCardProps {
      * ones only these notes define have no edit or delete button.
      */
     itemNotes?: Iterable<FNote>;
+    /**
+     * Starts what the settings have never named switched off, for a collection whose items have
+     * little room. A definition created from this card is shown all the same.
+     */
+    unarrangedHidden?: boolean;
+    /**
+     * Leaves out what `drawnByCollection` names, for a collection that always draws those itself,
+     * such as a calendar's dates. Otherwise they are listed with their switch held off.
+     */
+    omitDrawn?: boolean;
     /** Called with the whole list after every change, for the caller to store. */
     onChange: (attributes: PromotedAttribute[]) => void;
+    /**
+     * Runs the deletion of a definition and its values, for a caller that keeps settings of its own
+     * for the attribute and must update them in the same write, such as the columns a board stores
+     * for a grouping. Without it, the card runs the deletion itself.
+     */
+    runDeletion?: (
+        deletion: () => Promise<void>, type: "label" | "relation", name: string) => Promise<void>;
 }
 
 /**
@@ -67,10 +85,17 @@ export interface PromotedAttributesCardProps {
  * reports the order and what is hidden, which the caller stores.
  */
 export default function PromotedAttributesCard({
-    heading, instruction, note, settings, drawnByCollection, itemNotes, onChange
+    heading, instruction, note, settings, drawnByCollection, itemNotes, unarrangedHidden, omitDrawn,
+    onChange, runDeletion
 }: PromotedAttributesCardProps) {
-    const [ shown, setShown ] =
-        useState(() => resolvePromotedAttributes(note, settings, drawnByCollection, itemNotes));
+    const resolve = (stored: PromotedAttributeSetting[] | undefined) => resolvePromotedAttributes(
+        note, stored, drawnByCollection, itemNotes, { unarrangedHidden })
+        .filter((attribute) => !omitDrawn || !attribute.drawnByCollection);
+    const [ shown, setShown ] = useState(() => resolve(settings));
+    const shownRef = useRef(shown);
+    shownRef.current = shown;
+    /** Names of the definitions created from this card, to show once they load. */
+    const madeHere = useRef(new Set<string>());
     // What the collection draws can change while the card stands, a board being regrouped from
     // its header. The rows are marked again where they are, keeping their order and what is
     // hidden; the marks are not stored, so nothing is written back for them.
@@ -78,10 +103,12 @@ export default function PromotedAttributesCard({
     const [ lastDrawn, setLastDrawn ] = useState(drawn);
     if (lastDrawn !== drawn) {
         setLastDrawn(drawn);
-        setShown((was) => was.map((attribute) => ({
-            ...attribute,
-            drawnByCollection: drawnByCollection?.includes(attribute.name) ?? false
-        })));
+        setShown((was) => omitDrawn
+            ? resolve(storedPromotedAttributes(was))
+            : was.map((attribute) => ({
+                ...attribute,
+                drawnByCollection: drawnByCollection?.includes(attribute.name) ?? false
+            })));
     }
     // A card that joins through a branch change brings no attribute row for `entitiesReloaded`, so
     // the list is resolved again when the definition names of `itemNotes` change.
@@ -89,14 +116,13 @@ export default function PromotedAttributesCard({
     const [ lastItemDefinitions, setLastItemDefinitions ] = useState(itemDefinitions);
     if (lastItemDefinitions !== itemDefinitions) {
         setLastItemDefinitions(itemDefinitions);
-        setShown((was) => resolvePromotedAttributes(
-            note, storedPromotedAttributes(was), drawnByCollection, itemNotes));
+        setShown((was) => resolve(storedPromotedAttributes(was)));
     }
     const [ detail, setDetail ] = useState<AttributeDetailOpts | null>(null);
     /** The definition the editor last reported, which `save` writes. */
-    const edited = useRef<Attribute>();
+    const edited = useRef<Attribute | undefined>(undefined);
     /** The definition the editor was handed, which `save` compares against to spot a rename. */
-    const original = useRef<Attribute>();
+    const original = useRef<Attribute | undefined>(undefined);
 
     // A definition created, renamed or deleted here arrives as an attribute change. Resolving
     // against the current list is what keeps the order of the rest.
@@ -104,10 +130,25 @@ export default function PromotedAttributesCard({
         const notes = [ note, ...itemNotes ?? [] ];
         const affects = loadResults.getAttributeRows().some((attribute) =>
             notes.some((affected) => attributes.isAffecting(attribute, affected)));
-        if (affects) {
-            setShown((was) => resolvePromotedAttributes(
-                note, storedPromotedAttributes(was), drawnByCollection, itemNotes));
+        if (!affects) return;
+
+        const was = shownRef.current;
+        const next = resolve(storedPromotedAttributes(was));
+        // A definition made here is one the reader asked for, so it is shown even where what nobody
+        // has arranged starts hidden, and stored as such.
+        const made = next.filter((attribute) => attribute.hidden
+            && madeHere.current.has(attribute.name)
+            && !was.some((previous) => previous.name === attribute.name));
+        if (!made.length) {
+            setShown(next);
+            return;
         }
+
+        for (const attribute of made) {
+            madeHere.current.delete(attribute.name);
+        }
+        store(next.map((attribute) =>
+            made.includes(attribute) ? { ...attribute, hidden: false } : attribute));
     });
 
     const items = useMemo(() => shown.map((attribute) => ({
@@ -153,7 +194,6 @@ export default function PromotedAttributesCard({
             isOwned: true,
             // Where the press was, or below the top of the page for one made from the keyboard.
             x: event?.pageX ?? 0,
-            y: event?.pageY ?? 150,
             focus: attribute ? undefined : "name",
             hideMultiplicity: true,
             // Every attribute listed here is inheritable and promoted already, so the two toggles
@@ -178,10 +218,13 @@ export default function PromotedAttributesCard({
             return;
         }
 
-        const [ type, name ] = definition.name.split(":", 2) as [ "label" | "relation", string ];
+        const [ type, name ] = extractAttributeDefinitionTypeAndName(definition.name);
         const isRenamed = !!was && was.name !== definition.name;
+        if (!was) {
+            madeHere.current.add(name);
+        }
         if (isRenamed && was) {
-            const [ , previous ] = was.name.split(":", 2);
+            const [ , previous ] = extractAttributeDefinitionTypeAndName(was.name);
             await renameAttributeInSubtree(note.noteId, type, previous, name);
         }
 
@@ -198,10 +241,13 @@ export default function PromotedAttributesCard({
      * panel instead leaves the items carrying values no definition describes.
      */
     const erase = useCallback(async (definitionName: string) => {
-        const [ type, name ] = definitionName.split(":", 2) as [ "label" | "relation", string ];
-        await deleteAttributeInSubtree(note.noteId, type, name);
-        await removeOwnedAttributesByNameOrType(note, "label", definitionName);
-    }, [ note ]);
+        const [ type, name ] = extractAttributeDefinitionTypeAndName(definitionName);
+        const deletion = async () => {
+            await deleteAttributeInSubtree(note.noteId, type, name);
+            await removeOwnedAttributesByNameOrType(note, "label", definitionName);
+        };
+        await (runDeletion ? runDeletion(deletion, type, name) : deletion());
+    }, [ note, runDeletion ]);
 
     /** Deletes the definition the editor was opened on. */
     const removeEdited = useCallback(async () => {
@@ -235,14 +281,14 @@ export default function PromotedAttributesCard({
                     const attribute = shown.find((candidate) => candidate.name === item.key);
                     return attribute && (
                         <>
-                            {item.icon && <Icon icon={item.icon} />}
-                            <span className="promoted-attribute-name">{item.caption}</span>
-
-                            <Badge
-                                className="promoted-attribute-type"
-                                text={promotedAttributeType(attribute).title}
-                                outline
+                            <TooltipIcon
+                                icon={item.icon}
+                                tooltip={promotedAttributeType(attribute).title}
+                                tooltipClass="tooltip-top"
+                                role="img"
+                                aria-label={promotedAttributeType(attribute).title}
                             />
+                            <span className="promoted-attribute-name">{item.caption}</span>
 
                             {attribute.isConflicting && (
                                 <Badge

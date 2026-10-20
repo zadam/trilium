@@ -219,6 +219,26 @@ describe("FNote branches & children", () => {
         expect(subtreeNotes.map((n) => n.noteId).sort()).toEqual(["branchA", "leafA"]);
     });
 
+    it("getSubtreeNoteIds stops at maxDepth, a negative one meaning no limit", async () => {
+        const root = buildNote({
+            title: "root",
+            children: [{
+                id: "depth0",
+                title: "depth0",
+                children: [{
+                    id: "depth1",
+                    title: "depth1",
+                    children: [{ id: "depth2", title: "depth2" }]
+                }]
+            }]
+        });
+
+        expect(await root.getSubtreeNoteIds(false, 0)).toEqual(["depth0"]);
+        expect(await root.getSubtreeNoteIds(false, 1)).toEqual(["depth0", "depth1"]);
+        expect(await root.getSubtreeNoteIds(false, -1)).toEqual(["depth0", "depth1", "depth2"]);
+        expect(await root.getSubtreeNoteIds()).toEqual(["depth0", "depth1", "depth2"]);
+    });
+
     it("getChildNoteIdsWithArchiveFiltering returns children directly for hidden/search/includeArchived", async () => {
         const hidden = buildNote({ id: "_hiddenParent", title: "hidden", children: [{ id: "hc", title: "hc" }] });
         expect(await hidden.getChildNoteIdsWithArchiveFiltering()).toEqual(["hc"]);
@@ -823,6 +843,27 @@ describe("FNote paths & hierarchy", () => {
         // active path equal to one of the candidate paths -> equal-overlap branch exercised
         const withActive = leaf.getSortedNotePathRecords("root", "root/plainP/hoistLeaf");
         expect(withActive[0].notePath).toEqual(["root", "plainP", "hoistLeaf"]);
+    });
+
+    it("getBestNotePathString still resolves a note that froca has dropped", () => {
+        const root = froca.notes["root"] ?? buildNote({ id: "root", title: "root" });
+        const parent = buildNote({ id: "droppedParent", title: "parent" });
+        registerBranch("br-root-droppedParent", "droppedParent", "root", 0);
+        root.addChild("droppedParent", "br-root-droppedParent", false);
+        parent.addParent("root", "br-root-droppedParent", false);
+
+        const leaf = buildNote({ id: "droppedLeaf", title: "leaf", "#archived": "" });
+        registerBranch("br-droppedParent-droppedLeaf", "droppedLeaf", "droppedParent", 0);
+        parent.addChild("droppedLeaf", "br-droppedParent-droppedLeaf", false);
+        leaf.addParent("droppedParent", "br-droppedParent-droppedLeaf", false);
+
+        // `froca_updater` removes a deleted note from `froca.notes`, while a view can still hold it.
+        delete froca.notes["droppedLeaf"];
+
+        const [ record ] = leaf.getSortedNotePathRecords("root");
+        expect(record.notePath).toEqual(["root", "droppedParent", "droppedLeaf"]);
+        expect(record.isArchived).toBe(true);
+        expect(leaf.getBestNotePathString()).toBe("root/droppedParent/droppedLeaf");
     });
 
     it("getSortedNotePathRecords comparator exercises both ternary directions (reversed parent order)", () => {

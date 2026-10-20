@@ -57,13 +57,14 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         this.#setShadows();
         this.#setBackdropEffects();
         this.#setMonospaceLigatures();
+        this.#setStickyTableHeaders();
         updateThemeCapabilities();
         this.#setLocaleAndDirection(options.get("locale"));
         // The fonts stylesheet went out with the page; the files the user's own fonts are stored in
         // are fetched here, once froca can be asked which notes hold them.
         void applyCustomFontsFromOptions();
         this.#setExperimentalFeatures();
-        this.#initPWATopbarColor();
+        this.#initThemeColor();
 
         return super.render();
     }
@@ -96,6 +97,10 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
 
         if (loadResults.isOptionReloaded("monospaceLigaturesEnabled")) {
             this.#setMonospaceLigatures();
+        }
+
+        if (loadResults.isOptionReloaded("textNoteStickyTableHeadersEnabled")) {
+            this.#setStickyTableHeaders();
         }
 
         if (loadResults.isOptionReloaded("maxContentWidth")
@@ -167,6 +172,11 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         document.body.classList.toggle("monospace-ligatures-disabled", !enabled);
     }
 
+    #setStickyTableHeaders() {
+        const enabled = options.is("textNoteStickyTableHeadersEnabled");
+        document.body.classList.toggle("sticky-table-headers-disabled", !enabled);
+    }
+
     #setExperimentalFeatures() {
         for (const featureId of getEnabledExperimentalFeatureIds()) {
             document.body.classList.add(`experimental-feature-${featureId}`);
@@ -185,8 +195,7 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         }
     }
 
-    #initPWATopbarColor() {
-        if (!utils.isPWA()) return;
+    #initThemeColor() {
         const tracker = $("#background-color-tracker");
 
         if (tracker.length) {

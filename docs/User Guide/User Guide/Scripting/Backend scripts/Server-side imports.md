@@ -5,7 +5,7 @@ Backend scripting has to be enabled first — see `backendScriptingEnabled` in t
 
 ## npm packages
 
-Open a backend script note (a *JS backend* code note), pick **Script modules** from the note's actions, and install a package by name and version, such as `cheerio@1.1.2`. Trilium fetches it as ES modules and stores it in the database, so it syncs to your other instances and keeps working without network access.
+Open a backend script note (a *JS backend* code note), pick **Script modules** from the note menu, and install a package by name and version, such as `cheerio@1.1.2`. Trilium fetches it as ES modules and stores it in the database, so it syncs to your other instances and keeps working without network access.
 
 Scripts then require the package by name:
 

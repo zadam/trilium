@@ -16,6 +16,8 @@ export interface ExecOpts {
     cookieJar?: CookieJar;
     auth?: {
         password?: string;
+        /** Sent as `trilium-totp` when the server has two-factor authentication enabled. */
+        totpToken?: string;
     };
     timeout: number;
     body?: string | {};
@@ -172,7 +174,10 @@ export function validateFetchableUrl(urlString: string): URL {
  */
 export async function readCappedResponse(response: Response, maxBytes: number): Promise<FetchedResource> {
     const contentType = (response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
-    const headers = Object.fromEntries(response.headers);
+    // `Headers` iteration keeps the case the server sent under some implementations and lower-cases
+    // it under others; `FetchedResource` promises one case.
+    const headers = Object.fromEntries(
+        [ ...response.headers ].map(([ name, value ]) => [ name.toLowerCase(), value ]));
     const base = { status: response.status, ok: response.ok, contentType, headers };
 
     // Bail before reading a byte where the server says how many there will be.

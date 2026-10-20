@@ -30,7 +30,7 @@ export interface TableSize {
 }
 
 /**
- * The balloon form behind "Insert table…": a "Rows" field, a "Columns" field and an Insert button.
+ * The balloon form behind "Insert table…": a "Columns" field, a "Rows" field and an Insert button.
  * Invalid values are reported under their field when the form is submitted, and a table with more
  * than {@link MAX_TABLE_CELLS} cells is reported above the button.
  */
@@ -79,8 +79,8 @@ export default class TableInsertFormView extends View {
                 novalidate: true
             },
             children: [
-                this.rowsField,
                 this.columnsField,
+                this.rowsField,
                 {
                     tag: "div",
                     attributes: {
@@ -99,7 +99,7 @@ export default class TableInsertFormView extends View {
         });
 
         // The size error is cleared as soon as either value is edited.
-        for (const field of [this.rowsField, this.columnsField]) {
+        for (const field of [this.columnsField, this.rowsField]) {
             field.inputView.on("input", () => {
                 this.sizeErrorText = null;
             });
@@ -122,8 +122,8 @@ export default class TableInsertFormView extends View {
         // Turns a native form submit, the Enter key included, into the view's `submit` event.
         submitHandler({ view: this });
 
-        const { rowsField, columnsField, insertButtonView } = this;
-        for (const view of [rowsField.inputView, columnsField.inputView, insertButtonView]) {
+        const { columnsField, rowsField, insertButtonView } = this;
+        for (const view of [columnsField.inputView, rowsField.inputView, insertButtonView]) {
             this.focusables.add(view);
             /* v8 ignore next -- a child view rendered as part of this template has an element */
             if (view.element) {
@@ -143,10 +143,10 @@ export default class TableInsertFormView extends View {
         this.keystrokes.destroy();
     }
 
-    /** Focuses the "Rows" field and selects its value. */
+    /** Focuses the "Columns" field and selects its value. */
     public focus(): void {
         this.focusCycler.focusFirst();
-        this.rowsField.inputView.select();
+        this.columnsField.inputView.select();
     }
 
     /** Sets both fields to {@link DEFAULT_TABLE_SIZE} and clears the errors. */
@@ -162,20 +162,20 @@ export default class TableInsertFormView extends View {
      */
     public validate(): TableSize | null {
         this.sizeErrorText = null;
-        const rows = this.rowsField.validate();
         const columns = this.columnsField.validate();
+        const rows = this.rowsField.validate();
 
-        if (rows === null) {
-            this.rowsField.focus();
-            return null;
-        }
         if (columns === null) {
             this.columnsField.focus();
             return null;
         }
+        if (rows === null) {
+            this.rowsField.focus();
+            return null;
+        }
         if (rows * columns > MAX_TABLE_CELLS) {
             this.sizeErrorText = this.tooLargeText;
-            this.rowsField.focus();
+            this.columnsField.focus();
             return null;
         }
         return { rows, columns };

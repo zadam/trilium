@@ -52,7 +52,7 @@ const DEBOUNCE_MS = 150;
  * `dialog.pickSingleItem()`.
  */
 export default function ItemPickerDialog() {
-    const opts = useRef<ItemPickerDialogOptions>();
+    const opts = useRef<ItemPickerDialogOptions | undefined>(undefined);
     /** The item picked, reported in `onHidden` rather than while the dialog is closing. */
     const picked = useRef<PickerItem | null>(null);
     const searchRef = useRef<HTMLInputElement>(null);

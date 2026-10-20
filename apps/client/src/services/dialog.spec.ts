@@ -177,34 +177,6 @@ describe("dialog service", () => {
 
             expect(document.activeElement).toBe(input);
         });
-
-        it("closes the autocomplete dropdown on hide", async () => {
-            const $dialog = makeDialog();
-            await openDialog($dialog, false);
-
-            // `"autocomplete" in $autocompleteEl` is true for a jQuery object only if the
-            // autocomplete plugin is registered. Register a stub on the jQuery prototype so
-            // the branch is taken and the plugin is invoked.
-            const autocomplete = vi.fn();
-            ($.fn as any).autocomplete = autocomplete;
-
-            $dialog.trigger("hidden.bs.modal");
-
-            expect(autocomplete).toHaveBeenCalledWith("close");
-
-            delete ($.fn as any).autocomplete;
-        });
-
-        it("skips closing autocomplete when the plugin is not registered", async () => {
-            const $dialog = makeDialog();
-            await openDialog($dialog, false);
-
-            // Ensure no autocomplete plugin is present so the `in` check is false.
-            delete ($.fn as any).autocomplete;
-
-            // Should not throw.
-            expect(() => $dialog.trigger("hidden.bs.modal")).not.toThrow();
-        });
     });
 
     describe("lifting a dialog above what is already open", () => {

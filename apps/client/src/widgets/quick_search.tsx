@@ -14,6 +14,7 @@ import type { ShortcutHintDefinition } from "../services/shortcut_hints";
 import { isMobile } from "../services/utils";
 import ActionButton from "./react/ActionButton";
 import { ExtendedAdmonition } from "./react/Admonition";
+import { AttributeSnippetBadges } from "./react/Badge";
 import Button from "./react/Button";
 import { focusListItem } from "./react/FormList";
 import { useTriliumEvent } from "./react/hooks";
@@ -22,7 +23,7 @@ import { pointerMoved } from "./react/menu_context";
 import OverlayControlGroup from "./react/OverlayControlGroup";
 import Popup from "./react/Popup";
 import RawHtml, { RawHtmlBlock } from "./react/RawHtml";
-import SearchStringEditor from "./ribbon/SearchStringEditor";
+import SearchStringEditor from "./search/SearchStringEditor";
 import { ShortcutHintOverlayButton } from "./shortcut_hints/shortcut_hint_button";
 
 /** The keys the results answer, beside the field's own, for the shortcut-hints pane. */
@@ -58,7 +59,7 @@ export default function QuickSearch() {
     const [ open, setOpen ] = useState(false);
     // Set while the keys move through the results; see `.tn-menu-keyboard` in Menu.css.
     const [ keyboardDriven, setKeyboardDriven ] = useState(false);
-    const editorRef = useRef<FieldEditor>();
+    const editorRef = useRef<FieldEditor | undefined>(undefined);
     const boxRef = useRef<HTMLDivElement>(null);
     const popupRef = useRef<HTMLDivElement | null>(null);
     // Each search takes a number, so a slower earlier response cannot overwrite a later one.
@@ -83,7 +84,7 @@ export default function QuickSearch() {
         const requestId = ++requestIdRef.current;
         setSearchState({ status: "searching" });
         const { searchResults, highlightedTokens, error } = await server.get<QuickSearchResponse>(
-            `quick-search/${encodeURIComponent(query)}`
+            `quick-search?searchString=${encodeURIComponent(query)}`
         );
         if (requestId !== requestIdRef.current) return;
 
@@ -194,7 +195,6 @@ export default function QuickSearch() {
                         <Button
                             className="show-in-full-search"
                             text={t("quick-search.show-in-full-search")}
-                            keyboardShortcut="Ctrl+Enter"
                             size="small"
                             onClick={showInFullSearch}
                         />
@@ -210,7 +210,7 @@ export default function QuickSearch() {
  * the field, and closes them on Escape. Captured at the window, as Bootstrap's handler for keys in
  * a `.dropdown-menu` crashes on one with no toggle beside it.
  */
-function useResultNavigation(popupRef: RefObject<HTMLElement>, open: boolean, callbacks: {
+function useResultNavigation(popupRef: RefObject<HTMLElement | null>, open: boolean, callbacks: {
     /** Runs for ArrowUp on the first result. */
     focusField(): void;
     /** Runs once the keys have moved focus to another result. */
@@ -347,13 +347,10 @@ function QuickSearchResult({ result, viewScope, onOpen }: {
                     />
                 </div>
 
-                {result.highlightedAttributeSnippet && (
-                    // The attributes share one line, so the line breaks between them become spaces.
-                    <RawHtmlBlock
-                        className="search-result-attributes"
-                        html={result.highlightedAttributeSnippet.replace(/<br\s?\/?>/g, " ")}
-                    />
-                )}
+                <AttributeSnippetBadges
+                    snippet={result.highlightedAttributeSnippet}
+                    className="search-result-attributes"
+                />
 
                 {result.highlightedContentSnippet && (
                     <RawHtmlBlock

@@ -9,8 +9,10 @@ vi.mock("./bundle.js", () => ({
 
 // Spy on the actual JSX rendering so we don't depend on Preact mounting.
 const renderAtElementMock = vi.fn();
+const disposeMock = vi.fn();
 vi.mock("../widgets/react/react_utils.jsx", () => ({
-    renderReactWidgetAtElement: (...args: unknown[]) => renderAtElementMock(...args)
+    renderReactWidgetAtElement: (...args: unknown[]) => renderAtElementMock(...args),
+    disposeReactWidget: (...args: unknown[]) => disposeMock(...args)
 }));
 
 import FAttribute from "../entities/fattribute.js";
@@ -19,6 +21,7 @@ import noteAttributeCache from "../services/note_attribute_cache.js";
 import utils from "../services/utils.js";
 import { buildNote } from "../test/easy-froca";
 import froca from "./froca.js";
+import { waitForPendingRenders } from "./pending_renders.js";
 import renderDefault, { render, renderIfJsx } from "./render.js";
 import { RENDER_SCOPE_CLASS } from "./render_css_scope.js";
 import server from "./server.js";
@@ -72,6 +75,7 @@ describe("render", () => {
 
         expect(result).toBe(false);
         expect($el.children().length).toBe(0);
+        expect(disposeMock).toHaveBeenCalledWith($el[0]);
         expect($el.css("display")).toBe("none");
         expect(server.postWithSilentInternalServerError).not.toHaveBeenCalled();
     });
@@ -260,6 +264,59 @@ describe("render", () => {
         expect(renderAtElementMock).toHaveBeenCalledOnce();
         expect(renderAtElementMock.mock.calls[0][0]).toBe(closest);
         expect(renderAtElementMock.mock.calls[0][2]).toBe($el[0]);
+    });
+
+    it("mounts nothing once its signal is aborted", async () => {
+        const target = buildNote({ title: "Target9", type: "code" });
+        const jsxNote = buildNote({ id: "jsxRoot9", title: "JSX root" });
+        jsxNote.mime = "text/jsx";
+        const note = buildNote({ title: "Host9", "~renderNote": target.noteId });
+        server.postWithSilentInternalServerError = vi.fn(async () => ({
+            script: "",
+            html: "",
+            noteId: "jsxRoot9",
+            allNoteIds: []
+        })) as typeof server.postWithSilentInternalServerError;
+        let finishScript: (result: unknown) => void = () => {};
+        executeMock.mockReturnValue(new Promise((resolve) => { finishScript = resolve; }));
+        (glob as any).getComponentByEl = vi.fn(() => ({ fake: "component" }));
+        const controller = new AbortController();
+
+        const $el = $("<div class='component'>");
+        await render(note, $el, vi.fn(), { signal: controller.signal });
+        expect(executeMock).toHaveBeenCalledOnce();
+        controller.abort();
+        finishScript(() => null);
+        await waitForPendingRenders($el[0]);
+
+        expect(renderAtElementMock).not.toHaveBeenCalled();
+    });
+
+    it("holds waitForPendingRenders until the script and its JSX mount have settled", async () => {
+        const target = buildNote({ title: "Target8", type: "code" });
+        const jsxNote = buildNote({ id: "jsxRoot8", title: "JSX root" });
+        jsxNote.mime = "text/jsx";
+        const note = buildNote({ title: "Host8", "~renderNote": target.noteId });
+        server.postWithSilentInternalServerError = vi.fn(async () => ({
+            script: "",
+            html: "",
+            noteId: "jsxRoot8",
+            allNoteIds: []
+        })) as typeof server.postWithSilentInternalServerError;
+        let finishScript: (result: unknown) => void = () => {};
+        executeMock.mockReturnValue(new Promise((resolve) => { finishScript = resolve; }));
+        (glob as any).getComponentByEl = vi.fn(() => ({ fake: "component" }));
+
+        const $el = $("<div class='component'>");
+        await render(note, $el, vi.fn());
+        let settled = false;
+        const wait = waitForPendingRenders($el[0]).then(() => { settled = true; });
+        await flush();
+        expect(settled).toBe(false);
+
+        finishScript(() => null);
+        await wait;
+        expect(renderAtElementMock).toHaveBeenCalledOnce();
     });
 });
 

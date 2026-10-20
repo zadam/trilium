@@ -97,6 +97,33 @@ describe("Popup", () => {
         expect(tall.style.maxHeight).toBe(`${800 - 330 - 5}px`);
     });
 
+    it("keeps a top it is pinned to, whatever its height, and caps its height to the room below", async () => {
+        const layer = document.createElement("div");
+        document.body.append(layer);
+        anchorAt(100, 600);
+        vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(400);
+        // Unpinned, too tall for the room beside its anchor, it moves up to fit.
+        await placeFloating(layer, anchor, { placement: "right-start", capHeight: true });
+        expect(parseFloat(layer.style.top)).toBeLessThan(600);
+
+        await placeFloating(layer, anchor, { placement: "right-start", capHeight: true, pinTop: 250 });
+        expect(layer.style.top).toBe("250px");
+        expect(layer.style.maxHeight).toBe(`${800 - 250 - 5}px`);
+        // Its side still follows the room it has.
+        expect(layer.style.left).toBe("180px");
+        layer.remove();
+    });
+
+    it("keeps to one side of a caret, never over the line typed, however long it is", async () => {
+        vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(1000);
+        const caret = { getBoundingClientRect: () => DOMRect.fromRect({ x: 100, y: 300, width: 1, height: 16 }) };
+        const popup = await open({ anchor: caret });
+
+        // Below the caret, with the room down to the viewport's edge less its gap.
+        expect(popup.style.top).toBe("316px");
+        expect(popup.style.maxHeight).toBe(`${800 - 316 - 5}px`);
+    });
+
     it("keeps clear of the screen's safe areas, such as a notch or a gesture bar", async () => {
         // The insets a device reports, as the probe reads them from the stylesheet.
         const measure = window.getComputedStyle.bind(window);
@@ -129,6 +156,60 @@ describe("Popup", () => {
         expect(popup.parentElement?.className).toBe("tn-dropdown-portal note-actions");
         expect(popup.parentElement?.parentElement).toBe(document.body);
         expect(onPlaced).toHaveBeenCalledTimes(1);
+    });
+
+    it("names the side it reveals itself from once placed, when it is asked to reveal itself", async () => {
+        anchorAt(100, 50);
+        expect((await open({ reveal: true })).dataset.reveal).toBe("bottom-start");
+
+        render(null, host);
+        anchorAt(100, 740);
+        expect((await open({ reveal: true })).dataset.reveal).toBe("top-start");
+
+        render(null, host);
+        expect((await open({ reveal: true, placedByStylesheet: true })).dataset.reveal).toBe("stylesheet");
+
+        render(null, host);
+        expect((await open()).dataset.reveal).toBeUndefined();
+    });
+
+    it("leaves an inert copy in its wrapper to play its closing animation, gone once that ends", async () => {
+        anchorAt(100, 50);
+        const popup = await open({ reveal: true, portalClassName: "tn-dropdown-portal global-menu", id: "the-menu" });
+        popup.scrollTop = 40;
+        let finish = () => {};
+        const finished = new Promise<void>((resolve) => {
+            finish = resolve;
+        });
+        vi.spyOn(HTMLElement.prototype, "getAnimations").mockImplementation(function (this: HTMLElement) {
+            return this.dataset.closing !== undefined ? [ { finished } as unknown as Animation ] : [];
+        });
+
+        render(null, host);
+        const copy = document.querySelector<HTMLElement>(".tn-popup");
+        expect(copy).not.toBeNull();
+        expect(copy).not.toBe(popup);
+        expect(copy?.dataset.closing).toBe("");
+        expect(copy?.dataset.reveal).toBe("bottom-start");
+        expect([ copy?.hasAttribute("inert"), copy?.getAttribute("aria-hidden"), copy?.id ]).toEqual([ true, "true", "" ]);
+        expect(copy?.scrollTop).toBe(40);
+        expect(copy?.parentElement?.className).toBe("tn-dropdown-portal global-menu");
+        expect(copy?.parentElement?.parentElement).toBe(document.body);
+
+        finish();
+        await vi.waitFor(() => expect(document.querySelector(".tn-dropdown-portal")).toBeNull());
+    });
+
+    it("leaves no copy behind without a reveal, or with nothing to play", async () => {
+        anchorAt(100, 50);
+        await open();
+        render(null, host);
+        expect(document.querySelector(".tn-popup")).toBeNull();
+
+        // As with motion turned off, which leaves no animation.
+        await open({ reveal: true });
+        render(null, host);
+        expect(document.querySelector(".tn-popup")).toBeNull();
     });
 
     it("says nothing of a placement that settles once it has closed", async () => {

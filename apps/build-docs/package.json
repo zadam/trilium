@@ -14,15 +14,15 @@
   "keywords": [],
   "author": "Elian Doran <contact@eliandoran.me>",
   "license": "AGPL-3.0-only",
-  "packageManager": "pnpm@12.7.0",
+  "packageManager": "pnpm@12.14.0",
   "dependencies": {
     "@triliumnext/core": "workspace:*",
     "@triliumnext/server": "workspace:*"
   },
   "devDependencies": {
-    "@redocly/cli": "2.54.3",
+    "@redocly/cli": "2.64.0",
     "archiver": "8.0.0",
-    "js-yaml": "5.4.2",
+    "js-yaml": "5.5.0",
     "typedoc": "0.28.20",
     "typedoc-plugin-missing-exports": "4.1.4"
   }

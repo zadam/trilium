@@ -1,10 +1,9 @@
-//! This is currently only used for the new layout.
 import "./RightPanelContainer.css";
 
 import Split from "@triliumnext/split.js";
 import clsx from "clsx";
 import { VNode } from "preact";
-import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context";
 import { WidgetsByParent } from "../../services/bundle";
@@ -13,7 +12,7 @@ import options from "../../services/options";
 import { DEFAULT_GUTTER_SIZE } from "../../services/resizer";
 import ActionButton from "../react/ActionButton";
 import Button from "../react/Button";
-import { useActiveNoteContext, useGetContextData, useLegacyWidget, useNoteProperty, useTriliumEvent, useTriliumOption, useTriliumOptionBool, useTriliumOptionJson } from "../react/hooks";
+import { useActiveNoteContext, useGetContextData, useLegacyWidget, useNoteProperty, useTriliumEvent, useTriliumOptionBool, useTriliumOptionJson } from "../react/hooks";
 import LazyComponent from "../react/LazyComponent";
 import NoItems from "../react/NoItems";
 import { PaneMode, usePaneMode, usePeekDismiss } from "../react/peek_pane";
@@ -53,7 +52,14 @@ export interface RightPaneTabContents extends RightPaneTabDefinition {
 export default function RightPanelContainer({ widgetsByParent }: { widgetsByParent: WidgetsByParent }) {
     const { mode, visible, mounted, togglePeek, toggleDocked, dock, close, dismiss } = usePaneMode("rightPaneVisible");
     const tabs = useItems(mounted, widgetsByParent);
-    const [ selectedTabId, setSelectedTabId ] = useTriliumOption("rightPaneSelectedTab");
+    // This window's own choice, seeded from the option and written back for the next window to start
+    // from — the same treatment usePaneMode gives the pane's visibility. Subscribing to the option
+    // (useTriliumOption) would let a click in one window flip the strip in every other.
+    const [ selectedTabId, setSelectedTabIdState ] = useState(() => options.get("rightPaneSelectedTab"));
+    const setSelectedTabId = useCallback((tabId: RightPaneTabId) => {
+        setSelectedTabIdState(tabId);
+        void options.save("rightPaneSelectedTab", tabId);
+    }, []);
     const [ expandRequest, setExpandRequest ] = useState<ExpandWidgetRequest | null>(null);
     useSplit(mode);
 
@@ -91,7 +97,7 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
             return;
         }
 
-        void setSelectedTabId(tabId);
+        setSelectedTabId(tabId);
         // Raised before the pane opens, so a widget mounted for the first time already reads it.
         if (expandWidgetId) {
             setExpandRequest((prev) => ({ id: expandWidgetId, counter: (prev?.counter ?? 0) + 1 }));
@@ -145,7 +151,7 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
                                     <RightPaneTabs
                                         tabs={tabs}
                                         activeTabId={activeTab?.id}
-                                        onSelect={(tabId) => void setSelectedTabId(tabId)}
+                                        onSelect={setSelectedTabId}
                                     />
                                 )}
                                 <div class="right-pane-actions">
@@ -243,7 +249,7 @@ function useItems(rightPaneVisible: boolean, widgetsByParent: WidgetsByParent): 
         },
         {
             el: <TableOfContents />,
-            enabled: (noteType === "text" || noteType === "doc" || isPdf || noteType === "llmChat" || !!note?.isMarkdown()),
+            enabled: (noteType === "text" || isPdf || noteType === "llmChat" || !!note?.isMarkdown()),
             tab: "outline"
         },
         {

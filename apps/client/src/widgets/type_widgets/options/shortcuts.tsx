@@ -595,7 +595,7 @@ export function ShortcutRecorder({ onCapture }: { onCapture: (shortcut: string) 
  * class so the tooltip renders above the options modal, and a focus trigger on mobile where hover
  * is unavailable.
  */
-function useShortcutTooltip(elRef: RefObject<Element>, title: string) {
+function useShortcutTooltip(elRef: RefObject<Element | null>, title: string) {
     useStaticTooltip(elRef, {
         title,
         placement: "top",

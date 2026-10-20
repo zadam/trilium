@@ -57,6 +57,8 @@ const OPERATOR = /\*=\*|~=|~\*|!=|>=|<=|%=|\*=|=\*|[=><]|[+\-](?=\d)/y;
 const BRACKET = /[()]/y;
 const NUMBER = /\d+(?:\.\d+)?/y;
 const WORD = /[^\s#~().,=<>*!%+\-'"`]+/y;
+// Matches text that ends at the start of a word, or after grouping `(`s that open one.
+const WORD_START = /(?:^|\s)\(*$/;
 
 /** Splits a search query into the tokens worth colouring, skipping over everything else. */
 export function tokenizeSearchQuery(text: string): SearchToken[] {
@@ -64,6 +66,8 @@ export function tokenizeSearchQuery(text: string): SearchToken[] {
     let pos = 0;
     // Set by `note` and by a relation, both of which a dotted property path can follow.
     let inPath = false;
+    // Set by the first attribute or `note.`, which end the full-text part as they do in `lex()`.
+    let fulltextEnded = false;
 
     const match = (pattern: RegExp) => {
         pattern.lastIndex = pos;
@@ -100,16 +104,24 @@ export function tokenizeSearchQuery(text: string): SearchToken[] {
         }
 
         const attribute = match(ATTRIBUTE);
+        if (attribute && !fulltextEnded && !WORD_START.test(text.slice(0, pos))) {
+            // Inside a full-text word, `#` and `~` are text: `c#`, `towers#book`.
+            pos++;
+            continue;
+        }
+
         if (attribute) {
             const isLabel = attribute[1] === "#";
             take(isLabel ? "label" : "relation", ATTRIBUTE);
             inPath = !isLabel;
+            fulltextEnded = true;
             continue;
         }
 
         if (match(NOTE_PREFIX)) {
             take("property", NOTE_PREFIX);
             inPath = true;
+            fulltextEnded = true;
             continue;
         }
 

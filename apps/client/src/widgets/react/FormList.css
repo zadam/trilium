@@ -9,6 +9,23 @@
         flex-shrink: 0;
     }
 
+    .tn-svg-icon {
+        display: inline-flex;
+
+        & > svg {
+            width: 1em;
+            height: 1em;
+        }
+
+        & > svg *:not([fill]) {
+            fill: currentColor;
+        }
+    }
+
+    & > span > div:has(> .switch-widget) {
+        flex-grow: 1;
+    }
+
     .switch-widget {
         flex-grow: 1;
         width: 100%;
@@ -26,6 +43,12 @@
             flex-grow: 1;
         }
     }
+}
+
+/* Ends the switch where a submenu row's arrow ends (see `.dropdown-submenu .dropdown-toggle::after`
+   in theme-next/menus.css), rather than at the padding kept for that arrow. */
+.dropdown-item.tn-menu-toggle {
+    --menu-item-end-padding: 10px;
 }
 
 .form-list-row {

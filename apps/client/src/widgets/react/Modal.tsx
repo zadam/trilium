@@ -2,12 +2,13 @@ import "./Modal.css";
 
 import { Modal as BootstrapModal } from "bootstrap";
 import clsx from "clsx";
-import { ComponentChildren, CSSProperties, RefObject } from "preact";
-import { useEffect, useLayoutEffect, useMemo, useRef } from "preact/hooks";
+import { ComponentChildren, createPortal, CSSProperties, RefObject } from "preact";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context";
 import { openDialog } from "../../services/dialog";
 import { t } from "../../services/i18n";
+import { RENDER_SCOPE_CLASS } from "../../services/render_css_scope";
 import { openInAppHelpFromUrl } from "../../services/utils";
 import { useSyncedRef } from "./hooks";
 import { suspendModalFocusTraps } from "./modal_focustrap";
@@ -20,7 +21,7 @@ interface CustomTitleBarButton {
 }
 
 export interface ModalProps {
-    className: string;
+    className?: string;
     title?: string | ComponentChildren;
     customTitleBarButtons?: (CustomTitleBarButton | null)[];
     size: "xl" | "lg" | "md" | "sm";
@@ -60,11 +61,11 @@ export interface ModalProps {
      * Gives access to the underlying modal element. This is useful for manipulating the modal directly
      * or for attaching event listeners.
      */
-    modalRef?: RefObject<HTMLDivElement>;
+    modalRef?: RefObject<HTMLDivElement | null>;
     /**
      * Gives access to the underlying form element of the modal. This is only set if `onSubmit` is provided.
      */
-    formRef?: RefObject<HTMLFormElement>;
+    formRef?: RefObject<HTMLFormElement | null>;
     bodyStyle?: CSSProperties;
     /**
      * Controls whether the modal is shown. Setting it to `true` will trigger the modal to be displayed to the user, whereas setting it to `false` will hide the modal.
@@ -107,10 +108,10 @@ export interface ModalProps {
     ariaLabel?: string;
 }
 
-export default function Modal({ children, className, size, title, customTitleBarButtons: titleBarButtons, header, footer, footerStyle, footerAlignment, onShown, onSubmit, helpPageId, minWidth, maxWidth, zIndex, scrollable, onHidden, modalRef: externalModalRef, formRef, bodyStyle, show, stackable, keepInDom, noFocus, sidebar, hideSidebarHeader, isFullPageOnMobile, ariaLabel }: ModalProps) {
+export default function Modal({ children, className = "", size, title, customTitleBarButtons: titleBarButtons, header, footer, footerStyle, footerAlignment, onShown, onSubmit, helpPageId, minWidth, maxWidth, zIndex, scrollable, onHidden, modalRef: externalModalRef, formRef, bodyStyle, show, stackable, keepInDom, noFocus, sidebar, hideSidebarHeader, isFullPageOnMobile, ariaLabel }: ModalProps) {
     const modalRef = useSyncedRef<HTMLDivElement>(externalModalRef);
-    const modalInstanceRef = useRef<BootstrapModal>();
-    const elementToFocus = useRef<Element | null>();
+    const modalInstanceRef = useRef<BootstrapModal | undefined>(undefined);
+    const elementToFocus = useRef<Element | null | undefined>(undefined);
 
     /*
      * Bootstrap writes classes of its own onto this element — `show` above all, which is what makes
@@ -324,6 +325,23 @@ export default function Modal({ children, className, size, title, customTitleBar
             </div></ContainerVisibilityContext.Provider>}
         </div>
     );
+}
+
+/** Mounts a script modal beside Bootstrap's body-level backdrop while retaining its source context. */
+export function ScriptModal(props: ModalProps) {
+    const [ origin, setOrigin ] = useState<HTMLTemplateElement | null>(null);
+    const ntxId = origin?.closest("[data-ntx-id]")?.getAttribute("data-ntx-id");
+    const isRenderNote = !!origin?.closest(`.note-detail-render-content, .${RENDER_SCOPE_CLASS}`);
+
+    return <>
+        <template ref={setOrigin} />
+        {origin && createPortal(
+            <div className={clsx("script-modal-host", isRenderNote && RENDER_SCOPE_CLASS)} data-ntx-id={ntxId}>
+                <Modal {...props} />
+            </div>,
+            document.body
+        )}
+    </>;
 }
 
 /** The classes a host asked for, as `classList` takes them. */

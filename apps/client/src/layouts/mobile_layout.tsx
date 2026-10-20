@@ -1,7 +1,6 @@
 import "./mobile_layout.css";
 
 import type AppContext from "../components/app_context.js";
-import ApiLog from "../widgets/api_log.jsx";
 import GlobalMenuWidget from "../widgets/buttons/global_menu.js";
 import CloseZenModeButton from "../widgets/close_zen_button.js";
 import NoteList from "../widgets/collections/NoteList.jsx";
@@ -14,6 +13,7 @@ import LauncherContainer from "../widgets/launch_bar/LauncherContainer.jsx";
 import InlineTitle from "../widgets/layout/InlineTitle.jsx";
 import NoteBadges from "../widgets/layout/NoteBadges.jsx";
 import NoteTitleActions from "../widgets/layout/NoteTitleActions.jsx";
+import HideKeyboardButton from "../widgets/mobile_widgets/hide_keyboard_button.jsx";
 import MobileDetailMenu from "../widgets/mobile_widgets/mobile_detail_menu.js";
 import MobileNoteNavigator from "../widgets/mobile_widgets/MobileNoteNavigator.jsx";
 import ScreenContainer from "../widgets/mobile_widgets/screen_container.js";
@@ -84,7 +84,6 @@ export default class MobileLayout {
                                                 .child(<SearchResult />)
                                                 .child(<ScrollPadding />)
                                         )
-                                        .child(<ApiLog />)
                                         .child(<MobileEditorToolbar />)
                                         .child(new FindWidget())
                                 )
@@ -102,7 +101,8 @@ export default class MobileLayout {
                         .child(<GlobalMenuWidget isHorizontalLayout />)
                         .id("launcher-pane"))
             )
-            .child(<CloseZenModeButton />);
+            .child(<CloseZenModeButton />)
+            .child(<HideKeyboardButton />);
         applyModals(rootContainer);
         return rootContainer;
     }

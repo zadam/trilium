@@ -63,11 +63,16 @@ describe("FetchRequestProvider.exec", () => {
         expect(result).toBeNull();
     });
 
-    it("adds a trilium-cred header when auth is provided", async () => {
+    it("adds a trilium-cred header when auth is provided, and trilium-totp only with a token", async () => {
         const spy = mockFetch({ status: 200, text: async () => "{}" });
         await provider.exec({ method: "GET", url: `${location.origin}/x`, auth: { password: "pw" } } as ExecOpts);
         const headers = lastInit(spy).headers as Record<string, string>;
         expect(headers["trilium-cred"]).toBe(btoa("dummy:pw"));
+        expect(headers).not.toHaveProperty("trilium-totp");
+
+        spy.mockClear();
+        await provider.exec({ method: "GET", url: `${location.origin}/x`, auth: { password: "pw", totpToken: "123456" } } as ExecOpts);
+        expect((lastInit(spy).headers as Record<string, string>)["trilium-totp"]).toBe("123456");
     });
 
     it("serializes object bodies as JSON and passes string bodies through", async () => {

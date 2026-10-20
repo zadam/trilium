@@ -7,8 +7,13 @@ import keyboard_actions from "../../services/keyboard_actions";
 import { formatShortcut, joinShortcut } from "../../services/keyboard_shortcut_display";
 import { isMobile } from "../../services/utils";
 import { useStaticTooltip } from "./hooks";
+import { useCommandTrigger } from "./react_utils";
 
-export interface ActionButtonProps extends Pick<HTMLAttributes<HTMLButtonElement>, "onClick" | "onAuxClick" | "onContextMenu" | "onBlur" | "style"> {
+export interface ActionButtonProps extends Pick<
+    HTMLAttributes<HTMLButtonElement>,
+    "onClick" | "onAuxClick" | "onContextMenu" | "onBlur" | "style" | "aria-expanded"
+    | "aria-pressed"
+> {
     text: string;
     titlePosition?: "top" | "right" | "bottom" | "left";
     /** Extra class applied to the tooltip popup (e.g. `tooltip-top` to raise its z-index above modals). */
@@ -36,6 +41,7 @@ const cachedIsMobile = isMobile();
 export default function ActionButton({ text, icon, className, triggerCommand, titlePosition, tooltipClass, tooltipHtml, noIconActionClass, noTooltipOnTouch, frame, active, disabled, ...restProps }: ActionButtonProps) {
     const buttonRef = useRef<HTMLButtonElement>(null);
     const [ keyboardShortcut, setKeyboardShortcut ] = useState<string[]>();
+    const triggerOwnCommand = useCommandTrigger(triggerCommand);
 
     const title = keyboardShortcut?.length
         ? `${text} (${keyboardShortcut.map((shortcut) => joinShortcut(formatShortcut(shortcut))).join(", ")})`
@@ -81,7 +87,7 @@ export default function ActionButton({ text, icon, className, triggerCommand, ti
         // (e.g. the error-dismiss button stealing the login form's Enter).
         type="button"
         class={`${className ?? ""} ${!noIconActionClass ? "icon-action" : "btn"} ${icon} ${frame ? "btn btn-primary" : ""} ${disabled ? "disabled" : ""} ${active ? "active" : ""}`}
-        data-trigger-command={triggerCommand}
+        onClick={triggerOwnCommand}
         // Only where the tooltip that would otherwise carry it has been declined: elsewhere the
         // tooltip is the button's name, and a second one here would be read out beside it.
         aria-label={declined ? title : undefined}

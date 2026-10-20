@@ -1,4 +1,4 @@
-export {};
+import type { HTMLAttributes } from "preact";
 
 declare module "htmldiff-js" {
     const HtmlDiff: {
@@ -52,7 +52,7 @@ declare global {
 
 declare module "preact" {
     namespace JSX {
-        interface ElectronWebViewElement extends JSX.HTMLAttributes<HTMLElement> {
+        interface ElectronWebViewElement extends HTMLAttributes<HTMLElement> {
             src: string;
             class: string;
             key?: string | number;

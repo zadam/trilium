@@ -1,4 +1,4 @@
-import { cls } from "@triliumnext/core";
+import { cls, NotFoundError } from "@triliumnext/core";
 import express from "express";
 import { existsSync } from "fs";
 import request from "supertest";
@@ -7,9 +7,12 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import {
     apiResultHandler,
     asyncRoute,
+    createShareTargetMiddleware,
     importMiddlewareWithErrorHandling,
+    multipartBoundary,
     route,
     router,
+    stripNulBeforeDelimiters,
     uploadMiddlewareWithErrorHandling
 } from "./route_api.js";
 
@@ -141,6 +144,90 @@ describe("uploadMiddlewareWithErrorHandling (in-memory)", () => {
     });
 });
 
+describe("createShareTargetMiddleware", () => {
+    it("rejects a file above the size limit before the handler runs", async () => {
+        const app = express();
+        const handler = vi.fn((_req: express.Request, res: express.Response) => res.sendStatus(200));
+        app.post("/share", createShareTargetMiddleware(4), handler);
+
+        const res = await request(app).post("/share").attach("files", Buffer.from("12345"), "big.bin");
+
+        expect(res.status).toBe(400);
+        expect(res.text).toContain("Share rejected");
+        expect(handler).not.toHaveBeenCalled();
+        await request(app).post("/share").attach("files", Buffer.from("1234"), "fits.bin").expect(200);
+    });
+
+    it("forwards a body busboy cannot parse as an error instead of reaching the handler", async () => {
+        const app = express();
+        const handler = vi.fn((_req: express.Request, res: express.Response) => res.sendStatus(200));
+        app.post("/share", createShareTargetMiddleware(), handler);
+        app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+            res.status(500).send(err.message);
+        });
+
+        const unterminated = await request(app)
+            .post("/share")
+            .set("Content-Type", "multipart/form-data; boundary=b")
+            .send("--b\r\nContent-Disposition: form-data; name=\"text\"\r\n\r\nhi");
+        expect(unterminated.status).toBe(500);
+        expect(unterminated.text).toBe("Unexpected end of form");
+
+        const noBoundary = await request(app).post("/share").set("Content-Type", "multipart/form-data").send("x");
+        expect(noBoundary.status).toBe(500);
+        expect(handler).not.toHaveBeenCalled();
+    });
+
+    it("parses a body whose boundary is quoted", async () => {
+        const app = express();
+        app.post("/share", createShareTargetMiddleware(), (req, res) => res.json(req.body));
+
+        const res = await request(app)
+            .post("/share")
+            .set("Content-Type", "multipart/form-data; boundary=\"b c\"")
+            .send("--b c\r\nContent-Disposition: form-data; name=\"text\"\r\n\r\nhi\r\n\0--b c--\r\n");
+
+        expect(res.body).toEqual({ text: "hi" });
+    });
+});
+
+describe("multipartBoundary", () => {
+    it("reads a plain or quoted boundary parameter", () => {
+        expect(multipartBoundary("multipart/form-data; boundary=----abc")).toBe("----abc");
+        expect(multipartBoundary("multipart/form-data; charset=utf-8; BOUNDARY=\"a b\"")).toBe("a b");
+        expect(multipartBoundary("multipart/form-data")).toBeUndefined();
+        expect(multipartBoundary(undefined)).toBeUndefined();
+    });
+});
+
+describe("stripNulBeforeDelimiters", () => {
+    it("drops the NUL before every delimiter, wherever the chunks split it", async () => {
+        const input = Buffer.from("--b\r\n\r\nx\0y\r\n\0--b\r\n\r\nz\r\n\0--b--\r\n", "latin1");
+        const expected = "--b\r\n\r\nx\0y\r\n--b\r\n\r\nz\r\n--b--\r\n";
+
+        for (let split = 0; split <= input.length; split++) {
+            const filter = stripNulBeforeDelimiters("b");
+            const output: Buffer[] = [];
+            filter.on("data", (chunk: Buffer) => output.push(chunk));
+            const ended = new Promise((resolve) => filter.on("end", resolve));
+            filter.write(input.subarray(0, split));
+            filter.end(input.subarray(split));
+            await ended;
+            expect(Buffer.concat(output).toString("latin1"), `split at ${split}`).toBe(expected);
+        }
+    });
+
+    it("passes the bytes through unchanged without a boundary", async () => {
+        const filter = stripNulBeforeDelimiters(undefined);
+        const output: Buffer[] = [];
+        filter.on("data", (chunk: Buffer) => output.push(chunk));
+        const ended = new Promise((resolve) => filter.on("end", resolve));
+        filter.end(Buffer.from("x\r\n\0--b", "latin1"));
+        await ended;
+        expect(Buffer.concat(output).toString("latin1")).toBe("x\r\n\0--b");
+    });
+});
+
 /**
  * `internalRoute` opens the CLS context every API handler runs in and seeds it from the
  * `trilium-*` request headers. Entity changes are collected against that context, so losing it
@@ -228,5 +315,34 @@ describe("internalRoute CLS wiring", () => {
         expect(closeProbe.error).toBeUndefined();
         expect(closeProbe.componentId).toBe("comp-close");
         expect(closeProbe.wrote).toBe("written");
+    });
+});
+
+describe("internalRoute without a result handler", () => {
+    let app: express.Application;
+
+    beforeAll(() => {
+        asyncRoute("get", "/no-handler/reject", [], async () => {
+            throw new Error("boom");
+        }, null);
+
+        asyncRoute("get", "/no-handler/reject-http", [], async () => {
+            throw new NotFoundError("missing");
+        }, null);
+
+        app = express();
+        app.use(router);
+    });
+
+    it("answers a rejected async handler with a 500 instead of leaving the request open", async () => {
+        const res = await request(app).get("/no-handler/reject").timeout(2000).expect(500);
+
+        expect(res.body).toEqual({ message: "boom" });
+    });
+
+    it("keeps the status of a rejected HttpError", async () => {
+        const res = await request(app).get("/no-handler/reject-http").timeout(2000).expect(404);
+
+        expect(res.body).toEqual({ message: "missing" });
     });
 });

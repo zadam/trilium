@@ -10,7 +10,7 @@ export interface Locale {
     /** The value to pass to `--lang` for the Electron instance in order to set it as a locale. Not setting it will hide it from the list of supported locales. */
     electronLocale?: "en" | "de" | "es" | "fr" | "zh_CN" | "zh_TW" | "ro" | "af" | "am" | "ar" | "bg" | "bn" | "ca" | "cs" | "da" | "el" | "en_GB" | "es_419" | "et" | "fa" | "fi" | "fil" | "gu" | "he" | "hi" | "hr" | "hu" | "id" | "it" | "ja" | "kn" | "ko" | "lt" | "lv" | "ml" | "mr" | "ms" | "nb" | "nl" | "pl" | "pt_BR" | "pt_PT" | "ru" | "sk" | "sl" | "sr" | "sv" | "sw" | "ta" | "te" | "th" | "tr" | "uk" | "ur" | "vi";
     /** The Tesseract OCR language code for this locale (e.g. "eng", "fra", "deu"). See https://tesseract-ocr.github.io/tessdoc/Data-Files-in-different-versions.html */
-    tesseractCode?: "eng" | "deu" | "spa" | "fra" | "gle" | "ita" | "hin" | "ind" | "jpn" | "por" | "pol" | "ron" | "rus" | "chi_sim" | "chi_tra" | "ukr" | "ara" | "heb" | "kur" | "fas" | "kor" | "ces" | "uig" | "tur";
+    tesseractCode?: "eng" | "deu" | "spa" | "fra" | "gle" | "ita" | "hin" | "ind" | "jpn" | "por" | "pol" | "ron" | "rus" | "chi_sim" | "chi_tra" | "ukr" | "ara" | "heb" | "kur" | "fas" | "kor" | "ces" | "uig" | "tur" | "vie";
 }
 
 // When adding a new locale, prefer the version with hyphen instead of underscore.
@@ -36,6 +36,7 @@ const UNSORTED_LOCALES = [
     { id: "tr", name: "Türkçe", electronLocale: "tr", tesseractCode: "tur" },
     { id: "tw", name: "繁體中文", electronLocale: "zh_TW", tesseractCode: "chi_tra" },
     { id: "uk", name: "Українська", electronLocale: "uk", tesseractCode: "ukr" },
+    { id: "vi", name: "Tiếng Việt", electronLocale: "vi", tesseractCode: "vie" },
 
     /**
      * Development-only languages.
@@ -151,6 +152,42 @@ export function normalizeLocale(locale: string) {
         case "tw": return "zh-TW";
         default: return locale;
     }
+}
+
+/**
+ * Turns a Trilium locale id into a canonical BCP 47 tag, for a `lang` attribute or `Intl`. An id
+ * that gives no valid tag, such as `en_rtl`, falls back to its language part, then to `en`.
+ */
+export function toLanguageTag(localeId: string) {
+    const tag = normalizeLocale(localeId);
+    for (const candidate of [ tag, tag.split("-")[0] ]) {
+        try {
+            const [ canonical ] = Intl.getCanonicalLocales(candidate);
+            if (canonical) {
+                return canonical;
+            }
+        } catch {
+            // `Intl` throws a RangeError on a malformed tag; the next candidate is tried.
+        }
+    }
+    return "en";
+}
+
+/**
+ * Returns the language of a note's content: its `#language` label, otherwise the
+ * `defaultContentLanguage` option, otherwise the display language (the `locale` option).
+ */
+export function resolveContentLanguage(
+    noteLanguage: string | null | undefined,
+    defaultContentLanguage: string | null | undefined,
+    displayLanguage: string | null | undefined
+): string | null {
+    return noteLanguage || defaultContentLanguage || displayLanguage || null;
+}
+
+/** Whether the language of the locale id is written right to left. */
+export function isRightToLeftLanguage(localeId: string | null | undefined) {
+    return LOCALES.find((locale) => locale.id === localeId)?.rtl ?? false;
 }
 
 /**

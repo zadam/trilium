@@ -1,5 +1,5 @@
 import { Plugin, toWidget, viewToModelPositionOutsideModelElement, Widget } from 'ckeditor5';
-import { preventCKEditorHandling } from '../widget_utils.js';
+import { preventCKEditorHandling, restoreRendererFocusOnInput } from '../widget_utils.js';
 import {
     CHANGE_LINK_DISPLAY_COMMAND,
     CHANGE_LINK_PREVIEW_TITLE_COMMAND,
@@ -38,6 +38,8 @@ export default class LinkEmbedEditing extends Plugin {
         this.editor.commands.add(CHANGE_LINK_DISPLAY_COMMAND, new ChangeLinkDisplayCommand(this.editor));
         this.editor.commands.add(REMOVE_LINK_EMBED_COMMAND, new RemoveLinkEmbedCommand(this.editor));
         this.editor.commands.add(CHANGE_LINK_PREVIEW_TITLE_COMMAND, new ChangeLinkPreviewTitleCommand(this.editor));
+
+        restoreRendererFocusOnInput(this);
     }
 
     _defineSchema() {
@@ -45,6 +47,7 @@ export default class LinkEmbedEditing extends Plugin {
 
         schema.register('linkEmbed', {
             isObject: true,
+            isBlock: true,
             allowAttributes: ['url', 'embedType', 'title', 'description', 'favicon', 'siteName', 'image'],
             allowWhere: '$block'
         });

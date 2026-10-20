@@ -18,10 +18,16 @@ vi.mock("../react/hooks", async (importOriginal) => ({
 
 // The attributes panel builds its editor on CKEditor, which is a legacy widget wanting a real parent
 // component to be a child of. What the panel is here is a panel that is up or is not.
-vi.mock("../ribbon/components/AttributeEditor", async () => {
+const editorProps = vi.hoisted(() => ({ current: null as Record<string, unknown> | null }));
+vi.mock("../attribute_widgets/AttributeEditor", async () => {
     const { h } = await import("preact");
 
-    return { default: () => h("div", { class: "attribute-editor-stub" }) };
+    return {
+        default: (props: Record<string, unknown>) => {
+            editorProps.current = props;
+            return h("div", { class: "attribute-editor-stub" });
+        }
+    };
 });
 
 import appContext from "../../components/app_context";
@@ -29,7 +35,7 @@ import type Component from "../../components/component";
 import server from "../../services/server";
 import { buildNote } from "../../test/easy-froca";
 import { ParentComponent } from "../react/react_utils";
-import StatusBar from "./StatusBar";
+import StatusBar, { useAttributeCount } from "./StatusBar";
 
 describe("StatusBar panels", () => {
     let container: HTMLElement;
@@ -75,6 +81,14 @@ describe("StatusBar panels", () => {
         expect(isShown(".attribute-list")).toBe(false);
     });
 
+    it("hands the shortcut that opens the attributes panel to the editor it mounts", () => {
+        renderBar();
+        fire("addNewRelation");
+
+        expect(isShown(".attribute-list")).toBe(true);
+        expect(editorProps.current?.initialCommand).toBe("addNewRelation");
+    });
+
     it("offers the attributes panel a way to the sidebar's own, and steps aside once taken", () => {
         const triggerEvent = vi.spyOn(appContext, "triggerEvent").mockResolvedValue(undefined);
         renderBar();
@@ -87,6 +101,14 @@ describe("StatusBar panels", () => {
         expect(triggerEvent).toHaveBeenCalledWith("selectRightPaneTab", { tabId: "attributes", peek: true });
         // Two attribute editors over the one note is what the way across is for the reader to avoid.
         expect(isShown(".attribute-list")).toBe(false);
+    });
+
+    it("offers no attributes panel for a note that cannot be edited, not even on the shortcut", () => {
+        renderBar(false);
+        expect(container.querySelector(".attributes-button")).toBeNull();
+
+        fire("addNewLabel");
+        expect(container.querySelector(".attribute-editor-stub")).toBeNull();
     });
 
     it("closes the similar notes panel from its own title bar", () => {
@@ -102,8 +124,9 @@ describe("StatusBar panels", () => {
         expect(container.querySelector(".similar-notes-pane")).toBeNull();
     });
 
-    function renderBar() {
+    function renderBar(isContentWritable = true) {
         shownNote.current = buildNote({ id: "note1", title: "A note" });
+        shownNote.current.isContentWritable = isContentWritable;
         eventHandlers = new Map();
         const parent = {
             componentId: "status-bar-cid",
@@ -118,6 +141,17 @@ describe("StatusBar panels", () => {
             container
         ));
     }
+
+    it("counts the attributes of a note, leaving out the links its content makes", () => {
+        const target = buildNote({ title: "Target" });
+        const note = buildNote({ title: "Counted", "#color": "red", "~template": target.noteId, "~internalLink": target.noteId });
+        function Count() {
+            return <span className="count">{useAttributeCount(note)}</span>;
+        }
+        const parent = { registerHandler: () => {}, removeHandler: () => {} } as unknown as Component;
+        act(() => render(<ParentComponent.Provider value={parent}><Count /></ParentComponent.Provider>, container));
+        expect(container.querySelector(".count")?.textContent).toBe("2");
+    });
 
     /** Hands the bar one of the keyboard actions it listens for, as the app's event bus would. */
     function fire(eventName: string) {

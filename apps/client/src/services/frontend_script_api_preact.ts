@@ -1,3 +1,7 @@
+// Scripts build their vnodes with core's `h`, so compat's `options.vnode` hook is what gives their
+// components `defaultProps` and their numeric styles a `px` unit.
+import "preact/compat";
+
 import { createContext, Fragment, h, VNode } from "preact";
 import * as hooks from "preact/hooks";
 
@@ -25,7 +29,7 @@ import * as triliumHooks from "../widgets/react/hooks";
 import Icon from "../widgets/react/Icon";
 import LinkButton from "../widgets/react/LinkButton";
 import LoadingSpinner from "../widgets/react/LoadingSpinner";
-import Modal from "../widgets/react/Modal";
+import { ScriptModal } from "../widgets/react/Modal";
 import NoteAutocomplete from "../widgets/react/NoteAutocomplete";
 import NoteLink from "../widgets/react/NoteLink";
 import RawHtml from "../widgets/react/RawHtml";
@@ -95,7 +99,7 @@ export const preactAPI = Object.freeze({
     Icon,
     LinkButton,
     LoadingSpinner,
-    Modal,
+    Modal: ScriptModal,
     NoteAutocomplete,
     NoteColorPicker,
     NoteLink,

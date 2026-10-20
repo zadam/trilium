@@ -1,4 +1,4 @@
-import type { Editor } from "ckeditor5";
+import { type Editor, isWidget, type Plugin, type ViewDocumentSelection, type ViewElement } from "ckeditor5";
 
 /**
  * Hack coming from https://github.com/ckeditor/ckeditor5/issues/4465
@@ -26,6 +26,21 @@ export function preventCKEditorHandling(domElement: HTMLElement, editor: Editor)
 }
 
 /**
+ * Sets `_renderer.isFocused` back to `view.document.isFocused` on a press or key in the text,
+ * after `preventCKEditorHandling()` turned it off. The view ignores the events of widget UI
+ * (`data-cke-ignore-events`), so a press or key that the view sees is back in the text.
+ */
+export function restoreRendererFocusOnInput(plugin: Plugin) {
+    const view = plugin.editor.editing.view;
+    const restore = () => {
+        //@ts-expect-error: We are accessing a private field.
+        view._renderer.isFocused = view.document.isFocused;
+    };
+    plugin.listenTo(view.document, "mousedown", restore, { priority: "highest" });
+    plugin.listenTo(view.document, "keydown", restore, { priority: "highest" });
+}
+
+/**
  * Finds the closest widget ancestor of a DOM element and selects it in the
  * editor model. This makes the widget toolbar appear when clicking inside
  * UI elements that have `data-cke-ignore-events`.
@@ -50,4 +65,31 @@ function selectParentWidget(domElement: HTMLElement, editor: Editor) {
     editor.model.enqueueChange({ isUndoable: false }, writer => {
         writer.setSelection(modelElement, "on");
     });
+}
+
+/**
+ * Returns the innermost widget with the `property` custom property that is selected or contains
+ * the selection. Used as the `getRelatedElement` of a widget toolbar.
+ */
+export function findSelectedWidget(
+    selection: ViewDocumentSelection,
+    property: string
+): ViewElement | null {
+    const selected = selection.getSelectedElement();
+    if (selected && isMarkedWidget(selected, property)) {
+        return selected;
+    }
+
+    let node = selection.getFirstPosition()?.parent ?? null;
+    while (node) {
+        if (node.is("element") && isMarkedWidget(node, property)) {
+            return node;
+        }
+        node = node.parent;
+    }
+    return null;
+}
+
+function isMarkedWidget(element: ViewElement, property: string) {
+    return !!element.getCustomProperty(property) && isWidget(element);
 }

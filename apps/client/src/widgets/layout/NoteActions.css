@@ -1,0 +1,67 @@
+.note-actions-bar {
+    --button-gap: 5px;
+
+    display: flex;
+    align-items: center;
+    height: 36px;
+    margin: 0;
+    gap: var(--button-gap);
+
+    button {
+        transition: opacity 250ms ease-in;
+
+        &.disabled {
+            opacity: 0.4;
+        }
+    }
+
+    .note-actions-custom {
+        display: flex;
+        align-items: center;
+        height: 36px;
+        gap: var(--button-gap);
+
+        &> button:last-of-type {
+            margin-inline-end: 0.5em;
+        }
+    }
+}
+
+.note-actions {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+}
+
+.note-actions .dropdown-menu {
+    min-width: 15em;
+}
+
+.note-actions .dropdown-item[disabled], .note-actions .dropdown-item[disabled]:hover {
+    color: var(--muted-text-color) !important;
+    background-color: transparent !important;
+    pointer-events: none; /* makes it unclickable */
+}
+
+.tn-menu-actions.note-actions-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+}
+
+/* The gaps and the card background match `.form-list-row` and the mobile `.dropdown-item` in theme-next/menus.css. */
+body.mobile .tn-menu-actions.note-actions-strip {
+    gap: 1em;
+    margin-bottom: 1em;
+
+    & > .tn-menu-action {
+        padding-block: var(--dropdown-menu-padding-vertical);
+        background: var(--card-background-color);
+        border-radius: 6px;
+
+        &::before {
+            content: none;
+        }
+    }
+}

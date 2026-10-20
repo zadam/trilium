@@ -23,7 +23,9 @@
 
     --cell-editing-border-color: var(--main-border-color);
     --cell-editing-border-width: 2px;
-    --cell-editing-background-color: var(--ck-color-selector-focused-cell-background);
+    --cell-editing-background-color: var(
+        --ck-color-table-focused-cell-background, hsla(212, 90%, 80%, .3)
+    );
     --cell-editing-text-color: initial;
 
     background: unset;

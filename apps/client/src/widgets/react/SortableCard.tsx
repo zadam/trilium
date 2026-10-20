@@ -122,9 +122,9 @@ export function SortableCard<T extends SortableItem>({
 
     const listRef = useRef<HTMLDivElement>(null);
     const adderRef = useRef<HTMLElement>(null);
-    const dragRef = useRef<Drag<T>>();
+    const dragRef = useRef<Drag<T> | undefined>(undefined);
     /** A touch waiting out `TOUCH_HOLD_MS`, after which it becomes a drag. */
-    const holdRef = useRef<Hold>();
+    const holdRef = useRef<Hold | undefined>(undefined);
     /** The last pointer position, needed when scrolling moves the list under a still pointer. */
     const pointerRef = useRef({ x: 0, y: 0 });
     /** The current `dragTo`, so the scroller can reposition the segment without a stale closure. */
@@ -157,7 +157,7 @@ export function SortableCard<T extends SortableItem>({
     /** The entry just added, which grows and fades in. */
     const [ addedKey, setAddedKey ] = useState<string>();
     /** The segment to focus after the next render: moving an element drops its focus. */
-    const pendingFocus = useRef<string>();
+    const pendingFocus = useRef<string | undefined>(undefined);
 
     const shown = draft ?? items;
     /** The current list, for a callback that resumes after an await. */

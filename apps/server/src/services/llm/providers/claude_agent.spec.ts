@@ -5,6 +5,7 @@ import type { ClaudeSession } from "./claude_session_pool.js";
 
 const queryMock = vi.hoisted(() => vi.fn());
 const errorLogMock = vi.hoisted(() => vi.fn());
+const infoLogMock = vi.hoisted(() => vi.fn());
 /** Streaming-input-only Query controls the session pool drives. */
 const setModelMock = vi.hoisted(() => vi.fn());
 const closeMock = vi.hoisted(() => vi.fn());
@@ -14,7 +15,7 @@ vi.mock("@anthropic-ai/claude-agent-sdk", () => ({
 }));
 
 vi.mock("@triliumnext/core", () => ({
-    getLog: () => ({ info: vi.fn(), error: errorLogMock })
+    getLog: () => ({ info: infoLogMock, error: errorLogMock })
 }));
 
 // buildSystemPrompt (reached via composeSystemPrompt) reads the workspace task
@@ -56,8 +57,10 @@ vi.mock("@triliumnext/core/src/services/llm/attachment_content.js", async (impor
 const spawnMock = vi.hoisted(() => vi.fn());
 vi.mock("child_process", () => ({ spawn: spawnMock }));
 
-const { buildSeededPrompt, buildSubscriptionModelList, ClaudeAgentProvider, hashTranscript, resetAgentCwdForTests, resetSubscriptionModelCacheForTests } = await import("./claude_agent.js");
+const { buildSeededPrompt, buildSubscriptionModelList, ClaudeAgentProvider, hashTranscript, resetAgentCwdForTests, resetSubscriptionModelCacheForTests, TITLE_TIMEOUT_MS } = await import("./claude_agent.js");
 const { MAX_WARM_SESSIONS, Pushable, releaseSession, rememberSession: rememberWarmSession, resetClaudeSessionPoolForTests } = await import("./claude_session_pool.js");
+const { buildTitlePrompt, MAX_TITLES_PER_SESSION } = await import("./transcript.js");
+const { TOOL_CALL_DECLINED_REASON, ToolApprovals } = await import("@triliumnext/core/src/services/llm/tool_approval.js");
 type PushablePrompt = { pending: readonly { message: { role: string; content: unknown[] } }[] };
 
 /**
@@ -159,6 +162,19 @@ describe("ClaudeAgentProvider.chatChunks", () => {
         resetClaudeSessionPoolForTests();
         setModelMock.mockClear();
         closeMock.mockClear();
+    });
+
+    it("titles every session it opens, so Claude Code generates no title of its own", async () => {
+        scriptAgent([successResult()]);
+        const provider = new ClaudeAgentProvider();
+        await collect(provider.chatChunks([{ role: "user", content: "hi" }], {}));
+        scriptTitleAgent(async () => [titleResult("Title")]);
+        await provider.generateTitle("hi");
+
+        expect(queryMock).toHaveBeenCalledTimes(2);
+        for (const [{ options }] of queryMock.mock.calls) {
+            expect(options.title).toEqual(expect.stringMatching(/\S/));
+        }
     });
 
     it("names Claude Code's web tools the way the other providers name theirs", async () => {
@@ -466,14 +482,70 @@ describe("ClaudeAgentProvider.chatChunks", () => {
 
         const options = queryMock.mock.calls[0][0].options;
         expect(options.tools).toEqual([]);
-        expect(options.allowedTools).toEqual(["mcp__trilium"]);
+        // Note tools are not pre-approved: each call goes through `canUseTool`.
+        expect(options.allowedTools).toEqual([]);
+        expect(options.canUseTool).toEqual(expect.any(Function));
         // In-process (sdk) transport, not an HTTP endpoint — the instance is
         // Trilium's own createMcpServer(), tunneled over the SDK control channel.
         expect(options.mcpServers.trilium.type).toBe("sdk");
         expect(options.mcpServers.trilium.instance).toEqual({ mcpServerInstance: true });
         expect(createMcpServerMock).toHaveBeenCalled();
-        expect(options.permissionMode).toBe("dontAsk");
+        expect(options.permissionMode).toBe("default");
         expect(options.settingSources).toEqual([]);
+    });
+
+    it("asks the running turn's approvals before a note tool runs, across the turns of a warm session", async () => {
+        const config = { chatNoteId: "note-approval", enableNoteTools: true };
+        const signal = new AbortController().signal;
+        const sdk = { name: "trilium", source: "sdk" };
+        const ask = (options: { canUseTool: (...args: unknown[]) => Promise<unknown> }, toolName: string, toolUseID: string, mcpServer?: object) =>
+            options.canUseTool(toolName, { noteId: "n" }, { signal, toolUseID, requestId: "r", mcpServer });
+        const decisions: unknown[] = [];
+        queryMock.mockImplementation(({ options }) => Object.assign((async function* () {
+            decisions.push(await ask(options, "mcp__trilium__rename_note", "toolu_1", sdk));
+            decisions.push(await ask(options, "Bash", "toolu_2"));
+            yield textDelta("first reply");
+            yield successResult("sess-A");
+            decisions.push(await ask(options, "mcp__trilium__delete_note", "toolu_3", sdk));
+            yield successResult("sess-A");
+        })(), { setModel: setModelMock, close: closeMock }));
+
+        const provider = new ClaudeAgentProvider();
+        const requests: unknown[] = [];
+        const approvalsAnswering = (approved: boolean) => {
+            const approvals = new ToolApprovals();
+            approvals.onRequest = (request) => {
+                requests.push(request);
+                queueMicrotask(() => approvals.answer(request.toolCallId, approved));
+            };
+            return approvals;
+        };
+        await collect(provider.chatChunks([{ role: "user", content: "first" }], { ...config, toolApprovals: approvalsAnswering(true) }));
+        await collect(provider.chatChunks([
+            { role: "user", content: "first" },
+            { role: "assistant", content: "first reply" },
+            { role: "user", content: "second" }
+        ], { ...config, toolApprovals: approvalsAnswering(false) }));
+
+        expect(queryMock).toHaveBeenCalledOnce();
+        const { options } = queryMock.mock.calls[0][0];
+        expect(options.permissionMode).toBe("default");
+        expect(options.allowedTools).toEqual([]);
+        expect(requests).toEqual([
+            { toolCallId: "toolu_1", toolName: "rename_note", toolInput: { noteId: "n" } },
+            { toolCallId: "toolu_3", toolName: "delete_note", toolInput: { noteId: "n" } }
+        ]);
+        expect(decisions).toEqual([
+            { behavior: "allow", updatedInput: { noteId: "n" } },
+            { behavior: "deny", message: expect.any(String) },
+            { behavior: "deny", message: TOOL_CALL_DECLINED_REASON }
+        ]);
+        // Between turns no approvals are open, so a call runs unasked.
+        await expect(ask(options, "mcp__trilium__get_note", "toolu_4", sdk))
+            .resolves.toEqual({ behavior: "allow", updatedInput: { noteId: "n" } });
+        // A tool named like Trilium's but served from configuration is never Trilium's.
+        await expect(ask(options, "mcp__trilium__get_note", "toolu_5", { name: "trilium", source: "user" }))
+            .resolves.toMatchObject({ behavior: "deny" });
     });
 
     it("enables adaptive extended thinking when the turn requests it", async () => {
@@ -1083,36 +1155,238 @@ describe("ClaudeAgentProvider.chatChunks", () => {
 describe("generateTitle", () => {
     beforeEach(() => {
         queryMock.mockReset();
+        errorLogMock.mockReset();
+        infoLogMock.mockReset();
+        resetClaudeSessionPoolForTests();
+        closeMock.mockClear();
     });
 
-    it("returns the agent's one-shot result with surrounding quotes stripped", async () => {
-        scriptAgent([{ ...successResult(), result: '"Meeting Notes Summary"' }]);
-        const provider = new ClaudeAgentProvider();
-        await expect(provider.generateTitle("summarize my meeting notes")).resolves.toBe("Meeting Notes Summary");
+    it("names chats in one shared session on the cheap model, one title at a time", async () => {
+        let inFlight = 0;
+        let maxInFlight = 0;
+        const answered: string[] = [];
+        const pushed = scriptTitleAgent(async prompt => {
+            inFlight++;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            await new Promise(resolve => setTimeout(resolve, 5));
+            inFlight--;
+            const name = prompt.slice(prompt.lastIndexOf("\n") + 1);
+            answered.push(name);
+            return [textDelta("streamed noise"), titleResult(`  "${name.toUpperCase()} notes"  `)];
+        });
 
+        const provider = new ClaudeAgentProvider();
+        await expect(Promise.all([provider.generateTitle("a"), provider.generateTitle("b"), provider.generateTitle("c")]))
+            .resolves.toEqual(["A notes", "B notes", "C notes"]);
+
+        expect(answered).toEqual(["a", "b", "c"]);
+        expect(maxInFlight).toBe(1);
+        await vi.waitFor(() => expect(pushed).toEqual([
+            buildTitlePrompt("a"), "/clear", buildTitlePrompt("b"), "/clear", buildTitlePrompt("c"), "/clear"
+        ]));
+        expect(queryMock).toHaveBeenCalledTimes(1);
         const options = queryMock.mock.calls[0][0].options;
-        expect(options.maxTurns).toBe(1);
-        expect(options.persistSession).toBe(false);
+        expect(options).toMatchObject({ model: "claude-haiku-4-5-20251001", maxTurns: 1, persistSession: false });
+        expect(options.mcpServers).toBeUndefined();
+        expect(closeMock).not.toHaveBeenCalled();
     });
 
-    it("returns an empty string when the agent fails", async () => {
-        queryMock.mockImplementation(() => (async function* () {
-            throw new Error("not logged in");
-            yield undefined;
-        })());
-        const provider = new ClaudeAgentProvider();
-        await expect(provider.generateTitle("hello")).resolves.toBe("");
+    it("sends the shared title prompt, which tells the agent to ignore earlier titles", async () => {
+        const prompts: string[] = [];
+        scriptTitleAgent(async prompt => {
+            prompts.push(prompt);
+            return [titleResult("Title")];
+        });
+
+        await new ClaudeAgentProvider().generateTitle("x".repeat(600));
+
+        expect(prompts).toEqual([buildTitlePrompt("x".repeat(600))]);
+        expect(prompts[0]).toContain("earlier messages in this conversation do not apply");
     });
 
-    it("skips non-result messages and returns empty on a non-success result", async () => {
-        scriptAgent([textDelta("streamed noise"), { ...successResult(), result: "The Title" }]);
-        const provider = new ClaudeAgentProvider();
-        await expect(provider.generateTitle("hello")).resolves.toBe("The Title");
+    it("states the five-word limit with example titles in the system prompt, since /clear leaves none in the history", async () => {
+        scriptTitleAgent(async () => [titleResult("Title")]);
 
-        scriptAgent([{ ...successResult(), subtype: "error_during_execution", is_error: true, errors: [] }]);
-        await expect(provider.generateTitle("hello")).resolves.toBe("");
+        await new ClaudeAgentProvider().generateTitle("hi");
+
+        const systemPrompt: string = queryMock.mock.calls[0][0].options.systemPrompt;
+        expect(systemPrompt).toContain("at most five words");
+        const examples = [...systemPrompt.matchAll(/"([^"]+)"/g)].map(match => match[1]).filter(text => /^[A-Z]/.test(text) && text.includes(" "));
+        expect(examples.length).toBeGreaterThanOrEqual(2);
+        for (const example of examples) {
+            expect(example.split(/\s+/).length).toBeLessThanOrEqual(5);
+        }
+    });
+
+    it("empties the session with /clear after a title, without holding that title back", async () => {
+        let releaseClear = () => {};
+        const gate = new Promise<void>(resolve => {
+            releaseClear = resolve;
+        });
+        const pushed = scriptTitleAgent(
+            async prompt => [titleResult(prompt.slice(prompt.lastIndexOf("\n") + 1).toUpperCase())],
+            async () => {
+                await gate;
+                return clearedMessages();
+            }
+        );
+        const provider = new ClaudeAgentProvider();
+
+        await expect(provider.generateTitle("a")).resolves.toBe("A");
+        const second = provider.generateTitle("b");
+        await vi.waitFor(() => expect(pushed).toEqual([buildTitlePrompt("a"), "/clear"]));
+
+        releaseClear();
+        await expect(second).resolves.toBe("B");
+        expect(pushed.slice(0, 3)).toEqual([buildTitlePrompt("a"), "/clear", buildTitlePrompt("b")]);
+        expect(queryMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps one session however many titles it answers", async () => {
+        scriptTitleAgent(async () => [titleResult("Title")]);
+        const provider = new ClaudeAgentProvider();
+
+        for (let i = 0; i < MAX_TITLES_PER_SESSION + 5; i++) {
+            await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        }
+
+        expect(queryMock).toHaveBeenCalledTimes(1);
+        expect(closeMock).not.toHaveBeenCalled();
+    });
+
+    it("replaces the title session when a title or a /clear fails, or its stream ended", async () => {
+        let clears = 0;
+        scriptTitleAgent(async prompt => {
+            if (prompt.endsWith("boom")) {
+                throw new Error("agent crashed");
+            }
+            if (prompt.endsWith("quit")) {
+                return null;
+            }
+            return [titleResult("Title")];
+        }, async () => {
+            clears++;
+            if (clears === 1) {
+                throw new Error("clear crashed");
+            }
+            return clears === 2 ? null : clearedMessages();
+        });
+        const provider = new ClaudeAgentProvider();
+
+        // A /clear that throws closes the session, and the next title starts another.
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        expect(queryMock).toHaveBeenCalledTimes(2);
+        expect(closeMock).toHaveBeenCalledTimes(1);
+        expect(infoLogMock).toHaveBeenCalledWith(expect.stringContaining("clear crashed"));
+
+        // A /clear whose stream ends closes the session too.
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        expect(queryMock).toHaveBeenCalledTimes(3);
+
+        // Failed: the session is closed, the failure logged, and the next title starts another.
+        await expect(provider.generateTitle("boom")).resolves.toBe("");
+        expect(errorLogMock).toHaveBeenCalledWith(expect.stringContaining("agent crashed"));
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        expect(queryMock).toHaveBeenCalledTimes(4);
+
+        // Ended: a stream that stops before its result yields no title, and the next title starts another.
+        await expect(provider.generateTitle("quit")).resolves.toBe("");
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+        expect(queryMock).toHaveBeenCalledTimes(5);
+    });
+
+    it("gives up on a title or a /clear that gets no reply in time, so later titles still run", async () => {
+        vi.useFakeTimers();
+        try {
+            const never = new Promise<null>(() => {});
+            scriptTitleAgent(async prompt => (prompt.endsWith("hang") ? never : [titleResult("Title")]), async () => never);
+            const provider = new ClaudeAgentProvider();
+
+            const hung = provider.generateTitle("hang");
+            await vi.advanceTimersByTimeAsync(TITLE_TIMEOUT_MS);
+            await expect(hung).resolves.toBe("");
+            expect(errorLogMock).toHaveBeenCalledWith(expect.stringContaining("no reply"));
+
+            const answered = provider.generateTitle("hi");
+            await vi.advanceTimersByTimeAsync(0);
+            await expect(answered).resolves.toBe("Title");
+            const next = provider.generateTitle("hi");
+            await vi.advanceTimersByTimeAsync(TITLE_TIMEOUT_MS);
+            await expect(next).resolves.toBe("Title");
+
+            expect(queryMock).toHaveBeenCalledTimes(3);
+            expect(closeMock).toHaveBeenCalledTimes(2);
+        } finally {
+            // The last title's /clear hangs as well; let it time out so the next test's titles can run.
+            await vi.advanceTimersByTimeAsync(TITLE_TIMEOUT_MS);
+            vi.useRealTimers();
+        }
+    }, 5000);
+
+    it("keeps the session after an unsuccessful result, which leaves it in a known state", async () => {
+        scriptTitleAgent(async prompt => (prompt.endsWith("fail")
+            ? [{ ...successResult(), subtype: "error_during_execution", is_error: true, errors: [] }]
+            : [titleResult("Title")]));
+        const provider = new ClaudeAgentProvider();
+
+        await expect(provider.generateTitle("fail")).resolves.toBe("");
+        await expect(provider.generateTitle("hi")).resolves.toBe("Title");
+
+        expect(queryMock).toHaveBeenCalledTimes(1);
+        expect(closeMock).not.toHaveBeenCalled();
+    });
+
+    it("returns an empty title and logs when the agent cannot start", async () => {
+        resolveClaudeBinaryMock.mockRejectedValueOnce(new Error("claude not found"));
+
+        await expect(new ClaudeAgentProvider().generateTitle("hi")).resolves.toBe("");
+        expect(errorLogMock).toHaveBeenCalledWith(expect.stringContaining("claude not found"));
     });
 });
+
+/**
+ * A title session: Claude Code in streaming input mode, answering each title
+ * prompt pushed onto its input with what `reply` returns for its text, and each
+ * `/clear` with what `clear` returns. `null` ends the stream, as a process that
+ * exits does. Returns the texts pushed, in order.
+ */
+function scriptTitleAgent(
+    reply: (prompt: string) => Promise<unknown[] | null>,
+    clear: () => Promise<unknown[] | null> = async () => clearedMessages()
+): string[] {
+    type Pushed = { message: { content: { text: string }[] } };
+    const pushed: string[] = [];
+    queryMock.mockImplementation(({ prompt }: { prompt: string | AsyncIterable<Pushed> }) => {
+        const generator = (async function* () {
+            const input = typeof prompt === "string" ? [prompt] : prompt;
+            for await (const message of input) {
+                const text = typeof message === "string" ? message : message.message.content.map(block => block.text).join("");
+                pushed.push(text);
+                const messages = await (text === "/clear" ? clear() : reply(text));
+                if (!messages) {
+                    return;
+                }
+                yield* messages;
+            }
+        })();
+        return Object.assign(generator, { setModel: setModelMock, close: closeMock });
+    });
+    return pushed;
+}
+
+/** What Claude Code streams for a `/clear`, as recorded from CLI 2.1.287. */
+function clearedMessages() {
+    return [
+        { type: "conversation_reset", trigger: "clear", session_id: "sess-1", new_conversation_id: "conv-2" },
+        { type: "system", subtype: "init", session_id: "sess-2" },
+        { ...successResult("sess-2"), result: "" }
+    ];
+}
+
+function titleResult(title: string) {
+    return { ...successResult(), result: title };
+}
 
 describe("transcript helpers", () => {
     it("hashTranscript is stable across content shapes and sensitive to edits", () => {

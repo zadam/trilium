@@ -3,7 +3,7 @@ import "./shortcut_hints_panel.css";
 
 import { autoUpdate } from "@floating-ui/dom";
 import clsx from "clsx";
-import { createPortal } from "preact/compat";
+import { createPortal } from "preact";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import { t } from "../../services/i18n.js";
@@ -28,7 +28,7 @@ export default function ShortcutHintsPanel() {
     // `undefined` means closed. Only ever set with a non-empty section list, so presence == open.
     const [ state, setState ] = useState<OpenState>();
     const panelRef = useRef<HTMLDivElement>(null);
-    const timerRef = useRef<number>();
+    const timerRef = useRef<number | undefined>(undefined);
     // Kept in a ref so the outside-click handler always sees the current anchor without re-subscribing.
     const anchorRef = useRef<HTMLElement | null>(null);
     anchorRef.current = state?.anchor ?? null;

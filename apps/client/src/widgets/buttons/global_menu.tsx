@@ -6,9 +6,8 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
 import Component from "../../components/component";
-import { ExperimentalFeature, ExperimentalFeatureId, getAvailableExperimentalFeatures, isExperimentalFeatureEnabled, toggleExperimentalFeature } from "../../services/experimental_features";
 import { t } from "../../services/i18n";
-import utils, { isElectron, isMobile, isStandalone, reloadFrontendApp } from "../../services/utils";
+import utils, { isElectron, isMobile, isStandalone } from "../../services/utils";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../react/FormList";
 import { useStaticTooltip, useStaticTooltipWithKeyboardShortcut, useTriliumOption, useTriliumOptionBool } from "../react/hooks";
@@ -50,10 +49,8 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
                 <FormDropdownDivider />
             </>}
 
-            <MenuItem command="openNewWindow" icon="bx bx-window-open" text={t("global_menu.open_new_window")} />
-            <MenuItem command="showShareSubtree" icon="bx bx-share-alt" text={t("global_menu.show_shared_notes_subtree")} />
+            {!isMobile() && <MenuItem command="openNewWindow" icon="bx bx-window-open" text={t("global_menu.open_new_window")} />}
             <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
-            <KeyboardActionMenuItem command="showSpaceUsage" icon="bx bx-pie-chart-alt-2" text={t("global_menu.show_space_usage")} />
             <FormDropdownDivider />
 
             <ZoomControls parentComponent={parentComponent} />
@@ -61,14 +58,14 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
             <KeyboardActionMenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
             <FormDropdownDivider />
 
-            <SwitchToOptions />
+            {!isMobile() && <SwitchToOptions />}
             <MenuItem command="showLaunchBarSubtree" icon={`bx ${isMobile() ? "bx-mobile" : "bx-sidebar"}`} text={t("global_menu.configure_launchbar")} />
             <AdvancedMenu />
             <MenuItem command="showOptions" icon="bx bx-cog" text={t("global_menu.options")} />
             <FormDropdownDivider />
 
             <KeyboardActionMenuItem command="showHelp" icon="bx bx-help-circle" text={t("global_menu.show_help")} />
-            <KeyboardActionMenuItem command="showCheatsheet" icon="bx bxs-keyboard" text={t("global_menu.show-cheatsheet")} />
+            {!isMobile() && <KeyboardActionMenuItem command="showCheatsheet" icon="bx bxs-keyboard" text={t("global_menu.show-cheatsheet")} />}
             <MenuItem command="openAboutDialog" icon="bx bx-info-circle" text={t("global_menu.about")} />
 
             {isUpdateAvailable &&  <>
@@ -79,7 +76,6 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
             </>}
 
             {!isElectron() && !isStandalone && <BrowserOnlyOptions />}
-            {glob.isDev && <DevelopmentOptions />}
         </Dropdown>
     );
 }
@@ -87,17 +83,24 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
 function AdvancedMenu() {
     return (
         <FormDropdownSubmenu icon="bx bx-chip" title={t("global_menu.advanced")}>
+            <MenuItem command="showShareSubtree" icon="bx bx-share-alt" text={t("global_menu.show_shared_notes_subtree")} />
+            <KeyboardActionMenuItem command="showSpaceUsage" icon="bx bx-pie-chart-alt-2" text={t("global_menu.show_space_usage")} />
             <MenuItem command="showHiddenSubtree" icon="bx bx-hide" text={t("global_menu.show_hidden_subtree")} />
             <MenuItem command="showSearchHistory" icon="bx bx-search-alt" text={t("global_menu.open_search_history")} />
             <FormDropdownDivider />
 
-            <KeyboardActionMenuItem command="showBackendLog" icon="bx bx-detail" text={t("global_menu.show_backend_log")} />
+            <KeyboardActionMenuItem command="showBackendLog" icon="bx bx-receipt" text={t("global_menu.show_backend_log")} />
             <KeyboardActionMenuItem command="showSQLConsole" icon="bx bx-data" text={t("global_menu.open_sql_console")} />
             <MenuItem command="showSQLConsoleHistory" icon="bx bx-data" text={t("global_menu.open_sql_console_history")} />
             <FormDropdownDivider />
 
             {isElectron() && <MenuItem command="openDevTools" icon="bx bx-bug-alt" text={t("global_menu.open_dev_tools")} />}
             <KeyboardActionMenuItem command="reloadFrontendApp" icon="bx bx-refresh" text={t("global_menu.reload_frontend")} title={t("global_menu.reload_hint")} />
+
+            {isMobile() && <>
+                <FormDropdownDivider />
+                <SwitchToOptions />
+            </>}
         </FormDropdownSubmenu>
     );
 }
@@ -107,32 +110,6 @@ function BrowserOnlyOptions() {
         <FormDropdownDivider />
         <MenuItem command="logout" icon="bx bx-log-out" text={t("global_menu.logout")} />
     </>;
-}
-
-function DevelopmentOptions() {
-    return <>
-        <FormListHeader text="Development Options" />
-        <FormDropdownSubmenu icon="bx bx-test-tube" title="Experimental features">
-            {getAvailableExperimentalFeatures().map((feature) => (
-                <ExperimentalFeatureToggle key={feature.id} experimentalFeature={feature as ExperimentalFeature} />
-            ))}
-        </FormDropdownSubmenu>
-    </>;
-}
-
-function ExperimentalFeatureToggle({ experimentalFeature }: { experimentalFeature: ExperimentalFeature }) {
-    const featureEnabled = isExperimentalFeatureEnabled(experimentalFeature.id as ExperimentalFeatureId);
-
-    return (
-        <FormListItem
-            checked={featureEnabled}
-            title={experimentalFeature.description}
-            onClick={async () => {
-                await toggleExperimentalFeature(experimentalFeature.id as ExperimentalFeatureId, !featureEnabled);
-                reloadFrontendApp();
-            }}
-        >{experimentalFeature.name}</FormListItem>
-    );
 }
 
 function SwitchToOptions() {
@@ -161,7 +138,7 @@ function KeyboardActionMenuItem({ command, ...props }: MenuItemProps<KeyboardAct
     return <MenuItem {...props} command={command} keyboardShortcut={command} />;
 }
 
-export function VerticalLayoutIcon({ logoRef }: { logoRef?: RefObject<SVGSVGElement> }) {
+function VerticalLayoutIcon({ logoRef }: { logoRef?: RefObject<SVGSVGElement | null> }) {
     return (
         <svg ref={logoRef} viewBox="0 0 256 256" title={t("global_menu.menu")}>
             <g>

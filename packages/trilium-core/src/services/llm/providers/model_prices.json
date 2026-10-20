@@ -20,6 +20,11 @@
       "output": 5,
       "ctx": 200000
     },
+    "claude-haiku-5-5": {
+      "input": 0.1,
+      "output": 0.5,
+      "ctx": 1000000
+    },
     "claude-mythos-5": {
       "input": 10,
       "output": 50,
@@ -83,12 +88,12 @@
     "claude-sonnet-4-5": {
       "input": 3,
       "output": 15,
-      "ctx": 1000000
+      "ctx": 200000
     },
     "claude-sonnet-4-5-20250929": {
       "input": 3,
       "output": 15,
-      "ctx": 1000000
+      "ctx": 200000
     },
     "claude-sonnet-4-6": {
       "input": 3,
@@ -96,6 +101,11 @@
       "ctx": 1000000
     },
     "claude-sonnet-5": {
+      "input": 2,
+      "output": 10,
+      "ctx": 1000000
+    },
+    "claude-sonnet-5-5": {
       "input": 2,
       "output": 10,
       "ctx": 1000000
@@ -253,6 +263,11 @@
       "input": 0.3,
       "output": 2.5,
       "ctx": 1048576
+    },
+    "gemini-robotics-er-2-preview": {
+      "input": 1,
+      "output": 5,
+      "ctx": 131072
     }
   },
   "openai": {
@@ -381,7 +396,17 @@
       "output": 0.6,
       "ctx": 128000
     },
+    "gpt-4o-mini-search-preview-2025-03-11": {
+      "input": 0.15,
+      "output": 0.6,
+      "ctx": 128000
+    },
     "gpt-4o-search-preview": {
+      "input": 2.5,
+      "output": 10,
+      "ctx": 128000
+    },
+    "gpt-4o-search-preview-2025-03-11": {
       "input": 2.5,
       "output": 10,
       "ctx": 128000
@@ -515,6 +540,10 @@
       "input": 12.5,
       "output": 75
     },
+    "gpt-5.5-cyber-preview": {
+      "input": 12.5,
+      "output": 75
+    },
     "gpt-5.6": {
       "input": 4,
       "output": 20,
@@ -555,6 +584,11 @@
       "output": 10,
       "ctx": 922000
     },
+    "gpt-6.1-sol": {
+      "input": 2,
+      "output": 10,
+      "ctx": 922000
+    },
     "gpt-audio": {
       "input": 2.5,
       "output": 10,
@@ -575,10 +609,19 @@
       "output": 2.4,
       "ctx": 128000
     },
+    "gpt-audio-mini-2025-10-06": {
+      "input": 0.6,
+      "output": 2.4,
+      "ctx": 128000
+    },
     "gpt-audio-mini-2025-12-15": {
       "input": 0.6,
       "output": 2.4,
       "ctx": 128000
+    },
+    "gpt-rosalind-discovery": {
+      "input": 5,
+      "output": 25
     },
     "gpt-rosalind-research": {
       "input": 5,

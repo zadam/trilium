@@ -1,4 +1,6 @@
-import { safeLinkPreviewHref, type TaskStateDef } from "@triliumnext/commons";
+import {
+    MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS, safeLinkPreviewHref, type TaskStateDef
+} from "@triliumnext/commons";
 import { ADMONITION_TYPE_MAPPINGS } from "@triliumnext/commons/src/lib/markdown_renderer.js";
 import { HIGHLIGHT_BACKGROUND } from "@triliumnext/commons/src/lib/marked_extensions.js";
 import { gfm, serializeStructuralHtml } from "@triliumnext/turndown-plugin-gfm";
@@ -61,7 +63,7 @@ function toMarkdown(content: string, options: ToMarkdownOptions = {}) {
             codeBlockStyle: "fenced",
             headerlessTables,
             blankReplacement(_content, node) {
-                if (node.nodeName === "SECTION" && node.classList.contains("include-note")) {
+                if (isContentEmbed(node)) {
                     return node.outerHTML;
                 }
 
@@ -69,6 +71,16 @@ function toMarkdown(content: string, options: ToMarkdownOptions = {}) {
                 // by `injectLinkPreviewFallbacks` makes every other one non-blank).
                 if (isLinkPreview(node)) {
                     return linkPreviewReplacement(node);
+                }
+
+                // A tab without text still keeps its `=== ""` line, or the import loses the tab.
+                const blankTabs = blankTabsReplacement(node);
+                if (blankTabs !== null) {
+                    return blankTabs;
+                }
+
+                if (isMulticolumnLayout(node) || isMulticolumnColumn(node)) {
+                    return blankMulticolumnReplacement(node);
                 }
 
                 // Original implementation as per https://github.com/mixmark-io/turndown/blob/master/src/turndown.js.
@@ -80,6 +92,9 @@ function toMarkdown(content: string, options: ToMarkdownOptions = {}) {
         instance.addRule("img", buildImageFilter());
         instance.addRule("admonition", buildAdmonitionFilter());
         instance.addRule("details", buildDetailsFilter());
+        instance.addRule("tabTitle", buildTabTitleFilter());
+        instance.addRule("tabPanel", buildTabPanelFilter());
+        instance.addRule("multicolumn", buildMulticolumnFilter());
         instance.addRule("inlineLink", buildInlineLinkFilter());
         instance.addRule("figure", buildFigureFilter());
         instance.addRule("linkPreview", buildLinkPreviewFilter());
@@ -293,13 +308,19 @@ function buildInlineLinkFilter(): Rule {
 function buildFigureFilter(): Rule {
     return {
         filter(node, options) {
-            return node.nodeName === 'FIGURE'
-                && node.classList.contains("image");
+            return (node.nodeName === "FIGURE" && node.classList.contains("image"))
+                || isContentEmbed(node);
         },
         replacement(content, node) {
             return (node as HTMLElement).outerHTML;
         }
     };
+}
+
+/** Whether `node` is an embed. Embeds saved before captions existed are `<section>`s. */
+function isContentEmbed(node: Pick<LinkPreviewNodeLike, "nodeName" | "classList">) {
+    return (node.nodeName === "FIGURE" || node.nodeName === "SECTION")
+        && node.classList.contains("include-note");
 }
 
 /**
@@ -411,6 +432,122 @@ function buildDetailsFilter(): Rule {
         }
     };
 }
+
+/**
+ * Exports a multicolumn layout and each of its columns as `<div>` tags on lines of their own, with
+ * the Markdown of each column between them. A blank line ends a CommonMark HTML block, so the blank
+ * lines inside each column make renderers, the importer included, parse the column as Markdown.
+ */
+function buildMulticolumnFilter(): Rule {
+    return {
+        filter(node) {
+            return isMulticolumnLayout(node) || isMulticolumnColumn(node);
+        },
+        replacement(content, node) {
+            return multicolumnReplacement(node, content);
+        }
+    };
+}
+
+function multicolumnReplacement(node: Element, content: string): string {
+    if (isMulticolumnColumn(node)) {
+        const body = content.trim();
+        const opening = multicolumnOpeningTag(node);
+        return `\n${opening}\n${body ? `\n${body}\n\n` : ""}</div>\n`;
+    }
+    const opening = multicolumnOpeningTag(node);
+    return `\n\n${opening}\n${content.trim()}\n</div>\n\n`;
+}
+
+/** Turndown skips the children of a blank element, so this writes the columns of a blank layout. */
+function blankMulticolumnReplacement(node: Element): string {
+    const columns = isMulticolumnLayout(node)
+        ? Array.from(node.children).filter(isMulticolumnColumn)
+            .map((column) => multicolumnReplacement(column, "").trim())
+        : [];
+    return multicolumnReplacement(node, columns.join("\n"));
+}
+
+function multicolumnOpeningTag(node: Element): string {
+    const attributes = Array.from(node.attributes)
+        .map(({ name, value }) => ` ${name}="${escapeHtml(value)}"`);
+    return `<div${attributes.join("")}>`;
+}
+
+function isMulticolumnLayout(node: Node): boolean {
+    return isElement(node) && node.classList.contains(MULTICOLUMN_LAYOUT_CLASS);
+}
+
+function isMulticolumnColumn(node: Node): boolean {
+    return isElement(node) && node.classList.contains(MULTICOLUMN_COLUMN_CLASS);
+}
+
+/** Exports a tab title as the `=== "Title"` line of MkDocs content tabs (`pymdownx.tabbed`). */
+function buildTabTitleFilter(): Rule {
+    return {
+        filter(node) {
+            return node.classList.contains(TAB_TITLE_CLASS);
+        },
+        replacement(content, node) {
+            return `\n\n${tabTitleLine(node, content)}\n\n`;
+        }
+    };
+}
+
+function buildTabPanelFilter(): Rule {
+    return {
+        filter(node) {
+            return node.classList.contains(TAB_PANEL_CLASS);
+        },
+        replacement(content) {
+            const indented = content
+                .trim()
+                .split("\n")
+                .map((line) => (line ? `    ${line}` : line))
+                .join("\n");
+            return `\n\n${indented}\n\n`;
+        }
+    };
+}
+
+/** The title lines of a tabs block, tab or title that holds no text; `null` for any other node. */
+function blankTabsReplacement(node: Node): string | null {
+    if (!isElement(node)) {
+        return null;
+    }
+    const childrenWithClass = (parent: Element, className: string) =>
+        Array.from(parent.children).filter((child) => child.classList.contains(className));
+
+    const titles = node.classList.contains(TABS_CLASS)
+        ? childrenWithClass(node, TAB_CLASS).flatMap((tab) => childrenWithClass(tab, TAB_TITLE_CLASS))
+        : node.classList.contains(TAB_CLASS)
+            ? childrenWithClass(node, TAB_TITLE_CLASS)
+            : node.classList.contains(TAB_TITLE_CLASS) ? [node] : null;
+    if (!titles) {
+        return null;
+    }
+    return `\n\n${titles.map((title) => tabTitleLine(title, "")).join("\n\n")}\n\n`;
+}
+
+/** `content` is the title as Turndown rendered it, so its icons and formatting stay inline Markdown. */
+function tabTitleLine(title: Element, content: string): string {
+    const tab = title.parentElement;
+    const block = tab?.parentElement;
+    const startsNewBlock = block?.firstElementChild === tab
+        && block?.previousElementSibling?.classList.contains(TABS_CLASS);
+    // Collapses line breaks but keeps U+00A0: CKEditor drops a plain space after an inline icon.
+    const text = content.replace(/[^\S\u00A0]+/g, " ").trim();
+    return `===${startsNewBlock ? "!" : ""} "${text}"`;
+}
+
+function isElement(node: Node): node is Element {
+    return node.nodeType === 1;
+}
+
+const TABS_CLASS = "trilium-tabs";
+const TAB_CLASS = "trilium-tab";
+const TAB_TITLE_CLASS = "trilium-tab-title";
+const TAB_PANEL_CLASS = "trilium-tab-panel";
 
 // Keep in line with https://github.com/mixmark-io/turndown/blob/master/src/commonmark-rules.js.
 function buildListItemFilter(): Rule {

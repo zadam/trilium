@@ -27,7 +27,8 @@ function mount(children: ComponentChildren) {
 /** The tooltip config the hook was handed for the button bearing the given accessible name. */
 function tooltipFor(label: string) {
     const call = staticTooltipSpy.mock.calls.find(
-        (args) => (args[0] as RefObject<HTMLElement>).current?.getAttribute("aria-label") === label
+        (args) => (args[0] as RefObject<HTMLElement | null>)
+            .current?.getAttribute("aria-label") === label
     );
     return call?.[1] as { title: string; placement: string } | undefined;
 }

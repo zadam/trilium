@@ -3,21 +3,35 @@ import "ckeditor5/ckeditor5.css";
 // admonition plugin (which was forked from block-quote) but styles `blockquote`, not admonitions —
 // the client's theme-next stylesheet overrides parts of it with `!important`.
 import "./theme/blockquote.css";
+import "./theme/content_colors.css";
 import "./theme/code_block_toolbar.css";
 import "./theme/link_embed_form.css";
 import type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
+import type { ImageEditingSourceConfig } from "./plugins/image_editing_source.js";
 import type { PasteTarget } from "./plugins/cuttonote.js";
-import { COMMON_PLUGINS, CORE_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
+import { CLASSIC_EDITOR_PLUGINS, CORE_PLUGINS, POPUP_EDITOR_PLUGINS } from "./plugins.js";
 import { BalloonEditor, DecoupledEditor, FindAndReplaceEditing, FindCommand } from "ckeditor5";
-export { default as EditorWatchdog } from "./custom_watchdog";
+export { onTextEditorError } from "./editor_errors.js";
 export { CHAT_INPUT_PLUGINS, MEMO_PLUGINS } from "./plugins.js";
-export type { EditorConfig, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription, WatchdogConfig, WatchdogState } from "ckeditor5";
+export type { CKEditorError, EditorConfig, FindResultType, MentionFeed, MentionFeedObjectItem, ModelNode, ModelPosition, ModelElement, ModelText, TextTransformationConfig, TextTypingTransformationDescription } from "ckeditor5";
 export type { ClipboardImageEmbedConfig } from "./plugins/clipboard_image_embed.js";
+export type { ImageEditingSourceConfig } from "./plugins/image_editing_source.js";
 export type { FileUploadData, FileUploadEvent } from "./plugins/file_upload/fileuploadediting.js";
 export type { PasteTarget } from "./plugins/cuttonote.js";
+export type {
+    ContentEmbedCodeView, ContentEmbedState
+} from "./plugins/content_embed/content_embed.js";
+export type { EmbedEdge } from "./plugins/content_embed/content_embed_caret.js";
+export { default as EmbedHistory } from "./plugins/content_embed/embed_history.js";
+export type {
+    EmbedHistoryEntry, EmbedHistoryStep
+} from "./plugins/content_embed/embed_history.js";
+export type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
 export type { AttachmentLinkChange } from "./plugins/referencelink.js";
-export type { SlashCommandConfig, SlashCommandDefinition } from "./plugins/mention/slash_commands.js";
-export type { TriliumMentionFeed } from "./plugins/mention/types.js";
+export type { default as TriliumEmojiMention, EmojiSuggestion } from "./plugins/mention/emoji_mention.js";
+export type { default as TriliumSlashCommands, SlashCommandConfig, SlashCommandDefinition, SlashCommandItem } from "./plugins/mention/slash_commands.js";
+export type { MentionHostedFeed, MentionHostedList, MentionHostedListState } from "./plugins/mention/types.js";
+export type { ToolbarGroupMenuEntry, ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest } from "./plugins/toolbar_group_menu.js";
 export { default as TriliumSnippets } from "./plugins/snippets/snippets.js";
 export type { SnippetDefinition } from "./plugins/snippets/snippetsconfig.js";
 export { default as TriliumAiAssistant } from "./plugins/ai_assistant/ai_assistant.js";
@@ -28,7 +42,14 @@ export * from "./utils.js";
 
 // Import with sideffects to ensure that type augmentations are present.
 import "./plugins/file_upload/uploadfileplugin.js";
+import "./plugins/block_reference/block_reference.js";
+import "./plugins/content_embed/content_embed.js";
+import "./plugins/content_embed/content_embed_caret.js";
+import "./plugins/find_in_link_widgets.js";
+import "./plugins/find_reveal.js";
 import "./plugins/math/math.js";
+import "./plugins/tabs/tabs.js";
+import "./plugins/multicolumn/multicolumn.js";
 import "./plugins/mermaid/mermaid.js";
 import "./plugins/referencelink.js";
 import "./plugins/table_context_menu.js";
@@ -66,7 +87,7 @@ export class AttributeEditor extends BalloonEditor {
  */
 export class ClassicEditor extends DecoupledEditor {
     static override get builtinPlugins() {
-        return COMMON_PLUGINS;
+        return CLASSIC_EDITOR_PLUGINS;
     }
 }
 
@@ -112,6 +133,7 @@ declare module "ckeditor5" {
             copyHtml?(html: string, plainText: string): void;
         },
         clipboardImageEmbed?: ClipboardImageEmbedConfig,
+        imageEditingSource?: ImageEditingSourceConfig,
         autoSort?: {
             /** More date formats for table sorting to recognize, in Day.js syntax. */
             dateFormats?: string[];

@@ -252,7 +252,8 @@ export function setupShellHandlers() {
 
     electron.ipcMain.handle("open-path", (_event, filePath: string) => {
         try {
-            const resolved = validateOpenPath(filePath, dataDirs.TRILIUM_DATA_DIR, dataDirs.TMP_DIR, getConfiguredBackupDir());
+            const resolved = validateOpenPath(filePath, dataDirs.TRILIUM_DATA_DIR, dataDirs.TMP_DIR,
+                ...getConfiguredOpenRoots());
             return electron.shell.openPath(resolved);
         } catch (e) {
             getLog().error(`open-path failed: ${coreUtils.safeExtractMessageAndStackFromError(e)}`);
@@ -265,7 +266,7 @@ export function setupShellHandlers() {
     electron.ipcMain.on("show-item-in-folder", (_event, filePath: string) => {
         try {
             const resolved = validateOpenPath(filePath, dataDirs.TRILIUM_DATA_DIR, dataDirs.TMP_DIR,
-                getConfiguredBackupDir(), dataDirs.DOCUMENT_PATH);
+                ...getConfiguredOpenRoots(), dataDirs.DOCUMENT_PATH);
             electron.shell.showItemInFolder(resolved);
         } catch (e) {
             getLog().error(`show-item-in-folder failed: ${coreUtils.safeExtractMessageAndStackFromError(e)}`);
@@ -380,6 +381,14 @@ function shouldOpenViaProtocolHandler(filePath: string): boolean {
     } catch {
         return false;
     }
+}
+
+/**
+ * The roots `open-path` and `show-item-in-folder` accept besides the data and tmp directories:
+ * directories the user can configure outside the data directory.
+ */
+export function getConfiguredOpenRoots() {
+    return [ getConfiguredBackupDir(), dataDirs.RESOURCES_DIR ];
 }
 
 /**

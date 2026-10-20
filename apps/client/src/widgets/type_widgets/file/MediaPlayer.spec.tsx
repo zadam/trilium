@@ -51,7 +51,7 @@ function fakeMedia({ duration = 100, currentTime = 0 } = {}) {
     const media = document.createElement("audio");
     Object.defineProperty(media, "duration", { value: duration, writable: true, configurable: true });
     media.currentTime = currentTime;
-    return { current: media } as RefObject<HTMLAudioElement>;
+    return { current: media } as RefObject<HTMLAudioElement | null>;
 }
 
 const click = (el: Element | null | undefined) =>
@@ -358,7 +358,7 @@ describe("useMediaPlayMode", () => {
     async function renderHook({ notePath, playlistNoteId, mediaRef = fakeMedia() }: {
         notePath?: string;
         playlistNoteId?: string;
-        mediaRef?: RefObject<HTMLAudioElement>;
+        mediaRef?: RefObject<HTMLAudioElement | null>;
     }) {
         const noteContext = { notePath } as NoteContext;
 

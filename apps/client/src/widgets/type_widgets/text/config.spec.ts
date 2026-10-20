@@ -3,7 +3,6 @@ import { DISPLAYABLE_LOCALE_IDS, IMAGE_MIMES, LOCALES, SANITIZER_DEFAULT_ALLOWED
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import imageService from "../../../services/image.js";
-import noteAutocompleteService from "../../../services/note_autocomplete.js";
 import { ensureMimeTypesForHighlighting } from "../../../services/syntax_highlight.js";
 import { buildConfig, type BuildEditorOptions, OPEN_SOURCE_LICENSE_KEY } from "./config.js";
 
@@ -26,7 +25,9 @@ const catalogState = vi.hoisted(() => ({
 vi.mock("../../../services/i18n.js", () => ({
     t: (key: string) => catalogState.entries[key] ?? key,
     // Read while the AI assistant's Translate submenu is built, which every config goes through.
-    getAvailableLocales: () => []
+    getAvailableLocales: () => [],
+    // Awaited by `command_registry.ts` as it loads, through the `@` list's note autocomplete.
+    translationsInitializedPromise: Promise.resolve()
 }));
 vi.mock("i18next", () => ({
     default: {
@@ -76,12 +77,6 @@ vi.mock("../../../services/image.js", () => ({
     }
 }));
 
-vi.mock("../../../services/note_autocomplete.js", () => ({
-    default: {
-        autocompleteSourceForCKEditor: vi.fn(async () => [])
-    }
-}));
-
 // Keep the real module, but skip the actual theme/mime loading the lazy loader would trigger.
 vi.mock("../../../services/syntax_highlight.js", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../../../services/syntax_highlight.js")>()),
@@ -89,7 +84,6 @@ vi.mock("../../../services/syntax_highlight.js", async (importOriginal) => ({
 }));
 
 // Heavy modules pulled in lazily by the editor config — replace with light stubs.
-vi.mock("mermaid", () => ({ default: { name: "mermaid-stub" } }));
 vi.mock("@triliumnext/highlightjs", () => ({ default: { name: "hljs-stub" } }));
 vi.mock("../../../services/math.js", () => ({ default: { name: "katex-stub" } }));
 
@@ -103,12 +97,6 @@ function baseOpts(overrides: Partial<BuildEditorOptions> = {}): BuildEditorOptio
     };
 }
 
-interface MentionSuggestion {
-    icon?: string;
-    action?: string;
-    highlightedNotePathTitle?: string;
-}
-
 /** The dynamically-attached config members that CKEditor's `EditorConfig` type doesn't declare. */
 interface DynamicConfig {
     renderShortcut(shortcut: string): string;
@@ -118,15 +106,11 @@ interface DynamicConfig {
         download(src: string): void;
     };
     math: { enableMathField: boolean; lazyLoad(): Promise<void> };
-    mermaid: { lazyLoad(): Promise<unknown> };
+    contentEmbed: { inlineLanguages: string[] };
     syntaxHighlighting: { loadHighlightJs(): Promise<{ default: unknown }> };
     mention?: {
-        feeds: {
-            marker: string;
-            minimumCharacters: number;
-            feed(queryText: string): Promise<unknown>;
-            itemRenderer(item: MentionSuggestion): HTMLElement;
-        }[];
+        feeds: unknown[];
+        hostedFeeds?: { marker: string; minimumCharacters?: number; allowSpaces?: boolean; list(): unknown }[];
     };
 }
 
@@ -515,6 +499,7 @@ describe("CK config - image actions", () => {
         const unsupportedToolbar = (unsupported.image as { toolbar: unknown[] }).toolbar;
         expect(unsupportedToolbar).not.toContain("copyImageToClipboard");
         expect(unsupportedToolbar).toContain("downloadImage");
+        expect(unsupportedToolbar).toContain("convertImageToDrawing");
 
         imageState.copySupported = true;
         const supported = await buildConfig(baseOpts());
@@ -554,14 +539,11 @@ describe("CK config - image actions", () => {
 });
 
 describe("CK config - lazy loaders", () => {
-    it("lazy-loads KaTeX, Mermaid and highlight.js on demand", async () => {
+    it("lazy-loads KaTeX and highlight.js on demand", async () => {
         const config = await buildDynamicConfig();
 
         await config.math.lazyLoad();
         expect((window as unknown as { katex: unknown }).katex).toEqual({ name: "katex-stub" });
-
-        const mermaid = await config.mermaid.lazyLoad();
-        expect(mermaid).toEqual({ name: "mermaid-stub" });
 
         const hljs = await config.syntaxHighlighting.loadHighlightJs();
         expect(hljs.default).toEqual({ name: "hljs-stub" });
@@ -569,41 +551,24 @@ describe("CK config - lazy loaders", () => {
     });
 });
 
-describe("CK config - mention feed", () => {
-    it("is omitted when note completion is disabled", async () => {
+describe("CK config - inline embeds", () => {
+    it("keeps the source of every source embed type inline, as a code block of its language", async () => {
         const config = await buildDynamicConfig();
-        expect(config.mention).toBeUndefined();
+        expect(config.contentEmbed.inlineLanguages).toEqual([ "mermaid" ]);
     });
+});
 
-    it("builds the @-mention feed and renders suggestions when note completion is enabled", async () => {
+describe("CK config - mention feed", () => {
+    it("lists notes after @ as the note autocomplete does, only when note completion is enabled", async () => {
+        const off = await buildDynamicConfig();
+        expect(off.mention?.feeds).toEqual([]);
+        expect(off.mention?.hostedFeeds).toEqual([]);
+
         optionsState.map["textNoteCompletionEnabled"] = "true";
         const config = await buildDynamicConfig();
-
-        const feedConfig = config.mention?.feeds[0];
-        if (!feedConfig) throw new Error("expected the mention feed to be configured");
-        expect(feedConfig.marker).toBe("@");
-        expect(feedConfig.minimumCharacters).toBe(0);
-
-        await feedConfig.feed("query-text");
-        expect(noteAutocompleteService.autocompleteSourceForCKEditor).toHaveBeenCalledWith("query-text");
-
-        // A normal note suggestion keeps its own icon and renders its highlighted title.
-        const noteItem = feedConfig.itemRenderer({ icon: "bx bx-folder", action: "open", highlightedNotePathTitle: "<b>Hello</b>" });
-        expect(noteItem.tagName).toBe("BUTTON");
-        expect((noteItem.firstChild as HTMLElement).className).toBe("bx bx-folder");
-        expect(noteItem.querySelector("b")?.textContent).toBe("Hello");
-
-        // The row is exactly the icon and a wrapped title: the stylesheet lays the two out against
-        // each other, which it cannot do if the title is spread into the button as loose nodes.
-        expect(noteItem.className).toBe("note-mention-suggestion");
-        expect(noteItem.childNodes).toHaveLength(2);
-        const title = noteItem.querySelector(".note-mention-suggestion-title");
-        expect(title?.textContent).toBe("Hello");
-
-        // A "create note" suggestion with no icon/title gets the plus icon and an empty title.
-        const createItem = feedConfig.itemRenderer({ action: "create-note" });
-        expect((createItem.firstChild as HTMLElement).className).toBe("bx bx-plus");
-        expect(createItem.querySelector("b")).toBeNull();
+        const hosted = config.mention?.hostedFeeds?.[0];
+        expect(hosted).toMatchObject({ marker: "@", minimumCharacters: 0, allowSpaces: true });
+        expect(hosted?.list()).toEqual(expect.objectContaining({ show: expect.any(Function), handleKeyDown: expect.any(Function) }));
     });
 });
 
@@ -655,5 +620,18 @@ describe("CK config - disabled plugins", () => {
         const enabled = await buildConfig(baseOpts());
         expect(enabled.removePlugins).not.toContain("TriliumEmojiMention");
         expect(enabled.removePlugins).not.toContain("TriliumSlashCommands");
+    });
+
+    it("removes the block drag handle in the mobile layout", async () => {
+        const originalDevice = window.glob.device;
+        try {
+            window.glob.device = "desktop";
+            expect((await buildConfig(baseOpts())).removePlugins).not.toContain("BlockDragHandle");
+
+            window.glob.device = "mobile";
+            expect((await buildConfig(baseOpts())).removePlugins).toContain("BlockDragHandle");
+        } finally {
+            window.glob.device = originalDevice;
+        }
     });
 });

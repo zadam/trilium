@@ -2,7 +2,7 @@ import "./ListOrGridView.css";
 import { Card, CardFrame, CardSection } from "../../react/Card";
 
 import type { HighlightedTokenInfo } from "@triliumnext/commons";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import FNote from "../../../entities/fnote";
 import attribute_renderer from "../../../services/attribute_renderer";
@@ -13,6 +13,7 @@ import CollectionProperties from "../../note_bars/CollectionProperties";
 import { useImperativeSearchHighlighlighting, useNoteLabel, useNoteLabelBoolean, useNoteProperty } from "../../react/hooks";
 import Icon from "../../react/Icon";
 import NoteLink from "../../react/NoteLink";
+import { ParentComponent } from "../../react/react_utils";
 import { ViewModeProps } from "../interface";
 import { Pager, usePagination, PaginationContext } from "../Pagination";
 import { filterChildNotes, useFilteredNoteIds } from "./utils";
@@ -273,7 +274,7 @@ function GridNoteCard(props: GridNoteCardProps) {
     );
 }
 
-function NoteAttributes({ note }: { note: FNote }) {
+export function NoteAttributes({ note }: { note: FNote }) {
     const ref = useRef<HTMLSpanElement>(null);
     useEffect(() => {
         attribute_renderer.renderNormalAttributes(note).then(({$renderedAttributes}) => {
@@ -297,6 +298,7 @@ export function NoteContent({ note, trim, noChildrenList, highlightedTokens, inc
 }) {
     const contentRef = useRef<HTMLDivElement>(null);
     const highlightSearch = useImperativeSearchHighlighlighting(highlightedTokens);
+    const parentComponent = useContext(ParentComponent);
 
     const [ready, setReady] = useState(false);
     const [noteType, setNoteType] = useState<string>("none");
@@ -324,11 +326,12 @@ export function NoteContent({ note, trim, noChildrenList, highlightedTokens, inc
         content_renderer.getRenderedContent(note, {
             trim,
             noChildrenList,
-            // The note list is a lightweight preview: don't render included notes at all.
-            noIncludedNotes: true,
+            // The note list is a lightweight preview: don't render embedded notes at all.
+            noContentEmbeds: true,
             includeArchivedNotes,
             showTextRepresentation,
-            interactive
+            interactive,
+            parentComponent: parentComponent ?? undefined
         })
             .then(({ $renderedContent, type }) => {
                 if (cancelled || !contentRef.current) {

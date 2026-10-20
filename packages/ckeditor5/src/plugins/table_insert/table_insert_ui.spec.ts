@@ -2,6 +2,7 @@ import {
     _getModelData as getModelData,
     _setModelData as setModelData,
     BlockToolbar,
+    ButtonView,
     ClassicEditor,
     ContextualBalloon,
     DropdownView,
@@ -41,7 +42,7 @@ describe("TableInsertUI", () => {
 
     beforeEach(async () => {
         editor = await createTestEditor([Essentials, Paragraph, Table, TableInsertUI], {
-            toolbar: ["insertTable"]
+            toolbar: ["insertTable", "insertTableForm"]
         });
         balloon = editor.plugins.get(ContextualBalloon);
         setModelData(editor.model, "<paragraph>foo[]</paragraph>");
@@ -136,7 +137,26 @@ describe("TableInsertUI", () => {
 
             await userEvent.keyboard("{Enter}");
             expect(dropdown.isOpen).toBe(false);
-            expect(document.activeElement).toBe(getForm(balloon).rowsField.inputView.element);
+            expect(document.activeElement)
+                .toBe(getForm(balloon).columnsField.inputView.element);
+        });
+    });
+
+    describe("form button", () => {
+        it("opens the form, and is enabled with the insertTable command", async () => {
+            const button = editor.ui.view.toolbar.items.get(1);
+            expect(button).toBeInstanceOf(ButtonView);
+            expect(button).toMatchObject({ label: "Insert table", icon: IconTable, tooltip: true });
+
+            editor.enableReadOnlyMode("spec");
+            expect(button).toHaveProperty("isEnabled", false);
+            editor.disableReadOnlyMode("spec");
+            expect(button).toHaveProperty("isEnabled", true);
+
+            await userEvent.click(getElement(button as ButtonView));
+            const form = getForm(balloon);
+            expect(getInput(form, "columns").value).toBe(String(DEFAULT_TABLE_SIZE));
+            expect(document.activeElement).toBe(getInput(form, "columns"));
         });
     });
 
@@ -151,7 +171,7 @@ describe("TableInsertUI", () => {
             const form = getForm(balloon);
             expect(getInput(form, "rows").value).toBe(String(DEFAULT_TABLE_SIZE));
             expect(getInput(form, "columns").value).toBe(String(DEFAULT_TABLE_SIZE));
-            expect(document.activeElement).toBe(getInput(form, "rows"));
+            expect(document.activeElement).toBe(getInput(form, "columns"));
 
             // The balloon points at the caret, after "foo".
             const caret = getCaretRect(editor);
@@ -206,14 +226,14 @@ describe("TableInsertUI", () => {
             expect(balloon.visibleView).toBe(form);
             expect(form.rowsField.errorText).not.toBeNull();
             expect(form.columnsField.errorText).not.toBeNull();
-            expect(document.activeElement).toBe(getInput(form, "rows"));
-
-            await userEvent.fill(getInput(form, "rows"), "3");
-            await userEvent.keyboard("{Enter}");
-            expect(getTableSize(editor)).toBeNull();
             expect(document.activeElement).toBe(getInput(form, "columns"));
 
             await userEvent.fill(getInput(form, "columns"), "4");
+            await userEvent.keyboard("{Enter}");
+            expect(getTableSize(editor)).toBeNull();
+            expect(document.activeElement).toBe(getInput(form, "rows"));
+
+            await userEvent.fill(getInput(form, "rows"), "3");
             await userEvent.keyboard("{Enter}");
             expect(getTableSize(editor)).toEqual({ rows: 3, columns: 4 });
         });
@@ -232,7 +252,7 @@ describe("TableInsertUI", () => {
             expect(message?.textContent)
                 .toBe(`The table is too large (max ${MAX_TABLE_CELLS} cells).`);
             expect(message?.checkVisibility()).toBe(true);
-            expect(document.activeElement).toBe(getInput(form, "rows"));
+            expect(document.activeElement).toBe(getInput(form, "columns"));
 
             await userEvent.fill(getInput(form, "rows"), "100");
             expect(message?.checkVisibility()).toBe(false);
@@ -333,7 +353,7 @@ describe("TableInsertUI", () => {
             const form = getForm(translated.plugins.get(ContextualBalloon));
             const labels = Array.from(getElement(form).querySelectorAll("label"))
                 .map((label) => label.textContent);
-            expect(labels).toEqual(["Rânduri", "Coloane"]);
+            expect(labels).toEqual(["Coloane", "Rânduri"]);
 
             getInput(form, "rows").value = "0";
             form.validate();
@@ -359,7 +379,7 @@ describe("TableInsertUI", () => {
 
             expect(blockToolbar.panelView.isVisible).toBe(false);
             const form = getForm(blockEditor.plugins.get(ContextualBalloon));
-            expect(document.activeElement).toBe(getInput(form, "rows"));
+            expect(document.activeElement).toBe(getInput(form, "columns"));
         });
     });
 });

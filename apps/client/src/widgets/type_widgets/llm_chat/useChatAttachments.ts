@@ -121,7 +121,7 @@ async function uploadFileAsAttachment(noteId: string, file: File, kind: UploadKi
 
 export interface UseChatAttachmentsReturn {
     /** Ref to plug into the hidden `<input type="file">`. */
-    fileInputRef: RefObject<HTMLInputElement>;
+    fileInputRef: RefObject<HTMLInputElement | null>;
     /** Value for the `accept` attribute of the hidden file input. */
     acceptAttr: string;
     /**

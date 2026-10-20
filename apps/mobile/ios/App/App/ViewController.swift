@@ -29,6 +29,19 @@ class ViewController: CAPBridgeViewController {
         keyboardFrameTracker?.invalidate()
     }
 
+    // Routes local API requests on capacitor:// to TriliumRequestBridge. Capacitor registers its
+    // WebViewAssetHandler before this hook runs, and WebKit raises NSInvalidArgumentException on
+    // a second handler for the same scheme, so the registered instance is re-typed to the
+    // TriliumAssetHandler subclass instead (the same technique as hideKeyboardInputAccessoryView).
+    override func webView(with frame: CGRect, configuration: WKWebViewConfiguration) -> WKWebView {
+        if let assetHandler = configuration.urlSchemeHandler(forURLScheme: "capacitor") as? WebViewAssetHandler {
+            object_setClass(assetHandler, TriliumAssetHandler.self)
+        }
+        configuration.userContentController.add(TriliumRequestBridge.shared,
+                                                name: TriliumRequestBridge.messageHandlerName)
+        return super.webView(with: frame, configuration: configuration)
+    }
+
     // When a page element receives focus and the keyboard animates in,
     // WKWebView reflexively scrolls its outer UIScrollView upward to keep
     // the focused element visible. Our layout is `body { position: fixed;

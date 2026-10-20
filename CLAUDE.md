@@ -22,7 +22,7 @@ pnpm dev:format-check | dev:format-fix   # stylistic formatting
 
 - **Never run ESLint** (`dev:linter-check`, `dev:linter-fix`, `npx eslint`) — it dies with an out-of-memory error, so a run tells you nothing. CI does not lint either — there is no `eslint`/`linter-check` step anywhere in `.github/workflows/`, so lint findings never block a merge; the gates are `pnpm typecheck` and the per-package `test --coverage` runs. (`packages/*` is ignored by the ESLint config anyway.)
 - **Never run `pnpm test:all`, `test:parallel`, `test:sequential`, or a whole-package `coverage`** during development — CI runs them on every push. Run the **narrowest** suite that covers what you touched: `pnpm --filter <pkg> test <pattern>` (Vitest treats the trailing argument as a substring filter over spec paths). Core specs need **two** runs, server and standalone (see Testing). Only reach for a full suite if the user asks or wants a final check.
-- **Typecheck with `pnpm typecheck`, not a raw `tsc`** — it resolves the project references a hand-written `tsc -p …` gets wrong, and is far cheaper than a test suite. Still, run it **once, after a piece of work is finished** — not after every edit: it builds the project references, and repeating it is a common way to lose minutes across a session.
+- **Typecheck with `pnpm typecheck`, not a raw `tsc`** — it resolves the project references a hand-written `tsc -p …` gets wrong, and is far cheaper than a test suite. Still, run it **once, after a piece of work is finished** — not after every edit: it builds the project references, and repeating it is a common way to lose minutes across a session. Two ways its output misleads: the incremental build does not recheck the files that use an ambient `.d.ts` (`types-lib.d.ts`) after it changes — delete `apps/client/dist/*.tsbuildinfo` (gitignored) before trusting the result; and a dependent project (`tsconfig.spec.json`, `apps/build-docs`) is checked only once the app project compiles, so its errors appear only after the app's are fixed, and some vanish with them.
 - **Two TypeScript versions, on purpose**: root `package.json` has `typescript` 6.x (the JS compiler API that TypeDoc, typescript-eslint and the browser-bundled language service in `packages/codemirror` load) and `@typescript/native` (7, drives `pnpm typecheck` and owns the `tsc` bin). Do **not** bump `typescript` to 7, dedupe them, or switch to the `@typescript/typescript6` shim (no `lib.*.d.ts` → client build breaks). Reasoning: `docs/Developer Guide/Developer Guide/Environment Setup.md`, "TypeScript".
 
 ## Git Workflow
@@ -110,6 +110,8 @@ Frontend widgets in `apps/client/src/widgets/`:
 
 **Widget lifecycle**: `doRenderBody()` for initial render, `refreshWithNote()` for note changes, `entitiesReloadedEvent({loadResults})` for entity updates. Fluent builder pattern: `.child()`, `.class()`, `.css()` chaining with position-based ordering. These legacy widgets are jQuery; new UI is Preact under `widgets/react/` — don't mix the two inside one component.
 
+The client runs **Preact 11**: components, `createPortal` and types come from `preact`, hooks from `preact/hooks`, and `preact/compat` only for `memo`, `lazy`, `Suspense`, `flushSync` and `useSyncExternalStore`. Compat is nonetheless always loaded, so `onChange` on a text input fires on `input` and `onFocus`/`onBlur` bubble. A removed component's `useEffect` cleanup runs after paint, so one that must happen during the unmount is a `useLayoutEffect` cleanup. Ref typing, per-element ARIA types and the rest: the **`building-client-ui` skill**, "Preact 11 conventions"; for specs (unmount inside `act()`, which events to dispatch): **`writing-unit-tests`**.
+
 #### Reusable Preact Components
 Shared components live in `apps/client/src/widgets/react/` — **always** reuse them (`FormTextBox`, `FormSelect`, `Button`, `Badge`, `NoItems`, `Dropdown`, `Table`, `Calendar`, …) instead of writing raw HTML elements or a custom implementation, and never put Bootstrap utility classes (`form-control-sm`, `input-group`, …) on them. Any control floating **over** a note's content (map, mind map, image, diagram) goes on `OverlayControlGroup` / `OverlayToolbar` — never a hand-rolled `<button>`. The full catalogue, when to use a `Dropdown` menu and when a `DropdownPanel` and the overlay-control contract are in the **`building-client-ui` skill** — load it before building client UI.
 
@@ -146,7 +148,10 @@ Shared components live in `apps/client/src/widgets/react/` — **always** reuse 
 `apps/standalone` runs the client on the page and `@triliumnext/core` — plain JS — in a dedicated Web Worker over `@sqlite.org/sqlite-wasm` persisted in OPFS; a Web Lock elects the one tab that owns the database, which answers its own API calls straight from the worker (`standaloneApi.localFetch`); the service worker forwards other tabs' calls to it and covers what the page still requests. Every core provider has a browser twin in `apps/standalone/src/lightweight/` — **a new provider or Node import in core breaks this build first.** Load the **`developing-standalone` skill** before touching `sw.ts`, `main.ts`, `local-server-worker.ts`, `lightweight/*` or `vite.config.mts`.
 
 ### Mobile (Capacitor) app
-`apps/mobile` wraps the standalone WASM build in a Capacitor WebView — no network backend. Its one tab always owns the worker, so the client answers most API calls in-page; what still leaves it (images, fonts, uploads) goes through the service worker on Android, at `https://localhost`, and through `apps/standalone/src/ios-interceptors.ts` on iOS, at `capacitor://localhost`, where no service worker can register. **`iosScheme: "https"` is a no-op and must not be re-added, and the iOS interceptor path is not dead code.** Load the **`developing-capacitor-mobile` skill** before touching `apps/mobile`, `ios-interceptors.ts`, `capacitor_http_handler.ts` or the `capacitor:` branches of `sw.ts`/`main.ts`.
+`apps/mobile` wraps the standalone WASM build in a Capacitor WebView — no network backend. Its one tab always owns the worker, so the client answers most API calls in-page; what still leaves it (images, fonts, media, iframes) goes to a native request bridge instead of a service worker: `TriliumRequestBridge.java` from `shouldInterceptRequest` on Android, at `https://localhost`, and `TriliumRequestBridge.swift` from Capacitor's `capacitor://` scheme handler (re-typed with `object_setClass`) on iOS, where no service worker can register. Both forward to `apps/standalone/src/native-request-bridge.ts` and answer GET/HEAD only. **`iosScheme: "https"` is a no-op and must not be re-added.** Load the **`developing-capacitor-mobile` skill** before touching `apps/mobile`, `native-request-bridge.ts`, `capacitor_http_handler.ts` or the `capacitor:` branches of `sw.ts`/`main.ts`.
+
+### PDF viewer
+PDF notes render in Mozilla's PDF.js viewer plus Trilium's code from `packages/pdfjs-viewer`, which every app serves from the built `dist` — **rebuild it (`pnpm --filter @triliumnext/pdfjs-viewer build`) after every viewer change**, since no `*:start` script does; load the **`developing-pdf-viewer` skill** before touching the viewer, `Pdf.tsx` or the PDF sidebar panels.
 
 ### Database
 
@@ -201,7 +206,7 @@ Use `note.getOwnedAttribute()` for direct, `note.getAttribute()` for inherited.
   - **This rule overrides the file you are editing.** Most comments in the repository predate it and use a literary register — personified subjects, em-dash asides, inverted clauses. Do not match them; they are history, not house style. Code has no voice: a card does not *state*, a row does not *say*, a request does not *stand*, a tool does not *hand over*.
   - Name the identifier instead of alluding to it. Write ``// Erasing changes the note and attachment counts, so `DatabaseInfo` reads them again.`` — not `// Erasing frees pages inside the file rather than shrinking it, so what the card above has to re-read is what the database holds.`
   - **Never comment an absence.** A removal — a prop, a flag, a CSS rule, a branch, a whole widget — is explained by the commit that makes it, not by a note left where the code was: at the call site it defends something the reader cannot see. The same goes for a removal's mirror image: don't annotate a default that was left alone, or an option deliberately not passed. If an absence needs defending in the source, name the code better instead.
-- **CSS comments** never narrate a change (`/* was 8px */`, `/* moved from the toolbar */`) — that is the commit message. Comment only what is non-obvious in place: a browser workaround, a value that must match one elsewhere, a `z-index` in a stacking contract.
+- **Avoid CSS comments.** A rule is read through its selector and properties; a comment explaining why a margin is negative or a selector excludes a class belongs in the commit message. Comment only what no reader can recover from the stylesheet: a browser workaround, a value that must match one in another file, a `z-index` in a stacking contract. Never narrate a change (`/* was 8px */`, `/* moved from the toolbar */`).
 
 ## Testing
 
@@ -220,8 +225,12 @@ Use `note.getOwnedAttribute()` for direct, `note.getAttribute()` for inherited.
 ## Documentation
 
 - Script API reference — Generated by `apps/build-docs` (TypeDoc) into the gitignored `site/script-api/{backend,frontend,electron}` and published to [docs.triliumnotes.org](https://docs.triliumnotes.org/). Not committed; never hand-edit — it's regenerated from the script API type definitions
-- `docs/User Guide/` — Markdown pages plus `!!!meta.json`; the in-app help under `apps/server/src/assets/doc_notes/` and `apps/standalone/src/assets/help_meta.json` are **generated from it and never hand-edited**. Edit the Markdown by hand or in the editor (`pnpm edit-docs:edit-docs`), then run `pnpm edit-docs:sync-docs` so the HTML and both help metas follow. A page's shape (a new page, an image, a rename, a move) is meta work — the **`writing-documentation` skill**'s `docs.mjs` does it (`new`, `image`, `rename`, `move`, `delete`) and audits the trees (`check`); load the skill before touching `docs/`
+- `docs/User Guide/` — Markdown pages plus `!!!meta.json`; the in-app help artifacts `apps/server/src/assets/help/help_meta.json` and `help_content.json` are **generated from it and never hand-edited**. Edit the Markdown by hand or in the editor (`pnpm edit-docs:edit-docs`), then run `pnpm edit-docs:sync-docs` so both artifacts follow. A page's shape (a new page, an image, a rename, a move) is meta work — the **`writing-documentation` skill**'s `docs.mjs` does it (`new`, `image`, `rename`, `move`, `delete`) and audits the trees (`check`); load the skill before touching `docs/`
 - `docs/Developer Guide/` and `docs/Release Notes/` — Safe for direct Markdown editing (also normalized by `sync-docs`)
+
+### In-app help (the `_help` subtree)
+
+Help pages are **virtual notes** (`packages/trilium-core/src/services/virtual_notes.ts`): they exist only in becca, are never persisted or synced, and are read-only through an inheritable `readOnly` label on `_help`. `edit-docs` renders them from the Markdown into the two artifacts above; their images stay in `docs/User Guide/` and every packaging path (server, desktop, standalone) copies them itself. Load the **`in-app-help` skill** before touching the pipeline or its providers.
 
 ### A user-facing change is documented in the same change
 
@@ -260,6 +269,15 @@ Tools are `defineTools({...})` registries in `packages/trilium-core/src/services
 
 ### Server-Side Static Assets
 Node-side assets (templates, translations, prompts) live in `apps/server/src/assets/` and are read via `RESOURCE_DIR` from `apps/server/src/services/resource_dir.ts` (`path.join(RESOURCE_DIR, "llm", "prompts", …)`); assets core itself reads (`schema.sql`, LLM skills) live in `packages/trilium-core/src/assets/`. **Never resolve paths with `import.meta.url`/`fileURLToPath` or `__dirname` + relative path** — the server bundles to `dist/main.mjs` plus lazy `chunks/`, so both point at the bundle (or at whichever chunk the module landed in), not the source tree.
+
+#### A new static route needs a dev path too, and a 200 does not mean it works
+
+In dev, Vite's middleware owns whole URL prefixes and answers anything it does not recognise with `index.html`. A missing static route therefore returns **200 with `text/html`**, not a 404 — so `curl -o /dev/null -w "%{http_code}"`, and any test that only checks the status, passes while every asset is broken. **Check `Content-Type` (or the body), never the status alone.**
+
+Two places apply the fallback, and both need the route added explicitly:
+
+- **server** — `apps/server/src/routes/assets.ts` mounts Vite on `/${assetUrlFragment}/` with an allowlist (`/images/`, `/doc_notes/`, `/help/`) of prefixes that fall through to the static mounts. A path not on that list is swallowed
+- **standalone** — `apps/standalone/vite.config.mts`; `viteStaticCopy` targets are served in dev, but anything copied by a custom plugin needs its own `configureServer` middleware (see `copyHelpAssetsPlugin` and `pdfjsServePlugin`). A plugin marked `apply: "build"` does nothing under `standalone:start`
 
 ## MCP Server
 
