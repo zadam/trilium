@@ -577,6 +577,11 @@ div.bookmark-folder-widget .note-link .tn-icon {
     animation: fade-in 200ms ease-in;
 }
 
+#left-pane .tree.scroll-edge-fade {
+    --scroll-fade-top: 18px;
+    padding-top: 10px;
+}
+
 :is(#left-pane, .tree-popup-sidebar) span.fancytree-node {
     border: unset;
     border-radius: 6px;
