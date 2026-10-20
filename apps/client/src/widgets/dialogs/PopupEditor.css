@@ -138,6 +138,12 @@ body.mobile .modal.popup-editor-dialog .modal-dialog {
     margin-block: 0;
 }
 
+/* The body is a fixed-height column, and the mobile rule that lets the fields shrink (to give the
+   editor room under the keyboard) collapses them to nothing on a note taller than the dialog. */
+body.mobile #root-widget:not(.virtual-keyboard-opened) .modal.popup-editor-dialog .promoted-attributes-widget {
+    flex-shrink: 0;
+}
+
 .modal.popup-editor-dialog .classic-toolbar-widget {
     position: sticky;
     margin-inline: 8px;
