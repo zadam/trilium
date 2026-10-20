@@ -9,9 +9,21 @@ body.mobile :is(.hide-keyboard-button, .hide-keyboard-action) {
         --icon-button-size: var(--hide-keyboard-button-size);
         width: var(--hide-keyboard-button-size);
         height: var(--hide-keyboard-button-size);
+        --icon-button-icon-ratio: 0.6;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+
+        &::after {
+            content: "\ea4a"; /* bx-chevron-down, from boxicons.css */
+            margin-top: -0.65em;
+            margin-bottom: -0.3em;
+            font-family: boxicons;
+            font-size: calc(var(--icon-button-size) * 0.4);
+            font-weight: normal;
+            line-height: 1;
+        }
     }
 }
 

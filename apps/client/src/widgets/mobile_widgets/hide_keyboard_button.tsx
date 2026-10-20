@@ -32,7 +32,7 @@ export function HideKeyboardAction({ className, containerRef }: {
         // send it back into the dialog and bring the keyboard up again.
         <div ref={containerRef} className={className} onMouseDown={(e) => e.preventDefault()}>
             <ActionButton
-                icon="bx bx-chevron-down"
+                icon="bx bxs-keyboard"
                 text={t("hide_keyboard_button.title")}
                 noTooltipOnTouch
                 onClick={() => {
