@@ -3,6 +3,7 @@ import "./toolbar_group_menu.css";
 import type {
     ToolbarGroupMenuEntry, ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest
 } from "@triliumnext/ckeditor5";
+import clsx from "clsx";
 import { render } from "preact";
 
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
@@ -53,14 +54,16 @@ function ToolbarGroupMenu({ request, onClose }: {
     onClose(returnFocus: boolean): void;
 }) {
     const bottomSheet = isMobile() && isNarrowLayout();
-    const keyboardPanel = useKeyboardPanel(bottomSheet);
+    const { isPanel, replacesPanel } = useKeyboardPanel(bottomSheet);
 
     return (
         <Menu
             anchor={request.anchor}
             offset={ANCHOR_GAP}
             portalClassName="tn-dropdown-portal"
-            className={keyboardPanel ? "tn-dropdown-menu keyboard-panel" : "tn-dropdown-menu"}
+            className={clsx(
+                "tn-dropdown-menu", isPanel && "keyboard-panel", replacesPanel && "replaces-panel"
+            )}
             bottomSheet={bottomSheet}
             aria-labelledby={request.anchor.getAttribute("aria-labelledby") ?? undefined}
             elementRef={request.setElement}

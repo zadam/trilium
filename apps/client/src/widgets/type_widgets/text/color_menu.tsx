@@ -1,4 +1,5 @@
 import type { ColorMenuHost, ColorMenuRequest, ColorMenuTarget } from "@triliumnext/ckeditor5";
+import clsx from "clsx";
 import { render } from "preact";
 
 import { t } from "../../../services/i18n";
@@ -46,14 +47,16 @@ function ColorMenu({ request, onClose }: {
     onClose(returnFocus: boolean): void;
 }) {
     const bottomSheet = isMobile() && isNarrowLayout();
-    const keyboardPanel = useKeyboardPanel(bottomSheet);
+    const { isPanel, replacesPanel } = useKeyboardPanel(bottomSheet);
 
     return (
         <Menu
             anchor={request.anchor}
             offset={ANCHOR_GAP}
             portalClassName="tn-dropdown-portal"
-            className={keyboardPanel ? "tn-dropdown-menu keyboard-panel" : "tn-dropdown-menu"}
+            className={clsx(
+                "tn-dropdown-menu", isPanel && "keyboard-panel", replacesPanel && "replaces-panel"
+            )}
             bottomSheet={bottomSheet}
             elementRef={request.setElement}
             onDismiss={() => onClose(false)}

@@ -149,13 +149,15 @@ export function useShownToolbarElement(editor: CKTextEditor | undefined) {
  * Whether a menu of the formatting toolbar opens in the place of the keyboard, as it does when the
  * keyboard is up as it opens: the keyboard closes as the menu takes focus, and the menu fills its
  * `--tn-keyboard-height`. While such a menu is mounted, `keyboard-panel-open` on the body keeps
- * the layout of an open keyboard.
+ * the layout of an open keyboard. `replacesPanel` is set for a menu that opens as another one
+ * leaves the place, which it takes over without a reveal.
  */
 export function useKeyboardPanel(enabled: boolean) {
-    const [ isPanel ] = useState(() => {
+    const [ { isPanel, replacesPanel } ] = useState(() => {
         const root = document.getElementById("root-widget");
         const isKeyboardUp = !!root?.classList.contains("virtual-keyboard-opened");
-        return enabled && (isKeyboardUp || isKeyboardPanelOpen());
+        const isPanel = enabled && (isKeyboardUp || isKeyboardPanelOpen());
+        return { isPanel, replacesPanel: isPanel && !!pendingHandBack };
     });
 
     useLayoutEffect(() => {
@@ -164,7 +166,7 @@ export function useKeyboardPanel(enabled: boolean) {
         return handBackKeyboardPlace;
     }, [ isPanel ]);
 
-    return isPanel;
+    return { isPanel, replacesPanel };
 }
 
 /** Whether a menu of the toolbar is in the keyboard's place, for its host to tell the editor. */

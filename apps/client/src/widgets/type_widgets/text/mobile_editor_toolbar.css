@@ -102,6 +102,10 @@ body.mobile {
         max-height: var(--tn-keyboard-height);
     }
 
+    .dropdown-menu.mobile-bottom-menu.keyboard-panel.replaces-panel[data-reveal]:not([data-closing]) {
+        animation: none;
+    }
+
     &.keyboard-panel-open .classic-toolbar-island,
     .virtual-keyboard-opened .classic-toolbar-island {
         --mobile-toolbar-fade: 24px;

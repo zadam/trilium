@@ -54,7 +54,7 @@ describe("useKeyboardPanel", () => {
         root.id = "root-widget";
         document.body.append(root);
         const isMarked = isKeyboardPanelOpen;
-        const seen: boolean[] = [];
+        const seen: ReturnType<typeof useKeyboardPanel>[] = [];
         const host = document.createElement("div");
         function Harness({ enabled }: { enabled: boolean }) {
             seen.push(useKeyboardPanel(enabled));
@@ -62,24 +62,24 @@ describe("useKeyboardPanel", () => {
         }
 
         act(() => render(<Harness enabled />, host));
-        expect(seen.at(-1)).toBe(false);
+        expect(seen.at(-1)?.isPanel).toBe(false);
         expect(isMarked()).toBe(false);
         act(() => render(null, host));
 
         root.classList.add("virtual-keyboard-opened");
         act(() => render(<Harness enabled={false} />, host));
-        expect(seen.at(-1)).toBe(false);
+        expect(seen.at(-1)?.isPanel).toBe(false);
         expect(isMarked()).toBe(false);
         act(() => render(null, host));
 
         act(() => render(<Harness enabled />, host));
-        expect(seen.at(-1)).toBe(true);
+        expect(seen.at(-1)?.isPanel).toBe(true);
         expect(isMarked()).toBe(true);
 
         // The keyboard closes as the menu takes focus, and the menu keeps its place.
         root.classList.remove("virtual-keyboard-opened");
         act(() => render(<Harness enabled />, host));
-        expect(seen.at(-1)).toBe(true);
+        expect(seen.at(-1)?.isPanel).toBe(true);
         expect(isMarked()).toBe(true);
 
         await act(async () => render(null, host));
@@ -103,7 +103,7 @@ describe("useKeyboardPanel", () => {
 
         // A menu opened while the keyboard is on its way takes the place over.
         act(() => render(<Harness />, host));
-        expect(seen.at(-1)).toBe(true);
+        expect(seen.at(-1)?.isPanel).toBe(true);
         await act(async () => render(null, host));
         expect(isKeyboardPanelOpen()).toBe(true);
 
@@ -119,6 +119,7 @@ describe("useKeyboardPanel", () => {
 
         root.classList.add("virtual-keyboard-opened");
         act(() => render(<Harness />, host));
+        expect(seen.at(-1)?.replacesPanel).toBe(false);
         root.classList.remove("virtual-keyboard-opened");
 
         // A press on another button of the toolbar closes the menu as it starts, and its click
@@ -130,7 +131,9 @@ describe("useKeyboardPanel", () => {
             render(<Harness />, host);
             await new Promise((resolve) => setTimeout(resolve));
         });
-        expect(seen.at(-1)).toBe(true);
+        expect(seen.at(-1)?.isPanel).toBe(true);
+        // It shows at once, in the place the closed one leaves.
+        expect(seen.at(-1)?.replacesPanel).toBe(true);
         expect(isKeyboardPanelOpen()).toBe(true);
 
         await act(async () => render(null, host));
@@ -193,7 +196,7 @@ function buildPanelFixture() {
     editable.className = "ck-editor__editable";
     editable.tabIndex = 0;
     document.body.append(root, editable);
-    const seen: boolean[] = [];
+    const seen: ReturnType<typeof useKeyboardPanel>[] = [];
     const host = document.createElement("div");
     function Harness() {
         seen.push(useKeyboardPanel(true));
