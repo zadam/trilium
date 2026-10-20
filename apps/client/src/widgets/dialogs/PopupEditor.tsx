@@ -198,15 +198,16 @@ export default function PopupEditor({ ntxId = POPUP_EDITOR_NTX_ID, openCommand =
                     noFocus // automatic focus breaks block popup
                     stackable
                 >
-                    <PromotedAttributes />
+                    <div className={`popup-editor-scroll${isMobile ? " scroll-edge-fade" : ""}`}>
+                        <PromotedAttributes />
 
-                    {isMobile
-                        ? <MobileEditorToolbar inPopupEditor />
-                        : <FormattingToolbar />}
+                        {!isMobile && <FormattingToolbar />}
 
-                    <NoteDetail />
-                    <NoteList media="screen" displayOnlyCollections />
+                        <NoteDetail />
+                        <NoteList media="screen" displayOnlyCollections />
+                    </div>
                     {switchable && <NoteTypeSwitcher note={noteContext.note} />}
+                    {isMobile && <MobileEditorToolbar />}
                 </Modal>
             </DialogWrapper>
         </NoteContextContext.Provider>
