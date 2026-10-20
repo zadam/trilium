@@ -1,10 +1,10 @@
 import "./mobile_editor_toolbar.css";
 
 import type { CKTextEditor, ClassicEditor } from "@triliumnext/ckeditor5";
-import { RefObject } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 
 import { isIOS } from "../../../services/utils";
+import { HideKeyboardAction, usePositioningOniOS } from "../../mobile_widgets/hide_keyboard_button";
 import { useIsNoteReadOnly, useNoteContext, useNoteProperty, useTriliumEvent } from "../../react/hooks";
 import { useNestedEditor } from "./editable_embed";
 
@@ -71,43 +71,10 @@ export default function MobileEditorToolbar() {
         <div className={`classic-toolbar-outer-container ${!shouldDisplay ? "hidden-ext" : "visible"} ${isIOS() ? "ios" : ""}`}>
             <div ref={islandRef} className="classic-toolbar-island">
                 <div ref={containerRef} className={`classic-toolbar-widget ${dropdownActive ? "dropdown-active" : ""}`} />
+                <HideKeyboardAction className="hide-keyboard-action" />
             </div>
         </div>
     );
-}
-
-function usePositioningOniOS(wrapperRef: RefObject<HTMLDivElement | null>) {
-    // Fallback path for plain mobile Safari (no Capacitor): the WKWebView
-    // isn't resized when the keyboard opens, so visualViewport.height
-    // shrinks while window.innerHeight stays the same. Push the toolbar
-    // up by the difference. Under Capacitor `resize: native` both values
-    // shrink together, so `obscured` is 0 and we leave CSS in charge.
-    const adjustPosition = useCallback(() => {
-        if (!wrapperRef.current) return;
-        const viewport = window.visualViewport;
-        if (!viewport) return;
-
-        const obscured = Math.max(0, Math.round(
-            window.innerHeight - viewport.height - viewport.offsetTop
-        ));
-
-        if (obscured <= 1) {
-            wrapperRef.current.style.removeProperty("bottom");
-        } else {
-            wrapperRef.current.style.bottom = `${obscured}px`;
-        }
-    }, [ wrapperRef ]);
-
-    useEffect(() => {
-        if (!isIOS()) return;
-        // Run once in case the keyboard is already up when mounting
-        // (e.g. returning from a dialog).
-        adjustPosition();
-        window.visualViewport?.addEventListener("resize", adjustPosition);
-        return () => {
-            window.visualViewport?.removeEventListener("resize", adjustPosition);
-        };
-    }, [ adjustPosition ]);
 }
 
 /** The editors whose toolbar dropdowns open upwards already. */

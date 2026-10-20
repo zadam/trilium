@@ -56,6 +56,24 @@ body.mobile {
         border-start-end-radius: 0;
     }
 
+    .virtual-keyboard-opened .classic-toolbar-island .classic-toolbar-widget {
+        inset-inline-end: var(--hide-keyboard-button-size);
+    }
+
+    .classic-toolbar-island .hide-keyboard-action {
+        position: absolute;
+        inset-block: 0;
+        inset-inline-end: 0;
+        align-items: center;
+
+        .icon-action {
+            border-inline-start: 1px solid var(--main-border-color);
+            border-radius: 0;
+            border-start-end-radius: 5px;
+            border-end-end-radius: 5px;
+        }
+    }
+
     .classic-toolbar-widget .ck.ck-toolbar {
         --ck-color-toolbar-background: transparent;
         --ck-color-button-default-background: transparent;
