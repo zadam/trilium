@@ -49,16 +49,9 @@
         margin: 0;
     }
 
-    .search-actions {
+    .search-definition-actions {
         display: flex;
-    }
-
-    .search-actions-container {
-        display: flex;
-        flex: 1 1 auto;
-        justify-content: space-evenly;
-        gap: 8px;
-        min-width: 0;
+        justify-content: flex-end;
     }
 }
 
@@ -80,11 +73,6 @@ body.mobile .search-definition-widget {
 }
 
 @media (max-width: 720px) {
-
-    .search-actions-container {
-        align-items: center;
-        justify-content: center !important;
-    }
 
     .search-result-widget,
     .note-list.list-view,

@@ -79,7 +79,7 @@ describe("the search definition", () => {
         const container = renderDefinition();
 
         act(() => editorProps?.onChange("#book #year"));
-        const button = [ ...container.querySelectorAll("button") ].find((b) => b.textContent?.includes(label));
+        const button = await findAction(container, label);
         expect(button).toBeDefined();
         act(() => button?.click());
         await settle();
@@ -136,4 +136,17 @@ async function settle() {
     await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
     });
+}
+
+/** The button named `label`, opening the split button's menu when it is one of the actions there. */
+async function findAction(container: HTMLElement, label: string) {
+    const button = [ ...container.querySelectorAll("button") ].find((b) => b.textContent?.includes(label));
+    if (button) {
+        return button;
+    }
+
+    const toggle = container.querySelector<HTMLButtonElement>(".dropdown-toggle-split");
+    await act(async () => toggle?.click());
+    return [ ...document.querySelectorAll<HTMLElement>(".dropdown-item") ]
+        .find((item) => item.textContent?.includes(label));
 }

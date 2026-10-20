@@ -38,8 +38,8 @@ To search for notes, click on the <span class="tn-icon bx bx-search"></span> ico
 3.  To limit the search to only a few levels of hierarchy (e.g. look in sub-children but not in sub-sub-children of a note), set the _depth_ field to one of the provided values.
 4.  In addition to that, the search can be configured via the _Add search option_ menu, as described in the follow-up section.
 5.  Press _Search_ (<span class="tn-icon bx bx-search"></span>) to trigger the search. The results are displayed below the search configuration pane.
-6.  The _Search & Execute actions_ (<span class="tn-icon bx bxs-zap"></span>) button is only relevant if at least one action has been added (as described in the section below).
-7.  The _Save to note_ (<span class="tn-icon bx bx-save"></span>) button will create a new note with the search configuration. For more information, see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>.
+6.  The _Search & Execute actions_ (<span class="tn-icon bx bxs-zap"></span>) entry in the menu beside _Search_ is only relevant if at least one action has been added (as described in the section below).
+7.  The _Save to note_ (<span class="tn-icon bx bx-save"></span>) entry in the same menu will create a new note with the search configuration. For more information, see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>.
 
 ## Features
 
@@ -112,7 +112,7 @@ The options available are:
     1.  This will print additional information in the server log (see <a class="reference-link" href="../../Troubleshooting/Error%20logs.md">Error logs</a>), regarding how the search expression was parsed.
     2.  This function is especially useful after understanding the search functionality in detail, in order to determine why a complex search query is not working as expected.
 
-The same menu ends with a _Bulk actions_ section for applying changes such as adding a label or a relation to the matched notes. Its groups—_Labels_, _Relations_, _Notes_ and _Other_—each open a list of the actions in the corresponding group of the <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a> dialog, which is an alternative for operating directly with notes within the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>. Choosing one adds it to the search; unlike the other options, the same action can be added more than once (e.g. to apply multiple labels). After defining the actions, first press _Search_ to check the matched notes and then press _Search & Execute actions_ to trigger the actions.
+The same menu ends with a _Bulk actions_ section for applying changes such as adding a label or a relation to the matched notes. Its groups—_Labels_, _Relations_, _Notes_ and _Other_—each open a list of the actions in the corresponding group of the <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a> dialog, which is an alternative for operating directly with notes within the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>. Choosing one adds it to the search; unlike the other options, the same action can be added more than once (e.g. to apply multiple labels). After defining the actions, first press _Search_ to check the matched notes and then choose _Search & Execute actions_ from the menu beside it to trigger the actions.
 
 ## Viewing search results
 

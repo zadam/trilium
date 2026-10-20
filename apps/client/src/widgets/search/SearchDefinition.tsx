@@ -17,14 +17,13 @@ import tree from "../../services/tree";
 import { escapeHtml } from "../../services/utils";
 import ws from "../../services/ws";
 import RenameNoteBulkAction from "../bulk_actions/note/rename_note";
-import Button, { SplitButton } from "../react/Button";
+import { SplitButton } from "../react/Button";
 import { Card, CardSection } from "../react/Card";
 import Dropdown from "../react/Dropdown";
 import { FormListItem } from "../react/FormList";
 import { useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import { ParentComponent } from "../react/react_utils";
-import ResponsiveContainer from "../react/ResponsiveContainer";
 import { SEARCH_OPTIONS, SearchOption } from "./SearchDefinitionOptions";
 
 export default function SearchDefinition({ note, ntxId }: {
@@ -142,24 +141,13 @@ function SearchButtonBar({ note, refreshResults, savePendingOptions }: {
 
     return (
         <CardSection className="search-definition-actions">
-            <ResponsiveContainer
-                desktop={
-                    <div className="search-actions-container">
-                        <Button icon="bx bx-search" text={t("search_definition.search_button")} keyboardShortcut="Enter" onClick={refreshResults} />
-                        <Button icon="bx bxs-zap" text={t("search_definition.search_execute")} onClick={searchAndExecuteActions} />
-                        {note.isHiddenCompletely() && <Button icon="bx bx-save" text={t("search_definition.save_to_note")} onClick={saveSearchNote} />}
-                    </div>
-                }
-                mobile={
-                    <SplitButton
-                        text={t("search_definition.search_button")} icon="bx bx-search"
-                        onClick={refreshResults}
-                    >
-                        <FormListItem icon="bx bxs-zap" onClick={searchAndExecuteActions}>{t("search_definition.search_execute")}</FormListItem>
-                        {note.isHiddenCompletely() && <FormListItem icon="bx bx-save" onClick={saveSearchNote}>{t("search_definition.save_to_note")}</FormListItem>}
-                    </SplitButton>
-                }
-            />
+            <SplitButton
+                text={t("search_definition.search_button")} icon="bx bx-search"
+                onClick={refreshResults}
+            >
+                <FormListItem icon="bx bxs-zap" onClick={searchAndExecuteActions}>{t("search_definition.search_execute")}</FormListItem>
+                {note.isHiddenCompletely() && <FormListItem icon="bx bx-save" onClick={saveSearchNote}>{t("search_definition.save_to_note")}</FormListItem>}
+            </SplitButton>
         </CardSection>
     );
 }
