@@ -43,9 +43,10 @@ export function buildToolbarConfig(isClassicToolbar: boolean, aiAssistant: boole
 }
 
 /**
- * The bar above the virtual keyboard: scrolling rows without nested groups. Undo and redo lead the
- * main row, since a virtual keyboard has no key for either. The `textFormatting` button swaps in a
- * second row of the formatting applied to text, which `TextFormattingToolbar` builds.
+ * The bar above the virtual keyboard: scrolling rows whose only nested group is the insert menu,
+ * which holds the least used insertions. Undo and redo lead the main row, since a virtual keyboard
+ * has no key for either. The `textFormatting` button swaps in a second row of the formatting
+ * applied to text, which `TextFormattingToolbar` builds.
  */
 export function buildMobileToolbar(aiAssistant: boolean) {
     return {
@@ -54,6 +55,22 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "undo",
                 "redo",
                 "|",
+                {
+                    ...buildInsertGroup(),
+                    items: [
+                        "collapsible", "tabs", "multicolumnLayout",
+                        "|",
+                        "horizontalLine", "pageBreak",
+                        "|",
+                        "math", "drawingCanvas", "mermaid",
+                        "|",
+                        "footnote", "bookmark", "linkEmbed", "contentEmbed",
+                        "|",
+                        "dateTime", "specialCharacters", "emoji", "insertIcon",
+                        "|",
+                        "insertTemplate", "markdownImport"
+                    ]
+                },
                 "blockType",
                 "textFormatting",
                 "|",
@@ -61,39 +78,18 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "indent",
                 "|",
                 "link",
+                "internallink",
                 ...(aiAssistant ? ["aiAssistant"] : []),
                 "imageUpload",
                 "fileUpload",
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.
                 "insertTableForm",
                 "|",
-                "footnote",
-                "linkEmbed",
-                "bookmark",
-                "internallink",
-                "contentEmbed",
-                "|",
-                "collapsible",
-                "tabs",
-                "multicolumnLayout",
-                "math",
-                "drawingCanvas",
-                "mermaid",
-                "horizontalLine",
-                "pageBreak",
-                "|",
-                "dateTime",
-                "specialCharacters",
-                "emoji",
-                "insertIcon",
-                "|",
                 "alignment:left",
                 "alignment:center",
                 "alignment:right",
                 "alignment:justify",
                 "|",
-                "insertTemplate",
-                "markdownImport",
                 "cuttonote"
             ]
         },

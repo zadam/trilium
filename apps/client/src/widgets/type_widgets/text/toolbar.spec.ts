@@ -124,17 +124,42 @@ describe("group labels", () => {
 });
 
 describe("buildMobileToolbar", () => {
-    it("holds no nested groups, on either row", () => {
+    it("nests only the insert menu, which holds the least used insertions", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
-        for (const items of [ toolbar.items, textFormattingToolbar ] as unknown[][]) {
-            expect(items.every((item) => typeof item === "string")).toBe(true);
-        }
+        const groups = (toolbar.items as unknown[]).filter((item) => typeof item !== "string");
+        expect(groups).toStrictEqual([ {
+            label: "text-editor.toolbar-groups.insert",
+            icon: "plus",
+            asMenu: true,
+            items: [
+                "collapsible", "tabs", "multicolumnLayout",
+                "|",
+                "horizontalLine", "pageBreak",
+                "|",
+                "math", "drawingCanvas", "mermaid",
+                "|",
+                "footnote", "bookmark", "linkEmbed", "contentEmbed",
+                "|",
+                "dateTime", "specialCharacters", "emoji", "insertIcon",
+                "|",
+                "insertTemplate", "markdownImport"
+            ]
+        } ]);
+        expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
+        expect(toolbar.items.slice(9)).toStrictEqual([
+            "|",
+            "link", "internallink", "aiAssistant", "imageUpload", "fileUpload", "insertTableForm",
+            "|",
+            "alignment:left", "alignment:center", "alignment:right", "alignment:justify",
+            "|",
+            "cuttonote"
+        ]);
     });
 
     it("keeps text formatting on a row of its own, opened from the main row", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
-        expect(toolbar.items.slice(0, 8)).toStrictEqual([
-            "undo", "redo", "|", "blockType", "textFormatting", "|", "outdent", "indent"
+        expect(toolbar.items.slice(0, 9).map(itemName)).toStrictEqual([
+            "undo", "redo", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting", "|", "outdent", "indent"
         ]);
         expect(textFormattingToolbar).toStrictEqual([
             "bold", "italic", "underline", "strikethrough", "code",
@@ -145,7 +170,7 @@ describe("buildMobileToolbar", () => {
             "|",
             "removeFormat", "formatPainter"
         ]);
-        expect(toolbar.items.filter((item) => item !== "|" && textFormattingToolbar.includes(item))).toStrictEqual([]);
+        expect(collectItems({ items: toolbar.items }).filter((item) => textFormattingToolbar.includes(item))).toStrictEqual([]);
         // Turned into from the block type menu instead.
         for (const item of [ "bulletedList", "numberedList", "todoList", "codeBlock", "blockQuote", "admonition" ]) {
             expect(toolbar.items).not.toContain(item);
@@ -213,10 +238,10 @@ describe("buildToolbarConfig dispatch", () => {
         vi.clearAllMocks();
     });
 
-    it("returns the flattened mobile toolbar on a mobile device", () => {
+    it("returns the mobile toolbar on a mobile device", () => {
         setDevice("mobile");
         const config = buildToolbarConfig(true, true);
-        expect(config.toolbar.items.every((item) => typeof item === "string")).toBe(true);
+        expect("textFormattingToolbar" in config).toBe(true);
     });
 
     it("returns the multiline classic toolbar when on desktop and the option is enabled", () => {
@@ -266,6 +291,11 @@ describe("usesClassicToolbar", () => {
         })).toBe(false);
     });
 });
+
+/** The name of a toolbar item, or the label of a group. */
+function itemName(item: unknown) {
+    return typeof item === "object" && item !== null && "label" in item ? item.label : item;
+}
 
 /** The item names of a toolbar configuration, its groups included, without separators. */
 function collectItems(config: ToolbarConfig): string[] {
