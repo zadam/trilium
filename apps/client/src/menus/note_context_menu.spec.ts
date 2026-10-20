@@ -79,7 +79,8 @@ function fakeEditor(domRoot: HTMLElement, selectedHtml: string, plainText = "", 
  * Points window.getSelection() at `anchorNode`, cloning `fallbackHtml` for the DOM-range path.
  * `text` is what the selection stringifies to — what the browser menu's gate reads. happy-dom lays
  * nothing out, so the highlighted box is stated here: it covers the origin every `rightClick`
- * lands on unless that test says otherwise.
+ * lands on unless that test says otherwise. The selection touches `anchorNode`, so it partly
+ * contains the ancestors of that node.
  */
 function setSelection(anchorNode: Node | null, fallbackHtml = "", text = "") {
     const fragment = document.createDocumentFragment();
@@ -95,6 +96,9 @@ function setSelection(anchorNode: Node | null, fallbackHtml = "", text = "") {
             cloneContents: () => fragment.cloneNode(true),
             getClientRects: () => [ { left: 0, top: 0, right: 200, bottom: 100 } ]
         }),
+        isCollapsed: !text,
+        containsNode: (node: Node, allowPartialContainment = false) => !!anchorNode
+            && (node === anchorNode || (allowPartialContainment && node.contains(anchorNode))),
         toString: () => text
     } as unknown as Selection);
 }
@@ -508,6 +512,14 @@ describe("setupContextMenu (browser)", () => {
         return content;
     }
 
+    /** A line of a code editor, as CodeMirror renders one inside its `.cm-content`. */
+    function codeLine(content: HTMLElement) {
+        const line = document.createElement("div");
+        line.className = "cm-line";
+        content.appendChild(line);
+        return line;
+    }
+
     /** Right-clicks `element` and returns the rows the menu went up with. */
     async function menuFor(element: Element) {
         rightClick(element);
@@ -796,6 +808,37 @@ describe("setupContextMenu (browser)", () => {
         } finally {
             delete (navigator as { clipboard?: unknown }).clipboard;
         }
+    });
+
+    it("claims a selection of blank lines or spaces on a line of a code note", async () => {
+        const line = codeLine(codeEditable());
+        setSelection(line, "", "\n  \n");
+
+        // Away from the highlighted box: any part of a line that the selection touches counts.
+        const event = rightClick(line, { clientX: 500, clientY: 500 });
+        await vi.waitFor(() => expect(contextMenu.show).toHaveBeenCalled());
+
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it("leaves a blank selection to the browser off its lines or when read-only", async () => {
+        const content = codeEditable();
+        const selectedLine = codeLine(content);
+        setSelection(selectedLine, "", "  ");
+        const otherLine = rightClick(codeLine(content));
+
+        const readOnlyLine = codeLine(codeEditable(true));
+        setSelection(readOnlyLine, "", "  ");
+        const readOnly = rightClick(readOnlyLine);
+
+        const caretLine = codeLine(codeEditable());
+        setSelection(caretLine, "", "");
+        const caret = rightClick(caretLine);
+        await settle();
+
+        expect([ otherLine, readOnly, caret ].map((event) => event.defaultPrevented))
+            .toEqual([ false, false, false ]);
+        expect(contextMenu.show).not.toHaveBeenCalled();
     });
 
     it("drops the cut row in a read-only code note", async () => {

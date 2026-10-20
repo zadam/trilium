@@ -84,8 +84,9 @@ export function setupContextMenu() {
         // earlier one standing.
         const selection = window.getSelection();
         const selectionText = selection?.toString() ?? "";
-        const isOnSelection = !!selection && !!selectionText.trim()
-            && isPointInSelection(selection, event.clientX, event.clientY);
+        const isOnSelection = !!selection && (isOnSelectedCodeLine(selection, element, isEditable)
+            || (!!selectionText.trim()
+                && isPointInSelection(selection, event.clientX, event.clientY)));
 
         // A table cell in the text editor is claimed even at a bare caret, for the table section.
         const isOnEditableTableCell = isEditable && !!element?.closest("td, th");
@@ -330,6 +331,19 @@ async function showBrowserContextMenu(x: number, y: number, target: ContextMenuT
     if (!items.length) return;
 
     contextMenu.show({ x, y, items, selectMenuItemHandler: () => {} });
+}
+
+/**
+ * Whether `element` is on a line of an editable code editor that `selection` touches. The whole
+ * line counts, so that the text tools are reachable for a selection of blank lines or spaces.
+ */
+function isOnSelectedCodeLine(
+    selection: Selection,
+    element: HTMLElement | null,
+    isEditable: boolean
+) {
+    const line = isEditable ? element?.closest(".cm-line") : null;
+    return !!line && !selection.isCollapsed && selection.containsNode(line, true);
 }
 
 /** Whether the point (`x`, `y`), in viewport coordinates, lands on what `selection` highlights. */
