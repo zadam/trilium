@@ -70,6 +70,30 @@ describe("createToolbarGroupMenuHost", () => {
         expect(rowTitled("Date/time").querySelector(".tn-svg-icon > svg")).not.toBeNull();
     });
 
+    it("draws a heading over the rows it opens, and an entry's icon-pack glyph", async () => {
+        const items: ToolbarGroupMenuItem[] = [
+            { kind: "entry", label: "Ask AI…", iconClass: "bx bx-message", isEnabled: true },
+            {
+                kind: "entry", label: "Model", iconClass: "bx bx-chip", isEnabled: true,
+                children: [ { kind: "heading", label: "OpenAI" }, { kind: "entry", label: "Fast", isEnabled: true } ]
+            }
+        ];
+        host.show({ anchor, items, setElement: vi.fn(), onClose: vi.fn() });
+
+        expect(rowTitled("Ask AI…").querySelector(".bx.bx-message")).not.toBeNull();
+        const model = [ ...document.querySelectorAll<HTMLElement>("li.dropdown-submenu") ]
+            .find((row) => row.textContent?.includes("Model"));
+        expect(model?.querySelector(".bx.bx-chip")).not.toBeNull();
+
+        model?.dispatchEvent(new PointerEvent("pointerenter"));
+        const submenu = () => document.querySelector(".tn-popup.tn-menu > .dropdown-submenu > .dropdown-menu");
+        await vi.waitFor(() => expect(submenu()).not.toBeNull());
+        const rows = [ ...submenu()?.querySelectorAll(".tn-menu-scroll > li") ?? [] ];
+        expect(rows.map((row) => row.textContent)).toEqual([ "OpenAI", "Fast" ]);
+        expect(rows[0]?.querySelector(".dropdown-header")).not.toBeNull();
+        expect(rows[1]?.classList).toContain("dropdown-item");
+    });
+
     it("checks the entry that is on, and marks only those that can be on as checkable", () => {
         const items: ToolbarGroupMenuItem[] = [
             { kind: "entry", label: "Paragraph", icon: ICON, isEnabled: true, isOn: false },

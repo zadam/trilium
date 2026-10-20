@@ -51,13 +51,15 @@ export interface ToolbarGroupMenuRequest {
     onClose(returnFocus: boolean): void;
 }
 
-export type ToolbarGroupMenuItem = { kind: "separator" } | ToolbarGroupMenuEntry;
+export type ToolbarGroupMenuItem = { kind: "separator" } | { kind: "heading"; label: string } | ToolbarGroupMenuEntry;
 
 export interface ToolbarGroupMenuEntry {
     kind: "entry";
     label: string;
     /** The SVG of the icon of the toolbar item. */
     icon?: string;
+    /** An icon-pack glyph as a class list, such as `bx bx-cog`, for an entry with no SVG. */
+    iconClass?: string;
     isEnabled: boolean;
     /**
      * Whether the item is on, for a button that is on or off, as `bold` is or a row of the
@@ -75,6 +77,11 @@ export interface ToolbarGroupMenuEntry {
 export interface ListMenuOptions {
     /** See {@link ToolbarGroupMenuRequest.layout}. */
     layout?: "tiles";
+    /**
+     * Describes the menu's entries on each open, for a dropdown whose content its views do not
+     * hold. `run` wraps an entry's action, so the menu hides before it runs.
+     */
+    describe?(run: (action: () => void) => () => void): ToolbarGroupMenuItem[];
 }
 
 /** The dropdowns handed to {@link openListAsMenu}, with their options. */
@@ -104,8 +111,6 @@ export function openListAsMenu(dropdown: DropdownView, options: ListMenuOptions 
  */
 export default class ToolbarGroupMenu extends Plugin {
 
-    /** The dropdowns of the groups marked `asMenu`, with the options of their menus. */
-    private groupMenuOptions = new WeakMap<DropdownView, ListMenuOptions>();
     private watchedDropdowns = new WeakSet<DropdownView>();
     private host: ToolbarGroupMenuHost | null = null;
     /** The menu the host shows, with the dropdown it stands for, or `null`. */
@@ -182,15 +187,12 @@ export default class ToolbarGroupMenu extends Plugin {
         }
 
         const label = item.buttonView.label;
-        const groupOptions = label ? groups.get(label) : undefined;
-        if (!listMenuDropdowns.has(item) && !groupOptions) {
+        const options = listMenuDropdowns.get(item) ?? (label ? groups.get(label) : undefined);
+        if (!options) {
             return;
         }
 
         this.watchedDropdowns.add(item);
-        if (groupOptions) {
-            this.groupMenuOptions.set(item, groupOptions);
-        }
 
         // Every way of opening the dropdown sets `isOpen`, its button and the ▼ key alike, so the
         // value is turned back here and the host's menu toggles instead.
@@ -207,13 +209,14 @@ export default class ToolbarGroupMenu extends Plugin {
                     this.editor.editing.view.focus();
                 }
             } else {
-                this.showMenu(toolbar, item, createHost);
+                this.showMenu(toolbar, item, options, createHost);
             }
         }, { priority: "high" });
     }
 
     private showMenu(
-        toolbar: ToolbarView, dropdown: DropdownView, createHost: () => ToolbarGroupMenuHost
+        toolbar: ToolbarView, dropdown: DropdownView, options: ListMenuOptions,
+        createHost: () => ToolbarGroupMenuHost
     ) {
         const editor = this.editor;
         const anchor = dropdown.buttonView.element;
@@ -232,23 +235,30 @@ export default class ToolbarGroupMenu extends Plugin {
             && !!child.element?.contains(anchor));
         const trackers = [editor.ui.focusTracker, ...enclosing.map((child) => child.focusTracker)];
 
-        const run = (view: View) => () => {
+        const runAction = (action: () => void) => () => {
             this.hideMenu();
             for (const child of enclosing) {
                 child.isOpen = false;
             }
             editor.editing.view.focus();
-            view.fire("execute");
+            action();
         };
+        const run = (view: View) => runAction(() => view.fire("execute"));
 
         let element: HTMLElement | null = null;
-        const listOptions = listMenuDropdowns.get(dropdown);
+        const { describe, ...menuOptions } = options;
+        let items: ToolbarGroupMenuItem[];
+        if (describe) {
+            items = describe(runAction);
+        } else if (listMenuDropdowns.has(dropdown)) {
+            items = this.describeList(dropdown, run);
+        } else {
+            items = describeItems(this.sourceItems(dropdown), run);
+        }
         const request: ToolbarGroupMenuRequest = {
             anchor,
-            items: listOptions
-                ? this.describeList(dropdown, run)
-                : describeItems(this.sourceItems(dropdown), run),
-            ...listOptions ?? this.groupMenuOptions.get(dropdown),
+            items,
+            ...menuOptions,
             setElement: (next) => {
                 if (element) {
                     untrackElement(element, trackers);

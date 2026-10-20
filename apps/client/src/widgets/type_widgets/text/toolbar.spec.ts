@@ -84,7 +84,7 @@ describe("buildClassicToolbar", () => {
 describe("the AI assistant's entries", () => {
     it("are dropped from every toolbar when the assistant is unavailable", () => {
         expect(buildClassicToolbar(false, false).toolbar.items).not.toContain("aiAssistant");
-        expect(buildMobileToolbar(false).toolbar.items).not.toContain("aiAssistant");
+        expect(buildMobileToolbar(false).toolbar.items).not.toContain("aiAssistantMenu");
 
         const floating = buildFloatingToolbar(false);
         expect(floating.toolbar.items).not.toContain("aiAssistant");
@@ -148,7 +148,7 @@ describe("buildMobileToolbar", () => {
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
         expect(toolbar.items.slice(9)).toStrictEqual([
             "|",
-            "link", "internallink", "aiAssistant", "imageUpload", "fileUpload", "insertTableForm",
+            "link", "internallink", "aiAssistantMenu", "imageUpload", "fileUpload", "insertTableForm",
             "|",
             "alignmentMenu"
         ]);
@@ -208,7 +208,8 @@ describe("buildMobileToolbar", () => {
             "alignment:left": "alignmentMenu",
             "alignment:center": "alignmentMenu",
             "alignment:right": "alignmentMenu",
-            "alignment:justify": "alignmentMenu"
+            "alignment:justify": "alignmentMenu",
+            aiAssistant: "aiAssistantMenu"
         };
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })

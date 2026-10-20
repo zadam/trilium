@@ -11,7 +11,7 @@ The assistant is only available once at least one provider is configured in <a 
 
 To access the AI assistant:
 
-*   Look for the <span class="tn-icon cke cke-trilium-ai"></span> button in the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a>. Press the button itself to enter the _Ask AI_ mode or press the arrow key next to it to access the quick commands and the model selection.
+*   Look for the <span class="tn-icon cke cke-trilium-ai"></span> button in the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a>. Press the button itself to enter the _Ask AI_ mode or press the arrow key next to it to access the quick commands and the model selection. On a phone, the button has no arrow: tapping it opens the same menu at the bottom of the screen, with _Ask AI…_ at its top, and a group such as _Translate_ opens as a page of its own.
 *   Look for _AI assistant_ or any of the _AI_\-prefixed quick commands in <a class="reference-link" href="Slash%20Commands.md">Slash Commands</a>.
 *   Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd>.
 *   Select a text and choose the _AI assistant_ option in the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20contextual%20menu.md">Note contextual menu</a>.

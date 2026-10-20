@@ -172,6 +172,20 @@ class SampleDropdown extends Plugin {
             return dropdown;
         });
 
+        // A dropdown whose entries the plugin cannot read from its views, which it describes itself.
+        this.editor.ui.componentFactory.add("described", (locale: Locale) => {
+            const dropdown = createDropdown(locale);
+            dropdown.buttonView.set({ label: "Described", icon: "<svg />" });
+            openListAsMenu(dropdown, {
+                describe: (run) => [
+                    { kind: "entry", label: `Now: ${now}`, iconClass: "bx bx-time", isEnabled: true, run: run(() => insertedSamples.push(now)) },
+                    { kind: "heading", label: "Later" },
+                    { kind: "entry", label: "Never", isEnabled: false }
+                ]
+            });
+            return dropdown;
+        });
+
         // A dropdown with no list of its own, which the menu has no rows to draw for.
         this.editor.ui.componentFactory.add("panelOnly", (locale: Locale) => {
             const dropdown = createDropdown(locale);
@@ -558,6 +572,33 @@ describe("ToolbarGroupMenu", () => {
         const samples = entry(lastGroup().items, "Insert sample");
         expect(samples.isOn).toBeUndefined();
         expect(samples.children?.map((child) => child.kind === "entry" && child.isOn)).toStrictEqual([undefined, undefined]);
+    });
+
+    it("opens the entries a dropdown handed to openListAsMenu describes, read on each open", async () => {
+        const { host, config, last } = createHost();
+        const editor = await createTestEditor(PLUGINS, {
+            ...config,
+            toolbar: { items: ["bold", "described"] }
+        });
+
+        const dropdown = groupDropdown(getToolbar(editor), "Described");
+        dropdown.buttonView.fire("open");
+        expect(dropdown.isOpen).toBe(false);
+        expect(last().items).toStrictEqual([
+            { kind: "entry", label: "Now: noon", iconClass: "bx bx-time", isEnabled: true, run: expect.any(Function) },
+            { kind: "heading", label: "Later" },
+            { kind: "entry", label: "Never", isEnabled: false }
+        ]);
+        expect("describe" in last()).toBe(false);
+
+        // The menu hides before the entry runs, as for a toolbar item.
+        entry(last().items, "Now: noon").run?.();
+        expect(host.hide).toHaveBeenCalled();
+        expect(insertedSamples).toStrictEqual(["noon"]);
+
+        now = "dusk";
+        dropdown.buttonView.fire("open");
+        expect(labels(last().items)[0]).toBe("Now: dusk");
     });
 
     it("leaves a dropdown handed to openListAsMenu to CKEditor when no host is configured", async () => {

@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { render } from "preact";
 
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
-import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../../react/FormList";
+import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../../react/FormList";
 import Menu, { MenuTile } from "../../react/Menu";
 import { isKeyboardPanelOpen, logMenuHost, useKeyboardPanel } from "./mobile_editor_toolbar";
 
@@ -84,12 +84,15 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                 if (item.kind === "separator") {
                     return <FormDropdownDivider key={index} />;
                 }
+                if (item.kind === "heading") {
+                    return <FormListHeader key={index} text={item.label} />;
+                }
 
-                const { label, icon, isEnabled, isOn, className, run, children } = item;
+                const { label, icon, iconClass, isEnabled, isOn, className, run, children } = item;
                 if (children) {
                     return (
                         <FormDropdownSubmenu
-                            key={index} iconSvg={icon} title={label} disabled={!isEnabled}
+                            key={index} icon={iconClass} iconSvg={icon} title={label} disabled={!isEnabled}
                             onDropdownToggleClicked={run && (() => run())}
                         >
                             <MenuRows items={children} />
@@ -99,7 +102,7 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
 
                 return (
                     <FormListItem
-                        key={index} iconSvg={icon} disabled={!isEnabled} onClick={() => run?.()}
+                        key={index} icon={iconClass} iconSvg={icon} disabled={!isEnabled} onClick={() => run?.()}
                         checkable={isOn !== undefined} checked={isOn} className={className}
                     >
                         <span className="toolbar-group-menu-label">{label}</span>
@@ -117,10 +120,10 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
 function MenuTileGroups({ items }: { items: ToolbarGroupMenuItem[] }) {
     const groups: ToolbarGroupMenuEntry[][] = [ [] ];
     for (const item of items) {
-        if (item.kind === "separator") {
-            groups.push([]);
-        } else {
+        if (item.kind === "entry") {
             groups[groups.length - 1].push(item);
+        } else {
+            groups.push([]);
         }
     }
 
@@ -128,15 +131,15 @@ function MenuTileGroups({ items }: { items: ToolbarGroupMenuItem[] }) {
         <>
             {groups.map((group, index) => (
                 <li key={index} className="tn-menu-actions tn-menu-actions-cards toolbar-group-menu-tiles" role="group">
-                    {group.map(({ label, icon, isEnabled, isOn, run, children }, tileIndex) => (children
+                    {group.map(({ label, icon, iconClass, isEnabled, isOn, run, children }, tileIndex) => (children
                         ? (
-                            <FormDropdownSubmenu key={tileIndex} tile iconSvg={icon} title={label} disabled={!isEnabled}>
+                            <FormDropdownSubmenu key={tileIndex} tile icon={iconClass} iconSvg={icon} title={label} disabled={!isEnabled}>
                                 <MenuRows items={children} />
                             </FormDropdownSubmenu>
                         )
                         : (
                             <MenuTile
-                                key={tileIndex} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
+                                key={tileIndex} icon={iconClass} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
                                 disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
                             />
                         )
