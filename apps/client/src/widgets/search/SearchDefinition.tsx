@@ -84,44 +84,6 @@ export default function SearchDefinition({ note, ntxId }: {
         <div className="search-definition-widget">
             {note && (
                 <Card className="search-definition-card">
-                    <CardSection className="search-definition-add">
-                        <span className="search-definition-add-label">{t("search_definition.add_search_option")}</span>
-                        <div className="search-definition-add-buttons">
-                            <ResponsiveContainer
-                                desktop={searchOptions?.availableOptions.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
-                                    <Button
-                                        key={`${attributeType}-${attributeName}`}
-                                        size="small" icon={icon} text={label} title={tooltip}
-                                        onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
-                                    />
-                                ))}
-                                mobile={
-                                    <Dropdown
-                                        buttonClassName="action-add-toggle btn btn-sm"
-                                        text={<><Icon icon="bx bx-plus" />{" "}{t("search_definition.option")}</>}
-                                        mobileBottomSheet
-                                        noSelectButtonStyle
-                                    >
-                                        {searchOptions?.availableOptions.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
-                                            <FormListItem
-                                                key={`${attributeType}-${attributeName}`}
-                                                icon={icon}
-                                                description={tooltip}
-                                                onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
-                                            >{label}</FormListItem>
-                                        ))}
-                                    </Dropdown>
-                                }
-                            />
-
-                            <AddBulkActionButton
-                                noteId={note.noteId}
-                                buttonClassName="action-add-toggle btn btn-sm"
-                                text={<><Icon icon="bx bxs-zap" />{" "}{t("search_definition.action")}</>}
-                            />
-                        </div>
-                    </CardSection>
-
                     {searchOptions?.activeOptions.map(({ attributeType, attributeName, component, additionalAttributesToDelete, defaultValue }) => {
                         const Component = component;
                         return <Component
@@ -137,6 +99,15 @@ export default function SearchDefinition({ note, ntxId }: {
                     })}
 
                     <BulkActionsList note={note} />
+
+                    <CardSection className="search-definition-add">
+                        <AddSearchOptionButton note={note} options={searchOptions?.availableOptions ?? []} />
+                        <AddBulkActionButton
+                            noteId={note.noteId}
+                            buttonClassName="btn-secondary btn-micro"
+                            text={<><Icon icon="bx bx-plus" />{" "}{t("bulk_actions.add_action")}</>}
+                        />
+                    </CardSection>
 
                     <SearchButtonBar
                         note={note}
@@ -228,5 +199,30 @@ function BulkActionsList({ note }: { note: FNote }) {
                 </tbody>
             </table>
         </CardSection>
+    );
+}
+
+/** A menu of the search options the note does not use yet, adding the picked one to it. */
+function AddSearchOptionButton({ note, options }: { note: FNote; options: SearchOption[] }) {
+    if (!options.length) {
+        return null;
+    }
+
+    return (
+        <Dropdown
+            buttonClassName="btn-secondary btn-micro"
+            text={<><Icon icon="bx bx-plus" />{" "}{t("search_definition.add_search_option")}</>}
+            noSelectButtonStyle
+            mobileBottomSheet
+        >
+            {options.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
+                <FormListItem
+                    key={`${attributeType}-${attributeName}`}
+                    icon={icon}
+                    description={tooltip}
+                    onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
+                >{label}</FormListItem>
+            ))}
+        </Dropdown>
     );
 }

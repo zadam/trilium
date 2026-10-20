@@ -3,19 +3,8 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
+        justify-content: flex-end;
         gap: 8px;
-    }
-
-    .search-definition-add-label {
-        font-weight: 500;
-    }
-
-    .search-definition-add-buttons {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 6px;
-        margin-inline-start: auto;
     }
 
     /* An option's controls take the room its label leaves, with the help and remove buttons last. */
@@ -91,10 +80,6 @@ body.mobile .search-definition-widget {
 }
 
 @media (max-width: 720px) {
-
-    .search-definition-add-buttons {
-        margin-inline-start: 0;
-    }
 
     .search-actions-container {
         align-items: center;

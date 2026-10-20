@@ -1446,7 +1446,7 @@
     "conflicting_tooltip": "The items define this attribute in more than one way, so it is sorted as text and cannot be set from the item menu."
   },
   "search_definition": {
-    "add_search_option": "Add search option:",
+    "add_search_option": "Add search option",
     "search_string": "search string",
     "search_script": "search script",
     "ancestor": "ancestor",

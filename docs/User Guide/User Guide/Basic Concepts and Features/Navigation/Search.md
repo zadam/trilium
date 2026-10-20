@@ -36,7 +36,7 @@ To search for notes, click on the <span class="tn-icon bx bx-search"></span> ico
     1.  This value is also pre-filled if the search is triggered from a [hoisted note](Note%20Hoisting.md) or a [workspace](Workspaces.md).
     2.  To search the entire database, keep the value empty.
 3.  To limit the search to only a few levels of hierarchy (e.g. look in sub-children but not in sub-sub-children of a note), set the _depth_ field to one of the provided values.
-4.  In addition to that, the search can be configured via the _Add search option_ buttons, as described in the follow-up section.
+4.  In addition to that, the search can be configured via the _Add search option_ menu, as described in the follow-up section.
 5.  Press _Search_ (<span class="tn-icon bx bx-search"></span>) to trigger the search. The results are displayed below the search configuration pane.
 6.  The _Search & Execute actions_ (<span class="tn-icon bx bxs-zap"></span>) button is only relevant if at least one action has been added (as described in the section below).
 7.  The _Save to note_ (<span class="tn-icon bx bx-save"></span>) button will create a new note with the search configuration. For more information, see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>.
@@ -88,7 +88,7 @@ To add a new line, press <kbd>Shift</kbd>+<kbd>Enter</kbd>.
 
 ## Search options
 
-Click on which search option to apply from the _Add search option_ section.
+Click _Add search option_ to choose an option to apply.
 
 *   For each search option selected, the search configuration will update to reveal the entry. Each search option will have its own configuration.
 *   To remove a search option, simply press the <span class="tn-icon bx bx-x"></span> button to the right of it.

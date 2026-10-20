@@ -49,9 +49,11 @@ describe("the search definition", () => {
         const card = container.querySelector(".search-definition-widget > .tn-card");
 
         expect(card).not.toBeNull();
-        expect(card?.querySelector(".tn-card-section.search-definition-add")).not.toBeNull();
         expect(card?.querySelector(".tn-card-section.tn-card-option.searchString")).not.toBeNull();
         expect(card?.querySelector(".tn-card-section.search-definition-actions")).not.toBeNull();
+
+        const addRow = card?.querySelector(".tn-card-section.search-definition-add");
+        expect(addRow?.querySelectorAll(".dropdown")).toHaveLength(2);
     });
 
     it.each([
