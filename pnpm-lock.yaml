@@ -7567,8 +7567,8 @@ packages:
   fmix@0.1.0:
     resolution: {integrity: sha512-Y6hyofImk9JdzU8k5INtTXX1cu8LDlePWDFU5sftm9H+zKCr5SGrVjdhkvsim646cw5zD0nADj8oHyXMZmCZ9w==}
 
-  follow-redirects@1.16.0:
-    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
+  follow-redirects@1.16.1:
+    resolution: {integrity: sha512-FNvFGzoMLWmE6Yj9spb/zjd7yiNCHiAW9/Tg9CXrQ8wuu32HtlJOwWO11OJafl5FfY3DxTdQ0vj42zU1kvv5jg==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -19734,7 +19734,7 @@ snapshots:
       imul: 1.0.1
     optional: true
 
-  follow-redirects@1.16.0(debug@4.4.3(supports-color@10.2.2)):
+  follow-redirects@1.16.1(debug@4.4.3(supports-color@10.2.2)):
     optionalDependencies:
       debug: 4.4.3(supports-color@10.2.2)
 
@@ -20277,7 +20277,7 @@ snapshots:
   http-proxy@1.18.1(debug@4.4.3(supports-color@10.2.2)):
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@10.2.2))
+      follow-redirects: 1.16.1(debug@4.4.3(supports-color@10.2.2))
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
