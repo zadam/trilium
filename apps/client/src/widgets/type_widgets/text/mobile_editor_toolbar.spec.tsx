@@ -1,7 +1,7 @@
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
 import { render } from "preact";
 import { act } from "preact/test-utils";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
     isKeyboardPanelOpen, useEditorsFocused, useKeyboardPanel, useShownToolbarElement
@@ -43,7 +43,13 @@ describe("useEditorsFocused", () => {
 });
 
 describe("useKeyboardPanel", () => {
-    it("takes the keyboard's place while mounted, only for a menu opened over the keyboard", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+        document.getElementById("root-widget")?.remove();
+        document.querySelector(".ck-editor__editable")?.remove();
+    });
+
+    it("takes the keyboard's place while mounted, for a menu opened over it", async () => {
         const root = document.createElement("div");
         root.id = "root-widget";
         document.body.append(root);
@@ -76,11 +82,78 @@ describe("useKeyboardPanel", () => {
         expect(seen.at(-1)).toBe(true);
         expect(isMarked()).toBe(true);
 
-        act(() => render(null, host));
+        await act(async () => render(null, host));
         expect(isMarked()).toBe(false);
-        root.remove();
+    });
+
+    it("keeps the place for a keyboard that comes back, until it is up", async () => {
+        const { root, editable, host, Harness, seen } = buildPanelFixture();
+
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        root.classList.remove("virtual-keyboard-opened");
+
+        // An entry that runs, or the menu's own button, focuses the text as the menu closes.
+        await act(async () => {
+            render(null, host);
+            editable.focus();
+        });
+        expect(isKeyboardPanelOpen()).toBe(true);
+
+        // A menu opened while the keyboard is on its way takes the place over.
+        act(() => render(<Harness />, host));
+        expect(seen.at(-1)).toBe(true);
+        await act(async () => render(null, host));
+        expect(isKeyboardPanelOpen()).toBe(true);
+
+        root.classList.add("virtual-keyboard-opened");
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve));
+        });
+        expect(isKeyboardPanelOpen()).toBe(false);
+    });
+
+    it("gives the place up at once when focus goes elsewhere, or after 1s", async () => {
+        const { root, editable, host, Harness } = buildPanelFixture();
+
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        root.classList.remove("virtual-keyboard-opened");
+        await act(async () => render(null, host));
+        expect(isKeyboardPanelOpen()).toBe(false);
+
+        // A keyboard that never comes back, as with a hardware keyboard.
+        vi.useFakeTimers({ toFake: [ "setTimeout", "clearTimeout" ] });
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        root.classList.remove("virtual-keyboard-opened");
+        await act(async () => {
+            render(null, host);
+            editable.focus();
+        });
+        expect(isKeyboardPanelOpen()).toBe(true);
+        act(() => {
+            vi.advanceTimersByTime(1000);
+        });
+        expect(isKeyboardPanelOpen()).toBe(false);
     });
 });
+
+function buildPanelFixture() {
+    const root = document.createElement("div");
+    root.id = "root-widget";
+    const editable = document.createElement("div");
+    editable.className = "ck-editor__editable";
+    editable.tabIndex = 0;
+    document.body.append(root, editable);
+    const seen: boolean[] = [];
+    const host = document.createElement("div");
+    function Harness() {
+        seen.push(useKeyboardPanel(true));
+        return null;
+    }
+    return { root, editable, host, Harness, seen };
+}
 
 describe("useShownToolbarElement", () => {
     it("shows the editor's toolbar, and the text formatting one while that is active", () => {

@@ -152,17 +152,16 @@ export function useShownToolbarElement(editor: CKTextEditor | undefined) {
  * the layout of an open keyboard.
  */
 export function useKeyboardPanel(enabled: boolean) {
-    const [ isPanel ] = useState(() => enabled
-        && !!document.getElementById("root-widget")?.classList.contains("virtual-keyboard-opened"));
+    const [ isPanel ] = useState(() => {
+        const root = document.getElementById("root-widget");
+        const isKeyboardUp = !!root?.classList.contains("virtual-keyboard-opened");
+        return enabled && (isKeyboardUp || isKeyboardPanelOpen());
+    });
 
     useLayoutEffect(() => {
         if (!isPanel) return;
-        document.body.classList.add("keyboard-panel-open");
-        holdVisibleBottom(true);
-        return () => {
-            document.body.classList.remove("keyboard-panel-open");
-            holdVisibleBottom(false);
-        };
+        takeKeyboardPlace();
+        return handBackKeyboardPlace;
     }, [ isPanel ]);
 
     return isPanel;
@@ -171,6 +170,69 @@ export function useKeyboardPanel(enabled: boolean) {
 /** Whether a menu of the toolbar is in the keyboard's place, for its host to tell the editor. */
 export function isKeyboardPanelOpen() {
     return document.body.classList.contains("keyboard-panel-open");
+}
+
+/** How long a closed panel keeps the keyboard's place for a keyboard that does not come back. */
+const KEYBOARD_RETURN_TIMEOUT = 1000;
+
+/** The hand-back of a closed panel's place, while it waits for the keyboard. */
+let pendingHandBack: { cancel(): void } | undefined;
+
+/**
+ * Lays the page out as for an open keyboard, or keeps the layout a closed panel still holds for
+ * the keyboard, with the visible bottom it was taken at.
+ */
+function takeKeyboardPlace() {
+    if (pendingHandBack) {
+        pendingHandBack.cancel();
+        pendingHandBack = undefined;
+        return;
+    }
+    document.body.classList.add("keyboard-panel-open");
+    holdVisibleBottom(true);
+}
+
+/**
+ * Gives a closed panel's place back. When the text has the focus once the menu has closed, as
+ * after an entry runs or the menu's own button closes it, the keyboard is on its way, so the
+ * layout stays until `RootContainer` reports it up; laying out for no keyboard in between drops
+ * the toolbar and brings the launcher bar back for some 250ms.
+ */
+function handBackKeyboardPlace() {
+    let isCancelled = false;
+    let stopWaiting = () => {};
+    const handBack = {
+        cancel() {
+            isCancelled = true;
+            stopWaiting();
+        }
+    };
+    pendingHandBack = handBack;
+    const release = () => {
+        stopWaiting();
+        if (pendingHandBack === handBack) pendingHandBack = undefined;
+        document.body.classList.remove("keyboard-panel-open");
+        holdVisibleBottom(false);
+    };
+
+    // The plugin focuses the text after the menu has unmounted, in the same task.
+    queueMicrotask(() => {
+        if (isCancelled) return;
+        const root = document.getElementById("root-widget");
+        if (!root || !document.activeElement?.closest(".ck-editor__editable")) {
+            release();
+            return;
+        }
+        const observer = new MutationObserver(() => {
+            if (root.classList.contains("virtual-keyboard-opened")) release();
+        });
+        observer.observe(root, { attributeFilter: [ "class" ] });
+        const timer = setTimeout(release, KEYBOARD_RETURN_TIMEOUT);
+        stopWaiting = () => {
+            observer.disconnect();
+            clearTimeout(timer);
+        };
+    });
 }
 
 /** The editors whose toolbar dropdowns open upwards already. */
