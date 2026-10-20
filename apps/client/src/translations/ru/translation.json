@@ -30,7 +30,7 @@
     },
     "widget-error": {
       "title": "Не удалось инициализировать виджет",
-      "message-custom": "Не удалось инициализировать пользовательский виджет из заметки с идентификатором \"{{id}}\" и названием \"{{title}}\" по следующим причинам:\n\n{{message}}",
+      "message-custom": "Не удалось инициализировать пользовательский виджет из заметки с ID \"{{id}}\" и названием \"{{title}}\" по следующим причинам:\n\n{{message}}",
       "message-unknown": "Неизвестный виджет не удалось инициализировать по причине:\n\n{{message}}"
     },
     "bundle-error": {
@@ -1008,7 +1008,10 @@
     "board-inbox-column": "Показать столбец \"Входящие\"",
     "board-inbox-column-help": "Отображает столбец \"Входящие\", в котором перечислены все дочерние заметки, не назначенные столбцу.",
     "cluster-markers": "Группировать близлежащие маркеры",
-    "vector_auto": "Векторная (Авто)"
+    "vector_auto": "Векторная (Авто)",
+    "max-nesting-depth-description": "Сколько уровней дочерних элементов коллекции будет отображаться: 0 — только дочерние элементы, 1 — также дочерние элементы дочерних элементов и т. д. Оставьте поле пустым, чтобы отображались все уровни.",
+    "hide-routine-events": "Скрыть рутинные мероприятия",
+    "hide-routine-events-help": "Скрывает мероприятия, повторяющиеся по {{days}} или более дней в неделю, из представлений Месяц, Год и Список. В представлениях День и Неделя они по-прежнему отображаются."
   },
   "editorfeatures": {
     "note_completion_enabled": "Автодополнение заметок",
@@ -1025,7 +1028,9 @@
     "html_support_enabled": "Сохранять неподдерживаемые HTML-теги",
     "html_support_description": "Сохранять теги HTML, для которых в редакторе нет собственной функции, как указано в разделе «Настройки → Прочее → Теги HTML для импорта». Они отображаются в виде блоков, которые нельзя редактировать напрямую, а при редактировании неизвестный тег может вообще не отображаться. Если этот параметр выключен, такие теги удаляются из заметки при первом редактировании и сохранении; на импорт это никак не влияет.",
     "mathlive_enabled": "Визуальный редактор MathLive",
-    "mathlive_description": "Математические уравнения можно редактировать с помощью визуального редактора."
+    "mathlive_description": "Математические уравнения можно редактировать с помощью визуального редактора.",
+    "sticky_table_headers_enabled": "Закреплять строки заголовков таблиц",
+    "sticky_table_headers_description": "Оставлять строки заголовков вверху заметки при прокрутке остальной части таблицы."
   },
   "cpu_arch_warning": {
     "dont_show_again": "Больше не показывать это предупреждение",
@@ -2860,7 +2865,11 @@
     "template_description": "Эта заметка является шаблоном. Заметки, созданные на её основе, наследуют её атрибуты, поэтому при их изменении в этой заметке изменения коснутся всех остальных.",
     "template_scope_global": "Доступен везде",
     "template_scope_workspace": "Только внутри его пространства",
-    "template_scope_workspace_unavailable": "Шаблон находится вне рабочего пространства."
+    "template_scope_workspace_unavailable": "Шаблон находится вне рабочего пространства.",
+    "template_properties": "Свойства шаблона...",
+    "workspace_template": "Шаблон пространства",
+    "read_only_locked": "Только для чтения",
+    "read_only_locked_description": "Эта заметка предоставлена Trilium и не подлежит редактированию."
   },
   "breadcrumb": {
     "hoisted_badge_title": "Снять фокус",
@@ -3209,7 +3218,23 @@
     "manage_search_providers": "Управление поставщиками поиска…",
     "web_search_builtin_unsupported": "В этой модели нет встроенного веб-поиска. Вместо него выберите поставщика поиска.",
     "web_search_provider_unsupported": "Поставщик этой модели выполняет поиск в сети с помощью собственных инструментов.",
-    "searched_with": "Поиск выполнен с помощью {{name}}"
+    "searched_with": "Поиск выполнен с помощью {{name}}",
+    "tool_approval_prompt": "Разрешить вызов этого инструмента?",
+    "tool_approval_allow": "Разрешить",
+    "tool_approval_deny": "Запретить",
+    "tool_approval_declined": "запрешено",
+    "tool_approval_allow_for_chat": "Всегда разрешить {{tool}} для этого чата",
+    "allowed_tools": "Разрешено в этом чате",
+    "allowed_tools_count_one": "{{count}} инструмент",
+    "allowed_tools_count_few": "{{count}} инструмента",
+    "allowed_tools_count_many": "{{count}} инструментов",
+    "permissions": "Разрешения",
+    "permission_mode_always_ask": "Всегда спрашивать",
+    "permission_mode_always_ask_description": "Спрашивать перед каждым действием, даже перед чтением",
+    "permission_mode_ask_before_changes": "Спрашивать перед изменением",
+    "permission_mode_ask_before_changes_description": "Спрашивать только перед изменением ваших заметок",
+    "permission_mode_dont_ask": "Не спрашивать",
+    "permission_mode_dont_ask_description": "Запускать всё самостоятельно, включая изменения"
   },
   "sidebar_chat": {
     "title": "Чат с ИИ",
@@ -3260,7 +3285,10 @@
     "sample_wardley": "Карта Уордли",
     "sample_swimlane": "Плавательные дорожки",
     "sample_railroad": "Синтаксическая диаграмма",
-    "sample_cynefin": "Диаграмма Кеневин"
+    "sample_cynefin": "Диаграмма Кеневин",
+    "syntax_help": "Помощь по синтаксису Mermaid",
+    "sample_event_modeling": "Событийное моделирование",
+    "sample_use_case": "Варианты использования"
   },
   "mind-map": {
     "addChild": "Добавить дочерний элемент",
@@ -3361,7 +3389,8 @@
       "read_web_page": "Прочитать веб-страницу",
       "note_moved_from": "<Note/> из <From/> в <To/>",
       "note_moved": "<Note/> в <To/>",
-      "attachment_in_note": "<Title/> в <Note/>"
+      "attachment_in_note": "<Title/> в <Note/>",
+      "search_in_subtree": "<Query/> в <Subtree/>"
     },
     "feature_not_enabled": "Чтобы использовать ИИ-интеграции, включите экспериментальную функцию LLM в «Настройки → Расширенные → Экспериментальные функции».",
     "mcp_title": "MCP (Model Context Protocol)",
@@ -3591,7 +3620,7 @@
   },
   "text_editor": {
     "title": "Редактор",
-    "related_task_states": "Настраиваемые состояния флажков для задач"
+    "related_task_states": "Пользовательские состояния флажков для задач"
   },
   "mobile_note_navigator": {
     "back": "На уровень выше",
@@ -3902,7 +3931,8 @@
       "column-0-width-1": "Ширина столбца %0: %1%",
       "table-columns": "Столбцы таблицы",
       "scroll-to-the-previous-tabs": "Перейти к предыдущим вкладкам",
-      "scroll-to-the-next-tabs": "Перейти к следующим вкладкам"
+      "scroll-to-the-next-tabs": "Перейти к следующим вкладкам",
+      "box-size-0": "Размер рамки: %0"
     },
     "task-state-dropped-title": "Недопустимые состояния задачи",
     "task-state-dropped-configure": "Настроить состояния задач",
@@ -4803,6 +4833,29 @@
     "member_title": "Название заметки",
     "member_note_id": "ID заметки",
     "member_type": "Тип заметки, например, text или code",
-    "member_mime": "MIME-тип заметки"
+    "member_mime": "MIME-тип заметки",
+    "member_date_created_obj": "Дата создания, для использования с format('…')",
+    "member_utc_date_created_obj": "Дата создания в формате UTC, для использования с format('…')",
+    "member_date_created": "Когда заметка была создана, по местному времени",
+    "member_date_modified": "Когда заметка была изменена в последний раз, по местному времени",
+    "member_utc_date_created": "Когда заметка была создана, по UTC",
+    "member_utc_date_modified": "Когда заметка была изменена в последний раз, по UTC",
+    "member_is_protected": "Защищена ли заметка",
+    "member_get_label_value": "Значение метки с указанным именем",
+    "member_get_relation_value": "ID заметки, на которую указывает отношение с указанным именем",
+    "member_format": "Дата в указанном формате, например YYYY-MM-DD"
+  },
+  "template_properties": {
+    "title": "Свойства шаблона",
+    "title_template": "Название по умолчанию для созданных заметок",
+    "title_template_description": "Может считывать время создания (now) и название заметки, под которой она создана (parentNote).",
+    "title_template_placeholder": "Встреча ${now.format('YYY-MM-DD')}",
+    "new_notes": "Новые заметки",
+    "default_parent": "Расположение по умолчанию для созданных заметок",
+    "default_parent_description": "Где они размещаются, если не выбрано другое расположение, например при создании с помощью @ в текстовой заметке.",
+    "default_parent_placeholder": "Где они создаются"
+  },
+  "hide_keyboard_button": {
+    "title": "Скрыть клавиатуру"
   }
 }
