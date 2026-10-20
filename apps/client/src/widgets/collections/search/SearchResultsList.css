@@ -75,6 +75,7 @@
     /* The expanded render supplies its own content wrapper; the card's padding keeps it aligned. */
     .search-result-card-content .note-book-content {
         font-size: inherit;
+        animation: none;
     }
 
     .search-result-card-content .note-book-content .rendered-content {

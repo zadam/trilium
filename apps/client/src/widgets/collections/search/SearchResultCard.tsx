@@ -1,7 +1,7 @@
 import type { HighlightedTokenInfo, SearchResultDetails } from "@triliumnext/commons";
 import clsx from "clsx";
 import { Fragment } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
 import { t } from "../../../services/i18n";
@@ -42,10 +42,42 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
     const hasDetails = !!details || loading;
     const canExpand = !!details?.contentSnippetTruncated;
     const [ expanded, setExpanded ] = useState(false);
+    const [ contentReady, setContentReady ] = useState(false);
+    const contentRef = useRef<HTMLDivElement>(null);
+    const pendingHeight = useRef<number | null>(null);
 
     useEffect(() => {
-        if (!canExpand) setExpanded(false);
+        if (!canExpand) {
+            setExpanded(false);
+            setContentReady(false);
+        }
     }, [ canExpand ]);
+
+    useEffect(() => {
+        // A fresh expansion waits for the note to render before it replaces the excerpt.
+        if (!expanded) setContentReady(false);
+    }, [ expanded ]);
+
+    useLayoutEffect(() => {
+        const element = contentRef.current;
+        if (!element) return;
+
+        if (expanded && !contentReady) {
+            // The excerpt stands in for the note: it is where the expansion starts from.
+            pendingHeight.current = element.offsetHeight;
+            return;
+        }
+
+        const from = pendingHeight.current;
+        if (from === null) return;
+        pendingHeight.current = null;
+        animateHeight(element, from, element.offsetHeight);
+    }, [ expanded, contentReady ]);
+
+    function toggleExpanded() {
+        pendingHeight.current = contentRef.current?.offsetHeight ?? null;
+        setExpanded(!expanded);
+    }
 
     return (
         <div
@@ -66,22 +98,26 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
             </h5>
 
             {hasDetails && (
-                <div className="search-result-card-content">
+                <div className="search-result-card-content" ref={contentRef}>
                     {expanded && note ? (
-                        <NoteContent
-                            note={note}
-                            noChildrenList
-                            highlightedTokens={highlightedTokens}
-                            includeArchivedNotes={false}
-                            showTextRepresentation={showTextRepresentation}
-                        />
+                        <>
+                            {!contentReady && <SearchResultSnippet details={details} loading={loading} />}
+                            <NoteContent
+                                note={note}
+                                noChildrenList
+                                highlightedTokens={highlightedTokens}
+                                includeArchivedNotes={false}
+                                showTextRepresentation={showTextRepresentation}
+                                onReady={() => setContentReady(true)}
+                            />
+                        </>
                     ) : (
                         <SearchResultSnippet details={details} loading={loading} />
                     )}
                     {canExpand && (
                         <LinkButton
                             className="search-result-card-more"
-                            onClick={() => setExpanded(!expanded)}
+                            onClick={toggleExpanded}
                             text={<>
                                 <Icon icon={expanded ? "bx bx-chevron-up" : "bx bx-chevron-down"} />
                                 <span className="search-result-card-more-label">
@@ -98,6 +134,35 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
             )}
         </div>
     );
+}
+
+/** The height animation in flight per card, so a second toggle cancels the first instead of racing it. */
+const heightAnimations = new WeakMap<HTMLElement, Animation>();
+
+/**
+ * Grows or shrinks the card between two measured heights, then hands the height back to CSS. The
+ * wrapper keeps its natural height, so content that renders later (images) is not clipped.
+ */
+function animateHeight(element: HTMLElement, from: number, to: number) {
+    heightAnimations.get(element)?.cancel();
+    if (from === to || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+        return;
+    }
+
+    element.style.overflow = "hidden";
+    const animation = element.animate(
+        [ { height: `${from}px` }, { height: `${to}px` } ],
+        { duration: 200, easing: "ease" }
+    );
+    heightAnimations.set(element, animation);
+
+    const settle = () => {
+        if (heightAnimations.get(element) !== animation) return;
+        heightAnimations.delete(element);
+        element.style.overflow = "";
+    };
+    animation.onfinish = settle;
+    animation.oncancel = settle;
 }
 
 function SearchResultSnippet({ details, loading }: { details: SearchResultDetails | undefined; loading: boolean }) {

@@ -20,9 +20,25 @@ vi.mock("../../../services/i18n", () => ({
 }));
 
 // The expanded view renders the full note through the note list; the toggle is what is under test.
-vi.mock("../legacy/ListOrGridView", () => ({
-    NoteContent: () => "EXPANDED"
+const noteContentState = vi.hoisted(() => ({
+    ready: true,
+    reportReady: undefined as (() => void) | undefined
 }));
+vi.mock("../legacy/ListOrGridView", async () => {
+    const { useEffect } = await import("preact/hooks");
+    return {
+        NoteContent: ({ onReady }: { onReady?: () => void }) => {
+            useEffect(() => {
+                if (noteContentState.ready) {
+                    onReady?.();
+                } else {
+                    noteContentState.reportReady = onReady;
+                }
+            }, []);
+            return "EXPANDED";
+        }
+    };
+});
 
 import Component from "../../../components/component";
 import type FNote from "../../../entities/fnote";
@@ -53,6 +69,8 @@ let container: HTMLElement;
 let parent: Component;
 
 beforeEach(() => {
+    noteContentState.ready = true;
+    noteContentState.reportReady = undefined;
     parent = new Component();
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -164,6 +182,27 @@ describe("SearchResultCard", () => {
         expect(container.querySelector("a.search-result-card-title")).not.toBeNull();
         expect(container.querySelector(".search-result-card-content a")).toBeNull();
         expect(container.querySelector(".search-result-card-content")?.textContent).toContain("calendar");
+    });
+
+    it("keeps the excerpt while the note it expands to is still rendering", async () => {
+        noteContentState.ready = false;
+        const note = buildNote({ id: "note1", title: "Meeting notes", type: "text" });
+        await mount(
+            <SearchResultCard
+                noteId={note.noteId}
+                details={makeDetails({ contentSnippetTruncated: true })}
+                loading={false}
+                highlightedTokens={null}
+            />
+        );
+
+        const more = container.querySelector<HTMLAnchorElement>(".search-result-card-more");
+        await act(async () => more?.click());
+        expect(container.querySelector(".search-result-card-snippet")).not.toBeNull();
+        expect(container.querySelector(".search-result-card-more")?.textContent).toContain("search_result.show_less");
+
+        await act(async () => noteContentState.reportReady?.());
+        expect(container.querySelector(".search-result-card-snippet")).toBeNull();
     });
 
     it("expands to the full note content when the snippet leaves more behind", async () => {
