@@ -124,14 +124,9 @@ describe("group labels", () => {
 });
 
 describe("buildMobileToolbar", () => {
-    it("flattens nested toolbar groups into a single flat item list", () => {
-        const mobile = buildMobileToolbar(true);
-
-        // Items nested inside group objects (text-formatting, alignment, ...) are hoisted up.
-        expect(mobile.toolbar.items).toContain("underline");
-        expect(mobile.toolbar.items).toContain("alignment:left");
-        // No nested group objects survive the flattening.
-        expect(mobile.toolbar.items.some((item) => typeof item === "object")).toBe(false);
+    it("holds no nested groups", () => {
+        const items: unknown[] = buildMobileToolbar(true).toolbar.items;
+        expect(items.every((item) => typeof item === "string")).toBe(true);
     });
 
     it("opens the table form instead of the size grid", () => {
@@ -139,6 +134,30 @@ describe("buildMobileToolbar", () => {
         expect(items).toContain("insertTableForm");
         expect(items).not.toContain("insertTable");
         expect(buildClassicToolbar(false, true).toolbar.items).toContain("insertTable");
+    });
+
+    it("opens with undo and redo, set apart by a separator", () => {
+        const items = buildMobileToolbar(true).toolbar.items;
+        expect(items.slice(0, 3)).toStrictEqual([ "undo", "redo", "|" ]);
+        expect(items.filter((item) => item === "undo" || item === "redo")).toHaveLength(2);
+    });
+
+    it("offers every item of the classic toolbar", () => {
+        for (const aiAssistant of [ true, false ]) {
+            const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
+                .map((item) => item === "insertTable" ? "insertTableForm" : item);
+            const mobileItems = collectItems({ items: buildMobileToolbar(aiAssistant).toolbar.items });
+            expect(mobileItems.toSorted()).toStrictEqual(classicItems.toSorted());
+        }
+    });
+
+    it("neither starts nor ends on a separator, nor doubles one", () => {
+        for (const aiAssistant of [ true, false ]) {
+            const items = buildMobileToolbar(aiAssistant).toolbar.items;
+            expect(items[0]).not.toBe("|");
+            expect(items.at(-1)).not.toBe("|");
+            expect(items.some((item, index) => item === "|" && items[index + 1] === "|")).toBe(false);
+        }
     });
 });
 
@@ -206,3 +225,11 @@ describe("usesClassicToolbar", () => {
         })).toBe(false);
     });
 });
+
+/** The item names of a toolbar configuration, its groups included, without separators. */
+function collectItems(config: ToolbarConfig): string[] {
+    if (typeof config === "object") {
+        return config.items.flatMap(collectItems);
+    }
+    return config === "|" ? [] : [ config ];
+}

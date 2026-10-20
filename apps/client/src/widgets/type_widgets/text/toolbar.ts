@@ -42,26 +42,82 @@ export function buildToolbarConfig(isClassicToolbar: boolean, aiAssistant: boole
     }
 }
 
+/**
+ * The bar above the virtual keyboard: one scrolling row without nested groups. Undo and redo lead
+ * it, since a virtual keyboard has no key for either.
+ */
 export function buildMobileToolbar(aiAssistant: boolean) {
-    const classicConfig = buildClassicToolbar(false, aiAssistant);
-    const items: string[] = [];
-
-    for (const item of classicConfig.toolbar.items) {
-        if (typeof item === "object" && "items" in item) {
-            for (const subitem of item.items) {
-                items.push(subitem);
-            }
-        } else {
-            // The size grid of `insertTable` needs a pointer that hovers over its cells.
-            items.push(item === "insertTable" ? "insertTableForm" : item);
-        }
-    }
-
     return {
-        ...classicConfig,
         toolbar: {
-            ...classicConfig.toolbar,
-            items
+            items: [
+                "undo",
+                "redo",
+                "|",
+                "heading",
+                "fontSize",
+                "|",
+                "bold",
+                "italic",
+                "underline",
+                "strikethrough",
+                "|",
+                "superscript",
+                "subscript",
+                "|",
+                "kbd",
+                "formatPainter",
+                "|",
+                "fontColor",
+                "fontBackgroundColor",
+                "removeFormat",
+                "|",
+                "bulletedList",
+                "numberedList",
+                "todoList",
+                "|",
+                ...(aiAssistant ? ["aiAssistant"] : []),
+                "imageUpload",
+                "fileUpload",
+                "blockQuote",
+                "admonition",
+                // The size grid of `insertTable` needs a pointer that hovers over its cells.
+                "insertTableForm",
+                "|",
+                "code",
+                "codeBlock",
+                "|",
+                "footnote",
+                "link",
+                "linkEmbed",
+                "bookmark",
+                "internallink",
+                "contentEmbed",
+                "|",
+                "collapsible",
+                "tabs",
+                "multicolumnLayout",
+                "math",
+                "drawingCanvas",
+                "mermaid",
+                "horizontalLine",
+                "pageBreak",
+                "|",
+                "dateTime",
+                "specialCharacters",
+                "emoji",
+                "insertIcon",
+                "|",
+                "alignment:left",
+                "alignment:center",
+                "alignment:right",
+                "alignment:justify",
+                "outdent",
+                "indent",
+                "|",
+                "insertTemplate",
+                "markdownImport",
+                "cuttonote"
+            ]
         }
     };
 }
