@@ -16,19 +16,18 @@
     background: var(--cmd-button-background-color);
     box-shadow: 1px 1px 1px var(--cmd-button-shadow-color);
 
-    button.btn {
-        border-radius: 0;
-        box-shadow: none;
-    }
-
     > .btn:first-child {
         border-start-start-radius: inherit;
         border-end-start-radius: inherit;
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
     }
 
     > .dropdown > .btn.dropdown-toggle-split {
         border-start-end-radius: inherit;
         border-end-end-radius: inherit;
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
         border-inline-start: 1px solid var(--main-border-color);
         padding-inline: 0.45em;
     }
