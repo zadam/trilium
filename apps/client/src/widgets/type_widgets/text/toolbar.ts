@@ -87,9 +87,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.
                 "insertTableForm",
                 "|",
-                "alignmentMenu",
-                "|",
-                "cuttonote"
+                "alignmentMenu"
             ]
         },
         textFormattingToolbar: [
@@ -107,7 +105,10 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "colorMenu",
             "|",
             "removeFormat",
-            "formatPainter"
+            "formatPainter",
+            "|",
+            // Acts on the selection, which brings this row up.
+            "cuttonote"
         ]
     };
 }

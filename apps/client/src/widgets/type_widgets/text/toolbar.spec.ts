@@ -150,9 +150,7 @@ describe("buildMobileToolbar", () => {
             "|",
             "link", "internallink", "aiAssistant", "imageUpload", "fileUpload", "insertTableForm",
             "|",
-            "alignmentMenu",
-            "|",
-            "cuttonote"
+            "alignmentMenu"
         ]);
     });
 
@@ -168,7 +166,10 @@ describe("buildMobileToolbar", () => {
             "|",
             "fontSizeMenu", "colorMenu",
             "|",
-            "removeFormat", "formatPainter"
+            "removeFormat", "formatPainter",
+            "|",
+            // Acts on the selection, which brings this row up.
+            "cuttonote"
         ]);
         expect(collectItems({ items: toolbar.items }).filter((item) => textFormattingToolbar.includes(item))).toStrictEqual([]);
         // Turned into from the block type menu instead.
