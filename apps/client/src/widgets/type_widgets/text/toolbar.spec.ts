@@ -133,8 +133,8 @@ describe("buildMobileToolbar", () => {
 
     it("keeps text formatting on a row of its own, opened from the main row", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
-        expect(toolbar.items.slice(0, 7)).toStrictEqual([
-            "undo", "redo", "|", "headingCompact", "textFormatting", "|", "bulletedList"
+        expect(toolbar.items.slice(0, 8)).toStrictEqual([
+            "undo", "redo", "|", "blockType", "textFormatting", "|", "outdent", "indent"
         ]);
         expect(textFormattingToolbar).toStrictEqual([
             "bold", "italic", "underline", "strikethrough", "code",
@@ -165,7 +165,10 @@ describe("buildMobileToolbar", () => {
         // Variants of an item that suit a touch screen.
         const MOBILE_VARIANTS: Record<string, string> = {
             insertTable: "insertTableForm",
-            heading: "headingCompact",
+            heading: "blockType",
+            bulletedList: "blockType",
+            numberedList: "blockType",
+            todoList: "blockType",
             fontSize: "fontSizeMenu",
             fontColor: "colorMenu",
             fontBackgroundColor: "colorMenu"
