@@ -25,7 +25,8 @@ import Popup, { type PopupProps } from "./Popup";
  * `FormDropdownSubmenu`, `FormDropdownDivider`, `FormListHeader` and `FormListCustomItem`.
  */
 export interface MenuProps<T> extends Pick<PopupProps, "anchor" | "offset" | "container" | "portalClassName"
-        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby" | "placedByStylesheet"> {
+        | "backdropClassName" | "style" | "onClick" | "elementRef" | "aria-labelledby" | "placedByStylesheet"
+        | "keepOpenSelector"> {
     id?: string;
     className?: string;
     /** The side of its anchor it prefers: beside a point towards the right, or below an element. */

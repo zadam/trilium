@@ -9,7 +9,9 @@ import { render } from "preact";
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../../react/FormList";
 import Menu, { MenuTile } from "../../react/Menu";
-import { isKeyboardPanelOpen, useKeyboardPanel } from "./mobile_editor_toolbar";
+import {
+    isKeyboardPanelOpen, MOBILE_TOOLBAR_ROW, useClosedByToolbarTap, useKeyboardPanel
+} from "./mobile_editor_toolbar";
 
 /** The gap between the group's button and the menu, as a `Dropdown` leaves under its toggle. */
 const ANCHOR_GAP = 2;
@@ -49,6 +51,7 @@ function ToolbarGroupMenu({ request, onClose }: {
 }) {
     const bottomSheet = isMobile() && isNarrowLayout();
     const { isPanel, replacesPanel } = useKeyboardPanel(bottomSheet);
+    useClosedByToolbarTap(request.anchor, () => onClose(false));
 
     return (
         <Menu
@@ -59,6 +62,7 @@ function ToolbarGroupMenu({ request, onClose }: {
                 "tn-dropdown-menu", isPanel && "keyboard-panel", replacesPanel && "replaces-panel"
             )}
             bottomSheet={bottomSheet}
+            keepOpenSelector={MOBILE_TOOLBAR_ROW}
             aria-labelledby={request.anchor.getAttribute("aria-labelledby") ?? undefined}
             elementRef={request.setElement}
             onDismiss={() => onClose(false)}

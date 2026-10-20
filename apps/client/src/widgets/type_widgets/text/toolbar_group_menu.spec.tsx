@@ -271,6 +271,37 @@ describe("createToolbarGroupMenuHost", () => {
         expect(runs).toEqual([ "iso" ]);
     });
 
+    it("stays open as the phone toolbar is dragged, and closes as a tap on another item clicks", () => {
+        const island = document.createElement("div");
+        island.className = "classic-toolbar-island";
+        const row = document.createElement("div");
+        row.className = "classic-toolbar-widget";
+        const bold = document.createElement("button");
+        const boldClicked = vi.fn();
+        bold.addEventListener("click", boldClicked);
+        row.append(bold);
+        island.append(row);
+        document.body.append(island);
+
+        const { menu, onClose } = show();
+        bold.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+        expect(menu.isConnected).toBe(true);
+        expect(onClose).not.toHaveBeenCalled();
+
+        bold.click();
+        expect(onClose).toHaveBeenCalledExactlyOnceWith(false);
+        expect(menu.isConnected).toBe(false);
+        expect(boldClicked).toHaveBeenCalledTimes(1);
+
+        // The menu's own button, which toggles it, is left to the editor.
+        row.append(anchor);
+        const toggled = show();
+        anchor.click();
+        expect(toggled.onClose).not.toHaveBeenCalled();
+        document.body.append(anchor);
+        island.remove();
+    });
+
     it("returns focus to the group's button on Escape, and not on a press elsewhere", () => {
         const escaped = show();
         escaped.menu.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
