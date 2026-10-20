@@ -157,6 +157,58 @@ body.mobile {
             --ck-size-control-min-height: var(--mobile-toolbar-button-size);
             --ck-icon-size: var(--mobile-toolbar-icon-size);
         }
+
+        /* A button keeps the full height of the bar to be pressed, and draws its state on a pill
+           inside it. */
+        .ck-toolbar__items > :is(
+            .ck-button,
+            .ck-dropdown > .ck-button,
+            .ck-dropdown > .ck-splitbutton > .ck-button
+        ) {
+            --mobile-toolbar-pill: transparent;
+            --mobile-toolbar-pill-tint: transparent;
+            --mobile-toolbar-pill-shadow: none;
+            position: relative;
+            isolation: isolate;
+
+            &, &:hover, &:active {
+                background: transparent;
+                box-shadow: none;
+            }
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 6px 2px;
+                z-index: -1;
+                border-radius: 6px;
+                background:
+                    linear-gradient(var(--mobile-toolbar-pill-tint), var(--mobile-toolbar-pill-tint)),
+                    var(--mobile-toolbar-pill);
+                box-shadow: var(--mobile-toolbar-pill-shadow);
+            }
+
+            &.ck-on {
+                --mobile-toolbar-pill: var(--ck-editor-toolbar-button-on-background, var(--accented-background-color));
+                --mobile-toolbar-pill-shadow: var(--ck-editor-toolbar-button-on-shadow, none);
+            }
+
+            &.ck-dropdown__button.ck-on {
+                --mobile-toolbar-pill: var(--ck-editor-toolbar-dropdown-button-open-background, var(--accented-background-color));
+                --mobile-toolbar-pill-shadow: none;
+            }
+
+            &:not(.ck-disabled):active {
+                --mobile-toolbar-pill-tint: var(--hover-item-background-color);
+            }
+
+            /* A touch screen keeps `:hover` on the last button pressed. */
+            @media (hover: hover) {
+                &:not(.ck-disabled):hover {
+                    --mobile-toolbar-pill-tint: var(--hover-item-background-color);
+                }
+            }
+        }
     }
 }
 
