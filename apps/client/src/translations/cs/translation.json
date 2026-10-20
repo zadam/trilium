@@ -777,18 +777,8 @@
   },
   "search_definition": {
     "add_search_option": "Přidat možnost hledání:",
-    "search_string": "vyhledávací řetězec",
-    "search_script": "skript pro hledání",
-    "ancestor": "předek",
-    "fast_search": "rychlé hledání",
-    "fast_search_description": "Možnost rychlého hledání vypne úplné textové prohledávání obsahu poznámek, což může urychlit hledání ve velkých databázích.",
-    "include_archived": "zahrnout archivované",
     "include_archived_notes_description": "Archivované poznámky jsou ve výchozím nastavení vyloučeny z výsledků hledání, s touto možností budou zahrnuty.",
-    "order_by": "seřadit podle",
-    "limit": "limit",
     "limit_description": "Omezit počet výsledků",
-    "debug": "ladění",
-    "debug_description": "Ladění vypíše do konzole další ladicí informace, které pomohou při ladění složitých dotazů",
     "action": "akce",
     "option": "možnost",
     "search_button": "Hledání",
@@ -831,8 +821,7 @@
     "include_archived_notes": "Zahrnout archivované poznámky"
   },
   "limit": {
-    "limit": "Limit",
-    "take_first_x_results": "Zobrazí pouze prvních X zadaných výsledků."
+    "limit": "Limit"
   },
   "order_by": {
     "order_by": "Seřadit podle",

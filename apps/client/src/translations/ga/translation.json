@@ -1146,18 +1146,8 @@
   },
   "search_definition": {
     "add_search_option": "Cuir rogha cuardaigh leis:",
-    "search_string": "teaghrán cuardaigh",
-    "search_script": "script cuardaigh",
-    "ancestor": "sinsear",
-    "fast_search": "cuardach tapa",
-    "fast_search_description": "Díchumasaíonn an rogha cuardaigh thapa cuardach iomlán ar ábhar nótaí rud a d’fhéadfadh luas a chur le cuardach i mbunachair shonraí móra.",
-    "include_archived": "cuir cartlannaithe san áireamh",
     "include_archived_notes_description": "De réir réamhshocraithe, eisiatar nótaí cartlannaithe ó thorthaí cuardaigh, agus leis an rogha seo cuirfear san áireamh iad.",
-    "order_by": "ordú de réir",
-    "limit": "teorainn",
     "limit_description": "Teorainn a chur le líon na dtorthaí",
-    "debug": "dífhabhtú",
-    "debug_description": "Priontálfaidh Debug faisnéis bhreise dífhabhtaithe isteach sa chonsól chun cabhrú le fiosrúcháin chasta a dhífhabhtú",
     "action": "gníomh",
     "search_button": "Cuardaigh",
     "search_execute": "Gníomhartha Cuardaigh & Forghníomhaithe",
@@ -1200,8 +1190,7 @@
     "include_archived_notes": "Cuir nótaí cartlannaithe san áireamh"
   },
   "limit": {
-    "limit": "Teorainn",
-    "take_first_x_results": "Glac na chéad X torthaí sonraithe amháin."
+    "limit": "Teorainn"
   },
   "order_by": {
     "order_by": "Ordú de réir",

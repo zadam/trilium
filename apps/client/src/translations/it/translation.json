@@ -529,20 +529,10 @@
     "attachment_deleted": "Questo allegato è stato eliminato."
   },
   "search_definition": {
-    "ancestor": "antenato",
-    "debug": "debug",
     "action": "azione",
     "add_search_option": "Aggiungi opzione di ricerca:",
-    "search_string": "stringa di ricerca",
-    "limit": "limite",
-    "search_script": "script di ricerca",
-    "fast_search": "ricerca veloce",
-    "fast_search_description": "L'opzione di ricerca rapida disattiva la ricerca del testo completo del contenuto delle note, il che potrebbe velocizzare la ricerca in database di grandi dimensioni.",
-    "include_archived": "includere archiviato",
     "include_archived_notes_description": "Per impostazione predefinita, le note archiviate sono escluse dai risultati della ricerca; con questa opzione verranno incluse.",
-    "order_by": "ordina per",
     "limit_description": "Limita il numero di risultati",
-    "debug_description": "Debug stamperà informazioni di debug aggiuntive nella console per facilitare il debug di query complesse",
     "search_button": "Ricerca",
     "search_execute": "Cerca ed esegui azioni",
     "save_to_note": "Salva per annotare",
@@ -1799,8 +1789,7 @@
     "include_archived_notes": "Includi note archiviate"
   },
   "limit": {
-    "limit": "Limite",
-    "take_first_x_results": "Prendi solo i primi X risultati specificati."
+    "limit": "Limite"
   },
   "order_by": {
     "order_by": "Ordina per",

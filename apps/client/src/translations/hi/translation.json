@@ -791,18 +791,8 @@
   },
   "search_definition": {
     "add_search_option": "सर्च विकल्प जोड़ें:",
-    "search_string": "सर्च स्ट्रिंग",
-    "search_script": "सर्च स्क्रिप्ट",
-    "ancestor": "पूर्वज (Ancestor)",
-    "fast_search": "फ़ास्ट सर्च",
-    "fast_search_description": "फ़ास्ट सर्च नोट कंटेंट के पूरे टेक्स्ट की खोज को बंद कर देता है, जिससे बड़े डेटाबेस में सर्च आसान हो सकता है।",
-    "include_archived": "आर्काइव शामिल करें",
     "include_archived_notes_description": "आर्काइव किए गए नोट्स डिफ़ॉल्ट रूप से सर्च से बाहर होते हैं, इस विकल्प से वे शामिल हो जाएंगे।",
-    "order_by": "इसके अनुसार क्रम दें",
-    "limit": "सीमा (Limit)",
     "limit_description": "रिज़ल्ट्स की संख्या सीमित करें",
-    "debug": "डिबग (Debug)",
-    "debug_description": "डिबग करने पर कंसोल में अतिरिक्त जानकारी दिखेगी जो कठिन क्वेरीज़ को सुलझाने में मदद करेगी",
     "action": "एक्शन",
     "option": "विकल्प",
     "search_button": "खोजें",
@@ -845,8 +835,7 @@
     "include_archived_notes": "आर्काइव किए गए नोट्स शामिल करें"
   },
   "limit": {
-    "limit": "सीमा (Limit)",
-    "take_first_x_results": "केवल पहले X रिज़ल्ट्स लें।"
+    "limit": "सीमा (Limit)"
   },
   "order_by": {
     "order_by": "इसके अनुसार क्रम दें",

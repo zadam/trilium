@@ -1154,18 +1154,8 @@
   },
   "search_definition": {
     "add_search_option": "Tambahkan opsi pencarian:",
-    "search_string": "string pencarian",
-    "search_script": "skrip pencarian",
-    "ancestor": "ancestor",
-    "fast_search": "pencarian cepat",
-    "fast_search_description": "Opsi pencarian cepat menonaktifkan pencarian teks lengkap pada isi catatan yang dapat mempercepat pencarian dalam basis data besar.",
-    "include_archived": "sertakan yang diarsipkan",
     "include_archived_notes_description": "Catatan yang diarsipkan secara default dikecualikan dari hasil pencarian; dengan opsi ini catatan tersebut akan disertakan.",
-    "order_by": "urutkan berdasarkan",
-    "limit": "batas",
     "limit_description": "Batasi jumlah hasil",
-    "debug": "debug",
-    "debug_description": "Debug akan mencetak informasi debugging tambahan ke konsol untuk membantu men-debug kueri yang kompleks",
     "action": "tindakan",
     "option": "opsi",
     "search_button": "Pencarian",
@@ -1208,8 +1198,7 @@
     "include_archived_notes": "Sertakan catatan yang diarsipkan"
   },
   "limit": {
-    "limit": "Batas",
-    "take_first_x_results": "Ambil hanya X hasil pertama yang ditentukan."
+    "limit": "Batas"
   },
   "order_by": {
     "order_by": "Urutkan berdasarkan",

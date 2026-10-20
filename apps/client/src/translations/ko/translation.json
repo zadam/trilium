@@ -1395,18 +1395,8 @@
   },
   "search_definition": {
     "add_search_option": "검색 옵션 추가:",
-    "search_string": "검색 문자열",
-    "search_script": "검색 스크립트",
-    "ancestor": "조상",
-    "fast_search": "빠른 검색",
-    "fast_search_description": "빠른 검색 옵션은 노트 내용의 전체 텍스트 검색을 비활성화하여 대규모 데이터베이스 검색 속도를 높일 수 있습니다.",
-    "include_archived": "보관된 노트 포함",
     "include_archived_notes_description": "보관된 노트는 기본적으로 검색 결과에서 제외되며, 이 옵션을 통해 포함됩니다.",
-    "order_by": "정렬 기준",
-    "limit": "개수 제한",
     "limit_description": "결과 수 제한",
-    "debug": "디버그",
-    "debug_description": "디버그는 복잡한 쿼리를 디버깅하는 데 도움을 주기 위해 추가 디버깅 정보를 콘솔에 출력합니다",
     "action": "작업",
     "option": "옵션",
     "search_button": "검색",
@@ -1449,8 +1439,7 @@
     "include_archived_notes": "보관된 노트 포함"
   },
   "limit": {
-    "limit": "개수 제한",
-    "take_first_x_results": "지정한 결과 중 처음 X개만 가져옵니다."
+    "limit": "개수 제한"
   },
   "order_by": {
     "order_by": "정렬 기준",

@@ -298,17 +298,8 @@
   },
   "search_definition": {
     "add_search_option": "検索オプションを追加:",
-    "search_string": "文字列検索",
-    "search_script": "スクリプト検索",
-    "fast_search": "高速検索",
-    "fast_search_description": "高速検索オプションは、ノートの全文検索を無効にし、大規模データベースでの検索を高速化します。",
-    "include_archived": "アーカイブを含む",
     "include_archived_notes_description": "アーカイブされたノートはデフォルトで検索結果から除外されますが、このオプションを使用すると含まれるようになります。",
-    "order_by": "並べ替え",
-    "limit": "リミット",
     "limit_description": "検索結果の数を制限する",
-    "debug": "デバッグ",
-    "debug_description": "デバッグは複雑なクエリのデバッグを支援するために、追加のデバッグ情報をコンソールに出力します",
     "action": "アクション",
     "search_button": "検索",
     "search_execute": "検索とアクションの実行",
@@ -317,7 +308,6 @@
     "unknown_search_option": "不明な検索オプション {{searchOptionName}}",
     "search_note_saved": "検索ノートが {{- notePathTitle}} に保存されました",
     "actions_executed": "アクションが実行されました。",
-    "ancestor": "祖先:",
     "view_options": "表示オプション:",
     "option": "オプション"
   },
@@ -973,8 +963,7 @@
     "include_archived_notes": "アーカイブされたノートを含む"
   },
   "limit": {
-    "limit": "リミット",
-    "take_first_x_results": "最初からX個の結果のみを取得。"
+    "limit": "リミット"
   },
   "order_by": {
     "order_by": "並べ替え",

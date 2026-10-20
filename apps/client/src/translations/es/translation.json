@@ -1136,18 +1136,8 @@
   },
   "search_definition": {
     "add_search_option": "Añadir opción de búsqueda:",
-    "search_string": "cadena de búsqueda",
-    "search_script": "script de búsqueda",
-    "ancestor": "antepasado",
-    "fast_search": "búsqueda rápida",
-    "fast_search_description": "La opción de búsqueda rápida desactiva la búsqueda de texto completo del contenido de las notas, lo que podría acelerar la búsqueda en bases de datos grandes.",
-    "include_archived": "incluir notas archivadas",
     "include_archived_notes_description": "Las notas archivadas se excluyen por defecto de los resultados de búsqueda; con esta opción se incluirán.",
-    "order_by": "ordenar por",
-    "limit": "límite",
     "limit_description": "Limitar el número de resultados",
-    "debug": "depurar",
-    "debug_description": "La depuración imprimirá información de depuración adicional en la consola para ayudar a depurar consultas complejas",
     "action": "acción",
     "search_button": "Buscar",
     "search_execute": "Buscar y ejecutar acciones",
@@ -1190,8 +1180,7 @@
     "include_archived_notes": "Incluir notas archivadas"
   },
   "limit": {
-    "limit": "Límite",
-    "take_first_x_results": "Tomar solo los primeros X resultados especificados."
+    "limit": "Límite"
   },
   "order_by": {
     "order_by": "Ordenar por",

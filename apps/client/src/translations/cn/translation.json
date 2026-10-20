@@ -1134,18 +1134,8 @@
   },
   "search_definition": {
     "add_search_option": "添加搜索选项：",
-    "search_string": "搜索字符串",
-    "search_script": "搜索脚本",
-    "ancestor": "上级笔记",
-    "fast_search": "快速搜索",
-    "fast_search_description": "快速搜索选项禁用笔记内容的全文搜索，这可能会加速大数据库中的搜索。",
-    "include_archived": "包含归档",
     "include_archived_notes_description": "归档的笔记默认不包含在搜索结果中，使用此选项将包含它们。",
-    "order_by": "排序方式",
-    "limit": "限制",
     "limit_description": "限制结果数量",
-    "debug": "调试",
-    "debug_description": "调试将打印额外的调试信息到控制台，以帮助调试复杂查询",
     "action": "操作",
     "search_button": "搜索",
     "search_execute": "搜索并执行操作",
@@ -1188,8 +1178,7 @@
     "include_archived_notes": "包括已归档的笔记"
   },
   "limit": {
-    "limit": "限制",
-    "take_first_x_results": "仅取前 X 个指定结果。"
+    "limit": "限制"
   },
   "order_by": {
     "order_by": "排序依据",

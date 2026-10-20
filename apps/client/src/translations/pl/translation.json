@@ -483,23 +483,13 @@
   },
   "search_definition": {
     "add_search_option": "Dodaj opcję wyszukiwania:",
-    "search_string": "ciąg wyszukiwania",
-    "search_script": "skrypt wyszukiwania",
-    "ancestor": "przodek",
-    "fast_search": "szybkie wyszukiwanie",
-    "fast_search_description": "Opcja szybkiego wyszukiwania wyłącza pełnotekstowe przeszukiwanie treści notatek, co może przyspieszyć wyszukiwanie w dużych bazach danych.",
-    "include_archived": "uwzględnij zarchiwizowane",
     "include_archived_notes_description": "Zarchiwizowane notatki są domyślnie wykluczone z wyników wyszukiwania, ta opcja spowoduje ich uwzględnienie.",
-    "order_by": "sortuj według",
-    "limit": "limit",
     "limit_description": "Ogranicz liczbę wyników",
     "save_to_note": "Zapisz do notatki",
     "search_parameters": "Parametry wyszukiwania",
     "unknown_search_option": "Nieznana opcja wyszukiwania {{searchOptionName}}",
     "search_note_saved": "Notatka wyszukiwania została zapisana w {{- notePathTitle}}",
     "actions_executed": "Akcje zostały wykonane.",
-    "debug": "debug",
-    "debug_description": "Debugowanie wypisze dodatkowe informacje debugowania w konsoli, aby pomóc w debugowaniu złożonych zapytań",
     "action": "akcja",
     "search_button": "Szukaj",
     "search_execute": "Szukaj i wykonaj akcje",
@@ -566,8 +556,7 @@
     "modal_body_text": "Ze względu na ograniczenia przeglądarki (sandbox) nie można bezpośrednio odczytać schowka z poziomu JavaScript. Proszę wkleić treść Markdown do zaimportowania w poniższe pole tekstowe i kliknąć przycisk Importuj"
   },
   "limit": {
-    "limit": "Limit",
-    "take_first_x_results": "Weź tylko pierwsze X określonych wyników."
+    "limit": "Limit"
   },
   "link_context_menu": {
     "open_note_in_popup": "Szybka edycja",
