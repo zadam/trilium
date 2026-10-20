@@ -50,15 +50,15 @@ describe("the search definition", () => {
 
         expect(card).not.toBeNull();
         expect(card?.querySelector(".tn-card-section.tn-card-option.searchString")).not.toBeNull();
-        expect(card?.querySelector(".tn-card-section.search-definition-actions")).not.toBeNull();
 
-        const addRow = card?.querySelector(".tn-card-section.search-definition-add");
-        expect(addRow?.querySelectorAll(".dropdown")).toHaveLength(1);
+        const actionsRow = card?.querySelector(".tn-card-section.search-definition-actions");
+        expect(actionsRow?.querySelector(".search-definition-add")).not.toBeNull();
+        expect(actionsRow?.querySelector(".tn-split-button")).not.toBeNull();
     });
 
     it("offers the unused options and the bulk actions from the same menu", async () => {
         const container = renderDefinition();
-        const toggle = container.querySelector<HTMLButtonElement>(".search-definition-add .dropdown button");
+        const toggle = container.querySelector<HTMLButtonElement>(".search-definition-add button");
         await act(async () => toggle?.click());
 
         const menu = document.querySelector(".action-add-menu");

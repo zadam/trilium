@@ -100,15 +100,14 @@ export default function SearchDefinition({ note, ntxId }: {
 
                     <BulkActionsList note={note} />
 
-                    <CardSection className="search-definition-add">
+                    <CardSection className="search-definition-actions">
                         <AddSearchOptionButton note={note} options={searchOptions?.availableOptions ?? []} />
+                        <SearchButtonBar
+                            note={note}
+                            refreshResults={refreshResults}
+                            savePendingOptions={savePendingOptions}
+                        />
                     </CardSection>
-
-                    <SearchButtonBar
-                        note={note}
-                        refreshResults={refreshResults}
-                        savePendingOptions={savePendingOptions}
-                    />
                 </Card>
             )}
         </div>
@@ -140,16 +139,14 @@ function SearchButtonBar({ note, refreshResults, savePendingOptions }: {
     }
 
     return (
-        <CardSection className="search-definition-actions">
-            <SplitButton
-                text={t("search_definition.search_button")} icon="bx bx-search"
-                size="micro"
-                onClick={refreshResults}
-            >
-                <FormListItem icon="bx bxs-zap" onClick={searchAndExecuteActions}>{t("search_definition.search_execute")}</FormListItem>
-                {note.isHiddenCompletely() && <FormListItem icon="bx bx-save" onClick={saveSearchNote}>{t("search_definition.save_to_note")}</FormListItem>}
-            </SplitButton>
-        </CardSection>
+        <SplitButton
+            text={t("search_definition.search_button")} icon="bx bx-search"
+            size="micro"
+            onClick={refreshResults}
+        >
+            <FormListItem icon="bx bxs-zap" onClick={searchAndExecuteActions}>{t("search_definition.search_execute")}</FormListItem>
+            {note.isHiddenCompletely() && <FormListItem icon="bx bx-save" onClick={saveSearchNote}>{t("search_definition.save_to_note")}</FormListItem>}
+        </SplitButton>
     );
 }
 
@@ -212,6 +209,7 @@ function AddSearchOptionButton({ note, options }: { note: FNote; options: Search
 
     return (
         <Dropdown
+            className="search-definition-add"
             buttonClassName="btn-secondary btn-micro"
             text={<><Icon icon="bx bx-plus" />{" "}{t("search_definition.add_search_option")}</>}
             noSelectButtonStyle
