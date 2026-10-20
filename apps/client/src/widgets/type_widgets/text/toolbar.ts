@@ -82,8 +82,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "link",
                 "internallink",
                 ...(aiAssistant ? ["aiAssistantMenu"] : []),
-                "imageUpload",
-                "fileUpload",
+                "attachMenu",
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.
                 "insertTableForm",
                 "|",

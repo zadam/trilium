@@ -17,10 +17,13 @@ import {
     IconHeading5,
     IconHeading6,
     IconNumberedList,
+    IconPaperClip,
     IconParagraph,
     IconQuote,
     IconTodoList,
     List,
+    ListItemView,
+    ListView,
     Plugin,
     TodoList,
     UIModel
@@ -29,6 +32,7 @@ import type { ButtonView, Command, DropdownView, ListDropdownItemDefinition, Loc
 
 import admonitionIcon from "../icons/admonition.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
+import FileUploadUI from "./file_upload/file_upload_ui.js";
 import { openListAsMenu } from "./toolbar_group_menu.js";
 
 const HEADING_ICONS: Record<string, string> = {
@@ -60,6 +64,8 @@ interface BlockType {
  * - `fontSizeMenu`: the `fontSize` dropdown.
  * - `alignmentMenu`: the `alignment` dropdown, whose button shows the current alignment, with the
  *   alignments as a row of tiles.
+ * - `attachMenu`: the image upload and the rows of the `fileUpload` list as a row of tiles, under
+ *   a paperclip. A row whose feature the editor lacks is left out.
  */
 export default class MobileToolbarItems extends Plugin {
 
@@ -87,6 +93,38 @@ export default class MobileToolbarItems extends Plugin {
             openListAsMenu(dropdown, { layout: "tiles" });
             return dropdown;
         });
+
+        editor.ui.componentFactory.add("attachMenu", (locale) => this.createAttachDropdown(locale));
+    }
+
+    private createAttachDropdown(locale: Locale) {
+        const editor = this.editor;
+        const t = editor.t;
+        const buttons: ButtonView[] = [];
+
+        if (editor.ui.componentFactory.has("menuBar:uploadImage")) {
+            const image = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView;
+            image.label = t("Image");
+            buttons.push(image);
+        }
+        if (editor.plugins.has(FileUploadUI)) {
+            buttons.push(...editor.plugins.get(FileUploadUI).createListButtons(locale));
+        }
+
+        const dropdown = createDropdown(locale);
+        dropdown.buttonView.set({ label: t("Attach file"), icon: IconPaperClip, tooltip: true });
+        const listView = dropdown.listView = new ListView(locale);
+        for (const button of buttons) {
+            const item = new ListItemView(locale);
+            item.children.add(button);
+            listView.items.add(item);
+            button.delegate("execute").to(dropdown);
+        }
+        dropdown.panelView.children.add(listView);
+        dropdown.bind("isEnabled").toMany(buttons, "isEnabled", (...enabled) => enabled.some(Boolean));
+
+        openListAsMenu(dropdown, { layout: "tiles" });
+        return dropdown;
     }
 
     private createBlockTypeDropdown(locale: Locale) {

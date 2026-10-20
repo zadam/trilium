@@ -148,7 +148,7 @@ describe("buildMobileToolbar", () => {
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
         expect(toolbar.items.slice(9)).toStrictEqual([
             "|",
-            "link", "internallink", "aiAssistantMenu", "imageUpload", "fileUpload", "insertTableForm",
+            "link", "internallink", "aiAssistantMenu", "attachMenu", "insertTableForm",
             "|",
             "alignmentMenu"
         ]);
@@ -204,6 +204,8 @@ describe("buildMobileToolbar", () => {
             admonition: "blockType",
             fontSize: "fontSizeMenu",
             fontColor: "colorMenu",
+            imageUpload: "attachMenu",
+            fileUpload: "attachMenu",
             fontBackgroundColor: "colorMenu",
             "alignment:left": "alignmentMenu",
             "alignment:center": "alignmentMenu",

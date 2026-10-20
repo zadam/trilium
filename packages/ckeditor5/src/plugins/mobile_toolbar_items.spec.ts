@@ -5,6 +5,7 @@ import {
     BlockQuote,
     ClassicEditor,
     CodeBlock,
+    Command,
     DropdownView,
     Essentials,
     FontSize,
@@ -18,20 +19,28 @@ import {
     IconCodeBlock,
     IconHeading2,
     IconHeading3,
+    IconImageUpload,
     IconNumberedList,
+    IconPaperClip,
     IconParagraph,
     IconQuote,
     IconTodoList,
+    Image,
+    ImageUpload,
     List,
     Paragraph,
+    Plugin,
     TodoList
 } from "ckeditor5";
+import bxLink from "boxicons/svg/regular/bx-link.svg?raw";
+import bxShapeSquare from "boxicons/svg/regular/bx-shape-square.svg?raw";
 import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
 import admonitionIcon from "../icons/admonition.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
+import FileUploadUI from "./file_upload/file_upload_ui.js";
 import MobileToolbarItems from "./mobile_toolbar_items.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuEntry, type ToolbarGroupMenuItem, type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
@@ -256,6 +265,92 @@ describe("MobileToolbarItems", () => {
         entry(tiles, "Align right").run?.();
         expect(menuEditor.getData()).toBe("<p style=\"text-align:right;\">foo</p>");
         expect(dropdown.buttonView.icon).toBe(IconAlignRight);
+    });
+});
+
+describe("attachMenu", () => {
+    /** Stands in for `FileUploadEditing` and `ContentEmbed`, whose commands the rows run. */
+    class UploadCommands extends Plugin {
+        init() {
+            for (const name of ["fileUpload", "insertContentEmbed"]) {
+                const command = new Command(this.editor);
+                command.refresh();
+                this.editor.commands.add(name, command);
+            }
+        }
+    }
+
+    async function createAttachEditor() {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const editor = await createTestEditor([
+            Essentials, Paragraph, Image, ImageUpload, UploadCommands, FileUploadUI, MobileToolbarItems, ToolbarGroupMenu
+        ], {
+            toolbar: ["attachMenu"],
+            toolbarGroupMenu: { host: () => host }
+        });
+        return { editor, requests };
+    }
+
+    /** Runs `row` and returns the file input it opened, with the files it is given picked in it. */
+    function pick(row: ToolbarGroupMenuEntry, files: File[]) {
+        let input: HTMLInputElement | undefined;
+        const click = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(function (this: HTMLInputElement) {
+            input = this;
+        });
+        row.run?.();
+        click.mockRestore();
+        if (!input) throw new Error(`expected "${row.label}" to open a file input`);
+
+        const transfer = new DataTransfer();
+        for (const file of files) transfer.items.add(file);
+        input.files = transfer.files;
+        input.dispatchEvent(new Event("change"));
+        return input;
+    }
+
+    it("opens the image and file uploads as a row of tiles under a paperclip", async () => {
+        const { editor, requests } = await createAttachEditor();
+
+        const dropdown = getDropdown(editor, 0);
+        expect([dropdown.buttonView.label, dropdown.buttonView.icon]).toStrictEqual(["Attach file", IconPaperClip]);
+        dropdown.buttonView.fire("open");
+
+        const request = requests.at(-1);
+        expect(request?.layout).toBe("tiles");
+        const tiles = request?.items ?? [];
+        expect(tiles.map(rowText)).toStrictEqual(["Image", "Attach and embed file", "Attach file as a link"]);
+        expect(icons(tiles)).toStrictEqual([IconImageUpload, bxShapeSquare, bxLink]);
+    });
+
+    it("picks images for the image tile, and any file for the others, which attach them", async () => {
+        const { editor, requests } = await createAttachEditor();
+        const upload = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
+        getDropdown(editor, 0).buttonView.fire("open");
+        const tiles = requests.at(-1)?.items ?? [];
+        const file = new File(["a"], "a.pdf", { type: "application/pdf" });
+
+        expect(pick(entry(tiles, "Image"), []).accept).toContain("image/png");
+        expect(pick(entry(tiles, "Attach and embed file"), [file]).accept).toBe("");
+        pick(entry(tiles, "Attach file as a link"), [file]);
+        expect(upload.mock.calls).toStrictEqual([
+            ["fileUpload", { file: [file], asEmbed: true }],
+            ["fileUpload", { file: [file] }]
+        ]);
+    });
+
+    it("leaves out the tiles of the features the editor lacks", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const editor = await createTestEditor([Essentials, Paragraph, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["attachMenu"],
+            toolbarGroupMenu: { host: () => host }
+        });
+
+        const dropdown = getDropdown(editor, 0);
+        expect(dropdown.isEnabled).toBe(false);
+        dropdown.buttonView.fire("open");
+        expect(requests.at(-1)?.items ?? []).toStrictEqual([]);
     });
 });
 
