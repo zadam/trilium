@@ -1,6 +1,7 @@
 body.mobile {
     /* Read by `PopupEditor.css` to clear the toolbar. */
     --mobile-toolbar-button-size: 44px;
+    --mobile-toolbar-icon-size: 22px;
     /* The 2px is the island's border. */
     --mobile-toolbar-height: calc(var(--mobile-toolbar-button-size) + 2px);
     --mobile-toolbar-gap: 6px;
@@ -107,6 +108,8 @@ body.mobile {
         align-items: center;
 
         .icon-action {
+            /* Must equal `--mobile-toolbar-icon-size` / `--mobile-toolbar-button-size`. */
+            --icon-button-icon-ratio: 0.5;
             border-inline-start: 1px solid var(--main-border-color);
             border-radius: 0;
             border-start-end-radius: 5px;
@@ -130,6 +133,7 @@ body.mobile {
         /* Set on the buttons, not the dropdowns, whose panels would inherit it. */
         .ck-toolbar__items > :is(.ck-button, .ck-dropdown > .ck-dropdown__button) {
             --ck-size-control-min-height: var(--mobile-toolbar-button-size);
+            --ck-icon-size: var(--mobile-toolbar-icon-size);
         }
     }
 }
