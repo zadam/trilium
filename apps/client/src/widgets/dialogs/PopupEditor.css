@@ -107,6 +107,13 @@ body.mobile .modal.popup-editor-dialog .modal-dialog {
     flex-direction: column;
 }
 
+/* Fades the content at the top edge instead of clipping it; the padding keeps the first line
+   clear at rest. */
+body.mobile .modal.popup-editor-dialog .popup-editor-scroll {
+    --scroll-fade-top: 16px;
+    padding-top: var(--scroll-fade-top);
+}
+
 .modal.popup-editor-dialog .title-row,
 .modal.popup-editor-dialog .modal-title,
 .modal.popup-editor-dialog .note-icon-widget,

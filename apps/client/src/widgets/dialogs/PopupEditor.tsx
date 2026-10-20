@@ -198,7 +198,7 @@ export default function PopupEditor({ ntxId = POPUP_EDITOR_NTX_ID, openCommand =
                     noFocus // automatic focus breaks block popup
                     stackable
                 >
-                    <div className="popup-editor-scroll">
+                    <div className={`popup-editor-scroll${isMobile ? " scroll-edge-fade" : ""}`}>
                         <PromotedAttributes />
 
                         {!isMobile && <FormattingToolbar />}

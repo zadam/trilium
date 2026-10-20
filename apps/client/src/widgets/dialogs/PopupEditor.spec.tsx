@@ -505,6 +505,7 @@ describe("PopupEditor", () => {
 
     it("gives mobile its own toolbar and hides the buttons that make no sense in a popup", async () => {
         expect(container.querySelector(".mobile-toolbar-stub")).toBeNull();
+        expect(container.querySelector(".popup-editor-scroll")?.classList.contains("scroll-edge-fade")).toBe(false);
 
         mocks.isMobile.mockReturnValue(true);
         const mobileContainer = document.body.appendChild(document.createElement("div"));
@@ -522,6 +523,7 @@ describe("PopupEditor", () => {
         const scroll = mobileContainer.querySelector(".popup-editor-scroll");
         const toolbar = mobileContainer.querySelector(".mobile-toolbar-stub");
         expect(scroll?.querySelector(".note-detail-stub")).not.toBeNull();
+        expect(scroll?.classList.contains("scroll-edge-fade")).toBe(true);
         expect(toolbar).not.toBeNull();
         expect(scroll?.contains(toolbar)).toBe(false);
         expect(scroll?.nextElementSibling).toBe(toolbar);
