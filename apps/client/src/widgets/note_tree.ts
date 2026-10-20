@@ -107,7 +107,7 @@ const TPL = /*html*/`
     }
     </style>
 
-    <div class="tree"></div>
+    <div class="tree scroll-edge-fade"></div>
 
     <div class="tree-actions">
         <button class="tree-floating-button bx bx-layer-minus collapse-tree-button"

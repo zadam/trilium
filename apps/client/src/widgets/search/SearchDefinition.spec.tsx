@@ -44,6 +44,49 @@ afterEach(() => {
 });
 
 describe("the search definition", () => {
+    it("lays the parameters out as rows of a card, as the bulk actions dialog does", () => {
+        const container = renderDefinition();
+        const card = container.querySelector(".search-definition-widget > .tn-card");
+
+        expect(card).not.toBeNull();
+        expect(card?.querySelector(".search-definition-options .search-option.searchString")).not.toBeNull();
+
+        const actionsRow = card?.querySelector(".tn-card-section.search-definition-actions");
+        expect(actionsRow?.querySelector(".search-definition-add")).not.toBeNull();
+        expect(actionsRow?.querySelector(".tn-split-button")).not.toBeNull();
+    });
+
+    it("describes an option that configures nothing instead of offering help", () => {
+        const container = renderDefinition([ "searchString", "fastSearch", "debug" ]);
+
+        for (const [ name, text ] of [
+            [ "fastSearch", "fast_search.description" ],
+            [ "debug", "debug.debug_info" ]
+        ]) {
+            const row = container.querySelector(`.search-option.${name}`);
+            expect(row?.querySelector(".search-option-description")?.textContent).toContain(text);
+            expect(row?.querySelector(".help-dropdown")).toBeNull();
+        }
+
+        expect(container.querySelector(".search-option.searchString .help-dropdown")).not.toBeNull();
+    });
+
+    it("offers the unused options and the bulk actions from the same menu", async () => {
+        const container = renderDefinition();
+        const toggle = container.querySelector<HTMLButtonElement>(".search-definition-add button");
+        await act(async () => toggle?.click());
+
+        const menu = document.querySelector(".action-add-menu");
+        expect(menu?.textContent).toContain("limit.limit");
+        expect(menu?.querySelector(".dropdown-header")?.textContent).toBe("bulk_actions.bulk_actions");
+
+        const groups = [ ...menu?.querySelectorAll(".dropdown-submenu") ?? [] ]
+            .map((row) => row.textContent?.trim());
+        expect(groups).toEqual([
+            "bulk_actions.labels", "bulk_actions.relations", "bulk_actions.notes", "bulk_actions.other"
+        ]);
+    });
+
     it.each([
         [ "search", "search_definition.search_button", () => search.runSearchNote ],
         [ "search & execute", "search_definition.search_execute", () => server.post ]
@@ -51,7 +94,7 @@ describe("the search definition", () => {
         const container = renderDefinition();
 
         act(() => editorProps?.onChange("#book #year"));
-        const button = [ ...container.querySelectorAll("button") ].find((b) => b.textContent?.includes(label));
+        const button = await findAction(container, label);
         expect(button).toBeDefined();
         act(() => button?.click());
         await settle();
@@ -83,13 +126,13 @@ describe("the search definition", () => {
     });
 });
 
-function renderDefinition() {
+function renderDefinition(labels = [ "searchString" ]) {
     const note = {
         noteId: "search1",
         title: "search1",
         getLabelValue: (name: string) => (name === "searchString" ? "#book" : null),
         getAttribute: (type: string, name: string) =>
-            (type === "label" && name === "searchString" ? {} : undefined),
+            (type === "label" && labels.includes(name) ? {} : undefined),
         getAttributes: () => [],
         isHiddenCompletely: () => false
     } as unknown as FNote;
@@ -108,4 +151,17 @@ async function settle() {
     await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
     });
+}
+
+/** The button named `label`, opening the split button's menu when it is one of the actions there. */
+async function findAction(container: HTMLElement, label: string) {
+    const button = [ ...container.querySelectorAll("button") ].find((b) => b.textContent?.includes(label));
+    if (button) {
+        return button;
+    }
+
+    const toggle = container.querySelector<HTMLButtonElement>(".dropdown-toggle-split");
+    await act(async () => toggle?.click());
+    return [ ...document.querySelectorAll<HTMLElement>(".dropdown-item") ]
+        .find((item) => item.textContent?.includes(label));
 }

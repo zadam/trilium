@@ -12,7 +12,7 @@ import dialogService from "../../services/dialog";
 import server from "../../services/server";
 import toast from "../../services/toast";
 import { getErrorMessage, isShare } from "../../services/utils";
-import { ViewTypeOptions } from "../collections/interface";
+import { resolveViewType, ViewTypeOptions } from "../collections/interface";
 import { searchTermsFor } from "../collections/search/SearchResultCard";
 import ActionButton from "../react/ActionButton";
 import { Card } from "../react/Card";
@@ -29,6 +29,7 @@ import { bookPropertiesConfig } from "./collection-properties-config";
 export const ICON_MAPPINGS: Record<ViewTypeOptions, string> = {
     grid: "bx bxs-grid",
     list: "bx bx-list-ul",
+    searchPreview: "bx bx-news",
     calendar: "bx bx-calendar",
     table: "bx bx-table",
     geoMap: "bx bx-map-alt",
@@ -40,6 +41,7 @@ export const ICON_MAPPINGS: Record<ViewTypeOptions, string> = {
 export const VIEW_TYPE_MAPPINGS: Record<ViewTypeOptions, string> = {
     grid: t("book_properties.grid"),
     list: t("book_properties.list"),
+    searchPreview: t("book_properties.search-preview"),
     calendar: t("book_properties.calendar"),
     table: t("book_properties.table"),
     geoMap: t("book_properties.geo-map"),
@@ -104,7 +106,7 @@ function CollectionPropertiesBar({
         <div className="collection-properties">
             <div className="left-container">
                 {!isShare && <>
-                    <ViewTypeSwitcher viewType={viewType} setViewType={setViewType} />
+                    <ViewTypeSwitcher noteType={noteType} viewType={viewType} setViewType={setViewType} />
                     <ViewOptions note={note} viewType={viewType} optionsChildren={optionsChildren} />
                 </>}
             </div>
@@ -188,12 +190,32 @@ async function getResultDetails(searchNote: FNote, noteIds: string[]) {
 
 export function useViewType(note: FNote | null | undefined) {
     const [ viewType, setViewType ] = useNoteLabel(note, "viewType");
-    const defaultViewType = (note?.type === "search" ? "list" : "grid");
-    const viewTypeWithDefault = (viewType ?? defaultViewType) as ViewTypeOptions;
-    return [ viewTypeWithDefault, setViewType ] as const;
+    return [ resolveViewType(note, viewType) ?? "grid", setViewType ] as const;
 }
 
-function ViewTypeSwitcher({ viewType, setViewType }: { viewType: ViewTypeOptions, setViewType: (newValue: ViewTypeOptions) => void }) {
+function ViewTypeSwitcher({ noteType, viewType, setViewType }: {
+    noteType: string | null | undefined;
+    viewType: ViewTypeOptions;
+    setViewType: (newValue: ViewTypeOptions) => void;
+}) {
+    // The search preview fetches a saved search's result details, so only search notes offer it.
+    // The basic views stay above the divider, the richer collection views below it.
+    const isSearchNote = noteType === "search";
+    const basicViewTypes: ViewTypeOptions[] = isSearchNote
+        ? [ "searchPreview", "list", "grid" ]
+        : [ "grid", "list" ];
+    const otherViewTypes = (Object.keys(VIEW_TYPE_MAPPINGS) as ViewTypeOptions[])
+        .filter((key) => key !== "searchPreview" && !basicViewTypes.includes(key));
+    const renderViewType = (key: ViewTypeOptions) => (
+        <FormListItem
+            key={key}
+            onClick={() => setViewType(key)}
+            checked={viewType === key}
+            checkable
+            icon={ICON_MAPPINGS[key]}
+            badges={key === "dashboard" ? [{ text: t("note_types.beta-feature") }] : undefined}
+        >{VIEW_TYPE_MAPPINGS[key]}</FormListItem>
+    );
     // Keyboard shortcut
     const dropdownContainerRef = useRef<HTMLDivElement>(null);
     const { ntxId: ownNtxId } = useNoteContext();
@@ -210,16 +232,9 @@ function ViewTypeSwitcher({ viewType, setViewType }: { viewType: ViewTypeOptions
                 {VIEW_TYPE_MAPPINGS[viewType]}
             </>}
         >
-            {Object.entries(VIEW_TYPE_MAPPINGS).map(([ key, label ]) => (
-                <FormListItem
-                    key={key}
-                    onClick={() => setViewType(key as ViewTypeOptions)}
-                    selected={viewType === key}
-                    disabled={viewType === key}
-                    icon={ICON_MAPPINGS[key as ViewTypeOptions]}
-                    badges={key === "dashboard" ? [{ text: t("note_types.beta-feature") }] : undefined}
-                >{label}</FormListItem>
-            ))}
+            {basicViewTypes.map(renderViewType)}
+            <FormDropdownDivider />
+            {otherViewTypes.map(renderViewType)}
         </Dropdown>
     );
 }

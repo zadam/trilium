@@ -413,13 +413,23 @@ function press(el: Element, key: string) {
 }
 
 describe("menuItemTooltipSide", () => {
-    /** A row spanning `left`–`right` and a tooltip of `width`, which must not sway the side. */
+    /** A row spanning `left`–`right`, and a tooltip laid out at `width` but capped by its inner. */
     function sideFor(left: number, right: number, width: number) {
         const row = document.createElement("li");
         row.getBoundingClientRect = () => ({ left, right } as DOMRect);
         const tip = document.createElement("div");
         tip.style.width = `${width}px`;
-        return menuItemTooltipSide(undefined, tip, row);
+        const inner = document.createElement("div");
+        inner.className = "tooltip-inner";
+        inner.style.maxWidth = "500px";
+        tip.append(inner);
+        // Attached, as Bootstrap shows it, so the inner's computed cap can be read.
+        document.body.append(tip);
+        try {
+            return menuItemTooltipSide(tip, row);
+        } finally {
+            tip.remove();
+        }
     }
 
     it("keeps every row of a menu on one side, whatever its tooltip's width", () => {
@@ -427,14 +437,14 @@ describe("menuItemTooltipSide", () => {
         window.innerWidth = 1000;
         try {
             window.glob.isRtl = false;
-            // Room for the widest tooltip on the right.
-            expect([ 40, 400 ].map((width) => sideFor(500, 780, width))).toStrictEqual([ "right", "right" ]);
+            // Room for a tooltip at its widest on the right.
+            expect([ 100, 400 ].map((width) => sideFor(100, 480, width))).toStrictEqual([ "right", "right" ]);
             // Not enough of it: both go left, the narrow one included.
-            expect([ 40, 400 ].map((width) => sideFor(600, 900, width))).toStrictEqual([ "left", "left" ]);
+            expect([ 100, 400 ].map((width) => sideFor(400, 780, width))).toStrictEqual([ "left", "left" ]);
 
             window.glob.isRtl = true;
-            expect(sideFor(300, 600, 40)).toBe("left");
-            expect(sideFor(100, 400, 40)).toBe("right");
+            expect(sideFor(700, 990, 100)).toBe("left");
+            expect(sideFor(300, 600, 100)).toBe("right");
         } finally {
             window.glob.isRtl = false;
             window.innerWidth = innerWidth;

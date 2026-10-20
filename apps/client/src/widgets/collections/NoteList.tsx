@@ -9,7 +9,7 @@ import FNote from "../../entities/fnote";
 import type { PrintReport } from "../../print";
 import { subscribeToMessages, unsubscribeToMessage as unsubscribeFromMessage } from "../../services/ws";
 import { useGetContextDataFrom, useNoteContext, useNoteLabel, useNoteLabelBoolean, useNoteLabelInt, useNoteProperty, useTriliumEvent } from "../react/hooks";
-import { allViewTypes, ViewModeMedia, ViewModeProps, ViewTypeOptions } from "./interface";
+import { ViewModeMedia, ViewModeProps, resolveViewType, ViewTypeOptions } from "./interface";
 import ViewModeStorage, { type ViewModeStorageType } from "./view_mode_storage";
 
 interface NoteListProps {
@@ -38,6 +38,10 @@ type LazyLoadedComponent = ((props: ViewModeProps<any>) => VNode<any> | undefine
 const ViewComponents: Record<ViewTypeOptions, { normal: LazyLoadedComponent, print?: LazyLoadedComponent }> = {
     list: {
         normal: lazy(() => import("./legacy/ListOrGridView.js").then(i => i.ListView)),
+        print: lazy(() => import("./legacy/ListPrintView.js").then(i => i.ListPrintView))
+    },
+    searchPreview: {
+        normal: lazy(() => import("./search/SearchResultsList.js").then(i => i.default)),
         print: lazy(() => import("./legacy/ListPrintView.js").then(i => i.ListPrintView))
     },
     grid: {
@@ -91,12 +95,12 @@ export function EmbeddedNoteList(props: Omit<NoteListProps, "isEnabled" | "viewT
     return <CustomNoteList {...props} isEnabled={true} viewType={viewType} />;
 }
 
-export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, contentReady = true, notePath, highlightedTokens, displayOnlyCollections, ntxId, onReady, onProgressChanged, ...restProps }: NoteListProps) {
+export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, contentReady = true, notePath, highlightedTokens, displayOnlyCollections, ntxId, onReady, onProgressChanged, media, ...restProps }: NoteListProps) {
     const widgetRef = useRef<HTMLDivElement>(null);
     const noteIds = useNoteIds(shouldEnable ? note : null, viewType, ntxId);
-    const isFullHeight = (viewType && viewType !== "list" && viewType !== "grid");
+    const isFullHeight = (viewType && viewType !== "list" && viewType !== "grid" && viewType !== "searchPreview");
     const [ isIntersecting, setIsIntersecting ] = useState(false);
-    const shouldRender = (isFullHeight || isIntersecting || note?.type === "book");
+    const shouldRender = shouldRenderNoteList(note, viewType, isIntersecting, media);
     const isEnabled = (note && shouldEnable && !!viewType && shouldRender);
 
     useEffect(() => {
@@ -142,8 +146,9 @@ export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, conten
     const viewModeConfig = useViewModeConfig(note, viewType);
     if (note && notePath && viewModeConfig) {
         props = {
-            note, noteIds, notePath,
+            note, noteIds, notePath, ntxId,
             highlightedTokens,
+            media,
             viewConfig: viewModeConfig.config,
             saveConfig: viewModeConfig.storeFn,
             onReady: onReady ?? (() => {}),
@@ -174,21 +179,28 @@ export function CustomNoteList({ note, viewType, isEnabled: shouldEnable, conten
 
 export function useNoteViewType(note?: FNote | null): ViewTypeOptions | undefined {
     const [ viewType ] = useNoteLabel(note, "viewType");
+    return resolveViewType(note, viewType);
+}
 
-    if (!note) {
-        return undefined;
-    } else if (!(allViewTypes as readonly string[]).includes(viewType || "")) {
-        // when not explicitly set, decide based on the note type
-        return note.type === "search" ? "list" : "grid";
-    }
-    return viewType as ViewTypeOptions;
-
+/**
+ * Whether a view is drawn yet. A full-height view, or a book's, is drawn at once; a list waits until
+ * it scrolls into view. A print page has nothing on screen to scroll into, so it draws its results
+ * for the paper.
+ */
+export function shouldRenderNoteList(
+    note: FNote | null | undefined,
+    viewType: ViewTypeOptions | undefined,
+    isIntersecting: boolean,
+    media: ViewModeMedia
+) {
+    const isFullHeight = viewType && viewType !== "list" && viewType !== "grid" && viewType !== "searchPreview";
+    return !!(isFullHeight || isIntersecting || note?.type === "book" || media === "print");
 }
 
 export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOptions | undefined, ntxId: string | null | undefined) {
     const [ noteIds, setNoteIds ] = useState<string[]>([]);
     const [ includeArchived ] = useNoteLabelBoolean(note, "includeArchived");
-    const directChildrenOnly = (viewType === "list" || viewType === "grid" || viewType === "table" || viewType === "dashboard" || note?.type === "search");
+    const directChildrenOnly = (viewType === "list" || viewType === "searchPreview" || viewType === "grid" || viewType === "table" || viewType === "dashboard" || note?.type === "search");
     const [ labelMaxDepth ] = useNoteLabelInt(note, "maxNestingDepth");
     const maxDepth = (viewType === "calendar" || viewType === "geoMap" || viewType === "board")
         ? labelMaxDepth : undefined;

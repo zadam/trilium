@@ -64,4 +64,27 @@ describe("SplitButton", () => {
             .toEqual([ [ true, true ], [ true, true ] ]);
         expect(halves[0]?.classList.contains("btn-secondary")).toBe(false);
     });
+
+    it("joins its halves, and takes a micro look on both", () => {
+        render((
+            <SplitButton text="Add" size="micro">
+                <FormListItem onClick={() => {}}>Add another</FormListItem>
+            </SplitButton>
+        ), host);
+
+        expect(host.querySelector(".btn-group")?.classList.contains("tn-split-button")).toBe(true);
+        expect([ ...host.querySelectorAll<HTMLButtonElement>(".btn-group button") ]
+            .every((button) => button.classList.contains("btn-micro"))).toBe(true);
+    });
+
+    it("shows the main action's shortcut on its half", () => {
+        render((
+            <SplitButton text="Search" keyboardShortcut="Enter">
+                <FormListItem onClick={() => {}}>Search and execute</FormListItem>
+            </SplitButton>
+        ), host);
+
+        const [ main ] = host.querySelectorAll(".btn-group button");
+        expect(main?.querySelector("kbd")).not.toBeNull();
+    });
 });

@@ -20,6 +20,7 @@ import ws from "../../services/ws";
 import ClosePaneButton from "../buttons/close_pane_button";
 import CreatePaneButton from "../buttons/create_pane_button";
 import MovePaneButton from "../buttons/move_pane_button";
+import { resolveViewType } from "../collections/interface";
 import { showImageCompressionDialog } from "../dialogs/image_compression/image_compression_dialog";
 import { isAlwaysFullWidthByType } from "../note_wrapper";
 import Dropdown, { type DropdownHandle } from "../react/Dropdown";
@@ -86,6 +87,7 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
         ["text", "code", "spreadsheet", "llmChat"].includes(noteType) ||
         (noteType === "render" && !!renderNote) ||
         (noteType === "book" && ["presentation", "list", "table"].includes(viewType ?? "")) ||
+        (noteType === "search" && ["list", "searchPreview"].includes(resolveViewType(note, viewType) ?? "")) ||
         (noteType === "file" && note.mime === "application/pdf")
     );
     const isElectron = getIsElectron();

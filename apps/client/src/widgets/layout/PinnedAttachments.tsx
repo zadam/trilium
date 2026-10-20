@@ -42,6 +42,7 @@ export default function PinnedAttachments({ note }: { note: FNote }) {
                         className="pinned-attachment"
                         title={attachment.title}
                         headerActions={HeaderActions && <HeaderActions attachment={attachment} />}
+                        card
                         initiallyExpanded
                     >
                         <View attachment={attachment} />

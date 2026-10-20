@@ -13,6 +13,8 @@ interface CollapsibleProps extends Pick<HTMLAttributes<HTMLDivElement>, "classNa
     initiallyExpanded?: boolean;
     /** Shown beside the title, also while collapsed; not part of the button that toggles. */
     headerActions?: ComponentChildren;
+    /** Draws the expanded body on a card of its own, apart from what surrounds it. */
+    card?: boolean;
 }
 
 export default function Collapsible({ initiallyExpanded, ...restProps }: CollapsibleProps) {
@@ -21,7 +23,7 @@ export default function Collapsible({ initiallyExpanded, ...restProps }: Collaps
 }
 
 export function ExternallyControlledCollapsible({
-    title, children, className, expanded, setExpanded, headerActions
+    title, children, className, expanded, setExpanded, headerActions, card
 }: Omit<CollapsibleProps, "initiallyExpanded"> & {
     expanded: boolean | undefined;
     setExpanded: (expanded: boolean) => void
@@ -73,7 +75,8 @@ export function ExternallyControlledCollapsible({
     return (
         <div className={clsx("collapsible", className, {
             expanded,
-            "with-transition": transitionEnabled
+            "with-transition": transitionEnabled,
+            "collapsible-card": card
         })}>
             {headerActions ? (
                 <div className="collapsible-header">

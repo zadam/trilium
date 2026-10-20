@@ -1158,6 +1158,16 @@ describe("Search", () => {
             expect(detailsFor("orbiter").find((d) => d.noteId === asimov.noteId)?.matchedTerms).toEqual([ "writer" ]);
         });
 
+        it("reports whether the body continues past the snippet", () => {
+            const short = contentNote("Short", "<p>the needle is here</p>");
+            const long = contentNote("Long", `<p>${"padding ".repeat(60)}the needle is here</p>`);
+
+            const details = detailsFor("needle");
+
+            expect(details.find((d) => d.noteId === short.noteId)?.contentSnippetTruncated).toBe(false);
+            expect(details.find((d) => d.noteId === long.noteId)?.contentSnippetTruncated).toBe(true);
+        });
+
         it("highlights the word a fuzzy body match actually matched", () => {
             // "writer" is two edits from "orbiter", which AUTO allows for a 7-character token, so
             // this note is a result even though the word the user typed appears nowhere in it.
@@ -1231,6 +1241,18 @@ describe("Search", () => {
 
         const snippet = searchService.extractContentSnippet(noteBuilder.note.noteId, [ "second" ]);
         expect(snippet.split("\n")).toEqual([ "First line", "second line", "third line", "Next paragraph" ]);
+    });
+
+    it("keeps a code note's indentation in the snippet", () => {
+        // Collapsing the whitespace of a line, as prose snippets do, would run the source together
+        // and lose the nesting the code is read by.
+        const noteBuilder = note("script.ts", { type: "code", mime: "text/typescript" });
+        noteBuilder.note.getContent = () => "function main() {\n\tif (ready) {\n\t\trun();\n\t}\n}";
+        rootNote.child(noteBuilder);
+
+        const snippet = searchService.extractContentSnippet(noteBuilder.note.noteId, [ "run" ]);
+        // Tabs are widened to the four spaces the code editor draws them as.
+        expect(snippet.split("\n")).toEqual([ "    if (ready) {", "        run();", "    }", "}..." ]);
     });
 
     it("escapes angle brackets in the note title instead of dropping them", () => {

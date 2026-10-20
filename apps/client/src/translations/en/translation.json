@@ -1335,6 +1335,7 @@
     "view_type": "View type",
     "grid": "Grid",
     "list": "List",
+    "search-preview": "Search preview",
     "collapse_all_notes": "Collapse all notes",
     "expand_tooltip": "Expands the direct children of this collection (one level deep). For more options, press the arrow on the right.",
     "collapse": "Collapse",
@@ -1445,19 +1446,9 @@
     "conflicting_tooltip": "The items define this attribute in more than one way, so it is sorted as text and cannot be set from the item menu."
   },
   "search_definition": {
-    "add_search_option": "Add search option:",
-    "search_string": "search string",
-    "search_script": "search script",
-    "ancestor": "ancestor",
-    "fast_search": "fast search",
-    "fast_search_description": "Fast search option disables full text search of note contents which might speed up searching in large databases.",
-    "include_archived": "include archived",
+    "add_search_option": "Add search option",
     "include_archived_notes_description": "Archived notes are by default excluded from search results, with this option they will be included.",
-    "order_by": "order by",
-    "limit": "limit",
     "limit_description": "Limit number of results",
-    "debug": "debug",
-    "debug_description": "Debug will print extra debugging information into the console to aid in debugging complex queries",
     "action": "action",
     "option": "option",
     "search_button": "Search",
@@ -1497,27 +1488,27 @@
     "label": "Ancestor",
     "placeholder": "search for note by its name",
     "depth_label": "depth",
-    "depth_doesnt_matter": "doesn't matter",
-    "depth_eq": "is exactly {{count}}",
-    "direct_children": "direct children",
-    "depth_gt": "is greater than {{count}}",
-    "depth_lt": "is less than {{count}}"
+    "depth_doesnt_matter": "any",
+    "depth_eq": "= {{count}}",
+    "direct_children": "children only",
+    "depth_gt": "> {{count}}",
+    "depth_lt": "< {{count}}"
   },
   "debug": {
     "debug": "Debug",
-    "debug_info": "Debug will print extra debugging information into the console to aid in debugging complex queries.",
-    "access_info": "To access the debug information, execute query and click on \"Show backend log\" in top left corner."
+    "debug_info": "Prints extra debugging information into the console to aid in debugging complex queries.",
+    "access_info": "Run the search, then click \"Show backend log\" in the global menu."
   },
   "fast_search": {
     "fast_search": "Fast search",
-    "description": "Fast search option disables full text search of note contents which might speed up searching in large databases."
+    "description": "Disables full text search of note contents, which speeds up searching in large databases."
   },
   "include_archived_notes": {
     "include_archived_notes": "Include archived notes"
   },
   "limit": {
     "limit": "Limit",
-    "take_first_x_results": "Take only first X specified results."
+    "max_results": "max results"
   },
   "order_by": {
     "order_by": "Order by",
@@ -1527,7 +1518,7 @@
     "date_modified": "Date of last modification",
     "content_size": "Note content size",
     "content_and_attachments_size": "Note content size including attachments",
-    "content_and_attachments_and_revisions_size": "Note content size including attachments and revisions",
+    "content_and_attachments_and_revisions_size": "Note size with attachments & revisions",
     "revision_count": "Number of revisions",
     "children_count": "Number of children notes",
     "parent_count": "Number of clones",
@@ -1535,11 +1526,11 @@
     "owned_relation_count": "Number of relations",
     "target_relation_count": "Number of relations targeting the note",
     "random": "Random order",
-    "asc": "Ascending (default)",
+    "asc": "Ascending",
     "desc": "Descending"
   },
   "search_script": {
-    "title": "Search script:",
+    "title": "Search script",
     "placeholder": "search for note by its name",
     "description1": "Search script allows to define search results by running a script. This provides maximal flexibility when standard search doesn't suffice.",
     "description2": "Search script must be of type \"code\" and subtype \"JavaScript backend\". The script needs to return an array of noteIds or notes.",
@@ -1548,7 +1539,7 @@
     "note": "Note that search script and search string can't be combined with each other."
   },
   "search_string": {
-    "title_column": "Search string:",
+    "title_column": "Search string",
     "placeholder": "Ctrl+Space for suggestions, @ for a note, Shift+Enter for a new line, Enter to search",
     "search_syntax": "Search syntax",
     "also_see": "also see",
@@ -2878,6 +2869,8 @@
     "result_count_other": "{{count}} results",
     "page_size": "Per page",
     "snippet_unavailable": "No preview available.",
+    "show_more": "Show more",
+    "show_less": "Show less",
     "searching": "Searching..."
   },
   "sql_result": {

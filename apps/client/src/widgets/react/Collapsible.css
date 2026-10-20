@@ -32,6 +32,14 @@
         opacity: 0;
     }
 
+    &.collapsible-card .collapsible-inner-body {
+        margin-top: 0.5em;
+        padding: 0;
+        overflow: hidden;
+        border-radius: var(--card-border-radius, 8px);
+        background: var(--card-background-color, var(--accented-background-color));
+    }
+
     &.expanded {
         .collapsible-title .arrow {
             transform: rotate(90deg);

@@ -31,10 +31,12 @@ const BulkAction = memo(({ children, bulkAction }: BulkActionProps) => {
                     {children ?? <span className="bulk-action-description">{actionDescription}</span>}
                 </div>
             </td>
-            <HelpRemoveButtons
-                removeText={t("bulk_actions.remove_action")}
-                onRemove={() => bulkAction?.deleteAction()}
-            />
+            <td className="button-column">
+                <HelpRemoveButtons
+                    removeText={t("bulk_actions.remove_action")}
+                    onRemove={() => bulkAction?.deleteAction()}
+                />
+            </td>
         </tr>
     );
 });

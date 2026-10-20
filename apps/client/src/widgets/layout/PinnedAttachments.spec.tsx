@@ -40,6 +40,7 @@ describe("PinnedAttachments", () => {
         const sections = container.querySelectorAll(".pinned-attachment");
         expect(sections).toHaveLength(1);
         const [ section ] = sections;
+        expect(section.classList.contains("collapsible-card")).toBe(true);
         expect(section.textContent).toContain("Transcript");
         expect(section.querySelector("[aria-expanded]")?.getAttribute("aria-expanded")).toBe("true");
         expect(section.querySelector(".transcript-stub")?.textContent).toBe("transcript1");

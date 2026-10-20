@@ -170,7 +170,7 @@ describe("NoteContextMenu", () => {
         expect(await hasPropertiesItem("board", { "#readOnly": "" })).toBe(true);
     });
 
-    it("offers to print a render note only while it has a render target", async () => {
+    it("offers to print the note types and views that have a print renderer", async () => {
         const isPrintEnabled = async (note: FNote) => {
             const noteContext = new NoteContext("ntx-render");
             noteContext.noteId = note.noteId;
@@ -197,6 +197,10 @@ describe("NoteContextMenu", () => {
         expect(await isPrintEnabled(buildNote({ title: "Render", type: "render", "~renderNote": script.noteId }))).toBe(true);
         expect(await isPrintEnabled(buildNote({ title: "Unset", type: "render" }))).toBe(false);
         expect(await isPrintEnabled(buildNote({ title: "Disabled", type: "render", "~disabled:renderNote": script.noteId }))).toBe(false);
+
+        expect(await isPrintEnabled(buildNote({ title: "Search", type: "search" }))).toBe(true);
+        expect(await isPrintEnabled(buildNote({ title: "Search list", type: "search", "#viewType": "list" }))).toBe(true);
+        expect(await isPrintEnabled(buildNote({ title: "Search grid", type: "search", "#viewType": "grid" }))).toBe(false);
     });
 
     it("draws the actions that look into the note as a strip of tiles, or a row where one is left", async () => {

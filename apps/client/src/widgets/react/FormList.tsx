@@ -294,7 +294,7 @@ export function FormListItem({ className, icon, iconSvg, iconClassName, value, t
     );
 }
 
-/** Bootstrap's default `--bs-tooltip-max-width` and the gap its `offset` leaves beside the row. */
+/** Bootstrap's default `--bs-tooltip-max-width`, for a tooltip whose inner carries no cap of its own. */
 const TOOLTIP_MAX_WIDTH = 200;
 const TOOLTIP_OFFSET = 6;
 
@@ -302,17 +302,32 @@ const TOOLTIP_OFFSET = 6;
  * Puts a row's tooltip on the reading-direction end of the menu, or on the other side when the
  * viewport has no room there for a tooltip at its widest. The room is measured against that widest
  * tooltip rather than this one, so every row of a menu gets the same side whatever its text.
+ *
+ * Bootstrap calls this with the tip first and the row it stands beside second, `this` being the
+ * `Tooltip`.
  */
-export function menuItemTooltipSide(_tooltip?: unknown, tip?: HTMLElement, row?: Element): "left" | "right" {
+export function menuItemTooltipSide(tip?: HTMLElement, row?: Element): "left" | "right" {
     const preferred = handleRightToLeftPlacement("right");
     if (!tip || !row) return preferred;
 
-    const maxWidth = parseFloat(getComputedStyle(tip).getPropertyValue("--bs-tooltip-max-width"));
-    const needed = (Number.isNaN(maxWidth) ? TOOLTIP_MAX_WIDTH : maxWidth) + TOOLTIP_OFFSET;
+    const needed = tooltipWidth(tip) + TOOLTIP_OFFSET;
     const { left, right } = row.getBoundingClientRect();
     const room = preferred === "right" ? window.innerWidth - right : left;
     if (room >= needed) return preferred;
     return preferred === "right" ? "left" : "right";
+}
+
+/**
+ * The widest the tooltip can be: the cap its inner carries, which `tooltip.css` sets well above
+ * Bootstrap's, on `.tooltip-inner`.
+ */
+function tooltipWidth(tip: HTMLElement) {
+    const inner = tip.querySelector(".tooltip-inner");
+    const cap = inner ? parseFloat(getComputedStyle(inner).maxWidth) : NaN;
+    if (!Number.isNaN(cap)) return cap;
+
+    const bootstrapCap = parseFloat(getComputedStyle(tip).getPropertyValue("--bs-tooltip-max-width"));
+    return Number.isNaN(bootstrapCap) ? TOOLTIP_MAX_WIDTH : bootstrapCap;
 }
 
 export function FormListToggleableItem({

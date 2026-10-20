@@ -36,10 +36,10 @@ To search for notes, click on the <span class="tn-icon bx bx-search"></span> ico
     1.  This value is also pre-filled if the search is triggered from a [hoisted note](Note%20Hoisting.md) or a [workspace](Workspaces.md).
     2.  To search the entire database, keep the value empty.
 3.  To limit the search to only a few levels of hierarchy (e.g. look in sub-children but not in sub-sub-children of a note), set the _depth_ field to one of the provided values.
-4.  In addition to that, the search can be configured via the _Add search option_ buttons, as described in the follow-up section.
+4.  In addition to that, the search can be configured via the _Add search option_ menu, as described in the follow-up section.
 5.  Press _Search_ (<span class="tn-icon bx bx-search"></span>) to trigger the search. The results are displayed below the search configuration pane.
-6.  The _Search & Execute actions_ (<span class="tn-icon bx bxs-zap"></span>) button is only relevant if at least one action has been added (as described in the section below).
-7.  The _Save to note_ (<span class="tn-icon bx bx-save"></span>) button will create a new note with the search configuration. For more information, see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>.
+6.  The _Search & Execute actions_ (<span class="tn-icon bx bxs-zap"></span>) entry in the menu beside _Search_ is only relevant if at least one action has been added (as described in the section below).
+7.  The _Save to note_ (<span class="tn-icon bx bx-save"></span>) entry in the same menu will create a new note with the search configuration. For more information, see <a class="reference-link" href="../../Note%20Types/Saved%20Search.md">Saved Search</a>.
 
 ## Features
 
@@ -88,7 +88,7 @@ To add a new line, press <kbd>Shift</kbd>+<kbd>Enter</kbd>.
 
 ## Search options
 
-Click on which search option to apply from the _Add search option_ section.
+Click _Add search option_ to choose an option to apply.
 
 *   For each search option selected, the search configuration will update to reveal the entry. Each search option will have its own configuration.
 *   To remove a search option, simply press the <span class="tn-icon bx bx-x"></span> button to the right of it.
@@ -111,28 +111,30 @@ The options available are:
 6.  <span class="tn-icon bx bx-bug"></span> Debug
     1.  This will print additional information in the server log (see <a class="reference-link" href="../../Troubleshooting/Error%20logs.md">Error logs</a>), regarding how the search expression was parsed.
     2.  This function is especially useful after understanding the search functionality in detail, in order to determine why a complex search query is not working as expected.
-7.  <span class="tn-icon bx bxs-zap"></span> Action
-    1.  Apart from just searching, it is also possible to apply actions such as to add a label or a relation to the notes that have been matched by the search.
-    2.  Unlike other search configurations, here it's possible to apply the same action multiple times (i.e. in order to be able to apply multiple labels to notes).
-    3.  The actions given are the same as the ones in <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a>, which is an alternative for operating directly with notes within the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>.
-    4.  After defining the actions, first press _Search_ to check the matched notes and then press _Search & Execute actions_ to trigger the actions.
+
+The same menu ends with a _Bulk actions_ section for applying changes such as adding a label or a relation to the matched notes. Its groups—_Labels_, _Relations_, _Notes_ and _Other_—each open a list of the actions in the corresponding group of the <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a> dialog, which is an alternative for operating directly with notes within the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>. Choosing one adds it to the search; unlike the other options, the same action can be added more than once (e.g. to apply multiple labels). After defining the actions, first press _Search_ to check the matched notes and then choose _Search & Execute actions_ from the menu beside it to trigger the actions.
 
 ## Viewing search results
 
-Results appear below the search pane as a list of **snippet cards**. Each card shows the note title and a short excerpt of the text that matched.
+Results appear below the search pane, by default in the _Search preview_ view. Each result is drawn as a **snippet card** with the note title, the path to it, a short excerpt of the matching text, and the attributes that matched. The excerpt of a code note keeps its indentation and is shown in the code font.
+
+To show the results as a plain note list instead, choose _List_ from the <a class="reference-link" href="../../Collections/Collection%20Properties.md">Collection Properties</a> bar. The _List_ view shows one row per note, with the note's title and content preview.
 
 The search will also highlight the words from the title or content that matched:
 
 *   With a solid underlined green for a direct match;
 *   With a dotted underline orange for a partial match (matched by the fuzzy search).
 
-In addition: 
+In addition, the _Search preview_ view offers:
 
 *   The **total number of results** is always shown, so you can immediately tell how broad a query is.
 *   A **page-size selector** lets you choose how many results to display per page. Your choice is remembered and synced across your devices (stored in the `searchResultsPageSize` option), so you do not have to reset it on every device.
-*   **Clicking a result** opens the note and jumps straight to the first match. The in-note find bar opens pre-filled with the first word of your search, so you can step through its matches with the find controls. To have the find bar look for a whole phrase instead, put the phrase in quotes in the search, e.g. `"The Lord of the Rings"`. In read-only notes, the other words of the search are highlighted as well.
+*   **Clicking a result's title** opens the note and jumps straight to the first match. The in-note find bar opens pre-filled with the first word of your search, so you can step through its matches with the find controls. To have the find bar look for a whole phrase instead, put the phrase in quotes in the search, e.g. `"The Lord of the Rings"`. In read-only notes, the other words of the search are highlighted as well. The excerpt and attributes can be selected without opening the note.
 *   _Open all results in new tabs_ (<span class="tn-icon bx bx-window-open"></span>, the button above the results) opens every result in a tab of its own, up to 50. Each tab opens on its first match with the find bar pre-filled, as when clicking a result.
 *   If a match is inside a **collapsed section** (for example a folded heading), that section is expanded automatically so the match is visible.
+*   When the excerpt is cut short, a _Show more_ button expands the card to the note's full content, with the search terms highlighted. _Show less_ returns to the excerpt.
+
+A saved search can also be <a class="reference-link" href="../Notes/Printing%20%26%20Exporting%20as%20PDF.md">printed or exported as PDF</a> from the _Print/export to PDF…_ item of the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a>, in either _Search preview_ or _List_ view. The results are laid out as a list, as they stand when printing starts.
 
 ## Simple Note Search Examples
 
