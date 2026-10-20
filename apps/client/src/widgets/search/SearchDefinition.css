@@ -53,6 +53,10 @@
         min-width: 0;
     }
 
+    .search-option-fields :is(.form-control, .form-select, .input-group-text) {
+        padding-block: 0.25rem;
+    }
+
     .search-option-fields > :is(.search-string, .input-group, .search-option-row) {
         flex: 1 1 16rem;
     }
