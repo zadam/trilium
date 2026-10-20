@@ -1,4 +1,5 @@
 import {
+    _setModelData as setModelData,
     Bold, ButtonView, type ClassicEditor, Essentials, IconPreviousArrow, IconText, Italic, Paragraph,
     ToolbarSeparatorView
 } from "ckeditor5";
@@ -74,6 +75,59 @@ describe("TextFormattingToolbar", () => {
         expect(requests.at(-1)?.items.map((item) => item.kind === "entry" && item.label)).toStrictEqual(["Bold", "Italic"]);
     });
 
+    it("swaps in as text is selected, and out as the selection collapses", async () => {
+        const { editor, plugin } = await createEditor();
+        const focus = vi.spyOn(editor.editing.view, "focus");
+        setModelData(editor.model, "<paragraph>fo[]obar</paragraph>");
+        expect(plugin.isActive).toBe(false);
+
+        select(editor, 0, 3);
+        expect(plugin.isActive).toBe(true);
+
+        // Dragging a selection handle keeps the toolbar, and so does a format applied to the text.
+        select(editor, 0, 5);
+        editor.execute("bold");
+        expect(plugin.isActive).toBe(true);
+
+        // Typing over the selection collapses it.
+        editor.execute("insertText", { text: "x" });
+        expect(plugin.isActive).toBe(false);
+        expect(focus).not.toHaveBeenCalled();
+    });
+
+    it("leaves the swap to the buttons once one of them is pressed", async () => {
+        const { editor, plugin } = await createEditor();
+        setModelData(editor.model, "<paragraph>fo[]obar</paragraph>");
+        const textFormatting = getToolbarButton(editor, 0);
+        const back = plugin.toolbarView.items.first as ButtonView;
+
+        // Opened from its button, the toolbar outlasts a selection made and collapsed.
+        textFormatting.fire("execute");
+        select(editor, 0, 3);
+        select(editor, 1, 1);
+        expect(plugin.isActive).toBe(true);
+        back.fire("execute");
+
+        // Closed from the back button over a selection, the toolbar waits for the next selection.
+        select(editor, 0, 3);
+        expect(plugin.isActive).toBe(true);
+        back.fire("execute");
+        select(editor, 0, 4);
+        expect(plugin.isActive).toBe(false);
+        select(editor, 2, 2);
+        select(editor, 0, 2);
+        expect(plugin.isActive).toBe(true);
+    });
+
+    it("does not follow the selection when no items are configured", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, TextFormattingToolbar], {
+            toolbar: ["textFormatting"]
+        });
+        setModelData(editor.model, "<paragraph>fo[]obar</paragraph>");
+        select(editor, 0, 3);
+        expect(editor.plugins.get(TextFormattingToolbar).isActive).toBe(false);
+    });
+
     it("destroys its toolbar with the editor", async () => {
         const { editor, plugin } = await createEditor();
         const destroy = vi.spyOn(plugin.toolbarView, "destroy");
@@ -81,6 +135,19 @@ describe("TextFormattingToolbar", () => {
         expect(destroy).toHaveBeenCalled();
     });
 });
+
+/** Selects from `start` to `end` in the first paragraph, which is a caret where they are equal. */
+function select(editor: ClassicEditor, start: number, end: number) {
+    editor.model.change((writer) => {
+        const paragraph = editor.model.document.getRoot()?.getChild(0);
+        if (!paragraph) {
+            throw new Error("expected a paragraph");
+        }
+        writer.setSelection(writer.createRange(
+            writer.createPositionAt(paragraph, start), writer.createPositionAt(paragraph, end)
+        ));
+    });
+}
 
 function getToolbarButton(editor: ClassicEditor, index: number) {
     const item = editor.ui.view.toolbar.items.get(index);

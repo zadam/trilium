@@ -8,11 +8,17 @@ import type { Editor, ToolbarConfig } from "ckeditor5";
  * own toolbar and the back button at its start swaps out again. The items come from the
  * `textFormattingToolbar` configuration. The host application places {@link toolbarView} and
  * shows it in place of the editor's toolbar while {@link isActive} is `true`.
+ *
+ * With items configured, the toolbar also follows the selection: it swaps in as text is selected,
+ * and out as the selection collapses, unless one of the buttons swapped it since.
  */
 export default class TextFormattingToolbar extends Plugin {
 
     /** Whether the toolbar is the one to show. */
     declare isActive: boolean;
+
+    /** Whether a selection swapped the toolbar in, so a collapsed one swaps it out. */
+    private shownForSelection = false;
 
     // Built before `afterInit()`, so `ToolbarGroupMenu` can watch it whichever plugin starts first.
     readonly toolbarView: ToolbarView;
@@ -57,6 +63,7 @@ export default class TextFormattingToolbar extends Plugin {
         if (items.length) {
             this.toolbarView.items.add(new ToolbarSeparatorView());
             this.toolbarView.fillFromConfig(items, editor.ui.componentFactory);
+            this.followSelection();
         }
         editor.ui.addToolbar(this.toolbarView);
     }
@@ -69,7 +76,33 @@ export default class TextFormattingToolbar extends Plugin {
     /** The button that swaps the toolbars leaves the page with its toolbar, so the editor takes the focus. */
     private setActive(isActive: boolean) {
         this.isActive = isActive;
+        this.shownForSelection = false;
         this.editor.editing.view.focus();
+    }
+
+    /**
+     * Swaps the toolbar as the selection turns from a caret into a range of text and back. A range
+     * that only grows or shrinks, as a selection handle is dragged, swaps nothing.
+     */
+    private followSelection() {
+        const selection = this.editor.model.document.selection;
+        let wasCollapsed = selection.isCollapsed;
+
+        this.listenTo(selection, "change:range", () => {
+            const isCollapsed = selection.isCollapsed;
+            if (isCollapsed === wasCollapsed) {
+                return;
+            }
+            wasCollapsed = isCollapsed;
+
+            if (!isCollapsed && !this.isActive) {
+                this.isActive = true;
+                this.shownForSelection = true;
+            } else if (isCollapsed && this.shownForSelection) {
+                this.isActive = false;
+                this.shownForSelection = false;
+            }
+        });
     }
 }
 
