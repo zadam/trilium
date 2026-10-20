@@ -111,12 +111,14 @@ export const SEARCH_OPTIONS: SearchOption[] = [
     }
 ];
 
-function SearchOption({ note, className, title, titleIcon, children, help, attributeName, attributeType, additionalAttributesToDelete }: {
+function SearchOption({ note, className, title, titleIcon, children, description, help, attributeName, attributeType, additionalAttributesToDelete }: {
     note: FNote;
     className?: string;
     title: string,
     titleIcon?: string,
     children?: ComponentChildren,
+    /** Shown in place of `children` for an option that configures nothing. */
+    description?: ComponentChildren,
     help?: ComponentChildren,
     attributeName: string,
     attributeType: AttributeType,
@@ -129,6 +131,7 @@ function SearchOption({ note, className, title, titleIcon, children, help, attri
                 {title}
             </span>
             <div className="search-option-fields">
+                {description && <span className="search-option-description">{description}</span>}
                 {children}
             </div>
             <HelpRemoveButtons
@@ -307,7 +310,7 @@ function AncestorOption({ note, ...restProps}: SearchOptionProps) {
 function FastSearchOption({ ...restProps }: SearchOptionProps) {
     return <SearchOption
         titleIcon="bx bx-run" title={t("fast_search.fast_search")}
-        help={t("fast_search.description")}
+        description={t("fast_search.description")}
         {...restProps}
     />;
 }
@@ -315,10 +318,7 @@ function FastSearchOption({ ...restProps }: SearchOptionProps) {
 function DebugOption({ ...restProps }: SearchOptionProps) {
     return <SearchOption
         titleIcon="bx bx-bug" title={t("debug.debug")}
-        help={<>
-            <p>{t("debug.debug_info")}</p>
-            {t("debug.access_info")}
-        </>}
+        description={<>{t("debug.debug_info")} {t("debug.access_info")}</>}
         {...restProps}
     />;
 }

@@ -56,6 +56,21 @@ describe("the search definition", () => {
         expect(actionsRow?.querySelector(".tn-split-button")).not.toBeNull();
     });
 
+    it("describes an option that configures nothing instead of offering help", () => {
+        const container = renderDefinition([ "searchString", "fastSearch", "debug" ]);
+
+        for (const [ name, text ] of [
+            [ "fastSearch", "fast_search.description" ],
+            [ "debug", "debug.debug_info" ]
+        ]) {
+            const row = container.querySelector(`.search-option.${name}`);
+            expect(row?.querySelector(".search-option-description")?.textContent).toContain(text);
+            expect(row?.querySelector(".help-dropdown")).toBeNull();
+        }
+
+        expect(container.querySelector(".search-option.searchString .help-dropdown")).not.toBeNull();
+    });
+
     it("offers the unused options and the bulk actions from the same menu", async () => {
         const container = renderDefinition();
         const toggle = container.querySelector<HTMLButtonElement>(".search-definition-add button");
@@ -111,13 +126,13 @@ describe("the search definition", () => {
     });
 });
 
-function renderDefinition() {
+function renderDefinition(labels = [ "searchString" ]) {
     const note = {
         noteId: "search1",
         title: "search1",
         getLabelValue: (name: string) => (name === "searchString" ? "#book" : null),
         getAttribute: (type: string, name: string) =>
-            (type === "label" && name === "searchString" ? {} : undefined),
+            (type === "label" && labels.includes(name) ? {} : undefined),
         getAttributes: () => [],
         isHiddenCompletely: () => false
     } as unknown as FNote;
