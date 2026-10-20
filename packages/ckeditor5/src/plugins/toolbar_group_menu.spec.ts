@@ -216,6 +216,18 @@ describe("ToolbarGroupMenu", () => {
         expect(host.show).toHaveBeenCalledTimes(2);
     });
 
+    it("hands the host the layout a group asks for in asMenu", async () => {
+        const { config, last } = createHost();
+        const editor = await createTestEditor(PLUGINS, {
+            ...config,
+            toolbar: { items: [{ ...MENU_GROUP, asMenu: { layout: "tiles" } }] }
+        });
+
+        groupDropdown(getToolbar(editor), "Insert").buttonView.fire("open");
+        expect(labels(last().items)).toStrictEqual(["Bold", "—", "Italic", "Insert sample"]);
+        expect(last().layout).toBe("tiles");
+    });
+
     it("describes an entry carrying a list of its own as a submenu, read on each open", async () => {
         const { config, last } = createHost();
         const editor = await createTestEditor(PLUGINS, {

@@ -322,6 +322,18 @@ body.mobile .tn-menu-actions.tn-menu-actions-cards {
     font-size: 0.6em;
 }
 
+.tn-menu-action-more {
+    position: absolute;
+    inset-block-start: 2px;
+    inset-inline-end: 2px;
+    color: var(--menu-item-icon-color);
+    opacity: 0.6;
+
+    &:dir(rtl) {
+        transform: scaleX(-1);
+    }
+}
+
 .tn-menu-action-title {
     max-width: 100%;
     overflow: hidden;

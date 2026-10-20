@@ -130,19 +130,19 @@ describe("buildMobileToolbar", () => {
         expect(groups).toStrictEqual([ {
             label: "text-editor.toolbar-groups.insert",
             icon: "plus",
-            asMenu: true,
+            asMenu: { layout: "tiles" },
             items: [
                 "collapsible", "tabs", "multicolumnLayout",
                 "|",
-                "horizontalLine", "pageBreak",
+                "horizontalLine", "pageBreak", "footnote",
                 "|",
                 "math", "drawingCanvas", "mermaid",
                 "|",
-                "footnote", "bookmark", "linkEmbed", "contentEmbed",
+                "bookmark", "linkEmbed", "contentEmbed",
                 "|",
-                "dateTime", "specialCharacters", "emoji", "insertIcon",
+                "specialCharacters", "emoji", "insertIcon",
                 "|",
-                "insertTemplate", "markdownImport"
+                "dateTime", "insertTemplate", "markdownImport"
             ]
         } ]);
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);

@@ -92,7 +92,8 @@ export function openListAsMenu(dropdown: DropdownView, options: ListMenuOptions 
  * Opens a toolbar group as a menu drawn by the host application (`toolbarGroupMenu.host`), with a
  * row of icon and label per entry, and a submenu for an entry that carries a list of its own.
  *
- * A group opts in with `asMenu: true` beside its `label` in the toolbar configuration.
+ * A group opts in with `asMenu: true` beside its `label` in the toolbar configuration, or with the
+ * {@link ListMenuOptions} of its menu, such as `asMenu: { layout: "tiles" }`.
  * `ToolbarView#_createNestedToolbarDropdown()` builds those dropdowns and keeps no reference to the
  * definition each came from, so the labels of the opted-in groups are read from the configuration
  * and matched against the dropdown buttons. The dropdown never opens its own panel: the views
@@ -102,6 +103,8 @@ export function openListAsMenu(dropdown: DropdownView, options: ListMenuOptions 
  */
 export default class ToolbarGroupMenu extends Plugin {
 
+    /** The dropdowns of the groups marked `asMenu`, with the options of their menus. */
+    private groupMenuOptions = new WeakMap<DropdownView, ListMenuOptions>();
     private watchedDropdowns = new WeakSet<DropdownView>();
     private host: ToolbarGroupMenuHost | null = null;
     /** The menu the host shows, with the dropdown it stands for, or `null`. */
@@ -115,7 +118,7 @@ export default class ToolbarGroupMenu extends Plugin {
 
     afterInit() {
         const editor = this.editor;
-        const labels = collectMenuGroupLabels(
+        const groups = collectMenuGroups(
             editor.config.get("toolbar"),
             editor.config.get("balloonToolbar"),
             editor.config.get("blockToolbar"),
@@ -129,11 +132,11 @@ export default class ToolbarGroupMenu extends Plugin {
 
         for (const toolbar of this.getToolbarViews()) {
             for (const item of toolbar.items) {
-                this.watchGroupDropdown(toolbar, item, labels, createHost);
+                this.watchGroupDropdown(toolbar, item, groups, createHost);
             }
 
             this.listenTo(toolbar.items, "add", (evt, item: View) => {
-                this.watchGroupDropdown(toolbar, item, labels, createHost);
+                this.watchGroupDropdown(toolbar, item, groups, createHost);
             });
         }
     }
@@ -170,18 +173,23 @@ export default class ToolbarGroupMenu extends Plugin {
     }
 
     private watchGroupDropdown(
-        toolbar: ToolbarView, item: View, labels: Set<string>, createHost: () => ToolbarGroupMenuHost
+        toolbar: ToolbarView, item: View, groups: Map<string, ListMenuOptions>,
+        createHost: () => ToolbarGroupMenuHost
     ) {
         if (!(item instanceof DropdownView) || this.watchedDropdowns.has(item)) {
             return;
         }
 
         const label = item.buttonView.label;
-        if (!listMenuDropdowns.has(item) && (!label || !labels.has(label))) {
+        const groupOptions = label ? groups.get(label) : undefined;
+        if (!listMenuDropdowns.has(item) && !groupOptions) {
             return;
         }
 
         this.watchedDropdowns.add(item);
+        if (groupOptions) {
+            this.groupMenuOptions.set(item, groupOptions);
+        }
 
         // Every way of opening the dropdown sets `isOpen`, its button and the ▼ key alike, so the
         // value is turned back here and the host's menu toggles instead.
@@ -239,7 +247,7 @@ export default class ToolbarGroupMenu extends Plugin {
             items: listOptions
                 ? this.describeList(dropdown, run)
                 : describeItems(this.sourceItems(dropdown), run),
-            ...listOptions,
+            ...listOptions ?? this.groupMenuOptions.get(dropdown),
             setElement: (next) => {
                 if (element) {
                     untrackElement(element, trackers);
@@ -319,27 +327,29 @@ function untrackElement(element: HTMLElement, trackers: FocusTracker[]) {
     }
 }
 
-function collectMenuGroupLabels(...configs: (ToolbarConfig | undefined)[]) {
-    const labels = new Set<string>();
+/** The labels of the groups marked `asMenu`, with the options of their menus. */
+function collectMenuGroups(...configs: (ToolbarConfig | undefined)[]) {
+    const groups = new Map<string, ListMenuOptions>();
 
     for (const config of configs) {
-        collectFromItems(Array.isArray(config) ? config : config?.items, labels);
+        collectFromItems(Array.isArray(config) ? config : config?.items, groups);
     }
 
-    return labels;
+    return groups;
 }
 
-function collectFromItems(items: ToolbarConfigItem[] | undefined, labels: Set<string>) {
+function collectFromItems(items: ToolbarConfigItem[] | undefined, groups: Map<string, ListMenuOptions>) {
     for (const item of items ?? []) {
         if (typeof item === "string") {
             continue;
         }
 
-        if ((item as { asMenu?: boolean }).asMenu) {
-            labels.add(item.label);
+        const { asMenu } = item as { asMenu?: boolean | ListMenuOptions };
+        if (asMenu) {
+            groups.set(item.label, asMenu === true ? {} : asMenu);
         }
 
-        collectFromItems(item.items, labels);
+        collectFromItems(item.items, groups);
     }
 }
 

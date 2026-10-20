@@ -8,7 +8,7 @@ import { render } from "preact";
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListItem } from "../../react/FormList";
 import Menu, { MenuTile } from "../../react/Menu";
-import { isKeyboardPanelOpen, useKeyboardPanel } from "./mobile_editor_toolbar";
+import { isKeyboardPanelOpen, logMenuHost, useKeyboardPanel } from "./mobile_editor_toolbar";
 
 /** The gap between the group's button and the menu, as a `Dropdown` leaves under its toggle. */
 const ANCHOR_GAP = 2;
@@ -27,6 +27,8 @@ export function createToolbarGroupMenuHost(): ToolbarGroupMenuHost {
 
     return {
         show(request) {
+            // TEMPORARY: press diagnostics.
+            logMenuHost(`show ${request.anchor.getAttribute("aria-labelledby") ?? ""}`);
             shown = request;
             // An entry that runs hides the menu first, so a close that follows finds it gone.
             const close = (returnFocus: boolean) => {
@@ -36,7 +38,11 @@ export function createToolbarGroupMenuHost(): ToolbarGroupMenuHost {
             };
             render(<ToolbarGroupMenu request={request} onClose={close} />, container);
         },
-        hide: unmount,
+        hide: () => {
+            // TEMPORARY: press diagnostics.
+            logMenuHost("hide");
+            unmount();
+        },
         destroy: unmount,
         isInPlaceOfKeyboard: isKeyboardPanelOpen
     };
@@ -101,7 +107,10 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
     );
 }
 
-/** The entries as tiles, a grid of them for each group between separators. */
+/**
+ * The entries as tiles, a grid of them for each group between separators. An entry with a submenu
+ * is a tile that opens it.
+ */
 function MenuTileGroups({ items }: { items: ToolbarGroupMenuItem[] }) {
     const groups: ToolbarGroupMenuEntry[][] = [ [] ];
     for (const item of items) {
@@ -116,11 +125,18 @@ function MenuTileGroups({ items }: { items: ToolbarGroupMenuItem[] }) {
         <>
             {groups.map((group, index) => (
                 <li key={index} className="tn-menu-actions tn-menu-actions-cards toolbar-group-menu-tiles" role="group">
-                    {group.map(({ label, icon, isEnabled, isOn, run }, tileIndex) => (
-                        <MenuTile
-                            key={tileIndex} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
-                            disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
-                        />
+                    {group.map(({ label, icon, isEnabled, isOn, run, children }, tileIndex) => (children
+                        ? (
+                            <FormDropdownSubmenu key={tileIndex} tile iconSvg={icon} title={label} disabled={!isEnabled}>
+                                <MenuRows items={children} />
+                            </FormDropdownSubmenu>
+                        )
+                        : (
+                            <MenuTile
+                                key={tileIndex} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
+                                disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
+                            />
+                        )
                     ))}
                 </li>
             ))}

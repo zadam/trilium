@@ -57,18 +57,20 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "|",
                 {
                     ...buildInsertGroup(),
+                    // Groups of three fill the rows of tiles.
+                    asMenu: { layout: "tiles" },
                     items: [
                         "collapsible", "tabs", "multicolumnLayout",
                         "|",
-                        "horizontalLine", "pageBreak",
+                        "horizontalLine", "pageBreak", "footnote",
                         "|",
                         "math", "drawingCanvas", "mermaid",
                         "|",
-                        "footnote", "bookmark", "linkEmbed", "contentEmbed",
+                        "bookmark", "linkEmbed", "contentEmbed",
                         "|",
-                        "dateTime", "specialCharacters", "emoji", "insertIcon",
+                        "specialCharacters", "emoji", "insertIcon",
                         "|",
-                        "insertTemplate", "markdownImport"
+                        "dateTime", "insertTemplate", "markdownImport"
                     ]
                 },
                 "blockType",
