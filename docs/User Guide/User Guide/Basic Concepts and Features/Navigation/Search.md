@@ -111,11 +111,8 @@ The options available are:
 6.  <span class="tn-icon bx bx-bug"></span> Debug
     1.  This will print additional information in the server log (see <a class="reference-link" href="../../Troubleshooting/Error%20logs.md">Error logs</a>), regarding how the search expression was parsed.
     2.  This function is especially useful after understanding the search functionality in detail, in order to determine why a complex search query is not working as expected.
-7.  <span class="tn-icon bx bxs-zap"></span> Action
-    1.  Apart from just searching, it is also possible to apply actions such as to add a label or a relation to the notes that have been matched by the search.
-    2.  Unlike other search configurations, here it's possible to apply the same action multiple times (i.e. in order to be able to apply multiple labels to notes).
-    3.  The actions given are the same as the ones in <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a>, which is an alternative for operating directly with notes within the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>.
-    4.  After defining the actions, first press _Search_ to check the matched notes and then press _Search & Execute actions_ to trigger the actions.
+
+The same menu ends with a _Bulk actions_ section for applying changes such as adding a label or a relation to the matched notes. Its groups—_Labels_, _Relations_, _Notes_ and _Other_—each open a list of the actions in the corresponding group of the <a class="reference-link" href="../../Advanced%20Usage/Bulk%20Actions.md">Bulk Actions</a> dialog, which is an alternative for operating directly with notes within the <a class="reference-link" href="../UI%20Elements/Note%20Tree.md">Note Tree</a>. Choosing one adds it to the search; unlike the other options, the same action can be added more than once (e.g. to apply multiple labels). After defining the actions, first press _Search_ to check the matched notes and then press _Search & Execute actions_ to trigger the actions.
 
 ## Viewing search results
 

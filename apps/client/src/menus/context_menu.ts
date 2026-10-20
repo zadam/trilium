@@ -68,8 +68,8 @@ export interface MenuCommandItem<T> {
      */
     uiIconBadge?: string;
     /**
-     * What a row of actions shows in the item's tooltip in place of its title, for an action whose
-     * short title needs a word of explanation.
+     * What the row shows as a tooltip on hover, in place of its title: for a short title that
+     * needs a word of explanation, whether the row is a menu row or one of a row of actions.
      */
     tooltip?: string;
     /**

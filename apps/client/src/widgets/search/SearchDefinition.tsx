@@ -6,15 +6,16 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context";
 import FNote from "../../entities/fnote";
+import type { MenuItem } from "../../menus/context_menu";
 import attributes from "../../services/attributes";
-import bulk_action from "../../services/bulk_action";
+import bulk_action, { ACTION_GROUPS } from "../../services/bulk_action";
 import { t } from "../../services/i18n";
 import search from "../../services/search";
 import server from "../../services/server";
 import toast from "../../services/toast";
 import tree from "../../services/tree";
+import { escapeHtml } from "../../services/utils";
 import ws from "../../services/ws";
-import AddBulkActionButton from "../bulk_actions/AddBulkActionButton";
 import RenameNoteBulkAction from "../bulk_actions/note/rename_note";
 import Button, { SplitButton } from "../react/Button";
 import { Card, CardSection } from "../react/Card";
@@ -102,11 +103,6 @@ export default function SearchDefinition({ note, ntxId }: {
 
                     <CardSection className="search-definition-add">
                         <AddSearchOptionButton note={note} options={searchOptions?.availableOptions ?? []} />
-                        <AddBulkActionButton
-                            noteId={note.noteId}
-                            buttonClassName="btn-secondary btn-micro"
-                            text={<><Icon icon="bx bx-plus" />{" "}{t("bulk_actions.add_action")}</>}
-                        />
                     </CardSection>
 
                     <SearchButtonBar
@@ -202,11 +198,28 @@ function BulkActionsList({ note }: { note: FNote }) {
     );
 }
 
-/** A menu of the search options the note does not use yet, adding the picked one to it. */
+/** A menu of the search options the note does not use yet, and of the bulk actions it can add. */
 function AddSearchOptionButton({ note, options }: { note: FNote; options: SearchOption[] }) {
-    if (!options.length) {
-        return null;
-    }
+    const items: MenuItem<unknown>[] = options.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => ({
+        title: escapeHtml(label),
+        tooltip,
+        uiIcon: icon,
+        handler: () => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")
+    }));
+
+    items.push(
+        { kind: "header", title: t("bulk_actions.bulk_actions") },
+        ...ACTION_GROUPS.map(({ title, icon, actions }) => ({
+            title: escapeHtml(title),
+            uiIcon: icon,
+            items: actions.map(({ actionName, actionTitle, actionIcon, actionDescription }) => ({
+                title: escapeHtml(actionTitle),
+                tooltip: actionDescription,
+                uiIcon: actionIcon,
+                handler: () => bulk_action.addAction(note.noteId, actionName)
+            }))
+        }))
+    );
 
     return (
         <Dropdown
@@ -214,15 +227,8 @@ function AddSearchOptionButton({ note, options }: { note: FNote; options: Search
             text={<><Icon icon="bx bx-plus" />{" "}{t("search_definition.add_search_option")}</>}
             noSelectButtonStyle
             mobileBottomSheet
-        >
-            {options.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
-                <FormListItem
-                    key={`${attributeType}-${attributeName}`}
-                    icon={icon}
-                    description={tooltip}
-                    onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
-                >{label}</FormListItem>
-            ))}
-        </Dropdown>
+            dropdownContainerClassName="action-add-menu"
+            items={items}
+        />
     );
 }

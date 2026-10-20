@@ -53,7 +53,23 @@ describe("the search definition", () => {
         expect(card?.querySelector(".tn-card-section.search-definition-actions")).not.toBeNull();
 
         const addRow = card?.querySelector(".tn-card-section.search-definition-add");
-        expect(addRow?.querySelectorAll(".dropdown")).toHaveLength(2);
+        expect(addRow?.querySelectorAll(".dropdown")).toHaveLength(1);
+    });
+
+    it("offers the unused options and the bulk actions from the same menu", async () => {
+        const container = renderDefinition();
+        const toggle = container.querySelector<HTMLButtonElement>(".search-definition-add .dropdown button");
+        await act(async () => toggle?.click());
+
+        const menu = document.querySelector(".action-add-menu");
+        expect(menu?.textContent).toContain("search_definition.limit");
+        expect(menu?.querySelector(".dropdown-header")?.textContent).toBe("bulk_actions.bulk_actions");
+
+        const groups = [ ...menu?.querySelectorAll(".dropdown-submenu") ?? [] ]
+            .map((row) => row.textContent?.trim());
+        expect(groups).toEqual([
+            "bulk_actions.labels", "bulk_actions.relations", "bulk_actions.notes", "bulk_actions.other"
+        ]);
     });
 
     it.each([
