@@ -1,6 +1,8 @@
 body.mobile {
     /* Read by `PopupEditor.css` to clear the toolbar. */
-    --mobile-toolbar-height: 40px;
+    --mobile-toolbar-button-size: 44px;
+    /* The 2px is the island's border. */
+    --mobile-toolbar-height: calc(var(--mobile-toolbar-button-size) + 2px);
     --mobile-toolbar-gap: 6px;
     --mobile-toolbar-clearance: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap));
 
@@ -44,6 +46,7 @@ body.mobile {
            dismiss. Zero elsewhere — no effect on Android or non-Capacitor. */
         transform: translateY(var(--tn-keyboard-gap, 0px));
         transition: opacity 100ms linear, visibility 100ms;
+        --hide-keyboard-button-size: var(--mobile-toolbar-button-size);
     }
 
     .classic-toolbar-outer-container:not(.active) .classic-toolbar-island {
@@ -115,8 +118,19 @@ body.mobile {
         --ck-color-toolbar-background: transparent;
         --ck-color-button-default-background: transparent;
         --ck-color-button-default-disabled-background: transparent;
+        --ck-toolbar-item-gap-inline: 0;
+        --ck-toolbar-padding: 0;
         position: absolute;
         border: none;
+
+        > .ck-toolbar__items > * {
+            margin-block: 0;
+        }
+
+        /* Set on the buttons, not the dropdowns, whose panels would inherit it. */
+        .ck-toolbar__items > :is(.ck-button, .ck-dropdown > .ck-dropdown__button) {
+            --ck-size-control-min-height: var(--mobile-toolbar-button-size);
+        }
     }
 }
 
