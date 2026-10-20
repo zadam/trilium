@@ -1500,7 +1500,7 @@
     "depth_label": "depth",
     "depth_doesnt_matter": "any",
     "depth_eq": "= {{count}}",
-    "direct_children": "Direct children",
+    "direct_children": "children only",
     "depth_gt": "> {{count}}",
     "depth_lt": "< {{count}}"
   },

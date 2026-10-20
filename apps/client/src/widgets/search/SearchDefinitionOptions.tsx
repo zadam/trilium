@@ -271,7 +271,7 @@ function AncestorOption({ note, ...restProps}: SearchOptionProps) {
     const options = useMemo(() => {
         const options: { value: string | undefined; label: string }[] = [
             { value: "", label: t("ancestor.depth_doesnt_matter") },
-            { value: "eq1", label: `${t("ancestor.depth_eq", { count: 1 })} (${t("ancestor.direct_children")})` }
+            { value: "eq1", label: t("ancestor.direct_children") }
         ];
 
         for (let i=2; i<=9; i++) options.push({ value: `eq${  i}`, label: t("ancestor.depth_eq", { count: i }) });
@@ -295,6 +295,7 @@ function AncestorOption({ note, ...restProps}: SearchOptionProps) {
 
             <span className="search-option-row-label">{t("ancestor.depth_label")}</span>
             <FormSelect
+                className="w-auto"
                 values={options}
                 keyProperty="value" titleProperty="label"
                 currentValue={depth ?? ""} onChange={(value) => setDepth(value ? value : null)}
