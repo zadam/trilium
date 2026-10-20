@@ -106,6 +106,7 @@ Not all <a class="reference-link" href="../../Note%20Types.md">Note Types</a> 
         *   Tables that are too complex (especially if they have multiple columns) might not fit properly, however tables with a large number of rows are supported thanks to pagination.
         *   Consider printing in landscape mode, or using `#printLandscape` if exporting to PDF.
     *   The rest of the collections are not supported, but we plan to add support for all the collection types at some point.
+*   A <a class="reference-link" href="../Navigation/Search.md">saved search</a> prints its results as a list, in either the _Search preview_ or the _List_ view.
 *   Using <a class="reference-link" href="../../Theme%20development/Custom%20app-wide%20CSS.md">Custom app-wide CSS</a> for printing is no longer supported, instead a custom `printCss` relation needs to be used (see below).
 
 ## Customizing the print CSS

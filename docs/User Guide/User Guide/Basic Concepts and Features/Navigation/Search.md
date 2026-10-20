@@ -134,6 +134,8 @@ In addition, the _Search preview_ view offers:
 *   If a match is inside a **collapsed section** (for example a folded heading), that section is expanded automatically so the match is visible.
 *   When the excerpt is cut short, a _Show more_ button expands the card to the note's full content, with the search terms highlighted. _Show less_ returns to the excerpt.
 
+A saved search can also be <a class="reference-link" href="../Notes/Printing%20%26%20Exporting%20as%20PDF.md">printed or exported as PDF</a> from the _Print/export to PDF…_ item of the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a>, in either _Search preview_ or _List_ view. The results are laid out as a list, as they stand when printing starts.
+
 ## Simple Note Search Examples
 
 *   `rings tolkien`: Full-text search to find notes containing both "rings" and "tolkien".
