@@ -119,9 +119,9 @@ The options available are:
 
 ## Viewing search results
 
-Results appear below the search pane. By default they are shown in the _List_ view, one row per note with the note's title and content preview.
+Results appear below the search pane, by default in the _Search preview_ view. Each result is drawn as a **snippet card** with the note title, the path to it, a short excerpt of the matching text, and the attributes that matched.
 
-To show a short excerpt of the text that matched instead, choose _Search preview_ from the <a class="reference-link" href="../../Collections/Collection%20Properties.md">Collection Properties</a> bar. Each result is then drawn as a **snippet card** with the note title, the path to it, a short excerpt of the matching text, and the attributes that matched.
+To show the results as a plain note list instead, choose _List_ from the <a class="reference-link" href="../../Collections/Collection%20Properties.md">Collection Properties</a> bar. The _List_ view shows one row per note, with the note's title and content preview.
 
 The search will also highlight the words from the title or content that matched:
 

@@ -26,7 +26,7 @@ export function resolveViewType(
         return undefined;
     }
 
-    const defaultViewType = note.type === "search" ? "list" : "grid";
+    const defaultViewType = note.type === "search" ? "searchPreview" : "grid";
     if (!isViewType(viewType)) {
         return defaultViewType;
     }

@@ -14,4 +14,4 @@ The view types dictate how the child notes are represented. By default, the note
 
 Generally the view type can only be changed from the <a class="reference-link" href="../../Collections/Collection%20Properties.md">Collection Properties</a>, but it can also be changed manually on any type of note using the `#viewType` [label](../../Advanced%20Usage/Attributes/Labels.md).
 
-Saved searches also offer _Search preview_, which draws each result as a snippet card with the text and attributes that matched. It is limited to search notes and is described in <a class="reference-link" href="../Navigation/Search.md">Search</a>.
+Saved searches use _Search preview_ by default: it draws each result as a snippet card with the text and attributes that matched. It is limited to search notes and is described in <a class="reference-link" href="../Navigation/Search.md">Search</a>.
