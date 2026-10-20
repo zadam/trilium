@@ -632,7 +632,10 @@
     "convert_to_markdown_successful": "ノートがマークダウンに変換されました。",
     "convert_to_text_successful": "ノートがテキストノートに変換されました。",
     "note_attributes": "ノートの属性...",
-    "note_attributes_title": "ノートの属性"
+    "note_attributes_title": "ノートの属性",
+    "search_in_note_short": "検索",
+    "note_attachments_short": "添付ファイル",
+    "note_settings": "ノート設定"
   },
   "command_palette": {
     "export_note_title": "ノートをエクスポート",
@@ -2029,7 +2032,9 @@
     "error_cannot_get_branch_id": "ノートパス 「{{notePath}} のbranchIdを取得できません",
     "note_revisions": "ノートの変更履歴",
     "backlinks": "バックリンク",
-    "content_language_switcher": "コンテンツの言語: {{language}}"
+    "content_language_switcher": "コンテンツの言語: {{language}}",
+    "insert_child_note_short": "子ノート",
+    "create_new_split_short": "新しい分割表示"
   },
   "inherited_attribute_list": {
     "title": "継承属性",
@@ -4749,5 +4754,8 @@
     "default_parent": "作成されるノートのデフォルトの保存場所",
     "default_parent_description": "テキストノート内で @ による補完機能を使って作成された場合など、他の場所が選択されなかった場合に配置される場所です。",
     "default_parent_placeholder": "作成される場所"
+  },
+  "hide_keyboard_button": {
+    "title": "キーボードを隠す"
   }
 }
