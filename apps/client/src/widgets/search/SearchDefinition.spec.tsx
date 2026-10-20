@@ -77,7 +77,7 @@ describe("the search definition", () => {
         await act(async () => toggle?.click());
 
         const menu = document.querySelector(".action-add-menu");
-        expect(menu?.textContent).toContain("search_definition.limit");
+        expect(menu?.textContent).toContain("limit.limit");
         expect(menu?.querySelector(".dropdown-header")?.textContent).toBe("bulk_actions.bulk_actions");
 
         const groups = [ ...menu?.querySelectorAll(".dropdown-submenu") ?? [] ]

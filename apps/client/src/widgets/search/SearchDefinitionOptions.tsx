@@ -47,7 +47,7 @@ export const SEARCH_OPTIONS: SearchOption[] = [
         attributeName: "searchString",
         attributeType: "label",
         icon: "bx bx-text",
-        label: t("search_definition.search_string"),
+        label: t("search_string.title_column"),
         component: SearchStringOption
     },
     {
@@ -55,7 +55,7 @@ export const SEARCH_OPTIONS: SearchOption[] = [
         attributeType: "relation",
         defaultValue: "root",
         icon: "bx bx-code",
-        label: t("search_definition.search_script"),
+        label: t("search_script.title"),
         component: SearchScriptOption
     },
     {
@@ -63,7 +63,7 @@ export const SEARCH_OPTIONS: SearchOption[] = [
         attributeType: "relation",
         defaultValue: "root",
         icon: "bx bx-filter-alt",
-        label: t("search_definition.ancestor"),
+        label: t("ancestor.label"),
         component: AncestorOption,
         additionalAttributesToDelete: [ { type: "label", name: "ancestorDepth" } ]
     },
@@ -71,15 +71,15 @@ export const SEARCH_OPTIONS: SearchOption[] = [
         attributeName: "fastSearch",
         attributeType: "label",
         icon: "bx bx-run",
-        label: t("search_definition.fast_search"),
-        tooltip: t("search_definition.fast_search_description"),
+        label: t("fast_search.fast_search"),
+        tooltip: t("fast_search.description"),
         component: FastSearchOption
     },
     {
         attributeName: "includeArchivedNotes",
         attributeType: "label",
         icon: "bx bx-archive",
-        label: t("search_definition.include_archived"),
+        label: t("include_archived_notes.include_archived_notes"),
         tooltip: t("search_definition.include_archived_notes_description"),
         component: IncludeArchivedNotesOption
     },
@@ -88,7 +88,7 @@ export const SEARCH_OPTIONS: SearchOption[] = [
         attributeType: "label",
         defaultValue: "relevancy",
         icon: "bx bx-arrow-from-top",
-        label: t("search_definition.order_by"),
+        label: t("order_by.order_by"),
         component: OrderByOption,
         additionalAttributesToDelete: [ { type: "label", name: "orderDirection" } ]
     },
@@ -97,7 +97,7 @@ export const SEARCH_OPTIONS: SearchOption[] = [
         attributeType: "label",
         defaultValue: "10",
         icon: "bx bx-stop",
-        label: t("search_definition.limit"),
+        label: t("limit.limit"),
         tooltip: t("search_definition.limit_description"),
         component: LimitOption
     },
@@ -105,8 +105,8 @@ export const SEARCH_OPTIONS: SearchOption[] = [
         attributeName: "debug",
         attributeType: "label",
         icon: "bx bx-bug",
-        label: t("search_definition.debug"),
-        tooltip: t("search_definition.debug_description"),
+        label: t("debug.debug"),
+        tooltip: t("debug.debug_info"),
         component: DebugOption
     }
 ];
