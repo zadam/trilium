@@ -1,7 +1,12 @@
 import type { HighlightedTokenInfo, SearchResultDetails } from "@triliumnext/commons";
+import clsx from "clsx";
+import { Fragment } from "preact";
+import { useEffect, useState } from "preact/hooks";
 
+import type FNote from "../../../entities/fnote";
 import { t } from "../../../services/i18n";
 import { calculateHash, type ViewScope } from "../../../services/link";
+import tree from "../../../services/tree";
 import { AttributeSnippetBadges } from "../../react/Badge";
 import { useNote, useNoteTitle } from "../../react/hooks";
 import Icon from "../../react/Icon";
@@ -26,27 +31,43 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
     const liveTitle = useNoteTitle(noteId, undefined);
     const title = liveTitle ?? details?.noteTitle ?? note?.title ?? "";
     const icon = note?.getIcon() ?? details?.icon ?? "bx bx-note";
-    const breadcrumb = getBreadcrumbTitle(details?.notePathTitle);
+    const fallbackBreadcrumb = useFallbackBreadcrumb(note, !details?.notePathTitle);
+    const breadcrumb = getBreadcrumbTitle(details?.notePathTitle) || fallbackBreadcrumb;
 
     const viewScope: ViewScope = { searchTerms: searchTermsFor(details, highlightedTokens) };
     const href = calculateHash({ notePath: noteId, viewScope });
+    const hasDetails = !!details || loading;
 
     return (
-        <a className="search-result-card" href={href}>
-            <div className="search-result-card-header">
-                <Icon className="search-result-card-icon" icon={icon} />
-                <HighlightedText
-                    className="search-result-card-title"
-                    text={title}
-                    highlightedTokens={highlightedTokens}
-                />
-                {breadcrumb && <span className="search-result-card-path">{breadcrumb}</span>}
-            </div>
-            <SearchResultSnippet details={details} loading={loading} />
-            <AttributeSnippetBadges
-                snippet={details?.highlightedAttributeSnippet}
-                className="search-result-card-badges"
-            />
+        <a
+            className={clsx("tn-card-frame", "note-book-card", "search-result-card", "no-tooltip-preview",
+                note?.getColorClass(), note?.isArchived && "archived")}
+            href={href}
+            data-note-id={noteId}
+        >
+            <h5 className="note-book-header">
+                <Icon className="note-icon" icon={icon} />
+                <span className="note-book-title">
+                    <span>
+                        <HighlightedText
+                            className="search-result-card-title"
+                            text={title}
+                            highlightedTokens={highlightedTokens}
+                        />
+                        {breadcrumb && <NotePath path={breadcrumb} />}
+                    </span>
+                </span>
+            </h5>
+
+            {hasDetails && (
+                <div className="search-result-card-content">
+                    <SearchResultSnippet details={details} loading={loading} />
+                    <AttributeSnippetBadges
+                        snippet={details?.highlightedAttributeSnippet}
+                        className="search-result-card-badges"
+                    />
+                </div>
+            )}
         </a>
     );
 }
@@ -64,6 +85,61 @@ function SearchResultSnippet({ details, loading }: { details: SearchResultDetail
 
     // Server snippet is pre-escaped with only <b>/<br> injected (same trust level as quick search).
     return <RawHtmlBlock className="search-result-card-snippet" html={details.highlightedContentSnippet ?? ""} />;
+}
+
+/**
+ * The ancestor path, marked up like `tree.formatNotePath()` so the shared stylesheet hides the
+ * brackets and draws the separators as arrows, exactly as the note list's search results do.
+ */
+function NotePath({ path }: { path: string }) {
+    const segments = path.split(" › ");
+
+    return (
+        <small>
+            <span className="note-path">
+                <span className="path-bracket"> (</span>
+                {segments.map((segment, index) => (
+                    <Fragment key={index}>
+                        <span>{segment}</span>
+                        {index < segments.length - 1 && <span className="path-delimiter"> / </span>}
+                    </Fragment>
+                ))}
+                <span className="path-bracket">)</span>
+            </span>
+        </small>
+    );
+}
+
+/**
+ * The note's path from the tree, as the grid builds it, for the first render before the server's
+ * snippet details arrive. The details' path wins once they do, as it names the path the search
+ * found the note through.
+ */
+function useFallbackBreadcrumb(note: FNote | undefined, enabled: boolean) {
+    const [ breadcrumb, setBreadcrumb ] = useState<string>();
+
+    useEffect(() => {
+        if (!enabled) {
+            setBreadcrumb(undefined);
+            return;
+        }
+
+        const ancestorIds = note?.getBestNotePath()?.slice(1, -1) ?? [];
+        if (ancestorIds.length === 0) {
+            setBreadcrumb(undefined);
+            return;
+        }
+
+        let cancelled = false;
+        void tree.getNotePathTitle(ancestorIds.join("/")).then((title) => {
+            if (!cancelled) setBreadcrumb(title);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [ note, enabled ]);
+
+    return breadcrumb;
 }
 
 /** The breadcrumb shows the ancestor path only, i.e. the note-path title minus the note's own title. */

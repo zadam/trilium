@@ -87,8 +87,12 @@ describe("SearchResultCard", () => {
         // type widget can highlight/jump to them via ViewScope.searchTerms.
         expect(link?.getAttribute("href")).toBe(`#${note.noteId}?searchTerms=sync`);
         expect(container.querySelector(".search-result-card-title")?.textContent).toBe("Meeting notes");
-        // Breadcrumb is the note-path title minus the note's own (last) segment.
-        expect(container.querySelector(".search-result-card-path")?.textContent).toBe("Work › 2026");
+        // Breadcrumb is the note-path title minus the note's own (last) segment, marked up as the
+        // note list does, so the shared stylesheet hides its brackets and draws the separators.
+        const path = container.querySelector(".search-result-card .note-path");
+        expect(path?.textContent).toContain("Work / 2026");
+        expect(path?.querySelectorAll(".path-bracket")).toHaveLength(2);
+        expect(path?.querySelector(".path-delimiter")?.textContent).toBe(" / ");
 
         const snippet = container.querySelector(".search-result-card-snippet");
         expect(snippet?.innerHTML).toContain("<b>sync</b>");

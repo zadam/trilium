@@ -1,6 +1,7 @@
 import "./SearchResultsList.css";
 
 import type { HighlightedTokenInfo } from "@triliumnext/commons";
+import clsx from "clsx";
 import { useMemo } from "preact/hooks";
 
 import type FNote from "../../../entities/fnote";
@@ -45,7 +46,7 @@ export default function SearchResultsList({ note, noteIds, ntxId, highlightedTok
     });
 
     return (
-        <div className="search-results-list">
+        <div className="search-results-list note-list">
             <CollectionProperties
                 note={note}
                 centerChildren={<Pager className="search-results-list-top-pager" {...pagination} />}
@@ -58,7 +59,7 @@ export default function SearchResultsList({ note, noteIds, ntxId, highlightedTok
                 }
             />
 
-            <div className="search-results-list-cards">
+            <div className="search-results-list-cards note-list-container search-results">
                 {pageNoteIds.map((noteId) => (
                     <SearchResultCard
                         key={noteId}
