@@ -4,7 +4,8 @@ import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
-    isKeyboardPanelOpen, useEditorsFocused, useKeyboardPanel, useShownToolbarElement
+    isKeyboardPanelOpen, useEditorsFocused, useIsKeyboardPanelOpen, useKeyboardPanel,
+    useShownToolbarElement
 } from "./mobile_editor_toolbar";
 
 describe("useEditorsFocused", () => {
@@ -175,6 +176,30 @@ describe("useKeyboardPanel", () => {
         await act(async () => render(null, host));
         await endPress();
         act(() => render(null, focusHost));
+    });
+
+    it("tells whether a panel holds the place, until it is given back", async () => {
+        const { root, host, Harness } = buildPanelFixture();
+        const seen: boolean[] = [];
+        const probeHost = document.createElement("div");
+        function Probe() {
+            seen.push(useIsKeyboardPanelOpen());
+            return null;
+        }
+        act(() => render(<Probe />, probeHost));
+        expect(seen.at(-1)).toBe(false);
+
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Harness />, host));
+        expect(seen.at(-1)).toBe(true);
+        root.classList.remove("virtual-keyboard-opened");
+
+        // The press on the X closes the menu as it starts, and its click still finds it open.
+        await act(async () => render(null, host));
+        expect(seen.at(-1)).toBe(true);
+        await endPress();
+        expect(seen.at(-1)).toBe(false);
+        act(() => render(null, probeHost));
     });
 
     it("gives the place up after its press when focus goes elsewhere, or after 1s", async () => {

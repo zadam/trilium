@@ -27,6 +27,10 @@ body.mobile :is(.hide-keyboard-button, .hide-keyboard-action) {
     }
 }
 
+body.mobile .hide-keyboard-action.closes-menu .icon-action::after {
+    content: none;
+}
+
 body.mobile .virtual-keyboard-opened :is(.hide-keyboard-button, .hide-keyboard-action),
 body.mobile.keyboard-panel-open .hide-keyboard-action {
     display: flex;

@@ -31,6 +31,9 @@ export default function MobileEditorToolbar() {
     const editor = nestedEditor?.ui.view.toolbar ? nestedEditor : noteEditor;
     const toolbarElement = useShownToolbarElement(editor);
     const isActive = useEditorsFocused(noteEditor, nestedEditor) || dropdownActive;
+    // A press outside the menu closes it as it starts, so the X's click only brings the keyboard
+    // back, focusing the text within the tap.
+    const isPanelOpen = useIsKeyboardPanelOpen();
 
     usePositioningOniOS(islandRef, outerRef);
 
@@ -83,7 +86,10 @@ export default function MobileEditorToolbar() {
         >
             <div ref={islandRef} className="classic-toolbar-island">
                 <div ref={containerRef} className={`classic-toolbar-widget ${dropdownActive ? "dropdown-active" : ""}`} />
-                <HideKeyboardAction className="hide-keyboard-action" />
+                <HideKeyboardAction
+                    className="hide-keyboard-action"
+                    closeMenu={isPanelOpen ? () => editor?.editing.view.focus() : undefined}
+                />
             </div>
         </div>
     );
@@ -176,6 +182,22 @@ export function useKeyboardPanel(enabled: boolean) {
 /** Whether a menu of the toolbar is in the keyboard's place, for its host to tell the editor. */
 export function isKeyboardPanelOpen() {
     return document.body.classList.contains("keyboard-panel-open");
+}
+
+/** {@link isKeyboardPanelOpen}, followed as the place is taken and given back. */
+export function useIsKeyboardPanelOpen() {
+    const [ isOpen, setIsOpen ] = useState(isKeyboardPanelOpen);
+
+    useEffect(() => {
+        const update = () => setIsOpen(isKeyboardPanelOpen());
+        update();
+        keyboardPanelListeners.add(update);
+        return () => {
+            keyboardPanelListeners.delete(update);
+        };
+    }, []);
+
+    return isOpen;
 }
 
 /** How long a closed panel keeps the keyboard's place for a keyboard that does not come back. */

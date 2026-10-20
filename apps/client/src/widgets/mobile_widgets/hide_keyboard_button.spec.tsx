@@ -14,7 +14,9 @@ vi.mock("../../services/utils", async (importOriginal) => ({
     isIOS: () => true
 }));
 
-import HideKeyboardButton, { holdVisibleBottom, usePositioningOniOS } from "./hide_keyboard_button";
+import HideKeyboardButton, {
+    HideKeyboardAction, holdVisibleBottom, usePositioningOniOS
+} from "./hide_keyboard_button";
 
 describe("HideKeyboardButton", () => {
     let input: HTMLInputElement | undefined;
@@ -40,6 +42,26 @@ describe("HideKeyboardButton", () => {
         expect(document.activeElement).toBe(input);
         act(() => button?.click());
         expect(document.activeElement).not.toBe(input);
+    });
+
+    it("closes the menu instead, as an X, while it is given one to close", () => {
+        input = document.createElement("input");
+        document.body.append(input);
+        const closeMenu = vi.fn();
+        let container: HTMLElement | undefined;
+        act(() => {
+            container = renderInto(<HideKeyboardAction className="action" closeMenu={closeMenu} />);
+        });
+
+        const button = container?.querySelector("button");
+        expect(button).toBeInstanceOf(HTMLButtonElement);
+        expect(button?.classList.contains("bx-x")).toBe(true);
+        expect(container?.querySelector(".action")?.classList.contains("closes-menu")).toBe(true);
+
+        act(() => input?.focus());
+        act(() => button?.click());
+        expect(closeMenu).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(input);
     });
 });
 

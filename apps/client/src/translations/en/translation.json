@@ -4837,6 +4837,7 @@
     "default_parent_placeholder": "Where they are created"
   },
   "hide_keyboard_button": {
-    "title": "Hide keyboard"
+    "title": "Hide keyboard",
+    "close_menu": "Close menu"
   }
 }

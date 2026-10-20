@@ -1,5 +1,6 @@
 import "./hide_keyboard_button.css";
 
+import clsx from "clsx";
 import { RefObject } from "preact";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
@@ -22,21 +23,34 @@ export default function HideKeyboardButton() {
     return <HideKeyboardAction className="hide-keyboard-button" containerRef={containerRef} />;
 }
 
-/** The button alone, which `MobileEditorToolbar` places at the end of its island. */
-export function HideKeyboardAction({ className, containerRef }: {
+/**
+ * The button alone, which `MobileEditorToolbar` places at the end of its island. Given
+ * `closeMenu`, as while a menu of the toolbar is in the keyboard's place, it is an X that calls
+ * `closeMenu` instead of hiding the keyboard.
+ */
+export function HideKeyboardAction({ className, containerRef, closeMenu }: {
     className: string;
     containerRef?: RefObject<HTMLDivElement | null>;
+    closeMenu?: () => void;
 }) {
     return (
         // Keeps the press from moving the focus onto the button: an open dialog's focus trap would
         // send it back into the dialog and bring the keyboard up again.
-        <div ref={containerRef} className={className} onMouseDown={(e) => e.preventDefault()}>
+        <div
+            ref={containerRef}
+            className={clsx(className, closeMenu && "closes-menu")}
+            onMouseDown={(e) => e.preventDefault()}
+        >
             <ActionButton
-                icon="bx bxs-keyboard"
-                text={t("hide_keyboard_button.title")}
+                icon={closeMenu ? "bx bx-x" : "bx bxs-keyboard"}
+                text={closeMenu
+                    ? t("hide_keyboard_button.close_menu")
+                    : t("hide_keyboard_button.title")}
                 noTooltipOnTouch
                 onClick={() => {
-                    if (document.activeElement instanceof HTMLElement) {
+                    if (closeMenu) {
+                        closeMenu();
+                    } else if (document.activeElement instanceof HTMLElement) {
                         document.activeElement.blur();
                     }
                 }}
