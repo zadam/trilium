@@ -16,6 +16,8 @@ Do note that most other LLM providers (e.g. OpenRouter, Groq, Mistral) can still
 
 If you are using a proxy or gateway, you can also configure the base URL, otherwise the default will be used.
 
+For Gemini, a chat that doesn't specify a model uses `gemini-3.8-flash`, and the automatically generated chat titles use `gemini-3.5-flash-lite`. A model you select explicitly is used as is and isn't affected by these defaults.
+
 > [!NOTE]
 > We don't plan to support all cloud providers, even if the library we are using would theoretically support them. Before opening a PR adding support for a different cloud provider, make sure to discuss it over [GitHub Discussions](https://github.com/orgs/TriliumNext/discussions).
 
