@@ -2,16 +2,24 @@ body.mobile {
     /* Read by `PopupEditor.css` to clear the toolbar. */
     --mobile-toolbar-height: 40px;
     --mobile-toolbar-gap: 6px;
+    --mobile-toolbar-clearance: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap));
 
     .classic-toolbar-outer-container {
         contain: none !important;
     }
 
     .classic-toolbar-outer-container.visible {
-        height: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap));
+        height: 0;
         position: relative;
         overflow: visible;
         flex-shrink: 0;
+        z-index: var(--ck-z-panel);
+    }
+
+    /* The `scroll-padding-bottom` is read by `EditableText` to keep the caret above the toolbar. */
+    :is(.scrolling-container, .popup-editor-scroll):has(~ .classic-toolbar-outer-container.visible) {
+        padding-bottom: var(--mobile-toolbar-clearance);
+        scroll-padding-bottom: var(--mobile-toolbar-clearance);
     }
 
     .classic-toolbar-island {
@@ -23,7 +31,13 @@ body.mobile {
         margin: 0 var(--mobile-toolbar-gap) var(--mobile-toolbar-gap);
         border: 1px solid var(--card-border-color, var(--main-border-color));
         border-radius: 6px;
-        background: var(--card-background-color, var(--accented-background-color));
+        /* `--card-background-color` is translucent in theme-next, so it tints an opaque backdrop. */
+        background:
+            linear-gradient(
+                var(--card-background-color, var(--accented-background-color)),
+                var(--card-background-color, var(--accented-background-color))
+            ),
+            var(--mobile-toolbar-backdrop, var(--main-background-color));
         /* On iOS, `--tn-keyboard-gap` is updated continuously by the
            ViewController (Swift) as the keyboard frame changes, so the
            toolbar follows a finger-dragged keyboard during interactive

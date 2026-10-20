@@ -144,6 +144,7 @@ body.mobile .modal.popup-editor-dialog .popup-editor-scroll {
 }
 
 .modal.popup-editor-dialog .classic-toolbar-outer-container.visible {
+    --mobile-toolbar-backdrop: var(--modal-background-color);
     background-color: transparent;
 }
 
@@ -177,8 +178,8 @@ body.mobile .modal.popup-editor-dialog .modal-body {
 }
 
 @media (max-width: 991px) {
-    body.mobile .modal.popup-editor-dialog .classic-toolbar-outer-container.visible {
-        height: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
+    body.mobile .modal.popup-editor-dialog {
+        --mobile-toolbar-clearance: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
     }
 
     body.mobile .modal.popup-editor-dialog .classic-toolbar-island {
