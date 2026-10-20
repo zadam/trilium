@@ -11,7 +11,6 @@ import server from "../../services/server";
 import SpacedUpdate from "../../services/spaced_update";
 import { openInAppHelpFromUrl } from "../../services/utils";
 import { ExtendedAdmonition } from "../react/Admonition";
-import { CardSection, OptionCardSection } from "../react/Card";
 import FormSelect from "../react/FormSelect";
 import FormTextBox from "../react/FormTextBox";
 import HelpRemoveButtons from "../react/HelpRemoveButtons";
@@ -124,10 +123,11 @@ function SearchOption({ note, className, title, titleIcon, children, help, attri
     additionalAttributesToDelete?: { type: "label" | "relation", name: string }[]
 }) {
     return (
-        <OptionCardSection
-            className={clsx("search-option", attributeName, className)}
-            label={titleIcon ? <><Icon icon={titleIcon} />{" "}{title}</> : title}
-        >
+        <div className={clsx("search-option", attributeName, className)}>
+            <span className="search-option-label">
+                {titleIcon && <Icon icon={titleIcon} />}
+                {title}
+            </span>
             <div className="search-option-fields">
                 {children}
             </div>
@@ -144,7 +144,7 @@ function SearchOption({ note, className, title, titleIcon, children, help, attri
                     }
                 }}
             />
-        </OptionCardSection>
+        </div>
     );
 }
 
@@ -228,7 +228,7 @@ function SearchStringOption({ note, refreshResults, flushRef, error, ...restProp
             />
         </SearchOption>
         {error?.message && (
-            <CardSection className="search-definition-error">
+            <div className="search-definition-error">
                 <ExtendedAdmonition
                     type="caution"
                     icon="bx bx-error-circle"
@@ -236,7 +236,7 @@ function SearchStringOption({ note, refreshResults, flushRef, error, ...restProp
                 >
                     {error.message}
                 </ExtendedAdmonition>
-            </CardSection>
+            </div>
         )}
     </>;
 }

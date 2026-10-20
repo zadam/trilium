@@ -7,16 +7,23 @@
         gap: 8px;
     }
 
-    /* An option row lines up like the bulk actions below it: a title column, the controls, and the
-       row's buttons at the trailing edge. */
-    .search-option.tn-card-option {
+    .search-definition-options > * {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--main-border-color);
+    }
+
+    .search-definition-rows > .search-definition-options:last-child > :last-child {
+        border-bottom: 0;
+    }
+
+    .search-option {
         display: grid;
         grid-template-columns: 12em minmax(0, 1fr) auto;
         align-items: center;
         column-gap: 12px;
         row-gap: 4px;
 
-        > .tn-card-option-label {
+        > .search-option-label {
             grid-column: 1;
             min-width: 0;
         }
@@ -33,6 +40,13 @@
         > .search-option-actions {
             grid-column: 3;
         }
+    }
+
+    .search-option-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
     }
 
     .search-option-fields > * {
@@ -96,10 +110,10 @@ body.mobile .search-definition-widget {
 }
 
 @container (width < 560px) {
-    .search-option.tn-card-option {
+    .search-option {
         grid-template-columns: minmax(0, 1fr) auto;
 
-        > .tn-card-option-label {
+        > .search-option-label {
             grid-column: 1;
             grid-row: 1;
         }

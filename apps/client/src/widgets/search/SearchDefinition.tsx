@@ -34,6 +34,7 @@ export default function SearchDefinition({ note, ntxId }: {
     const [ searchOptions, setSearchOptions ] = useState<{ availableOptions: SearchOption[], activeOptions: SearchOption[] }>();
     const [ error, setError ] = useState<{ message: string }>();
     const flushRef = useRef<() => Promise<void>>(null);
+    const bulkActions = useBulkActions(note);
 
     // The server reads the search options from the note's attributes, so a value still waiting
     // in a `SpacedUpdate` is saved first.
@@ -84,21 +85,27 @@ export default function SearchDefinition({ note, ntxId }: {
         <div className="search-definition-widget">
             {note && (
                 <Card className="search-definition-card">
-                    {searchOptions?.activeOptions.map(({ attributeType, attributeName, component, additionalAttributesToDelete, defaultValue }) => {
-                        const Component = component;
-                        return <Component
-                            attributeName={attributeName}
-                            attributeType={attributeType}
-                            note={note}
-                            refreshResults={refreshResults}
-                            flushRef={flushRef}
-                            error={error}
-                            additionalAttributesToDelete={additionalAttributesToDelete}
-                            defaultValue={defaultValue}
-                        />;
-                    })}
+                    {(searchOptions?.activeOptions.length || bulkActions.length > 0) && (
+                        <CardSection noPadding className="search-definition-rows">
+                            <div className="search-definition-options">
+                                {searchOptions?.activeOptions.map(({ attributeType, attributeName, component, additionalAttributesToDelete, defaultValue }) => {
+                                    const Component = component;
+                                    return <Component
+                                        attributeName={attributeName}
+                                        attributeType={attributeType}
+                                        note={note}
+                                        refreshResults={refreshResults}
+                                        flushRef={flushRef}
+                                        error={error}
+                                        additionalAttributesToDelete={additionalAttributesToDelete}
+                                        defaultValue={defaultValue}
+                                    />;
+                                })}
+                            </div>
 
-                    <BulkActionsList note={note} />
+                            {bulkActions.length > 0 && <BulkActionsTable bulkActions={bulkActions} />}
+                        </CardSection>
+                    )}
 
                     <CardSection className="search-definition-actions">
                         <AddSearchOptionButton note={note} options={searchOptions?.availableOptions ?? []} />
@@ -151,37 +158,33 @@ function SearchButtonBar({ note, refreshResults, savePendingOptions }: {
     );
 }
 
-function BulkActionsList({ note }: { note: FNote }) {
-    const [ bulkActions, setBulkActions ] = useState<RenameNoteBulkAction[]>();
+function useBulkActions(note: FNote | null | undefined) {
+    const [ bulkActions, setBulkActions ] = useState<RenameNoteBulkAction[]>([]);
 
     function refreshBulkActions() {
-        if (note) {
-            setBulkActions(bulk_action.parseActions(note));
-        }
+        setBulkActions(note ? bulk_action.parseActions(note) : []);
     }
 
     // React to changes.
     useEffect(refreshBulkActions, [ note ]);
     useTriliumEvent("entitiesReloaded", ({loadResults}) => {
-        if (loadResults.getAttributeRows().find(attr => attr.type === "label" && attr.name === "action" && attributes.isAffecting(attr, note))) {
+        if (note && loadResults.getAttributeRows().find(attr => attr.type === "label" && attr.name === "action" && attributes.isAffecting(attr, note))) {
             refreshBulkActions();
         }
     });
 
-    if (!bulkActions?.length) {
-        return null;
-    }
+    return bulkActions;
+}
 
+function BulkActionsTable({ bulkActions }: { bulkActions: RenameNoteBulkAction[] }) {
     return (
-        <CardSection noPadding className="search-definition-bulk-actions">
-            <table className="bulk-existing-action-list">
-                <tbody>
-                    {bulkActions.map((bulkAction) => (
-                        <Fragment key={bulkAction.attribute.attributeId}>{bulkAction.doRender()}</Fragment>
-                    ))}
-                </tbody>
-            </table>
-        </CardSection>
+        <table className="bulk-existing-action-list">
+            <tbody>
+                {bulkActions.map((bulkAction) => (
+                    <Fragment key={bulkAction.attribute.attributeId}>{bulkAction.doRender()}</Fragment>
+                ))}
+            </tbody>
+        </table>
     );
 }
 
