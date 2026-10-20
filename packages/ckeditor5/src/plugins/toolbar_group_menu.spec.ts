@@ -1,7 +1,8 @@
 import {
     addListToDropdown, Bold, ButtonView, type ClassicEditor, Collection, createDropdown,
-    DropdownView, type Editor, Essentials, Italic, type ListDropdownItemDefinition, type Locale,
-    Paragraph, Plugin, SplitButtonView, type ToolbarView, UIModel, View
+    DropdownView, type Editor, Essentials, Italic, type ListDropdownItemDefinition, ListItemView,
+    ListView, type Locale, Paragraph, Plugin, SearchTextView, SplitButtonView, type ToolbarView, UIModel,
+    View
 } from "ckeditor5";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -24,6 +25,13 @@ beforeEach(() => {
     now = "noon";
     level = "High";
 });
+
+/** The list of a search panel, as the `insertTemplate` dropdown has. */
+class SearchedListView extends ListView {
+    filter() {
+        return { resultsCount: this.items.length, totalItemsCount: this.items.length };
+    }
+}
 
 /** A toolbar item that is neither a button nor a dropdown, focusable as a toolbar wants. */
 class PlainItemView extends View {
@@ -96,6 +104,34 @@ class SampleDropdown extends Plugin {
             return dropdown;
         });
 
+        // Like `insertTemplate`: a list inside a search panel rather than the dropdown's own.
+        this.editor.ui.componentFactory.add("searched", (locale: Locale) => {
+            const dropdown = createDropdown(locale);
+            dropdown.buttonView.set({ label: "Searched", icon: "<svg />" });
+
+            const listView = new SearchedListView(locale);
+            const item = new ListItemView(locale);
+            const button = new ButtonView(locale);
+            button.set({ label: "Greeting", withText: true });
+            button.on("execute", () => insertedSamples.push("Greeting"));
+            item.children.add(button);
+            listView.items.add(item);
+            dropdown.panelView.children.add(new SearchTextView(locale, {
+                filteredView: listView,
+                queryView: { label: "Search" }
+            }));
+
+            return dropdown;
+        });
+
+        // A list with no rows, as `insertTemplate` has without any template.
+        this.editor.ui.componentFactory.add("emptyList", (locale: Locale) => {
+            const dropdown = createDropdown(locale);
+            dropdown.buttonView.set({ label: "Empty", icon: "<svg />" });
+            addListToDropdown(dropdown, new Collection<ListDropdownItemDefinition>());
+            return dropdown;
+        });
+
         // Neither a button nor a dropdown: a toolbar item the menu has no row to draw for.
         this.editor.ui.componentFactory.add("plainView", (locale: Locale) => {
             const view = new PlainItemView(locale);
@@ -140,6 +176,15 @@ class SampleDropdown extends Plugin {
         this.editor.ui.componentFactory.add("panelOnly", (locale: Locale) => {
             const dropdown = createDropdown(locale);
             dropdown.buttonView.set({ label: "Panel only", icon: "<svg />" });
+            dropdown.panelView.children.add(new ButtonView(locale));
+            return dropdown;
+        });
+
+        // A dropdown handed to `openListAsMenu` that holds no list after all.
+        this.editor.ui.componentFactory.add("listless", (locale: Locale) => {
+            const dropdown = createDropdown(locale);
+            dropdown.buttonView.set({ label: "Listless", icon: "<svg />" });
+            openListAsMenu(dropdown);
             return dropdown;
         });
     }
@@ -423,6 +468,29 @@ describe("ToolbarGroupMenu", () => {
         // A list's groups are passed over, and an unlabeled button or dropdown is named "".
         expect(labels(entry(last().items, "Odd list").children ?? [])).toStrictEqual(["First", "—", ""]);
         expect(labels(entry(last().items, "").children ?? [])).toStrictEqual(["Row"]);
+    });
+
+    it("reads a list inside a search panel, and draws an empty list as a disabled entry", async () => {
+        const { config, last } = createHost();
+        const editor = await createTestEditor(PLUGINS, {
+            ...config,
+            toolbar: { items: ["iconOnly", "listless", { ...MENU_GROUP, items: ["searched", "emptyList", "panelOnly"] }] }
+        });
+
+        groupDropdown(getToolbar(editor), "Insert").isOpen = true;
+        expect(labels(last().items)).toStrictEqual(["Searched", "Empty"]);
+
+        const searched = entry(last().items, "Searched");
+        expect(labels(searched.children ?? [])).toStrictEqual(["Greeting"]);
+        entry(searched.children ?? [], "Greeting").run?.();
+        expect(insertedSamples).toStrictEqual(["Greeting"]);
+
+        const empty = entry(last().items, "Empty");
+        expect([empty.isEnabled, empty.children, empty.run]).toStrictEqual([false, undefined, undefined]);
+
+        // A dropdown handed to `openListAsMenu` without a list opens an empty menu.
+        groupDropdown(getToolbar(editor), "Listless").buttonView.fire("open");
+        expect(last().items).toStrictEqual([]);
     });
 
     it("converts a group of the block toolbar, filled after the plugin is set up", async () => {

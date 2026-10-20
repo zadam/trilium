@@ -1,6 +1,6 @@
 import {
     BalloonToolbar, BlockToolbar, ButtonView, DropdownView, type Editor, type FocusTracker,
-    ListItemView, ListSeparatorView, Plugin, SplitButtonView, type ToolbarConfig,
+    ListItemView, ListSeparatorView, ListView, Plugin, SearchTextView, SplitButtonView, type ToolbarConfig,
     type ToolbarConfigItem, ToolbarSeparatorView, type ToolbarView, type View
 } from "ckeditor5";
 
@@ -282,7 +282,7 @@ export default class ToolbarGroupMenu extends Plugin {
     /** The rows of a dropdown handed to {@link openListAsMenu}. */
     private describeList(dropdown: DropdownView, run: (view: View) => () => void) {
         this.building = true;
-        const rows = describeListEntries(dropdown, run);
+        const rows = describeListEntries(dropdown, run) ?? [];
         this.building = false;
         return rows;
     }
@@ -367,18 +367,21 @@ function describeItems(items: View[], run: (view: View) => () => void) {
             described.push(describeButton(item, run(item)));
         } else if (item instanceof DropdownView) {
             const children = describeListEntries(item, run);
-            if (!children.length) {
+            if (!children) {
                 continue;
             }
 
+            // A list with no rows, such as the templates before there are any, is drawn disabled
+            // rather than left out, so the place of the entry does not change.
             const opener = item.buttonView;
+            const split = opener instanceof SplitButtonView;
             described.push({
                 kind: "entry",
                 label: opener.label ?? "",
                 icon: opener.icon,
-                isEnabled: item.isEnabled,
-                run: opener instanceof SplitButtonView ? run(opener) : undefined,
-                children
+                isEnabled: item.isEnabled && (split || children.length > 0),
+                run: split ? run(opener) : undefined,
+                children: children.length ? children : undefined
             });
         }
     }
@@ -387,10 +390,18 @@ function describeItems(items: View[], run: (view: View) => () => void) {
     return described;
 }
 
-/** The rows of the list `dropdown` holds, with a rule wherever the list has a separator. */
+/**
+ * The rows of the list `dropdown` holds, with a rule wherever the list has a separator, or
+ * `undefined` for a dropdown that holds no list.
+ */
 function describeListEntries(dropdown: DropdownView, run: (view: View) => () => void) {
+    const entries = listEntriesOf(dropdown);
+    if (!entries) {
+        return undefined;
+    }
+
     const rows: ToolbarGroupMenuItem[] = [];
-    for (const entry of listEntriesOf(dropdown)) {
+    for (const entry of entries) {
         if (entry instanceof ListSeparatorView) {
             addRule(rows);
         } else {
@@ -427,14 +438,22 @@ function describeButton(view: ButtonView, run: () => void): ToolbarGroupMenuEntr
     return entry;
 }
 
-/** The rows a dropdown's own list holds, which it builds the first time it is opened. */
+/**
+ * The rows a dropdown's list holds, which it builds the first time it is opened: its own, or that
+ * of a search panel, as `insertTemplate` has.
+ */
 function listEntriesOf(dropdown: DropdownView) {
     const wasOpen = dropdown.isOpen;
     dropdown.isOpen = true;
     dropdown.isOpen = wasOpen;
 
+    const listView = dropdown.listView ?? searchedListOf(dropdown);
+    if (!listView) {
+        return undefined;
+    }
+
     const entries: Array<ButtonView | ListSeparatorView> = [];
-    for (const item of dropdown.listView?.items ?? []) {
+    for (const item of listView.items) {
         if (item instanceof ListSeparatorView) {
             entries.push(item);
         } else if (item instanceof ListItemView && item.children.first instanceof ButtonView) {
@@ -443,4 +462,13 @@ function listEntriesOf(dropdown: DropdownView) {
     }
 
     return entries;
+}
+
+function searchedListOf(dropdown: DropdownView) {
+    for (const child of dropdown.panelView.children) {
+        if (child instanceof SearchTextView && child.filteredView instanceof ListView) {
+            return child.filteredView;
+        }
+    }
+    return undefined;
 }
