@@ -1,39 +1,33 @@
 .modal.script-modules-dialog {
-    .script-modules-install {
-        display: flex;
-        gap: 0.5em;
-        align-items: flex-start;
+    .tn-card {
+        margin-bottom: 16px;
     }
 
-    .script-modules-install > .form-group {
-        flex-grow: 1;
+    .tn-card:last-child {
         margin-bottom: 0;
     }
 
-    .script-module-spec-input {
-        font-family: var(--monospace-font-family);
-    }
-
-    .script-modules-list {
-        list-style: none;
-        margin: 1em 0 0;
-        padding: 0;
-    }
-
-    .script-modules-list li {
+    .script-modules-install {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 0.5em;
-        padding: 0.4em 0;
-        border-bottom: 1px solid var(--main-border-color);
+
+        > input {
+            flex-grow: 1;
+            min-width: 0;
+        }
     }
 
-    .script-modules-list li:last-child {
-        border-bottom: none;
-    }
-
+    .script-module-spec-input,
     .script-module-spec {
         font-family: var(--monospace-font-family);
+    }
+
+    .script-module-heading {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
     }
 
     .script-module-node-badge {
@@ -41,12 +35,8 @@
         flex-shrink: 0;
     }
 
-    .script-module-detail {
-        flex-grow: 1;
-        text-align: right;
-        color: var(--muted-text-color);
-        font-size: 0.85em;
-        white-space: nowrap;
+    .script-modules-error .alert {
+        margin-bottom: 0;
     }
 }
 

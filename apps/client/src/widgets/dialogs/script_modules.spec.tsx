@@ -4,6 +4,7 @@
  * What is held here is when the registry is reached: a search leaves the instance, so it happens
  * only where the row offering it is picked, never while the user types.
  */
+import type { ScriptModuleSummary } from "@triliumnext/commons";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -34,12 +35,33 @@ vi.mock("bootstrap", () => ({
     Modal: { getOrCreateInstance: () => ({ show: () => {}, hide: () => {}, dispose: () => {} }) },
     Tooltip: class {
         static getInstance() { return null; }
+        show() {}
+        hide() {}
         dispose() {}
     },
     Dropdown: class {}
 }));
 
 const CHEERIO = { name: "cheerio", version: "1.1.2", description: "Fast, flexible HTML parsing" };
+
+const DAYJS: ScriptModuleSummary = {
+    noteId: "note_dayjs",
+    spec: "dayjs@1.11.10",
+    name: "dayjs",
+    target: "portable",
+    providerId: "esm.sh",
+    fileCount: 12,
+    size: 4096,
+    dateModified: "2026-10-01 00:00:00.000Z"
+};
+
+const SQLITE: ScriptModuleSummary = {
+    ...DAYJS,
+    noteId: "note_sqlite",
+    spec: "sqlite3@5.1.1",
+    name: "sqlite3",
+    target: "node"
+};
 
 /** The dialog asks for the installed modules on opening; a search answers with whatever is given. */
 function mockServer(results: unknown[] | Error = []) {
@@ -113,6 +135,7 @@ beforeEach(() => {
     document.body.innerHTML = "";
     mocks.get.mockClear();
     mocks.post.mockClear();
+    mocks.remove.mockClear();
 });
 
 afterEach(() => {
@@ -196,5 +219,42 @@ describe("ScriptModulesDialog", () => {
 
         expect(labels()).toEqual([ "script_modules.search_failed" ]);
         expect(rows()[0].textContent).toContain("the registry is unreachable");
+    });
+
+    it("lists the installed packages as card segments, and removes the one picked", async () => {
+        mocks.get.mockImplementation(async (url: string) => {
+            if (url === "script-modules") return [ DAYJS, SQLITE ];
+            return url === "options" ? {} : [];
+        });
+
+        await open();
+
+        const headings = [ ...document.querySelectorAll(".script-modules-dialog .tn-card-heading") ]
+            .map((heading) => heading.textContent);
+        expect(headings).toEqual([
+            "script_modules.install_title", "script_modules.installed_title"
+        ]);
+
+        const specs = [ ...document.querySelectorAll(".script-modules-dialog .script-module-spec") ]
+            .map((element) => element.textContent);
+        expect(specs).toEqual([ "dayjs@1.11.10", "sqlite3@5.1.1" ]);
+        // Only the package installed as a Node.js build wears the mark saying so.
+        expect(document.querySelectorAll(".script-modules-dialog .script-module-node-badge"))
+            .toHaveLength(1);
+
+        const remove = document.querySelector<HTMLButtonElement>(
+            ".script-modules-dialog .tn-card-option-actions button");
+        await act(async () => { remove?.click(); });
+        await settle();
+
+        expect(mocks.remove).toHaveBeenCalledWith("script-modules/note_dayjs");
+    });
+
+    it("says so while nothing is installed", async () => {
+        mockServer();
+        await open();
+
+        const installedCard = [ ...document.querySelectorAll(".script-modules-dialog .tn-card") ][1];
+        expect(installedCard.textContent).toContain("script_modules.none_installed");
     });
 });

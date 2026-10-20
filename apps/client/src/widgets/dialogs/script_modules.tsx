@@ -10,9 +10,9 @@ import ActionButton from "../react/ActionButton";
 import Alert from "../react/Alert";
 import { Badge } from "../react/Badge";
 import Button from "../react/Button";
+import { Card, CardSection, OptionCardSection } from "../react/Card";
 import FormCheckbox from "../react/FormCheckbox";
 import FormEntryAutocomplete, { type AutocompleteEntry } from "../react/FormEntryAutocomplete";
-import FormGroup from "../react/FormGroup";
 import { useTriliumEvent } from "../react/hooks";
 import Modal from "../react/Modal";
 import NoItems from "../react/NoItems";
@@ -143,11 +143,11 @@ export default function ScriptModulesDialog() {
             show={shown}
             footer={<Button text={t("modal.close")} onClick={() => setShown(false)} />}
         >
-            <div className="script-modules-install">
-                <FormGroup
-                    name="script-module-spec"
-                    description={t("script_modules.spec_description")}
-                >
+            <Card
+                heading={t("script_modules.install_title")}
+                description={t("script_modules.spec_description")}
+            >
+                <CardSection className="script-modules-install">
                     <FormEntryAutocomplete
                         className="script-module-spec-input"
                         currentValue={spec}
@@ -159,56 +159,70 @@ export default function ScriptModulesDialog() {
                         placeholder={t("script_modules.spec_placeholder")}
                         autoFocus
                     />
-                </FormGroup>
-                <Button
-                    text={installing ? t("script_modules.installing") : t("script_modules.install")}
-                    disabled={installing || !spec.trim()}
-                    kind="primary"
-                />
-            </div>
+                    <Button
+                        text={installing ? t("script_modules.installing") : t("script_modules.install")}
+                        disabled={installing || !spec.trim()}
+                        kind="primary"
+                    />
+                </CardSection>
 
-            <FormCheckbox
-                name="script-module-node-build"
-                label={t("script_modules.node_build")}
-                hint={t("script_modules.node_build_hint")}
-                currentValue={nodeBuild}
-                onChange={setNodeBuild}
-            />
+                <CardSection>
+                    <FormCheckbox
+                        name="script-module-node-build"
+                        label={t("script_modules.node_build")}
+                        hint={t("script_modules.node_build_hint")}
+                        currentValue={nodeBuild}
+                        onChange={setNodeBuild}
+                    />
+                </CardSection>
 
-            {error && <Alert type="danger">{error}</Alert>}
+                {error && (
+                    <CardSection className="script-modules-error">
+                        <Alert type="danger">{error}</Alert>
+                    </CardSection>
+                )}
+            </Card>
 
-            {modules.length > 0
-                ? <ul className="script-modules-list">
-                    {modules.map((module) => (
-                        <li key={module.noteId}>
-                            <span className="script-module-spec">{module.spec}</span>
-                            {module.target === "node" &&
-                                <Badge
-                                    className="script-module-node-badge"
-                                    text={t("script_modules.node_badge")}
-                                    tooltip={t("script_modules.node_badge_hint")}
-                                    outline
-                                />}
-                            <span className="script-module-detail">
-                                {t("script_modules.module_detail", {
-                                    provider: module.providerId,
-                                    fileCount: module.fileCount,
-                                    size: formatSize(module.size)
-                                })}
+            <Card heading={t("script_modules.installed_title")}>
+                {modules.length > 0
+                    ? modules.map((module) => (
+                        <OptionCardSection
+                            key={module.noteId}
+                            label={
+                                <span className="script-module-heading">
+                                    <span className="script-module-spec">{module.spec}</span>
+                                    {module.target === "node" &&
+                                        <Badge
+                                            className="script-module-node-badge"
+                                            text={t("script_modules.node_badge")}
+                                            tooltip={t("script_modules.node_badge_hint")}
+                                            outline
+                                        />}
+                                </span>
+                            }
+                            description={t("script_modules.module_detail", {
+                                provider: module.providerId,
+                                fileCount: module.fileCount,
+                                size: formatSize(module.size)
+                            })}
+                        >
+                            <span className="tn-card-option-actions">
+                                <ActionButton
+                                    icon="bx bx-trash"
+                                    text={t("script_modules.remove")}
+                                    onClick={() => void remove(module)}
+                                />
                             </span>
-                            <ActionButton
-                                icon="bx bx-trash"
-                                text={t("script_modules.remove")}
-                                onClick={() => void remove(module)}
-                            />
-                        </li>
-                    ))}
-                </ul>
-                : <NoItems
-                    icon="bx bx-cube" size="small"
-                    text={t("script_modules.none_installed")}
-                />
-            }
+                        </OptionCardSection>
+                    ))
+                    : <CardSection>
+                        <NoItems
+                            icon="bx bx-cube" size="small"
+                            text={t("script_modules.none_installed")}
+                        />
+                    </CardSection>
+                }
+            </Card>
         </Modal>
     );
 }
