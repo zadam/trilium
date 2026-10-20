@@ -1,6 +1,7 @@
 import "./SearchDefinition.css";
 
 import { SaveSearchNoteResponse } from "@triliumnext/commons";
+import { Fragment } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context";
@@ -16,6 +17,7 @@ import ws from "../../services/ws";
 import AddBulkActionButton from "../bulk_actions/AddBulkActionButton";
 import RenameNoteBulkAction from "../bulk_actions/note/rename_note";
 import Button, { SplitButton } from "../react/Button";
+import { Card, CardSection } from "../react/Card";
 import Dropdown from "../react/Dropdown";
 import { FormListItem } from "../react/FormList";
 import { useTriliumEvent } from "../react/hooks";
@@ -80,72 +82,69 @@ export default function SearchDefinition({ note, ntxId }: {
 
     return (
         <div className="search-definition-widget">
-            <div className="search-settings">
-                {note && (
-                    <table className="search-setting-table">
-                        <tbody>
-                            <tr>
-                                <td className="title-column">{t("search_definition.add_search_option")}</td>
-                                <td colSpan={2} className="add-search-option">
-                                    <ResponsiveContainer
-                                        desktop={searchOptions?.availableOptions.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
-                                            <Button
-                                                key={`${attributeType}-${attributeName}`}
-                                                size="small" icon={icon} text={label} title={tooltip}
-                                                onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
-                                            />
-                                        ))}
-                                        mobile={
-                                            <Dropdown
-                                                buttonClassName="action-add-toggle btn btn-sm"
-                                                text={<><Icon icon="bx bx-plus" />{" "}{t("search_definition.option")}</>}
-                                                mobileBottomSheet
-                                                noSelectButtonStyle
-                                            >
-                                                {searchOptions?.availableOptions.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
-                                                    <FormListItem
-                                                        key={`${attributeType}-${attributeName}`}
-                                                        icon={icon}
-                                                        description={tooltip}
-                                                        onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
-                                                    >{label}</FormListItem>
-                                                ))}
-                                            </Dropdown>
-                                        }
+            {note && (
+                <Card className="search-definition-card">
+                    <CardSection className="search-definition-add">
+                        <span className="search-definition-add-label">{t("search_definition.add_search_option")}</span>
+                        <div className="search-definition-add-buttons">
+                            <ResponsiveContainer
+                                desktop={searchOptions?.availableOptions.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
+                                    <Button
+                                        key={`${attributeType}-${attributeName}`}
+                                        size="small" icon={icon} text={label} title={tooltip}
+                                        onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
                                     />
-
-                                    <AddBulkActionButton
-                                        noteId={note.noteId}
+                                ))}
+                                mobile={
+                                    <Dropdown
                                         buttonClassName="action-add-toggle btn btn-sm"
-                                        text={<><Icon icon="bx bxs-zap" />{" "}{t("search_definition.action")}</>}
-                                    />
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tbody className="search-options">
-                            {searchOptions?.activeOptions.map(({ attributeType, attributeName, component, additionalAttributesToDelete, defaultValue }) => {
-                                const Component = component;
-                                return <Component
-                                    attributeName={attributeName}
-                                    attributeType={attributeType}
-                                    note={note}
-                                    refreshResults={refreshResults}
-                                    flushRef={flushRef}
-                                    error={error}
-                                    additionalAttributesToDelete={additionalAttributesToDelete}
-                                    defaultValue={defaultValue}
-                                />;
-                            })}
-                        </tbody>
-                        <BulkActionsList note={note} />
-                        <SearchButtonBar
+                                        text={<><Icon icon="bx bx-plus" />{" "}{t("search_definition.option")}</>}
+                                        mobileBottomSheet
+                                        noSelectButtonStyle
+                                    >
+                                        {searchOptions?.availableOptions.map(({ icon, label, tooltip, attributeName, attributeType, defaultValue }) => (
+                                            <FormListItem
+                                                key={`${attributeType}-${attributeName}`}
+                                                icon={icon}
+                                                description={tooltip}
+                                                onClick={() => attributes.setAttribute(note, attributeType, attributeName, defaultValue ?? "")}
+                                            >{label}</FormListItem>
+                                        ))}
+                                    </Dropdown>
+                                }
+                            />
+
+                            <AddBulkActionButton
+                                noteId={note.noteId}
+                                buttonClassName="action-add-toggle btn btn-sm"
+                                text={<><Icon icon="bx bxs-zap" />{" "}{t("search_definition.action")}</>}
+                            />
+                        </div>
+                    </CardSection>
+
+                    {searchOptions?.activeOptions.map(({ attributeType, attributeName, component, additionalAttributesToDelete, defaultValue }) => {
+                        const Component = component;
+                        return <Component
+                            attributeName={attributeName}
+                            attributeType={attributeType}
                             note={note}
                             refreshResults={refreshResults}
-                            savePendingOptions={savePendingOptions}
-                        />
-                    </table>
-                )}
-            </div>
+                            flushRef={flushRef}
+                            error={error}
+                            additionalAttributesToDelete={additionalAttributesToDelete}
+                            defaultValue={defaultValue}
+                        />;
+                    })}
+
+                    <BulkActionsList note={note} />
+
+                    <SearchButtonBar
+                        note={note}
+                        refreshResults={refreshResults}
+                        savePendingOptions={savePendingOptions}
+                    />
+                </Card>
+            )}
         </div>
     );
 }
@@ -175,30 +174,26 @@ function SearchButtonBar({ note, refreshResults, savePendingOptions }: {
     }
 
     return (
-        <tbody className="search-actions">
-            <tr>
-                <td colSpan={3}>
-                    <ResponsiveContainer
-                        desktop={
-                            <div className="search-actions-container">
-                                <Button icon="bx bx-search" text={t("search_definition.search_button")} keyboardShortcut="Enter" onClick={refreshResults} />
-                                <Button icon="bx bxs-zap" text={t("search_definition.search_execute")} onClick={searchAndExecuteActions} />
-                                {note.isHiddenCompletely() && <Button icon="bx bx-save" text={t("search_definition.save_to_note")} onClick={saveSearchNote} />}
-                            </div>
-                        }
-                        mobile={
-                            <SplitButton
-                                text={t("search_definition.search_button")} icon="bx bx-search"
-                                onClick={refreshResults}
-                            >
-                                <FormListItem icon="bx bxs-zap" onClick={searchAndExecuteActions}>{t("search_definition.search_execute")}</FormListItem>
-                                {note.isHiddenCompletely() && <FormListItem icon="bx bx-save" onClick={saveSearchNote}>{t("search_definition.save_to_note")}</FormListItem>}
-                            </SplitButton>
-                        }
-                    />
-                </td>
-            </tr>
-        </tbody>
+        <CardSection className="search-definition-actions">
+            <ResponsiveContainer
+                desktop={
+                    <div className="search-actions-container">
+                        <Button icon="bx bx-search" text={t("search_definition.search_button")} keyboardShortcut="Enter" onClick={refreshResults} />
+                        <Button icon="bx bxs-zap" text={t("search_definition.search_execute")} onClick={searchAndExecuteActions} />
+                        {note.isHiddenCompletely() && <Button icon="bx bx-save" text={t("search_definition.save_to_note")} onClick={saveSearchNote} />}
+                    </div>
+                }
+                mobile={
+                    <SplitButton
+                        text={t("search_definition.search_button")} icon="bx bx-search"
+                        onClick={refreshResults}
+                    >
+                        <FormListItem icon="bx bxs-zap" onClick={searchAndExecuteActions}>{t("search_definition.search_execute")}</FormListItem>
+                        {note.isHiddenCompletely() && <FormListItem icon="bx bx-save" onClick={saveSearchNote}>{t("search_definition.save_to_note")}</FormListItem>}
+                    </SplitButton>
+                }
+            />
+        </CardSection>
     );
 }
 
@@ -219,11 +214,19 @@ function BulkActionsList({ note }: { note: FNote }) {
         }
     });
 
+    if (!bulkActions?.length) {
+        return null;
+    }
+
     return (
-        <tbody className="action-options">
-            {bulkActions?.map(bulkAction => (
-                bulkAction.doRender()
-            ))}
-        </tbody>
+        <CardSection noPadding className="search-definition-bulk-actions">
+            <table className="bulk-existing-action-list">
+                <tbody>
+                    {bulkActions.map((bulkAction) => (
+                        <Fragment key={bulkAction.attribute.attributeId}>{bulkAction.doRender()}</Fragment>
+                    ))}
+                </tbody>
+            </table>
+        </CardSection>
     );
 }

@@ -11,6 +11,7 @@ import server from "../../services/server";
 import SpacedUpdate from "../../services/spaced_update";
 import { openInAppHelpFromUrl } from "../../services/utils";
 import { ExtendedAdmonition } from "../react/Admonition";
+import { CardSection, OptionCardSection } from "../react/Card";
 import FormSelect from "../react/FormSelect";
 import FormTextBox from "../react/FormTextBox";
 import HelpRemoveButtons from "../react/HelpRemoveButtons";
@@ -123,25 +124,27 @@ function SearchOption({ note, className, title, titleIcon, children, help, attri
     additionalAttributesToDelete?: { type: "label" | "relation", name: string }[]
 }) {
     return (
-        <tr className={clsx(attributeName, className)}>
-            <td className="title-column">
-                {titleIcon && <><Icon icon={titleIcon} />{" "}</>}
-                {title}
-            </td>
-            <td>{children}</td>
-            <HelpRemoveButtons
-                help={help}
-                removeText={t("abstract_search_option.remove_this_search_option")}
-                onRemove={() => {
-                    removeOwnedAttributesByNameOrType(note, attributeType, attributeName);
-                    if (additionalAttributesToDelete) {
-                        for (const { type, name } of additionalAttributesToDelete) {
-                            removeOwnedAttributesByNameOrType(note, type, name);
+        <OptionCardSection
+            className={clsx("search-option", attributeName, className)}
+            label={titleIcon ? <><Icon icon={titleIcon} />{" "}{title}</> : title}
+        >
+            <div className="search-option-fields">
+                {children}
+                <HelpRemoveButtons
+                    className="search-option-actions"
+                    help={help}
+                    removeText={t("abstract_search_option.remove_this_search_option")}
+                    onRemove={() => {
+                        removeOwnedAttributesByNameOrType(note, attributeType, attributeName);
+                        if (additionalAttributesToDelete) {
+                            for (const { type, name } of additionalAttributesToDelete) {
+                                removeOwnedAttributesByNameOrType(note, type, name);
+                            }
                         }
-                    }
-                }}
-            />
-        </tr>
+                    }}
+                />
+            </div>
+        </OptionCardSection>
     );
 }
 
@@ -224,17 +227,15 @@ function SearchStringOption({ note, refreshResults, flushRef, error, ...restProp
             />
         </SearchOption>
         {error?.message && (
-            <tr>
-                <td colspan={3}>
-                    <ExtendedAdmonition
-                        type="caution"
-                        icon="bx bx-error-circle"
-                        title={t("search_string.error_title")}
-                    >
-                        {error.message}
-                    </ExtendedAdmonition>
-                </td>
-            </tr>
+            <CardSection className="search-definition-error">
+                <ExtendedAdmonition
+                    type="caution"
+                    icon="bx bx-error-circle"
+                    title={t("search_string.error_title")}
+                >
+                    {error.message}
+                </ExtendedAdmonition>
+            </CardSection>
         )}
     </>;
 }
@@ -282,19 +283,18 @@ function AncestorOption({ note, ...restProps}: SearchOptionProps) {
         title={t("ancestor.label")}
         note={note} {...restProps}
     >
-        <div style={{display: "flex", alignItems: "center"}}>
+        <div className="search-option-row">
             <NoteAutocomplete
                 noteId={ancestor !== "root" ? ancestor ?? undefined : undefined}
                 noteIdChanged={noteId => setAncestor(noteId ?? "root")}
                 placeholder={t("ancestor.placeholder")}
             />
 
-            <div style="margin-inline-start: 10px; margin-inline-end: 10px">{t("ancestor.depth_label")}:</div>
+            <span className="search-option-row-label">{t("ancestor.depth_label")}:</span>
             <FormSelect
                 values={options}
                 keyProperty="value" titleProperty="label"
                 currentValue={depth ?? ""} onChange={(value) => setDepth(value ? value : null)}
-                style={{ flexShrink: 3 }}
             />
         </div>
     </SearchOption>;

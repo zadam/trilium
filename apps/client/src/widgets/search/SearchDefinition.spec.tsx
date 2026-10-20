@@ -44,6 +44,16 @@ afterEach(() => {
 });
 
 describe("the search definition", () => {
+    it("lays the parameters out as segments of a card, as the bulk actions dialog does", () => {
+        const container = renderDefinition();
+        const card = container.querySelector(".search-definition-widget > .tn-card");
+
+        expect(card).not.toBeNull();
+        expect(card?.querySelector(".tn-card-section.search-definition-add")).not.toBeNull();
+        expect(card?.querySelector(".tn-card-section.tn-card-option.searchString")).not.toBeNull();
+        expect(card?.querySelector(".tn-card-section.search-definition-actions")).not.toBeNull();
+    });
+
     it.each([
         [ "search", "search_definition.search_button", () => search.runSearchNote ],
         [ "search & execute", "search_definition.search_execute", () => server.post ]

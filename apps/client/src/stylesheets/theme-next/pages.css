@@ -37,7 +37,7 @@
  */
 
  /* Button bar */
- .search-definition-widget .search-setting-table .search-actions-container {
+ .search-definition-widget .search-actions-container {
     justify-content: flex-end;
     gap: 8px;
  }

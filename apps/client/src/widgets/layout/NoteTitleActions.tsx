@@ -37,7 +37,6 @@ function SearchProperties({ note, ntxId }: { note: FNote | null | undefined, ntx
     return (note &&
         <Collapsible
             title={t("search_definition.search_parameters")}
-            card
             initiallyExpanded={note.isInHiddenSubtree()} // not saved searches
         >
             <SearchDefinition note={note} ntxId={ntxId} />
