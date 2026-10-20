@@ -4849,7 +4849,7 @@
     "title": "Свойства шаблона",
     "title_template": "Название по умолчанию для созданных заметок",
     "title_template_description": "Может считывать время создания (now) и название заметки, под которой она создана (parentNote).",
-    "title_template_placeholder": "Встреча ${now.format('YYY-MM-DD')}",
+    "title_template_placeholder": "Встреча ${now.format('YYYY-MM-DD')}",
     "new_notes": "Новые заметки",
     "default_parent": "Расположение по умолчанию для созданных заметок",
     "default_parent_description": "Где они размещаются, если не выбрано другое расположение, например при создании с помощью @ в текстовой заметке.",
