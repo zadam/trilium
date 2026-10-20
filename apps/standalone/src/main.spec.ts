@@ -49,6 +49,7 @@ interface ServiceWorkerLike {
     controller: unknown;
     register: ReturnType<typeof vi.fn>;
     ready: Promise<unknown>;
+    getRegistrations?: ReturnType<typeof vi.fn>;
 }
 
 interface WindowWithCapacitor {
@@ -202,6 +203,56 @@ describe("bootstrap", () => {
         expect(mocks.startLocalServerWorker).toHaveBeenCalled();
         expect(mocks.attachServiceWorkerBridge).not.toHaveBeenCalled();
         expect(sw.register).not.toHaveBeenCalled();
+        expect(document.body.innerHTML).toBe("");
+    });
+
+    it("removes a service worker an older shell build registered, reloading if it controls the page", async () => {
+        const win = window as unknown as WindowWithCapacitor;
+        win.Capacitor = {};
+        mocks.installNativeRequestBridge.mockReturnValue(true);
+
+        // An update installed over a build that answered through the SW: it still controls the
+        // page, and its fetches never reach the native bridge.
+        const controlling = { unregister: vi.fn().mockResolvedValue(true) };
+        setServiceWorker({
+            controller: {}, register: vi.fn(), ready: Promise.resolve(),
+            getRegistrations: vi.fn().mockResolvedValue([ controlling ])
+        });
+        await runBootstrap();
+        await vi.waitFor(() => expect(reloadSpy).toHaveBeenCalledTimes(1));
+        expect(controlling.unregister).toHaveBeenCalled();
+        expect(document.body.innerHTML).toBe("");
+
+        // A registration that controls nothing yet goes too, without a reload.
+        reloadSpy.mockClear();
+        const idle = { unregister: vi.fn().mockResolvedValue(true) };
+        setServiceWorker({
+            controller: null, register: vi.fn(), ready: Promise.resolve(),
+            getRegistrations: vi.fn().mockResolvedValue([ idle ])
+        });
+        await runBootstrap();
+        await vi.waitFor(() => expect(idle.unregister).toHaveBeenCalled());
+        expect(reloadSpy).not.toHaveBeenCalled();
+
+        // A failed unregister must not reload, or the page would reload forever.
+        const stuck = { unregister: vi.fn().mockResolvedValue(false) };
+        setServiceWorker({
+            controller: {}, register: vi.fn(), ready: Promise.resolve(),
+            getRegistrations: vi.fn().mockResolvedValue([ stuck ])
+        });
+        await runBootstrap();
+        await vi.waitFor(() => expect(stuck.unregister).toHaveBeenCalled());
+        expect(reloadSpy).not.toHaveBeenCalled();
+
+        // Where the registrations cannot be listed (WebKit on capacitor://), startup carries on.
+        setServiceWorker({
+            controller: null, register: vi.fn(), ready: Promise.resolve(),
+            getRegistrations: vi.fn().mockRejectedValue(new Error("SecurityError"))
+        });
+        await runBootstrap();
+        await vi.waitFor(() => expect(console.warn).toHaveBeenCalledWith(
+            "[Bootstrap] Could not remove a stale service worker:", expect.any(Error)));
+        expect(reloadSpy).not.toHaveBeenCalled();
         expect(document.body.innerHTML).toBe("");
     });
 

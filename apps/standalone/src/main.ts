@@ -132,7 +132,9 @@ async function bootstrap() {
         // Android WebView without message listeners, the service worker does.
         const answeredNatively = "Capacitor" in window
             && (await import("./native-request-bridge.js")).installNativeRequestBridge();
-        if (!answeredNatively) {
+        if (answeredNatively) {
+            await removeStaleServiceWorkers();
+        } else {
             attachServiceWorkerBridge();
             await waitForServiceWorkerControl();
         }
@@ -148,6 +150,32 @@ async function bootstrap() {
             "Failed to Initialize",
             err instanceof Error ? err.message : String(err)
         );
+    }
+}
+
+/**
+ * Unregisters the service worker an older Android build installed. While it controls the page,
+ * engine-initiated requests (stylesheets, images, fonts) go to it instead of the native request
+ * bridge, and nothing answers them, so a controlled page reloads once the worker is gone.
+ */
+async function removeStaleServiceWorkers() {
+    try {
+        const registrations = await navigator.serviceWorker?.getRegistrations() ?? [];
+        let removed = false;
+        for (const registration of registrations) {
+            removed = await registration.unregister() || removed;
+        }
+
+        if (removed && navigator.serviceWorker?.controller) {
+            console.log("[Bootstrap] Removed a stale service worker - reloading page");
+            window.location.reload();
+            throw new Error("Reloading without the stale service worker");
+        }
+    } catch (err) {
+        if (err instanceof Error && err.message.startsWith("Reloading")) {
+            throw err;
+        }
+        console.warn("[Bootstrap] Could not remove a stale service worker:", err);
     }
 }
 
