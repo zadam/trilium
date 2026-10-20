@@ -283,7 +283,7 @@ describe("ClaudeAgentProvider.chatChunks", () => {
                 type: "usage",
                 // No cost even though the SDK result carries total_cost_usd: usage is
                 // covered by the subscription, so a per-turn dollar figure isn't shown.
-                usage: { promptTokens: 100, completionTokens: 40, totalTokens: 140, model: "Claude Sonnet 5", provider: "claude-agent" }
+                usage: { promptTokens: 100, completionTokens: 40, totalTokens: 140, model: "Claude Sonnet 5.5", provider: "claude-agent" }
             },
             { type: "done" }
         ]);
@@ -742,8 +742,14 @@ describe("ClaudeAgentProvider.chatChunks", () => {
     it("exposes the subscription model list, zero pricing, and no chat() implementation", () => {
         const provider = new ClaudeAgentProvider();
         const models = provider.getAvailableModels();
-        expect(models.some(m => m.id === "claude-sonnet-5" && m.isDefault)).toBe(true);
-        expect(provider.getModelPricing("claude-sonnet-5")).toEqual(expect.objectContaining({ input: 0, output: 0 }));
+        expect(models.some(m => m.id === "claude-sonnet-5-5" && m.isDefault)).toBe(true);
+        // The current line-up leads the list; what it replaced is still listed, as legacy.
+        expect(models.filter(m => !m.isLegacy).map(m => m.id)).toEqual([
+            "claude-fable-5-1", "claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"
+        ]);
+        expect(models.find(m => m.id === "claude-fable-5")).toMatchObject({ isLegacy: true });
+        expect(provider.getModelPricing("claude-sonnet-5-5"))
+            .toEqual(expect.objectContaining({ input: 0, output: 0 }));
         // A long-context variant prices like its base model, not as an unknown.
         expect(provider.getModelPricing("claude-opus-4-8[1m]")).toEqual(expect.objectContaining({ input: 0, output: 0 }));
         expect(provider.getModelPricing("no-such-model")).toBeUndefined();

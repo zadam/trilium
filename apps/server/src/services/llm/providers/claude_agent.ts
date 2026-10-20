@@ -72,10 +72,41 @@ const SUPPORTED_IMAGE_MIMES = new Set<string>(["image/png", "image/jpeg", "image
 const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
     // ===== Current Models =====
     {
+        id: "claude-fable-5-1",
+        name: "Claude Fable 5.1",
+        pricing: { input: 0, output: 0 },
+        contextWindow: 1000000,
+        isSubscription: true
+    },
+    {
+        id: "claude-opus-5-5",
+        name: "Claude Opus 5.5",
+        pricing: { input: 0, output: 0 },
+        contextWindow: 1000000,
+        isSubscription: true
+    },
+    {
+        id: "claude-sonnet-5-5",
+        name: "Claude Sonnet 5.5",
+        pricing: { input: 0, output: 0 },
+        contextWindow: 1000000,
+        isDefault: true,
+        isSubscription: true
+    },
+    {
+        id: "claude-haiku-5-5",
+        name: "Claude Haiku 5.5",
+        pricing: { input: 0, output: 0 },
+        contextWindow: 1000000,
+        isSubscription: true
+    },
+    // ===== Legacy Models =====
+    {
         id: "claude-fable-5",
         name: "Claude Fable 5",
         pricing: { input: 0, output: 0 },
         contextWindow: 1000000,
+        isLegacy: true,
         isSubscription: true
     },
     {
@@ -83,6 +114,7 @@ const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
         name: "Claude Opus 4.8",
         pricing: { input: 0, output: 0 },
         contextWindow: 1000000,
+        isLegacy: true,
         isSubscription: true
     },
     {
@@ -90,6 +122,7 @@ const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
         name: "Claude Opus 4.7",
         pricing: { input: 0, output: 0 },
         contextWindow: 1000000,
+        isLegacy: true,
         isSubscription: true
     },
     {
@@ -97,7 +130,7 @@ const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
         name: "Claude Sonnet 5",
         pricing: { input: 0, output: 0 },
         contextWindow: 1000000,
-        isDefault: true,
+        isLegacy: true,
         isSubscription: true
     },
     {
@@ -105,9 +138,9 @@ const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
         name: "Claude Haiku 4.5",
         pricing: { input: 0, output: 0 },
         contextWindow: 200000,
+        isLegacy: true,
         isSubscription: true
     },
-    // ===== Legacy Models =====
     {
         id: "claude-sonnet-4-6",
         name: "Claude Sonnet 4.6",
