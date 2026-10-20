@@ -23,8 +23,8 @@ function geminiHasToolConflict(config: LlmProviderConfig): boolean {
 
 export class GoogleProvider extends BaseProvider {
     name = "google";
-    protected defaultModel = "gemini-2.5-flash";
-    protected titleModel = "gemini-2.5-flash-lite";
+    protected defaultModel = "gemini-3.8-flash";
+    protected titleModel = "gemini-3.5-flash-lite";
 
     private google: GoogleGenerativeAIProvider;
 
