@@ -18,6 +18,7 @@ interface SearchResultsListProps {
     noteIds: string[];
     highlightedTokens?: (string | HighlightedTokenInfo)[] | null;
     ntxId?: string | null;
+    showTextRepresentation?: boolean;
 }
 
 /**
@@ -29,7 +30,7 @@ interface SearchResultsListProps {
  * {@link SearchResultCard} per note on the current page plus a bottom pager. The per-note snippet
  * details are fetched lazily, one page at a time, via {@link useSearchResultDetails}.
  */
-export default function SearchResultsList({ note, noteIds, ntxId, highlightedTokens }: SearchResultsListProps) {
+export default function SearchResultsList({ note, noteIds, ntxId, highlightedTokens, showTextRepresentation }: SearchResultsListProps) {
     const [ pageSize, setPageSize ] = useTriliumOptionInt("searchResultsPageSize");
     const pagination = usePagination(note, noteIds, { defaultPageSize: pageSize });
     const pageNoteIds = useMemo(() => {
@@ -67,6 +68,7 @@ export default function SearchResultsList({ note, noteIds, ntxId, highlightedTok
                         details={detailsByNoteId.get(noteId)}
                         loading={loading}
                         highlightedTokens={highlightedTokens}
+                        showTextRepresentation={showTextRepresentation}
                     />
                 ))}
             </div>

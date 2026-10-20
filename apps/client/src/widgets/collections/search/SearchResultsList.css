@@ -72,6 +72,33 @@
         user-select: text;
     }
 
+    /* The expanded render supplies its own content wrapper; the card's padding keeps it aligned. */
+    .search-result-card-content .note-book-content {
+        font-size: inherit;
+    }
+
+    .search-result-card-content .note-book-content .rendered-content {
+        padding: 0;
+    }
+
+    .search-result-card-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 6px;
+        color: var(--muted-text-color);
+        cursor: pointer;
+
+        &:hover {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+    }
+
+    .search-result-card-more:hover .search-result-card-more-label {
+        text-decoration: underline;
+    }
+
     .search-result-card-snippet {
         line-height: 1.4;
         overflow-wrap: anywhere;

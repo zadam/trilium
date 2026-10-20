@@ -10,13 +10,16 @@ import tree from "../../../services/tree";
 import { AttributeSnippetBadges } from "../../react/Badge";
 import { useNote, useNoteTitle } from "../../react/hooks";
 import Icon from "../../react/Icon";
+import LinkButton from "../../react/LinkButton";
 import { HighlightedText, RawHtmlBlock } from "../../react/RawHtml";
+import { NoteContent } from "../legacy/ListOrGridView";
 
 interface SearchResultCardProps {
     noteId: string;
     details: SearchResultDetails | undefined;
     loading: boolean;
     highlightedTokens: (string | HighlightedTokenInfo)[] | null | undefined;
+    showTextRepresentation?: boolean;
 }
 
 /**
@@ -24,7 +27,7 @@ interface SearchResultCardProps {
  * server-built snippet and attribute badges fill in from {@link SearchResultDetails} (a snippet
  * skeleton shows while the page's details are still loading).
  */
-export default function SearchResultCard({ noteId, details, loading, highlightedTokens }: SearchResultCardProps) {
+export default function SearchResultCard({ noteId, details, loading, highlightedTokens, showTextRepresentation }: SearchResultCardProps) {
     const note = useNote(noteId);
     // Search-note children are addressed by bare noteId (a non-search path), matching how the legacy
     // list/grid cards compute their href for a search parent.
@@ -37,6 +40,12 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
     const viewScope: ViewScope = { searchTerms: searchTermsFor(details, highlightedTokens) };
     const href = calculateHash({ notePath: noteId, viewScope });
     const hasDetails = !!details || loading;
+    const canExpand = !!details?.contentSnippetTruncated;
+    const [ expanded, setExpanded ] = useState(false);
+
+    useEffect(() => {
+        if (!canExpand) setExpanded(false);
+    }, [ canExpand ]);
 
     return (
         <div
@@ -58,7 +67,29 @@ export default function SearchResultCard({ noteId, details, loading, highlighted
 
             {hasDetails && (
                 <div className="search-result-card-content">
-                    <SearchResultSnippet details={details} loading={loading} />
+                    {expanded && note ? (
+                        <NoteContent
+                            note={note}
+                            noChildrenList
+                            highlightedTokens={highlightedTokens}
+                            includeArchivedNotes={false}
+                            showTextRepresentation={showTextRepresentation}
+                        />
+                    ) : (
+                        <SearchResultSnippet details={details} loading={loading} />
+                    )}
+                    {canExpand && (
+                        <LinkButton
+                            className="search-result-card-more"
+                            onClick={() => setExpanded(!expanded)}
+                            text={<>
+                                <Icon icon={expanded ? "bx bx-chevron-up" : "bx bx-chevron-down"} />
+                                <span className="search-result-card-more-label">
+                                    {expanded ? t("search_result.show_less") : t("search_result.show_more")}
+                                </span>
+                            </>}
+                        />
+                    )}
                     <AttributeSnippetBadges
                         snippet={details?.highlightedAttributeSnippet}
                         className="search-result-card-badges"

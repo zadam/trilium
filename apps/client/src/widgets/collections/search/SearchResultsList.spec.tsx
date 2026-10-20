@@ -19,6 +19,11 @@ vi.mock("../../../services/i18n", () => ({
     t: (key: string, opts?: Record<string, unknown>) => (opts && "count" in opts ? `${key}:${opts.count}` : key)
 }));
 
+// The expanded view renders the full note through the note list; the toggle is what is under test.
+vi.mock("../legacy/ListOrGridView", () => ({
+    NoteContent: () => "EXPANDED"
+}));
+
 import Component from "../../../components/component";
 import type FNote from "../../../entities/fnote";
 import { calculateHash } from "../../../services/link";
@@ -159,6 +164,30 @@ describe("SearchResultCard", () => {
         expect(container.querySelector("a.search-result-card-title")).not.toBeNull();
         expect(container.querySelector(".search-result-card-content a")).toBeNull();
         expect(container.querySelector(".search-result-card-content")?.textContent).toContain("calendar");
+    });
+
+    it("expands to the full note content when the snippet leaves more behind", async () => {
+        const note = buildNote({ id: "note1", title: "Meeting notes", type: "text" });
+        await mount(
+            <SearchResultCard
+                noteId={note.noteId}
+                details={makeDetails({ contentSnippetTruncated: true })}
+                loading={false}
+                highlightedTokens={null}
+            />
+        );
+
+        const more = container.querySelector<HTMLAnchorElement>(".search-result-card-more");
+        expect(more?.textContent).toContain("search_result.show_more");
+        expect(container.querySelector(".search-result-card-snippet")).not.toBeNull();
+
+        await act(async () => more?.click());
+        expect(container.textContent).toContain("EXPANDED");
+        expect(container.querySelector(".search-result-card-snippet")).toBeNull();
+        expect(container.querySelector(".search-result-card-more")?.textContent).toContain("search_result.show_less");
+
+        await act(async () => container.querySelector<HTMLAnchorElement>(".search-result-card-more")?.click());
+        expect(container.querySelector(".search-result-card-snippet")).not.toBeNull();
     });
 });
 

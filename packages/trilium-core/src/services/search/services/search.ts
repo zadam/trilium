@@ -575,7 +575,7 @@ function getTextRepresentationForNote(note: BNote): string | null {
 /** Closing tags of the block elements the text editor writes, each of which ends a line. */
 const BLOCK_END_TAG_RE = /<\/(?:p|h[1-6]|li|blockquote|pre|tr|figcaption|div)>/gi;
 
-function extractContentSnippet(noteId: string, searchTokens: HighlightedTokenInfo[] | string[], maxLength: number = 200): string {
+function extractContentSnippet(noteId: string, searchTokens: HighlightedTokenInfo[] | string[], maxLength: number = 200, onTruncated?: (truncated: boolean) => void): string {
     const note = becca.notes[noteId];
     if (!note) {
         return "";
@@ -675,10 +675,12 @@ function extractContentSnippet(noteId: string, searchTokens: HighlightedTokenInf
 
         // Extract snippet
         let snippet = content.substring(snippetStart, snippetStart + maxLength);
+        let truncated = snippetStart > 0 || snippetStart + maxLength < content.length;
 
         // If snippet contains linebreaks, limit to max 4 lines and override character limit
         const lines = snippet.split('\n');
         if (lines.length > 4) {
+            truncated = true;
             // Find which lines contain the search tokens to ensure they're included
             const normalizedLines = lines.map((line) => normalizePreservingLength(line));
 
@@ -726,6 +728,7 @@ function extractContentSnippet(noteId: string, searchTokens: HighlightedTokenInf
             }
         }
 
+        onTruncated?.(truncated);
         return snippet;
     } catch (e) {
         getLog().error(`Error extracting content snippet for note ${noteId}: ${e}`);
@@ -900,7 +903,11 @@ function buildSearchResultDetails(results: SearchResult[], searchContext: Search
             ? [ ...tokenInfos, ...matchedWords.map((token) => ({ token, type: "fuzzy" as const })) ]
             : tokenInfos;
 
-        result.contentSnippet = extractContentSnippet(result.noteId, noteTokenInfos);
+        let contentSnippetTruncated = false;
+        result.contentSnippet = extractContentSnippet(result.noteId, noteTokenInfos, undefined, (truncated) => {
+            contentSnippetTruncated = truncated;
+        });
+        result.contentSnippetTruncated = contentSnippetTruncated;
         result.matchedTerms = findMatchedTerms(result.contentSnippet, noteTokenInfos);
         result.attributeSnippet = extractAttributeSnippet(result.noteId, noteTokenInfos);
         highlightSearchResults([ result ], noteTokenInfos, searchContext.ignoreInternalAttributes);
@@ -918,6 +925,7 @@ function buildSearchResultDetails(results: SearchResult[], searchContext: Search
             highlightedParentPathTitle: result.highlightedParentPathTitle,
             contentSnippet: result.contentSnippet,
             highlightedContentSnippet: result.highlightedContentSnippet,
+            contentSnippetTruncated: result.contentSnippetTruncated,
             attributeSnippet: result.attributeSnippet,
             highlightedAttributeSnippet: result.highlightedAttributeSnippet,
             matchedTerms: result.matchedTerms,

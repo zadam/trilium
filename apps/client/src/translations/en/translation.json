@@ -1498,11 +1498,11 @@
     "label": "Ancestor",
     "placeholder": "search for note by its name",
     "depth_label": "depth",
-    "depth_doesnt_matter": "doesn't matter",
-    "depth_eq": "is exactly {{count}}",
-    "direct_children": "direct children",
-    "depth_gt": "is greater than {{count}}",
-    "depth_lt": "is less than {{count}}"
+    "depth_doesnt_matter": "any",
+    "depth_eq": "= {{count}}",
+    "direct_children": "Direct children",
+    "depth_gt": "> {{count}}",
+    "depth_lt": "< {{count}}"
   },
   "debug": {
     "debug": "Debug",
@@ -2879,6 +2879,8 @@
     "result_count_other": "{{count}} results",
     "page_size": "Per page",
     "snippet_unavailable": "No preview available.",
+    "show_more": "Show more",
+    "show_less": "Show less",
     "searching": "Searching..."
   },
   "sql_result": {

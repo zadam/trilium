@@ -388,6 +388,8 @@ export interface SearchResultDetails {
     highlightedParentPathTitle?: string;
     contentSnippet?: string;
     highlightedContentSnippet?: string;
+    /** Whether the note body continues beyond the returned snippet. */
+    contentSnippetTruncated?: boolean;
     attributeSnippet?: string;
     highlightedAttributeSnippet?: string;
     /**
