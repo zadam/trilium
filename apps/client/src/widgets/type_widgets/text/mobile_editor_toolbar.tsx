@@ -16,6 +16,7 @@ import { useNestedEditor } from "./editable_embed";
  * - On Android, the viewport change makes the keyboard resize the content area, all we have to do is to hide the tab bar and global menu (handled in the global style).
  */
 export default function MobileEditorToolbar() {
+    const outerRef = useRef<HTMLDivElement>(null);
     const islandRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const { note, noteContext, ntxId } = useNoteContext();
@@ -29,7 +30,7 @@ export default function MobileEditorToolbar() {
     const toolbarElement = useShownToolbarElement(editor);
     const isActive = useEditorsFocused(noteEditor, nestedEditor) || dropdownActive;
 
-    usePositioningOniOS(islandRef);
+    usePositioningOniOS(islandRef, outerRef);
 
     // Attach the toolbar from the CKEditor.
     useTriliumEvent("textEditorRefreshed", ({ ntxId: eventNtxId, editor }) => {
@@ -70,10 +71,14 @@ export default function MobileEditorToolbar() {
     }, []);
 
     return (
-        <div className={clsx("classic-toolbar-outer-container", shouldDisplay ? "visible" : "hidden-ext", {
-            active: shouldDisplay && isActive,
-            ios: isIOS()
-        })}>
+        <div
+            ref={outerRef}
+            className={clsx(
+                "classic-toolbar-outer-container",
+                shouldDisplay ? "visible" : "hidden-ext",
+                { active: shouldDisplay && isActive, ios: isIOS() }
+            )}
+        >
             <div ref={islandRef} className="classic-toolbar-island">
                 <div ref={containerRef} className={`classic-toolbar-widget ${dropdownActive ? "dropdown-active" : ""}`} />
                 <HideKeyboardAction className="hide-keyboard-action" />

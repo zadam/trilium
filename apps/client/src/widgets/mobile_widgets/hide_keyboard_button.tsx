@@ -46,22 +46,26 @@ export function HideKeyboardAction({ className, containerRef }: {
 }
 
 /**
- * Lifts an element anchored to the bottom of the screen above the keyboard in plain mobile Safari,
- * which does not resize the page for the keyboard.
+ * Lifts an element at the bottom of its `anchorRef`, or of the screen for a fixed element, above
+ * the keyboard in plain mobile Safari, which does not resize the page for the keyboard.
  */
-export function usePositioningOniOS(wrapperRef: RefObject<HTMLDivElement | null>) {
-    // Fallback path for plain mobile Safari (no Capacitor): the WKWebView
-    // isn't resized when the keyboard opens, so visualViewport.height
-    // shrinks while window.innerHeight stays the same. Push the element
-    // up by the difference. Under Capacitor `resize: native` both values
-    // shrink together, so `obscured` is 0 and we leave CSS in charge.
+export function usePositioningOniOS(
+    wrapperRef: RefObject<HTMLDivElement | null>,
+    anchorRef?: RefObject<HTMLElement | null>
+) {
+    // Safari shrinks `visualViewport` and pans it (`offsetTop`) inside the unchanged layout
+    // viewport, so the element rises by how far its anchor reaches below the visible bottom. Under
+    // Capacitor `resize: native` the layout viewport shrinks too, so `obscured` is 0 and CSS stays
+    // in charge.
     const adjustPosition = useCallback(() => {
         if (!wrapperRef.current) return;
         const viewport = window.visualViewport;
         if (!viewport) return;
 
+        const anchorBottom = anchorRef?.current?.getBoundingClientRect().bottom
+            ?? window.innerHeight;
         const obscured = Math.max(0, Math.round(
-            window.innerHeight - viewport.height - viewport.offsetTop
+            anchorBottom - viewport.height - viewport.offsetTop
         ));
 
         if (obscured <= 1) {
@@ -76,9 +80,12 @@ export function usePositioningOniOS(wrapperRef: RefObject<HTMLDivElement | null>
         // Run once in case the keyboard is already up when mounting
         // (e.g. returning from a dialog).
         adjustPosition();
-        window.visualViewport?.addEventListener("resize", adjustPosition);
+        const viewport = window.visualViewport;
+        viewport?.addEventListener("resize", adjustPosition);
+        viewport?.addEventListener("scroll", adjustPosition);
         return () => {
-            window.visualViewport?.removeEventListener("resize", adjustPosition);
+            viewport?.removeEventListener("resize", adjustPosition);
+            viewport?.removeEventListener("scroll", adjustPosition);
         };
     }, [ adjustPosition ]);
 }

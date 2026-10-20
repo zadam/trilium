@@ -1,4 +1,6 @@
+import { render } from "preact";
 import { act } from "preact/test-utils";
+import { useRef } from "preact/hooks";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { renderInto } from "../../test/render";
@@ -7,8 +9,12 @@ vi.mock("../react/hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../react/hooks")>()),
     useStaticTooltip: vi.fn()
 }));
+vi.mock("../../services/utils", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../services/utils")>()),
+    isIOS: () => true
+}));
 
-import HideKeyboardButton from "./hide_keyboard_button";
+import HideKeyboardButton, { usePositioningOniOS } from "./hide_keyboard_button";
 
 describe("HideKeyboardButton", () => {
     let input: HTMLInputElement | undefined;
@@ -36,3 +42,109 @@ describe("HideKeyboardButton", () => {
         expect(document.activeElement).not.toBe(input);
     });
 });
+
+describe("usePositioningOniOS", () => {
+    const originalViewport = Object.getOwnPropertyDescriptor(window, "visualViewport");
+    const originalInnerHeight = Object.getOwnPropertyDescriptor(window, "innerHeight");
+
+    afterEach(() => {
+        for (const [ key, descriptor ] of [
+            [ "visualViewport", originalViewport ], [ "innerHeight", originalInnerHeight ]
+        ] as const) {
+            if (descriptor) {
+                Object.defineProperty(window, key, descriptor);
+            } else {
+                Reflect.deleteProperty(window, key);
+            }
+        }
+    });
+
+    it("lifts a fixed element above the keyboard, also when Safari pans the viewport", () => {
+        const viewport = fakeViewport(800);
+        const { element, unmount } = renderPositioned(false);
+
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("300px");
+
+        // Safari pans the visual viewport towards the caret without resizing it.
+        act(() => viewport.set({ height: 500, offsetTop: 120 }, "scroll"));
+        expect(element().style.bottom).toBe("180px");
+
+        act(() => viewport.set({ height: 800, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("");
+
+        unmount();
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(viewport.listenerCount()).toBe(0);
+    });
+
+    it("lifts an element by what the keyboard covers of its anchor, not of the window", () => {
+        const viewport = fakeViewport(800);
+        const { element, anchor } = renderPositioned(true);
+
+        // The anchor ends mid-screen, as the top note split does, above the keyboard.
+        anchor().getBoundingClientRect = () => new DOMRect(0, 0, 400, 400);
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("");
+
+        // The anchor ends 53px above the window's bottom, as above a bottom bar left in place.
+        anchor().getBoundingClientRect = () => new DOMRect(0, 0, 400, 747);
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("247px");
+    });
+});
+
+function fakeViewport(innerHeight: number) {
+    const target = new EventTarget();
+    let listeners = 0;
+    const viewport = Object.assign(target, { height: innerHeight, offsetTop: 0 });
+    const add = target.addEventListener.bind(target);
+    const remove = target.removeEventListener.bind(target);
+    viewport.addEventListener = (...args: Parameters<typeof add>) => {
+        listeners++;
+        add(...args);
+    };
+    viewport.removeEventListener = (...args: Parameters<typeof remove>) => {
+        listeners--;
+        remove(...args);
+    };
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: innerHeight });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: viewport });
+    return {
+        set(values: { height: number; offsetTop: number }, event: "resize" | "scroll") {
+            Object.assign(viewport, values);
+            viewport.dispatchEvent(new Event(event));
+        },
+        listenerCount: () => listeners
+    };
+}
+
+function renderPositioned(withAnchor: boolean) {
+    const host = document.createElement("div");
+    document.body.append(host);
+    function Harness() {
+        const anchorRef = useRef<HTMLDivElement>(null);
+        const elementRef = useRef<HTMLDivElement>(null);
+        usePositioningOniOS(elementRef, withAnchor ? anchorRef : undefined);
+        return (
+            <div ref={anchorRef} className="anchor">
+                <div ref={elementRef} className="element" />
+            </div>
+        );
+    }
+    act(() => render(<Harness />, host));
+
+    const find = (selector: string) => {
+        const found = host.querySelector<HTMLElement>(selector);
+        if (!found) throw new Error(`${selector} is not rendered`);
+        return found;
+    };
+    return {
+        element: () => find(".element"),
+        anchor: () => find(".anchor"),
+        unmount: () => {
+            act(() => render(null, host));
+            host.remove();
+        }
+    };
+}
