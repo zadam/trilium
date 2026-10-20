@@ -43,3 +43,7 @@ The Quick edit feature has a unique behavior for <a class="reference-link" href
 *   If the note is read-only due to performance reasons (auto read-only), then the note is made editable for quick editing.
 *   If the note has been manually set to read-only, then the note is read-only to prevent accidental change.
     *   In this case, the note can still be edited by on-screen instructions.
+
+## Mobile support
+
+On a phone, the popup uses the full width of the screen and the note's content keeps the same side margin as a <a class="reference-link" href="../../Note%20Types/Text.md">Text</a> note. The <a class="reference-link" href="../../Note%20Types/Text/Formatting%20toolbar.md">Formatting toolbar</a> of a text note sits at the foot of the dialog, below the note; its dropdowns open upwards so the keyboard does not cover them.
