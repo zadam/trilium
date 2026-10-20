@@ -201,6 +201,11 @@ body.mobile .modal.popup-editor-dialog .modal-body {
     overflow: visible; /* Allow selection rectangle to go outside of the editor area */
 }
 
+/* Mobile drops the block drag handle the 28px makes room for; match a text note's 8px margin. */
+body.mobile .modal.popup-editor-dialog .note-detail-editable-text-editor {
+    margin-inline: 8px;
+}
+
 .modal.popup-editor-dialog .note-detail-file {
     padding: 0;
 }
