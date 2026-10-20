@@ -115,7 +115,8 @@ body.mobile {
 
     &.keyboard-panel-open .classic-toolbar-island,
     .virtual-keyboard-opened .classic-toolbar-island {
-        --mobile-toolbar-fade: 24px;
+        /* One button wide, so part of an icon always falls under it. */
+        --mobile-toolbar-fade: var(--mobile-toolbar-button-size);
 
         .classic-toolbar-widget {
             inset-inline-end: var(--hide-keyboard-button-size);
