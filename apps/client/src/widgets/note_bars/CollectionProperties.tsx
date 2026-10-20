@@ -198,9 +198,24 @@ function ViewTypeSwitcher({ noteType, viewType, setViewType }: {
     viewType: ViewTypeOptions;
     setViewType: (newValue: ViewTypeOptions) => void;
 }) {
-    // The search preview fetches a saved search's result details, so it only applies to search notes.
-    const availableViewTypes = Object.entries(VIEW_TYPE_MAPPINGS)
-        .filter(([ key ]) => key !== "searchPreview" || noteType === "search");
+    // The search preview fetches a saved search's result details, so only search notes offer it.
+    // The basic views stay above the divider, the richer collection views below it.
+    const isSearchNote = noteType === "search";
+    const basicViewTypes: ViewTypeOptions[] = isSearchNote
+        ? [ "searchPreview", "list", "grid" ]
+        : [ "grid", "list" ];
+    const otherViewTypes = (Object.keys(VIEW_TYPE_MAPPINGS) as ViewTypeOptions[])
+        .filter((key) => key !== "searchPreview" && !basicViewTypes.includes(key));
+    const renderViewType = (key: ViewTypeOptions) => (
+        <FormListItem
+            key={key}
+            onClick={() => setViewType(key)}
+            selected={viewType === key}
+            disabled={viewType === key}
+            icon={ICON_MAPPINGS[key]}
+            badges={key === "dashboard" ? [{ text: t("note_types.beta-feature") }] : undefined}
+        >{VIEW_TYPE_MAPPINGS[key]}</FormListItem>
+    );
     // Keyboard shortcut
     const dropdownContainerRef = useRef<HTMLDivElement>(null);
     const { ntxId: ownNtxId } = useNoteContext();
@@ -217,16 +232,9 @@ function ViewTypeSwitcher({ noteType, viewType, setViewType }: {
                 {VIEW_TYPE_MAPPINGS[viewType]}
             </>}
         >
-            {availableViewTypes.map(([ key, label ]) => (
-                <FormListItem
-                    key={key}
-                    onClick={() => setViewType(key as ViewTypeOptions)}
-                    selected={viewType === key}
-                    disabled={viewType === key}
-                    icon={ICON_MAPPINGS[key as ViewTypeOptions]}
-                    badges={key === "dashboard" ? [{ text: t("note_types.beta-feature") }] : undefined}
-                >{label}</FormListItem>
-            ))}
+            {basicViewTypes.map(renderViewType)}
+            <FormDropdownDivider />
+            {otherViewTypes.map(renderViewType)}
         </Dropdown>
     );
 }
