@@ -8,17 +8,13 @@ import { isIOS } from "../../../services/utils";
 import { useIsNoteReadOnly, useNoteContext, useNoteProperty, useTriliumEvent } from "../../react/hooks";
 import { useNestedEditor } from "./editable_embed";
 
-interface MobileEditorToolbarProps {
-    inPopupEditor?: boolean;
-}
-
 /**
  * Handles the editing toolbar for CKEditor in mobile mode. The toolbar acts as a floating bar, with two different mechanism:
  *
  * - On iOS, because it does not respect the viewport meta value `interactive-widget=resizes-content`, we need to listen to window resizes and scroll and reposition the toolbar using absolute positioning.
  * - On Android, the viewport change makes the keyboard resize the content area, all we have to do is to hide the tab bar and global menu (handled in the global style).
  */
-export default function MobileEditorToolbar({ inPopupEditor }: MobileEditorToolbarProps) {
+export default function MobileEditorToolbar() {
     const containerRef = useRef<HTMLDivElement>(null);
     const { note, noteContext, ntxId } = useNoteContext();
     const noteType = useNoteProperty(note, "type");
@@ -29,23 +25,21 @@ export default function MobileEditorToolbar({ inPopupEditor }: MobileEditorToolb
     const nestedEditor = useNestedEditor(ntxId);
     const editor = nestedEditor?.ui.view.toolbar ? nestedEditor : noteEditor;
 
-    usePositioningOniOS(!inPopupEditor, containerRef);
+    usePositioningOniOS(containerRef);
 
     // Attach the toolbar from the CKEditor.
     useTriliumEvent("textEditorRefreshed", ({ ntxId: eventNtxId, editor }) => {
         if (eventNtxId !== ntxId) return;
 
-        if (!inPopupEditor) {
-            repositionDropdowns(editor);
-        }
+        repositionDropdowns(editor);
         setNoteEditor(editor);
     });
 
     useEffect(() => {
-        if (nestedEditor && !inPopupEditor) {
+        if (nestedEditor) {
             repositionDropdowns(nestedEditor);
         }
-    }, [ nestedEditor, inPopupEditor ]);
+    }, [ nestedEditor ]);
 
     useEffect(() => {
         const toolbar = editor?.ui.view.toolbar?.element;
@@ -79,7 +73,7 @@ export default function MobileEditorToolbar({ inPopupEditor }: MobileEditorToolb
     );
 }
 
-function usePositioningOniOS(enabled: boolean, wrapperRef: RefObject<HTMLDivElement | null>) {
+function usePositioningOniOS(wrapperRef: RefObject<HTMLDivElement | null>) {
     // Fallback path for plain mobile Safari (no Capacitor): the WKWebView
     // isn't resized when the keyboard opens, so visualViewport.height
     // shrinks while window.innerHeight stays the same. Push the toolbar
@@ -102,7 +96,7 @@ function usePositioningOniOS(enabled: boolean, wrapperRef: RefObject<HTMLDivElem
     }, [ wrapperRef ]);
 
     useEffect(() => {
-        if (!isIOS() || !enabled) return;
+        if (!isIOS()) return;
         // Run once in case the keyboard is already up when mounting
         // (e.g. returning from a dialog).
         adjustPosition();
@@ -110,7 +104,7 @@ function usePositioningOniOS(enabled: boolean, wrapperRef: RefObject<HTMLDivElem
         return () => {
             window.visualViewport?.removeEventListener("resize", adjustPosition);
         };
-    }, [ enabled, adjustPosition ]);
+    }, [ adjustPosition ]);
 }
 
 /** The editors whose toolbar dropdowns open upwards already. */

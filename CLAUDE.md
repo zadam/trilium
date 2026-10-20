@@ -36,6 +36,15 @@ pnpm dev:format-check | dev:format-fix   # stylistic formatting
 - **Commit by explicit path** — `git commit -F <message file> -- <paths>`, not whatever the index holds. The user stages and unstages in this worktree too, so between two commands the index can gain their files or lose yours. Give each commit its own message file: a `Write` onto an existing path that has not been read fails, and the commit then takes the old message.
 - **Never run a tree-wide git operation — no `git stash`, `git checkout --`, `git restore`.** The user edits this worktree at the same time, so a stash takes their uncommitted work with it, and their IDE can flush a partial buffer onto the stashed state and block the pop. To decide whether a failure predates your change, argue statically instead — check whether the failing spec even imports the module you touched. If a real A/B is unavoidable, copy the file, edit it in place, and restore it, touching only files you wrote; prefer `git worktree add` on a temp dir over anything that reaches the whole tree.
 
+### Commit messages
+
+- **Format**: `type(area): imperative summary`, e.g. `fix(search): keep result paths out of the bookmarks clone (closes #10021)`. The area names the subsystem (`search`, `share`, `desktop`, `collections/table`), never a file; the types in use are `fix`, `feat`, `perf`, `docs`, `chore` and `build`.
+- **Subject**: imperative mood, short (aim for 50 characters before any suffix), no trailing period, and it states the user-visible outcome rather than the mechanism.
+- **Issue references go in the subject**: `(closes #N)` for a bugfix, `(#N)` when the issue stays open, `(regression of #N)` for a regression. The body never carries the closing keyword.
+- **Body**: separated from the subject by a blank line, wrapped at 72 characters, and omitted when the subject says it all. Use it to explain what the user saw and why the code did it (naming the offending identifier), what changes and why that shape — including the alternative rejected — and what is deliberately unchanged or out of scope. Measurements, before/after numbers and red/green verification belong here, not in code comments.
+- **AI attribution is an `Assisted-by` trailer, not prose.** When an AI tool wrote or materially shaped the commit, end the message with a blank line and `Assisted-by: <tool and model>` (e.g. `Assisted-by: DeepSeek V4.1 Flash`), one trailer per tool. `Co-Authored-By` is for human co-authors and `Signed-off-by` is the human's DCO certification, so neither names a tool; never announce the tool in the subject or as a `Generated with …` footer.
+- **One logical change per commit**, each message self-contained: PR bodies are assembled from these bodies, so a message that only reads in sequence with the previous commit loses its rationale.
+
 ### Opening a PR
 
 `git push -u origin <branch>` then `gh pr create --base main --title … --body-file <file>`. There is no PR template in `.github/`, so the body is yours to shape.
