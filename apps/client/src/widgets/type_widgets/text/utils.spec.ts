@@ -15,6 +15,8 @@ vi.mock("../../../services/link", () => ({
 vi.mock("../../../services/content_renderer", () => ({
     default: {
         getRenderedContent: vi.fn(),
+        getRenderingType: vi.fn(),
+        isSelfUpdatingType: (type: string) => type === "canvasDrawing",
         disposeInteractiveContent: vi.fn(),
         mountInteractiveWidget: vi.fn()
     }
@@ -55,6 +57,7 @@ import {
     loadEmbeddedNote,
     openContentEmbedMenu,
     refreshEmbeddedNote,
+    showsAttachmentSave,
     watchContentEmbeds
 } from "./utils";
 
@@ -283,6 +286,48 @@ describe("loadEmbeddedAttachment", () => {
         expect(getLastOptions()).toMatchObject({ hasCodeLineNumbers: false });
         expect(getLastOptions()).not.toHaveProperty("codeLanguage");
         expect(getLastOptions()).not.toHaveProperty("isCodeWrapped");
+    });
+
+    it("tells when every box of an attachment shows its saves by itself", async () => {
+        const drawing = { ...attachment, title: "Canvas.excalidraw" } as FAttachment;
+        vi.mocked(froca.getAttachment).mockResolvedValue(drawing);
+        vi.mocked(content_renderer.getRenderingType).mockReturnValue("canvasDrawing");
+        const container = inPage(document.createElement("div"));
+        const addBox = () => {
+            const embed = document.createElement("figure");
+            embed.className = "include-note";
+            embed.dataset.attachmentId = "att1";
+            const wrapper = document.createElement("div");
+            wrapper.className = "include-note-wrapper";
+            embed.append(wrapper);
+            container.append(embed);
+            return wrapper;
+        };
+        const draw = async (wrapper: HTMLElement, type: string) => {
+            vi.mocked(content_renderer.getRenderedContent)
+                .mockResolvedValueOnce({ $renderedContent: $(content), type } as never);
+            await loadEmbeddedAttachment("att1", $(wrapper), "medium");
+        };
+        expect(showsAttachmentSave(container, drawing)).toBe(false);
+
+        const first = addBox();
+        expect(showsAttachmentSave(container, drawing)).toBe(false);
+        await draw(first, "canvasDrawing");
+        expect(showsAttachmentSave(container, drawing)).toBe(true);
+
+        // A new title, or another type of content, draws the box again.
+        expect(showsAttachmentSave(container, { ...drawing, title: "Renamed" } as FAttachment))
+            .toBe(false);
+        vi.mocked(content_renderer.getRenderingType).mockReturnValueOnce("file");
+        expect(showsAttachmentSave(container, drawing)).toBe(false);
+
+        // So does every box, once one of them shows content that does not follow the saves.
+        const second = addBox();
+        await draw(second, "pdf");
+        expect(showsAttachmentSave(container, drawing)).toBe(false);
+        await draw(second, "canvasDrawing");
+        await draw(first, "pdf");
+        expect(showsAttachmentSave(container, drawing)).toBe(false);
     });
 
     it("leaves the box alone for a deleted attachment", async () => {

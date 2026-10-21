@@ -22,6 +22,7 @@ import {
 import { consumeBookmark } from "../../../services/bookmark_jump";
 import { getUploadBoxSize } from "../../../services/content_renderer";
 import dialog from "../../../services/dialog";
+import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
 import link, { parseNavigationStateFromUrl, type ViewScope } from "../../../services/link";
 import type LoadResults from "../../../services/load_results";
@@ -57,6 +58,7 @@ import {
     openContentEmbedMenu,
     refreshEmbeddedNote,
     setupImageOpening,
+    showsAttachmentSave,
     watchContentEmbeds
 } from "./utils";
 
@@ -117,6 +119,7 @@ export default function EditableText({
         noteContext,
         noteType: "text",
         block,
+        shownRef: containerRef,
         getData() {
             const editor = editorRef.current;
             if (!editor) {
@@ -951,7 +954,8 @@ interface PendingAttachmentChanges {
 /**
  * Passes the attachments changed in `loadResults` to the editor's reference links, so a link shows
  * the new title of its attachment or goes away with it. Changes that this editor saved, such as a
- * canvas drawing, are skipped: redrawing an embed remounts what it shows.
+ * canvas drawing, are skipped: redrawing an embed remounts what it shows. So are the saves that
+ * every embed of the attachment shows by itself (`showsAttachmentSave()`).
  *
  * When `loadResults` also reloads the note's content, the changes wait in `pending` until
  * `applyPendingAttachmentChanges()` runs on the reloaded content.
@@ -965,10 +969,15 @@ export function notifyAttachmentChanges(
     componentId: string | undefined,
     pending: { current: PendingAttachmentChanges | undefined }
 ) {
+    const root = editor.editing.view.getDomRoot();
     const rows = loadResults.getAttachmentRows(componentId);
-    const changes = rows.flatMap(({ attachmentId, isDeleted }) =>
-        attachmentId ? [ { attachmentId, isDeleted: !!isDeleted } ] : []
-    );
+    const changes = rows.flatMap(({ attachmentId, isDeleted }) => {
+        if (!attachmentId) return [];
+        const attachment = froca.attachments[attachmentId];
+        const isShown = !isDeleted && !!root && !!attachment
+            && showsAttachmentSave(root, attachment);
+        return isShown ? [] : [ { attachmentId, isDeleted: !!isDeleted } ];
+    });
     if (!changes.length) {
         return;
     }

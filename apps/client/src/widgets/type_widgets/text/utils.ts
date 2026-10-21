@@ -3,6 +3,7 @@ import { attachmentIcon } from "@triliumnext/commons";
 import { h, type JSX } from "preact";
 
 import appContext from "../../../components/app_context";
+import type FAttachment from "../../../entities/fattachment";
 import linkContextMenu from "../../../menus/link_context_menu";
 import content_renderer, {
     type AttachmentEditor, CONTENT_RENDERERS, type NoteEditor
@@ -27,6 +28,12 @@ interface EmbeddedNoteOptions {
     /** Points the embed at the blocks that its editor holds, once they change. */
     onBlockChange?: (block: string) => void;
 }
+
+/**
+ * The title and content type that an attachment box was rendered with, by its wrapper. Only boxes
+ * whose content reloads itself after each save are kept.
+ */
+const selfUpdatingBoxes = new WeakMap<HTMLElement, { title: string; type: string }>();
 
 /**
  * Fills an embed box with a note. Without a box size of its own, the box takes the one of its
@@ -117,6 +124,7 @@ export async function loadEmbeddedAttachment(
     if (!attachment) return;
 
     const el = $el[0];
+    selfUpdatingBoxes.delete(el);
     const size = boxSize ?? getEmbedBoxSize(el);
     const viewScope: ViewScope = { viewMode: "attachments", attachmentId };
     if (size === "tiny") {
@@ -150,6 +158,9 @@ export async function loadEmbeddedAttachment(
         histories,
         ...getEmbedCodeView(el.closest(".include-note"))
     });
+    if (content_renderer.isSelfUpdatingType(type)) {
+        selfUpdatingBoxes.set(el, { title: attachment.title, type });
+    }
 
     const box = h(ContentEmbed, {
         boxSize: size,
@@ -161,6 +172,21 @@ export async function loadEmbeddedAttachment(
         ...(isFocused ? { isFocusedOnMount: true } : {})
     });
     await mountEmbedBox(el, box, $renderedContent);
+}
+
+/**
+ * Whether every box of `attachment` in `container` shows its latest save without a redraw: the
+ * content reloads itself, and the title and content type are unchanged. `false` when `container`
+ * has no box of the attachment.
+ */
+export function showsAttachmentSave(container: HTMLElement, attachment: FAttachment) {
+    const boxes = container.querySelectorAll<HTMLElement>(
+        `.include-note[data-attachment-id="${attachment.attachmentId}"] > .include-note-wrapper`);
+    const type = content_renderer.getRenderingType(attachment);
+    return boxes.length > 0 && [ ...boxes ].every((box) => {
+        const shown = selfUpdatingBoxes.get(box);
+        return shown?.title === attachment.title && shown.type === type;
+    });
 }
 
 interface InlineEmbedOptions {

@@ -114,7 +114,10 @@ export interface SavedData {
     }[];
 }
 
-export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, block }: {
+export function useEditorSpacedUpdate({
+    note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, block,
+    shownRef
+}: {
     noteType: NoteType;
     note: FNote | null | undefined,
     noteContext: NoteContext | null | undefined,
@@ -128,6 +131,8 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
      * replaces.
      */
     block?: string;
+    /** The element of the editor. Content saved elsewhere loads into it once it is shown. */
+    shownRef?: RefObject<Element | null>;
 }) {
     const parentComponent = useContext(ParentComponent);
     const blockRef = useRef(block ?? "");
@@ -135,7 +140,8 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
         reportLoadStateTo: noteContext,
         load: block === undefined
             ? undefined
-            : (loadedNote) => loadBlocks(loadedNote, blockRef.current)
+            : (loadedNote) => loadBlocks(loadedNote, blockRef.current),
+        shownRef
     });
 
     // The note whose content is currently loaded in the editor. Editor instances are reused
@@ -837,10 +843,16 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
     refreshOnShow?: boolean;
     /** Reads the content instead of the blob of the note, resolving to `null` when it fails. */
     load?: (note: FNote) => Promise<T | null>;
+    /**
+     * The element that displays the content. While it is hidden, content saved elsewhere loads at
+     * once, and the blob changes once the element is shown (`useWhenShown()`).
+     */
+    shownRef?: RefObject<Element | null>;
 }): T | null | undefined {
     const [ blob, setBlob ] = useState<T | null>();
     const requestIdRef = useRef(0);
     const missedContentChangeRef = useRef(false);
+    const whenShown = useWhenShown(opts?.shownRef);
 
     function reportLoadState(state: "loading" | "loaded" | "error") {
         if (opts?.isVisible === false) {
@@ -849,9 +861,11 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
         opts?.reportLoadStateTo?.setContextData("contentLoad", { state, retry: () => refresh() });
     }
 
-    async function refresh() {
+    /** Loads the blob. With `isSavedElsewhere`, it applies once `shownRef` is shown. */
+    async function refresh(isSavedElsewhere = false) {
         const requestId = ++requestIdRef.current;
-        if (note) {
+        const isWaiting = isSavedElsewhere && !!opts?.shownRef;
+        if (note && !isWaiting) {
             reportLoadState("loading");
         }
         const newBlob = note && opts?.load
@@ -859,12 +873,19 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
             : await note?.getBlob() as T | null | undefined;
 
         // Only update if this is the latest request.
-        if (requestId === requestIdRef.current) {
+        if (requestId !== requestIdRef.current) return;
+        const update = () => {
+            if (requestId !== requestIdRef.current) return;
             setBlob(newBlob);
             if (note) {
                 // froca.getBlob() resolves to null when the fetch failed.
                 reportLoadState(newBlob ? "loaded" : "error");
             }
+        };
+        if (isWaiting) {
+            whenShown(update);
+        } else {
+            update();
         }
     }
 
@@ -880,7 +901,7 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
         }
 
         if (loadResults.isNoteContentReloaded(note.noteId, componentId)) {
-            refresh();
+            refresh(true);
         } else if (opts?.refreshOnShow && loadResults.isNoteContentReloaded(note.noteId)) {
             // The change came from our own component, so the refetch was skipped; remember it so
             // the content is brought up to date when the widget is displayed again.
@@ -1019,6 +1040,47 @@ export function useElementSize(ref: RefObject<HTMLElement | null>) {
     }, [ ref ]);
 
     return size;
+}
+
+/**
+ * Returns a function that runs a callback at once while the element of `ref` is shown, and
+ * otherwise once it is shown again, for example when its tab is selected. While the element is
+ * hidden, only the last callback runs. Without an element, or with one that is not in the page
+ * yet, the callback runs at once.
+ */
+export function useWhenShown(ref: RefObject<Element | null> | undefined) {
+    const waitingRef =
+        useRef<{ callback: () => void; observer: ResizeObserver } | undefined>(undefined);
+    useEffect(() => () => waitingRef.current?.observer.disconnect(), []);
+
+    return useCallback((callback: () => void) => {
+        const element = ref?.current;
+        const waiting = waitingRef.current;
+        if (!element || isShown(element)) {
+            waiting?.observer.disconnect();
+            waitingRef.current = undefined;
+            callback();
+        } else if (waiting) {
+            waiting.callback = callback;
+        } else {
+            // `display: none` gives the element no size, so showing it resizes it.
+            const observer = new ResizeObserver(() => {
+                const current = waitingRef.current;
+                if (current && isShown(element)) {
+                    observer.disconnect();
+                    waitingRef.current = undefined;
+                    current.callback();
+                }
+            });
+            waitingRef.current = { callback, observer };
+            observer.observe(element);
+        }
+    }, [ ref ]);
+}
+
+/** Whether `element` is laid out, or not in the page yet. */
+function isShown(element: Element) {
+    return !element.isConnected || element.checkVisibility();
 }
 
 /**
