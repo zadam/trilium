@@ -1,4 +1,4 @@
-import { BlockQuote, _getModelData as getModelData, _setModelData as setModelData, ButtonView, ClassicEditor, CodeBlockEditing, Dialog, Essentials, keyCodes, Paragraph, SplitButtonView } from "ckeditor5";
+import { BlockQuote, _getModelData as getModelData, _setModelData as setModelData, ButtonView, ClassicEditor, CodeBlockEditing, Dialog, DropdownView, Essentials, keyCodes, Paragraph, SplitButtonView } from "ckeditor5";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
@@ -10,6 +10,7 @@ import TriliumAiAssistant from "./ai_assistant.js";
 import { AI_TARGET_MARKER } from "./ai_assistant_editing.js";
 import type { AiCompletionRequest, AiCompletionUsage, AiDiffFunction, AiQuickActionGroup, AiStreamCallback, AiStreamFunction } from "./ai_assistant_config.js";
 import AiAssistantUI from "./ai_assistant_ui.js";
+import ToolbarGroupMenu, { type ToolbarGroupMenuEntry, type ToolbarGroupMenuItem, type ToolbarGroupMenuRequest } from "../toolbar_group_menu.js";
 
 // ---- Typed views of the dropdown internals ----
 
@@ -711,6 +712,119 @@ describe("AiAssistantUI toolbar entry", () => {
 
     // A selection says nothing about where in the note it sits, and "continue this" or "summarize
     // this" read differently under a heading than they do in an opening paragraph.
+    describe("the entry for a phone's toolbar", () => {
+        async function createMenuEditor(quickActions: AiQuickActionGroup[] | undefined, stream?: AiStreamFunction) {
+            const requests: ToolbarGroupMenuRequest[] = [];
+            const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+            const menuEditor = await createTestEditor([Essentials, Paragraph, TriliumAiAssistant, ToolbarGroupMenu], {
+                toolbar: ["aiAssistantMenu"],
+                aiAssistant: { stream, quickActions, sanitizeHtml, askIconClass: "bx bx-message" },
+                toolbarGroupMenu: { host: () => host }
+            });
+            const item = menuEditor.ui.view.toolbar.items.get(0);
+            const open = () => {
+                (item as DropdownView).buttonView.fire("open");
+                const request = requests.at(-1);
+                if (!request) throw new Error("The host was asked to show no menu.");
+                // Closed again, so the next press opens a fresh menu rather than closing this one.
+                request.onClose(false);
+                return request.items;
+            };
+            return { editor: menuEditor, item, open };
+        }
+
+        /** An entry as its label, `(off)` when disabled, with its submenu's entries; a rule as `---`. */
+        function describeEntries(items: ToolbarGroupMenuItem[]): unknown[] {
+            return items.map((item) => {
+                if (item.kind === "separator") return "---";
+                if (item.kind === "heading") return `# ${item.label}`;
+                const label = `${item.label}${item.isEnabled ? "" : " (off)"}`;
+                return item.children ? { [label]: describeEntries(item.children) } : label;
+            });
+        }
+
+        function find(items: ToolbarGroupMenuItem[], label: string) {
+            const found = items.find((item): item is ToolbarGroupMenuEntry => item.kind === "entry" && item.label === label);
+            if (!found) throw new Error(`No "${label}" entry in the menu.`);
+            return found;
+        }
+
+        it("opens the app's menu from the whole button, the typed prompt first, gated on content as the split button is", async () => {
+            const { stream } = createStreamStub();
+            const { editor: menuEditor, item, open } = await createMenuEditor([
+                ...QUICK_ACTIONS.slice(0, 3),
+                { ...QUICK_ACTIONS[3], footer: { label: "Configure languages…", iconClass: "bx bx-cog", run: vi.fn() } }
+            ], stream);
+            const plugin = menuEditor.plugins.get(AiAssistantUI);
+            const footerRun = vi.fn();
+            plugin.updateMenuFooter([{
+                label: "Model", iconClass: "bx bx-chip", children: [
+                    { label: "Fast", heading: "OpenAI", iconClass: "bx bx-check", run: footerRun },
+                    { label: "Smart" }
+                ]
+            }]);
+
+            expect(item).toBeInstanceOf(DropdownView);
+            expect((item as DropdownView).buttonView).not.toBeInstanceOf(SplitButtonView);
+            expect((item as DropdownView).buttonView.label).toBe("AI assistant");
+
+            // An empty block: a caret widens to the block it sits in, which has nothing in it here.
+            setModelData(menuEditor.model, "<paragraph>[]</paragraph>");
+            const items = open();
+            expect(describeEntries(items)).toEqual([
+                "Ask AI…",
+                "---",
+                "Fix typos (off)",
+                "Make shorter (off)",
+                "---",
+                "Write something",
+                "---",
+                { "Change tone (off)": [ "Direct (off)", "Friendly (off)" ] },
+                { "Translate": [ "Romanian (off)", "---", "Configure languages…" ] },
+                "---",
+                { "Model": [ "# OpenAI", "Fast", "Smart" ] }
+            ]);
+            expect(find(items, "Ask AI…").iconClass).toBe("bx bx-message");
+            expect(find(items, "Change tone").iconClass).toBe("bx bx-palette");
+            expect(find(find(items, "Change tone").children ?? [], "Direct").iconClass).toBe("bx bx-target-lock");
+            expect(find(items, "Translate").run).toBeUndefined();
+
+            setModelData(menuEditor.model, "<paragraph>[foo]</paragraph>");
+            const withContent = open();
+            expect(find(withContent, "Fix typos").isEnabled).toBe(true);
+            expect(find(withContent, "Change tone").isEnabled).toBe(true);
+
+            find(find(withContent, "Model").children ?? [], "Fast").run?.();
+            expect(footerRun).toHaveBeenCalledTimes(1);
+        });
+
+        it("runs the prompt and the quick actions as the split button's menu does", async () => {
+            const { stream, requests } = createStreamStub();
+            const { editor: menuEditor, open } = await createMenuEditor(QUICK_ACTIONS, stream);
+            const plugin = menuEditor.plugins.get(AiAssistantUI);
+            const show = vi.spyOn(plugin, "show");
+            const runQuickAction = vi.spyOn(plugin, "runQuickAction");
+            setModelData(menuEditor.model, "<paragraph>[foo]</paragraph>");
+
+            find(open(), "Ask AI…").run?.();
+            expect(show).toHaveBeenCalledTimes(1);
+
+            find(open(), "Fix typos").run?.();
+            expect(runQuickAction).toHaveBeenCalledWith(QUICK_ACTIONS[0]?.actions[0]);
+            await vi.waitFor(() => expect(requests).toHaveLength(1));
+        });
+
+        it("is the plain button with no quick actions, and is off without a provider", async () => {
+            const { stream } = createStreamStub();
+            const { item } = await createMenuEditor(undefined, stream);
+            expect(item).toBeInstanceOf(ButtonView);
+            expect((item as ButtonView).isEnabled).toBe(true);
+
+            const { item: unavailable } = await createMenuEditor(QUICK_ACTIONS);
+            expect((unavailable as DropdownView).isEnabled).toBe(false);
+        });
+    });
+
     describe("the note around the target", () => {
         let editor: ClassicEditor;
         let dropdown: QuickActionsDropdown;

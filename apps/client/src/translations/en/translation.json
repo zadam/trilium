@@ -4566,7 +4566,6 @@
       "insert-titled-tabs-that-show-one-panel-at-a-time": "Insert titled tabs that show one panel at a time.",
       "multicolumn-layout": "Multicolumn layout",
       "multicolumn-layout-toolbar": "Multicolumn layout toolbar",
-      "multiple-column-layout": "Multiple column layout",
       "0-columns": "%0 columns",
       "column-layout": "Column layout",
       "0-columns-layout": "%0 columns layout",
@@ -4602,7 +4601,9 @@
       "add-a-tab-after-the-current-one": "Add a tab after the current one",
       "add-a-tab-before-the-current-one": "Add a tab before the current one",
       "scroll-to-the-previous-tabs": "Scroll to the previous tabs",
-      "scroll-to-the-next-tabs": "Scroll to the next tabs"
+      "scroll-to-the-next-tabs": "Scroll to the next tabs",
+      "text-formatting": "Text formatting",
+      "block-type": "Block type"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",
@@ -4625,6 +4626,10 @@
     },
     "colors": {
       "pink": "Pink"
+    },
+    "color-menu": {
+      "text-color": "Text color",
+      "background-color": "Background color"
     }
   },
   "collection_filter": {
@@ -4840,7 +4845,8 @@
     "default_parent_placeholder": "Where they are created"
   },
   "hide_keyboard_button": {
-    "title": "Hide keyboard"
+    "title": "Hide keyboard",
+    "close_menu": "Close menu"
   },
   "code_editor_context_menu": {
     "line_operations": "Line operations",

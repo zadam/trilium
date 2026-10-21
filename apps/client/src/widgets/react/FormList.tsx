@@ -454,6 +454,11 @@ export interface FormDropdownSubmenuProps {
     className?: string;
     /** Inside a menu, whether typing while the submenu is open filters it. See `MenuCommandItem.filterable`. */
     filterable?: boolean;
+    /**
+     * Draws the row as a tile of a `MenuTile` strip, which only opens the submenu: a tile has no
+     * room for the arrow of a split row.
+     */
+    tile?: boolean;
 }
 
 /**
@@ -467,7 +472,7 @@ export function FormDropdownSubmenu(props: FormDropdownSubmenuProps) {
     return <MenuSubmenu {...props} menu={menu} />;
 }
 
-function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDropdownToggleClicked, split = !!onDropdownToggleClicked, disabled, className, filterable }: FormDropdownSubmenuProps & { menu: MenuContextValue }) {
+function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDropdownToggleClicked, split = !!onDropdownToggleClicked, disabled, className, filterable, tile }: FormDropdownSubmenuProps & { menu: MenuContextValue }) {
     const level = useContext(MenuLevelContext);
     const id = useUniqueName("menu-row");
     const openSubmenu = menu.open[level];
@@ -487,6 +492,53 @@ function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDrop
         // The keyboard goes on from the row the pointer last pointed at.
         if (!disabled) menu.setActive(level, id);
         menu.openSubmenu(level, disabled ? undefined : id, e.currentTarget);
+    }
+
+    const layer = isMobile()
+        // A phone has no room beside the menu, so a submenu replaces it as a page of its own.
+        ? (open || pageSlide.from !== undefined) && menu.layerHost && createPortal((
+            <SubmenuPage rowId={id} level={level + 1} title={title} slide={pageSlide}>
+                <MenuFilterContext.Provider value={filter}>{children}</MenuFilterContext.Provider>
+            </SubmenuPage>
+        ), menu.layerHost)
+        : open && openSubmenu && menu.layerHost && createPortal((
+            <SubmenuLayer level={level + 1} submenu={openSubmenu} pinned={!!filter?.text}>
+                <MenuFilterContext.Provider value={filter}>{children}</MenuFilterContext.Provider>
+            </SubmenuLayer>
+        ), menu.layerHost);
+
+    if (tile) {
+        return (
+            <button
+                id={id} type="button"
+                ref={(element) => {
+                    menu.registerRow(id, element
+                        ? { level, element, custom: false, disabled: !!disabled, hasSubmenu: true, inline: true, filterable, select: () => {} }
+                        : undefined);
+                }}
+                className={clsx("tn-menu-action", isActive && "tn-menu-active", className)}
+                role="menuitem" aria-haspopup="menu" aria-expanded={open}
+                disabled={disabled} tabIndex={-1}
+                onPointerMove={(e) => {
+                    if (!disabled && !isActive && pointerMoved(e)) menu.setActive(level, id);
+                }}
+                // As any row: the press keeps focus where it was, and the release acts.
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={(e) => {
+                    // The dropdown's `closeOnClickInside` would close the whole menu.
+                    e.stopPropagation();
+                    menu.setActive(level, id);
+                    menu.openSubmenu(level, id, e.currentTarget, true);
+                }}
+            >
+                <span className="tn-menu-action-icon" aria-hidden="true">
+                    {iconSvg ? <SvgIcon svg={iconSvg} /> : <Icon icon={icon} />}
+                </span>
+                <span id={titleId(id)} className="tn-menu-action-title">{title}</span>
+                <span className="tn-menu-action-more bx bx-chevron-right" aria-hidden="true" />
+                {layer}
+            </button>
+        );
     }
 
     return (
@@ -544,18 +596,7 @@ function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDrop
                     }}
                 />
             )}
-            {isMobile()
-                // A phone has no room beside the menu, so a submenu replaces it as a page of its own.
-                ? (open || pageSlide.from !== undefined) && menu.layerHost && createPortal((
-                    <SubmenuPage rowId={id} level={level + 1} title={title} slide={pageSlide}>
-                        <MenuFilterContext.Provider value={filter}>{children}</MenuFilterContext.Provider>
-                    </SubmenuPage>
-                ), menu.layerHost)
-                : open && openSubmenu && menu.layerHost && createPortal((
-                    <SubmenuLayer level={level + 1} submenu={openSubmenu} pinned={!!filter?.text}>
-                        <MenuFilterContext.Provider value={filter}>{children}</MenuFilterContext.Provider>
-                    </SubmenuLayer>
-                ), menu.layerHost)}
+            {layer}
         </li>
     );
 }

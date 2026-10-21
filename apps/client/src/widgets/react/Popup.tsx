@@ -211,15 +211,24 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
 
 /**
  * Drops the click that follows a press dismissing a popup when it lands on something other than
- * `pressed`. A cover or backdrop is removed with the popup before a tap's click, so the click lands
- * on the element under it, such as an icon under the icon picker's menu.
+ * `pressed` or an element containing it. A cover or backdrop is removed with the popup before a
+ * tap's click, so the click lands on the element under it, such as an icon under the icon picker's
+ * menu. A tap that ends outside `pressed` clicks the element that contains both ends of the tap.
+ *
+ * WebKit on iOS takes a tap close to the one before it as a double tap, and replaces its click
+ * with one where the first tap landed, its `detail` the tap count. That click goes to `pressed`.
  */
 function swallowStrayClick(pressed: Node) {
     const onClick = (e: MouseEvent) => {
         stop();
-        if (e.target instanceof Node && pressed.contains(e.target)) return;
+        if (e.target instanceof Node && (pressed.contains(e.target) || e.target.contains(pressed))) {
+            return;
+        }
         e.preventDefault();
         e.stopPropagation();
+        if (e.detail > 1 && pressed.isConnected) {
+            pressed.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 }));
+        }
     };
     // The next press removes the listener, so a press without a click, such as a scroll, cannot
     // drop a later click.

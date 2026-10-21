@@ -255,5 +255,11 @@
   },
   "ocr": {
     "no_text_recognized": "OCR found no text to recognise."
+  },
+  "text-editor": {
+    "color-menu": {
+      "text-color": "Text colour",
+      "background-color": "Background colour"
+    }
   }
 }

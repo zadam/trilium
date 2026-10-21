@@ -1,108 +1,222 @@
+import { render } from "preact";
 import { act } from "preact/test-utils";
+import { useRef } from "preact/hooks";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { renderInto } from "../../test/render";
-
-const platform = vi.hoisted(() => ({ isMobileApp: true, isIOS: true }));
-
-vi.mock("../../services/utils", async (importOriginal) => ({
-    ...(await importOriginal<typeof import("../../services/utils")>()),
-    isMobileApp: () => platform.isMobileApp,
-    isIOS: () => platform.isIOS
-}));
 
 vi.mock("../react/hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../react/hooks")>()),
     useStaticTooltip: vi.fn()
 }));
+vi.mock("../../services/utils", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../services/utils")>()),
+    isIOS: () => true
+}));
 
-import HideKeyboardButton, { isEditable } from "./hide_keyboard_button";
+import HideKeyboardButton, {
+    HideKeyboardAction, holdVisibleBottom, usePositioningOniOS
+} from "./hide_keyboard_button";
 
 describe("HideKeyboardButton", () => {
+    let input: HTMLInputElement | undefined;
+
     afterEach(() => {
-        platform.isMobileApp = true;
-        platform.isIOS = true;
-        for (const element of added) element.remove();
-        added.length = 0;
+        input?.remove();
     });
 
-    const added: HTMLElement[] = [];
-
-    function attach(...elements: HTMLElement[]) {
-        document.body.append(...elements);
-        added.push(...elements);
-    }
-
-    function mount() {
+    it("blurs the focus when pressed, without taking it first", () => {
+        input = document.createElement("input");
+        document.body.append(input);
         let container: HTMLElement | undefined;
         act(() => { container = renderInto(<HideKeyboardButton />); });
-        if (!container) throw new Error("not rendered");
-        return container;
-    }
 
-    function focus(element: HTMLElement) {
-        act(() => element.focus());
-    }
-
-    it("shows while an editable element has the focus and blurs it when pressed", () => {
-        const input = document.createElement("input");
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        attach(input, checkbox);
-        const container = mount();
-
-        expect(container.querySelector("button")).toBeNull();
-
-        focus(input);
-        const button = container.querySelector("button");
-        expect(button).not.toBeNull();
+        const button = container?.querySelector("button");
+        expect(button).toBeInstanceOf(HTMLButtonElement);
 
         const press = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
         button?.dispatchEvent(press);
         expect(press.defaultPrevented).toBe(true);
 
+        act(() => input?.focus());
+        expect(document.activeElement).toBe(input);
         act(() => button?.click());
         expect(document.activeElement).not.toBe(input);
-        expect(container.querySelector("button")).toBeNull();
-
-        focus(input);
-        expect(container.querySelector("button")).not.toBeNull();
-        focus(checkbox);
-        expect(container.querySelector("button")).toBeNull();
     });
 
-    it("stays away outside the iOS app", () => {
-        const input = document.createElement("input");
-        attach(input);
+    it("closes the menu instead, as an X, while it is given one to close", () => {
+        input = document.createElement("input");
+        document.body.append(input);
+        const closeMenu = vi.fn();
+        let container: HTMLElement | undefined;
+        act(() => {
+            container = renderInto(<HideKeyboardAction className="action" closeMenu={closeMenu} />);
+        });
 
-        platform.isIOS = false;
-        const android = mount();
-        platform.isIOS = true;
-        platform.isMobileApp = false;
-        const safari = mount();
+        const button = container?.querySelector("button");
+        expect(button).toBeInstanceOf(HTMLButtonElement);
+        expect(button?.classList.contains("bx-x")).toBe(true);
+        expect(container?.querySelector(".action")?.classList.contains("closes-menu")).toBe(true);
 
-        focus(input);
-        expect(android.querySelector("button")).toBeNull();
-        expect(safari.querySelector("button")).toBeNull();
-    });
-
-    it("counts only elements that take typed text as editable", () => {
-        const make = <K extends keyof HTMLElementTagNameMap>(tag: K, setup?: (el: HTMLElementTagNameMap[K]) => void) => {
-            const element = document.createElement(tag);
-            setup?.(element);
-            return element;
-        };
-
-        expect(isEditable(make("input"))).toBe(true);
-        expect(isEditable(make("input", (el) => { el.type = "search"; }))).toBe(true);
-        expect(isEditable(make("textarea"))).toBe(true);
-        expect(isEditable(make("div", (el) => { el.contentEditable = "true"; }))).toBe(true);
-
-        expect(isEditable(make("input", (el) => { el.type = "checkbox"; }))).toBe(false);
-        expect(isEditable(make("input", (el) => { el.readOnly = true; }))).toBe(false);
-        expect(isEditable(make("textarea", (el) => { el.disabled = true; }))).toBe(false);
-        expect(isEditable(make("div"))).toBe(false);
-        expect(isEditable(make("button"))).toBe(false);
-        expect(isEditable(null)).toBe(false);
+        act(() => input?.focus());
+        act(() => button?.click());
+        expect(closeMenu).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(input);
     });
 });
+
+describe("usePositioningOniOS", () => {
+    const originalViewport = Object.getOwnPropertyDescriptor(window, "visualViewport");
+    const originalInnerHeight = Object.getOwnPropertyDescriptor(window, "innerHeight");
+    const originalScrollY = Object.getOwnPropertyDescriptor(window, "scrollY");
+
+    afterEach(() => {
+        for (const [ key, descriptor ] of [
+            [ "visualViewport", originalViewport ],
+            [ "innerHeight", originalInnerHeight ],
+            [ "scrollY", originalScrollY ]
+        ] as const) {
+            if (descriptor) {
+                Object.defineProperty(window, key, descriptor);
+            } else {
+                Reflect.deleteProperty(window, key);
+            }
+        }
+    });
+
+    it("lifts a fixed element above the keyboard, also when Safari pans the viewport", () => {
+        const viewport = fakeViewport(800);
+        const { element, unmount } = renderPositioned(false);
+
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("300px");
+
+        // Safari pans the visual viewport towards the caret without resizing it.
+        act(() => viewport.set({ height: 500, offsetTop: 120 }, "scroll"));
+        expect(element().style.bottom).toBe("180px");
+
+        act(() => viewport.set({ height: 800, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("");
+
+        unmount();
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(viewport.listenerCount()).toBe(0);
+    });
+
+    it("lifts an element by what the keyboard covers of its anchor, not of the window", () => {
+        const viewport = fakeViewport(800);
+        const { element, anchor } = renderPositioned(true);
+
+        // The anchor ends mid-screen, as the top note split does, above the keyboard.
+        anchor().getBoundingClientRect = () => new DOMRect(0, 0, 400, 400);
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("");
+
+        // The anchor ends 53px above the window's bottom, as above a bottom bar left in place.
+        anchor().getBoundingClientRect = () => new DOMRect(0, 0, 400, 747);
+        act(() => viewport.set({ height: 500, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("247px");
+    });
+
+    it("lifts to the visible bottom while Safari scrolls the fixed page for the keyboard", () => {
+        // As logged in Safari: the page scrolls by 118px, `innerHeight` shrinks by as much, and
+        // the visual viewport starts where the scroll does, at the top of the client area.
+        const viewport = fakeViewport(754);
+        const { element, anchor } = renderPositioned(true);
+        anchor().getBoundingClientRect = () => new DOMRect(0, -118, 400, 754);
+        Object.defineProperty(window, "innerHeight", { configurable: true, value: 636 });
+        Object.defineProperty(window, "scrollY", { configurable: true, value: 118 });
+        act(() => viewport.set({ height: 405, offsetTop: 118, pageTop: 118 }, "scroll"));
+        expect(element().style.bottom).toBe("231px");
+    });
+
+    it("holds the visible bottom while a menu takes the keyboard's place", () => {
+        // As logged in Safari: the keyboard is up and the page scrolled by 139px.
+        const viewport = fakeViewport(754);
+        const { element, anchor } = renderPositioned(true);
+        const layout = (innerHeight: number, scrollY: number) => {
+            Object.defineProperty(window, "innerHeight", {
+                configurable: true, value: innerHeight
+            });
+            Object.defineProperty(window, "scrollY", { configurable: true, value: scrollY });
+            anchor().getBoundingClientRect = () => new DOMRect(0, innerHeight - 754, 400, 754);
+        };
+        layout(615, 139);
+        act(() => viewport.set({ height: 405, offsetTop: 138.7, pageTop: 138.7 }, "resize"));
+        expect(element().style.bottom).toBe("210px");
+
+        // A menu takes the keyboard's place. Safari undoes the scroll at once, but reports the
+        // visual viewport of the keyboard for another 300ms or so, with no event of its own.
+        act(() => holdVisibleBottom(true));
+        layout(754, 0);
+        act(() => {
+            window.dispatchEvent(new Event("scroll"));
+        });
+        expect(element().style.bottom).toBe("349px");
+
+        act(() => viewport.set({ height: 754, offsetTop: 0, pageTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("349px");
+
+        act(() => holdVisibleBottom(false));
+        expect(element().style.bottom).toBe("");
+    });
+});
+
+function fakeViewport(innerHeight: number) {
+    const target = new EventTarget();
+    let listeners = 0;
+    const viewport = Object.assign(target, { height: innerHeight, offsetTop: 0, pageTop: 0 });
+    const add = target.addEventListener.bind(target);
+    const remove = target.removeEventListener.bind(target);
+    viewport.addEventListener = (...args: Parameters<typeof add>) => {
+        listeners++;
+        add(...args);
+    };
+    viewport.removeEventListener = (...args: Parameters<typeof remove>) => {
+        listeners--;
+        remove(...args);
+    };
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: innerHeight });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: viewport });
+    return {
+        set(
+            values: { height: number; offsetTop: number; pageTop?: number },
+            event: "resize" | "scroll"
+        ) {
+            // Outside Safari's keyboard scrolling, the visual viewport's page offset is its offset.
+            Object.assign(viewport, { pageTop: values.offsetTop }, values);
+            viewport.dispatchEvent(new Event(event));
+        },
+        listenerCount: () => listeners
+    };
+}
+
+function renderPositioned(withAnchor: boolean) {
+    const host = document.createElement("div");
+    document.body.append(host);
+    function Harness() {
+        const anchorRef = useRef<HTMLDivElement>(null);
+        const elementRef = useRef<HTMLDivElement>(null);
+        usePositioningOniOS(elementRef, withAnchor ? anchorRef : undefined);
+        return (
+            <div ref={anchorRef} className="anchor">
+                <div ref={elementRef} className="element" />
+            </div>
+        );
+    }
+    act(() => render(<Harness />, host));
+
+    const find = (selector: string) => {
+        const found = host.querySelector<HTMLElement>(selector);
+        if (!found) throw new Error(`${selector} is not rendered`);
+        return found;
+    };
+    return {
+        element: () => find(".element"),
+        anchor: () => find(".anchor"),
+        unmount: () => {
+            act(() => render(null, host));
+            host.remove();
+        }
+    };
+}

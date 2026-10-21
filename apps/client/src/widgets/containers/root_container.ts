@@ -137,6 +137,11 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         const isKeyboardOpened = windowHeight - viewportHeight > 150;
 
         this.$widget.toggleClass("virtual-keyboard-opened", isKeyboardOpened);
+        // Kept once the keyboard closes, for a menu that takes its place (see `useKeyboardPanel`).
+        if (isKeyboardOpened) {
+            const keyboardHeight = Math.round(windowHeight - viewportHeight);
+            document.body.style.setProperty("--tn-keyboard-height", `${keyboardHeight}px`);
+        }
     }
 
     #setMaxContentWidth() {

@@ -311,6 +311,25 @@ describe("Popup", () => {
         press(popup);
         click(icon);
         expect(iconClicked).toHaveBeenCalledTimes(3);
+
+        // A tap that starts on the button's glyph and ends on its padding clicks the button.
+        const glyph = document.createElement("span");
+        icon.append(glyph);
+        press(glyph);
+        click(icon);
+        expect(iconClicked).toHaveBeenCalledTimes(4);
+
+        // WebKit takes a tap close to the one before as a double tap, and clicks where that one
+        // landed instead of where this one did.
+        const other = document.createElement("button");
+        const otherClicked = vi.fn();
+        other.addEventListener("click", otherClicked);
+        document.body.append(other);
+        press(glyph);
+        other.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, detail: 2 }));
+        expect(otherClicked).not.toHaveBeenCalled();
+        expect(iconClicked).toHaveBeenCalledTimes(5);
+        other.remove();
         cover.remove();
         icon.remove();
     });

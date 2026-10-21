@@ -18,6 +18,7 @@ import { resolveContentLanguage } from "../../../utils/formatters.js";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams.js";
 import buildAiAssistantStream, { type AiNoteLocationProvider, buildAiAssistantQuickActions } from "./ai_assistant_stream.js";
 import diffAiResponse from "./ai_diff.js";
+import { createColorMenuHost } from "./color_menu.js";
 import { buildFontColorConfig, buildTableColorConfig } from "./color_palette.js";
 import { createEmojiList, createNoteMentionList, createSlashCommandList } from "./mention_list_view.js";
 import { buildQuoteTransformation, resolveQuoteSetting } from "./quotes.js";
@@ -169,7 +170,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             }
         },
         alignment: {
-            options: [ "left", "right", "center", "justify"]
+            options: [ "left", "center", "right", "justify" ]
         },
         ...buildFontColorConfig(),
         link: {
@@ -331,6 +332,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     };
 
     config.toolbarGroupMenu = { host: () => createToolbarGroupMenuHost() };
+    config.colorMenu = { host: () => createColorMenuHost() };
 
     return {
         ...config,
