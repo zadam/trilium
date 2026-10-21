@@ -44,6 +44,37 @@ describe("checkCommand", () => {
         }
     });
 
+    it("reads a message file whose path holds a variable, set before the commit or in the environment", () => {
+        message("good.txt", `fix(x): y
+
+${TRAILER}
+`);
+        process.env.COMMIT_ATTRIBUTION_TEST_DIR = dir;
+        for (const command of [
+            `S="${dir}" && git commit -F "$S/good.txt" -- a.ts`,
+            `export S='${dir}'; git commit --file="\${S}/good.txt"`,
+            "git commit -F \"$COMMIT_ATTRIBUTION_TEST_DIR/good.txt\"",
+            `S="${dir}"; T="$S/good.txt"; git commit -F "$T"`
+        ]) {
+            assert.equal(checkCommand(command, "."), null, command);
+        }
+    });
+
+    it("says so when it cannot read the message file, as one written in the same command", () => {
+        for (const command of [
+            "git commit -F missing.txt",
+            "git commit -F \"$UNSET_COMMIT_ATTRIBUTION_DIR/msg.txt\"",
+            `cat > new.txt <<'EOF'
+fix(x): y
+
+${TRAILER}
+EOF
+git commit -F new.txt`
+        ]) {
+            assert.match(checkCommand(command, dir) ?? "", /Could not read the commit message file/, command);
+        }
+    });
+
     it("blocks a message without the trailer, with a placeholder model, or crediting Claude as co-author", () => {
         const none = message("none.txt", "fix(x): y\n");
         const placeholder = message("placeholder.txt", "fix(x): y\n\nAssisted-by: Claude Code (<model>)\n");
@@ -56,7 +87,6 @@ describe("checkCommand", () => {
             "git commit -am \"fix(x): y\"",
             "git commit -m \"fix(x): y\" -m \"Assisted-by: Claude Code\"",
             "cd sub; git commit --message=wip",
-            "git commit -F missing.txt",
             `git commit -m a -m "${TRAILER}"; git commit -m b`
         ]) {
             assert.match(checkCommand(command, dir) ?? "", /Assisted-by: Claude Code \(/, command);
