@@ -303,6 +303,26 @@ describe("MobileToolbarItems", () => {
         expect(data.match(/<tr>/g)).toHaveLength(2);
         expect(data.match(/<td>/g)).toHaveLength(6);
     });
+
+    it("offers table sizes as a tile with a submenu in a group of tiles", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const menuEditor = await createTestEditor([Essentials, Paragraph, Table, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: [{ label: "Insert", icon: "plus", asMenu: { layout: "tiles" }, items: ["insertTableMenu"] }],
+            toolbarGroupMenu: { host: () => host }
+        });
+        setModelData(menuEditor.model, "<paragraph>foo[]</paragraph>");
+
+        getDropdown(menuEditor, 0).isOpen = true;
+        const table = entry(requests.at(-1)?.items ?? [], "Insert table");
+        expect(table.icon).toBe(IconTable);
+        expect((table.children ?? []).map(rowText)).toStrictEqual(["2 × 2", "2 × 3", "2 × 4", "3 × 2", "3 × 3", "3 × 4"]);
+
+        const size = (table.children ?? []).find((child) => child.kind === "entry" && child.label === "3 × 3");
+        if (size?.kind !== "entry") throw new Error("expected a 3 × 3 row");
+        size.run?.();
+        expect(menuEditor.getData().match(/<td>/g)).toHaveLength(9);
+    });
 });
 
 describe("addLink", () => {

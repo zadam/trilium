@@ -134,7 +134,7 @@ describe("buildMobileToolbar", () => {
             items: [
                 "codeBlock", "blockQuote", "admonition",
                 "|",
-                "collapsible", "tabs", "multicolumnLayout",
+                "insertTableMenu", "collapsible", "tabs", "multicolumnLayout",
                 "|",
                 "horizontalLine", "pageBreak", "footnote",
                 "|",
@@ -148,19 +148,20 @@ describe("buildMobileToolbar", () => {
             ]
         } ]);
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
-        expect(toolbar.items.slice(12)).toStrictEqual([
+        expect(toolbar.items.slice(10)).toStrictEqual([
             "|",
-            "addLink", "aiAssistantMenu", "attachMenu", "insertTableMenu",
+            "outdent", "indent", "moveBlockUp", "moveBlockDown",
             "|",
-            "alignmentMenu"
+            "aiAssistantMenu", "alignmentMenu"
         ]);
     });
 
     it("keeps text formatting on a row of its own, opened from the main row", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
-        expect(toolbar.items.slice(0, 12).map(itemName)).toStrictEqual([
+        // What a phone shows without scrolling: the blocks, text formatting, links and attachments.
+        expect(toolbar.items.slice(0, 10).map(itemName)).toStrictEqual([
             "undo", "redo", "contextToolbar", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting",
-            "|", "outdent", "indent", "moveBlockUp", "moveBlockDown"
+            "|", "addLink", "attachMenu"
         ]);
         expect(textFormattingToolbar).toStrictEqual([
             "bold", "italic", "underline", "strikethrough", "code",
@@ -185,10 +186,11 @@ describe("buildMobileToolbar", () => {
         }
     });
 
-    it("opens table sizes as tiles instead of the size grid", () => {
+    it("opens table sizes as tiles from the insert menu instead of the size grid", () => {
         const items = buildMobileToolbar(true).toolbar.items;
-        expect(items).toContain("insertTableMenu");
-        expect(items).not.toContain("insertTable");
+        expect(items).not.toContain("insertTableMenu");
+        expect(collectItems({ items })).toContain("insertTableMenu");
+        expect(collectItems({ items })).not.toContain("insertTable");
         expect(buildClassicToolbar(false, true).toolbar.items).toContain("insertTable");
     });
 

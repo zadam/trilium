@@ -65,7 +65,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                         // Also in the block type menu, where a reader might not look for them.
                         "codeBlock", "blockQuote", "admonition",
                         "|",
-                        "collapsible", "tabs", "multicolumnLayout",
+                        // The size grid of `insertTable` needs a pointer that hovers over its cells.
+                        "insertTableMenu", "collapsible", "tabs", "multicolumnLayout",
                         "|",
                         "horizontalLine", "pageBreak", "footnote",
                         "|",
@@ -81,18 +82,17 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "blockType",
                 "textFormatting",
                 "|",
+                // The most used after the blocks and text formatting, so they show without scrolling.
+                // One button for links to notes and to addresses, which the link dialog tells apart.
+                "addLink",
+                "attachMenu",
+                "|",
                 "outdent",
                 "indent",
                 "moveBlockUp",
                 "moveBlockDown",
                 "|",
-                // One button for links to notes and to addresses, which the link dialog tells apart.
-                "addLink",
                 ...(aiAssistant ? ["aiAssistantMenu"] : []),
-                "attachMenu",
-                // The size grid of `insertTable` needs a pointer that hovers over its cells.
-                "insertTableMenu",
-                "|",
                 "alignmentMenu"
             ]
         },
@@ -118,7 +118,9 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "|",
             // Acts on the selection, which brings this row up.
             "cuttonote"
-        ]
+        ],
+        // The row of the `contextToolbar` button in a list, as a list has no toolbar of its own.
+        listToolbar: [ "listStyleMenu", "listStartAt", "listReversed" ]
     };
 }
 
