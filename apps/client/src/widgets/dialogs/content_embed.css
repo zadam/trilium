@@ -1,0 +1,15 @@
+.modal.include-note-dialog {
+    @container (min-width: 501px) {
+        .include-note-note {
+            > .tn-card-option-label {
+                flex: 0 0 8em;
+                min-width: max-content;
+            }
+
+            > .input-group {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+        }
+    }
+}

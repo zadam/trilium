@@ -1,8 +1,10 @@
+import "./content_embed.css";
+
 import { useCallback, useRef, useState } from "preact/hooks";
 import { getEmbedBoxSize } from "../../services/content_renderer";
 import { t } from "../../services/i18n";
-import FormGroup from "../react/FormGroup";
-import FormRadioGroup from "../react/FormRadioGroup";
+import { Card, OptionCardSection } from "../react/Card";
+import FormSelect from "../react/FormSelect";
 import Modal from "../react/Modal";
 import NoteAutocomplete, { type NoteAutocompleteHandle } from "../react/NoteAutocomplete";
 import Button from "../react/Button";
@@ -45,6 +47,7 @@ export default function ContentEmbedDialog() {
             className="include-note-dialog"
             title={t("include_note.dialog_title")}
             size="lg"
+            helpPageId="nBAXQFj20hS1"
             onShown={() => autocompleteRef.current?.showRecentNotes()}
             onHidden={() => setShown(false)}
             onSubmit={async () => {
@@ -55,34 +58,42 @@ export default function ContentEmbedDialog() {
             footer={<Button text={t("include_note.button_include")} keyboardShortcut="Enter" />}
             show={shown}
         >
-            <FormGroup name="note" label={t("include_note.label_note")}>
-                <NoteAutocomplete
-                    placeholder={t("include_note.placeholder_search")}
-                    onChange={changeSuggestion}
-                    handleRef={autocompleteRef}
-                    opts={{
-                        hideGoToSelectedNoteButton: true,
-                        allowCreatingNotes: true
-                    }}
-                />
-            </FormGroup>
+            <Card>
+                <OptionCardSection
+                    className="include-note-note" name="note" label={t("include_note.label_note")}
+                >
+                    <NoteAutocomplete
+                        onChange={changeSuggestion}
+                        handleRef={autocompleteRef}
+                        opts={{
+                            hideGoToSelectedNoteButton: true,
+                            allowCreatingNotes: true
+                        }}
+                    />
+                </OptionCardSection>
 
-            <FormGroup name="include-note-box-size" label={t("include_note.box_size_prompt")}>
-                <FormRadioGroup
-                    name="include-note-box-size"
-                    currentValue={boxSize} onChange={(value) => setChosenBoxSize(value as BoxSize)}
-                    values={[
-                        { label: t("include_note.box_size_tiny"), value: "tiny" },
-                        { label: t("include_note.box_size_small"), value: "small" },
-                        { label: t("include_note.box_size_medium"), value: "medium" },
-                        { label: t("include_note.box_size_full"), value: "full" },
-                        { label: t("include_note.box_size_expandable"), value: "expandable" },
-                    ]}
-                />
-            </FormGroup>
+                <OptionCardSection
+                    className="include-note-size"
+                    name="box-size"
+                    label={t("include_note.box_size")}
+                    description={t(`include_note.size_${boxSize}_description`)}
+                >
+                    <FormSelect
+                        values={BOX_SIZES.map((size) => ({
+                            value: size, title: t(`include_note.size_${size}`)
+                        }))}
+                        keyProperty="value"
+                        titleProperty="title"
+                        currentValue={boxSize}
+                        onChange={(value) => setChosenBoxSize(value as BoxSize)}
+                    />
+                </OptionCardSection>
+            </Card>
         </Modal>
     )
 }
+
+const BOX_SIZES: BoxSize[] = [ "tiny", "small", "medium", "full", "expandable" ];
 
 async function embedNote(notePath: string, editorApi: Pick<CKEditorApi, "addContentEmbed" | "addImage">, boxSize: BoxSize) {
     const noteId = tree.getNoteIdFromUrl(notePath);

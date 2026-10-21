@@ -56,18 +56,25 @@ describe("ContentEmbedDialog", () => {
         });
     }
 
+    function sizeSelect() {
+        const select = container.querySelector<HTMLSelectElement>(".include-note-size select");
+        if (!select) throw new Error("The dialog has no box size select.");
+        return select;
+    }
+
+    // happy-dom does not follow which option Preact marks as selected, so the size is read from the
+    // description of the row, which names the chosen one.
     function checkedSize() {
-        return container.querySelector<HTMLInputElement>("input[type='radio']:checked")?.value;
+        const description = container
+            .querySelector(".include-note-size .tn-card-option-description")?.textContent;
+        return /^include_note\.size_(\w+)_description$/.exec(description ?? "")?.[1];
     }
 
     async function choose(size: string) {
-        const radio = container.querySelector<HTMLInputElement>(
-            `input[type='radio'][value='${size}']`
-        );
-        if (!radio) throw new Error(`No radio for ${size}.`);
+        const select = sizeSelect();
         await act(async () => {
-            radio.checked = true;
-            radio.dispatchEvent(new Event("change", { bubbles: true }));
+            select.value = size;
+            select.dispatchEvent(new Event("change", { bubbles: true }));
         });
     }
 
@@ -78,6 +85,22 @@ describe("ContentEmbedDialog", () => {
             form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
         });
     }
+
+    it("lays out the note and the box size as rows of one card", async () => {
+        expect(container.querySelectorAll(".tn-card")).toHaveLength(1);
+        expect(container.querySelector(".tn-card-heading")).toBeNull();
+        const labels = [ ...container.querySelectorAll(".tn-card-option-title") ]
+            .map((label) => label.textContent);
+        expect(labels).toStrictEqual([ "include_note.label_note", "include_note.box_size" ]);
+        expect(container.querySelector(".include-note-note input")).not.toBeNull();
+        expect([ ...sizeSelect().options ].map((option) => option.textContent)).toStrictEqual([
+            "include_note.size_tiny", "include_note.size_small", "include_note.size_medium",
+            "include_note.size_full", "include_note.size_expandable"
+        ]);
+        expect(checkedSize()).toBe("medium");
+        await choose("tiny");
+        expect(checkedSize()).toBe("tiny");
+    });
 
     it("preselects the size that suits the picked note, until another size is chosen", async () => {
         const script = buildNote({ title: "Script", type: "code", mime: "text/javascript" });

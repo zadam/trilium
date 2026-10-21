@@ -364,14 +364,18 @@
   "include_note": {
     "dialog_title": "Include note",
     "label_note": "Note",
-    "placeholder_search": "search for note by its name",
-    "box_size_prompt": "Box size of the included note:",
-    "box_size_small": "small (~ 10 lines)",
-    "box_size_medium": "medium (~ 30 lines)",
-    "box_size_full": "full (box shows complete text)",
-    "box_size_expandable": "expandable (collapsed by default)",
-    "button_include": "Include note",
-    "box_size_tiny": "tiny (a single row with the title and the actions)"
+    "box_size": "Box size",
+    "size_tiny": "Tiny",
+    "size_tiny_description": "A single row with the title and the actions.",
+    "size_small": "Small",
+    "size_small_description": "A box of about 10 lines.",
+    "size_medium": "Medium",
+    "size_medium_description": "A box of about 30 lines.",
+    "size_full": "Full",
+    "size_full_description": "The whole content.",
+    "size_expandable": "Expandable",
+    "size_expandable_description": "Only the title, until it is expanded.",
+    "button_include": "Include note"
   },
   "info": {
     "modalTitle": "Info message",
