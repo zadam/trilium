@@ -1133,7 +1133,7 @@
     "conflicting_tooltip": "这些条目以多种方式定义该属性，因此它按文本排序，且无法从条目菜单中设置。"
   },
   "search_definition": {
-    "add_search_option": "添加搜索选项：",
+    "add_search_option": "添加搜索选项",
     "include_archived_notes_description": "归档的笔记默认不包含在搜索结果中，使用此选项将包含它们。",
     "limit_description": "限制结果数量",
     "action": "操作",
@@ -1160,7 +1160,7 @@
     "placeholder": "按名称搜索笔记",
     "depth_label": "深度",
     "depth_doesnt_matter": "任意",
-    "depth_eq": "正好是 {{count}}",
+    "depth_eq": "= {{count}}",
     "direct_children": "直接子代",
     "depth_gt": "大于 {{count}}",
     "depth_lt": "小于 {{count}}"
