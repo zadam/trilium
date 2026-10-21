@@ -6,6 +6,7 @@ import froca from "../../services/froca";
 import { t } from "../../services/i18n";
 import type { Suggestion } from "../../services/note_autocomplete";
 import tree from "../../services/tree";
+import { isMobile } from "../../services/utils";
 import { logError } from "../../services/ws";
 import Button from "../react/Button";
 import { Card, CardSection, OptionCardSection } from "../react/Card";
@@ -94,6 +95,8 @@ export default function AddLinkDialog() {
     // The text of the link being edited, while it stands in for the picked note's title.
     const keptTitleRef = useRef<string | null>(null);
     const initialBookmarkRef = useRef("");
+    // On mobile, focusing a field opens the keyboard, so a field waits for a tap.
+    const autoFocus = !isMobile();
 
     useTriliumEvent("showAddLinkDialog", opts => {
         setOpts(opts);
@@ -142,6 +145,7 @@ export default function AddLinkDialog() {
     }
 
     useEffect(() => {
+        if (!autoFocus) return;
         if (target === "url") {
             webLinkRef.current?.focus();
         } else {
@@ -232,8 +236,10 @@ export default function AddLinkDialog() {
 
     async function onShown() {
         if (target === "url") {
-            webLinkRef.current?.focus();
-            webLinkRef.current?.select();
+            if (autoFocus) {
+                webLinkRef.current?.focus();
+                webLinkRef.current?.select();
+            }
             return;
         }
 
@@ -249,16 +255,18 @@ export default function AddLinkDialog() {
             || opts?.text;
 
         if (!text) {
-            handleRef.current?.showRecentNotes();
+            if (autoFocus) handleRef.current?.showRecentNotes();
         } else {
             // The note the dialog opens on is picked already, so the field selects it.
             handleRef.current?.setText(text, currentNotePath);
         }
 
         // to be able to quickly remove entered text
-        $autocompleteEl
-            .trigger("focus")
-            .trigger("select");
+        if (autoFocus) {
+            $autocompleteEl
+                .trigger("focus")
+                .trigger("select");
+        }
     }
 
     function onSubmit() {

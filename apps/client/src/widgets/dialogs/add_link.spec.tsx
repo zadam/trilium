@@ -213,6 +213,42 @@ describe("AddLinkDialog", () => {
         expect(field("url")?.value).toBe("https://pasted.example");
     });
 
+    it("focuses the field of the side shown, except on mobile, where it waits for a tap", async () => {
+        async function openAndShow() {
+            await open();
+            await act(async () => {
+                container.querySelector(".modal")?.dispatchEvent(new Event("shown.bs.modal"));
+            });
+            return container.querySelector(".note-autocomplete");
+        }
+
+        const picker = await openAndShow();
+        expect(picker).not.toBeNull();
+        expect(document.activeElement).toBe(picker);
+        (document.activeElement as HTMLElement | null)?.blur();
+
+        window.glob.device = "mobile";
+        try {
+            host = new Component();
+            container = renderInto(
+                <ParentComponent.Provider value={host}>
+                    <AddLinkDialog />
+                </ParentComponent.Provider>
+            );
+            const mobilePicker = await openAndShow();
+            expect(mobilePicker).not.toBeNull();
+            expect(document.activeElement).not.toBe(mobilePicker);
+
+            await act(async () => {
+                choice().find((button) => button.textContent?.includes("add_link.web_link"))?.click();
+            });
+            expect(field("url")).not.toBeNull();
+            expect(document.activeElement).not.toBe(field("url"));
+        } finally {
+            window.glob.device = "desktop";
+        }
+    });
+
     it("offers no web link when fixing a link to a missing note", async () => {
         await open({ text: "Gone", fixLink: true });
         expect(choice()).toStrictEqual([]);
