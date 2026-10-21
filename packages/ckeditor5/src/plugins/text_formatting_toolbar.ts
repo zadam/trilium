@@ -3,6 +3,8 @@ import {
 } from "ckeditor5";
 import type { Editor, ToolbarConfig } from "ckeditor5";
 
+import FormatPainterUI from "./format_painter/format_painter_ui.js";
+
 /**
  * A second toolbar of text formatting, which the `textFormatting` button swaps in for the editor's
  * own toolbar and the back button at its start swaps out again. The items come from the
@@ -40,7 +42,8 @@ export default class TextFormattingToolbar extends Plugin {
 
         editor.ui.componentFactory.add("textFormatting", (locale) => {
             const button = new ButtonView(locale);
-            button.set({ label: t("Text formatting"), icon: IconText, tooltip: true });
+            // The host marks a button that opens a row of its own (`ck-opens-row`).
+            button.set({ label: t("Text formatting"), icon: IconText, tooltip: true, class: "ck-opens-row" });
             button.on("execute", () => this.setActive(true));
             return button;
         });
@@ -82,27 +85,43 @@ export default class TextFormattingToolbar extends Plugin {
 
     /**
      * Swaps the toolbar as the selection turns from a caret into a range of text and back. A range
-     * that only grows or shrinks, as a selection handle is dragged, swaps nothing.
+     * that only grows or shrinks, as a selection handle is dragged, swaps nothing, and neither does
+     * a selected object, such as an image, which holds no text to format.
      */
     private followSelection() {
-        const selection = this.editor.model.document.selection;
-        let wasCollapsed = selection.isCollapsed;
-
-        this.listenTo(selection, "change:range", () => {
-            const isCollapsed = selection.isCollapsed;
-            if (isCollapsed === wasCollapsed) {
-                return;
-            }
-            wasCollapsed = isCollapsed;
-
-            if (!isCollapsed && !this.isActive) {
-                this.isActive = true;
-                this.shownForSelection = true;
-            } else if (isCollapsed && this.shownForSelection) {
+        const { model, plugins } = this.editor;
+        const selection = model.document.selection;
+        const holdsText = () => {
+            const selected = selection.getSelectedElement();
+            return !selection.isCollapsed && !(selected && model.schema.isObject(selected));
+        };
+        // An armed format painter keeps the toolbar, whose painter button applies or cancels it.
+        const painter = plugins.has(FormatPainterUI) ? plugins.get(FormatPainterUI) : undefined;
+        const swapOut = () => {
+            if (this.shownForSelection && !heldText && !painter?.isActive) {
                 this.isActive = false;
                 this.shownForSelection = false;
             }
+        };
+        let heldText = holdsText();
+
+        this.listenTo(selection, "change:range", () => {
+            const isHoldingText = holdsText();
+            if (isHoldingText === heldText) {
+                return;
+            }
+            heldText = isHoldingText;
+
+            if (isHoldingText && !this.isActive) {
+                this.isActive = true;
+                this.shownForSelection = true;
+            } else {
+                swapOut();
+            }
         });
+        if (painter) {
+            this.listenTo(painter, "change:isActive", swapOut);
+        }
     }
 }
 

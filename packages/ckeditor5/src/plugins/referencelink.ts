@@ -299,7 +299,7 @@ export class ReferenceLinkEditing extends Plugin {
 }
 
 /** The attributes of a `reference` to `href`, with `storedTitle` when there is one to keep. */
-function referenceAttributes( href: string | undefined, storedTitle: string | undefined ) {
+export function referenceAttributes( href: string | undefined, storedTitle: string | undefined ) {
 	return storedTitle ? { href, storedTitle } : { href };
 }
 

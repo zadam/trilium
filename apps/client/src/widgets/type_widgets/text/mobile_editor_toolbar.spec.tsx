@@ -62,10 +62,13 @@ describe("useKeyboardPanel", () => {
             return null;
         }
 
+        // Without a keyboard, the menu takes a place of its own height.
         act(() => render(<Harness enabled />, host));
-        expect(seen.at(-1)?.isPanel).toBe(false);
+        expect(seen.at(-1)).toMatchObject({ isPanel: true, isOwnHeight: true });
+        expect(isMarked()).toBe(true);
+        await act(async () => render(null, host));
+        await endPress();
         expect(isMarked()).toBe(false);
-        act(() => render(null, host));
 
         root.classList.add("virtual-keyboard-opened");
         act(() => render(<Harness enabled={false} />, host));
@@ -74,7 +77,7 @@ describe("useKeyboardPanel", () => {
         act(() => render(null, host));
 
         act(() => render(<Harness enabled />, host));
-        expect(seen.at(-1)?.isPanel).toBe(true);
+        expect(seen.at(-1)).toMatchObject({ isPanel: true, isOwnHeight: false });
         expect(isMarked()).toBe(true);
 
         // The keyboard closes as the menu takes focus, and the menu keeps its place.
@@ -86,6 +89,30 @@ describe("useKeyboardPanel", () => {
         await act(async () => render(null, host));
         await endPress();
         expect(isMarked()).toBe(false);
+    });
+
+    it("sizes the place by the menu with no keyboard, giving it back as the menu closes", async () => {
+        const { editable, host } = buildPanelFixture();
+        document.body.style.setProperty("--tn-keyboard-height", "300px");
+        const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(240);
+        function Menu() {
+            const { measureRef } = useKeyboardPanel(true);
+            return <div ref={measureRef} />;
+        }
+
+        act(() => render(<Menu />, host));
+        expect(isKeyboardPanelOpen()).toBe(true);
+        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("240px");
+
+        // An entry that runs focuses the text, and no keyboard comes up to take the place over.
+        await act(async () => {
+            render(null, host);
+            editable.focus();
+        });
+        expect(isKeyboardPanelOpen()).toBe(false);
+        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("300px");
+        height.mockRestore();
+        document.body.style.removeProperty("--tn-keyboard-height");
     });
 
     it("keeps the place for a keyboard that comes back, until it is up", async () => {
@@ -317,7 +344,59 @@ describe("useShownToolbarElement", () => {
         act(() => render(null, host));
         expect(listeners.size).toBe(0);
     });
+
+    it("shows the context toolbar while it is active, over the text formatting one", () => {
+        const main = document.createElement("div");
+        const formatting = fakeSwappedToolbar();
+        const context = fakeSwappedToolbar();
+        const plugins: Record<string, unknown> = { TextFormattingToolbar: formatting.plugin, ContextToolbar: context.plugin };
+        const editor = {
+            ui: { view: { toolbar: { element: main } } },
+            plugins: { has: (name: string) => name in plugins, get: (name: string) => plugins[name] }
+        } as unknown as CKTextEditor;
+
+        const seen: (HTMLElement | undefined)[] = [];
+        const host = document.createElement("div");
+        function Harness() {
+            seen.push(useShownToolbarElement(editor));
+            return null;
+        }
+
+        act(() => render(<Harness />, host));
+        act(() => context.setActive(true));
+        expect(seen.at(-1)).toBe(context.element);
+        act(() => formatting.setActive(true));
+        expect(seen.at(-1)).toBe(context.element);
+        act(() => context.setActive(false));
+        expect(seen.at(-1)).toBe(formatting.element);
+        act(() => formatting.setActive(false));
+        expect(seen.at(-1)).toBe(main);
+
+        act(() => render(null, host));
+        expect(context.listenerCount()).toBe(0);
+    });
 });
+
+/** A plugin that swaps its toolbar in for the editor's own, as `TextFormattingToolbar` does. */
+function fakeSwappedToolbar() {
+    const element = document.createElement("div");
+    const listeners = new Set<() => void>();
+    const plugin = {
+        isActive: false,
+        toolbarView: { element },
+        on: (_event: string, listener: () => void) => listeners.add(listener),
+        off: (_event: string, listener: () => void) => listeners.delete(listener)
+    };
+    return {
+        plugin,
+        element,
+        setActive(isActive: boolean) {
+            plugin.isActive = isActive;
+            for (const listener of listeners) listener();
+        },
+        listenerCount: () => listeners.size
+    };
+}
 
 function buildEditor() {
     const listeners = new Set<() => void>();

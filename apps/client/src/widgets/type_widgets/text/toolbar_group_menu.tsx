@@ -4,10 +4,13 @@ import type {
     ToolbarGroupMenuEntry, ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest
 } from "@triliumnext/ckeditor5";
 import clsx from "clsx";
-import { render } from "preact";
+import { Fragment, render } from "preact";
+import { useCallback } from "preact/hooks";
 
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
-import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../../react/FormList";
+import {
+    FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem, FormListToggleableItem
+} from "../../react/FormList";
 import Menu, { MenuTile } from "../../react/Menu";
 import {
     isKeyboardPanelOpen, MOBILE_TOOLBAR_ROW, useClosedByToolbarTap, useKeyboardPanel
@@ -50,7 +53,11 @@ function ToolbarGroupMenu({ request, onClose }: {
     onClose(returnFocus: boolean): void;
 }) {
     const bottomSheet = isMobile() && isNarrowLayout();
-    const { isPanel, replacesPanel } = useKeyboardPanel(bottomSheet);
+    const { isPanel, replacesPanel, isOwnHeight, measureRef } = useKeyboardPanel(bottomSheet);
+    const setElement = useCallback((element: HTMLElement | null) => {
+        request.setElement(element);
+        measureRef(element);
+    }, [ request, measureRef ]);
     useClosedByToolbarTap(request.anchor, () => onClose(false));
 
     return (
@@ -59,12 +66,13 @@ function ToolbarGroupMenu({ request, onClose }: {
             offset={ANCHOR_GAP}
             portalClassName="tn-dropdown-portal"
             className={clsx(
-                "tn-dropdown-menu", isPanel && "keyboard-panel", replacesPanel && "replaces-panel"
+                "tn-dropdown-menu", isPanel && "keyboard-panel",
+                isOwnHeight && "keyboard-panel-own-height", replacesPanel && "replaces-panel"
             )}
             bottomSheet={bottomSheet}
             keepOpenSelector={MOBILE_TOOLBAR_ROW}
             aria-labelledby={request.anchor.getAttribute("aria-labelledby") ?? undefined}
-            elementRef={request.setElement}
+            elementRef={setElement}
             onDismiss={() => onClose(false)}
             onClose={() => onClose(true)}
         >
@@ -86,7 +94,15 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                     return <FormListHeader key={index} text={item.label} />;
                 }
 
-                const { label, icon, iconClass, isEnabled, isOn, className, run, children } = item;
+                const { label, icon, iconClass, isEnabled, isOn, isSwitch, className, run, children } = item;
+                if (isSwitch) {
+                    return (
+                        <FormListToggleableItem
+                            key={index} icon={iconClass} title={label} currentValue={isOn ?? false}
+                            disabled={!isEnabled} className={className} onChange={() => run?.()}
+                        />
+                    );
+                }
                 if (children) {
                     return (
                         <FormDropdownSubmenu
@@ -112,37 +128,40 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
 }
 
 /**
- * The entries as tiles, a grid of them for each group between separators. An entry with a submenu
- * is a tile that opens it.
+ * The entries as tiles, a grid of them for each group between separators and headings, under its
+ * heading. An entry with a submenu is a tile that opens it.
  */
 function MenuTileGroups({ items }: { items: ToolbarGroupMenuItem[] }) {
-    const groups: ToolbarGroupMenuEntry[][] = [ [] ];
+    const groups: { heading?: string; entries: ToolbarGroupMenuEntry[] }[] = [ { entries: [] } ];
     for (const item of items) {
         if (item.kind === "entry") {
-            groups[groups.length - 1].push(item);
+            groups[groups.length - 1].entries.push(item);
         } else {
-            groups.push([]);
+            groups.push({ heading: item.kind === "heading" ? item.label : undefined, entries: [] });
         }
     }
 
     return (
         <>
-            {groups.map((group, index) => (
-                <li key={index} className="tn-menu-actions tn-menu-actions-cards toolbar-group-menu-tiles" role="group">
-                    {group.map(({ label, icon, iconClass, isEnabled, isOn, run, children }, tileIndex) => (children
-                        ? (
-                            <FormDropdownSubmenu key={tileIndex} tile icon={iconClass} iconSvg={icon} title={label} disabled={!isEnabled}>
-                                <MenuRows items={children} />
-                            </FormDropdownSubmenu>
-                        )
-                        : (
-                            <MenuTile
-                                key={tileIndex} icon={iconClass} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
-                                disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
-                            />
-                        )
-                    ))}
-                </li>
+            {groups.filter(({ entries }) => entries.length).map(({ heading, entries }, index) => (
+                <Fragment key={index}>
+                    {heading && <FormListHeader text={heading} />}
+                    <li className="tn-menu-actions tn-menu-actions-cards toolbar-group-menu-tiles" role="group">
+                        {entries.map(({ label, icon, iconClass, isEnabled, isOn, run, children }, tileIndex) => (children
+                            ? (
+                                <FormDropdownSubmenu key={tileIndex} tile icon={iconClass} iconSvg={icon} title={label} disabled={!isEnabled}>
+                                    <MenuRows items={children} />
+                                </FormDropdownSubmenu>
+                            )
+                            : (
+                                <MenuTile
+                                    key={tileIndex} icon={iconClass} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
+                                    disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
+                                />
+                            )
+                        ))}
+                    </li>
+                </Fragment>
             ))}
         </>
     );

@@ -92,7 +92,7 @@ class SampleDropdown extends Plugin {
             items.add({ type: "button", model: new UIModel({ withText: true }) });
             items.add({
                 type: "group",
-                model: new UIModel({ label: "Grouped" }),
+                label: "Grouped",
                 items: new Collection([{
                     type: "button" as const,
                     model: new UIModel({ label: "Inside", withText: true })
@@ -168,6 +168,20 @@ class SampleDropdown extends Plugin {
                 level = (evt.source as ButtonView).label ?? "";
             });
             openListAsMenu(dropdown, { layout: "tiles" });
+
+            return dropdown;
+        });
+
+        // Like `tableRow`: a switch among the rows of its list.
+        this.editor.ui.componentFactory.add("rows", (locale: Locale) => {
+            const dropdown = createDropdown(locale);
+            dropdown.buttonView.set({ label: "Rows", icon: "<svg />" });
+
+            const items = new Collection<ListDropdownItemDefinition>();
+            items.add({ type: "switchbutton", model: new UIModel({ label: "Header row", withText: true, isOn: true }) });
+            items.add({ type: "button", model: new UIModel({ label: "Insert row", withText: true }) });
+            addListToDropdown(dropdown, items);
+            openListAsMenu(dropdown);
 
             return dropdown;
         });
@@ -479,8 +493,10 @@ describe("ToolbarGroupMenu", () => {
 
         groupDropdown(getToolbar(editor), "Insert").isOpen = true;
         expect(labels(last().items)).toStrictEqual(["Bold", "—", "Italic", "Odd list", ""]);
-        // A list's groups are passed over, and an unlabeled button or dropdown is named "".
-        expect(labels(entry(last().items, "Odd list").children ?? [])).toStrictEqual(["First", "—", ""]);
+        // A list's group is a heading over its rows, and an unlabeled button or dropdown is named "".
+        const odd = entry(last().items, "Odd list").children ?? [];
+        expect(labels(odd)).toStrictEqual(["First", "—", "", "Grouped", "Inside"]);
+        expect(odd[3]?.kind).toBe("heading");
         expect(labels(entry(last().items, "").children ?? [])).toStrictEqual(["Row"]);
     });
 
@@ -572,6 +588,15 @@ describe("ToolbarGroupMenu", () => {
         const samples = entry(lastGroup().items, "Insert sample");
         expect(samples.isOn).toBeUndefined();
         expect(samples.children?.map((child) => child.kind === "entry" && child.isOn)).toStrictEqual([undefined, undefined]);
+    });
+
+    it("marks a switch among the rows of a list, which the host draws as a toggle", async () => {
+        const { config, last } = createHost();
+        const editor = await createTestEditor(PLUGINS, { ...config, toolbar: { items: ["rows"] } });
+
+        groupDropdown(getToolbar(editor), "Rows").buttonView.fire("open");
+        expect(entry(last().items, "Header row")).toMatchObject({ isSwitch: true, isOn: true });
+        expect(entry(last().items, "Insert row").isSwitch).toBeUndefined();
     });
 
     it("opens the entries a dropdown handed to openListAsMenu describes, read on each open", async () => {

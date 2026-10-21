@@ -1,6 +1,7 @@
 import type { ColorMenuHost, ColorMenuRequest, ColorMenuTarget } from "@triliumnext/ckeditor5";
 import clsx from "clsx";
 import { render } from "preact";
+import { useCallback } from "preact/hooks";
 
 import { t } from "../../../services/i18n";
 import { isMobile, isNarrowLayout } from "../../../services/utils";
@@ -49,7 +50,11 @@ function ColorMenu({ request, onClose }: {
     onClose(returnFocus: boolean): void;
 }) {
     const bottomSheet = isMobile() && isNarrowLayout();
-    const { isPanel, replacesPanel } = useKeyboardPanel(bottomSheet);
+    const { isPanel, replacesPanel, isOwnHeight, measureRef } = useKeyboardPanel(bottomSheet);
+    const setElement = useCallback((element: HTMLElement | null) => {
+        request.setElement(element);
+        measureRef(element);
+    }, [ request, measureRef ]);
     useClosedByToolbarTap(request.anchor, () => onClose(false));
 
     return (
@@ -58,11 +63,12 @@ function ColorMenu({ request, onClose }: {
             offset={ANCHOR_GAP}
             portalClassName="tn-dropdown-portal"
             className={clsx(
-                "tn-dropdown-menu", isPanel && "keyboard-panel", replacesPanel && "replaces-panel"
+                "tn-dropdown-menu", isPanel && "keyboard-panel",
+                isOwnHeight && "keyboard-panel-own-height", replacesPanel && "replaces-panel"
             )}
             bottomSheet={bottomSheet}
             keepOpenSelector={MOBILE_TOOLBAR_ROW}
-            elementRef={request.setElement}
+            elementRef={setElement}
             onDismiss={() => onClose(false)}
             onClose={() => onClose(true)}
         >

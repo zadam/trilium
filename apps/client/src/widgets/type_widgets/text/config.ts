@@ -4,6 +4,7 @@ import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD
 import i18next from "i18next";
 
 import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
+import { prompt } from "../../../services/dialog.js";
 import { t } from "../../../services/i18n.js";
 import imageService from "../../../services/image.js";
 import { getNoteImageSourceToLoad } from "../../../services/image_urls.js";
@@ -21,6 +22,7 @@ import diffAiResponse from "./ai_diff.js";
 import { createColorMenuHost } from "./color_menu.js";
 import { buildFontColorConfig, buildTableColorConfig } from "./color_palette.js";
 import { createEmojiList, createNoteMentionList, createSlashCommandList } from "./mention_list_view.js";
+import { getShownToolbarIsland } from "./mobile_editor_toolbar.js";
 import { buildQuoteTransformation, resolveQuoteSetting } from "./quotes.js";
 import { buildCustomTransformations, parseCustomReplacements } from "./replacements.js";
 import { buildToolbarConfig } from "./toolbar.js";
@@ -113,21 +115,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
                 }
             ],
             toolbar: [
-                // Image styles, see https://ckeditor.com/docs/ckeditor5/latest/features/images/images-styles.html#demo.
-                "imageStyle:inline",
-                "imageStyle:alignCenter",
-                {
-                    name: "imageStyle:wrapText",
-                    title: "Wrap text",
-                    items: ["imageStyle:alignLeft", "imageStyle:alignRight"],
-                    defaultItem: "imageStyle:alignRight"
-                },
-                {
-                    name: "imageStyle:block",
-                    title: "Block align",
-                    items: ["imageStyle:alignBlockLeft", "imageStyle:alignBlockRight"],
-                    defaultItem: "imageStyle:alignBlockLeft"
-                },
+                "imagePosition",
                 "|",
                 "imageResize:25",
                 "imageResize:50",
@@ -254,8 +242,10 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     // Global on/off switch for content-area hints (bottom-corner popups on task
     // checkboxes, collapsible summaries, drag handles). Plugins consult this via
     // `editor.config.get("contentHintsEnabled")` and skip registering their hint
-    // managers when it's false.
-    (config as Record<string, unknown>).contentHintsEnabled = options.get("textNoteContentHintsEnabled") === "true";
+    // managers when it's false. The mobile layout leaves them out: they show keyboard
+    // shortcuts, and the caret sets them off on every tap.
+    (config as Record<string, unknown>).contentHintsEnabled = !isMobile()
+        && options.get("textNoteContentHintsEnabled") === "true";
 
     // Whether a URL typed or pasted into the note is auto-detected and turned into a link preview.
     // A getter rather than a boolean: the LinkEmbed plugin calls it each time a URL is detected, so
@@ -333,6 +323,9 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
 
     config.toolbarGroupMenu = { host: () => createToolbarGroupMenuHost() };
     config.colorMenu = { host: () => createColorMenuHost() };
+    config.listStartPrompt = async (label, current) =>
+        parseListStart(await prompt({ title: label, defaultValue: String(current) }));
+    config.tableColumnBar = { bottomObstacle: getShownToolbarIsland };
 
     return {
         ...config,
@@ -354,6 +347,12 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
  * we actually have a pair for the language, so an unmapped locale keeps falling through to
  * CKEditor's default rather than losing quote replacement altogether.
  */
+/** The number a list starts at, from the text of a prompt: a whole number of 0 or more, or `null`. */
+function parseListStart(value: string | null) {
+    const text = value?.trim() ?? "";
+    return /^\d+$/.test(text) ? Number(text) : null;
+}
+
 function buildTransformationsConfig(contentLanguage: string | null): TextTransformationConfig {
     const remove: string[] = [];
     if (options.get("textNotePunctuationReplacementsEnabled") !== "true") remove.push("typography");

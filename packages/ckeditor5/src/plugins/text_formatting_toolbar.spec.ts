@@ -1,11 +1,12 @@
 import {
     _setModelData as setModelData,
-    Bold, ButtonView, type ClassicEditor, Essentials, IconPreviousArrow, IconText, Italic, Paragraph,
+    Bold, ButtonView, type ClassicEditor, Essentials, HorizontalLine, IconPreviousArrow, IconText, Italic, Paragraph,
     ToolbarSeparatorView
 } from "ckeditor5";
 import { describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
+import TriliumFormatPainter from "./format_painter/format_painter.js";
 import TextFormattingToolbar from "./text_formatting_toolbar.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
@@ -39,7 +40,8 @@ describe("TextFormattingToolbar", () => {
         const { editor, plugin } = await createEditor();
         const focus = vi.spyOn(editor.editing.view, "focus");
         const button = getToolbarButton(editor, 0);
-        expect(button).toMatchObject({ label: "Text formatting", icon: IconText, tooltip: true });
+        // Marked as opening a row of its own, which the host draws a chevron for.
+        expect(button).toMatchObject({ label: "Text formatting", icon: IconText, tooltip: true, class: "ck-opens-row" });
         expect(plugin.isActive).toBe(false);
 
         button.fire("execute");
@@ -117,6 +119,42 @@ describe("TextFormattingToolbar", () => {
         select(editor, 2, 2);
         select(editor, 0, 2);
         expect(plugin.isActive).toBe(true);
+    });
+
+    it("does not swap in for a selected object, which holds no text to format", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, Bold, HorizontalLine, TextFormattingToolbar], {
+            toolbar: ["textFormatting"],
+            textFormattingToolbar: ["bold"]
+        });
+        const plugin = editor.plugins.get(TextFormattingToolbar);
+        setModelData(editor.model, "<paragraph>fo[]obar</paragraph><horizontalLine></horizontalLine>");
+
+        editor.model.change((writer) => writer.setSelection(editor.model.document.getRoot()?.getChild(1) ?? null, "on"));
+        expect(plugin.isActive).toBe(false);
+
+        // Text selected from there still swaps it in.
+        select(editor, 0, 3);
+        expect(plugin.isActive).toBe(true);
+    });
+
+    it("stays while the format painter is armed, so its button can apply or cancel it", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, Bold, TriliumFormatPainter, TextFormattingToolbar], {
+            toolbar: ["textFormatting"],
+            textFormattingToolbar: ["formatPainter"]
+        });
+        const plugin = editor.plugins.get(TextFormattingToolbar);
+        setModelData(editor.model, "<paragraph>foo bar</paragraph>");
+        select(editor, 0, 3);
+        expect(plugin.isActive).toBe(true);
+
+        const painter = plugin.toolbarView.items.get(2) as ButtonView;
+        painter.fire("execute");
+        select(editor, 5, 5);
+        expect(plugin.isActive).toBe(true);
+
+        // Painting disarms it, and the caret it leaves takes the toolbar with it.
+        editor.editing.view.getDomRoot()?.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+        expect(plugin.isActive).toBe(false);
     });
 
     it("does not follow the selection when no items are configured", async () => {

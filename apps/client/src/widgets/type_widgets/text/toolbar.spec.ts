@@ -124,7 +124,7 @@ describe("group labels", () => {
 });
 
 describe("buildMobileToolbar", () => {
-    it("nests only the insert menu, which holds the least used insertions", () => {
+    it("nests only the insert menu, which holds the least used insertions and the wrapping blocks", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
         const groups = (toolbar.items as unknown[]).filter((item) => typeof item !== "string");
         expect(groups).toStrictEqual([ {
@@ -132,6 +132,10 @@ describe("buildMobileToolbar", () => {
             icon: "plus",
             asMenu: { layout: "tiles" },
             items: [
+                "addImage", "insertTableMenu", "todoList",
+                "|",
+                "codeBlock", "blockQuote", "admonition",
+                "|",
                 "collapsible", "tabs", "multicolumnLayout",
                 "|",
                 "horizontalLine", "pageBreak", "footnote",
@@ -146,21 +150,25 @@ describe("buildMobileToolbar", () => {
             ]
         } ]);
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
-        expect(toolbar.items.slice(9)).toStrictEqual([
+        expect(toolbar.items.slice(10)).toStrictEqual([
             "|",
-            "link", "internallink", "aiAssistantMenu", "attachMenu", "insertTableForm",
+            "outdent", "indent", "moveBlockUp", "moveBlockDown",
             "|",
-            "alignmentMenu"
+            "aiAssistantMenu"
         ]);
     });
 
     it("keeps text formatting on a row of its own, opened from the main row", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
-        expect(toolbar.items.slice(0, 9).map(itemName)).toStrictEqual([
-            "undo", "redo", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting", "|", "outdent", "indent"
+        // What a phone shows without scrolling: the blocks, text formatting, links and attachments.
+        expect(toolbar.items.slice(0, 10).map(itemName)).toStrictEqual([
+            "undo", "redo", "contextToolbar", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting",
+            "|", "addLink", "attachMenu"
         ]);
         expect(textFormattingToolbar).toStrictEqual([
             "bold", "italic", "underline", "strikethrough", "code",
+            "|",
+            "addLink",
             "|",
             "superscript", "subscript", "kbd",
             "|",
@@ -168,57 +176,68 @@ describe("buildMobileToolbar", () => {
             "|",
             "removeFormat", "formatPainter",
             "|",
+            "alignment:left", "alignment:center", "alignment:right", "alignment:justify",
+            "|",
             // Acts on the selection, which brings this row up.
             "cuttonote"
         ]);
-        expect(collectItems({ items: toolbar.items }).filter((item) => textFormattingToolbar.includes(item))).toStrictEqual([]);
+        // A link is made at the caret from the main row and from a selection here.
+        expect(collectItems({ items: toolbar.items }).filter((item) => textFormattingToolbar.includes(item)))
+            .toStrictEqual([ "addLink" ]);
         // Turned into from the block type menu instead.
         for (const item of [ "bulletedList", "numberedList", "todoList", "codeBlock", "blockQuote", "admonition" ]) {
             expect(toolbar.items).not.toContain(item);
         }
     });
 
-    it("opens the table form instead of the size grid", () => {
+    it("leads the list's own toolbar with the indentation and the moves, then the list properties", () => {
+        expect(buildMobileToolbar(true).listToolbar).toStrictEqual([
+            "outdent", "indent", "moveBlockUp", "moveBlockDown",
+            "|",
+            "listTypeMenu", "listStartAt", "listReversed"
+        ]);
+    });
+
+    it("opens table sizes as tiles from the insert menu instead of the size grid", () => {
         const items = buildMobileToolbar(true).toolbar.items;
-        expect(items).toContain("insertTableForm");
-        expect(items).not.toContain("insertTable");
+        expect(items).not.toContain("insertTableMenu");
+        expect(collectItems({ items })).toContain("insertTableMenu");
+        expect(collectItems({ items })).not.toContain("insertTable");
         expect(buildClassicToolbar(false, true).toolbar.items).toContain("insertTable");
     });
 
-    it("opens with undo and redo, set apart by a separator", () => {
+    it("opens with undo, redo and the toolbar of the widget at the selection, set apart by a separator", () => {
         const items = buildMobileToolbar(true).toolbar.items;
-        expect(items.slice(0, 3)).toStrictEqual([ "undo", "redo", "|" ]);
+        expect(items.slice(0, 4)).toStrictEqual([ "undo", "redo", "contextToolbar", "|" ]);
         expect(items.filter((item) => item === "undo" || item === "redo")).toHaveLength(2);
     });
 
     it("offers every item of the classic toolbar", () => {
         // Variants of an item that suit a touch screen.
         const MOBILE_VARIANTS: Record<string, string> = {
-            insertTable: "insertTableForm",
+            insertTable: "insertTableMenu",
+            link: "addLink",
+            internallink: "addLink",
             heading: "blockType",
             bulletedList: "blockType",
             numberedList: "blockType",
             todoList: "blockType",
-            codeBlock: "blockType",
-            blockQuote: "blockType",
-            admonition: "blockType",
             fontSize: "fontSizeMenu",
             fontColor: "colorMenu",
             imageUpload: "attachMenu",
             fileUpload: "attachMenu",
             fontBackgroundColor: "colorMenu",
-            "alignment:left": "alignmentMenu",
-            "alignment:center": "alignmentMenu",
-            "alignment:right": "alignmentMenu",
-            "alignment:justify": "alignmentMenu",
             aiAssistant: "aiAssistantMenu"
         };
+        // Alt+Up and Alt+Down move blocks on a keyboard, and the insert menu repeats the image upload
+        // and the to-do list, where a reader might look for them.
+        const MOBILE_ONLY = [ "moveBlockUp", "moveBlockDown", "contextToolbar", "addImage", "todoList" ];
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
                 .map((item) => MOBILE_VARIANTS[item] ?? item);
             const { toolbar, textFormattingToolbar } = buildMobileToolbar(aiAssistant);
             const mobileItems = collectItems({ items: [ ...toolbar.items, ...textFormattingToolbar ] })
-                .filter((item) => item !== "textFormatting");
+                .filter((item) => item !== "textFormatting" && !MOBILE_ONLY.includes(item));
             expect([ ...new Set(mobileItems) ].toSorted()).toStrictEqual([ ...new Set(classicItems) ].toSorted());
         }
     });

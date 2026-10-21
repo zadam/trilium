@@ -84,6 +84,13 @@ vi.mock("../../../services/syntax_highlight.js", async (importOriginal) => ({
 }));
 
 // Heavy modules pulled in lazily by the editor config — replace with light stubs.
+const promptState = vi.hoisted(() => ({ answer: null as string | null, seen: [] as unknown[] }));
+vi.mock("../../../services/dialog.js", () => ({
+    prompt: vi.fn(async (props: unknown) => {
+        promptState.seen.push(props);
+        return promptState.answer;
+    })
+}));
 vi.mock("@triliumnext/highlightjs", () => ({ default: { name: "hljs-stub" } }));
 vi.mock("../../../services/math.js", () => ({ default: { name: "katex-stub" } }));
 
@@ -298,6 +305,23 @@ describe("CK config - HTML support", () => {
 });
 
 describe("CK config - tables", () => {
+    it("keeps the column bar above the phone's toolbar while it is shown", async () => {
+        const bottomObstacle = (await buildConfig(baseOpts())).tableColumnBar?.bottomObstacle;
+        expect(bottomObstacle?.()).toBeNull();
+
+        const container = document.createElement("div");
+        container.className = "classic-toolbar-outer-container visible active";
+        const island = document.createElement("div");
+        island.className = "classic-toolbar-island";
+        container.appendChild(island);
+        document.body.appendChild(container);
+        expect(bottomObstacle?.()).toBe(island);
+
+        container.classList.remove("active");
+        expect(bottomObstacle?.()).toBeNull();
+        container.remove();
+    });
+
     it("offers the Sort dropdown just before the table properties", async () => {
         const toolbar = (await buildConfig(baseOpts())).table?.contentToolbar ?? [];
         expect(toolbar).toContain("tableSort");
@@ -493,7 +517,32 @@ describe("CK config - language & emoji", () => {
     });
 });
 
+describe("CK config - list start", () => {
+    it("asks for the number in the app's prompt, keeping only a whole number of 0 or more", async () => {
+        const config = await buildConfig(baseOpts());
+        const ask = config.listStartPrompt;
+        if (!ask) throw new Error("expected listStartPrompt");
+
+        promptState.answer = " 12 ";
+        expect(await ask("Start at", 3)).toBe(12);
+        expect(promptState.seen.at(-1)).toMatchObject({ title: "Start at", defaultValue: "3" });
+
+        for (const answer of [ null, "", "abc", "-1", "2.5" ]) {
+            promptState.answer = answer;
+            expect(await ask("Start at", 3)).toBeNull();
+        }
+        promptState.answer = "0";
+        expect(await ask("Start at", 3)).toBe(0);
+    });
+});
+
 describe("CK config - image actions", () => {
+    it("places the image in one position menu, in place of the style buttons", async () => {
+        const toolbar = ((await buildConfig(baseOpts())).image as { toolbar: unknown[] }).toolbar;
+        expect(toolbar[0]).toBe("imagePosition");
+        expect(JSON.stringify(toolbar)).not.toContain("imageStyle:");
+    });
+
     it("adds the copy-image toolbar action only when raw image copy is supported", async () => {
         const unsupported = await buildConfig(baseOpts());
         const unsupportedToolbar = (unsupported.image as { toolbar: unknown[] }).toolbar;
@@ -639,6 +688,22 @@ describe("CK config - disabled plugins", () => {
 
             window.glob.device = "mobile";
             expect((await buildConfig(baseOpts())).removePlugins).toContain("BlockDragHandle");
+        } finally {
+            window.glob.device = originalDevice;
+        }
+    });
+
+    it("leaves out the content hints in the mobile layout, whatever their option", async () => {
+        const originalDevice = window.glob.device;
+        const contentHints = async () => (await buildConfig(baseOpts()) as { contentHintsEnabled?: boolean })
+            .contentHintsEnabled;
+        optionsState.map["textNoteContentHintsEnabled"] = "true";
+        try {
+            window.glob.device = "desktop";
+            expect(await contentHints()).toBe(true);
+
+            window.glob.device = "mobile";
+            expect(await contentHints()).toBe(false);
         } finally {
             window.glob.device = originalDevice;
         }

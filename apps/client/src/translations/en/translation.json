@@ -60,14 +60,16 @@
     "help_on_links": "Help on links",
     "note": "Note",
     "search_note": "search for note by its name",
-    "link_title_mirrors": "link title mirrors the note's current title",
-    "link_title_arbitrary": "link title can be changed arbitrarily",
     "link_title": "Link title",
     "anchor": "Anchor (optional)",
     "anchor_none": "None (link to note)",
     "button_add_link": "Add link",
     "button_edit_link": "Save link",
-    "button_fix_link": "Fix link"
+    "button_fix_link": "Fix link",
+    "web_link": "Web link",
+    "url": "URL",
+    "mirror_title": "Mirror the note's title",
+    "mirror_title_description": "The link shows the note's current title, and changes when the note is renamed."
   },
   "branch_prefix": {
     "edit_branch_prefix": "Edit branch prefix",
@@ -4376,6 +4378,7 @@
       "anchor-widget": "anchor widget",
       "anchors": "Anchors",
       "applies-to-the-current-paragraph": "Applies to the current paragraph.",
+      "apply-formatting": "Apply formatting",
       "ask-ai": "Ask AI…",
       "ask-ai-to": "Ask AI to…",
       "ask-ai-to-rewrite-the-selection-or-generate-new-content": "Ask AI to rewrite the selection or generate new content.",
@@ -4595,7 +4598,13 @@
       "scroll-to-the-previous-tabs": "Scroll to the previous tabs",
       "scroll-to-the-next-tabs": "Scroll to the next tabs",
       "text-formatting": "Text formatting",
-      "block-type": "Block type"
+      "block-type": "Block type",
+      "camera": "Camera",
+      "move-up": "Move up",
+      "move-down": "Move down",
+      "image-position": "Image position",
+      "list": "List",
+      "list-type": "List type"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

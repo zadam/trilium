@@ -84,7 +84,7 @@ body.mobile {
     /* A menu of the toolbar in the place of the keyboard (see `useKeyboardPanel`). */
     &.keyboard-panel-open {
         --mobile-toolbar-clearance: calc(
-            var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap)
+            var(--mobile-toolbar-height) + var(--mobile-toolbar-gap)
             + var(--tn-keyboard-height, 0px)
         );
 
@@ -94,12 +94,29 @@ body.mobile {
 
         .classic-toolbar-island {
             bottom: var(--tn-keyboard-height, 0px);
+            margin-bottom: 0;
+            border-end-start-radius: 0;
+            border-end-end-radius: 0;
+
+            .classic-toolbar-widget {
+                border-end-start-radius: 0;
+                border-end-end-radius: 0;
+            }
+
+            .hide-keyboard-action .icon-action {
+                border-end-end-radius: 0;
+            }
         }
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
         height: var(--tn-keyboard-height);
         max-height: var(--tn-keyboard-height);
+    }
+
+    .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
+        height: auto;
+        max-height: 50vh;
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.replaces-panel[data-reveal]:not([data-closing]) {
@@ -109,8 +126,15 @@ body.mobile {
     /* `playClosing()` in Popup.tsx removes the copy once this animation ends or is replaced, as
        it is when `keyboard-panel-open` goes; 1.5s covers `PRESS_TIMEOUT` plus
        `KEYBOARD_RETURN_TIMEOUT` in mobile_editor_toolbar.tsx. */
-    &.keyboard-panel-open .dropdown-menu.mobile-bottom-menu.keyboard-panel[data-closing] {
-        animation: tn-keyboard-panel-hold 1.5s;
+    &.keyboard-panel-open .dropdown-menu.mobile-bottom-menu.keyboard-panel {
+        &[data-closing] {
+            animation: tn-keyboard-panel-hold 1.5s;
+        }
+
+        /* With no animation, `playClosing()` drops the copy at once. */
+        &.keyboard-panel-own-height[data-closing] {
+            animation: none;
+        }
     }
 
     &.keyboard-panel-open .classic-toolbar-island,
@@ -163,6 +187,10 @@ body.mobile {
 
         > .ck-toolbar__items > * {
             margin-block: 0;
+        }
+
+        .ck-toolbar__items > .ck-dropdown > .ck-splitbutton {
+            display: flex;
         }
 
         /* Set on the buttons, not the dropdowns, whose panels would inherit it. */
@@ -222,6 +250,53 @@ body.mobile {
                 }
             }
         }
+
+        .ck-toolbar__items > .ck.ck-button.ck-opens-row::after {
+            content: "›";
+            margin-inline-start: 1px;
+            opacity: 0.6;
+        }
+
+        .ck-toolbar__items > .ck.ck-button.ck-opens-row:dir(rtl)::after {
+            content: "‹";
+        }
+
+        .ck-toolbar__items > .ck-context-toolbar-title {
+            --ck-icon-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-inline: 6px 10px;
+            color: var(--muted-text-color);
+            white-space: nowrap;
+        }
+
+        .ck-toolbar__items > .ck.ck-button.ck-context-toolbar-button {
+            --mobile-toolbar-pill: var(--accented-background-color);
+            --mobile-toolbar-pill-shadow: inset 0 0 0 1px var(--main-border-color);
+            --ck-icon-size: 18px;
+            align-items: center;
+            padding-inline: 10px 8px;
+            animation: tn-context-toolbar-enter 150ms ease-out;
+
+            .ck-button__label::after {
+                content: "›";
+                margin-inline-start: 4px;
+                opacity: 0.6;
+            }
+
+            &:dir(rtl) .ck-button__label::after {
+                content: "‹";
+            }
+
+        }
+    }
+}
+
+@keyframes tn-context-toolbar-enter {
+    from {
+        opacity: 0;
+        scale: 0.85;
     }
 }
 
