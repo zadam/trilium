@@ -129,7 +129,7 @@ describe("NoteContextMenu", () => {
         };
 
         expect(await shownIn("ntx-tab", text)).toEqual({ search: true, noteMap: true, fullWidth: true, paperclips: 1 });
-        expect(await shownIn("_popup-editor", text)).toEqual({ search: false, noteMap: false, fullWidth: false, paperclips: 1 });
+        expect(await shownIn("_popup-editor", text)).toEqual({ search: true, noteMap: false, fullWidth: false, paperclips: 1 });
         if (image) {
             expect((await shownIn("ntx-tab", image)).paperclips).toBe(2);
             expect((await shownIn("_popup-editor", image)).paperclips).toBe(1);
@@ -233,10 +233,24 @@ describe("NoteContextMenu", () => {
         await vi.waitFor(() => expect(popup()).toBeNull());
         render(null, host);
 
-        // The quick edit popup leaves only the attachments, which a strip of one would not suit.
+        // The quick edit popup searches its own note, and opens no note map.
         await openIn("_popup-editor");
-        expect(popup()?.querySelector(".tn-menu-actions")).toBeNull();
-        expect(popup()?.querySelector("li.dropdown-item:has(.bx-paperclip)")?.textContent?.trim()).toBe("note_actions.note_attachments");
+        const popupTiles = [ ...popup()?.querySelectorAll<HTMLElement>(".tn-menu-actions .tn-menu-action") ?? [] ];
+        expect(popupTiles.map((tile) => tile.textContent?.trim())).toEqual([ "note_actions.search_in_note_short", "note_actions.note_attachments_short" ]);
+        await act(async () => popupTiles[0]?.click());
+        expect(triggerCommand).toHaveBeenCalledWith("findInText", expect.objectContaining({ ntxId: "_popup-editor" }));
+        await vi.waitFor(() => expect(popup()).toBeNull());
+        render(null, host);
+
+        // On a phone the popup leaves only Find, which a strip of one would not suit.
+        ctrl.mobile = true;
+        try {
+            await openIn("_popup-editor");
+            expect(popup()?.querySelector(".tn-menu-actions")).toBeNull();
+            expect(popup()?.querySelector("li.dropdown-item:has(.bx-file-find)")?.textContent?.trim()).toBe("note_actions.search_in_note");
+        } finally {
+            ctrl.mobile = false;
+        }
     });
 
     it("folds the revisions into one row that opens them, with the saving actions beside it", async () => {
