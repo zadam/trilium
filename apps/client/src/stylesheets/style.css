@@ -77,6 +77,14 @@ html {
     overscroll-behavior: none;
 }
 
+/* iOS 26 gives a web app added to the home screen a dynamic viewport short by the status bar until
+   the first rotation (WebKit bug 301108); the large viewport is the screen's height from the start. */
+html.ios-web-app,
+html.ios-web-app body,
+html.ios-web-app #root-widget {
+    height: 100lvh !important;
+}
+
 body {
     /* Fix for CKEditor block gutter icon "stretching" body and causing scrollbar to appear after pressing enter
         on the last line of the editor. */
