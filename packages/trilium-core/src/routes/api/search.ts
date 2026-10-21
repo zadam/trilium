@@ -155,14 +155,19 @@ function quickSearch(req: Request<{}, { searchString?: string }>): QuickSearchRe
 }
 
 function search(
-    req: Request<{}, { searchString?: string, ancestorNoteId?: string, includeTokens?: string }>
+    req: Request<{}, {
+        searchString?: string, ancestorNoteId?: string, includeTokens?: string,
+        includeArchivedNotes?: string
+    }>
 ): string[] | SearchWithTokensResponse {
     const searchString = getSearchString(req);
-    const { ancestorNoteId, includeTokens } = req.query;
+    const { ancestorNoteId, includeTokens, includeArchivedNotes } = req.query;
 
     const searchContext = new SearchContext({
         fastSearch: false,
-        includeArchivedNotes: true,
+        // A collection that hides archived notes asks for them to be left out, so their content is
+        // never read.
+        includeArchivedNotes: includeArchivedNotes !== "false",
         fuzzyAttributeSearch: false,
         ignoreHoistedNote: true,
         // Restricts the results to one subtree, for callers that filter a collection rather

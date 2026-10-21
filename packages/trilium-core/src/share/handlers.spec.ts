@@ -541,6 +541,12 @@ describe("share handlers", () => {
             `Basic ${encodeBase64("root:hunter2")}`);
         expect(JSON.parse(String(authorized.body)).searchResultNoteIds).toEqual([ "seen", "guarded" ]);
 
+        const includesArchived = () =>
+            vi.mocked(searchService.findResultsWithQuery).mock.lastCall?.[1].includeArchivedNotes;
+        expect(includesArchived()).toBe(true);
+        filter({ searchString: "seen", ancestorNoteId: "board", includeArchivedNotes: "false" });
+        expect(includesArchived()).toBe(false);
+
         expect(filter({ ancestorNoteId: "board" }).status).toBe(400);
         expect(filter({ searchString: "seen" }).status).toBe(400);
         expect(filter({ searchString: "seen", ancestorNoteId: "missing" }).status).toBe(404);

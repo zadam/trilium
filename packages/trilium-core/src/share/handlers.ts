@@ -381,7 +381,7 @@ function downloadAttachment(req: ShareRequest): ShareReply {
  * visitor can read with the tokens to highlight and the query's error.
  */
 function searchInSubtree(req: ShareRequest): ShareReply {
-    const { searchString, ancestorNoteId } = req.query;
+    const { searchString, ancestorNoteId, includeArchivedNotes } = req.query;
     if (typeof searchString !== "string" || !searchString || typeof ancestorNoteId !== "string") {
         return jsonReply(400, { message: "'searchString' and 'ancestorNoteId' parameters are mandatory." });
     }
@@ -389,7 +389,7 @@ function searchInSubtree(req: ShareRequest): ShareReply {
 
     const searchContext = new SearchContext({
         fastSearch: false,
-        includeArchivedNotes: true,
+        includeArchivedNotes: includeArchivedNotes !== "false",
         fuzzyAttributeSearch: false,
         ignoreHoistedNote: true,
         ancestorNoteId
