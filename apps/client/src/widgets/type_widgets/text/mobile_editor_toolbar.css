@@ -238,6 +238,32 @@ body.mobile {
                 }
             }
         }
+
+        .ck-toolbar__items > .ck.ck-button.ck-context-toolbar-button {
+            --mobile-toolbar-pill: var(--accented-background-color);
+            --mobile-toolbar-pill-shadow: inset 0 0 0 1px var(--main-border-color);
+            --ck-icon-size: 18px;
+            align-items: center;
+            padding-inline: 10px 8px;
+            animation: tn-context-toolbar-enter 150ms ease-out;
+
+            .ck-button__label::after {
+                content: "›";
+                margin-inline-start: 4px;
+                opacity: 0.6;
+            }
+
+            &:dir(rtl) .ck-button__label::after {
+                content: "‹";
+            }
+        }
+    }
+}
+
+@keyframes tn-context-toolbar-enter {
+    from {
+        opacity: 0;
+        scale: 0.85;
     }
 }
 

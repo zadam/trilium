@@ -73,19 +73,26 @@ export default class ContextToolbar extends Plugin {
         this.set("source", null);
         this.toolbarView = new ToolbarView(editor.locale, { shouldGroupWhenFull: true });
 
-        this.backView = new ButtonView(editor.locale);
-        this.backView.set({ label: editor.t("Back"), icon: IconPreviousArrow, tooltip: true });
-        this.backView.on("execute", () => this.setActive(false));
+        // Names the widget whose tools the row holds, as `‹ Table`.
+        const back = this.backView = new ButtonView(editor.locale);
+        back.set({ icon: IconPreviousArrow, tooltip: editor.t("Back") });
+        back.bind("label").to(this, "source", (source) => getToolbarName(editor, source) ?? editor.t("Back"));
+        back.bind("withText").to(this, "source", (source) => getToolbarName(editor, source) !== undefined);
+        back.on("execute", () => this.setActive(false));
     }
 
     init() {
         const editor = this.editor;
 
         editor.ui.componentFactory.add("contextToolbar", (locale) => {
+            // A chip naming the widget, `Table ›`, which the host styles apart from the tools.
             const button = new ButtonView(locale);
-            button.set({ tooltip: true });
+            button.set({ class: "ck-context-toolbar-button" });
             button.bind("isVisible").to(this, "source", (source) => source !== null);
-            button.bind("label").to(this, "source", (source) => source?.definition.view.ariaLabel ?? "");
+            button.bind("label").to(this, "source", (source) =>
+                getToolbarName(editor, source) ?? source?.definition.view.ariaLabel ?? "");
+            button.bind("withText").to(this, "source", (source) => getToolbarName(editor, source) !== undefined);
+            button.bind("tooltip").to(this, "source", (source) => source?.definition.view.ariaLabel ?? true);
             button.bind("icon").to(this, "source", (source) => (source && TOOLBAR_ICONS[source.id]) ?? IconThreeVerticalDots);
             button.on("execute", () => this.setActive(true));
             return button;
@@ -172,6 +179,24 @@ export default class ContextToolbar extends Plugin {
         } else if (this.isActive) {
             this.isActive = false;
         }
+    }
+}
+
+/** The short name of the widget a toolbar is for, or `undefined` for a toolbar without one. */
+function getToolbarName(editor: Editor, source: ContextToolbarSource | null) {
+    const t = editor.t;
+    switch (source?.id) {
+        case "table":
+        case "tableContent": return t("Table");
+        case "image": return t("Image");
+        case "codeblock": return t("Code block");
+        case "inlineCode": return t("Code");
+        case "admonition": return t("Admonition");
+        case "tabs": return t("Tabs");
+        case "multicolumnLayout": return t("Columns");
+        case "contentEmbed":
+        case "linkEmbed": return t("Embed");
+        default: return undefined;
     }
 }
 

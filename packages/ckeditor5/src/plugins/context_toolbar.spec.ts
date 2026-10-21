@@ -31,7 +31,11 @@ describe("ContextToolbar", () => {
 
         setModelData(editor.model, TABLE);
         editor.ui.update();
-        expect(button).toMatchObject({ isVisible: true, label: "Table toolbar", icon: IconTable, tooltip: true });
+        // A chip naming the widget, with the toolbar's own name as its tooltip.
+        expect(button).toMatchObject({
+            isVisible: true, label: "Table", withText: true, icon: IconTable, tooltip: "Table toolbar",
+            class: "ck-context-toolbar-button"
+        });
         expect(editor.plugins.get(WidgetToolbarRepository).isEnabled).toBe(false);
     });
 
@@ -46,7 +50,8 @@ describe("ContextToolbar", () => {
         expect(plugin.isActive).toBe(true);
         expect(focus).toHaveBeenCalledTimes(1);
         const [back, separator, ...items] = [...plugin.toolbarView.items];
-        expect(back).toMatchObject({ label: "Back", icon: IconPreviousArrow });
+        // The back button names the widget whose tools the row holds.
+        expect(back).toMatchObject({ label: "Table", withText: true, icon: IconPreviousArrow, tooltip: "Back" });
         expect(separator).toBeInstanceOf(ToolbarSeparatorView);
         expect(items.map((item) => (item as { buttonView?: ButtonView }).buttonView?.label)).toStrictEqual(["Column", "Row"]);
         expect(editor.ui.focusTracker.elements).toContain(plugin.toolbarView.element);
