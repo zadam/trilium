@@ -1,7 +1,7 @@
 import "./Button.css";
 
 import type { Tooltip } from "bootstrap";
-import type { ComponentChildren, CSSProperties, MouseEventHandler, RefObject } from "preact";
+import type { ButtonHTMLAttributes, ComponentChildren, CSSProperties, MouseEventHandler, RefObject } from "preact";
 import { useMemo, useRef } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
@@ -16,7 +16,7 @@ import { renderShortcutKbds } from "./shortcut_kbd";
 
 const cachedIsMobile = isMobile();
 
-export interface ButtonProps {
+export interface ButtonProps extends Pick<ButtonHTMLAttributes<HTMLButtonElement>, "tabIndex" | "aria-pressed"> {
     name?: string;
     /** Reference to the button element. Mostly useful for requesting focus. */
     buttonRef?: RefObject<HTMLButtonElement | null>;

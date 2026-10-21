@@ -1,11 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type FNote from "../../entities/fnote";
 import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
 import froca from "../../services/froca";
 import { buildNote } from "../../test/easy-froca";
+import DatePicker from "../react/DatePicker";
 import { buildAttributeMenuItems } from "./attribute_menu";
-import DateMenuCalendar from "./date_menu_calendar";
 import type { PromotedAttribute } from "./promoted_attributes";
 
 // The writes alone, so the rest of the service reads a note the way the application does.
@@ -15,16 +15,11 @@ vi.mock("../../services/attributes", async (importOriginal) => ({
     ...writes
 }));
 
-// The month grid is a component of its own, with its own spec; here only what it is handed counts.
-vi.mock("./date_menu_calendar", () => ({ default: vi.fn(() => null) }));
+// The picker is a component of its own, with its own spec; here only what it is handed counts.
+vi.mock("../react/DatePicker", () => ({ default: vi.fn(() => null) }));
 
 // i18next is never initialised under test, so `t` echoes the key it is given.
 vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
-
-const weekOptions = vi.hoisted(() => ({ firstDayOfWeek: 1 }));
-vi.mock("../../services/options", () => ({
-    default: { getInt: (name: string) => (name === "firstDayOfWeek" ? weekOptions.firstDayOfWeek : null) }
-}));
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -234,13 +229,6 @@ describe("buildAttributeMenuItems", () => {
     describe("a date", () => {
         const due = [ attribute({ name: "due", title: "Due", labelType: "date" }) ];
 
-        beforeEach(() => {
-            // A Wednesday.
-            vi.useFakeTimers({ now: new Date(2026, 9, 21, 15, 30) });
-            weekOptions.firstDayOfWeek = 1;
-        });
-        afterEach(() => vi.useRealTimers());
-
         function entries(...notes: FNote[]) {
             const items = buildAttributeMenuItems<string>({ notes, attributes: due });
             const entry = items[1];
@@ -248,74 +236,41 @@ describe("buildAttributeMenuItems", () => {
             return entry.items ?? [];
         }
 
-        it("offers Not set, then today, tomorrow and next week", () => {
+        it("offers Not set, then a date picker", () => {
             const items = entries(buildNote({ title: "Card" }));
 
-            expect(titles(items)).toEqual([
-                `<span class="tn-menu-name">attribute_menu.not-set</span>`,
-                "separator",
-                `<span class="tn-menu-name">attribute_menu.today</span>`,
-                `<span class="tn-menu-name">attribute_menu.tomorrow</span>`,
-                `<span class="tn-menu-name">attribute_menu.next-week</span>`,
-                "separator",
-                "separator"
-            ]);
-            expect(items.slice(-2)).toMatchObject([ { kind: "separator" }, { kind: "custom" } ]);
+            expect(items).toHaveLength(3);
+            expect(titles(items)[0]).toBe(`<span class="tn-menu-name">attribute_menu.not-set</span>`);
+            expect(items.slice(1)).toMatchObject([ { kind: "separator" }, { kind: "custom" } ]);
             expect(marked(items)).toEqual([
                 `<span class="tn-menu-name">attribute_menu.not-set</span>`
             ]);
+            expect(marked(entries(buildNote({ title: "Card", "#due": "2026-10-22" })))).toEqual([]);
         });
 
-        it("writes each date, next week starting on the configured first day", () => {
-            const note = buildNote({ title: "Card" });
+        it("hands the picker the date every item holds, and writes the date picked", () => {
+            const note = buildNote({ title: "Card", "#due": "2026-12-01" });
+            const picker = pickerOf(entries(note, buildNote({ title: "Two", "#due": "2026-12-01" })));
 
-            pick(entries(note)[2]);
-            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-21" ]);
-            pick(entries(note)[3]);
-            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-22" ]);
-            pick(entries(note)[4]);
-            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-26" ]);
+            expect(picker.value).toBe("2026-12-01");
+            expect(picker.onClear).toBeUndefined();
+            picker.onChange("2026-12-24");
+            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-12-24" ]);
 
-            weekOptions.firstDayOfWeek = 0;
-            pick(entries(note)[4]);
-            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-25" ]);
+            expect(pickerOf(entries(note, buildNote({ title: "Three" }))).value).toBeUndefined();
 
             pick(entries(note)[0]);
             expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", []);
         });
 
-        it("marks the date the items hold only while they all hold it", () => {
-            const tomorrow = buildNote({ title: "One", "#due": "2026-10-22" });
-
-            expect(marked(entries(tomorrow))).toEqual([
-                `<span class="tn-menu-name">attribute_menu.tomorrow</span>`
-            ]);
-            expect(marked(entries(tomorrow, buildNote({ title: "Two", "#due": "2026-10-22" }))))
-                .toEqual([ `<span class="tn-menu-name">attribute_menu.tomorrow</span>` ]);
-            expect(marked(entries(tomorrow, buildNote({ title: "Two" })))).toEqual([]);
-            expect(marked(entries(buildNote({ title: "Card", "#due": "2026-12-01" }))))
-                .toEqual([]);
-        });
-
-        it("ends with a month grid on the date the items hold, which writes the day picked", () => {
-            const note = buildNote({ title: "Card", "#due": "2026-12-01" });
-            const calendar = calendarOf(entries(note, buildNote({ title: "Two", "#due": "2026-12-01" })));
-
-            expect(calendar.value).toBe("2026-12-01");
-            calendar.onPick("2026-12-24");
-            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-12-24" ]);
-
-            expect(calendarOf(entries(note, buildNote({ title: "Three" }))).value).toBeUndefined();
-        });
-
-        /** What the submenu's custom row hands the month grid. */
-        function calendarOf(items: MenuItem<string>[]) {
+        /** What the submenu's custom row hands the date picker. */
+        function pickerOf(items: MenuItem<string>[]) {
             const row = items.at(-1);
-            if (!row || !("kind" in row) || row.kind !== "custom") throw new Error("expected a grid");
-            vi.mocked(DateMenuCalendar).mockClear();
+            if (!row || !("kind" in row) || row.kind !== "custom") throw new Error("expected a picker");
+            vi.mocked(DatePicker).mockClear();
             row.componentFn();
-            const props = vi.mocked(DateMenuCalendar).mock.calls[0]?.[0];
-            if (!props) throw new Error("expected the grid to render");
+            const props = vi.mocked(DatePicker).mock.calls[0]?.[0];
+            if (!props) throw new Error("expected the picker to render");
             return props;
         }
 

@@ -35,6 +35,8 @@ export interface CalendarArgs {
     weekNotes: string[];
     /** Whether days that have a day note are marked, which reads each shown month's day notes. */
     markDayNotes?: boolean;
+    /** The day that takes focus in the grid. When set, every other day is left out of the tab order. */
+    focusDate?: Dayjs;
 }
 
 export default function Calendar(args: CalendarArgs) {
@@ -135,7 +137,7 @@ function NextMonthDays({ date, dates, ...args }: { date: Dayjs, dates: Dayjs[] }
     ));
 }
 
-function CalendarDay({ date, dateNotesForMonth, className, activeDate, todaysDate, onDateClicked }: { date: Dayjs, dateNotesForMonth?: DateNotesForMonth, className?: string } & CalendarArgs) {
+function CalendarDay({ date, dateNotesForMonth, className, activeDate, todaysDate, focusDate, onDateClicked }: { date: Dayjs, dateNotesForMonth?: DateNotesForMonth, className?: string } & CalendarArgs) {
     const dateString = date.local().format('YYYY-MM-DD');
     const dateNoteId = dateNotesForMonth?.[dateString];
     return (
@@ -147,6 +149,7 @@ function CalendarDay({ date, dateNotesForMonth, className, activeDate, todaysDat
             )}
             data-calendar-date={date.local().format("YYYY-MM-DD")}
             data-href={dateNoteId && `#root/${dateNoteId}`}
+            tabIndex={focusDate ? (date.isSame(focusDate, "day") ? 0 : -1) : undefined}
             onClick={(e) => onDateClicked(dateString, e)}
         >
             <span>

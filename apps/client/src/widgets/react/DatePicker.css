@@ -1,13 +1,20 @@
-.calendar-dropdown-widget.date-menu-calendar {
+.calendar-dropdown-widget.date-picker {
     width: 260px;
-    padding: 4px 8px 8px;
+    padding: 8px;
+
+    .date-picker-presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding-bottom: 8px;
+    }
 
     .calendar-header {
         padding: 0 0 4px;
         justify-content: space-between;
     }
 
-    .date-menu-calendar-title {
+    .date-picker-title {
         font-weight: 500;
     }
 

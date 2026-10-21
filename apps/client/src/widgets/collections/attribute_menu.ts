@@ -1,13 +1,10 @@
-import { dayjs, type Dayjs, getWeekStartDate } from "@triliumnext/commons";
-
 import type FNote from "../../entities/fnote";
 import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
 import { menuName } from "../../menus/context_menu_utils";
 import { t } from "../../services/i18n";
 import { clearLabelOnNotes, setLabelOnNotes, shared } from "../../services/note_set";
-import options from "../../services/options";
 import { promotedAttributeIcon } from "../attribute_widgets/attribute_types";
-import DateMenuCalendar from "./date_menu_calendar";
+import DatePicker from "../react/DatePicker";
 import type { PromotedAttribute } from "./promoted_attributes";
 
 /** Marks the value an item holds, at the trailing edge as the other menus place it. */
@@ -36,10 +33,9 @@ export interface AttributeMenuOptions {
  *
  * Lists the attributes the items draw, in the order they are drawn, and only the types a menu can
  * hold: `boolean`, which the entry marks and toggles, `select`, whose options open in a submenu,
- * and `date`, whose submenu offers a few dates relative to today. The other types need a field to
- * type into and stay in the attribute editor. An
- * attribute the items define in different ways is left out, since one item's options might not
- * apply to another.
+ * and `date`, whose submenu holds a date picker. The other types need a field to type into and
+ * stay in the attribute editor. An attribute the items define in different ways is left out,
+ * since one item's options might not apply to another.
  *
  * Returns an empty array when no attribute qualifies, so a caller can spread the result without
  * checking for an empty section. The section opens with a heading, which draws its own line, so a
@@ -132,18 +128,11 @@ function buildSelectItem<T>(
 }
 
 /**
- * A `date`, with Not set, then today, tomorrow and the first day of next week, then a month grid
- * for any other day, in a submenu. Dates are stored as `YYYY-MM-DD` like the field's own date
- * input. The entry the items' value matches is marked, and the grid marks that day.
+ * A `date`, with Not set and then a {@link DatePicker} in a submenu. The picker marks the date the
+ * items hold, and nothing where they disagree.
  */
 function buildDateItem<T>(notes: FNote[], attribute: PromotedAttribute): MenuCommandItem<T> {
     const current = shared(notes, (note) => note.getLabelValue(attribute.name));
-    const today = dayjs().startOf("day");
-    const dates: [ string, Dayjs ][] = [
-        [ t("attribute_menu.today"), today ],
-        [ t("attribute_menu.tomorrow"), today.add(1, "day") ],
-        [ t("attribute_menu.next-week"), startOfNextWeek(today) ]
-    ];
 
     return {
         ...attributeEntry<T>(attribute),
@@ -154,30 +143,15 @@ function buildDateItem<T>(notes: FNote[], attribute: PromotedAttribute): MenuCom
                 handler: () => { void clearLabelOnNotes(notes, attribute.name); }
             },
             { kind: "separator" },
-            ...dates.map<MenuItem<T>>(([ title, date ]) => {
-                const value = date.format("YYYY-MM-DD");
-                return {
-                    title: menuName(title),
-                    trailingIcon: current.agreed && current.value === value ? CHECK : undefined,
-                    handler: () => { void setLabelOnNotes(notes, attribute.name, value); }
-                };
-            }),
-            { kind: "separator" },
             {
                 kind: "custom",
-                componentFn: () => DateMenuCalendar({
+                componentFn: () => DatePicker({
                     value: current.agreed ? current.value || undefined : undefined,
-                    onPick: (date) => { void setLabelOnNotes(notes, attribute.name, date); }
+                    onChange: (date) => { void setLabelOnNotes(notes, attribute.name, date); }
                 })
             }
         ]
     };
-}
-
-/** The first day of the week after `today`'s, as the `firstDayOfWeek` option sets it (0 is Sunday). */
-function startOfNextWeek(today: Dayjs) {
-    const firstDayOfWeek = options.getInt("firstDayOfWeek") ?? 1;
-    return getWeekStartDate(today, firstDayOfWeek === 0 ? 7 : firstDayOfWeek).add(7, "day");
 }
 
 /** What every entry carries: the attribute's display name, under the icon of its type. */

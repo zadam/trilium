@@ -466,6 +466,12 @@ body.layout-horizontal > .horizontal {
     z-index: -1;
 }
 
+.calendar-dropdown-widget .calendar-body a.calendar-date-active {
+    border-radius: 6px;
+    background: var(--active-item-background-color);
+    color: var(--active-item-text-color);
+}
+
 body .calendar-dropdown-widget .calendar-body a:hover {
     border-radius: 6px;
     background: var(--calendar-day-hover-background);

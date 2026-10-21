@@ -3088,10 +3088,7 @@
   },
   "attribute_menu": {
     "attributes": "Attributes",
-    "not-set": "Not set",
-    "today": "Today",
-    "tomorrow": "Tomorrow",
-    "next-week": "Next week"
+    "not-set": "Not set"
   },
   "link_context_menu": {
     "open_note": "Open note",
@@ -4885,5 +4882,11 @@
     "to_sentence_case": "To sentence case",
     "to_title_case": "To title case",
     "remove_diacritics": "Remove diacritics"
+  },
+  "date_picker": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "next-week": "Next week",
+    "clear": "Clear"
   }
 }

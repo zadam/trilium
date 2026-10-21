@@ -64,7 +64,10 @@ export interface MenuProps<T> extends Pick<PopupProps, "anchor" | "offset" | "co
 }
 
 
-/** The keys the menu keeps while focus is inside a custom row: those that leave it. */
+/**
+ * The keys the menu keeps while focus is inside a custom row: those that leave it, unless the
+ * focused element lists the key in `data-menu-keys`. See `handlesOwnKey()`.
+ */
 const KEYS_LEAVING_CUSTOM_ROW = new Set([ "ArrowUp", "ArrowDown", "Escape", "Tab" ]);
 /** The keys the menu always keeps while focus is in a submenu's filter input. See `isFilterKey()`. */
 const KEYS_OF_FILTER = new Set([ "ArrowUp", "ArrowDown", "Enter", "Escape", "Tab" ]);
@@ -233,7 +236,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
             const menu = menuRef.current;
             const takes = e.target instanceof HTMLInputElement && e.target.matches(FILTER_INPUT)
                 ? isFilterKey(e.target, e.key)
-                : KEYS_LEAVING_CUSTOM_ROW.has(e.key);
+                : KEYS_LEAVING_CUSTOM_ROW.has(e.key) && !handlesOwnKey(e.target, e.key);
             if (e.target === menu || (menu?.contains(e.target as Node) && takes)) {
                 keyHandler.current(e);
             }
@@ -732,6 +735,15 @@ function hasRowBefore(row: Element | undefined) {
 /** The filter input of the submenu open in `menu`, if one is. */
 function filterInputIn(menu: HTMLElement | null) {
     return menu?.querySelector<HTMLInputElement>(FILTER_INPUT) ?? null;
+}
+
+/**
+ * Whether the element focused in a custom row handles `key` itself, as listed in the
+ * space-separated `data-menu-keys` of it or an ancestor, as a date grid keeps Up and Down.
+ */
+function handlesOwnKey(target: EventTarget | null, key: string) {
+    const owner = target instanceof Element ? target.closest<HTMLElement>("[data-menu-keys]") : null;
+    return !!owner?.dataset.menuKeys?.split(" ").includes(key);
 }
 
 /** Where a custom row takes focus: the element its content marks as its way in with `tabindex="0"`. */
