@@ -435,7 +435,7 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
             // dead-end when the live model fetch fails.
             content: (
                 <Card heading={t("llm.select_models")}>
-                    <CardSection>
+                    <CardSection noPadding>
                         <ModelSelection
                             query={modelQuery}
                             timeoutMs={providerType?.modelListTimeoutMs}

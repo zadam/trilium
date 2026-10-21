@@ -30,6 +30,16 @@
     gap: 0.25em;
 }
 
+.tn-card-section.tn-no-padding > .model-selection {
+    > .model-selection-toolbar {
+        padding: var(--card-padding-block) var(--card-padding-inline) 0;
+    }
+
+    > .model-selection-list {
+        padding: 0 var(--card-padding-inline) var(--card-padding-block);
+    }
+}
+
 .model-selection-label {
     display: inline-flex;
     align-items: center;
