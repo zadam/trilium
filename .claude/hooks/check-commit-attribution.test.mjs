@@ -152,12 +152,14 @@ describe("checkCommand with a model", () => {
         }
     });
 
-    it("replaces a Claude Code line without a model only when it is the last `Assisted-by` line", () => {
+    it("replaces a malformed Claude line only when it is the last `Assisted-by` line", () => {
         const bare = message("bare.txt", "fix(x): y\n\nAssisted-by: DeepSeek V4\nAssisted-by: Claude Code\n");
         const notLast = message("not-last.txt", "fix(x): y\n\nAssisted-by: Claude Code\nAssisted-by: DeepSeek V4\n");
         const modeOf = (command) => /trailer\.ifexists=(\w+)/.exec(checkCommand(command, dir, MODEL).command)?.[1];
         assert.equal(modeOf(`git commit -F ${bare}`), "replace");
         assert.equal(modeOf("git commit -m \"fix(x): y\" -m \"Assisted-by: Claude Code (<model>)\""), "replace");
+        assert.equal(modeOf("git commit -m \"fix(x): y\" -m \"Assisted-by: Claude Opus 5.5\""), "replace");
+        assert.equal(modeOf("git commit -m \"fix(x): y\" -m \"Assisted-by: Claude Code <noreply@anthropic.com>\""), "replace");
         assert.equal(modeOf(`git commit -F ${notLast}`), "addIfDifferent");
     });
 

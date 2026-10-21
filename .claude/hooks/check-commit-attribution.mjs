@@ -19,9 +19,9 @@ const MESSAGE_FLAG = /\s(?:-[a-zA-Z]*[mF]|--message|--file)(?=[\s"'=]|$)/;
 const FILE_FLAG = /\s(?:-F\s*|--file[=\s]\s*)("[^"]+"|'[^']+'|[^\s;&|]+)/g;
 const TRAILER = /Assisted-by: Claude Code \([^()<>\n"']+\)/;
 const CO_AUTHOR = /Co-Authored-By: Claude/i;
-/** Every `Assisted-by` line, to tell whether the last one is a Claude Code line without a model. */
+/** Every `Assisted-by` line, to tell whether the last one is a Claude line that `TRAILER` rejects. */
 const ANY_TRAILER = /Assisted-by: [^\n"']*/g;
-const STALE_TRAILER = /^Assisted-by: Claude Code(?: \(<[^>]*>\))?\s*$/;
+const CLAUDE_TRAILER = /^Assisted-by: Claude\b/;
 /** `NAME=value` at the start of a command, as `S="…" && git commit -F "$S/msg.txt"` sets. */
 const ASSIGNMENT = /(?:^|[;&|(\n]\s*)(?:export\s+)?([A-Za-z_]\w*)=("[^"]*"|'[^']*'|[^\s;&|]*)/g;
 const VARIABLE = /\$\{(\w+)\}|\$(\w+)/g;
@@ -186,12 +186,13 @@ function checkCommit(args, cwd, variables) {
         return { action: "pass" };
     }
     // `replace` swaps the `Assisted-by` line nearest the end, so it applies only when that line
-    // is the Claude Code one; `addIfDifferent` leaves a matching line written to an unread file.
+    // is a Claude one, such as `Assisted-by: Claude Opus 5.5`; `addIfDifferent` leaves a matching
+    // line written to an unread file.
     const lastTrailer = messages.flatMap((text) => text.match(ANY_TRAILER) ?? []).at(-1);
     return {
         action: "fix",
         reason: unreadablePath ? unreadable(unreadablePath) : EXPECTED,
-        ifExists: lastTrailer && STALE_TRAILER.test(lastTrailer) ? "replace" : "addIfDifferent"
+        ifExists: lastTrailer && CLAUDE_TRAILER.test(lastTrailer) ? "replace" : "addIfDifferent"
     };
 }
 
