@@ -634,6 +634,51 @@ describe("useCanvasDrawingPersistence", () => {
         }));
     });
 
+    it("waits for an action that the user starts while the images of a save load", async () => {
+        const owner = buildNote({ title: "Owner" });
+        owner.getAttachmentsByRole = vi.fn(async () => [
+            { attachmentId: "img9", title: "f9.png" }
+        ]) as never;
+        let loadImage = () => {};
+        const isImageLoaded = new Promise<void>((resolve) => {
+            loadImage = resolve;
+        });
+        vi.stubGlobal("fetch", vi.fn(async () => {
+            await isImageLoaded;
+            return { ok: true, blob: async () => new Blob([ "ABC" ], { type: "image/png" }) };
+        }));
+        const loaded = [ { id: "r1", type: "rectangle", version: 3, versionNonce: 1 } ];
+        const { attachment, getBlob } = buildAttachment({ elements: loaded });
+        const drawing = { ...attachment, ownerId: owner.noteId } as unknown as FAttachment;
+        sceneFiles = {};
+        showUpdatedElements();
+        await mount(drawing, buildEditor());
+        change();
+        sceneElements = loaded;
+        change();
+
+        const image = { id: "i9", type: "image", version: 1, versionNonce: 2, fileId: "f9.png" };
+        const saved = [ loaded[0], image ];
+        getBlob.mockResolvedValue({ content: JSON.stringify({ elements: saved }) });
+        await reportSave();
+        appState = { ...appState, editingTextElement: { id: "t1" } };
+        await act(async () => {
+            loadImage();
+            // `FileReader` reads the image over several turns.
+            for (let turn = 0; turn < 5; turn++) {
+                await new Promise((resolve) => setTimeout(resolve, 10));
+            }
+        });
+        expect(updateScene).not.toHaveBeenCalled();
+
+        appState = { ...appState, editingTextElement: null };
+        await act(async () => {
+            change();
+        });
+        await vi.waitFor(() => expect(updateScene).toHaveBeenCalledExactlyOnceWith(
+            expect.objectContaining({ elements: saved })));
+    });
+
     it("shows a save that lands while the drawing loads once Excalidraw shows it", async () => {
         const loaded = [ { id: "r1", type: "rectangle", version: 3, versionNonce: 1 } ];
         const { attachment, getBlob } = buildAttachment({ elements: loaded });

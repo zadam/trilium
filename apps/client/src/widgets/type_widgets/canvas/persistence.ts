@@ -458,10 +458,13 @@ export function useCanvasDrawingPersistence(
         const isCurrent = () => request === showRequestRef.current && apiRef.current === api
             && editor?.getUnsavedContent() === undefined;
         if (!api || !isCurrent()) return;
-        if (isInteracting(api.getAppState())) {
+        // The save waits until the user ends the change in progress.
+        const isUserChanging = () => {
+            if (!isInteracting(api.getAppState())) return false;
             isSaveWaitingRef.current = true;
-            return;
-        }
+            return true;
+        };
+        if (isUserChanging()) return;
 
         const content = parseContent(savedContent, attachment);
         const elements = restoreLoadedElements(content.elements);
@@ -483,7 +486,7 @@ export function useCanvasDrawingPersistence(
             elements: elements.filter((element) =>
                 "fileId" in element && element.fileId && !shownFiles[element.fileId])
         });
-        if (!isCurrent()) return;
+        if (!isCurrent() || isUserChanging()) return;
 
         referencedFileIds.current = new Set([
             ...referencedFileIds.current, ...loaded.referencedFileIds

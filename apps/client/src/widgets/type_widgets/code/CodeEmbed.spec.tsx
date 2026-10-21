@@ -641,6 +641,54 @@ describe("CodeEmbed", () => {
         expect(view.state.doc.toString()).toBe("new");
     });
 
+    it("shows the latest content once shown, when hidden fetches land out of order", async () => {
+        const container = document.body.appendChild(document.createElement("div"));
+        const attachment = buildAttachment("script.py");
+        const { figure } = await mount(attachment, buildEditor(), {
+            content: "a",
+            isEditable: true,
+            container
+        });
+        const view = await findView(figure);
+        const resizeCallbacks: ((entries: unknown[]) => void)[] = [];
+        const { ResizeObserver } = globalThis;
+        globalThis.ResizeObserver = class {
+            constructor(callback: (entries: unknown[]) => void) {
+                resizeCallbacks.push(callback);
+            }
+            observe() {}
+            disconnect() {}
+        } as unknown as typeof ResizeObserver;
+
+        try {
+            container.style.display = "none";
+            const resolvers: ((blob: FBlob) => void)[] = [];
+            attachment.getBlob = () => new Promise((resolve) => resolvers.push(resolve));
+            const saved = new LoadResults([]);
+            saved.addAttachmentRow({ attachmentId: attachment.attachmentId } as never, "any");
+            await act(async () => {
+                await parent.handleEvent("entitiesReloaded", { loadResults: saved });
+                await parent.handleEvent("entitiesReloaded", { loadResults: saved });
+            });
+            await act(async () => {
+                resolvers[1](buildBlob("new"));
+            });
+            await act(async () => {
+                resolvers[0](buildBlob("old"));
+            });
+            expect(view.state.doc.toString()).toBe("a");
+
+            container.style.display = "";
+            await act(async () => {
+                for (const callback of resizeCallbacks) callback([]);
+            });
+            await vi.waitFor(() => expect(view.state.doc.toString()).toBe("new"));
+        } finally {
+            globalThis.ResizeObserver = ResizeObserver;
+            container.remove();
+        }
+    });
+
     it("shows how the saving goes in the title row of its embed while it edits", async () => {
         const listeners = new Set<() => void>();
         let state: SaveState = "unsaved";

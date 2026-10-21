@@ -1045,8 +1045,8 @@ export function useElementSize(ref: RefObject<HTMLElement | null>) {
 /**
  * Returns a function that runs a callback at once while the element of `ref` is shown, and
  * otherwise once it is shown again, for example when its tab is selected. While the element is
- * hidden, only the last callback runs. Without an element, or with one that is not in the page
- * yet, the callback runs at once.
+ * hidden, only the last callback runs, so a stale result must be dropped before it is passed.
+ * Without an element, or with one that is not in the page yet, the callback runs at once.
  */
 export function useWhenShown(ref: RefObject<Element | null> | undefined) {
     const waitingRef =

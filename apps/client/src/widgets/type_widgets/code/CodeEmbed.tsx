@@ -276,11 +276,14 @@ export function useSavedContent(
         const rows = loadResults.getAttachmentRows();
         if (rows.some((row) => row.attachmentId === entity.attachmentId)) {
             const requestId = ++requestIdRef.current;
-            void entity.getBlob().then((blob) => whenShown(() => {
-                if (requestId === requestIdRef.current) {
-                    setAttachmentContent(blob?.content);
-                }
-            }));
+            void entity.getBlob().then((blob) => {
+                if (requestId !== requestIdRef.current) return;
+                whenShown(() => {
+                    if (requestId === requestIdRef.current) {
+                        setAttachmentContent(blob?.content);
+                    }
+                });
+            });
         }
     });
 

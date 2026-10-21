@@ -92,8 +92,9 @@ function useShownContent(
     const refresh = useCallback(async (isSavedElsewhere = false) => {
         const requestId = ++requestIdRef.current;
         const blob = await note.getBlob();
+        if (!blob || requestId !== requestIdRef.current) return;
         const update = () => {
-            if (blob && requestId === requestIdRef.current && !closingSaveRef.current) {
+            if (requestId === requestIdRef.current && !closingSaveRef.current) {
                 setContent(blob.content);
             }
         };
