@@ -3,6 +3,8 @@ import {
 } from "ckeditor5";
 import type { Editor, ToolbarConfig } from "ckeditor5";
 
+import FormatPainterUI from "./format_painter/format_painter_ui.js";
+
 /**
  * A second toolbar of text formatting, which the `textFormatting` button swaps in for the editor's
  * own toolbar and the back button at its start swaps out again. The items come from the
@@ -87,11 +89,19 @@ export default class TextFormattingToolbar extends Plugin {
      * a selected object, such as an image, which holds no text to format.
      */
     private followSelection() {
-        const { model } = this.editor;
+        const { model, plugins } = this.editor;
         const selection = model.document.selection;
         const holdsText = () => {
             const selected = selection.getSelectedElement();
             return !selection.isCollapsed && !(selected && model.schema.isObject(selected));
+        };
+        // An armed format painter keeps the toolbar, whose painter button applies or cancels it.
+        const painter = plugins.has(FormatPainterUI) ? plugins.get(FormatPainterUI) : undefined;
+        const swapOut = () => {
+            if (this.shownForSelection && !heldText && !painter?.isActive) {
+                this.isActive = false;
+                this.shownForSelection = false;
+            }
         };
         let heldText = holdsText();
 
@@ -105,11 +115,13 @@ export default class TextFormattingToolbar extends Plugin {
             if (isHoldingText && !this.isActive) {
                 this.isActive = true;
                 this.shownForSelection = true;
-            } else if (!isHoldingText && this.shownForSelection) {
-                this.isActive = false;
-                this.shownForSelection = false;
+            } else {
+                swapOut();
             }
         });
+        if (painter) {
+            this.listenTo(painter, "change:isActive", swapOut);
+        }
     }
 }
 

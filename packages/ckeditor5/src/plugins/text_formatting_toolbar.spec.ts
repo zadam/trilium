@@ -6,6 +6,7 @@ import {
 import { describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
+import TriliumFormatPainter from "./format_painter/format_painter.js";
 import TextFormattingToolbar from "./text_formatting_toolbar.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
@@ -134,6 +135,26 @@ describe("TextFormattingToolbar", () => {
         // Text selected from there still swaps it in.
         select(editor, 0, 3);
         expect(plugin.isActive).toBe(true);
+    });
+
+    it("stays while the format painter is armed, so its button can apply or cancel it", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, Bold, TriliumFormatPainter, TextFormattingToolbar], {
+            toolbar: ["textFormatting"],
+            textFormattingToolbar: ["formatPainter"]
+        });
+        const plugin = editor.plugins.get(TextFormattingToolbar);
+        setModelData(editor.model, "<paragraph>foo bar</paragraph>");
+        select(editor, 0, 3);
+        expect(plugin.isActive).toBe(true);
+
+        const painter = plugin.toolbarView.items.get(2) as ButtonView;
+        painter.fire("execute");
+        select(editor, 5, 5);
+        expect(plugin.isActive).toBe(true);
+
+        // Painting disarms it, and the caret it leaves takes the toolbar with it.
+        editor.editing.view.getDomRoot()?.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+        expect(plugin.isActive).toBe(false);
     });
 
     it("does not follow the selection when no items are configured", async () => {
