@@ -54,6 +54,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             items: [
                 "undo",
                 "redo",
+                // Shown while the selection is in a widget, in place of the widget's balloon toolbar.
+                "contextToolbar",
                 "|",
                 {
                     ...buildInsertGroup(),

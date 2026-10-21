@@ -4,6 +4,7 @@ import {
     type ToolbarConfigItem, ToolbarSeparatorView, type ToolbarView, type View
 } from "ckeditor5";
 
+import ContextToolbar from "./context_toolbar.js";
 import TextFormattingToolbar from "./text_formatting_toolbar.js";
 
 declare module "ckeditor5" {
@@ -154,8 +155,8 @@ export default class ToolbarGroupMenu extends Plugin {
 
     /**
      * The toolbars an editor can hold: the fixed bar of a `DecoupledEditor`, the selection balloon
-     * of a `BalloonEditor`, the block toolbar either of them can carry, and the
-     * `TextFormattingToolbar`.
+     * of a `BalloonEditor`, the block toolbar either of them can carry, the `TextFormattingToolbar`
+     * and the `ContextToolbar`.
      */
     private getToolbarViews() {
         const editor = this.editor;
@@ -173,6 +174,9 @@ export default class ToolbarGroupMenu extends Plugin {
         }
         if (editor.plugins.has(TextFormattingToolbar)) {
             toolbars.push(editor.plugins.get(TextFormattingToolbar).toolbarView);
+        }
+        if (editor.plugins.has(ContextToolbar)) {
+            toolbars.push(editor.plugins.get(ContextToolbar).toolbarView);
         }
 
         return toolbars;

@@ -317,7 +317,59 @@ describe("useShownToolbarElement", () => {
         act(() => render(null, host));
         expect(listeners.size).toBe(0);
     });
+
+    it("shows the context toolbar while it is active, over the text formatting one", () => {
+        const main = document.createElement("div");
+        const formatting = fakeSwappedToolbar();
+        const context = fakeSwappedToolbar();
+        const plugins: Record<string, unknown> = { TextFormattingToolbar: formatting.plugin, ContextToolbar: context.plugin };
+        const editor = {
+            ui: { view: { toolbar: { element: main } } },
+            plugins: { has: (name: string) => name in plugins, get: (name: string) => plugins[name] }
+        } as unknown as CKTextEditor;
+
+        const seen: (HTMLElement | undefined)[] = [];
+        const host = document.createElement("div");
+        function Harness() {
+            seen.push(useShownToolbarElement(editor));
+            return null;
+        }
+
+        act(() => render(<Harness />, host));
+        act(() => context.setActive(true));
+        expect(seen.at(-1)).toBe(context.element);
+        act(() => formatting.setActive(true));
+        expect(seen.at(-1)).toBe(context.element);
+        act(() => context.setActive(false));
+        expect(seen.at(-1)).toBe(formatting.element);
+        act(() => formatting.setActive(false));
+        expect(seen.at(-1)).toBe(main);
+
+        act(() => render(null, host));
+        expect(context.listenerCount()).toBe(0);
+    });
 });
+
+/** A plugin that swaps its toolbar in for the editor's own, as `TextFormattingToolbar` does. */
+function fakeSwappedToolbar() {
+    const element = document.createElement("div");
+    const listeners = new Set<() => void>();
+    const plugin = {
+        isActive: false,
+        toolbarView: { element },
+        on: (_event: string, listener: () => void) => listeners.add(listener),
+        off: (_event: string, listener: () => void) => listeners.delete(listener)
+    };
+    return {
+        plugin,
+        element,
+        setActive(isActive: boolean) {
+            plugin.isActive = isActive;
+            for (const listener of listeners) listener();
+        },
+        listenerCount: () => listeners.size
+    };
+}
 
 function buildEditor() {
     const listeners = new Set<() => void>();

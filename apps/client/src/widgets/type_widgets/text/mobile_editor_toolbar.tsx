@@ -129,30 +129,32 @@ export function useEditorsFocused(
 }
 
 /**
- * The element of the toolbar `editor` shows: the `TextFormattingToolbar` while it is active, and
- * the editor's own toolbar otherwise.
+ * The element of the toolbar `editor` shows: the `ContextToolbar` while it is active, the
+ * `TextFormattingToolbar` while that is, and the editor's own toolbar otherwise.
  */
 export function useShownToolbarElement(editor: CKTextEditor | undefined) {
-    const formatting = editor?.plugins.has("TextFormattingToolbar")
-        ? editor.plugins.get("TextFormattingToolbar")
-        : undefined;
-    const [ formattingActive, setFormattingActive ] = useState(false);
+    const context = useActiveToolbarElement(editor, "ContextToolbar");
+    const formatting = useActiveToolbarElement(editor, "TextFormattingToolbar");
+    return context ?? formatting ?? editor?.ui.view.toolbar?.element ?? undefined;
+}
+
+/** The toolbar of a plugin that swaps it in for the editor's own, while the plugin is active. */
+function useActiveToolbarElement(editor: CKTextEditor | undefined, pluginName: "ContextToolbar" | "TextFormattingToolbar") {
+    const plugin = editor?.plugins.has(pluginName) ? editor.plugins.get(pluginName) : undefined;
+    const [ isActive, setIsActive ] = useState(false);
 
     useEffect(() => {
-        if (!formatting) {
-            setFormattingActive(false);
+        if (!plugin) {
+            setIsActive(false);
             return;
         }
-        const update = () => setFormattingActive(formatting.isActive);
+        const update = () => setIsActive(plugin.isActive);
         update();
-        formatting.on("change:isActive", update);
-        return () => formatting.off("change:isActive", update);
-    }, [ formatting ]);
+        plugin.on("change:isActive", update);
+        return () => plugin.off("change:isActive", update);
+    }, [ plugin ]);
 
-    const element = formatting && formattingActive
-        ? formatting.toolbarView.element
-        : editor?.ui.view.toolbar?.element;
-    return element ?? undefined;
+    return plugin && isActive ? plugin.toolbarView.element ?? undefined : undefined;
 }
 
 /**
@@ -355,13 +357,26 @@ function repositionDropdowns(editor: CKTextEditor) {
         toolbarViews.push(editor.plugins.get("TextFormattingToolbar").toolbarView);
     }
     for (const item of toolbarViews.flatMap((toolbarView) => [ ...toolbarView.items ])) {
-        if (!("panelView" in item)) continue;
-
-        item.on("change:isOpen", () => {
-            if (!("isOpen" in item) || !item.isOpen) return;
-
-            // @ts-ignore
-            item.panelView.position = item.panelView.position.replace("s", "n");
-        });
+        openUpwards(item);
     }
+
+    // The `ContextToolbar` fills its items as it swaps in.
+    if (editor.plugins.has("ContextToolbar")) {
+        const { items } = editor.plugins.get("ContextToolbar").toolbarView;
+        items.on("add", (_evt, item: ToolbarItem) => openUpwards(item));
+    }
+}
+
+/** A toolbar item, as the items of a CKEditor `ToolbarView` are. */
+type ToolbarItem = ClassicEditor["ui"]["view"]["toolbar"]["items"]["first"] & object;
+
+function openUpwards(item: ToolbarItem) {
+    if (!("panelView" in item)) return;
+
+    item.on("change:isOpen", () => {
+        if (!("isOpen" in item) || !item.isOpen) return;
+
+        // @ts-ignore
+        item.panelView.position = item.panelView.position.replace("s", "n");
+    });
 }

@@ -148,7 +148,7 @@ describe("buildMobileToolbar", () => {
             ]
         } ]);
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
-        expect(toolbar.items.slice(11)).toStrictEqual([
+        expect(toolbar.items.slice(12)).toStrictEqual([
             "|",
             "link", "internallink", "aiAssistantMenu", "attachMenu", "insertTableMenu",
             "|",
@@ -158,8 +158,8 @@ describe("buildMobileToolbar", () => {
 
     it("keeps text formatting on a row of its own, opened from the main row", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
-        expect(toolbar.items.slice(0, 11).map(itemName)).toStrictEqual([
-            "undo", "redo", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting",
+        expect(toolbar.items.slice(0, 12).map(itemName)).toStrictEqual([
+            "undo", "redo", "contextToolbar", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting",
             "|", "outdent", "indent", "moveBlockUp", "moveBlockDown"
         ]);
         expect(textFormattingToolbar).toStrictEqual([
@@ -188,9 +188,9 @@ describe("buildMobileToolbar", () => {
         expect(buildClassicToolbar(false, true).toolbar.items).toContain("insertTable");
     });
 
-    it("opens with undo and redo, set apart by a separator", () => {
+    it("opens with undo, redo and the toolbar of the widget at the selection, set apart by a separator", () => {
         const items = buildMobileToolbar(true).toolbar.items;
-        expect(items.slice(0, 3)).toStrictEqual([ "undo", "redo", "|" ]);
+        expect(items.slice(0, 4)).toStrictEqual([ "undo", "redo", "contextToolbar", "|" ]);
         expect(items.filter((item) => item === "undo" || item === "redo")).toHaveLength(2);
     });
 
@@ -214,7 +214,7 @@ describe("buildMobileToolbar", () => {
             aiAssistant: "aiAssistantMenu"
         };
         // Alt+Up and Alt+Down move blocks on a keyboard.
-        const MOBILE_ONLY = [ "moveBlockUp", "moveBlockDown" ];
+        const MOBILE_ONLY = [ "moveBlockUp", "moveBlockDown", "contextToolbar" ];
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
                 .map((item) => MOBILE_VARIANTS[item] ?? item);

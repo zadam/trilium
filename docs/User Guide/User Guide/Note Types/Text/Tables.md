@@ -21,6 +21,8 @@ When a table is selected, a special formatting toolbar will appear:
 
 <img src="3_Tables_image.png" width="384" height="100">
 
+On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the toolbar does not float over the table. Instead, press the <span class="tn-icon cke cke-table"></span> button after _Undo_ and _Redo_ in the formatting toolbar at the bottom of the screen to show the table's toolbar there.
+
 ## Context menu
 
 Since v0.106.0, right-clicking anywhere inside a table opens a context menu with the most common table operations:
