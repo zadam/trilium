@@ -124,7 +124,7 @@ describe("group labels", () => {
 });
 
 describe("buildMobileToolbar", () => {
-    it("nests only the insert menu, which holds the least used insertions", () => {
+    it("nests only the insert menu, which holds the least used insertions and the wrapping blocks", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
         const groups = (toolbar.items as unknown[]).filter((item) => typeof item !== "string");
         expect(groups).toStrictEqual([ {
@@ -132,6 +132,8 @@ describe("buildMobileToolbar", () => {
             icon: "plus",
             asMenu: { layout: "tiles" },
             items: [
+                "codeBlock", "blockQuote", "admonition",
+                "|",
                 "collapsible", "tabs", "multicolumnLayout",
                 "|",
                 "horizontalLine", "pageBreak", "footnote",
@@ -199,9 +201,6 @@ describe("buildMobileToolbar", () => {
             bulletedList: "blockType",
             numberedList: "blockType",
             todoList: "blockType",
-            codeBlock: "blockType",
-            blockQuote: "blockType",
-            admonition: "blockType",
             fontSize: "fontSizeMenu",
             fontColor: "colorMenu",
             imageUpload: "attachMenu",

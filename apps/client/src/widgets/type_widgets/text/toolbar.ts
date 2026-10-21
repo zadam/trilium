@@ -60,6 +60,9 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                     // Groups of three fill the rows of tiles.
                     asMenu: { layout: "tiles" },
                     items: [
+                        // Also in the block type menu, where a reader might not look for them.
+                        "codeBlock", "blockQuote", "admonition",
+                        "|",
                         "collapsible", "tabs", "multicolumnLayout",
                         "|",
                         "horizontalLine", "pageBreak", "footnote",
