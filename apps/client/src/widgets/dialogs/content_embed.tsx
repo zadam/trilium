@@ -55,7 +55,11 @@ export default function ContentEmbedDialog() {
                 setShown(false);
                 await embedNote(suggestion.notePath, editorApiRef.current, boxSize);
             }}
-            footer={<Button text={t("include_note.button_include")} keyboardShortcut="Enter" />}
+            footer={<Button
+                text={t("include_note.button_include")}
+                keyboardShortcut="Enter"
+                disabled={!suggestion?.notePath}
+            />}
             show={shown}
         >
             <Card>

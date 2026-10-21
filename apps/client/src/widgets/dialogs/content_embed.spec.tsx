@@ -120,6 +120,19 @@ describe("ContentEmbedDialog", () => {
         expect(editorApi.addContentEmbed).toHaveBeenCalledWith(song.noteId, "expandable");
     });
 
+    it("keeps the include button disabled while no note is picked", async () => {
+        const script = buildNote({ title: "Script", type: "code", mime: "text/javascript" });
+        const button = container.querySelector<HTMLButtonElement>(".modal-footer button");
+        if (!button) throw new Error("The dialog has no include button.");
+        expect(button.disabled).toBe(true);
+
+        await pick(script);
+        expect(button.disabled).toBe(false);
+
+        await act(async () => autocomplete.onChange?.(null));
+        expect(button.disabled).toBe(true);
+    });
+
     it("forgets the note picked the last time it was open", async () => {
         const script = buildNote({ title: "Script", type: "code", mime: "text/javascript" });
         await pick(script);

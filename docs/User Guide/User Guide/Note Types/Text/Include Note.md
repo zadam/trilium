@@ -7,7 +7,7 @@ This can be useful for e.g. including a dynamically generated chart (from script
 
 In the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a>, look for the <span class="tn-icon cke cke-trilium-note"></span> button. There is also a keyboard shortcut defined for it but it is not allocated by default.
 
-The _Include note_ dialog opens with two rows: _Note_, where you search for the note to include, and _Box size_ (see _Box sizes_ below), with a sentence under it describing the size chosen. Press _Include note_ or <kbd>Enter</kbd> to include the note. Typing the title of a note that does not exist offers to create it.
+The _Include note_ dialog opens with two rows: _Note_, where you search for the note to include, and _Box size_ (see _Box sizes_ below), with a sentence under it describing the size chosen. Once a note is picked, press _Include note_ or <kbd>Enter</kbd> to include it. Typing the title of a note that does not exist offers to create it.
 
 To include a note that is already linked, right-click a reference link to it in a text note being edited and select _Convert link to an included note_, at the end of the menu. The include gets the box size that suits the note, as one added from the button does.
 
