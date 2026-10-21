@@ -277,6 +277,7 @@ export default function EditableText({
             if (!editorApiRef.current) return;
             parentComponent?.triggerCommand("showContentEmbedDialog", {
                 editorApi: editorApiRef.current,
+                sizeEditable: true
             });
         },
         loadEmbeddedNote(

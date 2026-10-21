@@ -375,7 +375,9 @@
     "size_full_description": "The whole content.",
     "size_expandable": "Expandable",
     "size_expandable_description": "Only the title, until it is expanded.",
-    "inserted_as_image": "This note is inserted as an image, which can be resized once it is in the text.",
+    "inserted_as_image": "This note is inserted as an image.",
+    "size_hint": "The size can be changed later.",
+    "image_size_hint": "The image can be resized later.",
     "button_include": "Include note"
   },
   "info": {

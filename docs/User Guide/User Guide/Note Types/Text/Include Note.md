@@ -9,7 +9,7 @@ In the <a class="reference-link" href="Formatting%20toolbar.md">Formatting tool
 
 The _Include note_ dialog opens with two rows: _Note_, where you search for the note to include, and _Box size_ (see _Box sizes_ below), a row of buttons each with a small drawing of the size, with a sentence under it describing the size chosen. Once a note is picked, press _Include note_ or <kbd>Enter</kbd> to include it. Typing the title of a note that does not exist offers to create it.
 
-An image note, a <a class="reference-link" href="../Canvas.md">Canvas</a> or a <a class="reference-link" href="../Mermaid%20Diagrams.md">Mermaid Diagrams</a> note picked in the dialog is inserted as an image rather than included, so instead of the size buttons, the _Box size_ row says so. The image can be resized once it is in the text.
+An image note, a <a class="reference-link" href="../Canvas.md">Canvas</a> or a <a class="reference-link" href="../Mermaid%20Diagrams.md">Mermaid Diagrams</a> note picked in the dialog is inserted as an image rather than included, so instead of the size buttons, the _Box size_ row says so. In a text note, the image can be resized once it is in the text, and the dialog reminds you of that, as it reminds you that the size of an include can be changed later.
 
 To include a note that is already linked, right-click a reference link to it in a text note being edited and select _Convert link to an included note_, at the end of the menu. The include gets the box size that suits the note, as one added from the button does.
 

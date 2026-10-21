@@ -19,6 +19,8 @@ import type { BoxSize, CKEditorApi } from "../type_widgets/text/CKEditor";
 
 export interface ContentEmbedOpts {
     editorApi: Pick<CKEditorApi, "addContentEmbed" | "addImage">;
+    /** Whether the editor can change the size of an include or an image after it is inserted. */
+    sizeEditable?: boolean;
 }
 
 export default function ContentEmbedDialog() {
@@ -27,11 +29,13 @@ export default function ContentEmbedDialog() {
     // The size chosen by hand, otherwise the one that suits the picked note.
     const [chosenBoxSize, setChosenBoxSize] = useState<BoxSize | null>(null);
     const [shown, setShown] = useState(false);
+    const [sizeEditable, setSizeEditable] = useState(false);
     const note = useNote(suggestion?.notePath ? tree.getNoteIdFromUrl(suggestion.notePath) : null);
     const boxSize = chosenBoxSize ?? (note ? getEmbedBoxSize(note) : "medium");
 
-    useTriliumEvent("showContentEmbedDialog", ({ editorApi }) => {
+    useTriliumEvent("showContentEmbedDialog", ({ editorApi, sizeEditable }) => {
         editorApiRef.current = editorApi;
+        setSizeEditable(!!sizeEditable);
         autocompleteRef.current?.clear();
         setSuggestion(null);
         setChosenBoxSize(null);
@@ -44,6 +48,7 @@ export default function ContentEmbedDialog() {
     }, []);
 
     const autocompleteRef = useRef<NoteAutocompleteHandle>(null);
+    const asImage = !!note && insertsAsImage(note);
 
     return (
         <Modal
@@ -80,10 +85,10 @@ export default function ContentEmbedDialog() {
                 </OptionCardSection>
 
                 <OptionCardSection className="include-note-size" label={t("include_note.box_size")}>
-                    {note && insertsAsImage(note) ? (
-                        <p className="include-note-as-image">{t("include_note.inserted_as_image")}</p>
-                    ) : (
-                        <div className="include-note-size-control">
+                    <div className="include-note-size-control">
+                        {asImage ? (
+                            <p className="include-note-as-image">{t("include_note.inserted_as_image")}</p>
+                        ) : (<>
                             <SegmentedChoice<BoxSize>
                                 className="include-note-size-choice"
                                 options={BOX_SIZES.map((size) => ({
@@ -106,8 +111,13 @@ export default function ContentEmbedDialog() {
                                     </small>
                                 ))}
                             </div>
-                        </div>
-                    )}
+                        </>)}
+                        {sizeEditable && (
+                            <small className="include-note-size-hint">
+                                {asImage ? t("include_note.image_size_hint") : t("include_note.size_hint")}
+                            </small>
+                        )}
+                    </div>
                 </OptionCardSection>
             </Card>
         </Modal>

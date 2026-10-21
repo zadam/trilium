@@ -44,9 +44,9 @@ describe("ContentEmbedDialog", () => {
         await open();
     });
 
-    async function open() {
+    async function open(sizeEditable?: boolean) {
         await act(async () => {
-            void host.handleEventInChildren("showContentEmbedDialog", { editorApi });
+            void host.handleEventInChildren("showContentEmbedDialog", { editorApi, sizeEditable });
         });
     }
 
@@ -149,6 +149,21 @@ describe("ContentEmbedDialog", () => {
         await pick(script);
         expect(notice()).toBeNull();
         expect(checkedSize()).toBe("full");
+    });
+
+    it("says the size can be changed later only where the editor allows it", async () => {
+        const picture = buildNote({ title: "Picture", type: "image", mime: "image/png" });
+        const hint = () => container.querySelector(".include-note-size-hint")?.textContent;
+        expect(hint()).toBeUndefined();
+
+        await open(true);
+        expect(hint()).toBe("include_note.size_hint");
+        await pick(picture);
+        expect(hint()).toBe("include_note.image_size_hint");
+
+        await open(false);
+        await pick(picture);
+        expect(hint()).toBeUndefined();
     });
 
     it("keeps the include button disabled while no note is picked", async () => {
