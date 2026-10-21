@@ -160,6 +160,7 @@ export const byMimeType: MimeRecord = {
     "text/x-toml": () => import("highlight.js/lib/languages/ini"),
     "text/x-tornado": null,
     "text/x-trilium-log": null,
+    "text/x-trilium-search": null,
     "text/x-ttcn-asn": null,
     "text/x-ttcn-cfg": null,
     "text/x-ttcn": () => import("./languages/ttcn3.js"),

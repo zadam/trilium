@@ -1991,7 +1991,8 @@
     "badge_code_notes_tooltip": "Syntax highlighting available for code notes",
     "add_title": "Add a language",
     "add_another_one": "Add another language ({{count}} available)",
-    "add_another_other": "Add another language ({{count}} available)"
+    "add_another_other": "Add another language ({{count}} available)",
+    "trilium_search_query": "Trilium Search Query"
   },
   "vim_key_bindings": {
     "use_vim_keybindings_in_code_notes": "Vim keybindings",

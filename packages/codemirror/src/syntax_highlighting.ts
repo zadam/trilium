@@ -202,6 +202,7 @@ const byMimeType: Record<SupportedMimeTypes, (() => Promise<StreamParser<unknown
     "text/x-toml": async () => (await import('@codemirror/legacy-modes/mode/toml')).toml,
     "text/x-tornado": null,
     "text/x-trilium-log": async () => [ (await import('./extensions/trilium_log_highlighter.js')).triliumLogHighlighter ],
+    "text/x-trilium-search": async () => [ (await import('./extensions/trilium_search_highlighter.js')).triliumSearchHighlighter ],
     "text/x-ttcn-asn": async () => (await import('@codemirror/legacy-modes/mode/ttcn')).ttcn,
     "text/x-ttcn-cfg": async () => (await import('@codemirror/legacy-modes/mode/ttcn-cfg')).ttcnCfg,
     "text/x-ttcn": async () => (await import('@codemirror/legacy-modes/mode/ttcn')).ttcn,

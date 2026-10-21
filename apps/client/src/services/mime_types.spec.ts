@@ -17,6 +17,8 @@ vi.mock("@triliumnext/commons", async (importOriginal) => {
     };
 });
 
+vi.mock("./i18n.js", () => ({ t: (key: string) => key }));
+
 import options from "./options.js";
 import mimeTypesService, {
     getHighlightJsNameForMime, orderEnabledMimeTypes
@@ -103,6 +105,16 @@ describe("mime_types service", () => {
         expect(getHighlightJsNameForMime("totally-unknown")).toBeUndefined();
         // No rebuild happened across these three cached lookups.
         expect(normalizeSpy).not.toHaveBeenCalled();
+    });
+
+    it("translates the titles that name a Trilium format rather than a language", () => {
+        options.getJson = vi.fn(() => null) as typeof options.getJson;
+        mimeTypesService.loadMimeTypes();
+        const titleOf = (mime: string) =>
+            mimeTypesService.getMimeTypes().find((mt) => mt.mime === mime)?.title;
+
+        expect(titleOf("text/x-trilium-log")).toBe("code_mime_types.trilium_log");
+        expect(titleOf("text/x-trilium-search")).toBe("code_mime_types.trilium_search_query");
     });
 
     it("getEnabledMimeTypes follows the stored order unless sorting is on", () => {

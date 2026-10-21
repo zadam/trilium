@@ -10,6 +10,12 @@ export const MIME_TYPE_AUTO = "text-x-trilium-auto";
  */
 export const MIME_TYPE_TRILIUM_LOG = "text/x-trilium-log";
 
+/**
+ * The MIME type of a Trilium search query, as entered in a saved search. Highlighted only in
+ * CodeMirror, by the same highlighter as the search field.
+ */
+export const MIME_TYPE_TRILIUM_SEARCH = "text/x-trilium-search";
+
 export interface MimeTypeDefinition {
     default?: boolean;
     title: string;
@@ -198,6 +204,7 @@ const MIME_TYPES_DICT_RAW = [
     { title: "TOML", mime: "text/x-toml", mdLanguageCode: "ini", aliases: ["toml"], icon: "bx bx-bracket" },
     { title: "Tornado", mime: "text/x-tornado" },
     { title: "Trilium Log", mime: "text/x-trilium-log", icon: "bx bx-list-ul" },
+    { title: "Trilium Search Query", mime: "text/x-trilium-search", icon: "bx bx-search" },
     { title: "troff", mime: "text/troff" },
     { title: "TTCN_CFG", mime: "text/x-ttcn-cfg" },
     { title: "TTCN", mime: "text/x-ttcn" },

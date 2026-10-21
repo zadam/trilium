@@ -1,6 +1,6 @@
 import {
-    type MimeType, MIME_TYPE_AUTO, MIME_TYPE_TRILIUM_LOG, normalizeMimeTypeForCKEditor,
-    resolveEnabledMimeTypes
+    type MimeType, MIME_TYPE_AUTO, MIME_TYPE_TRILIUM_LOG, MIME_TYPE_TRILIUM_SEARCH,
+    normalizeMimeTypeForCKEditor, resolveEnabledMimeTypes
 } from "@triliumnext/commons";
 
 import { t } from "./i18n.js";
@@ -12,7 +12,8 @@ export const PLAIN_TEXT_MIME = "text/plain";
 // Titles that are descriptive names rather than language identifiers, so they get localized here
 // (the shared MIME dict in commons has no access to the client's i18n).
 const TRANSLATED_TITLES: Record<string, string> = {
-    [MIME_TYPE_TRILIUM_LOG]: "code_mime_types.trilium_log"
+    [MIME_TYPE_TRILIUM_LOG]: "code_mime_types.trilium_log",
+    [MIME_TYPE_TRILIUM_SEARCH]: "code_mime_types.trilium_search_query"
 };
 
 let mimeTypes: MimeType[] | null = null;
