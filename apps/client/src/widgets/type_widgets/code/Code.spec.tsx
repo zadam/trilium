@@ -78,8 +78,14 @@ describe("EditableCode", () => {
     });
 
     it("publishes its editor while it is displayed for the note of its context", async () => {
-        const setContextData = vi.fn();
-        const noteContext = { noteId: noteA.noteId, setContextData } as unknown as NoteContext;
+        const contextData = new Map<string, unknown>();
+        const setContextData = vi.fn((key: string, value: unknown) => contextData.set(key, value));
+        const noteContext = {
+            noteId: noteA.noteId,
+            setContextData,
+            getContextData: (key: string) => contextData.get(key),
+            clearContextData: (key: string) => contextData.delete(key)
+        } as unknown as NoteContext;
         let editor: VanillaCodeMirror | null = null;
         const showIn = (isVisible: boolean) => (
             <ParentComponent.Provider value={parent}>
@@ -108,6 +114,18 @@ describe("EditableCode", () => {
         await act(async () => { if (container) render(showIn(false), container); });
         await act(async () => { if (container) render(showIn(true), container); });
         expect(getPublished()).toEqual([ editor ]);
+        expect(contextData.get("codeEditor")).toBe(editor);
+
+        // Hidden, as by the attachments view of the same note.
+        await act(async () => { if (container) render(showIn(false), container); });
+        expect(contextData.has("codeEditor")).toBe(false);
+
+        // Hidden after another type widget has published its own editor.
+        await act(async () => { if (container) render(showIn(true), container); });
+        const replacement = {};
+        contextData.set("codeEditor", replacement);
+        await act(async () => { if (container) render(showIn(false), container); });
+        expect(contextData.get("codeEditor")).toBe(replacement);
     });
 });
 

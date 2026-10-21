@@ -89,8 +89,11 @@ export function transformText(
     switch (transform) {
         case "upperCase":
             return text.toLocaleUpperCase(locale);
-        case "lowerCase":
-            return text.toLocaleLowerCase(locale);
+        case "lowerCase": {
+            const { before = "", after = "" } = options;
+            const start = before.length;
+            return toLowerCase(before + text + after, start, start + text.length, locale);
+        }
         case "sentenceCase":
             return changeWordCase(text, locale, options, (word) => word.isSentenceStart);
         case "titleCase": {
@@ -130,6 +133,10 @@ const MINOR_WORDS = new Map(Object.entries({
     pt: "a as com da das de do dos e em na nas no nos o os ou para por sem um uma",
     ro: "a al ale cu de din în la o ori pe sau și un"
 }).map(([ language, words ]) => [ language, new Set(words.split(" ")) ]));
+
+// A capital sigma at the end of a word, by the Final_Sigma condition of Unicode. Sticky, to test
+// one position of a line.
+const FINAL_SIGMA = /(?<=\p{Cased}\p{Case_Ignorable}*)Σ(?!\p{Case_Ignorable}*\p{Cased})/uy;
 
 /** The lowercase letters whose capital is not their uppercase: Latin digraphs such as "ǆ". */
 const TITLE_CASE_LETTERS = new Map([ [ "ǆ", "ǅ" ], [ "ǉ", "ǈ" ], [ "ǌ", "ǋ" ], [ "ǳ", "ǲ" ] ]);
@@ -193,10 +200,9 @@ function changeWordCase(
 
         const from = Math.max(word.start, start);
         const to = Math.min(word.end, end);
-        const part = line.slice(from, to);
+        const part = toLowerCase(line, from, to, locale);
         const isCapitalized = from === word.start && isCapital(word, words[index + 1]);
-        result += line.slice(position, from)
-            + (isCapitalized ? capitalize(part, locale) : part.toLocaleLowerCase(locale));
+        result += line.slice(position, from) + (isCapitalized ? capitalize(part, locale) : part);
         position = to;
     }
     return result + line.slice(position, end);
@@ -219,17 +225,30 @@ function findWords(line: string): Word[] {
     return words;
 }
 
-/** Lowercases `word` and gives it a capital first letter. */
+/**
+ * Lowercases the text of `line` from `from` to `to`. A capital sigma takes its form from the whole
+ * line, so it becomes "ς" only at the end of a word.
+ */
+function toLowerCase(line: string, from: number, to: number, locale: string) {
+    return line.slice(from, to)
+        .replace(/Σ/g, (_, offset: number) => isFinalSigma(line, from + offset) ? "ς" : "σ")
+        .toLocaleLowerCase(locale);
+}
+
+function isFinalSigma(line: string, index: number) {
+    FINAL_SIGMA.lastIndex = index;
+    return FINAL_SIGMA.test(line);
+}
+
+/** Gives the lowercase `word` a capital first letter. */
 function capitalize(word: string, locale: string) {
-    // Lowercased as a whole, so that a Greek sigma at the end of the word becomes "ς".
-    const lower = word.toLocaleLowerCase(locale);
     // Dutch writes the digraph "ij" as one letter: "IJsselmeer".
-    if (languageOf(locale) === "nl" && lower.startsWith("ij")) {
-        return `IJ${lower.slice(2)}`;
+    if (languageOf(locale) === "nl" && word.startsWith("ij")) {
+        return `IJ${word.slice(2)}`;
     }
 
-    const [ first ] = lower;
-    return toCapitalLetter(first, locale) + lower.slice(first.length);
+    const [ first ] = word;
+    return toCapitalLetter(first, locale) + word.slice(first.length);
 }
 
 function toCapitalLetter(letter: string, locale: string) {
