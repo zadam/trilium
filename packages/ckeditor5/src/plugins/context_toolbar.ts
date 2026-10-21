@@ -1,10 +1,11 @@
 import {
-    ButtonView, IconCodeBlock, IconImage, IconPreviousArrow, IconTable, IconThreeVerticalDots, Plugin,
+    ButtonView, DropdownView, IconCodeBlock, IconImage, IconPreviousArrow, IconTable, IconThreeVerticalDots, Plugin,
     ToolbarSeparatorView, ToolbarView, WidgetToolbarRepository
 } from "ckeditor5";
 import type { Editor, ToolbarConfig, ToolbarConfigItem, ViewElement, ViewDocumentSelection } from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
+import { openListAsMenu } from "./toolbar_group_menu.js";
 
 /** The icons of the `contextToolbar` button, by the id a widget toolbar is registered under. */
 const TOOLBAR_ICONS: Record<string, string> = {
@@ -36,6 +37,7 @@ interface ContextToolbarSource {
  * The button shows while the selection is in a widget that has a toolbar. It swaps in
  * {@link toolbarView}: a back button, then the items of the toolbar the balloon would show, which is
  * the one of the innermost widget. The toolbar swaps out as the selection leaves that widget.
+ * Its dropdowns open as menus of `ToolbarGroupMenu`, like the rest of a phone's toolbar.
  */
 export default class ContextToolbar extends Plugin {
 
@@ -96,6 +98,12 @@ export default class ContextToolbar extends Plugin {
         // Grouping measures the rendered toolbar as items arrive.
         this.toolbarView.render();
         this.toolbarView.items.addMany([this.backView, new ToolbarSeparatorView()]);
+        // Before `ToolbarGroupMenu`, which decides on a dropdown as it is added.
+        this.listenTo(this.toolbarView.items, "add", (_evt, item) => {
+            if (item instanceof DropdownView) {
+                openListAsMenu(item);
+            }
+        }, { priority: "highest" });
         editor.ui.addToolbar(this.toolbarView);
 
         // The event `WidgetToolbarRepository` updates its balloons on.
