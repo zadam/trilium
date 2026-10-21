@@ -1,4 +1,4 @@
-import { ButtonView, Command, findAttributeRange, Plugin } from 'ckeditor5';
+import { ButtonView, Command, findAttributeRange, IconPencil, LinkUI, Plugin } from 'ckeditor5';
 import type { Editor, ModelRange } from 'ckeditor5';
 import internalLinkIcon from '../icons/trilium.svg?raw';
 import ReferenceLink from './referencelink';
@@ -40,6 +40,33 @@ export default class InternalLinkPlugin extends Plugin {
 			return view;
 		});
 	}
+
+    /** Replaces the `editLink` button of `LinkUI`, which opens the link form in the balloon. */
+    afterInit() {
+        const editor = this.editor;
+        const t = editor.t;
+        const command = editor.commands.get(COMMAND_NAME);
+        if (!editor.plugins.has(LinkUI) || !command) {
+            return;
+        }
+
+        // `_hideUI()` is private, and the only way to close the toolbar together with its listeners.
+        const linkUI = editor.plugins.get(LinkUI) as unknown as { _hideUI(updateFocus?: boolean): void };
+        editor.ui.componentFactory.add('editLink', locale => {
+            const button = new ButtonView(locale);
+            button.set({
+                label: t('Edit link'),
+                icon: IconPencil,
+                tooltip: true
+            });
+            button.bind('isEnabled').to(command, 'isEnabled');
+            this.listenTo(button, 'execute', () => {
+                linkUI._hideUI(false);
+                editor.execute(COMMAND_NAME);
+            });
+            return button;
+        });
+    }
 }
 
 class InsertInternalLinkCommand extends Command {

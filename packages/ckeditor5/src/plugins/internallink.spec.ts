@@ -1,6 +1,6 @@
 import {
-    _getModelData as getModelData, _setModelData as setModelData, Bold, ClassicEditor, CodeBlock, Essentials,
-    LinkEditing, Paragraph
+    _getModelData as getModelData, _setModelData as setModelData, Bold, ButtonView, ClassicEditor, CodeBlock,
+    ContextualBalloon, Essentials, Link, LinkEditing, LinkUI, Paragraph
 } from "ckeditor5";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -111,5 +111,36 @@ describe("the link at the selection", () => {
         const data = () => getModelData(editor.model, { withoutSelection: true });
         await vi.waitFor(() => expect(data()).toContain("<reference href=\"#root/abc\""));
         expect(data()).not.toContain("foo");
+    });
+});
+
+describe("the edit button of the link toolbar", () => {
+    let editor: ClassicEditor;
+    let triggerCommand: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+        triggerCommand = vi.fn();
+        installGlobMock({
+            getComponentByEl: () => ({ triggerCommand })
+        });
+        editor = await createTestEditor([Essentials, Paragraph, Link, InternalLinkPlugin]);
+    });
+
+    it("opens the Add link dialog in place of the link form, closing the toolbar", () => {
+        setModelData(editor.model, "<paragraph><$text linkHref=\"https://a.example\">fo[]o</$text></paragraph>");
+        const linkUI = editor.plugins.get(LinkUI);
+        const balloon = editor.plugins.get(ContextualBalloon);
+        (linkUI as unknown as { _showUI(): void })._showUI();
+        const toolbarView = linkUI.toolbarView;
+        expect(toolbarView && balloon.hasView(toolbarView)).toBe(true);
+
+        const edit = [...toolbarView?.items ?? []]
+            .find((item) => item instanceof ButtonView && item.label === "Edit link");
+        expect(edit).toBeInstanceOf(ButtonView);
+        edit?.fire("execute");
+
+        expect(triggerCommand).toHaveBeenCalledWith("addLinkToText");
+        expect(toolbarView && balloon.hasView(toolbarView)).toBe(false);
+        expect(linkUI.formView && balloon.hasView(linkUI.formView)).toBe(false);
     });
 });
