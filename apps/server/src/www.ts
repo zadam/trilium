@@ -3,6 +3,7 @@ import type { Express } from "express";
 import fs from "fs";
 import http from "http";
 import https from "https";
+import { networkInterfaces } from "os";
 import tmp from "tmp";
 
 import buildApp from "./app.js";
@@ -12,9 +13,11 @@ import { startCpuProfiler, writeCpuProfile } from "./services/cpu_profiler.js";
 import { registerOcrHandlers } from "./services/handlers.js";
 import host from "./services/host.js";
 import { registerServerLlmExtensions } from "./services/llm/index.js";
+import { listListeningUrls } from "./services/network_addresses.js";
 import port from "./services/port.js";
 import { installProcessErrorHandlers, markAppReady } from "./services/process_errors.js";
 import { isScriptingEnabled } from "./services/scripting_guard.js";
+import { isElectron } from "./services/utils.js";
 import { publishHealthcheckTarget } from "./services/healthcheck.js";
 import { getDbSize } from "./services/sql_init.js";
 import { isHttpAttachableMessagingProvider } from "./services/ws_messaging_provider.js";
@@ -207,6 +210,7 @@ function startHttpServer(app: Express) {
     httpServer.on("listening", () => {
         if (listenOnTcp) {
             getLog().info(`Listening on port ${port}`);
+            printListeningUrls();
         } else {
             getLog().info(`Listening on unix socket ${host}`);
         }
@@ -216,4 +220,25 @@ function startHttpServer(app: Express) {
     });
 
     return httpServer;
+}
+
+/**
+ * Prints the URLs the server answers on. It writes to the console only, since the log file ends
+ * up in bug reports and the list can hold a public address. Desktop has no console to read, and
+ * in a container the interfaces belong to the container network rather than the host.
+ */
+function printListeningUrls() {
+    if (isElectron || fs.existsSync("/.dockerenv") || fs.existsSync("/run/.containerenv")) {
+        return;
+    }
+
+    const protocol = config["Network"]["https"] ? "https" : "http";
+    const { local, network } = listListeningUrls(protocol, host, port, networkInterfaces());
+
+    if (local) {
+        console.log(`🌐 Local:       ${local}`);
+    }
+    for (const [index, url] of network.entries()) {
+        console.log(`${index === 0 ? "🌐 Network:     " : "                "}${url}`);
+    }
 }
