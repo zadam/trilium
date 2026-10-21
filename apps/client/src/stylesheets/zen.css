@@ -1,120 +1,122 @@
 body.zen {
     --tab-bar-height: 0;
-}
 
-body.zen .gutter,
-body.zen #launcher-container,
-body.zen #launcher-pane,
-body.zen #left-pane,
-body.zen #right-pane,
-body.zen .right-pane-peek-button,
-body.zen #mobile-sidebar-wrapper,
-body.zen .tab-row-container,
-body.zen .tab-row-widget,
-body.zen .title-row .icon-action,
-body.zen .note-badges > *:not(.read-only-badge),
-body.zen .note-actions-bar,
-body.zen .inline-title,
-body.zen .promoted-attributes-widget,
-body.zen .action-button,
-body.zen .tooltip.content-hint, /* content-area hints (task states, collapsible summaries, drag handles) */
-body.zen .note-split:not(.type-book) .note-list-widget {
-    display: none !important;
-}
-
-body.zen #vertical-main-container {
-    /* Remove the placeholder for the right pane peek button */
-    --right-pane-peek-button-gutter: 0 !important;
-}
-
-body.zen .split-note-container-widget > .gutter {
-    display: unset !important;
-}
-
-body.zen #launcher-pane {
-    position: absolute !important;
-    top: 0 !important;
-    inset-inline-end: 0 !important;
-    width: 64px !important;
-    height: 64px !important;
-    background: transparent !important;
-    border: 0 !important;
-}
-
-body.zen .title-row {
-    height: unset !important;
-    -webkit-app-region: drag;
-    padding-inline-start: env(titlebar-area-x);
-    padding-inline-end: calc(100vw - env(titlebar-area-width, 100vw) + 2.5em);
-    border-bottom: none !important;
-}
-
-body.zen .note-title-widget,
-body.zen .note-title-widget input {
-    font-size: 1rem !important;
-}
-
-body.zen #detail-container {
-    width: 100%;
-}
-
-body.zen .note-split:not(.full-content-width) .scrolling-container {
-    display: flex;
-    flex-direction: column;
-    scroll-behavior: unset !important;
-}
-
-body.zen .note-split:not(.full-content-width) .note-detail {
-    margin: auto;
-    padding-bottom: 25vh;
-    max-width: var(--max-content-width);
-    width: 100%;
-}
-
-body.zen .note-split:not(.full-content-width) .scroll-padding-widget {
-    display: none;
-}
-
-body.zen .note-split.type-text {
-    position: relative;
-    font-size: 1.15em;
-}
-
-body.zen:not(.backdrop-effects-disabled) .note-split.type-text .title-row {
-    --start-color: var(--main-background-color);
-
-    position: absolute;
-    width: 100%;
-    background: linear-gradient(var(--start-color) 30%, transparent 100%);
-    z-index: 1000;
-}
-
-@supports (background: color-mix(in srgb, white, transparent)) {
-    body.zen .note-split.type-text .title-row {
-        --start-color: color-mix(in srgb, var(--main-background-color), transparent 10%);
+    .gutter,
+    #launcher-container,
+    #launcher-pane,
+    #left-pane,
+    #right-pane,
+    .right-pane-peek-button,
+    #mobile-sidebar-wrapper,
+    .tab-row-container,
+    .tab-row-widget,
+    .title-row .icon-action,
+    .note-badges > *:not(.read-only-badge),
+    .note-actions-bar,
+    .inline-title,
+    .promoted-attributes-widget,
+    .action-button,
+    .tooltip.content-hint, /* content-area hints (task states, collapsible summaries, drag handles) */
+    .note-split:not(.type-book) .note-list-widget {
+        display: none !important;
     }
-}
 
-body.zen .note-split.type-text .scrolling-container {
-    --padding-bottom: 130px; /* Should be enough to avoid caret being hidden by the formatting toolbar */
-
-    /* (Usually) keeps the caret above the fixed toolbar */
-    scroll-padding-bottom: var(--padding-bottom);
-}
-
-body.zen:not(.backdrop-effects-disabled) .note-split.type-text .scrolling-container {
-    --padding-top: 50px; /* Should be enough to cover the title row */
-
-    padding-top: var(--padding-top);
-    scroll-padding-top: var(--padding-top);
-}
-
-/* Fixed formatting toolbar */
-
-body.zen {
     .status-bar {
         display: none;
     }
+
+    #vertical-main-container {
+        /* Remove the placeholder for the right pane peek button */
+        --right-pane-peek-button-gutter: 0 !important;
+    }
+
+    .split-note-container-widget > .gutter {
+        display: unset !important;
+    }
+
+    #launcher-pane {
+        position: absolute !important;
+        top: 0 !important;
+        inset-inline-end: 0 !important;
+        width: 64px !important;
+        height: 64px !important;
+        background: transparent !important;
+        border: 0 !important;
+    }
+
+    .title-row {
+        height: unset !important;
+        -webkit-app-region: drag;
+        padding-inline-start: env(titlebar-area-x);
+        padding-inline-end: calc(100vw - env(titlebar-area-width, 100vw) + 2.5em);
+        border-bottom: none !important;
+    }
+
+    .note-title-widget,
+    .note-title-widget input {
+        font-size: 1rem !important;
+    }
+
+    #detail-container {
+        width: 100%;
+    }
+
+    .note-split:not(.full-content-width) {
+        .scrolling-container {
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: unset !important;
+        }
+
+        .note-detail {
+            margin: auto;
+            padding-bottom: 25vh;
+            max-width: var(--max-content-width);
+            width: 100%;
+        }
+
+        .scroll-padding-widget {
+            display: none;
+        }
+    }
+
+    .note-split.type-text {
+        position: relative;
+        font-size: 1.15em;
+
+        .scrolling-container {
+            --padding-bottom: 130px; /* Should be enough to avoid caret being hidden by the formatting toolbar */
+
+            /* (Usually) keeps the caret above the fixed toolbar */
+            scroll-padding-bottom: var(--padding-bottom);
+        }
+    }
+
+    &:not(.backdrop-effects-disabled) .note-split.type-text {
+        .title-row {
+            --start-color: var(--main-background-color);
+
+            position: absolute;
+            width: 100%;
+            background: linear-gradient(var(--start-color) 30%, transparent 100%);
+            z-index: 1000;
+        }
+
+        .scrolling-container {
+            --padding-top: 50px; /* Should be enough to cover the title row */
+
+            padding-top: var(--padding-top);
+            scroll-padding-top: var(--padding-top);
+        }
+    }
+
+    @supports (background: color-mix(in srgb, white, transparent)) {
+        .note-split.type-text .title-row {
+            --start-color: color-mix(in srgb, var(--main-background-color), transparent 10%);
+        }
+    }
+
+    /* Fixed formatting toolbar */
 
     .classic-toolbar-widget {
         position: fixed;
@@ -148,14 +150,16 @@ body.zen {
             width: 100%;
         }
 
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_se,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_sw,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_smw,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_sme,
-        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel.ck-dropdown__panel_s {
-            /* Force toolbar items overflow dropdowns open upwards */
-            top: auto;
-            bottom: 100%;
+        .classic-toolbar-widget .ck.ck-dropdown .ck-dropdown__panel {
+            &.ck-dropdown__panel_se,
+            &.ck-dropdown__panel_sw,
+            &.ck-dropdown__panel_smw,
+            &.ck-dropdown__panel_sme,
+            &.ck-dropdown__panel_s {
+                /* Force toolbar items overflow dropdowns open upwards */
+                top: auto;
+                bottom: 100%;
+            }
         }
     }
 }
