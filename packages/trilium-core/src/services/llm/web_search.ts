@@ -31,6 +31,8 @@ export interface WebSearchSource {
 
 const MAX_RESULTS = 8;
 const SEARCH_TIMEOUT_MS = 30_000;
+/** The longest query DeepSeek's Search API accepts. */
+const DEEPSEEK_MAX_QUERY_CHARS = 128;
 
 /**
  * The `web_search` tool for `setup`. Its result has the `sources` the chat lists under the tool's
@@ -120,6 +122,14 @@ export async function searchWeb(setup: WebSearchSetup, query: string, signal?: A
                 body: JSON.stringify({ query, max_results: MAX_RESULTS })
             }, signal) as { results?: unknown[] };
             return toSources(payload.results, "snippet");
+        }
+        case "deepseek": {
+            const payload = await requestJson(`${setup.baseURL ?? "https://api.deepseek.com/v1"}/tools/search`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${setup.apiKey}` },
+                body: JSON.stringify({ query: query.slice(0, DEEPSEEK_MAX_QUERY_CHARS), count: MAX_RESULTS })
+            }, signal, describeDeepSeekFailure) as { results?: unknown[] };
+            return toSources(payload.results, "summary");
         }
         case "searxng": {
             if (!setup.baseURL) {
@@ -279,6 +289,20 @@ function describeSearxngFailure(status: number, hasApiKey: boolean): string | un
     }
     if (status === 429) {
         return "The SearXNG instance's limiter blocked the request (HTTP 429); turn off `server.limiter` in its settings.yml, or add Trilium's address to the limiter's `pass_ip` list.";
+    }
+    return undefined;
+}
+
+/**
+ * The cause of a DeepSeek error status: 402 for an account without balance, and 404 from an
+ * endpoint without the Search API, such as a gateway set as the provider's base URL.
+ */
+function describeDeepSeekFailure(status: number): string | undefined {
+    if (status === 402) {
+        return "The DeepSeek account has no balance left (HTTP 402); top it up on the DeepSeek platform.";
+    }
+    if (status === 404) {
+        return "The DeepSeek provider's endpoint has no Search API (HTTP 404). Search needs DeepSeek's own endpoint, https://api.deepseek.com, or a search provider chosen in the chat's Tools menu.";
     }
     return undefined;
 }
