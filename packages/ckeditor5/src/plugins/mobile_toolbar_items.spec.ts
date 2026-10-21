@@ -20,6 +20,7 @@ import {
     IconHeading2,
     IconHeading3,
     IconImageUpload,
+    IconLink,
     IconNumberedList,
     IconPaperClip,
     IconParagraph,
@@ -41,9 +42,11 @@ import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
+import { installGlobMock } from "../../test/globals-test-kit.js";
 import admonitionIcon from "../icons/admonition.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
 import FileUploadUI from "./file_upload/file_upload_ui.js";
+import InternalLinkPlugin from "./internallink.js";
 import MobileToolbarItems from "./mobile_toolbar_items.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuEntry, type ToolbarGroupMenuItem, type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
@@ -299,6 +302,27 @@ describe("MobileToolbarItems", () => {
         const data = menuEditor.getData();
         expect(data.match(/<tr>/g)).toHaveLength(2);
         expect(data.match(/<td>/g)).toHaveLength(6);
+    });
+});
+
+describe("addLink", () => {
+    it("opens the link dialog of the internal link button, under the link icon", async () => {
+        const triggerCommand = vi.fn();
+        installGlobMock({ getComponentByEl: () => ({ triggerCommand }) });
+        const editor = await createTestEditor([Essentials, Paragraph, InternalLinkPlugin, MobileToolbarItems], {
+            toolbar: ["addLink"]
+        });
+        setModelData(editor.model, "<paragraph>foo[]</paragraph>");
+
+        const button = editor.ui.view.toolbar.items.get(0) as unknown as {
+            label: string; icon: string; isEnabled: boolean; fire(name: string): void;
+        };
+        expect([button.label, button.icon, button.isEnabled]).toStrictEqual(["Link", IconLink, true]);
+        button.fire("execute");
+        expect(triggerCommand).toHaveBeenCalledExactlyOnceWith("addLinkToText");
+
+        editor.enableReadOnlyMode("spec");
+        expect(button.isEnabled).toBe(false);
     });
 });
 

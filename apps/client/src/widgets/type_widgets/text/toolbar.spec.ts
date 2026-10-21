@@ -150,7 +150,7 @@ describe("buildMobileToolbar", () => {
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
         expect(toolbar.items.slice(12)).toStrictEqual([
             "|",
-            "link", "internallink", "aiAssistantMenu", "attachMenu", "insertTableMenu",
+            "addLink", "aiAssistantMenu", "attachMenu", "insertTableMenu",
             "|",
             "alignmentMenu"
         ]);
@@ -198,6 +198,8 @@ describe("buildMobileToolbar", () => {
         // Variants of an item that suit a touch screen.
         const MOBILE_VARIANTS: Record<string, string> = {
             insertTable: "insertTableMenu",
+            link: "addLink",
+            internallink: "addLink",
             heading: "blockType",
             bulletedList: "blockType",
             numberedList: "blockType",

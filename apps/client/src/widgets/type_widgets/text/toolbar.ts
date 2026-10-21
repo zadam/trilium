@@ -86,8 +86,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "moveBlockUp",
                 "moveBlockDown",
                 "|",
-                "link",
-                "internallink",
+                // One button for links to notes and to addresses, which the link dialog tells apart.
+                "addLink",
                 ...(aiAssistant ? ["aiAssistantMenu"] : []),
                 "attachMenu",
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.

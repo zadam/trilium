@@ -4,6 +4,7 @@ import {
     addListToDropdown,
     Alignment,
     BlockQuote,
+    ButtonView,
     CodeBlock,
     Collection,
     createDropdown,
@@ -17,6 +18,7 @@ import {
     IconHeading4,
     IconHeading5,
     IconHeading6,
+    IconLink,
     IconNumberedList,
     IconPaperClip,
     IconParagraph,
@@ -31,11 +33,12 @@ import {
     TodoList,
     UIModel
 } from "ckeditor5";
-import type { ButtonView, Command, DropdownView, ListDropdownItemDefinition, Locale } from "ckeditor5";
+import type { Command, DropdownView, ListDropdownItemDefinition, Locale } from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
 import FileUploadUI from "./file_upload/file_upload_ui.js";
+import { COMMAND_NAME as INTERNAL_LINK_COMMAND } from "./internallink.js";
 import { openListAsMenu } from "./toolbar_group_menu.js";
 
 const HEADING_ICONS: Record<string, string> = {
@@ -73,6 +76,8 @@ interface BlockType {
  *   alignments as a row of tiles.
  * - `attachMenu`: the image upload, a photo taken with the camera and the rows of the `fileUpload`
  *   list as a row of tiles, under a paperclip. A row whose feature the editor lacks is left out.
+ * - `addLink`: one link button, which opens the link dialog of the internal link button for a link to
+ *   a note or to an address, in place of the separate `link` and `internalLink` buttons.
  * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
  *   which needs a pointer that hovers over its cells.
  */
@@ -105,6 +110,23 @@ export default class MobileToolbarItems extends Plugin {
 
         editor.ui.componentFactory.add("attachMenu", (locale) => this.createAttachDropdown(locale));
         editor.ui.componentFactory.add("insertTableMenu", (locale) => this.createInsertTableDropdown(locale));
+        editor.ui.componentFactory.add("addLink", (locale) => this.createAddLinkButton(locale));
+    }
+
+    private createAddLinkButton(locale: Locale) {
+        const editor = this.editor;
+        const button = new ButtonView(locale);
+        button.set({ label: editor.t("Link"), icon: IconLink, tooltip: true });
+
+        // Registered by `InternalLinkPlugin`, which every editor with this toolbar loads.
+        const command = editor.commands.get(INTERNAL_LINK_COMMAND);
+        if (command) {
+            button.bind("isEnabled").to(command);
+        } else {
+            button.isEnabled = false;
+        }
+        button.on("execute", () => editor.execute(INTERNAL_LINK_COMMAND));
+        return button;
     }
 
     private createInsertTableDropdown(locale: Locale) {
