@@ -76,15 +76,15 @@ When you re-indent content, the editor:
 *   Rebuilds the leading whitespace in the target style
 *   Preserves non-leading whitespace, blank lines, and content without indentation
 
-## Text tools
+## Transforming text
 
-To change the selected lines or text, right-click the selection and pick an entry from one of these submenus:
+To change the selected lines or text, right-click the selection and open _Transform_. Its commands come in three groups:
 
-*   _Line operations_: _Sort ascending_, _Sort descending_, _Shuffle lines_, _Reverse line order_ and _Deduplicate lines_, which keeps the first copy of each line.
-*   _Line removal_: _Trim leading_, _Trim trailing_ and _Trim both_ remove the whitespace at the start, at the end or at both ends of each line. _Remove blank lines_ also removes the lines that hold only whitespace.
-*   _Text transform_: _To uppercase_, _To lowercase_, _To sentence case_, _To title case_ and _Remove diacritics_.
+*   _Sort ascending_, _Sort descending_, _Shuffle lines_, _Reverse line order_ and _Deduplicate lines_, which keeps the first copy of each line.
+*   _Trim leading_, _Trim trailing_ and _Trim both_ remove the whitespace at the start, at the end or at both ends of each line. _Remove blank lines_ also removes the lines that hold only whitespace.
+*   _To uppercase_, _To lowercase_, _To sentence case_, _To title case_ and _Remove diacritics_.
 
-The line operations and the line removals change every line that the selection touches, even partly. The text transforms change only the selected text. Each change is undone in one step with <kbd>Ctrl</kbd>+<kbd>Z</kbd>.
+The commands of the first two groups change every line that the selection touches, even partly. Those of the third group change only the selected text. Each change is undone in one step with <kbd>Ctrl</kbd>+<kbd>Z</kbd>.
 
 *   Sorting reads numbers, dates and times by their value, as sorting a table does (see <a class="reference-link" href="Text/Tables.md">Tables</a>), and ignores the case of letters and the indentation. Blank lines go last.
 *   _To sentence case_ lowercases the text and capitalizes the first word of each sentence and of each line. _To title case_ capitalizes every word except minor words such as "of" and "the", which stay lowercase unless they start or end a sentence.

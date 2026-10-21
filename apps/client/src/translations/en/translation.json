@@ -4849,13 +4849,12 @@
     "close_menu": "Close menu"
   },
   "code_editor_context_menu": {
-    "line_operations": "Line operations",
+    "transform": "Transform",
     "sort_ascending": "Sort ascending",
     "sort_descending": "Sort descending",
     "shuffle_lines": "Shuffle lines",
     "reverse_lines": "Reverse line order",
     "deduplicate_lines": "Deduplicate lines",
-    "line_removal": "Line removal",
     "trim_leading": "Trim leading",
     "trim_leading_tooltip": "Removes the whitespace at the start of each line",
     "trim_trailing": "Trim trailing",
@@ -4863,7 +4862,6 @@
     "trim_both": "Trim both",
     "trim_both_tooltip": "Removes the whitespace at the start and at the end of each line",
     "remove_blank_lines": "Remove blank lines",
-    "text_transform": "Text transform",
     "to_uppercase": "To uppercase",
     "to_lowercase": "To lowercase",
     "to_sentence_case": "To sentence case",

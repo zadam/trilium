@@ -9,8 +9,8 @@ import { submenuItem } from "./context_menu_utils.js";
 
 /**
  * The text tools of a code editor's right-click menu, which change the selected lines or text:
- * the _Line operations_, _Line removal_ and _Text transform_ submenus. Their rows are disabled
- * while nothing is selected.
+ * a _Transform_ submenu with the line operations, the whitespace removals and the text
+ * transforms. Its rows are disabled while nothing is selected.
  *
  * Returns `null` when `element` is not in an editable code editor.
  */
@@ -34,10 +34,9 @@ export async function buildCodeEditorContextMenuItems(
     const isEnabled = hasSelectedText(editor.state);
     const toolOptions = getTextToolOptions();
     const lineItem = (
-        title: string, uiIcon: string, operation: LineOperation, tooltip?: string
+        title: string, operation: LineOperation, tooltip?: string
     ): MenuCommandItem<CommandNames> => ({
         title,
-        uiIcon,
         tooltip,
         enabled: isEnabled,
         handler: () => {
@@ -46,10 +45,9 @@ export async function buildCodeEditorContextMenuItems(
         }
     });
     const transformItem = (
-        title: string, uiIcon: string, transform: TextTransform
+        title: string, transform: TextTransform
     ): MenuCommandItem<CommandNames> => ({
         title,
-        uiIcon,
         enabled: isEnabled,
         handler: () => {
             runTextTransform(editor, transform, toolOptions);
@@ -57,52 +55,31 @@ export async function buildCodeEditorContextMenuItems(
         }
     });
 
-    const lineOperations: MenuItem<CommandNames>[] = [
-        lineItem(t("code_editor_context_menu.sort_ascending"), "bx bx-sort-a-z", "sortAscending"),
-        lineItem(t("code_editor_context_menu.sort_descending"), "bx bx-sort-z-a", "sortDescending"),
+    const transform: MenuItem<CommandNames>[] = [
+        lineItem(t("code_editor_context_menu.sort_ascending"), "sortAscending"),
+        lineItem(t("code_editor_context_menu.sort_descending"), "sortDescending"),
+        lineItem(t("code_editor_context_menu.shuffle_lines"), "shuffle"),
+        lineItem(t("code_editor_context_menu.reverse_lines"), "reverse"),
+        lineItem(t("code_editor_context_menu.deduplicate_lines"), "deduplicate"),
         { kind: "separator" },
-        lineItem(t("code_editor_context_menu.shuffle_lines"), "bx bx-shuffle", "shuffle"),
-        lineItem(t("code_editor_context_menu.reverse_lines"), "bx bx-transfer-alt bx-rotate-90",
-            "reverse"),
-        lineItem(t("code_editor_context_menu.deduplicate_lines"), "bx bx-layer-minus",
-            "deduplicate")
-    ];
-    const lineRemoval: MenuItem<CommandNames>[] = [
-        lineItem(t("code_editor_context_menu.trim_leading"), "bx bx-align-left", "trimLeading",
+        lineItem(t("code_editor_context_menu.trim_leading"), "trimLeading",
             t("code_editor_context_menu.trim_leading_tooltip")),
-        lineItem(t("code_editor_context_menu.trim_trailing"), "bx bx-align-right", "trimTrailing",
+        lineItem(t("code_editor_context_menu.trim_trailing"), "trimTrailing",
             t("code_editor_context_menu.trim_trailing_tooltip")),
-        lineItem(t("code_editor_context_menu.trim_both"), "bx bx-align-middle", "trimBoth",
+        lineItem(t("code_editor_context_menu.trim_both"), "trimBoth",
             t("code_editor_context_menu.trim_both_tooltip")),
+        lineItem(t("code_editor_context_menu.remove_blank_lines"), "removeBlankLines"),
         { kind: "separator" },
-        lineItem(t("code_editor_context_menu.remove_blank_lines"), "bx bx-collapse-vertical",
-            "removeBlankLines")
-    ];
-    const textTransforms: MenuItem<CommandNames>[] = [
-        transformItem(t("code_editor_context_menu.to_uppercase"), "bx bx-chevrons-up", "upperCase"),
-        transformItem(t("code_editor_context_menu.to_lowercase"), "bx bx-chevrons-down",
-            "lowerCase"),
-        transformItem(t("code_editor_context_menu.to_sentence_case"), "bx bx-text",
-            "sentenceCase"),
-        transformItem(t("code_editor_context_menu.to_title_case"), "bx bx-heading", "titleCase"),
-        { kind: "separator" },
-        transformItem(t("code_editor_context_menu.remove_diacritics"), "bx bx-eraser",
-            "removeDiacritics")
+        transformItem(t("code_editor_context_menu.to_uppercase"), "upperCase"),
+        transformItem(t("code_editor_context_menu.to_lowercase"), "lowerCase"),
+        transformItem(t("code_editor_context_menu.to_sentence_case"), "sentenceCase"),
+        transformItem(t("code_editor_context_menu.to_title_case"), "titleCase"),
+        transformItem(t("code_editor_context_menu.remove_diacritics"), "removeDiacritics")
     ];
 
     return [
-        submenuItem({
-            title: t("code_editor_context_menu.line_operations"),
-            uiIcon: "bx bx-list-ul"
-        }, lineOperations),
-        submenuItem({
-            title: t("code_editor_context_menu.line_removal"),
-            uiIcon: "bx bx-list-minus"
-        }, lineRemoval),
-        submenuItem({
-            title: t("code_editor_context_menu.text_transform"),
-            uiIcon: "bx bx-font"
-        }, textTransforms)
+        submenuItem({ title: t("code_editor_context_menu.transform"), uiIcon: "bx bx-text" },
+            transform)
     ];
 }
 

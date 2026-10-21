@@ -41,53 +41,47 @@ describe("buildCodeEditorContextMenuItems", () => {
         await expect(buildCodeEditorContextMenuItems(lineOf(readOnly))).resolves.toBeNull();
     });
 
-    it("offers the line operations, the line removals and the text transforms", async () => {
+    it("lists every tool in one Transform submenu, grouped by what it changes", async () => {
         const items = await buildItems(createEditor("text", { from: 0, to: 4 }));
 
-        expect(titles(items)).toEqual([
-            "code_editor_context_menu.line_operations",
-            "code_editor_context_menu.line_removal",
-            "code_editor_context_menu.text_transform"
-        ]);
+        expect(titles(items)).toEqual([ "code_editor_context_menu.transform" ]);
         expect(titles(submenu(items, 0))).toEqual([
             "code_editor_context_menu.sort_ascending",
             "code_editor_context_menu.sort_descending",
-            "---",
             "code_editor_context_menu.shuffle_lines",
             "code_editor_context_menu.reverse_lines",
-            "code_editor_context_menu.deduplicate_lines"
-        ]);
-        expect(titles(submenu(items, 1))).toEqual([
+            "code_editor_context_menu.deduplicate_lines",
+            "---",
             "code_editor_context_menu.trim_leading",
             "code_editor_context_menu.trim_trailing",
             "code_editor_context_menu.trim_both",
+            "code_editor_context_menu.remove_blank_lines",
             "---",
-            "code_editor_context_menu.remove_blank_lines"
-        ]);
-        expect(titles(submenu(items, 2))).toEqual([
             "code_editor_context_menu.to_uppercase",
             "code_editor_context_menu.to_lowercase",
             "code_editor_context_menu.to_sentence_case",
             "code_editor_context_menu.to_title_case",
-            "---",
             "code_editor_context_menu.remove_diacritics"
         ]);
-        expect(rows(submenu(items, 1)).map((row) => row.tooltip)).toEqual([
+        expect(rows(submenu(items, 0)).slice(5, 9).map((row) => row.tooltip)).toEqual([
             "code_editor_context_menu.trim_leading_tooltip",
             "code_editor_context_menu.trim_trailing_tooltip",
             "code_editor_context_menu.trim_both_tooltip",
             undefined
         ]);
-        expect(rows(items.flatMap((_, index) => submenu(items, index)))
-            .every((row) => row.enabled && row.uiIcon)).toBe(true);
+        expect(allRows(items)).toHaveLength(15);
+        expect(allRows(items).every((row) => row.enabled)).toBe(true);
+        expect(allRows(items).map((row) => row.uiIcon)).toEqual([
+            "bx bx-text",
+            ...Array(14).fill(undefined)
+        ]);
     });
 
     it("disables every row while nothing is selected", async () => {
         const items = await buildItems(createEditor("text", { from: 2, to: 2 }));
 
-        expect(rows(items).map((row) => row.enabled)).toEqual([ false, false, false ]);
-        expect(rows(items.flatMap((_, index) => submenu(items, index)))
-            .some((row) => row.enabled)).toBe(false);
+        expect(allRows(items)).toHaveLength(15);
+        expect(allRows(items).some((row) => row.enabled)).toBe(false);
     });
 
     it("sorts the selected lines by the user's date format, and focuses the editor", async () => {
@@ -112,14 +106,17 @@ describe("buildCodeEditorContextMenuItems", () => {
 
     it("removes lines and transforms the selected text by the content language", async () => {
         const editor = createEditor("a\n\nb istanbul", { from: 0, to: 12 });
-        run(submenu(await buildItems(editor), 1), "code_editor_context_menu.remove_blank_lines");
+        run(submenu(await buildItems(editor), 0), "code_editor_context_menu.remove_blank_lines");
         expect(editor.getText()).toBe("a\nb istanbul");
 
         editor.dispatch({ selection: EditorSelection.range(4, 12) });
         const focus = vi.spyOn(editor, "focus");
-        run(submenu(await buildItems(editor), 2), "code_editor_context_menu.to_uppercase");
+        run(submenu(await buildItems(editor), 0), "code_editor_context_menu.to_uppercase");
         expect(editor.getText()).toBe("a\nb İSTANBUL");
         expect(focus).toHaveBeenCalled();
+
+        run(submenu(await buildItems(editor), 0), "code_editor_context_menu.remove_diacritics");
+        expect(editor.getText()).toBe("a\nb ISTANBUL");
     });
 });
 
@@ -152,6 +149,11 @@ function rows(items: MenuItem<CommandNames>[]) {
 
 function titles(items: MenuItem<CommandNames>[]) {
     return items.map((item) => ("kind" in item ? "---" : item.title));
+}
+
+/** Every row of `items` and of their submenus. */
+function allRows(items: MenuItem<CommandNames>[]): MenuCommandItem<CommandNames>[] {
+    return rows(items).flatMap((row) => [ row, ...allRows(row.items ?? []) ]);
 }
 
 function submenu(items: MenuItem<CommandNames>[], index: number) {
