@@ -37,7 +37,6 @@ In a text note, the formatting toolbar sits at the bottom of the screen as a sin
 *   <span class="tn-icon cke cke-link"></span> to add a link and <span class="tn-icon cke cke-paper-clip"></span> to attach a file.
 *   The indentation buttons, then <span class="tn-icon cke cke-arrow-up"></span> and <span class="tn-icon cke cke-arrow-down"></span>, which move the current block, or the selected blocks, up or down, as <kbd>Alt</kbd>+<kbd>↑</kbd> and <kbd>Alt</kbd>+<kbd>↓</kbd> do on a keyboard. Inside a table they move the row instead.
 *   The <span class="tn-icon cke cke-trilium-ai"></span> AI assistant button, shown once a provider is configured, which opens its quick actions as a menu at the bottom of the screen, with _Ask AI…_ at its top.
-*   The alignment button, which shows the alignment of the current block, and opens left, center, right and justify as a list, with the current one checked.
 
 While the keyboard is open, the <span class="tn-icon bx bxs-keyboard"></span> button at the right end of the toolbar hides it.
 
@@ -96,7 +95,7 @@ Buttons of the element's toolbar with a list of choices, such as the column and 
 
 ### Formatting text
 
-The formatting applied to text (bold, italic, underline, strikethrough, inline code, superscript and subscript, keyboard shortcut, font size and colors, and removing formatting) is on a row of its own, which ends with <span class="tn-icon cke cke-trilium-scissors"></span> to cut the selection into a sub-note.
+The formatting applied to text (bold, italic, underline, strikethrough, inline code, superscript and subscript, keyboard shortcut, font size and colors, and removing formatting) is on a row of its own, followed by the left, center, right and justify alignments of the current block, with the current one highlighted. The row ends with <span class="tn-icon cke cke-trilium-scissors"></span> to cut the selection into a sub-note.
 
 *   Tap <span class="tn-icon cke cke-text"></span> next to the block type button to show it, and <span class="tn-icon cke cke-previous-arrow"></span> at its start to return to the main row.
 *   Selecting text shows this row on its own, and it goes back to the main row once the selection is gone (for example as you start typing), unless you opened or closed the row yourself in the meantime.

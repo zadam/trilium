@@ -154,7 +154,7 @@ describe("buildMobileToolbar", () => {
             "|",
             "outdent", "indent", "moveBlockUp", "moveBlockDown",
             "|",
-            "aiAssistantMenu", "alignmentMenu"
+            "aiAssistantMenu"
         ]);
     });
 
@@ -175,6 +175,8 @@ describe("buildMobileToolbar", () => {
             "fontSizeMenu", "colorMenu",
             "|",
             "removeFormat", "formatPainter",
+            "|",
+            "alignment:left", "alignment:center", "alignment:right", "alignment:justify",
             "|",
             // Acts on the selection, which brings this row up.
             "cuttonote"
@@ -225,10 +227,6 @@ describe("buildMobileToolbar", () => {
             imageUpload: "attachMenu",
             fileUpload: "attachMenu",
             fontBackgroundColor: "colorMenu",
-            "alignment:left": "alignmentMenu",
-            "alignment:center": "alignmentMenu",
-            "alignment:right": "alignmentMenu",
-            "alignment:justify": "alignmentMenu",
             aiAssistant: "aiAssistantMenu"
         };
         // Alt+Up and Alt+Down move blocks on a keyboard, and the insert menu repeats the image upload

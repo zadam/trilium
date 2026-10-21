@@ -94,9 +94,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "indent",
                 "moveBlockUp",
                 "moveBlockDown",
-                "|",
-                ...(aiAssistant ? ["aiAssistantMenu"] : []),
-                "alignmentMenu"
+                ...(aiAssistant ? ["|", "aiAssistantMenu"] : [])
             ]
         },
         textFormattingToolbar: [
@@ -118,6 +116,12 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "|",
             "removeFormat",
             "formatPainter",
+            "|",
+            // Of the block, but set as the look of selected text is.
+            "alignment:left",
+            "alignment:center",
+            "alignment:right",
+            "alignment:justify",
             "|",
             // Acts on the selection, which brings this row up.
             "cuttonote"

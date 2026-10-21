@@ -3,7 +3,6 @@ import bxSortDown from "boxicons/svg/regular/bx-sort-down.svg?raw";
 import {
     _getLocalizedHeadingOptions as getLocalizedHeadingOptions,
     addListToDropdown,
-    Alignment,
     BlockQuote,
     ButtonView,
     CodeBlock,
@@ -86,8 +85,6 @@ interface BlockType {
  *   other, and the block quote and the admonition, which wrap the block. One dropdown, under an
  *   icon of its own rather than the name of the current block, which takes 8em.
  * - `fontSizeMenu`: the `fontSize` dropdown.
- * - `alignmentMenu`: the `alignment` dropdown, whose button shows the current alignment, with the
- *   alignments as a list.
  * - `attachMenu`: the image upload, a photo taken with the camera and the rows of the `fileUpload`
  *   list as a list, under a paperclip. A row whose feature the editor lacks is left out.
  * - `addImage`: the image upload of the menu bar, labelled "Image", which the `attachMenu` row
@@ -104,7 +101,7 @@ interface BlockType {
 export default class MobileToolbarItems extends Plugin {
 
     static get requires() {
-        return [Heading, List, TodoList, CodeBlock, BlockQuote, AdmonitionEditing, FontSize, Alignment, Table] as const;
+        return [Heading, List, TodoList, CodeBlock, BlockQuote, AdmonitionEditing, FontSize, Table] as const;
     }
 
     static get pluginName() {
@@ -118,12 +115,6 @@ export default class MobileToolbarItems extends Plugin {
 
         editor.ui.componentFactory.add("fontSizeMenu", () => {
             const dropdown = editor.ui.componentFactory.create("fontSize") as DropdownView;
-            openListAsMenu(dropdown);
-            return dropdown;
-        });
-
-        editor.ui.componentFactory.add("alignmentMenu", () => {
-            const dropdown = editor.ui.componentFactory.create("alignment") as DropdownView;
             openListAsMenu(dropdown);
             return dropdown;
         });
