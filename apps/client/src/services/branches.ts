@@ -192,7 +192,7 @@ async function activateNeighbouringNotePath(branchIdsToDelete: string[], deleteA
 /**
  * Finds the child of `parentNoteId` closest to `noteId` that is still there once the given branches
  * are deleted: the next sibling, else the previous one. Archived siblings are skipped, since the
- * tree can be set to hide them.
+ * tree can be set to hide them, and so is `_hidden`, which the tree hides under root.
  */
 function findSurvivingSibling(
     parentNoteId: string,
@@ -218,6 +218,7 @@ function findSurvivingSibling(
     const survives = (branch: FBranch) =>
         !branchIdsToDelete.includes(branch.branchId)
         && !(deleteAllClones && deletedNoteIds.has(branch.noteId))
+        && branch.noteId !== "_hidden"
         && !froca.getNoteFromCache(branch.noteId)?.isArchived;
 
     const candidates = [

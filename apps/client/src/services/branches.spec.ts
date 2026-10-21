@@ -382,6 +382,21 @@ describe("activateNeighbouringNotePath (via deleteNotes navigation)", () => {
         expect(setNote).toHaveBeenCalledWith(`root/${p}/clC`);
     });
 
+    it("never activates the hidden subtree when deleting the last child of root", async () => {
+        const root = froca.getNoteFromCache("root");
+        for (const noteId of ["rootFirst", "rootLast", "_hidden"]) {
+            buildNote({ id: noteId, title: noteId });
+            makeBranch(`root_${noteId}`, noteId, "root");
+            root?.addChild(noteId, `root_${noteId}`, false);
+            froca.getNoteFromCache(noteId)?.addParent("root", `root_${noteId}`, false);
+        }
+        expect(root?.getChildNoteIds()).toEqual(["rootFirst", "rootLast", "_hidden"]);
+
+        const setNote = confirmDeletion(["root", "rootLast"]);
+        await branches.deleteNotes(["root_rootLast"]);
+        expect(setNote).toHaveBeenCalledWith("root/rootFirst");
+    });
+
     it("falls back to the parent when its children are not loaded in froca", async () => {
         const note = buildNote({ title: "Lonely" });
         makeBranch("lonelyBranch", note.noteId, "root");
