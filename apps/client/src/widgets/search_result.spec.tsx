@@ -12,8 +12,6 @@ const shownNote = vi.hoisted(() => ({
     listeners: new Set<() => void>(),
     parentComponent: null as import("../components/component").default | null
 }));
-const shownTab = vi.hoisted(() => ({ activeMainNtxId: "ntx1" as string | null }));
-const tabContext = vi.hoisted(() => ({ ntxId: "ntx1", getMainContext() { return tabContext; } }));
 vi.mock("./react/hooks", async (importOriginal) => {
     const { useEffect, useState } = await import("preact/hooks");
     return {
@@ -37,7 +35,6 @@ vi.mock("./react/hooks", async (importOriginal) => {
                 note,
                 notePath: note?.noteId,
                 ntxId: "ntx1",
-                noteContext: tabContext,
                 parentComponent: shownNote.parentComponent
             };
         }
@@ -53,7 +50,6 @@ import { buildNote } from "../test/easy-froca";
 import { ParentComponent } from "./react/react_utils";
 import SearchResult from "./search_result";
 
-const realTabManager = appContext.tabManager;
 let container: HTMLElement;
 let parent: Component;
 let realIntersectionObserver: typeof IntersectionObserver;
@@ -71,17 +67,11 @@ class ImmediateIntersectionObserver {
 }
 
 beforeEach(() => {
-    shownTab.activeMainNtxId = "ntx1";
     shownNote.listeners.clear();
     // Collection views read their saved config from attachments, which these fixtures do not have.
     vi.spyOn(froca, "getAttachmentsForNote").mockResolvedValue([]);
     realIntersectionObserver = window.IntersectionObserver;
     window.IntersectionObserver = ImmediateIntersectionObserver as unknown as typeof IntersectionObserver;
-    // Client tests run without app start-up, which is what creates the tab manager.
-    appContext.tabManager = {
-        getActiveMainContext: () =>
-            (shownTab.activeMainNtxId ? { ntxId: shownTab.activeMainNtxId } : null)
-    } as never;
     window.glob.TRILIUM_SAFE_MODE = false;
     parent = new Component();
     shownNote.parentComponent = parent;
@@ -91,7 +81,6 @@ beforeEach(() => {
 
 afterEach(() => {
     vi.restoreAllMocks();
-    appContext.tabManager = realTabManager;
     window.IntersectionObserver = realIntersectionObserver;
     render(null, container);
     container.remove();
@@ -181,7 +170,7 @@ describe("SearchResult", () => {
 });
 
 describe("running a saved search when it is shown", () => {
-    it("runs a search shown in the active tab and shows progress until it answers", async () => {
+    it("runs a shown search and shows progress until it answers", async () => {
         const savedSearch = searchNote("autoSearch", "#book");
         const result = buildNote({ id: "autoResult", title: "Auto result" });
         let answer: (value: unknown) => void = () => {};
@@ -248,22 +237,6 @@ describe("running a saved search when it is shown", () => {
 
         await settle(() => fail());
         expect(container.querySelector("button")).not.toBeNull();
-    });
-
-    it("waits for a background tab to be shown before running its saved search", async () => {
-        const savedSearch = searchNote("backgroundSearch", "#book");
-        const loadSearchNote = vi.spyOn(froca, "loadSearchNote").mockResolvedValue(undefined);
-        shownTab.activeMainNtxId = "otherTab";
-
-        shownNote.current = savedSearch;
-        await mount();
-        expect(loadSearchNote).not.toHaveBeenCalled();
-
-        await settle(() => {
-            shownTab.activeMainNtxId = "ntx1";
-            void parent.handleEvent("activeNoteChanged", { ntxId: "ntx1" });
-        });
-        expect(loadSearchNote).toHaveBeenCalledExactlyOnceWith("backgroundSearch");
     });
 
     it("leaves the search to \"Search now\" in safe mode and after a failed request", async () => {

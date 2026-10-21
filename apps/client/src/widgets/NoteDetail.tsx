@@ -26,7 +26,6 @@ import Button from "./react/Button";
 import {
     useDelayedVisibility,
     useGetContextDataFrom,
-    useHasTabBeenShown,
     useLegacyComponentElement,
     useNoteContext,
     useTriliumEvent
@@ -57,9 +56,6 @@ export default function NoteDetail() {
     const [ activeNoteType, setActiveNoteType ] = useState<ExtendedNoteType>();
     const widgetRequestId = useRef(0);
 
-    // Defer loading for tabs that haven't been active yet (e.g. on app refresh).
-    const hasTabBeenActive = useHasTabBeenShown(noteContext);
-
     const props: TypeWidgetProps = {
         note: note!,
         viewScope,
@@ -69,7 +65,7 @@ export default function NoteDetail() {
     };
 
     useEffect(() => {
-        if (!type || !hasTabBeenActive) return;
+        if (!type) return;
         const requestId = ++widgetRequestId.current;
 
         if (!noteTypesToRender[type]) {
@@ -88,7 +84,7 @@ export default function NoteDetail() {
         } else {
             setActiveNoteType(type);
         }
-    }, [ note, viewScope, type, noteTypesToRender, hasTabBeenActive ]);
+    }, [ note, viewScope, type, noteTypesToRender ]);
 
     // Detect note type changes.
     useTriliumEvent("entitiesReloaded", async ({ loadResults }) => {
