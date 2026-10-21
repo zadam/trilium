@@ -1953,6 +1953,11 @@ pre.code-embed-editor.read-only .cm-activeLine {
         border-radius: var(--bs-modal-border-radius) var(--bs-modal-border-radius) 0 0;
     }
 
+    body.mobile .modal:not(.options-dialog) .modal-content {
+        padding-left: var(--safe-area-inset-left, env(safe-area-inset-left));
+        padding-right: var(--safe-area-inset-right, env(safe-area-inset-right));
+    }
+
     body.mobile .modal-footer {
         padding-top: 12px;
         padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)), 12px));
