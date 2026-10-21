@@ -94,7 +94,7 @@ describe("AttachmentList", () => {
         expect(drawingBlob).not.toHaveBeenCalled();
     });
 
-    it("shows a transcript as its conversation, not through the content renderer", async () => {
+    it("files a transcript with the app's own, shown as its conversation", async () => {
         const content = JSON.stringify({
             version: 1,
             startedAt: "2026-10-13T14:30:00.000Z",
@@ -108,8 +108,13 @@ describe("AttachmentList", () => {
         getRenderedContent.mockClear();
         const container = await mount([ transcript ] as FAttachment[]);
 
+        expect(cards(container)).toHaveLength(0);
+        const disclosure = container.querySelector<HTMLButtonElement>(".attachment-system-group .collapsible-title");
+        expect(disclosure).not.toBeNull();
+        disclosure?.click();
+
         await vi.waitFor(() =>
-            expect(container.querySelector(".attachment-transcript .transcript-turn")).not.toBeNull());
+            expect(container.querySelector(".attachment-system-group .attachment-transcript .transcript-turn")).not.toBeNull());
         expect(container.querySelector(".attachment-transcript")?.textContent).toContain("Yes.");
         expect(getRenderedContent).not.toHaveBeenCalled();
     });
