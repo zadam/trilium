@@ -52,9 +52,14 @@ describe("ContextToolbar", () => {
         button.fire("execute");
         expect(plugin.isActive).toBe(true);
         expect(focus).toHaveBeenCalledTimes(1);
-        const [back, separator, ...items] = [...plugin.toolbarView.items];
-        // The back button names the widget whose tools the row holds.
-        expect(back).toMatchObject({ label: "Table", withText: true, icon: IconPreviousArrow, tooltip: "Back" });
+        const [back, separator, chip, ...items] = [...plugin.toolbarView.items];
+        expect(back).toMatchObject({ label: "Back", withText: false, icon: IconPreviousArrow, tooltip: true });
+        // A title naming the widget the tools act on, which is not a button.
+        expect(chip).not.toBeInstanceOf(ButtonView);
+        expect(chip).toMatchObject({ isVisible: true, label: "Table", icon: IconTable });
+        expect(chip.element?.classList).toContain("ck-context-toolbar-title");
+        expect(chip.element?.textContent).toBe("Table");
+        expect(chip.element?.querySelector("svg")).not.toBeNull();
         expect(separator).toBeInstanceOf(ToolbarSeparatorView);
         expect(items.map((item) => (item as { buttonView?: ButtonView }).buttonView?.label)).toStrictEqual(["Column", "Row"]);
         expect(editor.ui.focusTracker.elements).toContain(plugin.toolbarView.element);
@@ -70,7 +75,7 @@ describe("ContextToolbar", () => {
         setModelData(editor.model, "[<table><tableRow><tableCell><paragraph>a</paragraph></tableCell></tableRow></table>]<paragraph>b</paragraph>");
         editor.ui.update();
         button.fire("execute");
-        expect([...plugin.toolbarView.items].slice(2).map((item) => (item as ButtonView).label))
+        expect([...plugin.toolbarView.items].slice(3).map((item) => (item as ButtonView).label))
             .toStrictEqual(["Toggle caption on"]);
 
         editor.model.change((writer) => writer.setSelection(editor.model.document.getRoot()?.getChild(1) ?? null, "end"));
@@ -95,7 +100,7 @@ describe("ContextToolbar", () => {
         editor.ui.update();
         getButton(editor).fire("execute");
 
-        const column = [...editor.plugins.get(ContextToolbar).toolbarView.items][2] as DropdownView;
+        const column = [...editor.plugins.get(ContextToolbar).toolbarView.items][3] as DropdownView;
         column.buttonView.fire("open");
         expect(column.isOpen).toBe(false);
         const rows = requests.at(-1)?.items ?? [];
@@ -118,7 +123,7 @@ describe("ContextToolbar", () => {
         editor.ui.update();
         getButton(editor).fire("execute");
 
-        const position = [...editor.plugins.get(ContextToolbar).toolbarView.items][2] as DropdownView;
+        const position = [...editor.plugins.get(ContextToolbar).toolbarView.items][3] as DropdownView;
         position.buttonView.fire("open");
         expect(requests.at(-1)?.layout).toBe("tiles");
     });
@@ -141,7 +146,7 @@ describe("ContextToolbar", () => {
         selectTable();
         editor.ui.update();
         expect(plugin.isActive).toBe(true);
-        expect([...plugin.toolbarView.items].slice(2).map((item) => (item as ButtonView).label))
+        expect([...plugin.toolbarView.items].slice(3).map((item) => (item as ButtonView).label))
             .toStrictEqual(["Toggle caption on"]);
 
         // The back button holds while the selection stays on the widget.
@@ -181,7 +186,7 @@ describe("ContextToolbar", () => {
             expect(plugin.isActive).toBe(false);
 
             button.fire("execute");
-            expect([...plugin.toolbarView.items].slice(2).map((item) => (item as ButtonView).label))
+            expect([...plugin.toolbarView.items].slice(3).map((item) => (item as ButtonView).label))
                 .toStrictEqual(["Edit link", "Unlink"]);
 
             editor.model.change((writer) => writer.setSelection(editor.model.document.getRoot()?.getChild(0) ?? null, "end"));
@@ -201,7 +206,7 @@ describe("ContextToolbar", () => {
             expect(linkUI.toolbarView && balloon.hasView(linkUI.toolbarView)).toBe(false);
 
             getButton(editor).fire("execute");
-            const edit = [...editor.plugins.get(ContextToolbar).toolbarView.items][2] as ButtonView;
+            const edit = [...editor.plugins.get(ContextToolbar).toolbarView.items][3] as ButtonView;
             edit.fire("execute");
             expect(balloon.visibleView).toBe(linkUI.formView);
 
@@ -224,7 +229,7 @@ describe("ContextToolbar", () => {
         editor.ui.update();
 
         expect(getButton(editor)).toMatchObject({ isVisible: true, label: "Link", icon: IconLink });
-        expect([...editor.plugins.get(ContextToolbar).toolbarView.items][0]).toMatchObject({ label: "Link" });
+        expect([...editor.plugins.get(ContextToolbar).toolbarView.items][2]).toMatchObject({ label: "Link" });
     });
 
     it("leaves the balloons alone in an editor without its button", async () => {

@@ -1,9 +1,9 @@
 import {
     ButtonView, ContextualBalloon, DropdownView, IconCodeBlock, IconImage, IconLink, IconPreviousArrow, IconTable,
-    IconThreeVerticalDots, LinkUI, Plugin, ToolbarSeparatorView, ToolbarView, WidgetToolbarRepository
+    IconThreeVerticalDots, IconView, LinkUI, Plugin, ToolbarSeparatorView, ToolbarView, View, WidgetToolbarRepository
 } from "ckeditor5";
 import type {
-    Editor, LinkCommand, ToolbarConfig, ToolbarConfigItem, View, ViewDocumentFragment, ViewDocumentSelection,
+    Editor, LinkCommand, Locale, ToolbarConfig, ToolbarConfigItem, ViewDocumentFragment, ViewDocumentSelection,
     ViewElement, ViewNode
 } from "ckeditor5";
 
@@ -52,10 +52,11 @@ interface ContextToolbarSource {
  * holds the `contextToolbar` button.
  *
  * The button shows while the selection is in a widget that has a toolbar. It swaps in
- * {@link toolbarView}: a back button, then the items of the toolbar the balloon would show, which is
- * the one of the innermost widget. The toolbar swaps in on its own as a widget is selected whole,
- * since there is no text to format then, and swaps out as the selection leaves the widget.
- * Its dropdowns open as menus of `ToolbarGroupMenu`, like the rest of a phone's toolbar.
+ * {@link toolbarView}: a back button, then a title naming the widget ahead of the items of the
+ * toolbar the balloon would show, which is the one of the innermost widget. The toolbar swaps in on
+ * its own as a widget is selected whole, since there is no text to format then, and swaps out as
+ * the selection leaves the widget. Its dropdowns open as menus of `ToolbarGroupMenu`, like the
+ * rest of a phone's toolbar.
  */
 export default class ContextToolbar extends Plugin {
 
@@ -69,6 +70,7 @@ export default class ContextToolbar extends Plugin {
     readonly toolbarView: ToolbarView;
 
     private readonly backView: ButtonView;
+    private readonly titleView: ContextToolbarTitleView;
     /** The source whose items {@link toolbarView} holds. */
     private shownSource: ContextToolbarSource | null = null;
 
@@ -86,12 +88,16 @@ export default class ContextToolbar extends Plugin {
         this.set("source", null);
         this.toolbarView = new ToolbarView(editor.locale, { shouldGroupWhenFull: true });
 
-        // Names the widget whose tools the row holds, as `‹ Table`.
-        const back = this.backView = new ButtonView(editor.locale);
-        back.set({ icon: IconPreviousArrow, tooltip: editor.t("Back") });
-        back.bind("label").to(this, "source", (source) => getToolbarName(editor, source) ?? editor.t("Back"));
-        back.bind("withText").to(this, "source", (source) => getToolbarName(editor, source) !== undefined);
-        back.on("execute", () => this.setActive(false));
+        this.backView = new ButtonView(editor.locale);
+        this.backView.set({ label: editor.t("Back"), icon: IconPreviousArrow, tooltip: true });
+        this.backView.on("execute", () => this.setActive(false));
+
+        // Names the widget the tools act on. Hidden for a toolbar without a name.
+        const title = this.titleView = new ContextToolbarTitleView(editor.locale);
+        const name = (source: ContextToolbarSource | null) => getToolbarName(editor, source);
+        title.bind("isVisible").to(this, "source", (source) => name(source) !== undefined);
+        title.bind("label").to(this, "source", (source) => name(source) ?? "");
+        title.bind("icon").to(this, "source", (source) => (source ? TOOLBAR_ICONS[source.id] ?? "" : ""));
     }
 
     init() {
@@ -125,7 +131,7 @@ export default class ContextToolbar extends Plugin {
 
         // Grouping measures the rendered toolbar as items arrive.
         this.toolbarView.render();
-        this.toolbarView.items.addMany([this.backView, new ToolbarSeparatorView()]);
+        this.toolbarView.items.addMany([this.backView, new ToolbarSeparatorView(), this.titleView]);
         // Before `ToolbarGroupMenu`, which decides on a dropdown as it is added.
         this.listenTo(this.toolbarView.items, "add", (_evt, item) => {
             if (item instanceof DropdownView && !isListMenu(item)) {
@@ -144,6 +150,7 @@ export default class ContextToolbar extends Plugin {
             this.toolbarView.destroy();
         } else {
             this.backView.destroy();
+            this.titleView.destroy();
         }
     }
 
@@ -174,13 +181,13 @@ export default class ContextToolbar extends Plugin {
         this.editor.editing.view.focus();
     }
 
-    /** Fills {@link toolbarView} with the items of the toolbar for the selection, after the back button. */
+    /** Fills {@link toolbarView} with the items of the toolbar for the selection, after the title. */
     private fillToolbar() {
         if (this.source === this.shownSource || !this.source) {
             return;
         }
 
-        for (const item of [...this.toolbarView.items].slice(2)) {
+        for (const item of [...this.toolbarView.items].slice(3)) {
             this.toolbarView.items.remove(item);
             item.destroy();
         }
@@ -214,6 +221,30 @@ export default class ContextToolbar extends Plugin {
         } else if (this.isActive) {
             this.isActive = false;
         }
+    }
+}
+
+/** The icon and the name of the widget whose tools a {@link ContextToolbar} row holds. Not a button. */
+class ContextToolbarTitleView extends View {
+    declare label: string;
+    declare icon: string;
+    declare isVisible: boolean;
+
+    constructor(locale: Locale) {
+        super(locale);
+        this.set({ label: "", icon: "", isVisible: true });
+
+        const iconView = new IconView();
+        iconView.bind("content").to(this, "icon");
+
+        const bind = this.bindTemplate;
+        this.setTemplate({
+            tag: "span",
+            attributes: {
+                class: ["ck", "ck-context-toolbar-title", bind.if("isVisible", "ck-hidden", (isVisible) => !isVisible)]
+            },
+            children: [iconView, { tag: "span", children: [{ text: bind.to("label") }] }]
+        });
     }
 }
 

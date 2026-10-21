@@ -253,6 +253,16 @@ body.mobile {
             }
         }
 
+        .ck-toolbar__items > .ck-context-toolbar-title {
+            --ck-icon-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-inline: 6px 10px;
+            color: var(--muted-text-color);
+            white-space: nowrap;
+        }
+
         .ck-toolbar__items > .ck.ck-button.ck-context-toolbar-button {
             --mobile-toolbar-pill: var(--accented-background-color);
             --mobile-toolbar-pill-shadow: inset 0 0 0 1px var(--main-border-color);
@@ -270,6 +280,7 @@ body.mobile {
             &:dir(rtl) .ck-button__label::after {
                 content: "‹";
             }
+
         }
     }
 }
