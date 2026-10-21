@@ -65,7 +65,11 @@
     "edit_link": "リンクを編集",
     "button_edit_link": "リンクを保存",
     "fix_link": "リンクを修正",
-    "button_fix_link": "リンクを修正"
+    "button_fix_link": "リンクを修正",
+    "web_link": "Web リンク",
+    "url": "URL",
+    "mirror_title": "ノートのタイトルを反映",
+    "mirror_title_description": "リンクにはノートの現在のタイトルが表示され、ノートの名前が変更されるとタイトルも変わります。"
   },
   "branch_prefix": {
     "save": "保存",
@@ -3869,7 +3873,14 @@
       "scroll-to-the-next-tabs": "次のタブエリアへスクロール",
       "box-size-0": "ボックスサイズ: %0",
       "text-formatting": "テキスト書式",
-      "block-type": "ブロックタイプ"
+      "block-type": "ブロックタイプ",
+      "apply-formatting": "書式を適用",
+      "camera": "カメラ",
+      "move-up": "上に移動",
+      "move-down": "下に移動",
+      "image-position": "画像の位置",
+      "list": "リスト",
+      "list-type": "リストタイプ"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
