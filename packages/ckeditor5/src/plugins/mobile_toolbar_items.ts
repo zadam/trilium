@@ -19,6 +19,16 @@ import {
     IconHeading5,
     IconHeading6,
     IconLink,
+    IconListStyleArabicIndic,
+    IconListStyleCircle,
+    IconListStyleDecimal,
+    IconListStyleDecimalLeadingZero,
+    IconListStyleDisc,
+    IconListStyleLowerLatin,
+    IconListStyleLowerRoman,
+    IconListStyleSquare,
+    IconListStyleUpperLatin,
+    IconListStyleUpperRoman,
     IconNumberedList,
     IconPaperClip,
     IconParagraph,
@@ -33,13 +43,15 @@ import {
     TodoList,
     UIModel
 } from "ckeditor5";
-import type { Command, DropdownView, ListDropdownItemDefinition, Locale } from "ckeditor5";
+import type {
+    Command, DropdownView, Editor, ListDropdownItemDefinition, ListStyleCommand, Locale
+} from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
 import FileUploadUI from "./file_upload/file_upload_ui.js";
 import { COMMAND_NAME as INTERNAL_LINK_COMMAND } from "./internallink.js";
-import { openListAsMenu } from "./toolbar_group_menu.js";
+import { openListAsMenu, type ToolbarGroupMenuItem } from "./toolbar_group_menu.js";
 
 const HEADING_ICONS: Record<string, string> = {
     heading1: IconHeading1,
@@ -80,6 +92,10 @@ interface BlockType {
  *   a note or to an address, in place of the separate `link` and `internalLink` buttons.
  * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
  *   which needs a pointer that hovers over its cells.
+ * - `listStyleMenu`, `listStartAt` and `listReversed`: the list properties of `ListProperties`,
+ *   whose panel holds a form: the styles of the list at the selection as tiles, a button that asks
+ *   the host for the number the list starts at (`listStartPrompt`), and a toggle for the order. The
+ *   last two show only in a numbered list.
  */
 export default class MobileToolbarItems extends Plugin {
 
@@ -111,6 +127,75 @@ export default class MobileToolbarItems extends Plugin {
         editor.ui.componentFactory.add("attachMenu", (locale) => this.createAttachDropdown(locale));
         editor.ui.componentFactory.add("insertTableMenu", (locale) => this.createInsertTableDropdown(locale));
         editor.ui.componentFactory.add("addLink", (locale) => this.createAddLinkButton(locale));
+
+        if (editor.commands.get("listStyle")) {
+            editor.ui.componentFactory.add("listStyleMenu", (locale) => this.createListStyleDropdown(locale));
+        }
+        if (editor.commands.get("listStart")) {
+            editor.ui.componentFactory.add("listStartAt", (locale) => this.createListStartButton(locale));
+        }
+        if (editor.commands.get("listReversed")) {
+            editor.ui.componentFactory.add("listReversed", (locale) => this.createListReversedButton(locale));
+        }
+    }
+
+    private createListStyleDropdown(locale: Locale) {
+        const editor = this.editor;
+        const command = editor.commands.get("listStyle") as ListStyleCommand;
+        const dropdown = createDropdown(locale);
+        dropdown.buttonView.set({ label: editor.t("List style"), tooltip: true });
+        dropdown.buttonView.bind("icon").to(command, "value", (value: string | null) =>
+            LIST_STYLES.find(({ type }) => type === value)?.icon ?? IconBulletedList);
+        dropdown.bind("isEnabled").to(command);
+
+        openListAsMenu(dropdown, {
+            layout: "tiles",
+            describe: (run) => getListStyles(editor)
+                .filter(({ type }) => command.isStyleTypeSupported(type))
+                .map(({ type, icon, label }): ToolbarGroupMenuItem => ({
+                    kind: "entry", label, icon, isEnabled: command.isEnabled, isOn: command.value === type,
+                    run: run(() => {
+                        editor.execute("listStyle", { type });
+                        editor.editing.view.focus();
+                    })
+                }))
+        });
+        return dropdown;
+    }
+
+    private createListStartButton(locale: Locale) {
+        const editor = this.editor;
+        const t = editor.t;
+        const command = editor.commands.get("listStart") as Command & { value: number | null };
+        const button = new ButtonView(locale);
+        button.set({ withText: true });
+        button.bind("label").to(command, "value", (value: number | null) => `${t("Start at")} ${value ?? 1}`);
+        button.bind("isEnabled").to(command);
+        button.bind("isVisible").to(command, "isEnabled");
+        button.on("execute", async () => {
+            const prompt = editor.config.get("listStartPrompt");
+            const startIndex = await prompt?.(t("Start at"), command.value ?? 1);
+            if (startIndex !== null && startIndex !== undefined) {
+                editor.execute("listStart", { startIndex });
+            }
+            editor.editing.view.focus();
+        });
+        return button;
+    }
+
+    private createListReversedButton(locale: Locale) {
+        const editor = this.editor;
+        const command = editor.commands.get("listReversed") as Command & { value: boolean | null };
+        const button = new ButtonView(locale);
+        button.set({ label: editor.t("Reversed order"), withText: true, isToggleable: true });
+        button.bind("isOn").to(command, "value", (value: boolean | null) => !!value);
+        button.bind("isEnabled").to(command);
+        button.bind("isVisible").to(command, "isEnabled");
+        button.on("execute", () => {
+            editor.execute("listReversed", { reversed: !command.value });
+            editor.editing.view.focus();
+        });
+        return button;
     }
 
     private createAddLinkButton(locale: Locale) {
@@ -309,6 +394,41 @@ export default class MobileToolbarItems extends Plugin {
     }
 }
 
+/** The styles of `ListPropertiesUI`, as it offers them, by the list type they apply to. */
+const LIST_STYLES = [
+    { listType: "bulleted", type: "disc", icon: IconListStyleDisc },
+    { listType: "bulleted", type: "circle", icon: IconListStyleCircle },
+    { listType: "bulleted", type: "square", icon: IconListStyleSquare },
+    { listType: "numbered", type: "decimal", icon: IconListStyleDecimal },
+    { listType: "numbered", type: "decimal-leading-zero", icon: IconListStyleDecimalLeadingZero },
+    { listType: "numbered", type: "lower-roman", icon: IconListStyleLowerRoman },
+    { listType: "numbered", type: "upper-roman", icon: IconListStyleUpperRoman },
+    { listType: "numbered", type: "lower-latin", icon: IconListStyleLowerLatin },
+    { listType: "numbered", type: "upper-latin", icon: IconListStyleUpperLatin },
+    { listType: "numbered", type: "arabic-indic", icon: IconListStyleArabicIndic }
+] as const;
+
+/** The styles of the list at the selection, named as `ListPropertiesUI` names them. */
+function getListStyles(editor: Editor) {
+    const block = editor.model.document.selection.getFirstPosition()?.parent;
+    const listType = block?.is("element") ? block.getAttribute("listType") : undefined;
+    const t = editor.t;
+    const labels: Record<string, string> = {
+        "disc": t("Disc"),
+        "circle": t("Circle"),
+        "square": t("Square"),
+        "decimal": t("Decimal"),
+        "decimal-leading-zero": t("Decimal with leading zero"),
+        "lower-roman": t("Lower–roman"),
+        "upper-roman": t("Upper-roman"),
+        "lower-latin": t("Lower-latin"),
+        "upper-latin": t("Upper-latin"),
+        "arabic-indic": t("Arabic-indic")
+    };
+    return LIST_STYLES.filter((style) => style.listType === listType)
+        .map((style) => ({ ...style, label: labels[style.type] }));
+}
+
 /** An icon of a table of `rows` × `columns` cells, each a filled square, as the size grid draws them. */
 function tableSizeIcon(rows: number, columns: number) {
     const size = 20;
@@ -324,4 +444,14 @@ function tableSizeIcon(rows: number, columns: number) {
         }
     }
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">${cells.join("")}</svg>`;
+}
+
+declare module "ckeditor5" {
+    interface EditorConfig {
+        /**
+         * Asks for the number a list starts at, for `listStartAt`, with the label of the field and the
+         * current number. Resolves to `null` when nothing is to change.
+         */
+        listStartPrompt?(label: string, current: number): Promise<number | null>;
+    }
 }

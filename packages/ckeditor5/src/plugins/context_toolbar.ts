@@ -1,5 +1,6 @@
 import {
-    ButtonView, ContextualBalloon, DropdownView, IconCodeBlock, IconImage, IconLink, IconPreviousArrow, IconTable,
+    ButtonView, ContextualBalloon, DropdownView, IconBulletedList, IconCodeBlock, IconImage, IconLink,
+    IconNumberedList, IconPreviousArrow, IconTable,
     IconThreeVerticalDots, IconView, LinkUI, Plugin, ToolbarSeparatorView, ToolbarView, View, WidgetToolbarRepository
 } from "ckeditor5";
 import type {
@@ -18,7 +19,9 @@ const TOOLBAR_ICONS: Record<string, string> = {
     codeblock: IconCodeBlock,
     admonition: admonitionIcon,
     link: IconLink,
-    linkEmbed: IconLink
+    linkEmbed: IconLink,
+    bulletedList: IconBulletedList,
+    numberedList: IconNumberedList
 };
 
 /** What `WidgetToolbarRepository` keeps of a registered toolbar. */
@@ -271,6 +274,8 @@ function getToolbarName(editor: Editor, source: ContextToolbarSource | null) {
         // A link preview, which is a link whatever its shape.
         case "link":
         case "linkEmbed": return t("Link");
+        case "bulletedList":
+        case "numberedList": return t("List");
         default: return undefined;
     }
 }
@@ -287,6 +292,20 @@ function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefin
         yield [id, { ariaLabel: view.ariaLabel, getRelatedElement, itemsConfig }];
     }
 
+    // The toolbar of the innermost list, under the name of its kind, so the chip shows its icon.
+    const listItems = editor.config.get("listToolbar") ?? [];
+    if (listItems.length) {
+        for (const [id, tag] of [["bulletedList", "ul"], ["numberedList", "ol"]] as const) {
+            yield [id, {
+                getRelatedElement: (selection) => {
+                    const list = getInnermostList(selection);
+                    return list?.name === tag ? list : null;
+                },
+                itemsConfig: listItems
+            }];
+        }
+    }
+
     const linkItems = getLinkToolbarItems(editor);
     if (linkItems.length) {
         yield ["link", {
@@ -294,6 +313,13 @@ function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefin
             itemsConfig: linkItems
         }];
     }
+}
+
+/** The innermost list at the selection, or `null` outside a list or in a to-do list, which has no properties. */
+function getInnermostList(selection: ViewDocumentSelection) {
+    const list = selection.getFirstPosition()?.getAncestors().reverse()
+        .find((node): node is ViewElement => node.is("element", "ul") || node.is("element", "ol"));
+    return list && !list.hasClass("todo-list") ? list : null;
 }
 
 /** The items of the link toolbar, without the properties a link has none of, as `LinkUI` builds it. */
@@ -320,5 +346,10 @@ function hasItem(config: ToolbarConfig | undefined, name: string): boolean {
 declare module "ckeditor5" {
     interface PluginsMap {
         [ContextToolbar.pluginName]: ContextToolbar;
+    }
+
+    interface EditorConfig {
+        /** The items of the toolbar the `contextToolbar` button brings up in a list. */
+        listToolbar?: ToolbarConfigItem[];
     }
 }

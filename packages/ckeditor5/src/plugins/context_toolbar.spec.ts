@@ -1,7 +1,7 @@
 import {
     _setModelData as setModelData,
     ButtonView, type ClassicEditor, ContextualBalloon, DropdownView, Essentials, IconLink, Image, ImageStyle, ImageToolbar,
-    IconPreviousArrow, IconTable, Link, LinkUI, Paragraph, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
+    IconBulletedList, IconNumberedList, IconPreviousArrow, IconTable, Link, LinkUI, List, ListProperties, Paragraph, TodoList, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
     WidgetToolbarRepository
 } from "ckeditor5";
 import { describe, expect, it, vi } from "vitest";
@@ -11,6 +11,7 @@ import { installGlobMock } from "../../test/globals-test-kit.js";
 import ContextToolbar from "./context_toolbar.js";
 import ImagePosition from "./image_position.js";
 import LinkEmbedToolbar from "./link_embed/link_embed_toolbar.js";
+import MobileToolbarItems from "./mobile_toolbar_items.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
 const TABLE = "<table><tableRow><tableCell><paragraph>a[]</paragraph></tableCell></tableRow></table><paragraph>b</paragraph>";
@@ -163,6 +164,36 @@ describe("ContextToolbar", () => {
         selectTable();
         editor.ui.update();
         expect(plugin.isActive).toBe(true);
+    });
+
+    it("offers the list toolbar for the innermost list, and none for a to-do list", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoList, MobileToolbarItems, ContextToolbar], {
+            toolbar: ["contextToolbar"],
+            list: { properties: { styles: true, startIndex: true, reversed: true } },
+            listToolbar: ["listStyleMenu", "listReversed"]
+        });
+        editor.ui.focusTracker.isFocused = true;
+        const plugin = editor.plugins.get(ContextToolbar);
+        const button = getButton(editor);
+
+        setModelData(editor.model,
+            "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\">a</paragraph>"
+            + "<paragraph listIndent=\"1\" listItemId=\"b\" listType=\"numbered\">b[]</paragraph>");
+        editor.ui.update();
+        expect(button).toMatchObject({ isVisible: true, label: "List", icon: IconNumberedList });
+        // A caret in a list is in text, so the row waits for the chip.
+        expect(plugin.isActive).toBe(false);
+        button.fire("execute");
+        expect([...plugin.toolbarView.items].slice(3).map((item) => (item as ButtonView).label))
+            .toStrictEqual([undefined, "Reversed order"]);
+
+        setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\">a[]</paragraph>");
+        editor.ui.update();
+        expect(button).toMatchObject({ isVisible: true, icon: IconBulletedList });
+
+        setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"todo\">a[]</paragraph>");
+        editor.ui.update();
+        expect(button.isVisible).toBe(false);
     });
 
     describe("for a link", () => {

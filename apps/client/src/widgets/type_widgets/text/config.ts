@@ -4,6 +4,7 @@ import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD
 import i18next from "i18next";
 
 import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
+import { prompt } from "../../../services/dialog.js";
 import { t } from "../../../services/i18n.js";
 import imageService from "../../../services/image.js";
 import { getNoteImageSourceToLoad } from "../../../services/image_urls.js";
@@ -320,6 +321,8 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
 
     config.toolbarGroupMenu = { host: () => createToolbarGroupMenuHost() };
     config.colorMenu = { host: () => createColorMenuHost() };
+    config.listStartPrompt = async (label, current) =>
+        parseListStart(await prompt({ title: label, defaultValue: String(current) }));
     config.tableColumnBar = { bottomObstacle: getShownToolbarIsland };
 
     return {
@@ -342,6 +345,12 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
  * we actually have a pair for the language, so an unmapped locale keeps falling through to
  * CKEditor's default rather than losing quote replacement altogether.
  */
+/** The number a list starts at, from the text of a prompt: a whole number of 0 or more, or `null`. */
+function parseListStart(value: string | null) {
+    const text = value?.trim() ?? "";
+    return /^\d+$/.test(text) ? Number(text) : null;
+}
+
 function buildTransformationsConfig(contentLanguage: string | null): TextTransformationConfig {
     const remove: string[] = [];
     if (options.get("textNotePunctuationReplacementsEnabled") !== "true") remove.push("typography");

@@ -35,6 +35,7 @@ export type { MentionHostedFeed, MentionHostedList, MentionHostedListState } fro
 export type { ToolbarGroupMenuEntry, ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest } from "./plugins/toolbar_group_menu.js";
 export type { default as TextFormattingToolbar } from "./plugins/text_formatting_toolbar.js";
 export type { default as ContextToolbar } from "./plugins/context_toolbar.js";
+export type { default as MobileToolbarItems } from "./plugins/mobile_toolbar_items.js";
 export type { ColorMenuHost, ColorMenuRequest, ColorMenuTarget } from "./plugins/color_menu.js";
 export { default as TriliumSnippets } from "./plugins/snippets/snippets.js";
 export type { SnippetDefinition } from "./plugins/snippets/snippetsconfig.js";

@@ -84,6 +84,13 @@ vi.mock("../../../services/syntax_highlight.js", async (importOriginal) => ({
 }));
 
 // Heavy modules pulled in lazily by the editor config — replace with light stubs.
+const promptState = vi.hoisted(() => ({ answer: null as string | null, seen: [] as unknown[] }));
+vi.mock("../../../services/dialog.js", () => ({
+    prompt: vi.fn(async (props: unknown) => {
+        promptState.seen.push(props);
+        return promptState.answer;
+    })
+}));
 vi.mock("@triliumnext/highlightjs", () => ({ default: { name: "hljs-stub" } }));
 vi.mock("../../../services/math.js", () => ({ default: { name: "katex-stub" } }));
 
@@ -507,6 +514,25 @@ describe("CK config - language & emoji", () => {
         // Dev mode prepends the origin, so the dev URL ends with the plain (prod) one.
         expect(devUrl.endsWith(prodUrl)).toBe(true);
         expect(devUrl.length).toBeGreaterThanOrEqual(prodUrl.length);
+    });
+});
+
+describe("CK config - list start", () => {
+    it("asks for the number in the app's prompt, keeping only a whole number of 0 or more", async () => {
+        const config = await buildConfig(baseOpts());
+        const ask = config.listStartPrompt;
+        if (!ask) throw new Error("expected listStartPrompt");
+
+        promptState.answer = " 12 ";
+        expect(await ask("Start at", 3)).toBe(12);
+        expect(promptState.seen.at(-1)).toMatchObject({ title: "Start at", defaultValue: "3" });
+
+        for (const answer of [ null, "", "abc", "-1", "2.5" ]) {
+            promptState.answer = answer;
+            expect(await ask("Start at", 3)).toBeNull();
+        }
+        promptState.answer = "0";
+        expect(await ask("Start at", 3)).toBe(0);
     });
 });
 

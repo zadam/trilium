@@ -186,6 +186,10 @@ describe("buildMobileToolbar", () => {
         }
     });
 
+    it("brings the list properties up from the list's own toolbar", () => {
+        expect(buildMobileToolbar(true).listToolbar).toStrictEqual([ "listStyleMenu", "listStartAt", "listReversed" ]);
+    });
+
     it("opens table sizes as tiles from the insert menu instead of the size grid", () => {
         const items = buildMobileToolbar(true).toolbar.items;
         expect(items).not.toContain("insertTableMenu");

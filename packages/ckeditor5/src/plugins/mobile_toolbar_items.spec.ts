@@ -30,6 +30,10 @@ import {
     Image,
     ImageUpload,
     List,
+    ListProperties,
+    IconListStyleCircle,
+    IconListStyleDisc,
+    IconListStyleLowerRoman,
     Paragraph,
     Plugin,
     Table,
@@ -343,6 +347,74 @@ describe("addLink", () => {
 
         editor.enableReadOnlyMode("spec");
         expect(button.isEnabled).toBe(false);
+    });
+});
+
+describe("list properties", () => {
+    const BULLETED_LIST = "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\" listStyle=\"circle\">a[]</paragraph>";
+    const NUMBERED_LIST = "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"numbered\" listStart=\"3\">a[]</paragraph>";
+
+    async function createListEditor() {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const promptListStart = vi.fn(async () => 7 as number | null);
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["listStyleMenu", "listStartAt", "listReversed"],
+            list: { properties: { styles: true, startIndex: true, reversed: true } },
+            toolbarGroupMenu: { host: () => host },
+            listStartPrompt: promptListStart
+        });
+        const [style, start, reversed] = [...editor.ui.view.toolbar.items] as [DropdownView, ButtonView, ButtonView];
+        return { editor, requests, promptListStart, style, start, reversed };
+    }
+
+    it("opens the styles of the list at the selection as tiles, the current one on", async () => {
+        const { editor, requests, style } = await createListEditor();
+        setModelData(editor.model, BULLETED_LIST);
+        expect(style.buttonView).toMatchObject({ label: "List style", icon: IconListStyleCircle });
+
+        style.buttonView.fire("open");
+        const request = requests.at(-1);
+        expect(request?.layout).toBe("tiles");
+        const tiles = request?.items ?? [];
+        expect(tiles.map(rowText)).toStrictEqual(["Disc", "Circle ✓", "Square"]);
+        expect(icons(tiles)[0]).toBe(IconListStyleDisc);
+
+        entry(tiles, "Disc").run?.();
+        expect(editor.commands.get("listStyle")?.value).toBe("disc");
+        expect(style.buttonView.icon).toBe(IconListStyleDisc);
+
+        setModelData(editor.model, NUMBERED_LIST);
+        style.buttonView.fire("open");
+        const numbered = requests.at(-1)?.items ?? [];
+        expect(numbered.map(rowText)).toContain("Lower–roman");
+        expect(icons(numbered)).toContain(IconListStyleLowerRoman);
+        expect(numbered.map(rowText)).not.toContain("Disc");
+    });
+
+    it("sets the start and the order of a numbered list, and shows neither for a bulleted one", async () => {
+        const { editor, promptListStart, start, reversed } = await createListEditor();
+        setModelData(editor.model, BULLETED_LIST);
+        expect([start.isVisible, reversed.isVisible]).toStrictEqual([false, false]);
+
+        setModelData(editor.model, NUMBERED_LIST);
+        expect(start).toMatchObject({ isVisible: true, label: "Start at 3", withText: true });
+        expect(reversed).toMatchObject({ isVisible: true, label: "Reversed order", isOn: false });
+
+        start.fire("execute");
+        expect(promptListStart).toHaveBeenCalledExactlyOnceWith("Start at", 3);
+        await vi.waitFor(() => expect(editor.commands.get("listStart")?.value).toBe(7));
+        expect(start.label).toBe("Start at 7");
+
+        // A prompt closed without a number leaves the list as it is.
+        promptListStart.mockResolvedValueOnce(null);
+        start.fire("execute");
+        await Promise.resolve();
+        expect(editor.commands.get("listStart")?.value).toBe(7);
+
+        reversed.fire("execute");
+        expect(reversed.isOn).toBe(true);
+        expect(editor.commands.get("listReversed")?.value).toBe(true);
     });
 });
 
