@@ -188,8 +188,12 @@ describe("buildMobileToolbar", () => {
         }
     });
 
-    it("brings the list properties up from the list's own toolbar", () => {
-        expect(buildMobileToolbar(true).listToolbar).toStrictEqual([ "listTypeMenu", "listStartAt", "listReversed" ]);
+    it("leads the list's own toolbar with the indentation and the moves, then the list properties", () => {
+        expect(buildMobileToolbar(true).listToolbar).toStrictEqual([
+            "outdent", "indent", "moveBlockUp", "moveBlockDown",
+            "|",
+            "listTypeMenu", "listStartAt", "listReversed"
+        ]);
     });
 
     it("opens table sizes as tiles from the insert menu instead of the size grid", () => {

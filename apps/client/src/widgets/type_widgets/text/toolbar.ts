@@ -122,8 +122,13 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             // Acts on the selection, which brings this row up.
             "cuttonote"
         ],
-        // The row of the `contextToolbar` button in a list, as a list has no toolbar of its own.
-        listToolbar: [ "listTypeMenu", "listStartAt", "listReversed" ]
+        // The row of the `contextToolbar` button in a list, as a list has no toolbar of its own. It
+        // replaces the main row, so it repeats the indentation and the moves, used most in a list.
+        listToolbar: [
+            "outdent", "indent", "moveBlockUp", "moveBlockDown",
+            "|",
+            "listTypeMenu", "listStartAt", "listReversed"
+        ]
     };
 }
 
