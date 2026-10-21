@@ -2,10 +2,13 @@ import { LOCALES } from "@triliumnext/commons";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type Component from "../../../components/component";
 import dialog from "../../../services/dialog";
+import type LoadResults from "../../../services/load_results";
 import options from "../../../services/options";
 import { renderInto } from "../../../test/render";
 import type { PickerItem } from "../../dialogs/item_picker";
+import { ParentComponent } from "../../react/react_utils";
 import { ContentLanguagesCard } from "./content_languages_card";
 
 vi.mock("../../../services/i18n", async (importOriginal) => ({
@@ -74,6 +77,24 @@ describe("ContentLanguagesCard", () => {
             expect(names(container)).toEqual([ "Deutsch", "Français", "Italiano", "Română" ]);
         });
 
+        it("keeps a language removed elsewhere while the picker is open", async () => {
+            let answer: (item: PickerItem | null) => void = () => {};
+            vi.spyOn(dialog, "pickSingleItem")
+                .mockReturnValue(new Promise((resolve) => { answer = resolve; }));
+            const container = draw();
+
+            await click(container.querySelector(".tn-sortable-adder"));
+            act(() => {
+                options.set("languages", JSON.stringify([ "ro", "de" ]));
+                reloadOption("languages");
+            });
+            await act(async () => { answer({ key: "it", caption: "Italiano" }); });
+            await act(async () => {});
+
+            expect(stored()).toEqual([ "ro", "de", "it" ]);
+            expect(names(container)).toEqual([ "Deutsch", "Italiano", "Română" ]);
+        });
+
         it("says how many languages are left to add, as the first one or another", () => {
             expect(draw().querySelector(".tn-sortable-adder")?.textContent?.trim())
                 .toBe(`content_language.add_another ${LOCALES.length - 3}`);
@@ -84,24 +105,51 @@ describe("ContentLanguagesCard", () => {
         });
     });
 
-    it("removes a language with its button or Delete", async () => {
+    it("removes a language with its button or Delete, focusing the next one", async () => {
         const container = draw();
 
         await click(segment(container, "Français")?.querySelector(".content-languages-remove")
             ?? null);
         expect(stored()).toEqual([ "ro", "de" ]);
 
+        act(() => segment(container, "Deutsch")?.focus());
         press(segment(container, "Deutsch"), "Delete");
         expect(stored()).toEqual([ "ro" ]);
         expect(names(container)).toEqual([ "Română" ]);
+        expect(document.activeElement).toBe(segment(container, "Română"));
     });
 });
 
+type ReloadHandler = (data: { loadResults: LoadResults }) => void;
+
+/** The card's `entitiesReloaded` handlers, which `reloadOption()` calls. */
+const reloadHandlers = new Set<ReloadHandler>();
+
 function draw() {
+    const parent = {
+        registerHandler: (name: string, handler: ReloadHandler) => {
+            if (name === "entitiesReloaded") reloadHandlers.add(handler);
+        },
+        removeHandler: (name: string, handler: ReloadHandler) => {
+            if (name === "entitiesReloaded") reloadHandlers.delete(handler);
+        }
+    } as unknown as Component;
+
     let container: HTMLElement | undefined;
-    act(() => { container = renderInto(<ContentLanguagesCard heading="Languages" />); });
+    act(() => {
+        container = renderInto(
+            <ParentComponent.Provider value={parent}>
+                <ContentLanguagesCard heading="Languages" />
+            </ParentComponent.Provider>);
+    });
     if (!container) throw new Error("The card did not render");
     return container;
+}
+
+/** Announces a changed option, the way a change made in another window arrives. */
+function reloadOption(name: string) {
+    const loadResults = { getOptionNames: () => [ name ] } as unknown as LoadResults;
+    for (const handler of reloadHandlers) handler({ loadResults });
 }
 
 function stored() {

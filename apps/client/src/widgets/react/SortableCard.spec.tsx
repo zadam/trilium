@@ -482,6 +482,22 @@ describe("SortableCard", () => {
             expect(changed.at(-1)?.map((item) => item.key)).toEqual([ "a", "b", "c", "d" ]);
         });
 
+        it("reports to the caller's latest onChange, after the list changed while it asked",
+            async () => {
+                let answer: (item: SortableItem | undefined) => void = () => {};
+                const stale = vi.fn();
+                const props = { itemCreationButtons: [ { label: "Add", onCreateItem: () =>
+                    new Promise<SortableItem | undefined>((resolve) => { answer = resolve; }) } ] };
+                draw({ ...props, onChange: stale });
+
+                await click(adder());
+                redraw(items.slice(1), props);
+                await act(async () => { answer({ key: "d", caption: "Delta" }); });
+
+                expect(stale).not.toHaveBeenCalled();
+                expect(changed.at(-1)?.map((item) => item.key)).toEqual([ "b", "c", "d" ]);
+            });
+
         it("offers a button for each way of making one, each the width of the others", async () => {
             draw({ itemCreationButtons: [
                 makes("d", "Delta", "Add a note"),
@@ -617,6 +633,49 @@ describe("SortableCard", () => {
             expect(changed).toEqual([]);
             // Control plus a movement key does not move the focus off it either.
             expect(document.activeElement).not.toBe(segmentOf("c"));
+        });
+    });
+
+    /** The caller removes it, from Delete, a button inside it, or a change made elsewhere. */
+    describe("removing the focused entry", () => {
+        it("moves the focus to the entry in its place, else the one before, else the creation row",
+            () => {
+                const props = { itemCreationButtons: [ makes("d", "Delta") ] };
+                draw(props);
+
+                focus(segmentOf("b"));
+                redraw([ items[0], items[2] ], props);
+                expect(document.activeElement).toBe(segmentOf("c"));
+
+                redraw([ items[0] ], props);
+                expect(document.activeElement).toBe(segmentOf("a"));
+
+                redraw([], props);
+                expect(document.activeElement).toBe(adder());
+            });
+
+        it("moves the focus from a control inside the entry too", () => {
+            const props = { renderItem: (item: SortableItem) =>
+                <button type="button" className="own">{item.caption}</button> };
+            draw(props);
+
+            focus(segmentOf("a")?.querySelector<HTMLElement>(".own") ?? null);
+            redraw(items.slice(1), props);
+
+            expect(document.activeElement).toBe(segmentOf("b"));
+        });
+
+        it("leaves the focus where it went once it left the card", () => {
+            draw();
+            const outside = document.createElement("button");
+            document.body.append(outside);
+
+            focus(segmentOf("b"));
+            focus(outside);
+            redraw([ items[0], items[2] ]);
+
+            expect(document.activeElement).toBe(outside);
+            outside.remove();
         });
     });
 

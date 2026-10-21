@@ -165,9 +165,13 @@ export function SortableCard<T extends SortableItem>({
     const pendingFocus = useRef<string | undefined>(undefined);
 
     const shown = draft ?? items;
-    /** The current list, for a callback that resumes after an await. */
+    // The current list and `onChange`, for a callback that resumes after an await.
     const shownRef = useRef(shown);
+    const onChangeRef = useRef(onChange);
+    /** Read before the commit, which can remove the focused segment. */
+    const focused = focusedEntry(listRef.current, shownRef.current);
     shownRef.current = shown;
+    onChangeRef.current = onChange;
     const selected = selectedKey ?? ownSelection;
 
     useEffect(() => {
@@ -218,6 +222,21 @@ export function SortableCard<T extends SortableItem>({
         select(key);
         segmentOf(key)?.focus();
     }, [ segmentOf, select, shown ]);
+
+    // Removing the focused segment leaves the focus on `document.body`, so it moves to the entry
+    // in its place, else the one before it, else the creation row.
+    useLayoutEffect(() => {
+        if (!focused || shown.some((item) => item.key === focused.key)
+                || (document.activeElement && document.activeElement !== document.body)) {
+            return;
+        }
+
+        if (shown.length) {
+            focusEntry(Math.min(focused.index, shown.length - 1));
+        } else {
+            adderRef.current?.querySelector<HTMLElement>(".tn-sortable-adder")?.focus();
+        }
+    });
 
     /** Moves the entry at `from` to `to`, keeping the focus on it. */
     const moveItem = useCallback((from: number, to: number) => {
@@ -409,8 +428,8 @@ export function SortableCard<T extends SortableItem>({
             return;
         }
 
-        // Read again instead of closed over: `create` can open a dialog, and an order built from
-        // the stale list would undo a reorder made meanwhile.
+        // Both read again instead of closed over: `create` can open a dialog, and the stale list or
+        // `onChange` would undo a change made meanwhile.
         const order = [ ...shownRef.current ];
         order.splice(at ?? order.length, 0, created);
         setAddedKey(created.key);
@@ -419,8 +438,8 @@ export function SortableCard<T extends SortableItem>({
             pendingFocus.current = created.key;
         }
 
-        onChange(order);
-    }, [ onChange ]);
+        onChangeRef.current(order);
+    }, []);
 
     /**
      * Ends what `event.pointerId` was doing, and nothing else: a second finger pressed and lifted
@@ -619,6 +638,15 @@ export function SortableCard<T extends SortableItem>({
             </div>
         </Card>
     );
+}
+
+/** The entry whose segment holds the focus, directly or through a control, and its index. */
+function focusedEntry(list: HTMLElement | null, shown: SortableItem[]) {
+    const segment = document.activeElement?.closest<HTMLElement>(".tn-sortable-segment");
+    const index = segment && segment.parentElement === list
+        ? shown.findIndex((item) => item.key === segment.dataset.key)
+        : -1;
+    return index < 0 ? undefined : { key: shown[index].key, index };
 }
 
 /**

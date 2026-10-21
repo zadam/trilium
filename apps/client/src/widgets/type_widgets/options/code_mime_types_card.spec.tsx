@@ -160,8 +160,10 @@ describe("CodeMimeTypesCard", () => {
         await click(removeButton(container, "Java"));
         expect(stored()).toEqual([ PLAIN, FRONTEND, C ]);
 
+        act(() => segment(container, "C")?.focus());
         press(segment(container, "C"), "Delete");
         expect(stored()).toEqual([ PLAIN, FRONTEND ]);
+        expect(document.activeElement).toBe(segment(container, "JavaScript (Trilium frontend)"));
 
         press(segment(container, "Plain text"), "Delete");
         expect(stored()).toEqual([ PLAIN, FRONTEND ]);
