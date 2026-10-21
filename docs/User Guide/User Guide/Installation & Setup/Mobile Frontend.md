@@ -108,7 +108,7 @@ A single color button replaces the separate text and background color buttons. I
 
 The <span class="tn-icon cke cke-link"></span> link button replaces the separate link and internal link buttons. It opens the _Add link_ dialog, which links to a note or to a web address, or _Edit link_ when the cursor is inside a link. The dialog does not open the keyboard by itself; tap the note or address field to type. The same button is on the row of text formatting, after the inline styles, to turn selected text into a link.
 
-The <span class="tn-icon cke cke-paper-clip"></span> button replaces the separate image upload and attach file buttons. It opens _Image_, _Camera_, _Attach and embed file_ and _Attach file as a link_ as a list. _Camera_ opens the device's camera and inserts the photo taken; the others open the device's file picker.
+The <span class="tn-icon cke cke-paper-clip"></span> button opens _Image_, _Camera_, _Attach and embed file_ and _Attach file as a link_ as a list: the menu of the desktop toolbar, with _Camera_ added. _Camera_ opens the device's camera and inserts the photo taken; the others open the device's file picker.
 
 ## Installing as a PWA
 

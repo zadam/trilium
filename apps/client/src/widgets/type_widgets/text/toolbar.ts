@@ -132,7 +132,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "outdent", "indent", "moveBlockUp", "moveBlockDown",
             "|",
             "listTypeMenu", "listStartAt", "listReversed"
-        ]
+        ],
+        attachMenu: { camera: true }
     };
 }
 
@@ -164,8 +165,7 @@ export function buildClassicToolbar(multilineToolbar: boolean, aiAssistant: bool
                 // down among the last items the assistant was grouped away at every ordinary note
                 // width.
                 ...(aiAssistant ? ["aiAssistant"] : []),
-                "imageUpload",
-                "fileUpload",
+                "attachMenu",
                 "blockQuote",
                 "admonition",
                 "insertTable",
@@ -238,8 +238,7 @@ export function buildFloatingToolbar(aiAssistant: boolean) {
             "numberedList",
             "todoList",
             "|",
-            "imageUpload",
-            "fileUpload",
+            "attachMenu",
             "blockQuote",
             "admonition",
             "codeBlock",

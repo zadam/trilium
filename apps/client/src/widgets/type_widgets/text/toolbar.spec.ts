@@ -70,6 +70,20 @@ describe("the Insert group", () => {
     });
 });
 
+describe("the attach menu", () => {
+    it("replaces the image and file uploads on every toolbar, with the camera only on a phone", () => {
+        const classic = buildClassicToolbar(false, true);
+        const floating = buildFloatingToolbar(true);
+        for (const items of [ classic.toolbar.items, floating.blockToolbar ]) {
+            expect(items).toContain("attachMenu");
+            expect(items).not.toContain("imageUpload");
+            expect(items).not.toContain("fileUpload");
+        }
+        expect("attachMenu" in classic || "attachMenu" in floating).toBe(false);
+        expect(buildMobileToolbar(true).attachMenu).toStrictEqual({ camera: true });
+    });
+});
+
 describe("buildClassicToolbar", () => {
     it("reflects the multiline flag via shouldNotGroupWhenFull", () => {
         expect(buildClassicToolbar(false, true).toolbar.shouldNotGroupWhenFull).toBe(false);
@@ -224,8 +238,6 @@ describe("buildMobileToolbar", () => {
             todoList: "blockType",
             fontSize: "fontSizeMenu",
             fontColor: "colorMenu",
-            imageUpload: "attachMenu",
-            fileUpload: "attachMenu",
             fontBackgroundColor: "colorMenu",
             aiAssistant: "aiAssistantMenu"
         };

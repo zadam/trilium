@@ -462,14 +462,15 @@ describe("attachMenu", () => {
         }
     }
 
-    async function createAttachEditor() {
+    async function createAttachEditor(camera = true) {
         const requests: ToolbarGroupMenuRequest[] = [];
         const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
         const editor = await createTestEditor([
             Essentials, Paragraph, Image, ImageUpload, UploadCommands, FileUploadUI, MobileToolbarItems, ToolbarGroupMenu
         ], {
             toolbar: ["attachMenu"],
-            toolbarGroupMenu: { host: () => host }
+            toolbarGroupMenu: { host: () => host },
+            ...(camera ? { attachMenu: { camera: true } } : {})
         });
         return { editor, requests };
     }
@@ -504,6 +505,13 @@ describe("attachMenu", () => {
         const tiles = request?.items ?? [];
         expect(tiles.map(rowText)).toStrictEqual(["Image", "Camera", "Attach and embed file", "Attach file as a link"]);
         expect(icons(tiles)).toStrictEqual([IconImageUpload, bxCamera, bxShapeSquare, bxLink]);
+    });
+
+    it("leaves out the camera unless it is asked for", async () => {
+        const { editor, requests } = await createAttachEditor(false);
+        getDropdown(editor, 0).buttonView.fire("open");
+        expect((requests.at(-1)?.items ?? []).map(rowText))
+            .toStrictEqual(["Image", "Attach and embed file", "Attach file as a link"]);
     });
 
     it("picks images for the image tile, takes a photo for the camera tile, and any file for the others", async () => {

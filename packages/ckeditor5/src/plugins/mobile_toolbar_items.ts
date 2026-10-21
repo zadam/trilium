@@ -77,16 +77,17 @@ interface BlockType {
 }
 
 /**
- * Registers variants of toolbar items for the narrow toolbar of a phone. When a host is configured,
- * `ToolbarGroupMenu` opens the lists of both as the host application's menu.
+ * Registers variants of toolbar items, most of them for the narrow toolbar of a phone. When a host
+ * is configured, `ToolbarGroupMenu` opens their lists as the host application's menu.
  *
  * - `blockType`: what Notion calls "Turn into". The paragraph, the headings of the `heading`
  *   configuration, the bulleted, numbered and to-do lists and the code block, which replace each
  *   other, and the block quote and the admonition, which wrap the block. One dropdown, under an
  *   icon of its own rather than the name of the current block, which takes 8em.
  * - `fontSizeMenu`: the `fontSize` dropdown.
- * - `attachMenu`: the image upload, a photo taken with the camera and the rows of the `fileUpload`
- *   list as a list, under a paperclip. A row whose feature the editor lacks is left out.
+ * - `attachMenu`: the image upload, a photo taken with the camera when `attachMenu.camera` is set,
+ *   and the rows of the `fileUpload` list as a list, under a paperclip. A row whose feature the
+ *   editor lacks is left out.
  * - `addImage`: the image upload of the menu bar, labelled "Image", which the `attachMenu` row
  *   is too, for the insert menu.
  * - `addLink`: one link button, which opens the link dialog of the internal link button for a link to
@@ -281,14 +282,16 @@ export default class MobileToolbarItems extends Plugin {
         if (editor.ui.componentFactory.has("addImage")) {
             buttons.push(editor.ui.componentFactory.create("addImage") as ButtonView);
 
-            const camera = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView & {
-                allowMultipleFiles: boolean;
-            };
-            camera.set({ label: t("Camera"), icon: bxCamera, allowMultipleFiles: false });
-            // Rendering adds the file input, which `capture` points at the rear camera.
-            camera.render();
-            camera.element?.querySelector("input[type=file]")?.setAttribute("capture", "environment");
-            buttons.push(camera);
+            if (editor.config.get("attachMenu")?.camera) {
+                const camera = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView & {
+                    allowMultipleFiles: boolean;
+                };
+                camera.set({ label: t("Camera"), icon: bxCamera, allowMultipleFiles: false });
+                // Rendering adds the file input, which `capture` points at the rear camera.
+                camera.render();
+                camera.element?.querySelector("input[type=file]")?.setAttribute("capture", "environment");
+                buttons.push(camera);
+            }
         }
         if (editor.plugins.has(FileUploadUI)) {
             buttons.push(...editor.plugins.get(FileUploadUI).createListButtons(locale));
@@ -493,5 +496,13 @@ declare module "ckeditor5" {
          * current number. Resolves to `null` when nothing is to change.
          */
         listStartPrompt?(label: string, current: number): Promise<number | null>;
+
+        attachMenu?: {
+            /**
+             * Whether `attachMenu` offers a photo taken with the camera. Desktop browsers ignore the
+             * `capture` attribute of a file input, so there the row opens the same picker as "Image".
+             */
+            camera?: boolean;
+        };
     }
 }
