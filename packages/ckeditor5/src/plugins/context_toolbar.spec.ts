@@ -115,6 +115,43 @@ describe("ContextToolbar", () => {
         expect(requests.at(-1)?.layout).toBe("tiles");
     });
 
+    it("swaps in on its own for a widget selected whole, and not for a caret inside one", async () => {
+        const { editor, plugin } = await createEditor();
+        const selectTable = () => setModelData(editor.model, `[${TABLE.replace("a[]", "a").replace("</table>", "</table>]")}`);
+        const toCell = () => editor.model.change((writer) => {
+            const cell = editor.model.document.getRoot()?.getNodeByPath([0, 0, 0, 0]);
+            writer.setSelection(cell ?? null, "end");
+        });
+        const toParagraph = () => editor.model.change((writer) => {
+            writer.setSelection(editor.model.document.getRoot()?.getChild(1) ?? null, "end");
+        });
+
+        setModelData(editor.model, TABLE);
+        editor.ui.update();
+        expect(plugin.isActive).toBe(false);
+
+        selectTable();
+        editor.ui.update();
+        expect(plugin.isActive).toBe(true);
+        expect([...plugin.toolbarView.items].slice(2).map((item) => (item as ButtonView).label))
+            .toStrictEqual(["Toggle caption on"]);
+
+        // The back button holds while the selection stays on the widget.
+        ([...plugin.toolbarView.items][0] as ButtonView).fire("execute");
+        editor.ui.update();
+        expect(plugin.isActive).toBe(false);
+
+        // Moving into a cell swaps nothing in; leaving and selecting the table again does.
+        toCell();
+        editor.ui.update();
+        expect(plugin.isActive).toBe(false);
+        toParagraph();
+        editor.ui.update();
+        selectTable();
+        editor.ui.update();
+        expect(plugin.isActive).toBe(true);
+    });
+
     it("leaves the balloons alone in an editor without its button", async () => {
         const { editor } = await createEditor(["undo"]);
         expect(editor.plugins.get(WidgetToolbarRepository).isEnabled).toBe(true);

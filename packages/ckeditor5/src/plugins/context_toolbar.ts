@@ -27,6 +27,10 @@ interface WidgetToolbarDefinition {
 interface ContextToolbarSource {
     id: string;
     definition: WidgetToolbarDefinition;
+    /** The widget the toolbar is for. */
+    element: ViewElement;
+    /** Whether the selection holds the widget whole, as it does an image, rather than a caret inside it. */
+    isSelected: boolean;
 }
 
 /**
@@ -36,7 +40,8 @@ interface ContextToolbarSource {
  *
  * The button shows while the selection is in a widget that has a toolbar. It swaps in
  * {@link toolbarView}: a back button, then the items of the toolbar the balloon would show, which is
- * the one of the innermost widget. The toolbar swaps out as the selection leaves that widget.
+ * the one of the innermost widget. The toolbar swaps in on its own as a widget is selected whole,
+ * since there is no text to format then, and swaps out as the selection leaves the widget.
  * Its dropdowns open as menus of `ToolbarGroupMenu`, like the rest of a phone's toolbar.
  */
 export default class ContextToolbar extends Plugin {
@@ -150,16 +155,21 @@ export default class ContextToolbar extends Plugin {
             const element = definition.getRelatedElement(selection);
             const depth = element?.getAncestors().length ?? 0;
             if (element && depth > (deepest?.depth ?? 0)) {
-                deepest = { source: { id, definition }, depth };
+                const isSelected = element === selection.getSelectedElement();
+                deepest = { source: { id, definition, element, isSelected }, depth };
             }
         }
 
         const next = deepest?.source ?? null;
-        if (next?.id === this.source?.id) {
+        // Unchanged for the same widget, so the back button holds while the selection stays on it.
+        if (next?.id === this.source?.id && next?.element === this.source?.element) {
             return;
         }
         this.source = next;
-        if (this.isActive) {
+        if (next?.isSelected) {
+            this.fillToolbar();
+            this.isActive = true;
+        } else if (this.isActive) {
             this.isActive = false;
         }
     }
