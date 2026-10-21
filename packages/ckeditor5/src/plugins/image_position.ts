@@ -6,12 +6,15 @@ import type {
     Locale
 } from "ckeditor5";
 
+import { openListAsMenu } from "./toolbar_group_menu.js";
+
 /**
  * Registers `imagePosition`, one dropdown for the styles of an image, in place of CKEditor's
  * separate style buttons and their "Wrap text" and "Block align" dropdowns, whose rows read the
  * same. The rows are grouped by how text runs around the image, as Word and Google Docs name it:
  * in line with it, broken above and below it ("Break text"), or wrapped around it ("Wrap text").
- * The button shows the icon of the current style.
+ * The button shows the icon of the current style. As a menu of `ToolbarGroupMenu`, as on a phone,
+ * the rows are tiles under their headings.
  */
 export default class ImagePosition extends Plugin {
 
@@ -76,6 +79,7 @@ export default class ImagePosition extends Plugin {
             editor.execute("imageStyle", { value: styleName });
             editor.editing.view.focus();
         });
+        openListAsMenu(dropdown, { layout: "tiles" });
         return dropdown;
     }
 }

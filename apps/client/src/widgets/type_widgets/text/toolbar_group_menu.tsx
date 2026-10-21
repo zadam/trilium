@@ -4,7 +4,7 @@ import type {
     ToolbarGroupMenuEntry, ToolbarGroupMenuHost, ToolbarGroupMenuItem, ToolbarGroupMenuRequest
 } from "@triliumnext/ckeditor5";
 import clsx from "clsx";
-import { render } from "preact";
+import { Fragment, render } from "preact";
 
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
 import {
@@ -122,37 +122,40 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
 }
 
 /**
- * The entries as tiles, a grid of them for each group between separators. An entry with a submenu
- * is a tile that opens it.
+ * The entries as tiles, a grid of them for each group between separators and headings, under its
+ * heading. An entry with a submenu is a tile that opens it.
  */
 function MenuTileGroups({ items }: { items: ToolbarGroupMenuItem[] }) {
-    const groups: ToolbarGroupMenuEntry[][] = [ [] ];
+    const groups: { heading?: string; entries: ToolbarGroupMenuEntry[] }[] = [ { entries: [] } ];
     for (const item of items) {
         if (item.kind === "entry") {
-            groups[groups.length - 1].push(item);
+            groups[groups.length - 1].entries.push(item);
         } else {
-            groups.push([]);
+            groups.push({ heading: item.kind === "heading" ? item.label : undefined, entries: [] });
         }
     }
 
     return (
         <>
-            {groups.map((group, index) => (
-                <li key={index} className="tn-menu-actions tn-menu-actions-cards toolbar-group-menu-tiles" role="group">
-                    {group.map(({ label, icon, iconClass, isEnabled, isOn, run, children }, tileIndex) => (children
-                        ? (
-                            <FormDropdownSubmenu key={tileIndex} tile icon={iconClass} iconSvg={icon} title={label} disabled={!isEnabled}>
-                                <MenuRows items={children} />
-                            </FormDropdownSubmenu>
-                        )
-                        : (
-                            <MenuTile
-                                key={tileIndex} icon={iconClass} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
-                                disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
-                            />
-                        )
-                    ))}
-                </li>
+            {groups.filter(({ entries }) => entries.length).map(({ heading, entries }, index) => (
+                <Fragment key={index}>
+                    {heading && <FormListHeader text={heading} />}
+                    <li className="tn-menu-actions tn-menu-actions-cards toolbar-group-menu-tiles" role="group">
+                        {entries.map(({ label, icon, iconClass, isEnabled, isOn, run, children }, tileIndex) => (children
+                            ? (
+                                <FormDropdownSubmenu key={tileIndex} tile icon={iconClass} iconSvg={icon} title={label} disabled={!isEnabled}>
+                                    <MenuRows items={children} />
+                                </FormDropdownSubmenu>
+                            )
+                            : (
+                                <MenuTile
+                                    key={tileIndex} icon={iconClass} iconSvg={icon} title={escapeHtml(label)} tooltip={label}
+                                    disabled={!isEnabled} checked={isOn} onSelect={() => run?.()}
+                                />
+                            )
+                        ))}
+                    </li>
+                </Fragment>
             ))}
         </>
     );

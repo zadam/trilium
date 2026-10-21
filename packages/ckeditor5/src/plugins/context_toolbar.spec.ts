@@ -1,12 +1,13 @@
 import {
     _setModelData as setModelData,
-    ButtonView, type ClassicEditor, DropdownView, Essentials, IconPreviousArrow, IconTable, Paragraph, Table, TableCaption, TableToolbar,
+    ButtonView, type ClassicEditor, DropdownView, Essentials, Image, ImageStyle, ImageToolbar, IconPreviousArrow, IconTable, Paragraph, Table, TableCaption, TableToolbar,
     ToolbarSeparatorView, WidgetToolbarRepository
 } from "ckeditor5";
 import { describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
 import ContextToolbar from "./context_toolbar.js";
+import ImagePosition from "./image_position.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
 const TABLE = "<table><tableRow><tableCell><paragraph>a[]</paragraph></tableCell></tableRow></table><paragraph>b</paragraph>";
@@ -91,6 +92,27 @@ describe("ContextToolbar", () => {
         expect(column.isOpen).toBe(false);
         const rows = requests.at(-1)?.items ?? [];
         expect(rows.flatMap((row) => (row.kind === "entry" ? [row.label] : []))).toContain("Insert column left");
+    });
+
+    it("keeps the layout a dropdown asks for itself", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const editor = await createTestEditor(
+            [Essentials, Paragraph, Image, ImageStyle, ImageToolbar, ImagePosition, ContextToolbar, ToolbarGroupMenu],
+            {
+                toolbar: ["contextToolbar"],
+                image: { toolbar: ["imagePosition"] },
+                toolbarGroupMenu: { host: () => host }
+            }
+        );
+        editor.ui.focusTracker.isFocused = true;
+        setModelData(editor.model, "[<imageBlock src=\"a.png\"></imageBlock>]<paragraph>b</paragraph>");
+        editor.ui.update();
+        getButton(editor).fire("execute");
+
+        const position = [...editor.plugins.get(ContextToolbar).toolbarView.items][2] as DropdownView;
+        position.buttonView.fire("open");
+        expect(requests.at(-1)?.layout).toBe("tiles");
     });
 
     it("leaves the balloons alone in an editor without its button", async () => {

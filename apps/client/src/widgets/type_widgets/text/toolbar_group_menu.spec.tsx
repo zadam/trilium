@@ -168,6 +168,25 @@ describe("createToolbarGroupMenuHost", () => {
         expect(menu?.isConnected).toBe(false);
     });
 
+    it("draws a heading over the tiles it starts, in the tiles layout", () => {
+        const items: ToolbarGroupMenuItem[] = [
+            { kind: "entry", label: "In line", icon: ICON, isEnabled: true },
+            { kind: "heading", label: "Break text" },
+            { kind: "entry", label: "Align left", icon: ICON, isEnabled: true },
+            { kind: "entry", label: "Align center", icon: ICON, isEnabled: true },
+            { kind: "heading", label: "Wrap text" },
+            { kind: "entry", label: "Align left", icon: ICON, isEnabled: true }
+        ];
+        host.show({ anchor, items, layout: "tiles", setElement: vi.fn(), onClose: vi.fn() });
+
+        const menu = document.querySelector<HTMLElement>(".tn-popup.tn-menu");
+        const rows = [ ...menu?.querySelectorAll(":scope > .tn-menu-scroll > li") ?? [] ].map((row) =>
+            (row.classList.contains("toolbar-group-menu-tiles")
+                ? [ ...row.querySelectorAll(".tn-menu-action") ].map((tile) => tile.textContent).join(", ")
+                : `# ${row.textContent}`));
+        expect(rows).toEqual([ "In line", "# Break text", "Align left, Align center", "# Wrap text", "Align left" ]);
+    });
+
     describe("an entry with a submenu, in the tiles layout", () => {
         afterEach(() => {
             window.glob.device = "desktop";

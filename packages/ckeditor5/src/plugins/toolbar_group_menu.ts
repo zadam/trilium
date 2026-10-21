@@ -99,6 +99,11 @@ export function openListAsMenu(dropdown: DropdownView, options: ListMenuOptions 
     listMenuDropdowns.set(dropdown, options);
 }
 
+/** Whether `dropdown` was handed to {@link openListAsMenu}. */
+export function isListMenu(dropdown: DropdownView) {
+    return listMenuDropdowns.has(dropdown);
+}
+
 /**
  * Opens a toolbar group as a menu drawn by the host application (`toolbarGroupMenu.host`), with a
  * row of icon and label per entry, and a submenu for an entry that carries a list of its own.

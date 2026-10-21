@@ -5,7 +5,7 @@ import {
 import type { Editor, ToolbarConfig, ToolbarConfigItem, ViewElement, ViewDocumentSelection } from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
-import { openListAsMenu } from "./toolbar_group_menu.js";
+import { isListMenu, openListAsMenu } from "./toolbar_group_menu.js";
 
 /** The icons of the `contextToolbar` button, by the id a widget toolbar is registered under. */
 const TOOLBAR_ICONS: Record<string, string> = {
@@ -100,7 +100,7 @@ export default class ContextToolbar extends Plugin {
         this.toolbarView.items.addMany([this.backView, new ToolbarSeparatorView()]);
         // Before `ToolbarGroupMenu`, which decides on a dropdown as it is added.
         this.listenTo(this.toolbarView.items, "add", (_evt, item) => {
-            if (item instanceof DropdownView) {
+            if (item instanceof DropdownView && !isListMenu(item)) {
                 openListAsMenu(item);
             }
         }, { priority: "highest" });
