@@ -692,4 +692,20 @@ describe("CK config - disabled plugins", () => {
             window.glob.device = originalDevice;
         }
     });
+
+    it("leaves out the content hints in the mobile layout, whatever their option", async () => {
+        const originalDevice = window.glob.device;
+        const contentHints = async () => (await buildConfig(baseOpts()) as { contentHintsEnabled?: boolean })
+            .contentHintsEnabled;
+        optionsState.map["textNoteContentHintsEnabled"] = "true";
+        try {
+            window.glob.device = "desktop";
+            expect(await contentHints()).toBe(true);
+
+            window.glob.device = "mobile";
+            expect(await contentHints()).toBe(false);
+        } finally {
+            window.glob.device = originalDevice;
+        }
+    });
 });

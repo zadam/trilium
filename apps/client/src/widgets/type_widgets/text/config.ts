@@ -242,8 +242,10 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     // Global on/off switch for content-area hints (bottom-corner popups on task
     // checkboxes, collapsible summaries, drag handles). Plugins consult this via
     // `editor.config.get("contentHintsEnabled")` and skip registering their hint
-    // managers when it's false.
-    (config as Record<string, unknown>).contentHintsEnabled = options.get("textNoteContentHintsEnabled") === "true";
+    // managers when it's false. The mobile layout leaves them out: they show keyboard
+    // shortcuts, and the caret sets them off on every tap.
+    (config as Record<string, unknown>).contentHintsEnabled = !isMobile()
+        && options.get("textNoteContentHintsEnabled") === "true";
 
     // Whether a URL typed or pasted into the note is auto-detected and turned into a link preview.
     // A getter rather than a boolean: the LinkEmbed plugin calls it each time a URL is detected, so
