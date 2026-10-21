@@ -8,6 +8,7 @@ To create a link without a custom text:
     *   Press <kbd>Enter</kbd> or the check mark icon to confirm.
 *   Alternatively, press <kbd>Ctrl</kbd>+<kbd>K</kbd> to trigger the aforementioned popup.
 *   A simpler way is to paste the raw link and press space to turn it automatically into a link.
+*   Since v0.107.0, the _Add link_ dialog of <a class="reference-link" href="Internal%20(reference)%20links.md">Internal (reference) links</a> (<kbd>Ctrl</kbd>+<kbd>L</kbd> or the <span class="tn-icon cke cke-trilium"></span> button) creates external links as well. Select _Web link_ at the top of the dialog, type or paste the address, and optionally a _Link title_; without one, the link shows its address. An address without a scheme, such as `example.com`, gets `https://`. A URL pasted into the _Note_ field, or picked from its search, switches the dialog to _Web link_. The dialog also opens on _Web link_ when the selected text is a URL.
 
 To create a link with a custom text:
 

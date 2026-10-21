@@ -67,7 +67,9 @@
     "anchor_none": "None (link to note)",
     "button_add_link": "Add link",
     "button_edit_link": "Save link",
-    "button_fix_link": "Fix link"
+    "button_fix_link": "Fix link",
+    "web_link": "Web link",
+    "url": "URL"
   },
   "branch_prefix": {
     "edit_branch_prefix": "Edit branch prefix",

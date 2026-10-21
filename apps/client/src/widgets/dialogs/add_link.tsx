@@ -1,18 +1,26 @@
-import { t } from "../../services/i18n";
-import Modal from "../react/Modal";
-import Button from "../react/Button";
-import FormRadioGroup from "../react/FormRadioGroup";
-import NoteAutocomplete, { type NoteAutocompleteHandle } from "../react/NoteAutocomplete";
-import { useRef, useState, useEffect } from "preact/hooks";
-import tree from "../../services/tree";
+import "./add_link.css";
+
+import { useEffect, useRef, useState } from "preact/hooks";
+
 import froca from "../../services/froca";
+import { t } from "../../services/i18n";
 import type { Suggestion } from "../../services/note_autocomplete";
+import tree from "../../services/tree";
 import { logError } from "../../services/ws";
+import Button from "../react/Button";
 import FormGroup from "../react/FormGroup.js";
-import { refToJQuerySelector } from "../react/react_utils";
+import FormRadioGroup from "../react/FormRadioGroup";
+import FormTextBox from "../react/FormTextBox";
 import { useTriliumEvent } from "../react/hooks";
+import Modal from "../react/Modal";
+import NoteAutocomplete, { type NoteAutocompleteHandle } from "../react/NoteAutocomplete";
+import { refToJQuerySelector } from "../react/react_utils";
+import SegmentedChoice from "../react/SegmentedChoice";
 
 type LinkType = "reference-link" | "external-link" | "hyper-link";
+
+/** What the link points at: a note, or an address outside Trilium. */
+type LinkTarget = "note" | "url";
 
 function findAnchorIds(content: string): string[] {
     const re = /<a\b([^>]*)>(<\/a>)?/g;
@@ -71,7 +79,10 @@ export default function AddLinkDialog() {
     const [ selectedBookmark, setSelectedBookmark ] = useState("");
     const [ noteTitle, setNoteTitle ] = useState("");
     const [ shown, setShown ] = useState(false);
+    const [ target, setTarget ] = useState<LinkTarget>("note");
+    const [ webLink, setWebLink ] = useState("");
     const hasSubmittedRef = useRef(false);
+    const webLinkRef = useRef<HTMLInputElement>(null);
 
     useTriliumEvent("showAddLinkDialog", opts => {
         setOpts(opts);
@@ -85,11 +96,44 @@ export default function AddLinkDialog() {
             setLinkType("reference-link");
         }
 
+        const initialWebLink = opts ? getInitialWebLink(opts) : null;
+        setTarget(initialWebLink !== null ? "url" : "note");
+        setWebLink(initialWebLink ?? "");
+        setLinkTitle("");
+
         // Taken as though it had just been picked, so that a dialog opened on a link and left alone
         // has one to apply — and so that everything a pick settles (the title, the anchors a note
         // offers, whether it is a link outside Trilium at all) is settled for it as well.
-        setSuggestion(opts?.currentLink ?? null);
+        const initialLink = initialWebLink !== null ? normalizeWebLink(initialWebLink) : null;
+        setSuggestion(opts?.currentLink ?? (initialLink ? { externalLink: initialLink } : null));
     }, [ opts ]);
+
+    function changeWebLink(text: string) {
+        setWebLink(text);
+        const link = normalizeWebLink(text);
+        setSuggestion(link ? { externalLink: link } : null);
+    }
+
+    function changeTarget(next: LinkTarget, text = "") {
+        setTarget(next);
+        setNoteTitle("");
+        setLinkTitle("");
+        setLinkType(opts?.hasSelection ? "hyper-link" : "reference-link");
+        if (next === "url") {
+            changeWebLink(text);
+        } else {
+            setWebLink("");
+            setSuggestion(null);
+        }
+    }
+
+    useEffect(() => {
+        if (target === "url") {
+            webLinkRef.current?.focus();
+        } else {
+            autocompleteRef.current?.focus();
+        }
+    }, [ target ]);
 
     async function setDefaultLinkTitle(noteId: string) {
         const title = await tree.getNoteTitle(noteId);
@@ -138,7 +182,6 @@ export default function AddLinkDialog() {
         }
 
         if (suggestion.externalLink) {
-            setLinkTitle(suggestion.externalLink);
             setLinkType("external-link");
         }
 
@@ -154,6 +197,12 @@ export default function AddLinkDialog() {
     }, [selectedBookmark, noteTitle]);
 
     async function onShown() {
+        if (target === "url") {
+            webLinkRef.current?.focus();
+            webLinkRef.current?.select();
+            return;
+        }
+
         const $autocompleteEl = refToJQuerySelector(autocompleteRef);
         const currentNotePath = opts?.currentLink?.notePath;
         const currentNoteId = currentNotePath && tree.getNoteIdFromUrl(currentNotePath);
@@ -196,52 +245,62 @@ export default function AddLinkDialog() {
     const buttonText = opts?.fixLink ? t("add_link.button_fix_link")
         : opts?.currentLink ? t("add_link.button_edit_link") : t("add_link.button_add_link");
 
-    return (
-        <Modal
-            className="add-link-dialog"
-            size="lg"
-            maxWidth={1000}
-            title={title}
-            helpPageId="QEAPj01N5f7w"
-            footer={<Button text={buttonText} keyboardShortcut="Enter" />}
-            onSubmit={onSubmit}
-            onShown={onShown}
-            onHidden={() => {
-                // Insert the link.
-                if (hasSubmittedRef.current && suggestion && opts) {
-                    hasSubmittedRef.current = false;
-
-                    if (suggestion.notePath) {
-                        // Handle note link, optionally with a bookmark anchor
-                        const path = selectedBookmark
-                            ? `${suggestion.notePath}?bookmark=${encodeURIComponent(selectedBookmark)}`
-                            : suggestion.notePath;
-                        opts.addLink(path, linkType === "reference-link" ? null : linkTitle);
-                    } else if (suggestion.externalLink) {
-                        // Handle external link
-                        opts.addLink(suggestion.externalLink, linkTitle, true);
-                    }
-                }
-
-                setSuggestion(null);
-                setBookmarks([]);
-                setSelectedBookmark("");
-                setNoteTitle("");
-                setShown(false);
-            }}
-            show={shown}
-        >
-            <FormGroup label={t("add_link.note")} name="note">
-                <NoteAutocomplete
-                    inputRef={autocompleteRef}
-                    handleRef={handleRef}
-                    onChange={setSuggestion}
-                    opts={{
-                        allowExternalLinks: !opts?.fixLink,
-                        allowCreatingNotes: true
-                    }}
+    const webLinkFields = (
+        <>
+            <FormGroup className="add-link-url" label={t("add_link.url")} name="url">
+                <FormTextBox
+                    inputRef={webLinkRef}
+                    inputMode="url"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellcheck={false}
+                    placeholder="https://"
+                    currentValue={webLink}
+                    onChange={changeWebLink}
                 />
             </FormGroup>
+
+            {!opts?.hasSelection && !opts?.targetOnly && (
+                <FormGroup
+                    className="add-link-text" label={t("add_link.link_title")} name="link-title"
+                >
+                    <FormTextBox
+                        currentValue={linkTitle}
+                        placeholder={suggestion?.externalLink}
+                        onChange={setLinkTitle}
+                    />
+                </FormGroup>
+            )}
+        </>
+    );
+
+    const noteFields = (
+        <>
+            <div
+                onPaste={(e) => {
+                    if (opts?.fixLink) return;
+                    const text = e.clipboardData?.getData("text/plain").trim();
+                    if (text && hasScheme(text)) {
+                        e.preventDefault();
+                        changeTarget("url", text);
+                    }
+                }}
+            >
+                <FormGroup label={t("add_link.note")} name="note">
+                    <NoteAutocomplete
+                        inputRef={autocompleteRef}
+                        handleRef={handleRef}
+                        // A URL picked from the search belongs on the web link side.
+                        onChange={(picked) => (picked?.externalLink
+                            ? changeTarget("url", picked.externalLink)
+                            : setSuggestion(picked))}
+                        opts={{
+                            allowExternalLinks: !opts?.fixLink,
+                            allowCreatingNotes: true
+                        }}
+                    />
+                </FormGroup>
+            </div>
 
             {bookmarks.length > 0 && !opts?.targetOnly && (
                 <FormGroup label={t("add_link.anchor")} name="anchor">
@@ -289,6 +348,85 @@ export default function AddLinkDialog() {
                     ))}
                 </div>
             )}
+        </>
+    );
+
+    return (
+        <Modal
+            className="add-link-dialog"
+            size="lg"
+            maxWidth={1000}
+            title={title}
+            helpPageId="QEAPj01N5f7w"
+            footer={<Button text={buttonText} keyboardShortcut="Enter" />}
+            onSubmit={onSubmit}
+            onShown={onShown}
+            onHidden={() => {
+                // Insert the link.
+                if (hasSubmittedRef.current && suggestion && opts) {
+                    hasSubmittedRef.current = false;
+
+                    if (suggestion.notePath) {
+                        // Handle note link, optionally with a bookmark anchor
+                        const path = selectedBookmark
+                            ? `${suggestion.notePath}?bookmark=${encodeURIComponent(selectedBookmark)}`
+                            : suggestion.notePath;
+                        opts.addLink(path, linkType === "reference-link" ? null : linkTitle);
+                    } else if (suggestion.externalLink) {
+                        // An external link without a text of its own reads as its address.
+                        const text = linkTitle.trim() || suggestion.externalLink;
+                        opts.addLink(suggestion.externalLink, text, true);
+                    }
+                }
+
+                setSuggestion(null);
+                setBookmarks([]);
+                setSelectedBookmark("");
+                setNoteTitle("");
+                setShown(false);
+            }}
+            show={shown}
+        >
+            {!opts?.fixLink && (
+                <SegmentedChoice<LinkTarget>
+                    className="add-link-target"
+                    options={[
+                        { value: "note", label: t("add_link.note"), icon: "bx-note" },
+                        { value: "url", label: t("add_link.web_link"), icon: "bx-globe" }
+                    ]}
+                    currentValue={target}
+                    onChange={(next) => changeTarget(next)}
+                />
+            )}
+
+            {target === "url" ? webLinkFields : noteFields}
         </Modal>
     );
+}
+
+/**
+ * The address the dialog opens on, on the web link side: the external link being edited, or a
+ * selected text that is a URL. `null` opens it on the note side.
+ */
+function getInitialWebLink(opts: AddLinkOpts): string | null {
+    if (opts.fixLink) return null;
+    if (opts.currentLink) return opts.currentLink.externalLink ?? null;
+    const text = opts.text.trim();
+    return opts.hasSelection && hasScheme(text) ? text : null;
+}
+
+/** Whether `text` is a whole URL with a scheme, the way the note search tells URLs apart. */
+function hasScheme(text: string) {
+    return /^[a-z][a-z0-9+.-]*:\/\/\S+$/i.test(text);
+}
+
+/**
+ * The link for an address as typed: trimmed, and with `https://` before an address that names no
+ * scheme, as CKEditor's `link.defaultProtocol` does. `null` for an empty one.
+ */
+export function normalizeWebLink(text: string): string | null {
+    const link = text.trim();
+    if (!link) return null;
+    // A colon followed by a digit is a port, as in `localhost:8080`, not the end of a scheme.
+    return /^[a-z][a-z0-9+.-]*:(?!\d)/i.test(link) ? link : `https://${link}`;
 }
