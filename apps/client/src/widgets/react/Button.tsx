@@ -40,6 +40,8 @@ export interface ButtonProps {
     title?: string;
     /** Why the button is off, shown on hover while `disabled`. Ignored otherwise. */
     disabledTooltip?: string;
+    /** Marks a toggle button as on or off for assistive technology. */
+    "aria-pressed"?: boolean;
 }
 
 function Button({ name, buttonRef, className, text, onClick, keyboardShortcut, icon, kind, disabled, disabledTooltip, size, style, triggerCommand, ...restProps }: ButtonProps) {

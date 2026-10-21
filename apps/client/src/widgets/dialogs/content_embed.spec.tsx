@@ -63,8 +63,8 @@ describe("ContentEmbedDialog", () => {
     }
 
     function checkedSize() {
-        const active = sizeButtons().filter((button) => button.classList.contains("active"));
-        if (active.length !== 1) throw new Error(`${active.length} box sizes are active.`);
+        const active = sizeButtons().filter((button) => button.getAttribute("aria-pressed") === "true");
+        if (active.length !== 1) throw new Error(`${active.length} box sizes are pressed.`);
         return /^include_note\.size_(\w+)$/.exec(active[0]?.textContent?.trim() ?? "")?.[1];
     }
 

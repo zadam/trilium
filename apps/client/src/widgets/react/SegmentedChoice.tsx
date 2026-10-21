@@ -86,6 +86,7 @@ export default function SegmentedChoice<T extends string>({ options, currentValu
                     title={title}
                     size="small"
                     disabled={disabled}
+                    aria-pressed={currentValue === value}
                     className={clsx(currentValue === value && "active", {
                         "tn-segmented-choice-with-glyph": glyph
                     })}
