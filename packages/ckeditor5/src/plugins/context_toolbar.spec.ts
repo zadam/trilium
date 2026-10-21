@@ -1,7 +1,8 @@
 import {
     _setModelData as setModelData,
-    ButtonView, type ClassicEditor, DropdownView, Essentials, Image, ImageStyle, ImageToolbar, IconPreviousArrow, IconTable, Paragraph, Table, TableCaption, TableToolbar,
-    ToolbarSeparatorView, WidgetToolbarRepository
+    ButtonView, type ClassicEditor, ContextualBalloon, DropdownView, Essentials, IconLink, Image, ImageStyle, ImageToolbar,
+    IconPreviousArrow, IconTable, Link, LinkUI, Paragraph, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
+    WidgetToolbarRepository
 } from "ckeditor5";
 import { describe, expect, it, vi } from "vitest";
 
@@ -157,11 +158,73 @@ describe("ContextToolbar", () => {
         expect(plugin.isActive).toBe(true);
     });
 
+    describe("for a link", () => {
+        async function createLinkEditor(toolbar = ["undo", "contextToolbar"]) {
+            const editor = await createTestEditor([Essentials, Paragraph, Link, ContextToolbar], {
+                toolbar,
+                link: { toolbar: ["editLink", "linkProperties", "unlink"] }
+            });
+            editor.ui.focusTracker.isFocused = true;
+            setModelData(editor.model, "<paragraph><$text linkHref=\"https://a.b\">li[]nk</$text> text</paragraph>");
+            editor.ui.update();
+            return editor;
+        }
+
+        it("offers the link toolbar as a chip while the caret is in a link, leaving out what the link cannot use", async () => {
+            const editor = await createLinkEditor();
+            const plugin = editor.plugins.get(ContextToolbar);
+            const button = getButton(editor);
+            expect(button).toMatchObject({ isVisible: true, label: "Link", icon: IconLink, withText: true });
+            // A caret in a link is in text, so the row waits for the chip.
+            expect(plugin.isActive).toBe(false);
+
+            button.fire("execute");
+            expect([...plugin.toolbarView.items].slice(2).map((item) => (item as ButtonView).label))
+                .toStrictEqual(["Edit link", "Unlink"]);
+
+            editor.model.change((writer) => writer.setSelection(editor.model.document.getRoot()?.getChild(0) ?? null, "end"));
+            editor.ui.update();
+            expect(plugin.isActive).toBe(false);
+            expect(button.isVisible).toBe(false);
+        });
+
+        it("keeps the link toolbar out of the balloon, and leaves its form there", async () => {
+            const editor = await createLinkEditor();
+            const balloon = editor.plugins.get(ContextualBalloon);
+            const linkUI = editor.plugins.get(LinkUI);
+
+            click(editor);
+            await Promise.resolve();
+            expect(linkUI.toolbarView).not.toBeNull();
+            expect(linkUI.toolbarView && balloon.hasView(linkUI.toolbarView)).toBe(false);
+
+            getButton(editor).fire("execute");
+            const edit = [...editor.plugins.get(ContextToolbar).toolbarView.items][2] as ButtonView;
+            edit.fire("execute");
+            expect(balloon.visibleView).toBe(linkUI.formView);
+
+            // Without the chip, CKEditor's balloon is left as it is.
+            const desktop = await createLinkEditor(["undo"]);
+            click(desktop);
+            await Promise.resolve();
+            const desktopUI = desktop.plugins.get(LinkUI);
+            expect(desktop.plugins.get(ContextualBalloon).visibleView).toBe(desktopUI.toolbarView);
+        });
+    });
+
     it("leaves the balloons alone in an editor without its button", async () => {
         const { editor } = await createEditor(["undo"]);
         expect(editor.plugins.get(WidgetToolbarRepository).isEnabled).toBe(true);
     });
 });
+
+/** A click in the editing view, as `LinkUI` opens its toolbar on. */
+function click(editor: ClassicEditor) {
+    const domEvent = new MouseEvent("click");
+    editor.editing.view.document.fire("click", {
+        domEvent, domTarget: document.body, preventDefault: () => undefined, stopPropagation: () => undefined
+    });
+}
 
 function getButton(editor: ClassicEditor) {
     const item = [...editor.ui.view.toolbar.items].find((view) => view instanceof ButtonView && !view.label?.startsWith("Undo"));

@@ -1,8 +1,11 @@
 import {
-    ButtonView, DropdownView, IconCodeBlock, IconImage, IconPreviousArrow, IconTable, IconThreeVerticalDots, Plugin,
-    ToolbarSeparatorView, ToolbarView, WidgetToolbarRepository
+    ButtonView, ContextualBalloon, DropdownView, IconCodeBlock, IconImage, IconLink, IconPreviousArrow, IconTable,
+    IconThreeVerticalDots, LinkUI, Plugin, ToolbarSeparatorView, ToolbarView, WidgetToolbarRepository
 } from "ckeditor5";
-import type { Editor, ToolbarConfig, ToolbarConfigItem, ViewElement, ViewDocumentSelection } from "ckeditor5";
+import type {
+    Editor, LinkCommand, ToolbarConfig, ToolbarConfigItem, View, ViewDocumentFragment, ViewDocumentSelection,
+    ViewElement, ViewNode
+} from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
 import { isListMenu, openListAsMenu } from "./toolbar_group_menu.js";
@@ -13,7 +16,8 @@ const TOOLBAR_ICONS: Record<string, string> = {
     tableContent: IconTable,
     image: IconImage,
     codeblock: IconCodeBlock,
-    admonition: admonitionIcon
+    admonition: admonitionIcon,
+    link: IconLink
 };
 
 /** What `WidgetToolbarRepository` keeps of a registered toolbar. */
@@ -23,10 +27,17 @@ interface WidgetToolbarDefinition {
     itemsConfig: ToolbarConfigItem[];
 }
 
+/** A toolbar the `contextToolbar` button can bring up: a widget's, or the one of `LinkUI`. */
+interface ContextToolbarDefinition {
+    ariaLabel?: string;
+    getRelatedElement(selection: ViewDocumentSelection): ViewElement | null;
+    itemsConfig: ToolbarConfigItem[];
+}
+
 /** The widget toolbar for the selection, as the `contextToolbar` button shows it. */
 interface ContextToolbarSource {
     id: string;
-    definition: WidgetToolbarDefinition;
+    definition: ContextToolbarDefinition;
     /** The widget the toolbar is for. */
     element: ViewElement;
     /** Whether the selection holds the widget whole, as it does an image, rather than a caret inside it. */
@@ -34,9 +45,10 @@ interface ContextToolbarSource {
 }
 
 /**
- * Moves the toolbars of `WidgetToolbarRepository` (table, image, code block, …) out of their
- * balloons into a toolbar the host application places, as {@link TextFormattingToolbar} does for
- * text formatting. Applies only to an editor whose toolbar holds the `contextToolbar` button.
+ * Moves the toolbars of `WidgetToolbarRepository` (table, image, code block, …) and the link
+ * toolbar of `LinkUI` out of their balloons into a toolbar the host application places, as
+ * {@link TextFormattingToolbar} does for text formatting. Applies only to an editor whose toolbar
+ * holds the `contextToolbar` button.
  *
  * The button shows while the selection is in a widget that has a toolbar. It swaps in
  * {@link toolbarView}: a back button, then the items of the toolbar the balloon would show, which is
@@ -90,9 +102,9 @@ export default class ContextToolbar extends Plugin {
             button.set({ class: "ck-context-toolbar-button" });
             button.bind("isVisible").to(this, "source", (source) => source !== null);
             button.bind("label").to(this, "source", (source) =>
-                getToolbarName(editor, source) ?? source?.definition.view.ariaLabel ?? "");
+                getToolbarName(editor, source) ?? source?.definition.ariaLabel ?? "");
             button.bind("withText").to(this, "source", (source) => getToolbarName(editor, source) !== undefined);
-            button.bind("tooltip").to(this, "source", (source) => source?.definition.view.ariaLabel ?? true);
+            button.bind("tooltip").to(this, "source", (source) => source?.definition.ariaLabel ?? true);
             button.bind("icon").to(this, "source", (source) => (source && TOOLBAR_ICONS[source.id]) ?? IconThreeVerticalDots);
             button.on("execute", () => this.setActive(true));
             return button;
@@ -106,6 +118,9 @@ export default class ContextToolbar extends Plugin {
         }
 
         editor.plugins.get(WidgetToolbarRepository).forceDisabled(ContextToolbar.pluginName);
+        if (editor.plugins.has(LinkUI)) {
+            this.keepOutOfBalloon(editor.plugins.get(LinkUI));
+        }
 
         // Grouping measures the rendered toolbar as items arrive.
         this.toolbarView.render();
@@ -129,6 +144,25 @@ export default class ContextToolbar extends Plugin {
         } else {
             this.backView.destroy();
         }
+    }
+
+    /**
+     * Takes the toolbar of `LinkUI` out of the balloon as `LinkUI` shows it, as a click in a link
+     * does. Its form and its other views stay in the balloon.
+     */
+    private keepOutOfBalloon(linkUI: LinkUI) {
+        const balloon = this.editor.plugins.get(ContextualBalloon);
+        this.listenTo(balloon, "change:visibleView", (_evt, _name, view: View | null) => {
+            if (!view || view !== linkUI.toolbarView) {
+                return;
+            }
+            // After `ContextualBalloon.add()`, which still positions the view, and before a paint.
+            queueMicrotask(() => {
+                if (balloon.hasView(view)) {
+                    balloon.remove(view);
+                }
+            });
+        });
     }
 
     private setActive(isActive: boolean) {
@@ -196,19 +230,45 @@ function getToolbarName(editor: Editor, source: ContextToolbarSource | null) {
         case "multicolumnLayout": return t("Columns");
         case "contentEmbed":
         case "linkEmbed": return t("Embed");
+        case "link": return t("Link");
         default: return undefined;
     }
 }
 
 /**
- * The toolbars registered with `WidgetToolbarRepository`. It keeps them in a private map: the spec
- * fails if a CKEditor upgrade renames it.
+ * The toolbars registered with `WidgetToolbarRepository`, and the link toolbar. The repository
+ * keeps its toolbars in a private map: the spec fails if a CKEditor upgrade renames it.
  */
-function getDefinitions(editor: Editor): Map<string, WidgetToolbarDefinition> {
+function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefinition]> {
     const repository = editor.plugins.get(WidgetToolbarRepository) as unknown as {
         _toolbarDefinitions: Map<string, WidgetToolbarDefinition>;
     };
-    return repository._toolbarDefinitions;
+    for (const [id, { view, getRelatedElement, itemsConfig }] of repository._toolbarDefinitions) {
+        yield [id, { ariaLabel: view.ariaLabel, getRelatedElement, itemsConfig }];
+    }
+
+    const linkItems = getLinkToolbarItems(editor);
+    if (linkItems.length) {
+        yield ["link", {
+            getRelatedElement: (selection) => selection.getFirstPosition()?.getAncestors().find(isLinkElement) ?? null,
+            itemsConfig: linkItems
+        }];
+    }
+}
+
+/** The items of the link toolbar, without the properties a link has none of, as `LinkUI` builds it. */
+function getLinkToolbarItems(editor: Editor): ToolbarConfigItem[] {
+    if (!editor.plugins.has(LinkUI)) {
+        return [];
+    }
+    const items = editor.config.get("link.toolbar") ?? [];
+    const command = editor.commands.get("link") as LinkCommand | undefined;
+    return command?.manualDecorators.length ? items : items.filter((item) => item !== "linkProperties");
+}
+
+/** Whether `node` is the element of a link, as the link plugin's own `isLinkElement()` tells. */
+function isLinkElement(node: ViewNode | ViewDocumentFragment): node is ViewElement {
+    return node.is("attributeElement") && !!node.getCustomProperty("link");
 }
 
 /** Whether a toolbar configuration holds `name`, at its top level or in a group. */
