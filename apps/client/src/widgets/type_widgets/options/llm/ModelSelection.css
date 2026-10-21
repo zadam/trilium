@@ -9,7 +9,6 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.5em;
-    margin-bottom: 0.5em;
 }
 
 .model-selection-count {
@@ -28,6 +27,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.25em;
+    --scroll-fade-top: 12px;
+    padding-top: var(--scroll-fade-top);
 }
 
 .tn-card-section.tn-no-padding > .model-selection {
@@ -36,7 +37,7 @@
     }
 
     > .model-selection-list {
-        padding: 0 var(--card-padding-inline) var(--card-padding-block);
+        padding: var(--scroll-fade-top) var(--card-padding-inline) var(--card-padding-block);
     }
 }
 

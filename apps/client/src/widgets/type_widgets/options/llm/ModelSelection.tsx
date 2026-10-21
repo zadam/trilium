@@ -116,7 +116,7 @@ export default function ModelSelection({ query, timeoutMs, selected, onChange, a
                     </button>
                 </div>
             </div>
-            <div className="model-selection-list">
+            <div className="model-selection-list scroll-edge-fade">
                 {models.map(model => (
                     <FormCheckbox
                         key={model.id}
