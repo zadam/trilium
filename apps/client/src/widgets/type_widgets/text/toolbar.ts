@@ -84,7 +84,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 ...(aiAssistant ? ["aiAssistantMenu"] : []),
                 "attachMenu",
                 // The size grid of `insertTable` needs a pointer that hovers over its cells.
-                "insertTableForm",
+                "insertTableMenu",
                 "|",
                 "alignmentMenu"
             ]

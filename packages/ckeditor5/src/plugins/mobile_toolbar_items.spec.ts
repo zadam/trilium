@@ -24,12 +24,14 @@ import {
     IconPaperClip,
     IconParagraph,
     IconQuote,
+    IconTable,
     IconTodoList,
     Image,
     ImageUpload,
     List,
     Paragraph,
     Plugin,
+    Table,
     TodoList
 } from "ckeditor5";
 import bxLink from "boxicons/svg/regular/bx-link.svg?raw";
@@ -265,6 +267,37 @@ describe("MobileToolbarItems", () => {
         entry(tiles, "Align right").run?.();
         expect(menuEditor.getData()).toBe("<p style=\"text-align:right;\">foo</p>");
         expect(dropdown.buttonView.icon).toBe(IconAlignRight);
+    });
+
+    it("opens table sizes as tiles, each inserting a table of that size", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const menuEditor = await createTestEditor([Essentials, Paragraph, Table, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["insertTableMenu"],
+            toolbarGroupMenu: { host: () => host }
+        });
+        setModelData(menuEditor.model, "<paragraph>foo[]</paragraph>");
+
+        const dropdown = getDropdown(menuEditor, 0);
+        expect(dropdown.buttonView).toMatchObject({ label: "Insert table", icon: IconTable });
+        menuEditor.enableReadOnlyMode("spec");
+        expect(dropdown.isEnabled).toBe(false);
+        menuEditor.disableReadOnlyMode("spec");
+        expect(dropdown.isEnabled).toBe(true);
+
+        dropdown.buttonView.fire("open");
+        expect(dropdown.isOpen).toBe(false);
+        const request = requests.at(-1);
+        expect(request?.layout).toBe("tiles");
+        const tiles = request?.items ?? [];
+        expect(tiles.map(rowText)).toStrictEqual(["2 × 2", "2 × 3", "2 × 4", "3 × 2", "3 × 3", "3 × 4"]);
+        // Each tile draws its own grid.
+        expect(new Set(icons(tiles)).size).toBe(6);
+
+        entry(tiles, "2 × 3").run?.();
+        const data = menuEditor.getData();
+        expect(data.match(/<tr>/g)).toHaveLength(2);
+        expect(data.match(/<td>/g)).toHaveLength(6);
     });
 });
 

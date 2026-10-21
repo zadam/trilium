@@ -148,7 +148,7 @@ describe("buildMobileToolbar", () => {
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
         expect(toolbar.items.slice(9)).toStrictEqual([
             "|",
-            "link", "internallink", "aiAssistantMenu", "attachMenu", "insertTableForm",
+            "link", "internallink", "aiAssistantMenu", "attachMenu", "insertTableMenu",
             "|",
             "alignmentMenu"
         ]);
@@ -178,9 +178,9 @@ describe("buildMobileToolbar", () => {
         }
     });
 
-    it("opens the table form instead of the size grid", () => {
+    it("opens table sizes as tiles instead of the size grid", () => {
         const items = buildMobileToolbar(true).toolbar.items;
-        expect(items).toContain("insertTableForm");
+        expect(items).toContain("insertTableMenu");
         expect(items).not.toContain("insertTable");
         expect(buildClassicToolbar(false, true).toolbar.items).toContain("insertTable");
     });
@@ -194,7 +194,7 @@ describe("buildMobileToolbar", () => {
     it("offers every item of the classic toolbar", () => {
         // Variants of an item that suit a touch screen.
         const MOBILE_VARIANTS: Record<string, string> = {
-            insertTable: "insertTableForm",
+            insertTable: "insertTableMenu",
             heading: "blockType",
             bulletedList: "blockType",
             numberedList: "blockType",

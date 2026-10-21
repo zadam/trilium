@@ -2,7 +2,6 @@ import {
     _getModelData as getModelData,
     _setModelData as setModelData,
     BlockToolbar,
-    ButtonView,
     ClassicEditor,
     ContextualBalloon,
     DropdownView,
@@ -42,7 +41,7 @@ describe("TableInsertUI", () => {
 
     beforeEach(async () => {
         editor = await createTestEditor([Essentials, Paragraph, Table, TableInsertUI], {
-            toolbar: ["insertTable", "insertTableForm"]
+            toolbar: ["insertTable"]
         });
         balloon = editor.plugins.get(ContextualBalloon);
         setModelData(editor.model, "<paragraph>foo[]</paragraph>");
@@ -139,24 +138,6 @@ describe("TableInsertUI", () => {
             expect(dropdown.isOpen).toBe(false);
             expect(document.activeElement)
                 .toBe(getForm(balloon).columnsField.inputView.element);
-        });
-    });
-
-    describe("form button", () => {
-        it("opens the form, and is enabled with the insertTable command", async () => {
-            const button = editor.ui.view.toolbar.items.get(1);
-            expect(button).toBeInstanceOf(ButtonView);
-            expect(button).toMatchObject({ label: "Insert table", icon: IconTable, tooltip: true });
-
-            editor.enableReadOnlyMode("spec");
-            expect(button).toHaveProperty("isEnabled", false);
-            editor.disableReadOnlyMode("spec");
-            expect(button).toHaveProperty("isEnabled", true);
-
-            await userEvent.click(getElement(button as ButtonView));
-            const form = getForm(balloon);
-            expect(getInput(form, "columns").value).toBe(String(DEFAULT_TABLE_SIZE));
-            expect(document.activeElement).toBe(getInput(form, "columns"));
         });
     });
 

@@ -20,11 +20,13 @@ import {
     IconPaperClip,
     IconParagraph,
     IconQuote,
+    IconTable,
     IconTodoList,
     List,
     ListItemView,
     ListView,
     Plugin,
+    Table,
     TodoList,
     UIModel
 } from "ckeditor5";
@@ -43,6 +45,10 @@ const HEADING_ICONS: Record<string, string> = {
     heading5: IconHeading5,
     heading6: IconHeading6
 };
+
+/** The sizes of the `insertTableMenu` tiles. A table grows from its row and column menus. */
+const TABLE_ROWS = [2, 3];
+const TABLE_COLUMNS = [2, 3, 4];
 
 /** A row of the `blockType` list: the command that makes a block of that type, and what it shows. */
 interface BlockType {
@@ -66,11 +72,13 @@ interface BlockType {
  *   alignments as a row of tiles.
  * - `attachMenu`: the image upload and the rows of the `fileUpload` list as a row of tiles, under
  *   a paperclip. A row whose feature the editor lacks is left out.
+ * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
+ *   which needs a pointer that hovers over its cells.
  */
 export default class MobileToolbarItems extends Plugin {
 
     static get requires() {
-        return [Heading, List, TodoList, CodeBlock, BlockQuote, AdmonitionEditing, FontSize, Alignment] as const;
+        return [Heading, List, TodoList, CodeBlock, BlockQuote, AdmonitionEditing, FontSize, Alignment, Table] as const;
     }
 
     static get pluginName() {
@@ -95,6 +103,37 @@ export default class MobileToolbarItems extends Plugin {
         });
 
         editor.ui.componentFactory.add("attachMenu", (locale) => this.createAttachDropdown(locale));
+        editor.ui.componentFactory.add("insertTableMenu", (locale) => this.createInsertTableDropdown(locale));
+    }
+
+    private createInsertTableDropdown(locale: Locale) {
+        const editor = this.editor;
+        // Always registered: `Table` loads `TableEditing`.
+        const command = editor.commands.get("insertTable") as Command;
+
+        const items = new Collection<ListDropdownItemDefinition>();
+        for (const rows of TABLE_ROWS) {
+            for (const columns of TABLE_COLUMNS) {
+                const model = new UIModel({
+                    // The label of the size grid of the `insertTable` dropdown.
+                    label: `${rows} × ${columns}`, icon: tableSizeIcon(rows, columns), withText: true,
+                    tableSize: { rows, columns }
+                });
+                items.add({ type: "button", model });
+            }
+        }
+
+        const dropdown = createDropdown(locale);
+        addListToDropdown(dropdown, items, { role: "menu" });
+        dropdown.buttonView.set({ label: editor.t("Insert table"), icon: IconTable, tooltip: true });
+        dropdown.bind("isEnabled").to(command);
+        dropdown.on("execute", (evt) => {
+            const { tableSize } = evt.source as ButtonView & { tableSize: { rows: number; columns: number } };
+            editor.execute("insertTable", tableSize);
+            editor.editing.view.focus();
+        });
+        openListAsMenu(dropdown, { layout: "tiles" });
+        return dropdown;
     }
 
     private createAttachDropdown(locale: Locale) {
@@ -236,4 +275,21 @@ export default class MobileToolbarItems extends Plugin {
         });
         editor.editing.view.focus();
     }
+}
+
+/** An icon of a table of `rows` × `columns` cells, each a filled square, as the size grid draws them. */
+function tableSizeIcon(rows: number, columns: number) {
+    const size = 20;
+    const gap = 2;
+    const width = (size - gap * (columns - 1)) / columns;
+    const height = (size - gap * (rows - 1)) / rows;
+    const cells: string[] = [];
+    for (let row = 0; row < rows; row++) {
+        for (let column = 0; column < columns; column++) {
+            const x = column * (width + gap);
+            const y = row * (height + gap);
+            cells.push(`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="1"/>`);
+        }
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">${cells.join("")}</svg>`;
 }
