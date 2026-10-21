@@ -10,6 +10,14 @@ import dataDir from "./services/data_dir.js";
 
 const LOG_FILE_PATTERN = /^trilium-\d{4}-\d{2}-\d{2}\.log$/;
 
+/** The ASCII-art banner `www.ts` prints at startup, followed by the version. */
+export const TRILIUM_LOGO = `\
+ _____     _ _ _
+|_   _| __(_) (_)_   _ _ __ ___   | \\ | | ___ | |_ ___  ___
+  | || '__| | | | | | | '_ \` _ \\  |  \\| |/ _ \\| __/ _ \\/ __|
+  | || |  | | | | |_| | | | | | | | |\\  | (_) | ||  __/\\__ \\
+  |_||_|  |_|_|_|\\__,_|_| |_| |_| |_| \\_|\\___/ \\__\\___||___/`;
+
 const requestBlacklist = [
     "/app",
     "/images",
@@ -159,6 +167,10 @@ const URL_STYLE: Style = "cyan";
 const QUERY_VERB_STYLE: Style = [ "bold", "magenta" ];
 const SQL_STYLE: Style = "magentaBright";
 const ERROR_STYLE: Style = "red";
+const WARNING_STYLE: Style = "yellow";
+// The green of the leaves in `icon-color.svg`.
+const LOGO_STYLE: Style = [ "bold", "green" ];
+const MUTED_STYLE: Style = "gray";
 const STATUS_STYLES: Record<string, Style> = {
     "2": [ "bold", "green" ],
     "3": [ "bold", "gray" ],
@@ -169,9 +181,17 @@ const STATUS_STYLES: Record<string, Style> = {
 const HTTP_REQUEST = /^(Slow )?(\d{3}) (GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) (\S+)/;
 const SLOW_QUERY = /^(Slow (?:recursive )?query)( took \d+ms)(?:(: )(.+))?/;
 const ERROR_ENTRY = /^(?:JS Error|ERROR):/;
+const WARNING_ENTRY = /^WARNING:/;
+// The `📦 Versions:    …` rows of the startup intro.
+const INTRO_ROW = /^\p{Extended_Pictographic}️? [^:]+:/u;
+const LOGO_PREFIX = `\n${TRILIUM_LOGO} `;
 
 /** Prefixes `message` with its `timestamp` and colours both the way the Backend Log note does. */
 export function colorizeLogEntry(message: string, timestamp: string): string {
+    // The logo and the blank line after the intro start their own lines.
+    if (!message || message.startsWith("\n")) {
+        return colorizeMessage(message);
+    }
     return `${paint(TIMESTAMP_STYLE, timestamp)} ${colorizeMessage(message)}`;
 }
 
@@ -199,7 +219,20 @@ function colorizeMessage(message: string): string {
         ].join("");
     }
 
-    return ERROR_ENTRY.test(message) ? paint(ERROR_STYLE, message) : message;
+    if (message.startsWith(LOGO_PREFIX)) {
+        const version = message.slice(LOGO_PREFIX.length).trimEnd();
+        return `\n${paint(LOGO_STYLE, TRILIUM_LOGO)} ${paint(MUTED_STYLE, version)}\n`;
+    }
+
+    const introRow = INTRO_ROW.exec(message);
+    if (introRow) {
+        return paint(MUTED_STYLE, introRow[0]) + message.slice(introRow[0].length);
+    }
+
+    if (ERROR_ENTRY.test(message)) {
+        return paint(ERROR_STYLE, message);
+    }
+    return WARNING_ENTRY.test(message) ? paint(WARNING_STYLE, message) : message;
 }
 
 function paint(style: Style, text: string): string {

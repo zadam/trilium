@@ -7,6 +7,7 @@ import { networkInterfaces } from "os";
 import tmp from "tmp";
 
 import buildApp from "./app.js";
+import { TRILIUM_LOGO } from "./log_provider.js";
 import config from "./services/config.js";
 import dataDir from "./services/data_dir.js";
 import { startCpuProfiler, writeCpuProfile } from "./services/cpu_profiler.js";
@@ -23,14 +24,6 @@ import { getDbSize } from "./services/sql_init.js";
 import { isHttpAttachableMessagingProvider } from "./services/ws_messaging_provider.js";
 
 const MINIMUM_NODE_VERSION = "20.0.0";
-
-const LOGO = `\
- _____     _ _ _
-|_   _| __(_) (_)_   _ _ __ ___   | \\ | | ___ | |_ ___  ___
-  | || '__| | | | | | | '_ \` _ \\  |  \\| |/ _ \\| __/ _ \\/ __|
-  | || |  | | | | |_| | | | | | | | |\\  | (_) | ||  __/\\__ \\
-  |_||_|  |_|_|_|\\__,_|_| |_| |_| |_| \\_|\\___/ \\__\\___||___/ [version]
-`;
 
 export default async function startTriliumServer(): Promise<Express> {
     await displayStartupMessage();
@@ -105,7 +98,7 @@ export default async function startTriliumServer(): Promise<Express> {
 }
 
 async function displayStartupMessage() {
-    getLog().info(`\n${LOGO.replace("[version]", appInfo.appVersion)}`);
+    getLog().info(`\n${TRILIUM_LOGO} ${appInfo.appVersion}\n`);
     getLog().info(`📦 Versions:    app=${appInfo.appVersion} db=${appInfo.dbVersion} sync=${appInfo.syncVersion} clipper=${appInfo.clipperProtocolVersion}`);
     getLog().info(`🔧 Build:       ${utils.formatUtcTime(appInfo.buildDate)} (${appInfo.buildRevision.substring(0, 10)})`);
     getLog().info(`📂 Data dir:    ${appInfo.dataDirectory}`);

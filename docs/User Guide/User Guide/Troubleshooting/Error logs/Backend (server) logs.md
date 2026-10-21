@@ -14,7 +14,7 @@ Backend logs are stored on the file system. To find them, open the <a class="re
 
 ## In the terminal
 
-The server also prints every log entry to its standard output, which is what `docker logs` or `journalctl` show. When that output is a terminal, each entry starts with its time and is colored the same way as the backend log in the app: request status codes by class, slow SQL queries, and errors in red. Output to a file, a pipe or a container log stays plain text without the time, since those tools add their own.
+The server also prints every log entry to its standard output, which is what `docker logs` or `journalctl` show. When that output is a terminal, each entry starts with its time and is colored the same way as the backend log in the app: request status codes by class, slow SQL queries, and errors in red. The startup banner with the Trilium logo and version information is colored too. Output to a file, a pipe or a container log stays plain text without the time, since those tools add their own.
 
 To turn the colors off in a terminal, set the `NO_COLOR` environment variable; to force them on elsewhere, set `FORCE_COLOR=1`.
 

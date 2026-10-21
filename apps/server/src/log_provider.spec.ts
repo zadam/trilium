@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { styleText } from "node:util";
 import { describe, expect, it, vi } from "vitest";
 
-import ServerLogService, { colorizeLogEntry } from "./log_provider.js";
+import ServerLogService, { colorizeLogEntry, TRILIUM_LOGO } from "./log_provider.js";
 
 describe("colorizeLogEntry", () => {
     const ts = paint("gray", "12:34:56.789");
@@ -35,6 +35,19 @@ describe("colorizeLogEntry", () => {
         for (const message of [ "ERROR: boom\n    at foo (bar.js:1:1)", "JS Error: boom\r\nStack: at x" ]) {
             expect(colorizeLogEntry(message, "12:34:56.789")).toBe(`${ts} ${paint("red", message)}`);
         }
+    });
+
+    it("colours the startup intro without timestamping the logo or blank lines", () => {
+        expect(colorizeLogEntry(`\n${TRILIUM_LOGO} 0.99.1\n`, "12:34:56.789")).toBe(
+            `\n${paint([ "bold", "green" ], TRILIUM_LOGO)} ${paint("gray", "0.99.1")}\n`
+        );
+        expect(colorizeLogEntry("", "12:34:56.789")).toBe("");
+        expect(colorizeLogEntry("📦 Versions:    app=0.99.1 db=233", "12:34:56.789")).toBe(
+            `${ts} ${paint("gray", "📦 Versions:")}    app=0.99.1 db=233`
+        );
+
+        const warning = "WARNING: Backend script execution is ENABLED.";
+        expect(colorizeLogEntry(warning, "12:34:56.789")).toBe(`${ts} ${paint("yellow", warning)}`);
     });
 
     it("leaves other entries uncoloured", () => {
