@@ -52,6 +52,31 @@ describe("createToolbarGroupMenuHost", () => {
         element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
     };
 
+    it("takes a place of its own height under the toolbar on a phone with no keyboard", async () => {
+        window.glob.device = "mobile";
+        const narrow = vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+            matches: true, media: query, onchange: null, dispatchEvent: () => true,
+            addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}
+        }));
+        const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(320);
+        try {
+            const { menu, setElement } = show();
+            expect(setElement).toHaveBeenCalledWith(menu);
+            expect([ ...menu.classList ]).toEqual(expect.arrayContaining([
+                "mobile-bottom-menu", "keyboard-panel", "keyboard-panel-own-height"
+            ]));
+            await vi.waitFor(() => {
+                expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("320px");
+            });
+            expect(document.body.classList).toContain("keyboard-panel-open");
+        } finally {
+            host.hide();
+            window.glob.device = "desktop";
+            narrow.mockRestore();
+            height.mockRestore();
+        }
+    });
+
     it("draws the entries as the app's menu, with their SVG icons, and hands the editor its element", () => {
         const { menu, setElement } = show();
 

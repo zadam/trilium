@@ -5,6 +5,7 @@ import type {
 } from "@triliumnext/ckeditor5";
 import clsx from "clsx";
 import { Fragment, render } from "preact";
+import { useCallback } from "preact/hooks";
 
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
 import {
@@ -52,7 +53,11 @@ function ToolbarGroupMenu({ request, onClose }: {
     onClose(returnFocus: boolean): void;
 }) {
     const bottomSheet = isMobile() && isNarrowLayout();
-    const { isPanel, replacesPanel } = useKeyboardPanel(bottomSheet);
+    const { isPanel, replacesPanel, isOwnHeight, measureRef } = useKeyboardPanel(bottomSheet);
+    const setElement = useCallback((element: HTMLElement | null) => {
+        request.setElement(element);
+        measureRef(element);
+    }, [ request, measureRef ]);
     useClosedByToolbarTap(request.anchor, () => onClose(false));
 
     return (
@@ -61,12 +66,13 @@ function ToolbarGroupMenu({ request, onClose }: {
             offset={ANCHOR_GAP}
             portalClassName="tn-dropdown-portal"
             className={clsx(
-                "tn-dropdown-menu", isPanel && "keyboard-panel", replacesPanel && "replaces-panel"
+                "tn-dropdown-menu", isPanel && "keyboard-panel",
+                isOwnHeight && "keyboard-panel-own-height", replacesPanel && "replaces-panel"
             )}
             bottomSheet={bottomSheet}
             keepOpenSelector={MOBILE_TOOLBAR_ROW}
             aria-labelledby={request.anchor.getAttribute("aria-labelledby") ?? undefined}
-            elementRef={request.setElement}
+            elementRef={setElement}
             onDismiss={() => onClose(false)}
             onClose={() => onClose(true)}
         >

@@ -158,27 +158,45 @@ function useActiveToolbarElement(editor: CKTextEditor | undefined, pluginName: "
 }
 
 /**
- * Whether a menu of the formatting toolbar opens in the place of the keyboard, as it does when the
- * keyboard is up as it opens: the keyboard closes as the menu takes focus, and the menu fills its
- * `--tn-keyboard-height`. While such a menu is mounted, `keyboard-panel-open` on the body keeps
- * the layout of an open keyboard. `replacesPanel` is set for a menu that opens as another one
- * leaves the place, which it takes over without a reveal.
+ * Whether a menu of the formatting toolbar opens in the place of the keyboard: the keyboard closes
+ * as the menu takes focus, and the menu fills its `--tn-keyboard-height`. While such a menu is
+ * mounted, `keyboard-panel-open` on the body keeps the layout of an open keyboard, with the
+ * toolbar on top of the menu. `replacesPanel` is set for a menu that opens as another one leaves
+ * the place, which it takes over without a reveal.
+ *
+ * With no keyboard up, the menu takes a place of its own height (`isOwnHeight`): `measureRef` on
+ * its element sets `--tn-keyboard-height` to that height while it is open.
  */
 export function useKeyboardPanel(enabled: boolean) {
-    const [ { isPanel, replacesPanel } ] = useState(() => {
+    const [ { isPanel, replacesPanel, isOwnHeight } ] = useState(() => {
         const root = document.getElementById("root-widget");
         const isKeyboardUp = !!root?.classList.contains("virtual-keyboard-opened");
-        const isPanel = enabled && (isKeyboardUp || isKeyboardPanelOpen());
-        return { isPanel, replacesPanel: isPanel && !!pendingHandBack };
+        // A menu taking over the place of a closed one keeps the way it was sized.
+        const isOwnHeight = enabled && (isKeyboardPanelOpen() ? hasOwnHeightPlace : !isKeyboardUp);
+        return { isPanel: enabled, replacesPanel: enabled && !!pendingHandBack, isOwnHeight };
     });
 
     useLayoutEffect(() => {
         if (!isPanel) return;
-        takeKeyboardPlace();
+        takeKeyboardPlace(isOwnHeight);
         return handBackKeyboardPlace;
     }, [ isPanel ]);
 
-    return { isPanel, replacesPanel };
+    // Measured once the place is taken, which saves the keyboard's height first.
+    const [ element, measureRef ] = useState<HTMLElement | null>(null);
+    useLayoutEffect(() => {
+        if (!element || !isOwnHeight) return;
+
+        const measure = () => {
+            document.body.style.setProperty("--tn-keyboard-height", `${element.offsetHeight}px`);
+        };
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [ element, isOwnHeight ]);
+
+    return { isPanel, replacesPanel, isOwnHeight, measureRef };
 }
 
 /** The row of buttons of the phone's toolbar, which scrolls sideways under a menu of it. */
@@ -237,6 +255,10 @@ const PRESS_TIMEOUT = 500;
 
 /** The hand-back of a closed panel's place, while it waits for the keyboard. */
 let pendingHandBack: { cancel(): void } | undefined;
+/** Whether the place was taken with no keyboard up, sized by the menu in it. */
+let hasOwnHeightPlace = false;
+/** The `--tn-keyboard-height` of the keyboard, which a place of the menu's own height covers. */
+let keyboardHeight = "";
 /** Called as `keyboard-panel-open` is set on the body or cleared. */
 const keyboardPanelListeners = new Set<() => void>();
 
@@ -244,11 +266,15 @@ const keyboardPanelListeners = new Set<() => void>();
  * Lays the page out as for an open keyboard, or keeps the layout a closed panel still holds for
  * the keyboard, with the visible bottom it was taken at.
  */
-function takeKeyboardPlace() {
+function takeKeyboardPlace(isOwnHeight: boolean) {
     if (pendingHandBack) {
         pendingHandBack.cancel();
         pendingHandBack = undefined;
         return;
+    }
+    hasOwnHeightPlace = isOwnHeight;
+    if (isOwnHeight) {
+        keyboardHeight = document.body.style.getPropertyValue("--tn-keyboard-height");
     }
     setKeyboardPanelOpen(true);
     holdVisibleBottom(true);
@@ -276,6 +302,10 @@ function handBackKeyboardPlace() {
     const release = () => {
         stopWaiting();
         if (pendingHandBack === handBack) pendingHandBack = undefined;
+        if (hasOwnHeightPlace) {
+            hasOwnHeightPlace = false;
+            document.body.style.setProperty("--tn-keyboard-height", keyboardHeight);
+        }
         setKeyboardPanelOpen(false);
         holdVisibleBottom(false);
     };
@@ -296,9 +326,10 @@ function handBackKeyboardPlace() {
             clearTimeout(timer);
         };
     };
+    // Only a keyboard that was up as the place was taken comes back for it.
     const settle = () => {
         if (isCancelled) return;
-        if (isTextFocused()) {
+        if (isTextFocused() && !hasOwnHeightPlace) {
             waitForKeyboard();
         } else {
             release();
@@ -309,7 +340,11 @@ function handBackKeyboardPlace() {
     queueMicrotask(() => {
         if (isCancelled) return;
         if (isTextFocused()) {
-            waitForKeyboard();
+            if (hasOwnHeightPlace) {
+                release();
+            } else {
+                waitForKeyboard();
+            }
             return;
         }
         // What the click runs, such as opening another menu, runs before `settle`.

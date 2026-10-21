@@ -62,10 +62,13 @@ describe("useKeyboardPanel", () => {
             return null;
         }
 
+        // Without a keyboard, the menu takes a place of its own height.
         act(() => render(<Harness enabled />, host));
-        expect(seen.at(-1)?.isPanel).toBe(false);
+        expect(seen.at(-1)).toMatchObject({ isPanel: true, isOwnHeight: true });
+        expect(isMarked()).toBe(true);
+        await act(async () => render(null, host));
+        await endPress();
         expect(isMarked()).toBe(false);
-        act(() => render(null, host));
 
         root.classList.add("virtual-keyboard-opened");
         act(() => render(<Harness enabled={false} />, host));
@@ -74,7 +77,7 @@ describe("useKeyboardPanel", () => {
         act(() => render(null, host));
 
         act(() => render(<Harness enabled />, host));
-        expect(seen.at(-1)?.isPanel).toBe(true);
+        expect(seen.at(-1)).toMatchObject({ isPanel: true, isOwnHeight: false });
         expect(isMarked()).toBe(true);
 
         // The keyboard closes as the menu takes focus, and the menu keeps its place.
@@ -86,6 +89,30 @@ describe("useKeyboardPanel", () => {
         await act(async () => render(null, host));
         await endPress();
         expect(isMarked()).toBe(false);
+    });
+
+    it("sizes the place by the menu with no keyboard, giving it back as the menu closes", async () => {
+        const { editable, host } = buildPanelFixture();
+        document.body.style.setProperty("--tn-keyboard-height", "300px");
+        const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(240);
+        function Menu() {
+            const { measureRef } = useKeyboardPanel(true);
+            return <div ref={measureRef} />;
+        }
+
+        act(() => render(<Menu />, host));
+        expect(isKeyboardPanelOpen()).toBe(true);
+        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("240px");
+
+        // An entry that runs focuses the text, and no keyboard comes up to take the place over.
+        await act(async () => {
+            render(null, host);
+            editable.focus();
+        });
+        expect(isKeyboardPanelOpen()).toBe(false);
+        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("300px");
+        height.mockRestore();
+        document.body.style.removeProperty("--tn-keyboard-height");
     });
 
     it("keeps the place for a keyboard that comes back, until it is up", async () => {
