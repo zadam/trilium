@@ -1,7 +1,7 @@
 import {
     _setModelData as setModelData,
     ButtonView, type ClassicEditor, ContextualBalloon, DropdownView, Essentials, IconLink, Image, ImageStyle, ImageToolbar,
-    IconBulletedList, IconNumberedList, IconPreviousArrow, IconTable, Link, LinkUI, List, ListProperties, Paragraph, TodoList, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
+    IconBulletedList, IconNumberedList, IconPreviousArrow, IconTodoList, IconTable, Link, LinkUI, List, ListProperties, Paragraph, TodoList, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
     WidgetToolbarRepository
 } from "ckeditor5";
 import { describe, expect, it, vi } from "vitest";
@@ -166,11 +166,11 @@ describe("ContextToolbar", () => {
         expect(plugin.isActive).toBe(true);
     });
 
-    it("offers the list toolbar for the innermost list, and none for a to-do list", async () => {
+    it("offers the list toolbar for the innermost list, to-do lists included", async () => {
         const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoList, MobileToolbarItems, ContextToolbar], {
             toolbar: ["contextToolbar"],
             list: { properties: { styles: true, startIndex: true, reversed: true } },
-            listToolbar: ["listStyleMenu", "listReversed"]
+            listToolbar: ["listTypeMenu", "listReversed"]
         });
         editor.ui.focusTracker.isFocused = true;
         const plugin = editor.plugins.get(ContextToolbar);
@@ -192,6 +192,10 @@ describe("ContextToolbar", () => {
         expect(button).toMatchObject({ isVisible: true, icon: IconBulletedList });
 
         setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"todo\">a[]</paragraph>");
+        editor.ui.update();
+        expect(button).toMatchObject({ isVisible: true, label: "List", icon: IconTodoList });
+
+        setModelData(editor.model, "<paragraph>a[]</paragraph>");
         editor.ui.update();
         expect(button.isVisible).toBe(false);
     });

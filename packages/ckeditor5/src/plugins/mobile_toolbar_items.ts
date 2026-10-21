@@ -95,10 +95,10 @@ interface BlockType {
  *   a note or to an address, in place of the separate `link` and `internalLink` buttons.
  * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
  *   which needs a pointer that hovers over its cells.
- * - `listStyleMenu`, `listStartAt` and `listReversed`: the list properties of `ListProperties`,
- *   whose panel holds a form: the styles of the list at the selection as tiles, a button that asks
- *   the host for the number the list starts at (`listStartPrompt`), and a toggle for the order. The
- *   last two show only in a numbered list.
+ * - `listTypeMenu`, `listStartAt` and `listReversed`: the list properties of `ListProperties`,
+ *   whose panel holds a form: the markers of bulleted and numbered lists and the to-do list as
+ *   tiles, under the kind of each, a button that asks the host for the number the list starts at
+ *   (`listStartPrompt`), and a toggle for the order. The last two show only in a numbered list.
  */
 export default class MobileToolbarItems extends Plugin {
 
@@ -139,7 +139,7 @@ export default class MobileToolbarItems extends Plugin {
         editor.ui.componentFactory.add("addLink", (locale) => this.createAddLinkButton(locale));
 
         if (editor.commands.get("listStyle")) {
-            editor.ui.componentFactory.add("listStyleMenu", (locale) => this.createListStyleDropdown(locale));
+            editor.ui.componentFactory.add("listTypeMenu", (locale) => this.createListTypeDropdown(locale));
         }
         if (editor.commands.get("listStart")) {
             editor.ui.componentFactory.add("listStartAt", (locale) => this.createListStartButton(locale));
@@ -149,26 +149,54 @@ export default class MobileToolbarItems extends Plugin {
         }
     }
 
-    private createListStyleDropdown(locale: Locale) {
+    private createListTypeDropdown(locale: Locale) {
         const editor = this.editor;
-        const command = editor.commands.get("listStyle") as ListStyleCommand;
+        const t = editor.t;
+        const styleCommand = editor.commands.get("listStyle") as ListStyleCommand;
+        const todoCommand = editor.commands.get("todoList") as Command;
+        const commands = [styleCommand, todoCommand, ...["bulletedList", "numberedList"].map((name) =>
+            editor.commands.get(name) as Command)];
         const dropdown = createDropdown(locale);
-        dropdown.buttonView.set({ label: editor.t("List style"), tooltip: true });
-        dropdown.buttonView.bind("icon").to(command, "value", (value: string | null) =>
-            LIST_STYLES.find(({ type }) => type === value)?.icon ?? IconBulletedList);
-        dropdown.bind("isEnabled").to(command);
+        dropdown.buttonView.set({ label: t("List type"), tooltip: true });
+        dropdown.buttonView.bind("icon").toMany(commands, "value", () =>
+            getCurrentListStyle(editor)?.icon ?? (todoCommand.value ? IconTodoList : IconBulletedList));
+        dropdown.bind("isEnabled").toMany(commands, "isEnabled", (...enabled) => enabled.some(Boolean));
 
+        // `listStyle` turns a list of the other kind, a to-do list included, into one of the marker's.
+        const kinds = [["bulleted", t("Bulleted List")], ["numbered", t("Numbered List")]] as const;
         openListAsMenu(dropdown, {
             layout: "tiles",
-            describe: (run) => getListStyles(editor)
-                .filter(({ type }) => command.isStyleTypeSupported(type))
-                .map(({ type, icon, label }): ToolbarGroupMenuItem => ({
-                    kind: "entry", label, icon, isEnabled: command.isEnabled, isOn: command.value === type,
+            describe: (run) => {
+                const current = getCurrentListStyle(editor);
+                const items: ToolbarGroupMenuItem[] = [];
+                for (const [listType, heading] of kinds) {
+                    items.push({ kind: "heading", label: heading });
+                    for (const style of getListStyles(editor, listType)) {
+                        if (!styleCommand.isStyleTypeSupported(style.type)) {
+                            continue;
+                        }
+                        items.push({
+                            kind: "entry", label: style.label, icon: style.icon,
+                            isEnabled: styleCommand.isEnabled, isOn: style.type === current?.type,
+                            run: run(() => {
+                                editor.execute("listStyle", { type: style.type });
+                                editor.editing.view.focus();
+                            })
+                        });
+                    }
+                }
+                items.push({ kind: "separator" }, {
+                    kind: "entry", label: t("To-do List"), icon: IconTodoList,
+                    isEnabled: todoCommand.isEnabled, isOn: todoCommand.value === true,
                     run: run(() => {
-                        editor.execute("listStyle", { type });
+                        if (!todoCommand.value) {
+                            editor.execute("todoList");
+                        }
                         editor.editing.view.focus();
                     })
-                }))
+                });
+                return items;
+            }
         });
         return dropdown;
     }
@@ -415,10 +443,23 @@ const LIST_STYLES = [
     { listType: "numbered", type: "arabic-indic", icon: IconListStyleArabicIndic }
 ] as const;
 
-/** The styles of the list at the selection, named as `ListPropertiesUI` names them. */
-function getListStyles(editor: Editor) {
+/** The style a list of each type is drawn with when it has none of its own. */
+const DEFAULT_LIST_STYLES: Record<string, string | undefined> = { bulleted: "disc", numbered: "decimal" };
+
+/**
+ * The style of the list at the selection, or the one a list with no style of its own is drawn
+ * with, or `undefined` outside a bulleted or numbered list.
+ */
+function getCurrentListStyle(editor: Editor) {
     const block = editor.model.document.selection.getFirstPosition()?.parent;
     const listType = block?.is("element") ? block.getAttribute("listType") : undefined;
+    const value = editor.commands.get("listStyle")?.value;
+    const type = !value || value === "default" ? DEFAULT_LIST_STYLES[String(listType)] : value;
+    return LIST_STYLES.find((style) => style.listType === listType && style.type === type);
+}
+
+/** The styles of a list of `listType`, named as `ListPropertiesUI` names them. */
+function getListStyles(editor: Editor, listType: "bulleted" | "numbered") {
     const t = editor.t;
     const labels: Record<string, string> = {
         "disc": t("Disc"),

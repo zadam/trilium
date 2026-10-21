@@ -1,6 +1,6 @@
 import {
     ButtonView, ContextualBalloon, DropdownView, IconBulletedList, IconCodeBlock, IconImage, IconLink,
-    IconNumberedList, IconPreviousArrow, IconTable,
+    IconNumberedList, IconPreviousArrow, IconTable, IconTodoList,
     IconThreeVerticalDots, IconView, LinkUI, Plugin, ToolbarSeparatorView, ToolbarView, View, WidgetToolbarRepository
 } from "ckeditor5";
 import type {
@@ -21,7 +21,8 @@ const TOOLBAR_ICONS: Record<string, string> = {
     link: IconLink,
     linkEmbed: IconLink,
     bulletedList: IconBulletedList,
-    numberedList: IconNumberedList
+    numberedList: IconNumberedList,
+    todoList: IconTodoList
 };
 
 /** What `WidgetToolbarRepository` keeps of a registered toolbar. */
@@ -275,7 +276,8 @@ function getToolbarName(editor: Editor, source: ContextToolbarSource | null) {
         case "link":
         case "linkEmbed": return t("Link");
         case "bulletedList":
-        case "numberedList": return t("List");
+        case "numberedList":
+        case "todoList": return t("List");
         default: return undefined;
     }
 }
@@ -295,11 +297,11 @@ function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefin
     // The toolbar of the innermost list, under the name of its kind, so the chip shows its icon.
     const listItems = editor.config.get("listToolbar") ?? [];
     if (listItems.length) {
-        for (const [id, tag] of [["bulletedList", "ul"], ["numberedList", "ol"]] as const) {
+        for (const id of ["bulletedList", "numberedList", "todoList"] as const) {
             yield [id, {
                 getRelatedElement: (selection) => {
                     const list = getInnermostList(selection);
-                    return list?.name === tag ? list : null;
+                    return list && getListKind(list) === id ? list : null;
                 },
                 itemsConfig: listItems
             }];
@@ -315,11 +317,18 @@ function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefin
     }
 }
 
-/** The innermost list at the selection, or `null` outside a list or in a to-do list, which has no properties. */
+/** The innermost list at the selection, or `null` outside a list. */
 function getInnermostList(selection: ViewDocumentSelection) {
-    const list = selection.getFirstPosition()?.getAncestors().reverse()
-        .find((node): node is ViewElement => node.is("element", "ul") || node.is("element", "ol"));
-    return list && !list.hasClass("todo-list") ? list : null;
+    return selection.getFirstPosition()?.getAncestors().reverse()
+        .find((node): node is ViewElement => node.is("element", "ul") || node.is("element", "ol")) ?? null;
+}
+
+/** The command that makes a list of the kind of `list`. */
+function getListKind(list: ViewElement) {
+    if (list.hasClass("todo-list")) {
+        return "todoList";
+    }
+    return list.name === "ol" ? "numberedList" : "bulletedList";
 }
 
 /** The items of the link toolbar, without the properties a link has none of, as `LinkUI` builds it. */

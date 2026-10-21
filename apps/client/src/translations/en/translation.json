@@ -4603,7 +4603,7 @@
       "move-down": "Move down",
       "image-position": "Image position",
       "list": "List",
-      "list-style": "List style"
+      "list-type": "List type"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

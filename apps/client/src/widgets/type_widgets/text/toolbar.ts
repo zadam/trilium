@@ -123,7 +123,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "cuttonote"
         ],
         // The row of the `contextToolbar` button in a list, as a list has no toolbar of its own.
-        listToolbar: [ "listStyleMenu", "listStartAt", "listReversed" ]
+        listToolbar: [ "listTypeMenu", "listStartAt", "listReversed" ]
     };
 }
 

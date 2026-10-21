@@ -5,7 +5,7 @@ There are three types of lists supported by text notes:
 *   <span class="tn-icon cke cke-numbered-list"></span> Numbered lists (or ordered lists).
 *   <span class="tn-icon cke cke-todo-list"></span> To-do lists
 
-For bulleted and numbered lists, it's possible to configure an alternative marker such as squares or Roman numbering by pressing the <span class="tn-icon cke cke-dropdown-arrow"></span> icon. For numbered lists, it's also possible to specify the number to start at or whether to count in reverse order. On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, these are in the row of the _List ›_ button, which shows while the cursor is in a list.
+For bulleted and numbered lists, it's possible to configure an alternative marker such as squares or Roman numbering by pressing the <span class="tn-icon cke cke-dropdown-arrow"></span> icon. For numbered lists, it's also possible to specify the number to start at or whether to count in reverse order. On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, these are in the row of the _List ›_ button, which shows while the cursor is in a list; its _List type_ button also turns the list into another kind, to-do lists included.
 
 ## Keyboard interaction
 
