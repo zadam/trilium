@@ -56,26 +56,22 @@ describe("ContentEmbedDialog", () => {
         });
     }
 
-    function sizeSelect() {
-        const select = container.querySelector<HTMLSelectElement>(".include-note-size select");
-        if (!select) throw new Error("The dialog has no box size select.");
-        return select;
+    function sizeButtons() {
+        return [ ...container.querySelectorAll<HTMLButtonElement>(
+            ".include-note-size .tn-segmented-choice button"
+        ) ];
     }
 
-    // happy-dom does not follow which option Preact marks as selected, so the size is read from the
-    // description of the row, which names the chosen one.
     function checkedSize() {
-        const description = container
-            .querySelector(".include-note-size .tn-card-option-description")?.textContent;
-        return /^include_note\.size_(\w+)_description$/.exec(description ?? "")?.[1];
+        const active = sizeButtons().filter((button) => button.classList.contains("active"));
+        if (active.length !== 1) throw new Error(`${active.length} box sizes are active.`);
+        return /^include_note\.size_(\w+)$/.exec(active[0]?.title ?? "")?.[1];
     }
 
     async function choose(size: string) {
-        const select = sizeSelect();
-        await act(async () => {
-            select.value = size;
-            select.dispatchEvent(new Event("change", { bubbles: true }));
-        });
+        const button = sizeButtons().find((b) => b.title === `include_note.size_${size}`);
+        if (!button) throw new Error(`No button for ${size}.`);
+        await act(async () => button.click());
     }
 
     async function submit() {
@@ -93,13 +89,26 @@ describe("ContentEmbedDialog", () => {
             .map((label) => label.textContent);
         expect(labels).toStrictEqual([ "include_note.label_note", "include_note.box_size" ]);
         expect(container.querySelector(".include-note-note input")).not.toBeNull();
-        expect([ ...sizeSelect().options ].map((option) => option.textContent)).toStrictEqual([
+        expect(sizeButtons().map((button) => button.textContent?.trim())).toStrictEqual([
             "include_note.size_tiny", "include_note.size_small", "include_note.size_medium",
             "include_note.size_full", "include_note.size_expandable"
         ]);
+        expect(sizeButtons().every((button) => button.querySelector("svg"))).toBe(true);
+
+        // Every description is laid out, so the row keeps the height of the longest; only the
+        // chosen one is shown.
+        expect(container.querySelector(".include-note-size .tn-card-option-label small")).toBeNull();
+        const descriptions = [ ...container.querySelectorAll(".include-note-size-description > *") ];
+        expect(descriptions).toHaveLength(5);
+        const description = () => {
+            const shown = descriptions.filter((d) => d.getAttribute("aria-hidden") !== "true");
+            return shown.length === 1 ? shown[0]?.textContent : `${shown.length} shown`;
+        };
         expect(checkedSize()).toBe("medium");
+        expect(description()).toBe("include_note.size_medium_description");
         await choose("tiny");
         expect(checkedSize()).toBe("tiny");
+        expect(description()).toBe("include_note.size_tiny_description");
     });
 
     it("preselects the size that suits the picked note, until another size is chosen", async () => {
