@@ -4,6 +4,7 @@ import {
     IconBulletedList, IconNumberedList, IconPreviousArrow, IconTodoList, IconTable, Link, LinkUI, List, ListProperties, Paragraph, TodoList, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
     WidgetToolbarRepository
 } from "ckeditor5";
+import bxPencil from "boxicons/svg/regular/bx-pencil.svg?raw";
 import { describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
@@ -239,6 +240,8 @@ describe("ContextToolbar", () => {
 
         const edit = [...plugin.toolbarView.items].at(-1);
         expect(edit).toBeInstanceOf(ButtonView);
+        // An icon of its own, as the row draws the pill of each button on its `::before`.
+        expect(edit).toMatchObject({ icon: bxPencil, withText: false });
         (edit as ButtonView).fire("execute");
         expect(editTaskStates).toHaveBeenCalledOnce();
     });

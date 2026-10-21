@@ -386,10 +386,10 @@ describe("list properties", () => {
         const tiles = open();
         expect(requests.at(-1)?.layout).toBe("tiles");
         expect(tiles.map(rowText)).toStrictEqual([
+            "To-do List",
             "Bulleted List", "Disc", "Circle ✓", "Square",
             "Numbered List", "Decimal", "Decimal with leading zero", "Lower–roman", "Upper-roman",
-            "Lower-latin", "Upper-latin", "Arabic-indic",
-            "—", "To-do List"
+            "Lower-latin", "Upper-latin", "Arabic-indic"
         ]);
         expect(icons(tiles)).toStrictEqual(expect.arrayContaining([IconListStyleDisc, IconListStyleLowerRoman, IconTodoList]));
 

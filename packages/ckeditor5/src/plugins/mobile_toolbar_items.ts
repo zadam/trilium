@@ -97,8 +97,8 @@ interface BlockType {
  * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
  *   which needs a pointer that hovers over its cells.
  * - `listTypeMenu`, `listStartAt` and `listReversed`: the list properties of `ListProperties`,
- *   whose panel holds a form: the markers of bulleted and numbered lists and the to-do list as
- *   tiles, under the kind of each, a button that asks the host for the number the list starts at
+ *   whose panel holds a form: the to-do list and the markers of bulleted and numbered lists as
+ *   tiles, the markers under the kind of each, a button that asks the host for the number the list starts at
  *   (`listStartPrompt`), and a toggle for the order. The last two show only in a numbered list.
  */
 export default class MobileToolbarItems extends Plugin {
@@ -169,7 +169,16 @@ export default class MobileToolbarItems extends Plugin {
             layout: "tiles",
             describe: (run) => {
                 const current = getCurrentListStyle(editor);
-                const items: ToolbarGroupMenuItem[] = [];
+                const items: ToolbarGroupMenuItem[] = [{
+                    kind: "entry", label: t("To-do List"), icon: IconTodoList,
+                    isEnabled: todoCommand.isEnabled, isOn: todoCommand.value === true,
+                    run: run(() => {
+                        if (!todoCommand.value) {
+                            editor.execute("todoList");
+                        }
+                        editor.editing.view.focus();
+                    })
+                }];
                 for (const [listType, heading] of kinds) {
                     items.push({ kind: "heading", label: heading });
                     for (const style of getListStyles(editor, listType)) {
@@ -186,16 +195,6 @@ export default class MobileToolbarItems extends Plugin {
                         });
                     }
                 }
-                items.push({ kind: "separator" }, {
-                    kind: "entry", label: t("To-do List"), icon: IconTodoList,
-                    isEnabled: todoCommand.isEnabled, isOn: todoCommand.value === true,
-                    run: run(() => {
-                        if (!todoCommand.value) {
-                            editor.execute("todoList");
-                        }
-                        editor.editing.view.focus();
-                    })
-                });
                 return items;
             }
         });
