@@ -8,6 +8,7 @@ import { highlightSelectionMatches } from "@codemirror/search";
 import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
 import { CodeMirror as VimEditor, vim } from "@replit/codemirror-vim";
 import { indentationMarkers } from "@replit/codemirror-indentation-markers";
+import type { ScriptModuleTypes } from "@triliumnext/commons";
 import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
 import smartIndentWithTab from "./extensions/custom_tab.js";
 import type { ThemeDefinition } from "./color_themes.js";
@@ -23,7 +24,7 @@ export {
     default as SharedHistory, type HostHistory, type HostHistoryStep
 } from "./shared_history.js";
 export {
-    isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND,
+    isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND, SCRIPT_MIME_JSX,
     type TypeCompletionEntry
 } from "./type_completion/index.js";
 export { triliumLogHighlighter } from "./extensions/trilium_log_highlighter.js";
@@ -716,11 +717,21 @@ function sharedHistoryKeys(view: CodeMirror): Extension {
     ];
 }
 
-/** Identifies a type-completion build by its MIME type and the context flags that are set. */
+/**
+ * Identifies a type-completion build by its MIME type, the context flags that are set, and which
+ * packages the editor was given declarations for. A package list is keyed by name and size rather
+ * than by its contents, which run to megabytes.
+ */
 function typeCompletionKey(mime: string, context: ScriptApiContext) {
     const flags = Object.entries(context)
         .filter(([ , value ]) => value)
-        .map(([ name ]) => name)
+        .map(([ name, value ]) => {
+            if (!Array.isArray(value)) return name;
+            const packages = value.map((module: ScriptModuleTypes) => (
+                `${module.spec}/${module.entry}/${module.files.length}`
+            ));
+            return `${name}:${packages.join(",")}`;
+        })
         .sort();
     return [ mime, ...flags ].join(" ");
 }

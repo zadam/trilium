@@ -1,4 +1,5 @@
 import { EditorConfig, default as VanillaCodeMirror } from "@triliumnext/codemirror";
+import type { ScriptModuleTypes } from "@triliumnext/commons";
 import { Ref } from "preact";
 import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
 
@@ -18,13 +19,15 @@ export interface CodeMirrorProps extends Omit<EditorConfig, "parent"> {
      * Gates the `api.req`/`api.res`/`api.pathParams` completions for backend scripts.
      */
     customRequestHandler?: boolean;
+    /** Declarations of the installed npm packages, so a backend script's `require()` is typed. */
+    scriptModules?: ScriptModuleTypes[];
     /** Whether the script is a bulk action's, which runs with the processed note as `note`. */
     bulkActionNote?: boolean;
     /** The snippets the completion list offers after a `/`, read each time the list opens. */
     getSnippets?: () => CodeSnippet[];
 }
 
-export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, lineNumbers = true, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, getSnippets, ...extraOpts }: CodeMirrorProps) {
+export default function CodeMirror({ className, content, mime, editorRef: externalEditorRef, containerRef: externalContainerRef, onInitialized, lineWrapping, lineNumbers = true, customRequestHandler, bulkActionNote, allowKeyboardSuggestions, scriptModules, getSnippets, ...extraOpts }: CodeMirrorProps) {
     const parentRef = useSyncedRef(externalContainerRef);
     const codeEditorRef = useRef<VanillaCodeMirror | undefined>(undefined);
     const getSnippetsRef = useRef(getSnippets);
@@ -62,13 +65,16 @@ export default function CodeMirror({ className, content, mime, editorRef: extern
         codeEditorRef.current?.setMimeType(mime);
     }, [ mime ]);
 
-    // React to custom-request-handler status, which gates the backend api.req/res/pathParams completions.
+    // React to what tunes the offered types: custom-request-handler status, which gates the backend
+    // api.req/res/pathParams completions, the bulk-action note, and the packages a `require()` can
+    // resolve to.
     useEffect(() => {
         codeEditorRef.current?.setScriptApiContext({
             customRequestHandler: !!customRequestHandler,
-            bulkActionNote: !!bulkActionNote
+            bulkActionNote: !!bulkActionNote,
+            ...(scriptModules?.length ? { scriptModules } : {})
         });
-    }, [ customRequestHandler, bulkActionNote ]);
+    }, [ customRequestHandler, bulkActionNote, scriptModules ]);
 
     // React to the language switching between prose and code, which decides whether the
     // on-screen keyboard is allowed to suggest words.

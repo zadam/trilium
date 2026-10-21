@@ -17,6 +17,7 @@ import { TypeWidgetProps } from "../type_widget";
 import ApiLog from "./ApiLog";
 import CodeMirror, { CodeMirrorProps } from "./CodeMirror";
 import { type CompletionTarget, useEditorCompletions } from "./editor_completions";
+import { scriptRuntimeFor, useScriptModuleCompletions, useScriptModuleTypes } from "./script_modules";
 
 export interface EditableCodeProps extends TypeWidgetProps {
     // if true, the update will be debounced to prevent excessive updates. Especially useful if the editor is linked to a live preview.
@@ -96,9 +97,11 @@ function formatViewSource(note: FNote, content: string) {
 
 export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentComponent, updateInterval, noteType = "code", onContentChanged, dataSaved, placeholder, editorRef: externalEditorRef, ...editorProps }: EditableCodeProps) {
     const editorRef = useRef<VanillaCodeMirror>(null);
+    const [ editorView, setEditorView ] = useState<VanillaCodeMirror | null>(null);
     const containerRef = useRef<HTMLPreElement>(null);
     const combinedEditorRef = useCallback((view: VanillaCodeMirror | null) => {
         editorRef.current = view;
+        setEditorView(view);
         if (typeof externalEditorRef === "function") externalEditorRef(view);
         else if (externalEditorRef) externalEditorRef.current = view;
     }, [externalEditorRef]);
@@ -146,6 +149,12 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
 
     useKeyboardShortcuts("code-detail", containerRef, parentComponent, ntxId);
 
+    // The installed packages: their names offered on the specifier being typed, and their
+    // declarations handed to the language service so what the script imports of one is typed.
+    const scriptRuntime = scriptRuntimeFor(mime);
+    useScriptModuleCompletions(editorView, scriptRuntime);
+    const scriptModules = useScriptModuleTypes(scriptRuntime);
+
     return (
         <>
             <CodeEditor
@@ -154,6 +163,7 @@ export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentC
                 mime={mime ?? "text/plain"}
                 completions={{ note, getNotePath: () => noteContext?.notePath }}
                 customRequestHandler={customRequestHandler != null}
+                scriptModules={scriptModules}
                 className="note-detail-code-editor"
                 placeholder={placeholder ?? t("editable_code.placeholder")}
                 vimKeybindings={vimKeymapEnabled}

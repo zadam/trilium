@@ -124,6 +124,12 @@ function mockServer() {
             };
         }
 
+        // A script note's editor lists what is installed for its runtime, and the declarations
+        // that type what it imports.
+        if (url === "script-modules" || url === "script-modules/types") {
+            return [];
+        }
+
         console.warn(`Unsupported GET to mocked server: ${url}`);
     }
 

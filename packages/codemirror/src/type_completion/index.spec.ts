@@ -53,6 +53,8 @@ const TS_TOP_LEVEL_AWAIT = 1375;
 const TS_JQUERY_NOT_FOUND = 2592;
 /** "Cannot find name 'x'." */
 const TS_NAME_NOT_FOUND = 2304;
+/** "Cannot find module 'x' or its corresponding type declarations." */
+const TS_MODULE_NOT_FOUND = 2307;
 /** "Cannot find name 'document'. Do you need to change your target library?…" (a DOM name) */
 const TS_DOM_NAME_NOT_FOUND = 2584;
 /** "Unreachable code detected." — the one diagnostic rendered as a warning marker. */
@@ -431,6 +433,79 @@ describe("backend custom request handler api (req/res/pathParams)", () => {
         expect(names).not.toContain("req");
         expect(names).not.toContain("res");
         expect(names).not.toContain("pathParams");
+    }, TIMEOUT);
+});
+
+describe("installed script modules", () => {
+    const DAYJS = {
+        name: "dayjs",
+        spec: "dayjs@1.11.10",
+        portable: true,
+        entry: "esm_dayjs_1.11.10_index.d.ts",
+        files: [ {
+            name: "esm_dayjs_1.11.10_index.d.ts",
+            content: "declare function dayjs(): dayjs.Dayjs;\n"
+                + "declare namespace dayjs { interface Dayjs { addDays(n: number): Dayjs; format(): string } }\n"
+                + "export = dayjs;\n"
+        } ]
+    };
+
+    it("types a require() of an installed package, by name and by name and version", async () => {
+        for (const specifier of [ "dayjs", "dayjs@1.11.10" ]) {
+            const completions = await completionsAtMarker(
+                SCRIPT_MIME_BACKEND,
+                `const d = require("${specifier}")();\nd.|`,
+                { scriptModules: [ DAYJS ] }
+            );
+            expect(completions).toContain("addDays");
+            expect(completions).toContain("format");
+        }
+    }, TIMEOUT);
+
+    it("types each package only from its own declarations", async () => {
+        const completions = await completionsAtMarker(
+            SCRIPT_MIME_BACKEND, `const c = require("cheerio")();\nc.|`, { scriptModules: [ DAYJS ] });
+        expect(completions).not.toContain("addDays");
+
+        // TS2307, "cannot find module", is what a package that is not installed has always drawn
+        // here — and now says the useful thing, since installing it is what makes it resolve.
+        const codes = await getScriptDiagnosticCodes(
+            SCRIPT_MIME_BACKEND, `const c = require("cheerio");\nc.anything();`, { scriptModules: [ DAYJS ] });
+        expect(codes).toEqual([ TS_MODULE_NOT_FOUND ]);
+    }, TIMEOUT);
+
+    it("types a package installed at a path inside it, by that path and with its version", async () => {
+        const utc = {
+            name: "dayjs/plugin/utc",
+            spec: "dayjs@1.11.10/plugin/utc",
+            portable: true,
+            entry: "esm_dayjs_1.11.10_plugin_utc.d.ts",
+            files: [ {
+                name: "esm_dayjs_1.11.10_plugin_utc.d.ts",
+                content: "declare const plugin: { name: string; install(): void };\nexport = plugin;\n"
+            } ]
+        };
+
+        for (const specifier of [ "dayjs/plugin/utc", "dayjs@1.11.10/plugin/utc" ]) {
+            const completions = await completionsAtMarker(
+                SCRIPT_MIME_BACKEND, `const p = require("${specifier}");\np.|`, { scriptModules: [ utc ] });
+            expect(completions).toContain("install");
+            expect(completions).toContain("name");
+        }
+    }, TIMEOUT);
+
+    it("types a frontend script's require, and a JSX note's import, of the same package", async () => {
+        const frontend = await completionsAtMarker(
+            SCRIPT_MIME_FRONTEND, `const d = require("dayjs")();\nd.|`, { scriptModules: [ DAYJS ] });
+        expect(frontend).toContain("addDays");
+
+        // A render note writes an import, which becomes a require when the note is built.
+        const jsx = await completionsAtMarker(
+            SCRIPT_MIME_JSX, `import dayjs from "dayjs";\nconst d = dayjs();\nd.|`, { scriptModules: [ DAYJS ] });
+        expect(jsx).toContain("addDays");
+        expect(await getScriptDiagnosticCodes(
+            SCRIPT_MIME_JSX, `import dayjs from "dayjs";\nconst d = dayjs().format();`, { scriptModules: [ DAYJS ] }))
+            .toEqual([]);
     }, TIMEOUT);
 });
 

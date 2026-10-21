@@ -4,6 +4,7 @@ import { indentUnit } from "@codemirror/language";
 import { EditorSelection, EditorState, StateEffect } from "@codemirror/state";
 import { EditorView, showTooltip, type ViewUpdate } from "@codemirror/view";
 import { CodeMirror as VimEditor, getCM } from "@replit/codemirror-vim";
+import type { ScriptModuleTypes } from "@triliumnext/commons";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./type_completion/index.js", async (importOriginal) => {
@@ -852,6 +853,24 @@ describe("CodeMirror", () => {
 
             await editor.setScriptApiContext({ customRequestHandler: true, bulkActionNote: false });
             await editor.setMimeType("text/css");
+            expect(buildMock).toHaveBeenCalledTimes(3);
+        });
+
+        it("builds again when the installed packages change", async () => {
+            const buildMock = vi.mocked(buildTypeCompletion);
+            buildMock.mockResolvedValue({ extensions: [], complete: null });
+            editor = build();
+
+            // Two installs of the same package differ in nothing but the version, which the build
+            // reads the declarations of.
+            const installed = (spec: string): ScriptModuleTypes => ({
+                name: "dayjs", spec, portable: true, entry: "index.d.ts",
+                files: [ { name: "index.d.ts", content: "export = dayjs;" } ]
+            });
+
+            await editor.setMimeType(SCRIPT_MIME_BACKEND);
+            await editor.setScriptApiContext({ scriptModules: [ installed("dayjs@1.11.10") ] });
+            await editor.setScriptApiContext({ scriptModules: [ installed("dayjs@1.9.0") ] });
             expect(buildMock).toHaveBeenCalledTimes(3);
         });
 

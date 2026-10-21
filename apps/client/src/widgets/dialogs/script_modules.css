@@ -1,0 +1,52 @@
+.modal.script-modules-dialog {
+    .tn-card {
+        margin-bottom: 16px;
+    }
+
+    .tn-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .script-modules-install {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5em;
+
+        > input {
+            flex-grow: 1;
+            min-width: 0;
+        }
+    }
+
+    .script-module-spec-input,
+    .script-module-spec {
+        font-family: var(--monospace-font-family);
+    }
+
+    .script-module-heading {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .script-module-node-badge {
+        --color: var(--muted-text-color);
+        flex-shrink: 0;
+    }
+
+    .script-modules-error .alert {
+        margin-bottom: 0;
+    }
+}
+
+/* The dropdown is portalled to the body, so these are not scoped under .script-modules-dialog. */
+.form-autocomplete-dropdown .script-module-entry-package .form-autocomplete-entry-name {
+    font-family: var(--monospace-font-family);
+}
+
+/* The row that goes and asks the registry is set apart from the packages it produces. */
+.form-autocomplete-dropdown .script-module-entry-search {
+    font-style: italic;
+    opacity: 0.85;
+}

@@ -43,6 +43,13 @@ export interface FetchedResource {
     ok: boolean;
     /** The media type alone, parameters stripped; empty where the server named none. */
     contentType: string;
+    /**
+     * The response headers, names lower-cased.
+     *
+     * For a caller that needs one the body does not carry — esm.sh answers a package build with
+     * `x-typescript-types`, naming where the package's declarations are.
+     */
+    headers?: Readonly<Record<string, string>>;
     bytes: Uint8Array;
 }
 
@@ -167,7 +174,11 @@ export function validateFetchableUrl(urlString: string): URL {
  */
 export async function readCappedResponse(response: Response, maxBytes: number): Promise<FetchedResource> {
     const contentType = (response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
-    const base = { status: response.status, ok: response.ok, contentType };
+    // `Headers` iteration keeps the case the server sent under some implementations and lower-cases
+    // it under others; `FetchedResource` promises one case.
+    const headers = Object.fromEntries(
+        [ ...response.headers ].map(([ name, value ]) => [ name.toLowerCase(), value ]));
+    const base = { status: response.status, ok: response.ok, contentType, headers };
 
     // Bail before reading a byte where the server says how many there will be.
     const advertised = response.headers.get("content-length");

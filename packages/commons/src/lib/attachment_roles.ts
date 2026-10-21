@@ -97,6 +97,18 @@ export const ATTACHMENT_ROLES = {
     canvasLibraryItem: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-shape-square" },
     /** The file an import was read from, kept so an import that went wrong can be looked at again. */
     importSource: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-import" },
+    /**
+     * One ES module of an npm package installed for backend scripts. Managed by the install that
+     * wrote it and named in its note's manifest, never referred to from note content, so it is not
+     * embedded — the cleanup that erases what content no longer mentions would take every one.
+     */
+    scriptModule: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-cube" },
+    /**
+     * One TypeScript declaration file of such a package, kept apart from the modules so that the
+     * runtime that imports a package never reads them and the editor that completes from them never
+     * reads its source. Managed by the same install, and not embedded for the same reason.
+     */
+    scriptModuleTypes: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-code-alt" },
     /** A meeting recording's transcript, which the recording rewrites as it transcribes. */
     transcript: { picture: false, deduplicated: false, embedded: false, copiedAs: "file", icon: "bx bx-microphone" }
 } as const satisfies Record<string, AttachmentRoleTraits>;
