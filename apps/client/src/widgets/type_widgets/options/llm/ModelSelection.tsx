@@ -53,7 +53,13 @@ export default function ModelSelection({ query, timeoutMs, selected, onChange, a
                 if (!active) return;
                 setModels(fetched);
                 setLoading(false);
-                if (autoSelectDefaults && selected.length === 0 && fetched.length > 0) {
+                const seedFresh = autoSelectDefaults && selected.length === 0;
+                // A stored selection the listing no longer carries any part of is one the provider
+                // has moved on from, so it is seeded again as for a new provider: the old ids are
+                // ones the provider now refuses, so keeping them would offer nothing usable.
+                const seedSuperseded = selected.length > 0
+                    && !selected.some(model => fetched.some(f => f.id === model.id));
+                if ((seedFresh || seedSuperseded) && fetched.length > 0) {
                     onChange(defaultSelectedModels(fetched));
                     return;
                 }
