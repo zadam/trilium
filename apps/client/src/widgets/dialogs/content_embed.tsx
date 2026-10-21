@@ -85,7 +85,6 @@ export default function ContentEmbedDialog() {
                             options={BOX_SIZES.map((size) => ({
                                 value: size,
                                 label: t(`include_note.size_${size}`),
-                                title: t(`include_note.size_${size}`),
                                 glyph: <BoxSizeGlyph size={size} />
                             }))}
                             currentValue={boxSize}

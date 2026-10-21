@@ -65,11 +65,12 @@ describe("ContentEmbedDialog", () => {
     function checkedSize() {
         const active = sizeButtons().filter((button) => button.classList.contains("active"));
         if (active.length !== 1) throw new Error(`${active.length} box sizes are active.`);
-        return /^include_note\.size_(\w+)$/.exec(active[0]?.title ?? "")?.[1];
+        return /^include_note\.size_(\w+)$/.exec(active[0]?.textContent?.trim() ?? "")?.[1];
     }
 
     async function choose(size: string) {
-        const button = sizeButtons().find((b) => b.title === `include_note.size_${size}`);
+        const button = sizeButtons()
+            .find((b) => b.textContent?.trim() === `include_note.size_${size}`);
         if (!button) throw new Error(`No button for ${size}.`);
         await act(async () => button.click());
     }
@@ -94,6 +95,8 @@ describe("ContentEmbedDialog", () => {
             "include_note.size_full", "include_note.size_expandable"
         ]);
         expect(sizeButtons().every((button) => button.querySelector("svg"))).toBe(true);
+        // The name is written on the button, so a tooltip would only repeat it.
+        expect(sizeButtons().some((button) => button.hasAttribute("title"))).toBe(false);
 
         // Every description is laid out, so the row keeps the height of the longest; only the
         // chosen one is shown.
