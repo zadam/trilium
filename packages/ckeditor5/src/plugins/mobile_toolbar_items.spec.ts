@@ -32,6 +32,7 @@ import {
     List,
     ListProperties,
     IconListStyleCircle,
+    IconListStyleDecimal,
     IconListStyleDisc,
     IconListStyleLowerRoman,
     Paragraph,
@@ -48,6 +49,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestEditor } from "../../test/editor-kit.js";
 import { installGlobMock } from "../../test/globals-test-kit.js";
 import admonitionIcon from "../icons/admonition.svg?raw";
+import blockTypeIcon from "../icons/block-type.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
 import FileUploadUI from "./file_upload/file_upload_ui.js";
 import InternalLinkPlugin from "./internallink.js";
@@ -83,31 +85,31 @@ describe("MobileToolbarItems", () => {
     });
 
     describe("blockType", () => {
-        it("shows the type of the current block as an icon, with its name in the accessible label", () => {
+        it("keeps one icon for every block, with the name of the current one in the accessible label", () => {
             const { buttonView } = getDropdown(editor, 1);
             expect(buttonView.withText).toBe(false);
             expect(buttonView.tooltip).toBe("Block type");
 
-            const icons: [string, string, string][] = [
-                ["<paragraph>foo[]</paragraph>", IconParagraph, "Paragraph"],
-                ["<heading2>foo[]</heading2>", IconHeading2, "Heading 2"],
-                [BULLETED, IconBulletedList, "Bulleted List"],
-                [BULLETED.replace("bulleted", "numbered"), IconNumberedList, "Numbered List"],
-                [BULLETED.replace("bulleted", "todo"), IconTodoList, "To-do List"],
-                ["<codeBlock language=\"plaintext\">foo[]</codeBlock>", IconCodeBlock, "Code block"],
-                // A wrapper leaves the button to the block inside it.
-                ["<blockQuote><heading2>foo[]</heading2></blockQuote>", IconHeading2, "Heading 2"]
+            const names: [string, string][] = [
+                ["<paragraph>foo[]</paragraph>", "Paragraph"],
+                ["<heading2>foo[]</heading2>", "Heading 2"],
+                [BULLETED, "Bulleted List"],
+                [BULLETED.replace("bulleted", "numbered"), "Numbered List"],
+                [BULLETED.replace("bulleted", "todo"), "To-do List"],
+                ["<codeBlock language=\"plaintext\">foo[]</codeBlock>", "Code block"],
+                // A wrapper leaves the label to the block inside it.
+                ["<blockQuote><heading2>foo[]</heading2></blockQuote>", "Heading 2"]
             ];
-            for (const [data, icon, name] of icons) {
+            for (const [data, name] of names) {
                 setModelData(editor.model, data);
-                expect(buttonView.icon).toBe(icon);
+                expect(buttonView.icon).toBe(blockTypeIcon);
                 expect(buttonView.ariaLabel).toBe(`${name}, Block type`);
             }
             expect(buttonView.element?.querySelector(".ck-button__icon")).not.toBeNull();
 
             // A block that is none of them, such as a horizontal line.
             setModelData(editor.model, "<paragraph>foo</paragraph>[<horizontalLine></horizontalLine>]");
-            expect(buttonView.icon).toBe(IconParagraph);
+            expect(buttonView.icon).toBe(blockTypeIcon);
             expect(buttonView.ariaLabel).toBe("Block type");
         });
 
@@ -359,8 +361,8 @@ describe("list properties", () => {
         const requests: ToolbarGroupMenuRequest[] = [];
         const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
         const promptListStart = vi.fn(async () => 7 as number | null);
-        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, MobileToolbarItems, ToolbarGroupMenu], {
-            toolbar: ["listStyleMenu", "listStartAt", "listReversed"],
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoList, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["listTypeMenu", "listStartAt", "listReversed"],
             list: { properties: { styles: true, startIndex: true, reversed: true } },
             toolbarGroupMenu: { host: () => host },
             listStartPrompt: promptListStart
@@ -369,28 +371,48 @@ describe("list properties", () => {
         return { editor, requests, promptListStart, style, start, reversed };
     }
 
-    it("opens the styles of the list at the selection as tiles, the current one on", async () => {
+    it("opens every list type as tiles under its kind, the current marker on", async () => {
         const { editor, requests, style } = await createListEditor();
+        const open = () => {
+            style.buttonView.fire("open");
+            return requests.at(-1)?.items ?? [];
+        };
+        const listType = () => (["bulleted", "numbered", "todo"] as const)
+            .find((type) => editor.commands.get(`${type}List`)?.value === true);
         setModelData(editor.model, BULLETED_LIST);
-        expect(style.buttonView).toMatchObject({ label: "List style", icon: IconListStyleCircle });
+        expect(style.buttonView).toMatchObject({ label: "List type", icon: IconListStyleCircle });
 
-        style.buttonView.fire("open");
-        const request = requests.at(-1);
-        expect(request?.layout).toBe("tiles");
-        const tiles = request?.items ?? [];
-        expect(tiles.map(rowText)).toStrictEqual(["Disc", "Circle ✓", "Square"]);
-        expect(icons(tiles)[0]).toBe(IconListStyleDisc);
+        const tiles = open();
+        expect(requests.at(-1)?.layout).toBe("tiles");
+        expect(tiles.map(rowText)).toStrictEqual([
+            "Bulleted List", "Disc", "Circle ✓", "Square",
+            "Numbered List", "Decimal", "Decimal with leading zero", "Lower–roman", "Upper-roman",
+            "Lower-latin", "Upper-latin", "Arabic-indic",
+            "—", "To-do List"
+        ]);
+        expect(icons(tiles)).toStrictEqual(expect.arrayContaining([IconListStyleDisc, IconListStyleLowerRoman, IconTodoList]));
 
         entry(tiles, "Disc").run?.();
         expect(editor.commands.get("listStyle")?.value).toBe("disc");
         expect(style.buttonView.icon).toBe(IconListStyleDisc);
 
+        // A marker of the other kind converts the list, in one undo step.
+        entry(open(), "Lower–roman").run?.();
+        expect([listType(), editor.commands.get("listStyle")?.value]).toStrictEqual(["numbered", "lower-roman"]);
+        editor.execute("undo");
+        expect([listType(), editor.commands.get("listStyle")?.value]).toStrictEqual(["bulleted", "disc"]);
+
+        entry(open(), "To-do List").run?.();
+        expect(listType()).toBe("todo");
+        expect(style.buttonView.icon).toBe(IconTodoList);
+        expect(open().map(rowText)).toContain("To-do List ✓");
+        entry(open(), "Square").run?.();
+        expect([listType(), editor.commands.get("listStyle")?.value]).toStrictEqual(["bulleted", "square"]);
+
+        // A list with no marker of its own shows the one it is drawn with.
         setModelData(editor.model, NUMBERED_LIST);
-        style.buttonView.fire("open");
-        const numbered = requests.at(-1)?.items ?? [];
-        expect(numbered.map(rowText)).toContain("Lower–roman");
-        expect(icons(numbered)).toContain(IconListStyleLowerRoman);
-        expect(numbered.map(rowText)).not.toContain("Disc");
+        expect(style.buttonView.icon).toBe(IconListStyleDecimal);
+        expect(open().map(rowText)).toContain("Decimal ✓");
     });
 
     it("sets the start and the order of a numbered list, and shows neither for a bulleted one", async () => {

@@ -48,6 +48,7 @@ import type {
 } from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
+import blockTypeIcon from "../icons/block-type.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
 import FileUploadUI from "./file_upload/file_upload_ui.js";
 import { COMMAND_NAME as INTERNAL_LINK_COMMAND } from "./internallink.js";
@@ -81,8 +82,8 @@ interface BlockType {
  *
  * - `blockType`: what Notion calls "Turn into". The paragraph, the headings of the `heading`
  *   configuration, the bulleted, numbered and to-do lists and the code block, which replace each
- *   other, and the block quote and the admonition, which wrap the block. One dropdown, whose
- *   button shows an icon of the current block rather than its name, which takes 8em.
+ *   other, and the block quote and the admonition, which wrap the block. One dropdown, under an
+ *   icon of its own rather than the name of the current block, which takes 8em.
  * - `fontSizeMenu`: the `fontSize` dropdown.
  * - `alignmentMenu`: the `alignment` dropdown, whose button shows the current alignment, with the
  *   alignments as a list.
@@ -332,8 +333,7 @@ export default class MobileToolbarItems extends Plugin {
 
         const dropdown = createDropdown(locale);
         addListToDropdown(dropdown, items, { ariaLabel: accessibleLabel, role: "menu" });
-        dropdown.buttonView.set({ withText: false, tooltip: accessibleLabel });
-        dropdown.buttonView.bind("icon").toMany(commands, "value", () => current()?.icon ?? IconParagraph);
+        dropdown.buttonView.set({ icon: blockTypeIcon, withText: false, tooltip: accessibleLabel });
         dropdown.buttonView.bind("label").toMany(commands, "value", () => current()?.label ?? accessibleLabel);
         dropdown.buttonView.bind("ariaLabel").toMany(commands, "value", () => {
             const type = current();
