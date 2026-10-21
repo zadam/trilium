@@ -114,7 +114,6 @@ body.mobile {
         max-height: var(--tn-keyboard-height);
     }
 
-    /* With no keyboard up, the menu sets `--tn-keyboard-height` from its own height. */
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
         height: auto;
         max-height: 50vh;
@@ -132,8 +131,7 @@ body.mobile {
             animation: tn-keyboard-panel-hold 1.5s;
         }
 
-        /* No keyboard comes back under a menu of its own height, and a taller one held here
-           covers the toolbar of the next; with no animation, `playClosing()` drops the copy. */
+        /* With no animation, `playClosing()` drops the copy at once. */
         &.keyboard-panel-own-height[data-closing] {
             animation: none;
         }
