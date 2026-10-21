@@ -39,7 +39,8 @@ describe("TextFormattingToolbar", () => {
         const { editor, plugin } = await createEditor();
         const focus = vi.spyOn(editor.editing.view, "focus");
         const button = getToolbarButton(editor, 0);
-        expect(button).toMatchObject({ label: "Text formatting", icon: IconText, tooltip: true });
+        // Marked as opening a row of its own, which the host draws a chevron for.
+        expect(button).toMatchObject({ label: "Text formatting", icon: IconText, tooltip: true, class: "ck-opens-row" });
         expect(plugin.isActive).toBe(false);
 
         button.fire("execute");

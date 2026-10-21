@@ -40,7 +40,8 @@ export default class TextFormattingToolbar extends Plugin {
 
         editor.ui.componentFactory.add("textFormatting", (locale) => {
             const button = new ButtonView(locale);
-            button.set({ label: t("Text formatting"), icon: IconText, tooltip: true });
+            // The host marks a button that opens a row of its own (`ck-opens-row`).
+            button.set({ label: t("Text formatting"), icon: IconText, tooltip: true, class: "ck-opens-row" });
             button.on("execute", () => this.setActive(true));
             return button;
         });

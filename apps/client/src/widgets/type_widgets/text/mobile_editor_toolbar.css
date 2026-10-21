@@ -253,6 +253,16 @@ body.mobile {
             }
         }
 
+        .ck-toolbar__items > .ck.ck-button.ck-opens-row::after {
+            content: "›";
+            margin-inline-start: 1px;
+            opacity: 0.6;
+        }
+
+        .ck-toolbar__items > .ck.ck-button.ck-opens-row:dir(rtl)::after {
+            content: "‹";
+        }
+
         .ck-toolbar__items > .ck-context-toolbar-title {
             --ck-icon-size: 18px;
             display: flex;
