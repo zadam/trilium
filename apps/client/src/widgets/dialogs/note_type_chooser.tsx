@@ -88,7 +88,6 @@ export default function NoteTypeChooserDialogComponent() {
             className="note-type-chooser-dialog"
             size="md"
             zIndex={1100} // note type chooser needs to be higher than other dialogs from which it is triggered, e.g. "add link"
-            scrollable
             // Bootstrap focuses the dialog itself once shown, which the menu takes back.
             onShown={() => {
                 if (!userMovedFocus.current) menuRef.current?.focus({ preventScroll: true });
