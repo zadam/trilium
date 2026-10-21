@@ -203,6 +203,40 @@ describe("ContextToolbar", () => {
         expect(button.isVisible).toBe(false);
     });
 
+    it("opens the list toolbar as a list starts, and not as the caret enters one", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoList, MobileToolbarItems, ContextToolbar], {
+            toolbar: ["contextToolbar"],
+            list: { properties: { styles: true } },
+            listToolbar: ["listTypeMenu"]
+        });
+        editor.ui.focusTracker.isFocused = true;
+        const plugin = editor.plugins.get(ContextToolbar);
+        const back = plugin.toolbarView.items.first as ButtonView;
+
+        setModelData(editor.model, "<paragraph>a[]</paragraph>");
+        editor.execute("bulletedList");
+        expect([plugin.source?.id, plugin.isActive]).toStrictEqual(["bulletedList", true]);
+
+        // Closed, it stays closed as items are added.
+        back.fire("execute");
+        editor.execute("enter");
+        expect([plugin.source?.id, plugin.isActive]).toStrictEqual(["bulletedList", false]);
+
+        // A marker of the other kind starts a numbered list, which keeps the row open.
+        editor.execute("listStyle", { type: "decimal" });
+        expect([plugin.source?.id, plugin.isActive]).toStrictEqual(["numberedList", true]);
+        editor.execute("todoList");
+        expect([plugin.source?.id, plugin.isActive]).toStrictEqual(["todoList", true]);
+
+        // Ending the list closes it.
+        editor.execute("todoList");
+        expect([plugin.source, plugin.isActive]).toStrictEqual([null, false]);
+
+        setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\">a[]</paragraph>");
+        editor.ui.update();
+        expect([plugin.source?.id, plugin.isActive]).toStrictEqual(["bulletedList", false]);
+    });
+
     it("adds the task states to the row of a to-do list", async () => {
         const editTaskStates = vi.fn();
         const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoListMultistateUI, MobileToolbarItems, ContextToolbar], {

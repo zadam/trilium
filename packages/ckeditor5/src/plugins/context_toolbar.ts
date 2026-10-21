@@ -59,8 +59,9 @@ interface ContextToolbarSource {
  * The button shows while the selection is in a widget that has a toolbar. It swaps in
  * {@link toolbarView}: a back button, then a title naming the widget ahead of the items of the
  * toolbar the balloon would show, which is the one of the innermost widget. The toolbar swaps in on
- * its own as a widget is selected whole, since there is no text to format then, and as a link is
- * tapped; it swaps out as the selection leaves the widget or link. Its dropdowns open as menus of
+ * its own as a widget is selected whole, since there is no text to format then, as a link is
+ * tapped, and as a list command starts a list; it swaps out as the selection leaves the widget,
+ * link or list. Its dropdowns open as menus of
  * `ToolbarGroupMenu`, like the rest of a phone's toolbar.
  */
 export default class ContextToolbar extends Plugin {
@@ -78,6 +79,8 @@ export default class ContextToolbar extends Plugin {
     private readonly titleView: ContextToolbarTitleView;
     /** The source whose items {@link toolbarView} holds. */
     private shownSource: ContextToolbarSource | null = null;
+    /** Whether a list command ran since the last update, so a list toolbar found then swaps in. */
+    private hasStartedList = false;
 
     static get requires() {
         return [WidgetToolbarRepository] as const;
@@ -139,6 +142,17 @@ export default class ContextToolbar extends Plugin {
                     this.setActive(true);
                 }
             });
+        }
+
+        // A list command runs as a list is started from the block type menu or by autoformat. Ahead
+        // of the command, whose change renders and so updates the UI before it returns.
+        for (const name of LIST_COMMANDS) {
+            const command = editor.commands.get(name);
+            if (command) {
+                this.listenTo(command, "execute", () => {
+                    this.hasStartedList = true;
+                }, { priority: "highest" });
+            }
         }
 
         // Grouping measures the rendered toolbar as items arrive.
@@ -222,12 +236,14 @@ export default class ContextToolbar extends Plugin {
         }
 
         const next = deepest?.source ?? null;
+        const hasStartedList = this.hasStartedList;
+        this.hasStartedList = false;
         // Unchanged for the same widget, so the back button holds while the selection stays on it.
         if (next?.id === this.source?.id && next?.element === this.source?.element) {
             return;
         }
         this.source = next;
-        if (next?.isSelected) {
+        if (next?.isSelected || (hasStartedList && next && isListCommand(next.id))) {
             this.fillToolbar();
             this.isActive = true;
         } else if (this.isActive) {
@@ -298,7 +314,7 @@ function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefin
     // The toolbar of the innermost list, under the name of its kind, so the chip shows its icon.
     const listItems = editor.config.get("listToolbar") ?? [];
     if (listItems.length) {
-        for (const id of ["bulletedList", "numberedList", "todoList"] as const) {
+        for (const id of LIST_COMMANDS) {
             yield [id, {
                 getRelatedElement: (selection) => {
                     const list = getInnermostList(selection);
@@ -318,6 +334,13 @@ function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefin
             itemsConfig: linkItems
         }];
     }
+}
+
+/** The commands that turn blocks into a list of each kind, which name the toolbars of the lists. */
+const LIST_COMMANDS = ["bulletedList", "numberedList", "todoList"] as const;
+
+function isListCommand(id: string) {
+    return (LIST_COMMANDS as readonly string[]).includes(id);
 }
 
 /** The innermost list at the selection, or `null` outside a list. */
