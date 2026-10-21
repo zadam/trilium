@@ -57,6 +57,7 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 // Shown while the selection is in a widget, in place of the widget's balloon toolbar.
                 "contextToolbar",
                 "|",
+                "blockType",
                 {
                     ...buildInsertGroup(),
                     // Groups of three fill the rows of tiles.
@@ -82,7 +83,6 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                         "dateTime", "insertTemplate", "markdownImport"
                     ]
                 },
-                "blockType",
                 "textFormatting",
                 "|",
                 // The most used after the blocks and text formatting, so they show without scrolling.

@@ -162,7 +162,7 @@ describe("buildMobileToolbar", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
         // What a phone shows without scrolling: the blocks, text formatting, links and attachments.
         expect(toolbar.items.slice(0, 10).map(itemName)).toStrictEqual([
-            "undo", "redo", "contextToolbar", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting",
+            "undo", "redo", "contextToolbar", "|", "blockType", "text-editor.toolbar-groups.insert", "textFormatting",
             "|", "addLink", "attachMenu"
         ]);
         expect(textFormattingToolbar).toStrictEqual([
