@@ -1,3 +1,4 @@
+import type { RefObject } from "preact";
 import { act } from "preact/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -6,17 +7,23 @@ import type FNote from "../../entities/fnote";
 import type { Suggestion } from "../../services/note_autocomplete";
 import { buildNote } from "../../test/easy-froca";
 import { renderInto } from "../../test/render";
+import type { NoteAutocompleteHandle } from "../react/NoteAutocomplete";
 import { ParentComponent } from "../react/react_utils";
 import ContentEmbedDialog from "./content_embed";
 
 const autocomplete = vi.hoisted(() => ({
-    onChange: undefined as ((suggestion: Suggestion | null) => void) | undefined
+    onChange: undefined as ((suggestion: Suggestion | null) => void) | undefined,
+    clear: vi.fn()
 }));
 
 vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
 vi.mock("../react/NoteAutocomplete", () => ({
-    default: ({ onChange }: { onChange: (suggestion: Suggestion | null) => void }) => {
+    default: ({ onChange, handleRef }: {
+        onChange: (suggestion: Suggestion | null) => void;
+        handleRef: RefObject<Partial<NoteAutocompleteHandle>>;
+    }) => {
         autocomplete.onChange = onChange;
+        handleRef.current = { clear: autocomplete.clear };
         return <input />;
     }
 }));
@@ -82,15 +89,25 @@ describe("ContentEmbedDialog", () => {
         await choose("tiny");
         expect(checkedSize()).toBe("tiny");
 
-        // Another note, or opening the dialog again, drops the size chosen by hand.
+        // Another note drops the size chosen by hand.
         await pick(song);
         expect(checkedSize()).toBe("small");
         await choose("expandable");
-        await open();
-        expect(checkedSize()).toBe("small");
-
-        await choose("expandable");
         await submit();
         expect(editorApi.addContentEmbed).toHaveBeenCalledWith(song.noteId, "expandable");
+    });
+
+    it("forgets the note picked the last time it was open", async () => {
+        const script = buildNote({ title: "Script", type: "code", mime: "text/javascript" });
+        await pick(script);
+        await submit();
+        expect(editorApi.addContentEmbed).toHaveBeenCalledExactlyOnceWith(script.noteId, "full");
+
+        autocomplete.clear.mockClear();
+        await open();
+        expect(autocomplete.clear).toHaveBeenCalledOnce();
+        expect(checkedSize()).toBe("medium");
+        await submit();
+        expect(editorApi.addContentEmbed).toHaveBeenCalledOnce();
     });
 });

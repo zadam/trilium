@@ -27,6 +27,8 @@ export default function ContentEmbedDialog() {
 
     useTriliumEvent("showContentEmbedDialog", ({ editorApi }) => {
         editorApiRef.current = editorApi;
+        autocompleteRef.current?.clear();
+        setSuggestion(null);
         setChosenBoxSize(null);
         setShown(true);
     });
