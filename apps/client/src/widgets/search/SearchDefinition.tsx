@@ -85,27 +85,23 @@ export default function SearchDefinition({ note, ntxId }: {
         <div className="search-definition-widget">
             {note && (
                 <Card className="search-definition-card">
-                    {(searchOptions?.activeOptions.length || bulkActions.length > 0) && (
-                        <CardSection noPadding className="search-definition-rows">
-                            <div className="search-definition-options">
-                                {searchOptions?.activeOptions.map(({ attributeType, attributeName, component, additionalAttributesToDelete, defaultValue }) => {
-                                    const Component = component;
-                                    return <Component
-                                        attributeName={attributeName}
-                                        attributeType={attributeType}
-                                        note={note}
-                                        refreshResults={refreshResults}
-                                        flushRef={flushRef}
-                                        error={error}
-                                        additionalAttributesToDelete={additionalAttributesToDelete}
-                                        defaultValue={defaultValue}
-                                    />;
-                                })}
-                            </div>
+                    {searchOptions?.activeOptions.map(({ attributeType, attributeName, component, additionalAttributesToDelete, defaultValue }) => {
+                        const Component = component;
+                        return <Component
+                            attributeName={attributeName}
+                            attributeType={attributeType}
+                            note={note}
+                            refreshResults={refreshResults}
+                            flushRef={flushRef}
+                            error={error}
+                            additionalAttributesToDelete={additionalAttributesToDelete}
+                            defaultValue={defaultValue}
+                        />;
+                    })}
 
-                            {bulkActions.length > 0 && <BulkActionsTable bulkActions={bulkActions} />}
-                        </CardSection>
-                    )}
+                    {bulkActions.map((bulkAction) => (
+                        <Fragment key={bulkAction.attribute.attributeId}>{bulkAction.doRender()}</Fragment>
+                    ))}
 
                     <CardSection className="search-definition-actions">
                         <AddSearchOptionButton note={note} options={searchOptions?.availableOptions ?? []} />
@@ -174,18 +170,6 @@ function useBulkActions(note: FNote | null | undefined) {
     });
 
     return bulkActions;
-}
-
-function BulkActionsTable({ bulkActions }: { bulkActions: RenameNoteBulkAction[] }) {
-    return (
-        <table className="bulk-existing-action-list">
-            <tbody>
-                {bulkActions.map((bulkAction) => (
-                    <Fragment key={bulkAction.attribute.attributeId}>{bulkAction.doRender()}</Fragment>
-                ))}
-            </tbody>
-        </table>
-    );
 }
 
 /** A menu of the search options the note does not use yet, and of the bulk actions it can add. */

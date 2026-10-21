@@ -96,56 +96,25 @@ body[dir=rtl] .bulk-action-arrow {
     transform: scaleX(-1);
 }
 
-/* A list of actions, shown whole in the bulk-actions dialog and in the search parameters. */
-.bulk-existing-action-list {
-    width: 100%;
-
-    tr:not(:last-child) {
-        border-bottom: 1px solid var(--main-border-color);
-    }
-
-    td {
-        padding: 8px 12px;
-    }
-
-    .title-column {
-        width: 1%;
-        white-space: nowrap;
-    }
+.bulk-action {
+    display: grid;
+    grid-template-columns: var(--bulk-action-title-column, 12em) minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
 
     .bulk-action-fields :is(.form-control, .form-select, .input-group-text) {
         padding-block: 0.25rem;
     }
-
-    .button-column {
-        width: 1%;
-        padding-inline-start: 0;
-    }
 }
 
 @container (width < 560px) {
-    .bulk-existing-action-list {
-        tr {
-            display: grid;
-            grid-template-columns: 1fr auto;
-        }
+    .bulk-action {
+        grid-template-columns: minmax(0, 1fr) auto;
 
-        .title-column {
-            width: auto;
-            white-space: normal;
-        }
-
-        .bulk-action-fields-column {
+        > .bulk-action-fields {
             grid-column: 1 / -1;
             grid-row: 2;
-            padding-top: 0;
-        }
-
-        .button-column {
-            width: auto;
-        }
-
-        .bulk-action-fields {
             flex-wrap: wrap;
 
             > :not(.bulk-action-name, .bulk-action-arrow) {

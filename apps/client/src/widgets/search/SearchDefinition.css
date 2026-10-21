@@ -1,5 +1,6 @@
 .search-definition-widget {
     --search-title-column: 12em;
+    --bulk-action-title-column: var(--search-title-column);
 
     .search-definition-add {
         display: flex;
@@ -7,15 +8,6 @@
         align-items: center;
         justify-content: flex-end;
         gap: 8px;
-    }
-
-    .search-definition-options > * {
-        padding: 8px 12px;
-        border-bottom: 1px solid var(--main-border-color);
-    }
-
-    .search-definition-rows > .search-definition-options:last-child > :last-child {
-        border-bottom: 0;
     }
 
     .search-option {
@@ -79,12 +71,6 @@
         flex: 1 1 16rem;
     }
 
-    /* The bulk action rows share the option rows' title column. */
-    .bulk-existing-action-list .title-column {
-        width: calc(var(--search-title-column) + 12px);
-        white-space: normal;
-    }
-
     .search-option-field-label {
         white-space: nowrap;
     }
@@ -142,10 +128,6 @@ body.mobile .search-definition-widget {
             grid-column: 1 / -1;
             grid-row: 2;
         }
-    }
-
-    .search-definition-widget .bulk-existing-action-list .title-column {
-        width: auto;
     }
 }
 

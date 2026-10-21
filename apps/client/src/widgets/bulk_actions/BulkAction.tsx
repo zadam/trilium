@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef } from "preact/hooks";
 import { t } from "../../services/i18n";
 import { AttributeNameSuggestion, fetchAttributeNames } from "../attribute_widgets/attribute_detail";
 import { useLabelValueSuggestions } from "../attribute_widgets/label_value_input";
+import { CardSection } from "../react/Card";
 import FormAutocomplete from "../react/FormAutocomplete";
 import { useSpacedUpdate } from "../react/hooks";
 import HelpRemoveButtons from "../react/HelpRemoveButtons";
@@ -22,22 +23,19 @@ const BulkAction = memo(({ children, bulkAction }: BulkActionProps) => {
     const { actionIcon, actionTitle, actionDescription } = bulkAction.constructor as typeof AbstractBulkAction;
 
     return (
-        <tr>
-            <td className="title-column">
+        <CardSection className="bulk-action">
+            <span className="bulk-action-title">
                 {actionIcon && <Icon icon={actionIcon} className="bulk-action-icon" />}{actionTitle}
-            </td>
-            <td className="bulk-action-fields-column">
-                <div className="bulk-action-fields">
-                    {children ?? <span className="bulk-action-description">{actionDescription}</span>}
-                </div>
-            </td>
-            <td className="button-column">
-                <HelpRemoveButtons
-                    removeText={t("bulk_actions.remove_action")}
-                    onRemove={() => bulkAction?.deleteAction()}
-                />
-            </td>
-        </tr>
+            </span>
+            <div className="bulk-action-fields">
+                {children ?? <span className="bulk-action-description">{actionDescription}</span>}
+            </div>
+            <HelpRemoveButtons
+                className="bulk-action-actions"
+                removeText={t("bulk_actions.remove_action")}
+                onRemove={() => bulkAction?.deleteAction()}
+            />
+        </CardSection>
     );
 });
 
