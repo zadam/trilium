@@ -24,7 +24,7 @@ export interface CKEditorApi {
     getCurrentLink(): { href: string; text: string } | null;
     addLink(notePath: string, linkTitle: string | null, externalLink?: boolean): void;
     /** Rewrites the link around the caret, as {@link addLink} would write a new one. */
-    updateLink(notePath: string, linkTitle: string | null, externalLink?: boolean): void;
+    updateLink(notePath: string, linkTitle: string | null, externalLink?: boolean): Promise<void>;
     addLinkToEditor(linkHref: string, linkTitle: string): void;
     addHtmlToEditor(html: string): void;
     addContentEmbed(noteId: string, boxSize?: BoxSize): void;
@@ -163,12 +163,13 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
             const editor = editorRef.current;
             return editor ? getLinkAtSelection(editor) : null;
         },
-        updateLink(notePath, linkTitle, externalLink) {
+        async updateLink(notePath, linkTitle, externalLink) {
             const editor = editorRef.current;
             if (!editor) return;
 
-            replaceLinkAtSelection(editor, externalLink ? notePath : `#${notePath}`, linkTitle);
             editor.editing.view.focus();
+            const href = externalLink ? notePath : `#${notePath}`;
+            await replaceLinkAtSelection(editor, href, linkTitle);
         },
         addLink(notePath, linkTitle, externalLink) {
             const editor = editorRef.current;

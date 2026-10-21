@@ -720,7 +720,7 @@ export function getAddLinkOpts(api: CKEditorApi, ready: () => Promise<unknown>):
             ...parseLinkHref(currentLink.href),
             async addLink(notePath, linkTitle, externalLink) {
                 await ready();
-                api.updateLink(notePath, linkTitle, externalLink);
+                await api.updateLink(notePath, linkTitle, externalLink);
             }
         };
     }

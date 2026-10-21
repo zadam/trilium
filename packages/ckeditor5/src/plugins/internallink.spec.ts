@@ -112,6 +112,28 @@ describe("the link at the selection", () => {
         await vi.waitFor(() => expect(data()).toContain("<reference href=\"#root/abc\""));
         expect(data()).not.toContain("foo");
     });
+
+    it("makes the reference in one undo step, and none when the title fails to load", async () => {
+        setModelData(editor.model, LINKED);
+        const data = () => getModelData(editor.model, { withoutSelection: true });
+        const original = data();
+        await replaceLinkAtSelection(editor, "#root/abc", null);
+        expect(data()).toContain("<reference href=\"#root/abc\"");
+        editor.execute("undo");
+        expect(data()).toBe(original);
+
+        installGlobMock({
+            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined }),
+            getReferenceLinkTitle: async () => {
+                throw new Error("not found");
+            },
+            getReferenceLinkTitleSync: () => "Target"
+        });
+        setModelData(editor.model, LINKED);
+        const replacing = replaceLinkAtSelection(editor, "#root/abc", null);
+        await expect(replacing).rejects.toThrow("not found");
+        expect(data()).toBe(original);
+    });
 });
 
 describe("the edit button of the link toolbar", () => {

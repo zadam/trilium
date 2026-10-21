@@ -1,7 +1,9 @@
-import { ButtonView, Command, findAttributeRange, IconPencil, LinkUI, Plugin } from 'ckeditor5';
+import {
+    ButtonView, Command, findAttributeRange, IconPencil, LinkUI, ModelLiveRange, Plugin
+} from 'ckeditor5';
 import type { Editor, ModelRange } from 'ckeditor5';
 import internalLinkIcon from '../icons/trilium.svg?raw';
-import ReferenceLink from './referencelink';
+import ReferenceLink, { referenceAttributes } from './referencelink';
 
 export const COMMAND_NAME = 'insertInternalLink';
 
@@ -106,34 +108,46 @@ export function getLinkAtSelection(editor: Editor): { href: string; text: string
 
 /**
  * Replaces the link around the selection with `text` linking to `href`, keeping the formatting of
- * its start, or with a reference to the note at `href` when `text` is `null`.
+ * its start, or with a reference to the note at `href` when `text` is `null`. A reference replaces
+ * the link once `glob.getReferenceLinkTitle()` resolves, in one undo step with the removal.
  */
-export function replaceLinkAtSelection(editor: Editor, href: string, text: string | null) {
+export async function replaceLinkAtSelection(editor: Editor, href: string, text: string | null) {
     const found = findLinkAtSelection(editor);
     if (!found) {
         return;
     }
 
     const model = editor.model;
+    if (text === null) {
+        const range = ModelLiveRange.fromRange(found.range);
+        try {
+            const title = await glob.getReferenceLinkTitle(href);
+            if (range.root.rootName === '$graveyard') {
+                return;
+            }
+            model.change((writer) => {
+                const attributes = referenceAttributes(href, title);
+                const reference = writer.createElement('reference', attributes);
+                const start = range.start;
+                writer.remove(range);
+                writer.insert(reference, start);
+                writer.setSelection(reference, 'after');
+            });
+        } finally {
+            range.detach();
+        }
+        return;
+    }
+
     model.change((writer) => {
         const start = found.range.start;
         const first = start.textNode ?? start.nodeAfter;
         const attributes = new Map(first?.getAttributes() ?? []);
         writer.remove(found.range);
-
-        if (text === null) {
-            writer.setSelection(start);
-            return;
-        }
-
         attributes.set('linkHref', href);
         writer.insertText(text, attributes, start);
         writer.setSelection(start.getShiftedBy(text.length));
     });
-
-    if (text === null) {
-        editor.execute('referenceLink', { href });
-    }
 }
 
 function findLinkAtSelection(editor: Editor): { href: string; range: ModelRange } | null {
