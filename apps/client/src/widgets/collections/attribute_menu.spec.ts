@@ -141,11 +141,12 @@ describe("buildAttributeMenuItems", () => {
             return entry.items ?? [];
         }
 
-        it("offers the options as defined, above nothing but Not set, and no icons", () => {
+        it("offers the options as defined, below Not set and a separator, and no icons", () => {
             const items = options(buildNote({ title: "Card" }));
 
             expect(titles(items)).toEqual([
                 `<span class="tn-menu-name">attribute_menu.not-set</span>`,
+                "separator",
                 `<span class="tn-menu-name">To Do</span>`,
                 `<span class="tn-menu-name">Doing</span>`,
                 `<span class="tn-menu-name">Done</span>`
@@ -172,7 +173,7 @@ describe("buildAttributeMenuItems", () => {
             const note = buildNote({ title: "Card", "#state": "Doing" });
             const items = options(note);
 
-            pick(items[2]);
+            pick(items[3]);
             expect(writes.setLabelValues).toHaveBeenCalledWith(note, "state", [ "Doing" ]);
 
             pick(items[0]);
@@ -202,7 +203,7 @@ describe("buildAttributeMenuItems", () => {
             const first = buildNote({ title: "One" });
             const second = buildNote({ title: "Two", "#state": "Done" });
 
-            await pick(options(first, second)[2]);
+            await pick(options(first, second)[3]);
 
             expect(writes.setLabelValues).toHaveBeenCalledWith(first, "state", [ "Doing" ]);
             expect(writes.setLabelValues).toHaveBeenCalledWith(second, "state", [ "Doing" ]);
@@ -308,7 +309,7 @@ describe("buildAttributeMenuItems", () => {
         const escaped = "<span class=\"tn-menu-name\">"
             + "&lt;img src&#x3D;x onerror&#x3D;&quot;alert(1)&quot;&gt;</span>";
         expect(titles(items)[1]).toBe(escaped);
-        expect(titles(entry.items ?? [])[1]).toBe(escaped);
+        expect(titles(entry.items ?? [])[2]).toBe(escaped);
     });
 });
 

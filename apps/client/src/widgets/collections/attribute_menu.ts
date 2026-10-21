@@ -119,6 +119,7 @@ function buildSelectItem<T>(
                 trailingIcon: current.agreed && !current.value ? CHECK : undefined,
                 handler: () => { void clearLabelOnNotes(notes, attribute.name); }
             },
+            { kind: "separator" },
             ...options.map<MenuItem<T>>((option) => ({
                 title: menuName(option),
                 trailingIcon: current.agreed && current.value === option ? CHECK : undefined,
