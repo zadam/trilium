@@ -117,6 +117,25 @@ describe("createToolbarGroupMenuHost", () => {
         expect(paragraph.querySelector(".bx-check")).toBeNull();
     });
 
+    it("draws a switch as a toggle, which runs its entry", () => {
+        const run = vi.fn(() => host.hide());
+        const items: ToolbarGroupMenuItem[] = [
+            { kind: "entry", label: "Header row", isEnabled: true, isOn: true, isSwitch: true, run },
+            { kind: "entry", label: "Insert row", icon: ICON, isEnabled: true }
+        ];
+        host.show({ anchor, items, setElement: vi.fn(), onClose: vi.fn() });
+
+        const header = [ ...document.querySelectorAll<HTMLElement>("li.dropdown-item") ]
+            .find((item) => item.textContent?.includes("Header row"));
+        expect(header?.classList).toContain("tn-menu-toggle");
+        expect(header?.querySelector<HTMLInputElement>("input.switch-toggle")?.checked).toBe(true);
+        expect(header?.querySelector(".bx-check")).toBeNull();
+        expect(rowTitled("Insert row").classList).not.toContain("tn-menu-toggle");
+
+        header?.click();
+        expect(run).toHaveBeenCalledTimes(1);
+    });
+
     it("draws the tiles layout as a grid of tiles per group, the one on checked", () => {
         const runs: string[] = [];
         const run = (name: string) => () => {

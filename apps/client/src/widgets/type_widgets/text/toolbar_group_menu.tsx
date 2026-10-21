@@ -7,7 +7,9 @@ import clsx from "clsx";
 import { render } from "preact";
 
 import { escapeHtml, isMobile, isNarrowLayout } from "../../../services/utils";
-import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../../react/FormList";
+import {
+    FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem, FormListToggleableItem
+} from "../../react/FormList";
 import Menu, { MenuTile } from "../../react/Menu";
 import {
     isKeyboardPanelOpen, MOBILE_TOOLBAR_ROW, useClosedByToolbarTap, useKeyboardPanel
@@ -86,7 +88,15 @@ function MenuRows({ items }: { items: ToolbarGroupMenuItem[] }) {
                     return <FormListHeader key={index} text={item.label} />;
                 }
 
-                const { label, icon, iconClass, isEnabled, isOn, className, run, children } = item;
+                const { label, icon, iconClass, isEnabled, isOn, isSwitch, className, run, children } = item;
+                if (isSwitch) {
+                    return (
+                        <FormListToggleableItem
+                            key={index} icon={iconClass} title={label} currentValue={isOn ?? false}
+                            disabled={!isEnabled} className={className} onChange={() => run?.()}
+                        />
+                    );
+                }
                 if (children) {
                     return (
                         <FormDropdownSubmenu

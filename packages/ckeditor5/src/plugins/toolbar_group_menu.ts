@@ -1,7 +1,7 @@
 import {
     BalloonToolbar, BlockToolbar, ButtonView, DropdownView, type Editor, type FocusTracker,
-    ListItemView, ListSeparatorView, ListView, Plugin, SearchTextView, SplitButtonView, type ToolbarConfig,
-    type ToolbarConfigItem, ToolbarSeparatorView, type ToolbarView, type View
+    ListItemView, ListSeparatorView, ListView, Plugin, SearchTextView, SplitButtonView, SwitchButtonView,
+    type ToolbarConfig, type ToolbarConfigItem, ToolbarSeparatorView, type ToolbarView, type View
 } from "ckeditor5";
 
 import ContextToolbar from "./context_toolbar.js";
@@ -67,6 +67,8 @@ export interface ToolbarGroupMenuEntry {
      * `heading` list. Left out for any other.
      */
     isOn?: boolean;
+    /** Whether the item is a switch, as the "Header row" row of `tableRow` is, for the host to draw as one. */
+    isSwitch?: boolean;
     /** The classes CKEditor gives the item, such as `ck-fontsize-option text-tiny`, for the host to style. */
     className?: string;
     /** Runs the toolbar item. An entry with `children` and no action only opens them. */
@@ -451,7 +453,10 @@ function describeButton(view: ButtonView, run: () => void): ToolbarGroupMenuEntr
     const entry: ToolbarGroupMenuEntry = {
         kind: "entry", label: view.label ?? "", icon: view.icon, isEnabled: view.isEnabled, run
     };
-    if (view.isToggleable || view.role === "menuitemradio" || view.role === "menuitemcheckbox") {
+    if (view instanceof SwitchButtonView) {
+        entry.isSwitch = true;
+        entry.isOn = view.isOn;
+    } else if (view.isToggleable || view.role === "menuitemradio" || view.role === "menuitemcheckbox") {
         entry.isOn = view.isOn;
     }
     if (view.class) {

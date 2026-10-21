@@ -172,6 +172,20 @@ class SampleDropdown extends Plugin {
             return dropdown;
         });
 
+        // Like `tableRow`: a switch among the rows of its list.
+        this.editor.ui.componentFactory.add("rows", (locale: Locale) => {
+            const dropdown = createDropdown(locale);
+            dropdown.buttonView.set({ label: "Rows", icon: "<svg />" });
+
+            const items = new Collection<ListDropdownItemDefinition>();
+            items.add({ type: "switchbutton", model: new UIModel({ label: "Header row", withText: true, isOn: true }) });
+            items.add({ type: "button", model: new UIModel({ label: "Insert row", withText: true }) });
+            addListToDropdown(dropdown, items);
+            openListAsMenu(dropdown);
+
+            return dropdown;
+        });
+
         // A dropdown whose entries the plugin cannot read from its views, which it describes itself.
         this.editor.ui.componentFactory.add("described", (locale: Locale) => {
             const dropdown = createDropdown(locale);
@@ -572,6 +586,15 @@ describe("ToolbarGroupMenu", () => {
         const samples = entry(lastGroup().items, "Insert sample");
         expect(samples.isOn).toBeUndefined();
         expect(samples.children?.map((child) => child.kind === "entry" && child.isOn)).toStrictEqual([undefined, undefined]);
+    });
+
+    it("marks a switch among the rows of a list, which the host draws as a toggle", async () => {
+        const { config, last } = createHost();
+        const editor = await createTestEditor(PLUGINS, { ...config, toolbar: { items: ["rows"] } });
+
+        groupDropdown(getToolbar(editor), "Rows").buttonView.fire("open");
+        expect(entry(last().items, "Header row")).toMatchObject({ isSwitch: true, isOn: true });
+        expect(entry(last().items, "Insert row").isSwitch).toBeUndefined();
     });
 
     it("opens the entries a dropdown handed to openListAsMenu describes, read on each open", async () => {
