@@ -1,5 +1,6 @@
 import "./add_link.css";
 
+import { ALLOWED_PROTOCOLS } from "@triliumnext/commons";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import froca from "../../services/froca";
@@ -461,6 +462,9 @@ function hasScheme(text: string) {
 export function normalizeWebLink(text: string): string | null {
     const link = text.trim();
     if (!link) return null;
-    // A colon followed by a digit is a port, as in `localhost:8080`, not the end of a scheme.
-    return /^[a-z][a-z0-9+.-]*:(?!\d)/i.test(link) ? link : `https://${link}`;
+    const scheme = /^([a-z][a-z0-9+.-]*):(\d?)/i.exec(link);
+    // A colon followed by a digit is a port, as in `localhost:8080`, unless it ends a scheme
+    // Trilium allows, as in `tel:123`.
+    const hasScheme = scheme && (!scheme[2] || ALLOWED_PROTOCOLS.includes(scheme[1].toLowerCase()));
+    return hasScheme ? link : `https://${link}`;
 }

@@ -30,6 +30,10 @@ describe("normalizeWebLink", () => {
         expect(normalizeWebLink("localhost:8080")).toBe("https://localhost:8080");
         expect(normalizeWebLink("http://example.com")).toBe("http://example.com");
         expect(normalizeWebLink("mailto:someone@example.com")).toBe("mailto:someone@example.com");
+        expect(normalizeWebLink("tel:123456789")).toBe("tel:123456789");
+        expect(normalizeWebLink("SMS:+123456789")).toBe("SMS:+123456789");
+        expect(normalizeWebLink("geo:47.6,-122.3")).toBe("geo:47.6,-122.3");
+        expect(normalizeWebLink("example.com:443/a")).toBe("https://example.com:443/a");
         expect(normalizeWebLink("  ")).toBeNull();
     });
 });
