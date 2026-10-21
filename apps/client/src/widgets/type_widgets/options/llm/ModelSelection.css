@@ -21,8 +21,14 @@
     gap: 0.5em;
 }
 
+.model-selection {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .model-selection-list {
-    max-height: 40vh;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;

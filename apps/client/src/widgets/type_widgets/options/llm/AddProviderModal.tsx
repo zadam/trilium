@@ -434,7 +434,7 @@ export default function AddProviderModal({ show, onHidden, onSave, existingProvi
             // models, same as a pre-selection migration), and allowing it avoids a
             // dead-end when the live model fetch fails.
             content: (
-                <Card heading={t("llm.select_models")}>
+                <Card heading={t("llm.select_models")} className="add-provider-models">
                     <CardSection noPadding>
                         <ModelSelection
                             query={modelQuery}
