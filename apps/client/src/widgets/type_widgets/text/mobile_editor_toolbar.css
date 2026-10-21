@@ -177,6 +177,10 @@ body.mobile {
             margin-block: 0;
         }
 
+        .ck-toolbar__items > .ck-dropdown > .ck-splitbutton {
+            display: flex;
+        }
+
         /* Set on the buttons, not the dropdowns, whose panels would inherit it. */
         .ck-toolbar__items > :is(.ck-button, .ck-dropdown > .ck-dropdown__button) {
             --ck-size-control-min-height: var(--mobile-toolbar-button-size);
