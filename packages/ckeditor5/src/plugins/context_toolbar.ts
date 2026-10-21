@@ -17,7 +17,8 @@ const TOOLBAR_ICONS: Record<string, string> = {
     image: IconImage,
     codeblock: IconCodeBlock,
     admonition: admonitionIcon,
-    link: IconLink
+    link: IconLink,
+    linkEmbed: IconLink
 };
 
 /** What `WidgetToolbarRepository` keeps of a registered toolbar. */
@@ -228,9 +229,10 @@ function getToolbarName(editor: Editor, source: ContextToolbarSource | null) {
         case "admonition": return t("Admonition");
         case "tabs": return t("Tabs");
         case "multicolumnLayout": return t("Columns");
-        case "contentEmbed":
-        case "linkEmbed": return t("Embed");
-        case "link": return t("Link");
+        case "contentEmbed": return t("Embed");
+        // A link preview, which is a link whatever its shape.
+        case "link":
+        case "linkEmbed": return t("Link");
         default: return undefined;
     }
 }

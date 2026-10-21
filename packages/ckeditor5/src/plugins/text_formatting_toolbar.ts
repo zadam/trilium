@@ -82,23 +82,29 @@ export default class TextFormattingToolbar extends Plugin {
 
     /**
      * Swaps the toolbar as the selection turns from a caret into a range of text and back. A range
-     * that only grows or shrinks, as a selection handle is dragged, swaps nothing.
+     * that only grows or shrinks, as a selection handle is dragged, swaps nothing, and neither does
+     * a selected object, such as an image, which holds no text to format.
      */
     private followSelection() {
-        const selection = this.editor.model.document.selection;
-        let wasCollapsed = selection.isCollapsed;
+        const { model } = this.editor;
+        const selection = model.document.selection;
+        const holdsText = () => {
+            const selected = selection.getSelectedElement();
+            return !selection.isCollapsed && !(selected && model.schema.isObject(selected));
+        };
+        let heldText = holdsText();
 
         this.listenTo(selection, "change:range", () => {
-            const isCollapsed = selection.isCollapsed;
-            if (isCollapsed === wasCollapsed) {
+            const isHoldingText = holdsText();
+            if (isHoldingText === heldText) {
                 return;
             }
-            wasCollapsed = isCollapsed;
+            heldText = isHoldingText;
 
-            if (!isCollapsed && !this.isActive) {
+            if (isHoldingText && !this.isActive) {
                 this.isActive = true;
                 this.shownForSelection = true;
-            } else if (isCollapsed && this.shownForSelection) {
+            } else if (!isHoldingText && this.shownForSelection) {
                 this.isActive = false;
                 this.shownForSelection = false;
             }

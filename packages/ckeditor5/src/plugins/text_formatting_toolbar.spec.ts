@@ -1,6 +1,6 @@
 import {
     _setModelData as setModelData,
-    Bold, ButtonView, type ClassicEditor, Essentials, IconPreviousArrow, IconText, Italic, Paragraph,
+    Bold, ButtonView, type ClassicEditor, Essentials, HorizontalLine, IconPreviousArrow, IconText, Italic, Paragraph,
     ToolbarSeparatorView
 } from "ckeditor5";
 import { describe, expect, it, vi } from "vitest";
@@ -116,6 +116,22 @@ describe("TextFormattingToolbar", () => {
         expect(plugin.isActive).toBe(false);
         select(editor, 2, 2);
         select(editor, 0, 2);
+        expect(plugin.isActive).toBe(true);
+    });
+
+    it("does not swap in for a selected object, which holds no text to format", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, Bold, HorizontalLine, TextFormattingToolbar], {
+            toolbar: ["textFormatting"],
+            textFormattingToolbar: ["bold"]
+        });
+        const plugin = editor.plugins.get(TextFormattingToolbar);
+        setModelData(editor.model, "<paragraph>fo[]obar</paragraph><horizontalLine></horizontalLine>");
+
+        editor.model.change((writer) => writer.setSelection(editor.model.document.getRoot()?.getChild(1) ?? null, "on"));
+        expect(plugin.isActive).toBe(false);
+
+        // Text selected from there still swaps it in.
+        select(editor, 0, 3);
         expect(plugin.isActive).toBe(true);
     });
 
