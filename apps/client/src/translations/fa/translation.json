@@ -802,7 +802,7 @@
     "board_sort_columns_descending": "برای مجموعه‌های تخته‌ای، ترتیب <code>#board:sortColumns</code> را برعکس اجرا می‌کند.",
     "calendar_view": "تقویم در کدام نمایش باز می‌شود: <code>timeGridDay</code>، <code>timeGridWeek</code>، <code>dayGridMonth</code>، <code>multiMonthYear</code> یا <code>listMonth</code>.",
     "calendar_initial_date": "تاریخی که تقویم در آن باز می‌شود. در صورت تنظی نشدن، امروز باز می‌شود.",
-    "calendar_hide_weekends": "جمعه و یکشنبه را از تقویم پنهان می‌کند. صرف‌نظر از مقدار اعمال می‌شود.",
+    "calendar_hide_weekends": "شنبه و یکشنبه را از تقویم پنهان می‌کند. صرف‌نظر از مقدار اعمال می‌شود.",
     "calendar_week_numbers": "شمارهٔ هفته را در تقویم نمایش می‌دهد. صرف‌نظر از مقدار اعمال می‌شود.",
     "calendar_slot_duration": "مدت هر بازهٔ زمانی تقویم، به صورت <code>HH:MM:SS</code>. پیش‌فرض 15 دقیقه.",
     "calendar_slot_label_interval": "دورهٔ برچسب‌گذاری بازه‌های زمانی تقویم، به صورت <code>HH:MM:SS</code>. پیش‌فرض یک ساعت.",
