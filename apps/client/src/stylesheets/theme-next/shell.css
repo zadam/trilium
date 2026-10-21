@@ -862,25 +862,6 @@ body[dir=rtl] :is(#left-pane, .tree-popup-sidebar) span.fancytree-node.protected
 }
 
 /*
- * Tree settings popup
- */
-
-:is(#left-pane, .tree-popup-sidebar) .tree-settings-popup {
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, var(--dropdown-shadow-opacity));
-    border: 1px solid var(--dropdown-border-color);
-    padding: 25px;
-    background: var(--menu-background-color);
-    backdrop-filter: blur(10px) saturate(6);
-    color: var(--menu-text-color);
-}
-
-:is(#left-pane, .tree-popup-sidebar) .tree-settings-popup h4 {
-    margin-bottom: 0.75em;
-    font-size: 1.5em;
-    line-height: 1;
-}
-
-/*
  * TAB BAR
  */
 

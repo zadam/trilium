@@ -34,7 +34,7 @@ See <a class="reference-link" href="Note%20Tree/Note%20tree%20contextual%20menu
 
 ## Tree Settings
 
-Click the tree icon in the tree toolbar to open the tree settings popup. It contains the following options:
+Click the tree icon in the tree toolbar to open the tree settings popup. Each option is a toggle that takes effect as soon as it is switched:
 
 *   _Hide archived notes_: When enabled, archived notes are not shown in the tree.
 *   _Automatically collapse notes_: When enabled, notes are collapsed after a period of inactivity to keep the tree tidy.

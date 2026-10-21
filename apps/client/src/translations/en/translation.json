@@ -2824,7 +2824,6 @@
     "automatically-collapse-notes-title": "Notes will be collapsed after period of inactivity to declutter the tree.",
     "follow-active-note": "Follow active note",
     "follow-active-note-title": "Scrolls the tree and expands parent nodes to show the active note. When disabled, the tree stays in place and only the background highlight is updated.",
-    "save-changes": "Save & apply changes",
     "auto-collapsing-notes-after-inactivity": "Auto collapsing notes after inactivity...",
     "saved-search-note-refreshed": "Saved search note refreshed.",
     "hoist-this-note-workspace": "Hoist this note (workspace)",
@@ -4383,7 +4382,8 @@
     "exit_fullscreen": "Exit fullscreen",
     "open_in_new_tab": "Open in new tab",
     "more_actions": "More actions",
-    "beta": "Beta"
+    "beta": "Beta",
+    "close": "Close"
   },
   "spreadsheet": {
     "read-only": "This note is read-only.",
