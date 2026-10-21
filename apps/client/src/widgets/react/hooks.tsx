@@ -1424,26 +1424,47 @@ export function useStaticTooltip(
                     }
                     shownDelegates.delete(target);
                 }
-                if (!shownDelegates.size) delegateObserver.disconnect();
+                if (!shownDelegates.size) stopWatching();
             });
+            // Hides a shown delegate once a scroll moves it partly out of the view of the element
+            // that scrolled, so that its popup does not follow it outside that element.
+            const onScroll = (event: Event) => {
+                const scroller = event.target;
+                if (!(scroller instanceof Element)) return;
+                const view = scroller.getBoundingClientRect();
+                for (const target of shownDelegates) {
+                    const box = target.getBoundingClientRect();
+                    const isInView = box.top >= view.top && box.bottom <= view.bottom
+                        && box.left >= view.left && box.right <= view.right;
+                    if (!isInView && scroller.contains(target)) {
+                        Tooltip.getInstance(target)?.hide();
+                    }
+                }
+            };
+            const startWatching = () => {
+                delegateObserver.observe(element, { childList: true, subtree: true });
+                document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+            };
+            const stopWatching = () => {
+                delegateObserver.disconnect();
+                document.removeEventListener("scroll", onScroll, { capture: true });
+            };
             // Bootstrap's component events bubble from the delegate up to the container.
             const onDelegateShown = (event: Event) => {
                 if (!(event.target instanceof Element) || event.target === element) return;
-                if (!shownDelegates.size) {
-                    delegateObserver.observe(element, { childList: true, subtree: true });
-                }
+                if (!shownDelegates.size) startWatching();
                 shownDelegates.add(event.target);
             };
             const onDelegateHidden = (event: Event) => {
                 if (!(event.target instanceof Element)) return;
                 shownDelegates.delete(event.target);
-                if (!shownDelegates.size) delegateObserver.disconnect();
+                if (!shownDelegates.size) stopWatching();
             };
             element.addEventListener("inserted.bs.tooltip", onDelegateShown);
             element.addEventListener("hidden.bs.tooltip", onDelegateHidden);
 
             disposeDelegateTracking = () => {
-                delegateObserver.disconnect();
+                stopWatching();
                 element.removeEventListener("inserted.bs.tooltip", onDelegateShown);
                 element.removeEventListener("hidden.bs.tooltip", onDelegateHidden);
             };

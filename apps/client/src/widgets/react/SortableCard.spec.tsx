@@ -620,6 +620,37 @@ describe("SortableCard", () => {
         });
     });
 
+    /** For a caller that sorts the entries itself, such as by name. */
+    describe("with the order fixed", () => {
+        it("draws no grip", () => {
+            draw({ isReorderable: false });
+
+            expect(container.querySelector(".tn-sortable-grip")).toBeNull();
+            expect(captions()).toEqual([ "Alpha", "Beta", "Gamma" ]);
+        });
+
+        it("takes nothing up for a finger resting on a segment", () => {
+            draw({ isReorderable: false });
+
+            touch(segmentOf("a"), { onGrip: false });
+            rest();
+
+            expect(segmentOf("a")?.className).not.toContain("tn-sortable-dragging");
+            expect(captured).toEqual([]);
+        });
+
+        it("moves nothing with Control, but still steps between the entries", () => {
+            draw({ isReorderable: false });
+
+            press(segmentOf("a"), "ArrowDown", { ctrlKey: true });
+            expect(changed).toEqual([]);
+            expect(captions()).toEqual([ "Alpha", "Beta", "Gamma" ]);
+
+            press(segmentOf("a"), "ArrowDown");
+            expect(document.activeElement).toBe(segmentOf("b"));
+        });
+    });
+
     it("carries the grip on the trailing edge of each segment, after what it reads", () => {
         draw();
         const [ first ] = segments();

@@ -6,6 +6,9 @@ import {
 import { t } from "./i18n.js";
 import options from "./options.js";
 
+/** The MIME type of plain text, which is always enabled. */
+export const PLAIN_TEXT_MIME = "text/plain";
+
 // Titles that are descriptive names rather than language identifiers, so they get localized here
 // (the shared MIME dict in commons has no access to the client's i18n).
 const TRANSLATED_TITLES: Record<string, string> = {
@@ -31,6 +34,46 @@ function getMimeTypes(): MimeType[] {
     }
 
     return mimeTypes as MimeType[];
+}
+
+/** The enabled MIME types, in the order the code language lists show them. */
+function getEnabledMimeTypes(): MimeType[] {
+    return orderEnabledMimeTypes(
+        getMimeTypes(),
+        options.getJson("codeNotesMimeTypes"),
+        options.is("codeNotesMimeTypesSortAlphabetically")
+    );
+}
+
+/**
+ * Returns the enabled entries of `mimeTypes` in display order. Plain text comes first, except in a
+ * stored order that places it elsewhere.
+ *
+ * @param order the `codeNotesMimeTypes` option. Without it, the entries are sorted.
+ * @param isSortedAlphabetically sorts the entries by title instead of following `order`.
+ */
+export function orderEnabledMimeTypes(
+    mimeTypes: readonly MimeType[],
+    order: readonly (string | null)[] | null | undefined,
+    isSortedAlphabetically: boolean
+): MimeType[] {
+    const enabled = mimeTypes.filter((mimeType) => mimeType.enabled);
+    const plainText = enabled.find((mimeType) => mimeType.mime === PLAIN_TEXT_MIME);
+
+    let ordered: MimeType[];
+    if (isSortedAlphabetically || !order) {
+        ordered = enabled
+            .filter((mimeType) => mimeType !== plainText)
+            .sort((a, b) => a.title.localeCompare(b.title));
+    } else {
+        const byMime = new Map(enabled.map((mimeType) => [ mimeType.mime, mimeType ]));
+        ordered = [ ...new Set(order) ].flatMap((mime) => (mime && byMime.get(mime)) || []);
+    }
+
+    if (plainText && !ordered.includes(plainText)) {
+        ordered.unshift(plainText);
+    }
+    return ordered;
 }
 
 let mimeToHighlightJsMapping: Record<string, string> | null = null;
@@ -62,6 +105,7 @@ export function getHighlightJsNameForMime(mimeType: string) {
 export default {
     MIME_TYPE_AUTO,
     getMimeTypes,
+    getEnabledMimeTypes,
     loadMimeTypes,
     getHighlightJsNameForMime
 };

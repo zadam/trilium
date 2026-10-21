@@ -336,8 +336,8 @@ function getBlankNoteTypes(command?: TreeCommandNames): MenuCommandItem<TreeComm
  */
 function getCodeLanguageItems(command?: TreeCommandNames): MenuItem<TreeCommandNames>[] {
     mimeTypes.loadMimeTypes();
-    const languages = mimeTypes.getMimeTypes()
-        .filter((mimeType) => mimeType.enabled && mimeType.mime !== MARKDOWN_NOTE_TYPE_MIME)
+    const languages = mimeTypes.getEnabledMimeTypes()
+        .filter((mimeType) => mimeType.mime !== MARKDOWN_NOTE_TYPE_MIME)
         .map<MenuItem<TreeCommandNames>>((mimeType) => ({
             title: escapeHtml(mimeType.title),
             uiIcon: getCodeLanguageIcon(mimeType),

@@ -96,6 +96,11 @@ export interface SortableCardProps<T extends SortableItem> extends CardProps {
      */
     gripPlacement?: "start" | "end";
     /**
+     * Whether the reader can reorder the entries. Off, the card draws no grip and ignores drags
+     * and Ctrl+arrow keys, for a caller that sorts the entries itself. Defaults to true.
+     */
+    isReorderable?: boolean;
+    /**
      * Called for a key the card does not answer itself, with the entry that had the focus. For a
      * caller whose entries have commands of their own.
      */
@@ -113,8 +118,8 @@ export interface SortableCardProps<T extends SortableItem> extends CardProps {
  * back. Entries are not interpreted, so anything identified by a key can be sorted.
  */
 export function SortableCard<T extends SortableItem>({
-    items, onChange, renderItem, itemCreationButtons, gripPlacement = "end", onItemKeyDown,
-    selectedKey, onSelect, className, ...card
+    items, onChange, renderItem, itemCreationButtons, gripPlacement = "end", isReorderable = true,
+    onItemKeyDown, selectedKey, onSelect, className, ...card
 }: SortableCardProps<T>) {
     if ((itemCreationButtons?.length ?? 0) > MAX_CREATION_BUTTONS) {
         throw new Error("Up to three item creation buttons are supported");
@@ -302,7 +307,7 @@ export function SortableCard<T extends SortableItem>({
     useEffect(() => () => cancelHold(), [ cancelHold ]);
 
     const beginDrag = useCallback((event: PointerEvent, key: string) => {
-        if (!listRef.current || !segmentOf(key)) {
+        if (!isReorderable || !listRef.current || !segmentOf(key)) {
             return;
         }
 
@@ -362,7 +367,7 @@ export function SortableCard<T extends SortableItem>({
                 }
             }, TOUCH_HOLD_MS)
         };
-    }, [ cancelHold, segmentOf, startDrag ]);
+    }, [ cancelHold, isReorderable, segmentOf, startDrag ]);
 
     const dragTo = useCallback((clientY: number) => {
         const drag = dragRef.current;
@@ -475,13 +480,19 @@ export function SortableCard<T extends SortableItem>({
             return;
         }
 
+        if (control && !isReorderable) {
+            return;
+        }
+
         event.preventDefault();
         if (control) {
             moveItem(index, to);
         } else {
             focusEntry(to);
         }
-    }, [ add, endDrag, focusEntry, itemCreationButtons, moveItem, onItemKeyDown, shown ]);
+    }, [
+        add, endDrag, focusEntry, isReorderable, itemCreationButtons, moveItem, onItemKeyDown, shown
+    ]);
 
     const onAddKeyDown = useCallback((event: KeyboardEvent) => {
         // Moves back into the entries. Home and End address the first and last entry, as they do
@@ -565,7 +576,7 @@ export function SortableCard<T extends SortableItem>({
                         onKeyDown={(event) => onSegmentKeyDown(event, index)}
                         onAnimationEnd={() => setAddedKey(undefined)}
                     >
-                        {gripPlacement === "start" && grip()}
+                        {isReorderable && gripPlacement === "start" && grip()}
 
                         <span className="tn-sortable-content">
                             {renderItem
@@ -576,7 +587,7 @@ export function SortableCard<T extends SortableItem>({
                                 </>}
                         </span>
 
-                        {gripPlacement === "end" && grip()}
+                        {isReorderable && gripPlacement === "end" && grip()}
                     </section>
                 ))}
 

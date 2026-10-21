@@ -79,7 +79,7 @@ export function Card(props: {children: ComponentChildren} & CardProps) {
             {props.heading}
             {props.actions && <span className="tn-card-heading-actions">{props.actions}</span>}
         </h5>}
-        {props.description && <p className="tn-card-description">{props.description}</p>}
+        {props.description && <div className="tn-card-description">{props.description}</div>}
         <div className="tn-card-body">
             <FilterPassthrough when={matched}>{props.children}</FilterPassthrough>
         </div>

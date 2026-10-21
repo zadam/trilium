@@ -389,6 +389,41 @@ describe("useStaticTooltip", () => {
         expect(span && Tooltip.getInstance(span), "instance untouched by the observer").not.toBeNull();
     });
 
+    it("hides a delegated tooltip once scrolling moves its child out of view", async () => {
+        const removeListener = vi.spyOn(document, "removeEventListener");
+        await act(async () => render(<DelegatedTooltipHarness generation={1} />, container));
+
+        const span = container.querySelector("span");
+        expect(span).not.toBeNull();
+        act(() => {
+            if (span) {
+                Tooltip.getOrCreateInstance(span, {
+                    animation: false,
+                    title() {
+                        return this.getAttribute("title") || "";
+                    }
+                }).show();
+            }
+        });
+        expect(document.querySelector(".tooltip"), "shown").not.toBeNull();
+
+        // The test container is the scroller, its view 100px tall; the span is 20px tall.
+        container.getBoundingClientRect = () => new DOMRect(0, 0, 300, 100);
+        const scrollSpanTo = (top: number) => act(() => {
+            if (span) span.getBoundingClientRect = () => new DOMRect(0, top, 50, 20);
+            container.dispatchEvent(new Event("scroll"));
+        });
+
+        scrollSpanTo(40);
+        expect(document.querySelector(".tooltip"), "kept while in view").not.toBeNull();
+
+        scrollSpanTo(90);
+        expect(document.querySelector(".tooltip"), "hidden once partly out of view").toBeNull();
+        expect(removeListener.mock.calls.some(([ type ]) => type === "scroll"),
+            "stops listening once nothing is shown").toBe(true);
+        removeListener.mockRestore();
+    });
+
     it("leaves a shown delegated tooltip standing when the mutation removed something else", async () => {
         await act(async () => render(<DelegatedTooltipHarness generation={1} />, container));
 

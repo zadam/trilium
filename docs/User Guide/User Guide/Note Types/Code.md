@@ -27,7 +27,18 @@ On the <a class="reference-link" href="../Installation%20%26%20Setup/Mobile%20F
 
 ## Adjusting the list of languages
 
-Trilium supports syntax highlighting for many languages, but by default displays only some of them. The supported languages can be adjusted by going to [Options](../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md), then _Code Notes_ and looking for the _Available MIME types in the dropdown_ section. Simply check any of the items to add them to the list, or un-check them to remove them from the list.
+Trilium supports syntax highlighting for many languages, but by default displays only some of them. To change which languages are offered, go to <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Code Notes_ and find _Available MIME types in the dropdown_. Here you can:
+
+*   Add a language by pressing the <span class="tn-icon bx bx-plus"></span> _Add another language_ button, which also shows how many languages are left, and then selecting it. While picking, hover a language to see where it is syntax highlighted.
+*   Press the <span class="tn-icon bx bx-x"></span> button beside a language, or select it and press <kbd>Delete</kbd>, to remove it from the list. _Plain text_ cannot be removed.
+*   See where each language is syntax highlighted: the _Code blocks_ badge stands for code blocks in text notes, the _Code notes_ badge for code notes.
+
+The languages are listed in the same order wherever you choose one: the language menu in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Status%20bar.md">Status bar</a>, the _Code_ submenu when creating a note, and the language of a code block. By default, the list is sorted alphabetically, with _Plain text_ first. To use an order of your own:
+
+1.  Turn off the _Sort alphabetically_ switch at the top of the section.
+2.  Hold the **\=** handle shown beside a language, and then drag it up or down. Alternatively, select a language and press <kbd>Ctrl</kbd>+<kbd>↑</kbd> or <kbd>Ctrl</kbd>+<kbd>↓</kbd>.
+
+Turning _Sort alphabetically_ back on does not discard your order: it is used again the next time the switch is turned off.
 
 Note that the list of languages is not immediately refreshed, you'd have to manually [refresh the application](../Troubleshooting/Refreshing%20the%20application.md).
 

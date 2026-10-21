@@ -265,6 +265,11 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     codeBlockTabWidth: number;
     codeNoteTabWidth: number;
     codeNoteIndentWithTabs: boolean;
+    /**
+     * Whether the code language lists are sorted by name. Off, they follow the order of
+     * {@link codeNotesMimeTypes}, which sorting leaves unchanged.
+     */
+    codeNotesMimeTypesSortAlphabetically: boolean;
     textNoteEditorMultilineToolbar: boolean;
     /**
      * Which marks a typed `"…"` becomes: `auto` to follow the note's content language, `off` to

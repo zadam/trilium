@@ -1981,7 +1981,17 @@
     "tooltip_syntax_highlighting": "Syntax highlighting",
     "tooltip_code_block_syntax": "Code blocks in Text notes",
     "tooltip_code_note_syntax": "Code notes",
-    "trilium_log": "Trilium Log"
+    "trilium_log": "Trilium Log",
+    "description": "The languages offered when you choose the language of a code note or a code block.",
+    "sort_alphabetically": "Sort alphabetically",
+    "badge_code_blocks": "Code blocks",
+    "badge_code_notes": "Code notes",
+    "remove": "Remove from the list",
+    "badge_code_blocks_tooltip": "Syntax highlighting available for code blocks in text notes",
+    "badge_code_notes_tooltip": "Syntax highlighting available for code notes",
+    "add_title": "Add a language",
+    "add_another_one": "Add another language ({{count}} available)",
+    "add_another_other": "Add another language ({{count}} available)"
   },
   "vim_key_bindings": {
     "use_vim_keybindings_in_code_notes": "Vim keybindings",
