@@ -57,6 +57,23 @@ describe("createColorMenuHost", () => {
         expect(second.setColor).toHaveBeenCalledExactlyOnceWith("fontColor", null);
     });
 
+    it("opens the picker from the custom cell holding the color of the text, keeping the menu", async () => {
+        const pick = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => {});
+        try {
+            const { menu, pickers, setColor } = show({ fontColor: "#123456", fontBackgroundColor: null });
+            const cell = pickers[0]?.querySelector<HTMLElement>(".custom-color-cell.selected");
+            if (!cell) throw new Error("expected the custom cell to be selected");
+            await vi.waitFor(() => expect(cell.style.getPropertyValue("--color")).toBe("#123456"));
+            cell.click();
+
+            expect(setColor).not.toHaveBeenCalled();
+            expect(menu.isConnected).toBe(true);
+            expect(pick.mock.contexts).toEqual([ cell.querySelector("input[type=color]") ]);
+        } finally {
+            pick.mockRestore();
+        }
+    });
+
     it("returns focus to the button on Escape, and not on a press elsewhere", () => {
         const escaped = show({ fontColor: null, fontBackgroundColor: null });
         escaped.menu.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
