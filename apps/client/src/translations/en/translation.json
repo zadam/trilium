@@ -3088,7 +3088,10 @@
   },
   "attribute_menu": {
     "attributes": "Attributes",
-    "not-set": "Not set"
+    "not-set": "Not set",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "next-week": "Next week"
   },
   "link_context_menu": {
     "open_note": "Open note",

@@ -1,8 +1,11 @@
+import { dayjs, type Dayjs, getWeekStartDate } from "@triliumnext/commons";
+
 import type FNote from "../../entities/fnote";
 import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
 import { menuName } from "../../menus/context_menu_utils";
 import { t } from "../../services/i18n";
 import { clearLabelOnNotes, setLabelOnNotes, shared } from "../../services/note_set";
+import options from "../../services/options";
 import { promotedAttributeIcon } from "../attribute_widgets/attribute_types";
 import type { PromotedAttribute } from "./promoted_attributes";
 
@@ -30,9 +33,10 @@ export interface AttributeMenuOptions {
  * Builds the section a collection's item menu uses to set the values shown on an item, so a flag or
  * a state changes without opening the note.
  *
- * Lists the attributes the items draw, in the order they are drawn, and only the two types a menu
- * can hold: `boolean`, which the entry marks and toggles, and `select`, whose options open in a
- * submenu. The other types need a field to type into and stay in the attribute editor. An
+ * Lists the attributes the items draw, in the order they are drawn, and only the types a menu can
+ * hold: `boolean`, which the entry marks and toggles, `select`, whose options open in a submenu,
+ * and `date`, whose submenu offers a few dates relative to today. The other types need a field to
+ * type into and stay in the attribute editor. An
  * attribute the items define in different ways is left out, since one item's options might not
  * apply to another.
  *
@@ -54,6 +58,10 @@ export function buildAttributeMenuItems<T>({
         // A select without options is skipped: its submenu would hold "Not set" alone.
         if (attribute.labelType === "select" && attribute.selectOptions?.length) {
             return [ buildSelectItem<T>(notes, attribute, attribute.selectOptions) ];
+        }
+
+        if (attribute.labelType === "date") {
+            return [ buildDateItem<T>(notes, attribute) ];
         }
 
         return [];
@@ -118,6 +126,47 @@ function buildSelectItem<T>(
             }))
         ]
     };
+}
+
+/**
+ * A `date`, with Not set and then today, tomorrow and the first day of next week in a submenu,
+ * stored as `YYYY-MM-DD` like the field's own date input. The entry the items' value matches is
+ * marked; a date the submenu does not offer marks nothing.
+ */
+function buildDateItem<T>(notes: FNote[], attribute: PromotedAttribute): MenuCommandItem<T> {
+    const current = shared(notes, (note) => note.getLabelValue(attribute.name));
+    const today = dayjs().startOf("day");
+    const dates: [ string, Dayjs ][] = [
+        [ t("attribute_menu.today"), today ],
+        [ t("attribute_menu.tomorrow"), today.add(1, "day") ],
+        [ t("attribute_menu.next-week"), startOfNextWeek(today) ]
+    ];
+
+    return {
+        ...attributeEntry<T>(attribute),
+        items: [
+            {
+                title: menuName(t("attribute_menu.not-set")),
+                trailingIcon: current.agreed && !current.value ? CHECK : undefined,
+                handler: () => { void clearLabelOnNotes(notes, attribute.name); }
+            },
+            { kind: "separator" },
+            ...dates.map<MenuItem<T>>(([ title, date ]) => {
+                const value = date.format("YYYY-MM-DD");
+                return {
+                    title: menuName(title),
+                    trailingIcon: current.agreed && current.value === value ? CHECK : undefined,
+                    handler: () => { void setLabelOnNotes(notes, attribute.name, value); }
+                };
+            })
+        ]
+    };
+}
+
+/** The first day of the week after `today`'s, as the `firstDayOfWeek` option sets it (0 is Sunday). */
+function startOfNextWeek(today: Dayjs) {
+    const firstDayOfWeek = options.getInt("firstDayOfWeek") ?? 1;
+    return getWeekStartDate(today, firstDayOfWeek === 0 ? 7 : firstDayOfWeek).add(7, "day");
 }
 
 /** What every entry carries: the attribute's display name, under the icon of its type. */

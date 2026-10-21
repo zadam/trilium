@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type FNote from "../../entities/fnote";
 import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
@@ -16,6 +16,11 @@ vi.mock("../../services/attributes", async (importOriginal) => ({
 
 // i18next is never initialised under test, so `t` echoes the key it is given.
 vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
+
+const weekOptions = vi.hoisted(() => ({ firstDayOfWeek: 1 }));
+vi.mock("../../services/options", () => ({
+    default: { getInt: (name: string) => (name === "firstDayOfWeek" ? weekOptions.firstDayOfWeek : null) }
+}));
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -218,6 +223,77 @@ describe("buildAttributeMenuItems", () => {
 
             pick(options(note)[0]);
             expect(writes.setLabelValues).toHaveBeenCalledWith(note, "state", [ "" ]);
+        });
+    });
+
+    describe("a date", () => {
+        const due = [ attribute({ name: "due", title: "Due", labelType: "date" }) ];
+
+        beforeEach(() => {
+            // A Wednesday.
+            vi.useFakeTimers({ now: new Date(2026, 9, 21, 15, 30) });
+            weekOptions.firstDayOfWeek = 1;
+        });
+        afterEach(() => vi.useRealTimers());
+
+        function entries(...notes: FNote[]) {
+            const items = buildAttributeMenuItems<string>({ notes, attributes: due });
+            const entry = items[1];
+            if (!entry || !("items" in entry)) throw new Error("expected a submenu");
+            return entry.items ?? [];
+        }
+
+        it("offers Not set, then today, tomorrow and next week", () => {
+            const items = entries(buildNote({ title: "Card" }));
+
+            expect(titles(items)).toEqual([
+                `<span class="tn-menu-name">attribute_menu.not-set</span>`,
+                "separator",
+                `<span class="tn-menu-name">attribute_menu.today</span>`,
+                `<span class="tn-menu-name">attribute_menu.tomorrow</span>`,
+                `<span class="tn-menu-name">attribute_menu.next-week</span>`
+            ]);
+            expect(marked(items)).toEqual([
+                `<span class="tn-menu-name">attribute_menu.not-set</span>`
+            ]);
+        });
+
+        it("writes each date, next week starting on the configured first day", () => {
+            const note = buildNote({ title: "Card" });
+
+            pick(entries(note)[2]);
+            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-21" ]);
+            pick(entries(note)[3]);
+            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-22" ]);
+            pick(entries(note)[4]);
+            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-26" ]);
+
+            weekOptions.firstDayOfWeek = 0;
+            pick(entries(note)[4]);
+            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-10-25" ]);
+
+            pick(entries(note)[0]);
+            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", []);
+        });
+
+        it("marks the date the items hold only while they all hold it", () => {
+            const tomorrow = buildNote({ title: "One", "#due": "2026-10-22" });
+
+            expect(marked(entries(tomorrow))).toEqual([
+                `<span class="tn-menu-name">attribute_menu.tomorrow</span>`
+            ]);
+            expect(marked(entries(tomorrow, buildNote({ title: "Two", "#due": "2026-10-22" }))))
+                .toEqual([ `<span class="tn-menu-name">attribute_menu.tomorrow</span>` ]);
+            expect(marked(entries(tomorrow, buildNote({ title: "Two" })))).toEqual([]);
+            expect(marked(entries(buildNote({ title: "Card", "#due": "2026-12-01" }))))
+                .toEqual([]);
+        });
+
+        it("leaves out a date and time, which a menu cannot set without its time", () => {
+            expect(build({ title: "Card" }, [
+                attribute({ name: "at", title: "At", labelType: "datetime" }),
+                attribute({ name: "time", title: "Time", labelType: "time" })
+            ])).toEqual([]);
         });
     });
 
