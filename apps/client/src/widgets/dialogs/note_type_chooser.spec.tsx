@@ -116,6 +116,21 @@ describe("NoteTypeChooserDialog", () => {
         container.remove();
     });
 
+    it("lays out the location and the note types in one card", async () => {
+        await openChooser();
+        await resolveNoteTypes();
+
+        await vi.waitFor(() => expect(menu()).not.toBeNull());
+        expect(container.querySelectorAll(".tn-card")).toHaveLength(1);
+        expect(container.querySelector(".tn-card-heading")).toBeNull();
+        const labels = [ ...container.querySelectorAll(".tn-card-option-title") ]
+            .map((label) => label.textContent);
+        expect(labels).toStrictEqual([ "note_type_chooser.location" ]);
+        expect(container.querySelector(".note-type-chooser-location .note-autocomplete"))
+            .not.toBeNull();
+        expect(menu()?.closest(".tn-card-section")).not.toBeNull();
+    });
+
     it("starts at Text, so Enter creates a text note", async () => {
         const callback = await openChooser();
         await resolveNoteTypes();

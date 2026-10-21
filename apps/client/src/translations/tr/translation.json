@@ -169,8 +169,6 @@
     "help_on_links": "Bağlantılar konusunda yardım",
     "note": "Not",
     "search_note": "notu isme göre ara",
-    "link_title_mirrors": "bağlantı başlığı, notun güncel başlığını yansıtır",
-    "link_title_arbitrary": "bağlantı başlığı isteğe bağlı olarak değiştirilebilir",
     "link_title": "Bağlantı başlığı",
     "button_add_link": "Bağlantı ekle",
     "anchor": "Bağlantı (isteğe bağlı)",
@@ -1580,18 +1578,8 @@
   },
   "search_definition": {
     "add_search_option": "Arama seçeneği ekle:",
-    "search_string": "arama dizesi",
-    "search_script": "arama betiği",
-    "ancestor": "üst kuşak",
-    "fast_search": "hızlı arama",
-    "fast_search_description": "Hızlı arama seçeneği, not içeriğinin tam metin aramasını devre dışı bırakır; bu, büyük veritabanlarında aramayı hızlandırabilir.",
-    "include_archived": "arşivlenmişleri dahil et",
     "include_archived_notes_description": "Arşivlenmiş notlar varsayılan olarak arama sonuçlarının dışında tutulur, bu seçenekle dahil edilirler.",
-    "order_by": "sıralama ölçütü",
-    "limit": "sınır",
     "limit_description": "Sonuç sayısını sınırla",
-    "debug": "hata ayıklama",
-    "debug_description": "Hata ayıklama, karmaşık sorguların hatalarını ayıklamaya yardımcı olmak için konsola ek hata ayıklama bilgisi yazdırır",
     "action": "eylem",
     "option": "seçenek",
     "search_button": "Ara",
@@ -1650,8 +1638,7 @@
     "include_archived_notes": "Arşivlenmiş notları dahil et"
   },
   "limit": {
-    "limit": "Sınır",
-    "take_first_x_results": "Yalnızca belirtilen ilk X sonucu al."
+    "limit": "Sınır"
   },
   "search_script": {
     "title": "Arama betiği:",

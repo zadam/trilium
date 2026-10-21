@@ -364,14 +364,21 @@
   "include_note": {
     "dialog_title": "Include note",
     "label_note": "Note",
-    "placeholder_search": "search for note by its name",
-    "box_size_prompt": "Box size of the included note:",
-    "box_size_small": "small (~ 10 lines)",
-    "box_size_medium": "medium (~ 30 lines)",
-    "box_size_full": "full (box shows complete text)",
-    "box_size_expandable": "expandable (collapsed by default)",
-    "button_include": "Include note",
-    "box_size_tiny": "tiny (a single row with the title and the actions)"
+    "box_size": "Box size",
+    "size_tiny": "Tiny",
+    "size_tiny_description": "A single row with the title and the actions.",
+    "size_small": "Small",
+    "size_small_description": "A box of about 10 lines.",
+    "size_medium": "Medium",
+    "size_medium_description": "A box of about 30 lines.",
+    "size_full": "Full",
+    "size_full_description": "The whole content.",
+    "size_expandable": "Expandable",
+    "size_expandable_description": "Only the title, until it is expanded.",
+    "inserted_as_image": "This note is inserted as an image.",
+    "size_hint": "The size can be changed later.",
+    "image_size_hint": "The image can be resized later.",
+    "button_include": "Include note"
   },
   "info": {
     "modalTitle": "Info message",
@@ -446,10 +453,9 @@
     "move_success_message": "Selected notes have been moved into "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Change where to create the new note:",
-    "search_placeholder": "search path by name (default if empty)",
+    "location": "Location",
+    "location_placeholder": "Default location if left empty",
     "modal_title": "Choose note type",
-    "modal_body": "Choose note type / template of the new note:",
     "templates": "Templates"
   },
   "password_not_set": {
@@ -4893,5 +4899,11 @@
     "to_sentence_case": "To sentence case",
     "to_title_case": "To title case",
     "remove_diacritics": "Remove diacritics"
+  },
+  "date_picker": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "next-week": "Next week",
+    "clear": "Clear"
   }
 }

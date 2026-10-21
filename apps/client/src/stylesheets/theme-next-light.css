@@ -307,6 +307,8 @@
     --calendar-day-hover-color: var(--hover-item-text-color);
     --calendar-day-hover-background: var(--active-item-background-color);
     --calendar-day-highlight-background: #80808024;
+    --calendar-day-selected-background: var(--menu-text-color);
+    --calendar-day-selected-color: var(--menu-background-color-no-backdrop);
 
     --timeline-bullet-color: #a5a5a5;
     --timeline-bullet-hover-color: black;

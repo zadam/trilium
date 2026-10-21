@@ -22,8 +22,6 @@
     "help_on_links": "Pomoć na linkovima",
     "note": "Beleška",
     "search_note": "potražite belešku po njenom imenu",
-    "link_title_mirrors": "naziv linka preslikava trenutan naziv beleške",
-    "link_title_arbitrary": "naziv linka se može proizvoljno menjati",
     "link_title": "Naziv linka",
     "button_add_link": "Dodaj link <kbd>enter</kbd>"
   },

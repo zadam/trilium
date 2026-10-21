@@ -62,6 +62,26 @@ describe("Search API (core)", () => {
         expect(unscoped.body).toContain(outside.noteId);
     });
 
+    it("leaves archived notes out of a full search only when asked to", async () => {
+        const token = "ZzArchivedSearchQwerty";
+        const board = await createTextNote(api, { title: "Board" });
+        const live = await createTextNote(api, { parentNoteId: board.noteId, title: `${token} live` });
+        const archived = await createTextNote(api, { parentNoteId: board.noteId, title: `${token} archived` });
+        await api.post(`/api/notes/${archived.noteId}/attributes`, {
+            body: { type: "label", name: "archived", value: "" }
+        });
+
+        const search = (includeArchivedNotes?: string) => api.get<string[]>("/api/search", {
+            query: { searchString: token, ancestorNoteId: board.noteId, includeArchivedNotes }
+        });
+
+        expect((await search()).body).toEqual(expect.arrayContaining([ live.noteId, archived.noteId ]));
+        expect((await search("true")).body).toEqual(expect.arrayContaining([ live.noteId, archived.noteId ]));
+        const withoutArchived = await search("false");
+        expect(withoutArchived.body).toContain(live.noteId);
+        expect(withoutArchived.body).not.toContain(archived.noteId);
+    });
+
     it("returns note ids with token infos and the error when includeTokens is set", async () => {
         const withTokens = await api.get<SearchWithTokensResponse>("/api/search", {
             query: { searchString: UNIQUE_TOKEN, includeTokens: "true" }

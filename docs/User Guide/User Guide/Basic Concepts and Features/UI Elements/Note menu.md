@@ -7,7 +7,7 @@ Every split has a note menu of its own, which acts on the note displayed in that
 
 ## Navigating the note
 
-These entries are the row of icons at the top of the menu, each with a short title. Hovering one shows its full name and its keyboard shortcut. In Quick edit, where only the attachments are left, it is listed as an ordinary entry instead.
+These entries are the row of icons at the top of the menu, each with a short title. Hovering one shows its full name and its keyboard shortcut. In Quick edit on a phone, where only _Find_ is left, it is listed as an ordinary entry instead.
 
 *   <span class="tn-icon bx bx-file-find"></span> _Find_ opens the <a class="reference-link" href="../Navigation/Search%20in%20note.md">Search in note</a> bar, to find and replace text inside the current note. On the desktop application, the same bar opens with <kbd>Ctrl</kbd>+<kbd>F</kbd>.
     *   It is available on <a class="reference-link" href="../../Note%20Types/Text.md">Text</a>, <a class="reference-link" href="../../Note%20Types/Code.md">Code</a>, <a class="reference-link" href="../../Note%20Types/Mind%20Map.md">Mind Map</a> and <a class="reference-link" href="../../Note%20Types/Spreadsheets.md">Spreadsheets</a> notes, <a class="reference-link" href="../../Collections.md">Collections</a>, PDF files, and any note displayed as <a class="reference-link" href="../../Advanced%20Usage/Note%20source.md">Note source</a>.
@@ -102,7 +102,7 @@ Notes deleted without erasing can be brought back, see <a class="reference-link
 *   The note menu is not available on launchers.
 *   On the notes of <a class="reference-link" href="Options.md">Options</a> and of the in-app help, most entries are grayed out, since these notes cannot be imported into, deleted or have revisions. Of the two, only the in-app help can be exported, see <a class="reference-link" href="../Import%20%26%20Export.md">Import &amp; Export</a>.
 *   The [Note properties](#note-properties) section is only listed when the note itself is displayed, not its <a class="reference-link" href="../Notes/Attachments.md">Attachments</a> or its <a class="reference-link" href="../../Advanced%20Usage/Note%20source.md">Note source</a>.
-*   In <a class="reference-link" href="../Navigation/Quick%20edit.md">Quick edit</a>, _Find_, _Note map_, _Full width_ and _Convert into attachment_ are not listed.
+*   In <a class="reference-link" href="../Navigation/Quick%20edit.md">Quick edit</a>, _Note map_, _Full width_ and _Convert into attachment_ are not listed.
 
 ## Mobile support
 

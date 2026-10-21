@@ -142,22 +142,11 @@ export function buildModelMessage(m: LlmMessage, accepts: AttachmentFilter = () 
 }
 
 /**
- * A hard-coded model definition that always carries pricing. Used only by the
- * Claude Agent (subscription) provider, whose fixed catalog and zero pricing
- * come from the CLI rather than the metered LiteLLM price table.
+ * One provider's slice of the committed price table, keyed by model id. The Claude
+ * Agent provider reads the `anthropic` slice for context windows.
  */
-type CuratedModel = ModelInfo & { pricing: ModelPricing };
-
-/**
- * Split a curated model array into the `{ models, pricing }` pair the subscription
- * provider needs (the model list plus an id → pricing lookup).
- */
-export function buildModelList(baseModels: CuratedModel[]): {
-    models: ModelInfo[];
-    pricing: Record<string, ModelPricing>;
-} {
-    const pricing = Object.fromEntries(baseModels.map(m => [m.id, m.pricing]));
-    return { models: baseModels, pricing };
+export function getProviderPrices(provider: string): ProviderPrices {
+    return MODEL_PRICES[provider] ?? {};
 }
 
 /**
@@ -170,9 +159,6 @@ export function buildModelList(baseModels: CuratedModel[]): {
  * The base list supplies pricing and context window (and, offline, a fallback
  * name) for the models it knows; the endpoint's display name always wins when
  * present.
- *
- * Shared by {@link BaseProvider.listModels} and the Claude Agent provider, which
- * merges the CLI's catalog rather than an HTTP endpoint's but needs the same rules.
  *
  * Ordering: base-known models first (in base order), then unknown remote models
  * alphabetically. An existing default keeps its flag; otherwise the first merged
@@ -493,7 +479,7 @@ export abstract class BaseProvider implements LlmProvider {
      * can inject a table without a real JSON file.
      */
     protected getProviderPrices(): ProviderPrices {
-        return MODEL_PRICES[this.name] ?? {};
+        return getProviderPrices(this.name);
     }
 
     /**

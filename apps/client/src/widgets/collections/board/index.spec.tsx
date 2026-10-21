@@ -3877,7 +3877,7 @@ describe("Board filtering", () => {
         // The matches arrive in score order; the board must keep branch order regardless.
         const note = await setup({ matched: [ "filtered3", "filtered1" ] });
 
-        expect(searchInSubtree).toHaveBeenCalledWith("#urgent", note.noteId);
+        expect(searchInSubtree).toHaveBeenCalledWith("#urgent", note.noteId, false);
         expect(cardTitles(0)).toEqual([ "First", "Third" ]);
         expect(cardTitles(1)).toEqual([]);
         expect(container.querySelectorAll(".board-column")).toHaveLength(2);

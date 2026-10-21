@@ -428,10 +428,15 @@ describe("AnthropicProvider recommendedModelIds", () => {
             "claude-sonnet-5", "claude-sonnet-4-6", "claude-sonnet-4-20250514",
             "claude-haiku-4-5-20251001"
         ]);
-        // One per family, newest each — Fable 5, Opus 4.8, Sonnet 5, Haiku 4.5.
+        // One per family, newest each — Opus 4.8, Sonnet 5, Haiku 4.5; Fable is never recommended.
         expect([...ids].sort()).toEqual([
-            "claude-fable-5", "claude-haiku-4-5-20251001", "claude-opus-4-8", "claude-sonnet-5"
+            "claude-haiku-4-5-20251001", "claude-opus-4-8", "claude-sonnet-5"
         ]);
+    });
+
+    it("never recommends a Mythos or Fable model", () => {
+        expect([...recommend(["claude-mythos-5-1", "claude-fable-5-1", "claude-fable-5", "claude-opus-5-5"])])
+            .toEqual(["claude-opus-5-5"]);
     });
 
     it("treats a snapshot date as the version, not a minor bump", () => {

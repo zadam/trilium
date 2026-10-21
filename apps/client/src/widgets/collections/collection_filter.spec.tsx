@@ -139,7 +139,7 @@ describe("useCollectionFilter", () => {
         });
         await settle();
 
-        expect(searchInSubtree).toHaveBeenCalledWith("#done", note.noteId);
+        expect(searchInSubtree).toHaveBeenCalledWith("#done", note.noteId, false);
         expect([ ...(currentFilter?.shownNoteIds ?? []) ]).toEqual([ "n1", "n2" ]);
         expect(currentFilter?.highlightedTokens).toEqual([ { token: "match", type: "plain" } ]);
 
@@ -170,8 +170,18 @@ describe("useCollectionFilter", () => {
         searchInSubtree.mockResolvedValue(matchResponse([ "n1" ]));
         const note = await mount({ persistedQuery: "#done" });
 
-        expect(searchInSubtree).toHaveBeenCalledWith("#done", note.noteId);
+        expect(searchInSubtree).toHaveBeenCalledWith("#done", note.noteId, false);
         expect(currentFilter?.shownNoteIds?.has("n1")).toBe(true);
+    });
+
+    it("searches archived notes only in a collection that shows them", async () => {
+        searchInSubtree.mockResolvedValue(matchResponse([ "n1" ]));
+        const note = await mount({
+            note: buildNote({ "title": "Board", "#includeArchived": "" }),
+            persistedQuery: "#done"
+        });
+
+        expect(searchInSubtree).toHaveBeenCalledWith("#done", note.noteId, true);
     });
 
     it("holds while a stored query resolves, and not for one submitted afterwards", async () => {

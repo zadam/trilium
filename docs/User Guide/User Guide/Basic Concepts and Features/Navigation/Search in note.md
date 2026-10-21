@@ -12,6 +12,7 @@ Local search allows you to search within the currently displayed note. 
 
 *   On desktop, press<kbd>Ctrl</kbd> + <kbd>F</kbd>.
 *   From the <a class="reference-link" href="../UI%20Elements/Note%20menu.md">Note menu</a>, select _Find_ in the row of icons at the top.
+*   In <a class="reference-link" href="Quick%20edit.md">Quick edit</a>, both open a search bar at the bottom of the popup, for the note in the popup.
 
 ## Interaction
 

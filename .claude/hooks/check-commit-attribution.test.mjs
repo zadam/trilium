@@ -103,14 +103,18 @@ ${TRAILER}
         for (const command of [
             "git commit -F missing.txt",
             "git commit -F \"$UNSET_COMMIT_ATTRIBUTION_DIR/msg.txt\"",
-            `cat > new.txt <<'EOF'
-fix(x): y
-
-${TRAILER}
-EOF
-git commit -F new.txt`
+            `printf 'fix(x): y\\n\\n${TRAILER}\\n' > printed.txt && git commit -F printed.txt`
         ]) {
             assert.match(blockReason(command), /Could not read the commit message file/, command);
+        }
+    });
+
+    it("reads a message file the same command writes from a heredoc", () => {
+        for (const command of [
+            `cat > new.txt <<'EOF'\nfix(x): y\n\n${TRAILER}\nEOF\ngit commit -F new.txt`,
+            `S=sub; cat <<"EOF" > "$S/new.txt"\nfix(x): y\n\n${TRAILER}\nEOF\ngit commit -F "$S/new.txt"`
+        ]) {
+            assert.deepEqual(checkCommand(command, dir), PASS, command);
         }
     });
 
@@ -137,12 +141,12 @@ describe("checkCommand with a model", () => {
     const MODEL = "Claude Opus 5.5";
     const ADD = `--trailer "${TRAILER}"`;
 
-    it("adds the trailer to a commit without it, or whose message file does not exist yet", () => {
+    it("adds the trailer to a commit without it, or whose message file a heredoc writes", () => {
         message("none.txt", "fix(x): y\n");
         for (const [ command, expected ] of [
             [ "git commit -m wip", `git -c trailer.ifexists=addIfDifferent commit ${ADD} -m wip` ],
-            [ "git -C sub commit -F none.txt -- a.ts",
-                `git -c trailer.ifexists=addIfDifferent -C sub commit ${ADD} -F none.txt -- a.ts` ],
+            [ "git -C sub commit -F ../none.txt -- a.ts",
+                `git -c trailer.ifexists=addIfDifferent -C sub commit ${ADD} -F ../none.txt -- a.ts` ],
             [ `cd ${dir} && git commit -F none.txt && git push`,
                 `cd ${dir} && git -c trailer.ifexists=addIfDifferent commit ${ADD} -F none.txt && git push` ],
             [ "cat > new.txt <<'EOF'\nfix(x): y\nEOF\ngit commit -F new.txt",
@@ -150,6 +154,11 @@ describe("checkCommand with a model", () => {
         ]) {
             assert.deepEqual(checkCommand(command, dir, MODEL), { action: "rewrite", command: expected, trailer: TRAILER });
         }
+    });
+
+    it("blocks a commit whose message file it cannot read, rather than risk a second trailer", () => {
+        assert.match(blockReason("printf 'fix(x): y\\n' > printed.txt && git commit -F printed.txt", MODEL),
+            /Could not read the commit message file/);
     });
 
     it("replaces a malformed Claude line only when it is the last `Assisted-by` line", () => {
@@ -161,6 +170,8 @@ describe("checkCommand with a model", () => {
         assert.equal(modeOf("git commit -m \"fix(x): y\" -m \"Assisted-by: Claude Opus 5.5\""), "replace");
         assert.equal(modeOf("git commit -m \"fix(x): y\" -m \"Assisted-by: Claude Code <noreply@anthropic.com>\""), "replace");
         assert.equal(modeOf(`git commit -F ${notLast}`), "addIfDifferent");
+        assert.equal(modeOf("cat > new.txt <<'EOF'\nfix(x): y\n\nAssisted-by: Claude Code\nEOF\ngit commit -F new.txt"),
+            "replace");
     });
 
     it("rewrites each commit that needs it and leaves the others as they are", () => {

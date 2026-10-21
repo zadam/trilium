@@ -25,9 +25,10 @@ import type { ContentBlockParam } from "@anthropic-ai/sdk/resources";
 import type { LlmMessage, LlmMessagePart, LlmStreamChunk } from "@triliumnext/commons";
 import { getLog } from "@triliumnext/core";
 import { attachmentPlaceholder, resolveAttachmentPart } from "@triliumnext/core/src/services/llm/attachment_content.js";
+import { getSelectedModel } from "@triliumnext/core/src/services/llm/index.js";
 import { buildNoteHint } from "@triliumnext/core/src/services/llm/note_hint.js";
 import { anthropicRecommendedIds } from "@triliumnext/core/src/services/llm/providers/anthropic.js";
-import { buildModelList, mergeModelLists, type RemoteModel } from "@triliumnext/core/src/services/llm/providers/base_provider.js";
+import { getProviderPrices, type ProviderPrices } from "@triliumnext/core/src/services/llm/providers/base_provider.js";
 import { buildSystemPrompt } from "@triliumnext/core/src/services/llm/system_prompt.js";
 import { TOOL_CALL_DECLINED_REASON, type ToolApprovals } from "@triliumnext/core/src/services/llm/tool_approval.js";
 import type { LlmProvider, LlmProviderConfig, ModelInfo, ModelPricing, StreamResult } from "@triliumnext/core/src/services/llm/types.js";
@@ -58,89 +59,20 @@ type SupportedImageMime = "image/png" | "image/jpeg" | "image/gif" | "image/webp
 const SUPPORTED_IMAGE_MIMES = new Set<string>(["image/png", "image/jpeg", "image/gif", "image/webp"]);
 
 /**
- * Curated Claude subscription models, mirroring Claude Code's own `/model`
- * picker (the Agent SDK accepts any of these). Pricing is zero because usage is
- * covered by the subscription — the per-turn `usage` chunk still reports the
- * API-equivalent cost as informational metadata from the agent's result.
- *
- * This is now the *metadata + fallback* list: {@link ClaudeAgentProvider.listModels}
- * discovers the actually-available models live from the CLI and enriches them
- * against these entries (context windows, legacy flags), falling back to this
- * list wholesale when the probe can't run (Claude Code not installed / not
- * logged in).
+ * Claude Code's own picker value for the model it recommends to this account. A chat
+ * on it sends no model, so Claude Code chooses.
  */
-const { models: AVAILABLE_MODELS, pricing: MODEL_PRICING } = buildModelList([
-    // ===== Current Models =====
-    {
-        id: "claude-fable-5",
-        name: "Claude Fable 5",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 1000000,
-        isSubscription: true
-    },
-    {
-        id: "claude-opus-4-8",
-        name: "Claude Opus 4.8",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 1000000,
-        isSubscription: true
-    },
-    {
-        id: "claude-opus-4-7",
-        name: "Claude Opus 4.7",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 1000000,
-        isSubscription: true
-    },
-    {
-        id: "claude-sonnet-5",
-        name: "Claude Sonnet 5",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 1000000,
-        isDefault: true,
-        isSubscription: true
-    },
-    {
-        id: "claude-haiku-4-5-20251001",
-        name: "Claude Haiku 4.5",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 200000,
-        isSubscription: true
-    },
-    // ===== Legacy Models =====
-    {
-        id: "claude-sonnet-4-6",
-        name: "Claude Sonnet 4.6",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 1000000,
-        isLegacy: true,
-        isSubscription: true
-    },
-    {
-        id: "claude-opus-4-6",
-        name: "Claude Opus 4.6",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 1000000,
-        isLegacy: true,
-        isSubscription: true
-    },
-    {
-        id: "claude-sonnet-4-5-20250929",
-        name: "Claude Sonnet 4.5",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 200000,
-        isLegacy: true,
-        isSubscription: true
-    },
-    {
-        id: "claude-opus-4-5-20251101",
-        name: "Claude Opus 4.5",
-        pricing: { input: 0, output: 0 },
-        contextWindow: 200000,
-        isLegacy: true,
-        isSubscription: true
-    }
-]);
+const DEFAULT_MODEL = "default";
+
+/**
+ * The catalog available without asking Claude Code anything. `chat.ts` needs a
+ * synchronous default for a chat that stores no model, and {@link DEFAULT_MODEL}
+ * is the one id that never goes out of date. {@link ClaudeAgentProvider.listModels}
+ * reads the real line-up from the CLI.
+ */
+const FALLBACK_MODELS: ModelInfo[] = [
+    { id: DEFAULT_MODEL, name: "Default", pricing: { input: 0, output: 0 }, isDefault: true, isSubscription: true }
+];
 
 const TITLE_MODEL = "claude-haiku-4-5-20251001";
 
@@ -214,15 +146,20 @@ function rememberSession(chatNoteId: string, entry: SessionEntry) {
 export class ClaudeAgentProvider implements LlmProvider {
     name = "claude-agent";
 
+    /**
+     * Free for every model the subscription covers: Claude Code's default, the
+     * models its catalog listed, and any Claude model the price table knows.
+     * Long-context variants (`claude-opus-4-8[1m]`) are looked up by their base id.
+     */
     getModelPricing(model: string): ModelPricing | undefined {
-        // Long-context variants (`claude-opus-4-8[1m]`) are the same model on the
-        // same plan, so they price like their base id rather than as unknowns.
-        const base = parseContextVariant(model)?.base;
-        return MODEL_PRICING[model] ?? (base ? MODEL_PRICING[base] : undefined);
+        const known = model === DEFAULT_MODEL
+            || subscriptionModelCache?.models.some(m => m.id === model)
+            || Object.hasOwn(getProviderPrices("anthropic"), baseModelId(model));
+        return known ? { input: 0, output: 0 } : undefined;
     }
 
     getAvailableModels(): ModelInfo[] {
-        return AVAILABLE_MODELS;
+        return FALLBACK_MODELS;
     }
 
     /**
@@ -238,7 +175,7 @@ export class ClaudeAgentProvider implements LlmProvider {
     recommendedModelIds(models: ModelInfo[]): Set<string> {
         const idsByBase = new Map<string, string[]>();
         for (const model of models) {
-            const base = parseContextVariant(model.id)?.base ?? model.id;
+            const base = baseModelId(model.id);
             idsByBase.set(base, [...(idsByBase.get(base) ?? []), model.id]);
         }
         const bases = anthropicRecommendedIds([...idsByBase.keys()].map(id => ({ id, name: id })));
@@ -246,17 +183,16 @@ export class ClaudeAgentProvider implements LlmProvider {
     }
 
     /**
-     * Dynamically list the models Claude Code actually offers on this host,
-     * enriched with curated metadata. Unlike the API providers there is no
+     * Dynamically list the models Claude Code actually offers on this host, with
+     * context windows from the committed price table. Unlike the API providers there is no
      * `/models` endpoint: the catalog is whatever the installed CLI reports for
      * the logged-in account (tier, version, any managed `availableModels`
      * allowlist), which the Agent SDK hands over via the `initialize` handshake.
      *
      * Cached for {@link SUBSCRIPTION_MODEL_TTL_MS}. A probe *failure* (Claude
      * Code not installed, not logged in, or timed out) propagates so the
-     * add/edit-provider screen surfaces an actionable error rather than masking
-     * it as success with the curated defaults. The curated list stays available
-     * via {@link getAvailableModels} as the static catalog used elsewhere.
+     * add/edit-provider screen surfaces an actionable error. There is no offline
+     * line-up to fall back to: {@link getAvailableModels} holds only Claude Code's default.
      */
     async listModels(): Promise<ModelInfo[]> {
         const now = Date.now();
@@ -264,14 +200,14 @@ export class ClaudeAgentProvider implements LlmProvider {
             return subscriptionModelCache.models;
         }
         if (!subscriptionModelInFlight) {
-            subscriptionModelInFlight = this.fetchAndMergeModels().finally(() => {
+            subscriptionModelInFlight = this.fetchModels().finally(() => {
                 subscriptionModelInFlight = undefined;
             });
         }
         return subscriptionModelInFlight;
     }
 
-    private async fetchAndMergeModels(): Promise<ModelInfo[]> {
+    private async fetchModels(): Promise<ModelInfo[]> {
         let sdkModels: SubscriptionModelSource[];
         try {
             sdkModels = await this.probeSupportedModels();
@@ -280,9 +216,9 @@ export class ClaudeAgentProvider implements LlmProvider {
             // so the caller can show an actionable message.
             throw new Error(describeAgentError(error));
         }
-        const merged = buildSubscriptionModelList(sdkModels, AVAILABLE_MODELS);
-        subscriptionModelCache = { models: merged, fetchedAt: Date.now() };
-        return merged;
+        const models = buildSubscriptionModelList(sdkModels, getProviderPrices("anthropic"));
+        subscriptionModelCache = { models, fetchedAt: Date.now() };
+        return models;
     }
 
     /**
@@ -394,10 +330,11 @@ export class ClaudeAgentProvider implements LlmProvider {
         const onAbort = () => abortController.abort();
         signal?.addEventListener("abort", onAbort, { once: true });
 
-        const model = config.model || AVAILABLE_MODELS.find(m => m.isDefault)?.id;
+        // A chat without a model, or on the default, sends none, so Claude Code chooses.
+        const model = config.model && config.model !== DEFAULT_MODEL ? config.model : undefined;
         // Report the friendly name in usage metadata (the chat pane renders it
         // verbatim); `model` itself must stay the raw ID for the query() call.
-        const modelDisplayName = describeModel(model);
+        const modelDisplayName = describeModel(model, config.providerId);
         let sessionId: string | undefined;
         let assistantText = "";
         /** The session this turn is driving, released (not closed) at the end. */
@@ -880,121 +817,65 @@ interface SubscriptionModelSource {
 }
 
 /**
- * Merge Claude Code's live catalog with the curated subscription metadata.
+ * Turn Claude Code's live catalog into Trilium's model list.
  *
  * The canonical wire id (`resolvedModel`) is preferred over the picker alias
- * (`value`) so a chat stores a stable, concrete model id that matches the
- * metered Anthropic provider's ids; aliases resolving to the same model are
- * deduped. The CLI's display name wins; curated entries supply the context
- * window and legacy flag for models they know, and unknown models come through
- * with whatever the CLI reported. Every row is a subscription model, so the
- * plan-covered invariants (zero pricing, no metered cost) are re-asserted
- * across the merged list.
+ * (`value`) so a chat stores a concrete model id that matches the metered
+ * Anthropic provider's ids; aliases resolving to the same model are deduped.
+ * Names and order are Claude Code's. `prices` (the price table's `anthropic`
+ * slice) supplies the context window, by the base id for a long-context variant
+ * it doesn't list. The subscription covers every model, so every row is free.
+ *
+ * {@link DEFAULT_MODEL} is not listed: it would win the dedupe and label its model
+ * "Default (recommended)". The model it resolves to is flagged as the default
+ * instead, or the first one when the catalog has no default.
  */
-export function buildSubscriptionModelList(sdkModels: SubscriptionModelSource[], curated: ModelInfo[]): ModelInfo[] {
-    const remote: RemoteModel[] = [];
+export function buildSubscriptionModelList(sdkModels: SubscriptionModelSource[], prices: ProviderPrices): ModelInfo[] {
+    const defaultId = sdkModels.find(m => m.value === DEFAULT_MODEL)?.resolvedModel;
+    const models: ModelInfo[] = [];
     const seen = new Set<string>();
     for (const model of sdkModels) {
-        // `default` is an account-level alias rather than a model: it resolves to
-        // whatever Claude Code currently recommends, and picking it would freeze
-        // that resolution into the chat under the unhelpful label "Default
-        // (recommended)". Worse, it sorts first, so the dedupe below would drop
-        // the concrete row pointing at the same model (`opus[1m]` → "Opus") and
-        // keep the alias's label instead. Trilium marks its own default via
-        // `isDefault`, so nothing is lost by skipping it.
-        if (model.value === "default") {
-            continue;
-        }
         const id = model.resolvedModel ?? model.value;
-        if (!id || seen.has(id)) {
+        if (model.value === DEFAULT_MODEL || !id || seen.has(id)) {
             continue;
         }
         seen.add(id);
-        remote.push({ id, name: model.displayName });
+        models.push({
+            id,
+            name: model.displayName ?? id,
+            contextWindow: prices[id]?.ctx ?? prices[baseModelId(id)]?.ctx,
+            pricing: { input: 0, output: 0 },
+            isSubscription: true
+        });
     }
 
-    return mergeModelLists(withContextVariants(curated, remote), remote).map(model => ({
-        ...model,
-        isSubscription: true,
-        pricing: model.pricing ?? { input: 0, output: 0 }
-    }));
+    const defaultIndex = Math.max(models.findIndex(m => m.id === defaultId), 0);
+    if (models.length > 0) {
+        models[defaultIndex] = { ...models[defaultIndex], isDefault: true };
+    }
+    return models;
 }
 
-/** A long-context model id: `claude-opus-4-8[1m]` → base `claude-opus-4-8`, label `1M`. */
-const CONTEXT_VARIANT = /\[([^\]]+)\]$/;
+/** The suffix of a long-context model id, such as `[1m]` in `claude-opus-4-8[1m]`. */
+const CONTEXT_VARIANT = /\[[^\]]+\]$/;
 
-function parseContextVariant(id: string): { base: string; label: string } | null {
-    const match = CONTEXT_VARIANT.exec(id);
-    if (!match) {
-        return null;
-    }
-    return { base: id.slice(0, match.index), label: match[1].toUpperCase() };
-}
-
-/**
- * Re-key curated metadata onto the long-context ids the CLI reports.
- *
- * Claude Code offers extended-context variants under a suffixed id
- * (`claude-opus-4-8[1m]`) that no curated entry carries, so the merge would file
- * them as unknown models — losing the context window and legacy flag, and leaving
- * anything that looks a model up by id (pricing, the usage row's display name)
- * with nothing but the raw id to show. A synthetic entry per variant, inserted
- * next to the model it varies so the curated ordering survives, makes them known.
- * The suffix stays part of the id: it is what selects the larger window when the
- * id is handed back to the SDK.
- */
-function withContextVariants(curated: ModelInfo[], remote: RemoteModel[]): ModelInfo[] {
-    const curatedIds = new Set(curated.map(m => m.id));
-    const variantsByBase = new Map<string, string[]>();
-    for (const model of remote) {
-        if (curatedIds.has(model.id)) {
-            continue;
-        }
-        const variant = parseContextVariant(model.id);
-        if (!variant || !curatedIds.has(variant.base)) {
-            continue;
-        }
-        variantsByBase.set(variant.base, [...(variantsByBase.get(variant.base) ?? []), model.id]);
-    }
-    if (variantsByBase.size === 0) {
-        return curated;
-    }
-
-    return curated.flatMap(entry => [
-        entry,
-        // A variant is a distinct row, so it must not inherit the base entry's
-        // default flag — that would leave two models claiming to be the default.
-        ...(variantsByBase.get(entry.id) ?? []).map(id => ({ ...entry, id, name: variantName(entry.name, id), isDefault: false }))
-    ]);
-}
-
-/** Offline fallback name for a variant row: `Claude Opus 4.8` + `[1m]` → `Claude Opus 4.8 (1M)`. */
-function variantName(baseName: string, id: string): string {
-    const variant = parseContextVariant(id);
-    return variant ? `${baseName} (${variant.label})` : baseName;
+/** The model a long-context id varies (`claude-opus-4-8[1m]` → `claude-opus-4-8`); other ids unchanged. */
+function baseModelId(id: string): string {
+    return id.replace(CONTEXT_VARIANT, "");
 }
 
 /**
- * Friendly name for the model id a chat turn was answered by, for the usage row.
- *
- * The live catalog is consulted first: it is the only source that names models
- * the curated list has never heard of, and it carries the CLI's own wording. It
- * is a cache though, so a chat sent before any model picker was opened falls
- * back to the curated list — by exact id, then by the base of a long-context id
- * — and finally to the raw id, which at least says which model answered.
+ * Friendly name for the model a chat turn ran on, for the usage row: the live
+ * catalog's, then the stored selection's (for a chat sent before this process
+ * listed the models), then the raw id. A turn on Claude Code's default has no id.
  */
-function describeModel(model: string | undefined): string | undefined {
+function describeModel(model: string | undefined, providerId: string | undefined): string | undefined {
     if (!model) {
         return undefined;
     }
-    const listed = subscriptionModelCache?.models.find(m => m.id === model)
-        ?? AVAILABLE_MODELS.find(m => m.id === model);
-    if (listed) {
-        return listed.name;
-    }
-    const base = parseContextVariant(model)?.base;
-    const curated = base ? AVAILABLE_MODELS.find(m => m.id === base) : undefined;
-    return curated ? variantName(curated.name, model) : model;
+    return subscriptionModelCache?.models.find(m => m.id === model)?.name
+        ?? getSelectedModel(providerId, model)?.name
+        ?? model;
 }
 
 /**

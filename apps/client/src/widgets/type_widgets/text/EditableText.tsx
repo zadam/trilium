@@ -58,6 +58,7 @@ import {
     openContentEmbedMenu,
     refreshEmbeddedNote,
     setupImageOpening,
+    setupTodoCheckboxTaps,
     showsAttachmentSave,
     watchContentEmbeds
 } from "./utils";
@@ -87,6 +88,7 @@ export default function EditableText({
     const focusedAttachmentIdRef = useRef<string | undefined>(undefined);
     const editorRef = useRef<CKTextEditor>(null);
     const stopWatchingEmbedsRef = useRef<(() => void) | undefined>(undefined);
+    const stopTodoCheckboxTapsRef = useRef<(() => void) | undefined>(undefined);
     const editorApiRef = useRef<CKEditorApi>(null);
     /** The open icon picker request and its balloon container, or `null` when none is open. */
     const [ iconPickerRequest, setIconPickerRequest ] = useState<IconPickerOpts & { container: HTMLElement } | null>(null);
@@ -278,6 +280,7 @@ export default function EditableText({
             if (!editorApiRef.current) return;
             parentComponent?.triggerCommand("showContentEmbedDialog", {
                 editorApi: editorApiRef.current,
+                sizeEditable: true
             });
         },
         loadEmbeddedNote(
@@ -421,7 +424,10 @@ export default function EditableText({
         });
     });
 
-    useEffect(() => () => stopWatchingEmbedsRef.current?.(), []);
+    useEffect(() => () => {
+        stopWatchingEmbedsRef.current?.();
+        stopTodoCheckboxTapsRef.current?.();
+    }, []);
 
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const editor = editorRef.current;
@@ -571,78 +577,6 @@ export default function EditableText({
         };
     }, []);
 
-    // Mobile-only: toggle todo-list checkboxes on the first tap and widen the
-    // hit area so finger taps don't have to land precisely on the ~16px box.
-    // Two problems are being solved:
-    //   1. iOS WKWebView doesn't dispatch `change` on the first tap inside a
-    //      contenteditable that isn't focused — users have to tap twice.
-    //   2. The native checkbox is too small to hit reliably with a finger.
-    // We accept any tap whose point lands within ~14px of the checkbox's
-    // bounding box (roughly a 44px touch target, matching Apple HIG), flip
-    // the checkbox, and fire a synthetic change event that CKEditor's
-    // TodoCheckboxChangeObserver picks up.
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container || !isMobile()) return;
-
-        const HIT_PAD = 14;
-        let tapped: HTMLInputElement | null = null;
-
-        const findCheckboxFromTap = (e: TouchEvent): HTMLInputElement | null => {
-            const target = e.target as HTMLElement | null;
-            if (!target) return null;
-
-            // Direct hit on the checkbox.
-            const direct = target.closest<HTMLInputElement>(
-                '.todo-list__label input[type="checkbox"]'
-            );
-            if (direct) return direct;
-
-            // Near-miss: tap landed on the label or its surroundings. Accept
-            // if the touch point is within HIT_PAD of the checkbox rect.
-            const label = target.closest(".todo-list__label");
-            if (!label) return null;
-            const checkbox = label.querySelector<HTMLInputElement>(
-                'input[type="checkbox"]'
-            );
-            if (!checkbox) return null;
-
-            const touch = e.touches[0] ?? e.changedTouches[0];
-            if (!touch) return null;
-            const rect = checkbox.getBoundingClientRect();
-            if (
-                touch.clientX >= rect.left - HIT_PAD &&
-                touch.clientX <= rect.right + HIT_PAD &&
-                touch.clientY >= rect.top - HIT_PAD &&
-                touch.clientY <= rect.bottom + HIT_PAD
-            ) {
-                return checkbox;
-            }
-            return null;
-        };
-
-        const onTouchStart = (e: TouchEvent) => {
-            tapped = findCheckboxFromTap(e);
-        };
-
-        const onTouchEnd = (e: TouchEvent) => {
-            if (!tapped) return;
-            const checkbox = tapped;
-            tapped = null;
-            // Suppress the synthesised click so we don't toggle twice.
-            e.preventDefault();
-            checkbox.checked = !checkbox.checked;
-            checkbox.dispatchEvent(new Event("change", { bubbles: true }));
-        };
-
-        container.addEventListener("touchstart", onTouchStart, { passive: true });
-        container.addEventListener("touchend", onTouchEnd, { passive: false });
-        return () => {
-            container.removeEventListener("touchstart", onTouchStart);
-            container.removeEventListener("touchend", onTouchEnd);
-        };
-    }, []);
-
     return (
         <>
             {note && !!templates && <CKEditor
@@ -673,6 +607,10 @@ export default function EditableText({
                             containerRef.current,
                             editor
                         );
+                        stopTodoCheckboxTapsRef.current?.();
+                        stopTodoCheckboxTapsRef.current = isMobile()
+                            ? setupTodoCheckboxTaps(containerRef.current)
+                            : undefined;
                     }
 
                     editor.plugins.get("FileUploadEditing")

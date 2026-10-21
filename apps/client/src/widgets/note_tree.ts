@@ -1360,7 +1360,10 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
                 for (const node of this.getNodesByBranch(branchRow)) {
                     if (node.isActive()) {
                         if (allBranchesDeleted) {
-                            const newActiveNode = node.getNextSibling() || node.getPrevSibling() || node.getParent();
+                            // `_hidden` stays in the tree under root, hidden only by CSS.
+                            const newActiveNode = [
+                                node.getNextSibling(), node.getPrevSibling(), node.getParent()
+                            ].find((candidate) => candidate && candidate.data.noteId !== "_hidden");
 
                             if (newActiveNode) {
                                 newActiveNode.setActive(true, { noEvents: true, noFocus: true });

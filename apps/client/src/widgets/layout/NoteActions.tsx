@@ -110,14 +110,14 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
         || (!isViewReadOnly && (isEventCalendar || isGeoMap || isTable));
     const isNormalViewMode = noteContext?.viewScope?.viewMode === "default";
     const hasBasicProperties = isNormalViewMode && !isHelpPage;
-    // The quick edit popup has no find bar, and the note map and a converted attachment open in the tab behind it.
+    // The note map and a converted attachment open in the tab behind the quick edit popup.
     const isInPopup = !!noteContext?.ntxId?.startsWith(POPUP_EDITOR_NTX_ID);
     const itemToFocusRef = useRef<ItemToFocus>(null);
     const showRevisions = useCommandTrigger("showRevisions");
     const searchInNote = useCommandTrigger("findInText");
     const showAttachments = useCommandTrigger("showAttachments");
     const showNoteMap = useCommandTrigger("toggleRibbonTabNoteMap");
-    const findAction: MenuCommandItem<CommandNames>[] = isInPopup ? [] : [ {
+    const findAction: MenuCommandItem<CommandNames>[] = [ {
         title: t("note_actions.search_in_note_short"), tooltip: t("note_actions.search_in_note"),
         uiIcon: "bx bx-file-find", keyboardShortcut: "findInText" as const, enabled: isSearchable,
         handler: () => searchInNote?.()
@@ -143,7 +143,7 @@ export function NoteContextMenu({ note, noteContext, leadingViewActions = [], tr
     const viewStrip = viewActions.length > 0 && <>
         <MenuItemRows items={viewActions.length > 1
             ? [ { kind: "actions", items: viewActions, className: "note-actions-strip tn-menu-actions-cards" } ]
-            // One action, as in the quick edit popup, is too few for a strip, so it is a row under its full name.
+            // One action, as in the quick edit popup on mobile, is too few for a strip, so it is a row under its full name.
             : viewActions.map((item) => ({ ...item, title: item.tooltip ?? item.title }))} />
         {(!isMobile || viewActions.length === 1) && <FormDropdownDivider />}
     </>;

@@ -11,7 +11,8 @@ import FindInCode from "./find_in_code.js";
 import { isIMEComposing } from "../services/shortcuts.js";
 import FindInHtml from "./find_in_html.js";
 import utils from "../services/utils.js";
-import type { EventData } from "../components/app_context.js";
+import type { EventData, EventNames } from "../components/app_context.js";
+import type NoteContext from "../components/note_context.js";
 
 const findWidgetDelayMillis = 200;
 const waitForEnter = findWidgetDelayMillis < 0;
@@ -110,9 +111,15 @@ const TPL = /*html*/`
 
 const SUPPORTED_NOTE_TYPES = ["text", "code", "render", "mindMap", "doc"];
 const SUPPORTED_NOTE_IDS = ["_backendLog"];
+/** The events that point a widget at a note context, which a pinned bar ignores for other contexts. */
+const CONTEXT_EVENTS: EventNames[] = [
+    "activeContextChanged", "noteSwitched", "noteSwitchedAndActivated", "setNoteContext"
+];
+
 export default class FindWidget extends NoteContextAwareWidget {
 
     private searchTerm: string | null;
+    private pinnedNtxId?: string;
 
     private textHandler: FindInText;
     private codeHandler: FindInCode;
@@ -133,14 +140,28 @@ export default class FindWidget extends NoteContextAwareWidget {
     private $replaceAllButton!: JQuery<HTMLElement>;
     private $replaceButton!: JQuery<HTMLElement>;
 
-    constructor() {
+    /**
+     * @param pinnedNtxId the note context to search, for a bar outside the tab row such as the one in
+     * the quick edit popup. Without it, the bar follows the context its split activates.
+     */
+    constructor(pinnedNtxId?: string) {
         super();
 
         this.searchTerm = null;
+        this.pinnedNtxId = pinnedNtxId;
 
         this.textHandler = new FindInText(this);
         this.codeHandler = new FindInCode(this);
         this.htmlHandler = new FindInHtml(this);
+    }
+
+    handleEvent<T extends EventNames>(name: T, data: EventData<T>) {
+        if (this.pinnedNtxId && CONTEXT_EVENTS.includes(name)
+                && (data as { noteContext?: NoteContext }).noteContext?.ntxId !== this.pinnedNtxId) {
+            return null;
+        }
+
+        return super.handleEvent(name, data);
     }
 
     async noteSwitched() {
@@ -192,6 +213,8 @@ export default class FindWidget extends NoteContextAwareWidget {
 
         this.$widget.on("keydown", async (e) => {
             if (e.key === "Escape") {
+                // Closing the bar is all Escape does here, not also closing a dialog the bar is in.
+                e.stopPropagation();
                 await this.closeSearch();
             }
         });

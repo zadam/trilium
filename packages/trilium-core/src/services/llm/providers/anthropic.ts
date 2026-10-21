@@ -175,10 +175,16 @@ export class AnthropicProvider extends BaseProvider {
 const ANTHROPIC_MODEL = /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{8})?$/;
 
 /**
+ * Claude families priced at the premium tier (2.5× Opus per token). They are
+ * never recommended; the user ticks them.
+ */
+const UNRECOMMENDED_FAMILIES = new Set(["fable", "mythos"]);
+
+/**
  * Recommend the newest version within each Claude family (Opus, Sonnet, Haiku,
- * Fable, and any future one) — one model per family, so today's Opus 4.8,
- * Sonnet 5, Haiku 4.5 and Fable 5. Older revisions and dated snapshots stay in
- * the picker, unchecked.
+ * and any future one) — one model per family, so today's Opus 4.8, Sonnet 5 and
+ * Haiku 4.5. Older revisions and dated snapshots stay in the picker, unchecked,
+ * as do the {@link UNRECOMMENDED_FAMILIES}.
  *
  * Exported because the Claude Code subscription provider serves the same
  * `claude-*` catalog and must apply the same rule, without inheriting from
@@ -188,7 +194,7 @@ export function anthropicRecommendedIds(models: ModelInfo[]): Set<string> {
     const byFamily = new Map<string, { id: string; version: number }[]>();
     for (const model of models) {
         const parsed = parseAnthropicModel(model.id);
-        if (!parsed) {
+        if (!parsed || UNRECOMMENDED_FAMILIES.has(parsed.family)) {
             continue;
         }
         const members = byFamily.get(parsed.family) ?? [];

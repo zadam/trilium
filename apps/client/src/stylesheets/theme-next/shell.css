@@ -473,6 +473,12 @@ body .calendar-dropdown-widget .calendar-body a:hover {
     text-decoration: unset;
 }
 
+body .calendar-dropdown-widget .calendar-body a.calendar-date-active {
+    border-radius: 6px;
+    background: var(--calendar-day-selected-background);
+    color: var(--calendar-day-selected-color) !important;
+}
+
 /*
  * Bookmarks folder popup
  */

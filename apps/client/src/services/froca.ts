@@ -421,8 +421,8 @@ class FrocaImpl implements Froca {
         return this.source.searchNoteIds(query, ancestorNoteId);
     }
 
-    searchInSubtree(query: string, ancestorNoteId: string) {
-        return this.source.searchInSubtree(query, ancestorNoteId);
+    searchInSubtree(query: string, ancestorNoteId: string, includeArchived: boolean) {
+        return this.source.searchInSubtree(query, ancestorNoteId, includeArchived);
     }
 
     lintSearch(searchString: string) {
@@ -490,9 +490,11 @@ const SERVER_SOURCE: FrocaSource = {
         const { default: search } = await import("./search.js");
         return await search.searchForNoteIds(query);
     },
-    searchInSubtree: (query, ancestorNoteId) => server.get<SearchWithTokensResponse>(
-        `search?searchString=${encodeURIComponent(query)}`
-        + `&ancestorNoteId=${encodeURIComponent(ancestorNoteId)}&includeTokens=true`),
+    searchInSubtree: (query, ancestorNoteId, includeArchived) =>
+        server.get<SearchWithTokensResponse>(
+            `search?searchString=${encodeURIComponent(query)}`
+            + `&ancestorNoteId=${encodeURIComponent(ancestorNoteId)}&includeTokens=true`
+            + `&includeArchivedNotes=${includeArchived}`),
     lintSearch: (searchString) => server.post<SearchLintResponse>("search/lint", { searchString }),
     getAttributeNames: (type, query) =>
         server.get<string[]>(`attribute-names/?type=${type}&query=${encodeURIComponent(query)}`),

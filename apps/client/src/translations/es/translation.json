@@ -58,8 +58,6 @@
     "help_on_links": "Ayuda sobre enlaces",
     "note": "Nota",
     "search_note": "buscar nota por su nombre",
-    "link_title_mirrors": "el título del enlace replica el título actual de la nota",
-    "link_title_arbitrary": "el título del enlace se puede cambiar arbitrariamente",
     "link_title": "Título del enlace",
     "button_add_link": "Agregar enlace",
     "anchor": "Ancla (opcional)",
@@ -90,7 +88,7 @@
     "execute_bulk_actions_many": "Aplicar a {{count}} notas",
     "execute_bulk_actions_other": "Aplicar a {{count}} notas",
     "bulk_actions_executed": "Las acciones en bloque se han ejecutado con éxito.",
-    "none_yet": "Ninguna todavía... agregue una acción haciendo clic en una de las disponibles arriba.",
+    "none_yet": "Todavía no hay acciones. Use «Añadir acción», más abajo, para elegir una.",
     "labels": "Etiquetas",
     "relations": "Relaciones",
     "notes": "Notas",
@@ -675,8 +673,8 @@
     "help_text_body3": "Alternativamente, puede añadir una etiqueta y una relación usando el botón <code>+</code> en el lado derecho.",
     "save_attributes": "Guardar atributos <enter>",
     "add_a_new_attribute": "Añadir un nuevo atributo",
-    "add_new_label": "Añadir nueva etiqueta <kbd data-command=\"addNewLabel\"></kbd>",
-    "add_new_relation": "Añadir nueva relación <kbd data-command=\"addNewRelation\"></kbd>",
+    "add_new_label": "Añadir nueva etiqueta... <kbd data-command=\"addNewLabel\"></kbd>",
+    "add_new_relation": "Añadir nueva relación... <kbd data-command=\"addNewRelation\"></kbd>",
     "add_new_label_definition": "Añadir nueva definición de etiqueta...",
     "add_new_relation_definition": "Añadir nueva definición de relación...",
     "placeholder": "Introduzca las etiquetas y relaciones aquí"
@@ -958,7 +956,10 @@
     "convert_to_markdown_successful": "La nota se ha convertido a Markdown.",
     "convert_to_text_successful": "La nota se ha convertido a nota de texto.",
     "note_attributes": "Atributos de la nota...",
-    "note_attributes_title": "Atributos de la nota"
+    "note_attributes_title": "Atributos de la nota",
+    "search_in_note_short": "Buscar",
+    "note_attachments_short": "Adjuntos",
+    "note_settings": "Configuración de la nota"
   },
   "onclick_button": {
     "no_click_handler": "El widget de botón '{{componentId}}' no tiene un controlador de clics definido"
@@ -996,7 +997,9 @@
     "error_unrecognized_command": "Comando no reconocido {{command}}",
     "note_revisions": "Revisiones de notas",
     "backlinks": "Vínculos de retroceso",
-    "content_language_switcher": "Idioma de contenido: {{language}}"
+    "content_language_switcher": "Idioma de contenido: {{language}}",
+    "insert_child_note_short": "Subnota",
+    "create_new_split_short": "Nueva división"
   },
   "note_icon": {
     "change_note_icon": "Cambiar icono de nota",
@@ -1131,18 +1134,8 @@
   },
   "search_definition": {
     "add_search_option": "Añadir opción de búsqueda:",
-    "search_string": "cadena de búsqueda",
-    "search_script": "script de búsqueda",
-    "ancestor": "antepasado",
-    "fast_search": "búsqueda rápida",
-    "fast_search_description": "La opción de búsqueda rápida desactiva la búsqueda de texto completo del contenido de las notas, lo que podría acelerar la búsqueda en bases de datos grandes.",
-    "include_archived": "incluir notas archivadas",
     "include_archived_notes_description": "Las notas archivadas se excluyen por defecto de los resultados de búsqueda; con esta opción se incluirán.",
-    "order_by": "ordenar por",
-    "limit": "límite",
     "limit_description": "Limitar el número de resultados",
-    "debug": "depurar",
-    "debug_description": "La depuración imprimirá información de depuración adicional en la consola para ayudar a depurar consultas complejas",
     "action": "acción",
     "search_button": "Buscar",
     "search_execute": "Buscar y ejecutar acciones",
@@ -1185,8 +1178,7 @@
     "include_archived_notes": "Incluir notas archivadas"
   },
   "limit": {
-    "limit": "Límite",
-    "take_first_x_results": "Tomar solo los primeros X resultados especificados."
+    "limit": "Límite"
   },
   "order_by": {
     "order_by": "Ordenar por",
@@ -2205,7 +2197,7 @@
     "add-script-launcher": "Añadir un lanzador de script",
     "add-custom-widget": "Añadir un widget personalizado",
     "add-spacer": "Añadir espaciador",
-    "delete": "Eliminar <kbd data-command=\"deleteNotes\"></kbd>",
+    "delete": "Eliminar... <kbd data-command=\"deleteNotes\"></kbd>",
     "reset": "Restaurar...",
     "move-to-visible-launchers": "Mover a lanzadores visibles",
     "move-to-available-launchers": "Mover a lanzadores disponibles",
@@ -3073,7 +3065,7 @@
     "zoom-to-fit": "Acercamiento para llenar",
     "zoom-reset": "Reiniciar acercamiento para llenar",
     "activate": "Reproducir {{- title}}",
-    "seek": "Buscar",
+    "seek": "Posición de reproducción",
     "forward-10s": "Avanzar 10 s",
     "previous-video": "Vídeo anterior: {{- title}}",
     "next-video": "Vídeo siguiente: {{- title}}",
@@ -3794,7 +3786,7 @@
     "description": "Guarda una revisión de cada nota, con un nombre opcional. Las notas protegidas se omiten salvo que haya una sesión protegida activa."
   },
   "convert_note": {
-    "convert_note": "Convertir",
+    "convert_note": "Convertir nota",
     "choose_conversion": "(elija una conversión)",
     "conversion_htmlToMarkdown": "Notas de texto → Notas Markdown (con pérdida)",
     "conversion_markdownToHtml": "Notas Markdown → Notas de texto",
@@ -4223,7 +4215,6 @@
       "insert-titled-tabs-that-show-one-panel-at-a-time": "Inserte pestañas con título que muestren un solo panel cada vez.",
       "multicolumn-layout": "Disposición multicolumna",
       "multicolumn-layout-toolbar": "Barra de herramientas de disposición multicolumna",
-      "multiple-column-layout": "Disposición de varias columnas",
       "0-columns": "%0 columnas",
       "column-layout": "Disposición en columnas",
       "0-columns-layout": "Disposición de %0 columnas",
@@ -4281,7 +4272,7 @@
     "inheritable": "Heredable: se aplica a esta nota y a todo su subárbol",
     "delete": "Eliminar este atributo",
     "delete_confirm": "¿Eliminar el atributo «{{name}}»?",
-    "add_definition": "Añadir una nueva definición",
+    "add_definition": "Añadir definición",
     "no_target": "Sin nota de destino",
     "no_value": "Sin valor",
     "change_target": "Cambiar la nota de destino",
@@ -4915,5 +4906,8 @@
     "default_parent": "Ubicación predeterminada de las notas creadas",
     "default_parent_description": "Dónde se colocan cuando no se elige otra ubicación, como al crearlas mediante la compleción con @ en una nota de texto.",
     "default_parent_placeholder": "Dónde se crean"
+  },
+  "hide_keyboard_button": {
+    "title": "Ocultar el teclado"
   }
 }

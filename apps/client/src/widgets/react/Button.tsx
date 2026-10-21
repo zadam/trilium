@@ -1,7 +1,7 @@
 import "./Button.css";
 
 import type { Tooltip } from "bootstrap";
-import type { ComponentChildren, CSSProperties, MouseEventHandler, RefObject } from "preact";
+import type { ButtonHTMLAttributes, ComponentChildren, CSSProperties, MouseEventHandler, RefObject } from "preact";
 import { useMemo, useRef } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
@@ -16,7 +16,7 @@ import { renderShortcutKbds } from "./shortcut_kbd";
 
 const cachedIsMobile = isMobile();
 
-export interface ButtonProps {
+export interface ButtonProps extends Pick<ButtonHTMLAttributes<HTMLButtonElement>, "tabIndex" | "aria-pressed"> {
     name?: string;
     /** Reference to the button element. Mostly useful for requesting focus. */
     buttonRef?: RefObject<HTMLButtonElement | null>;
@@ -40,6 +40,8 @@ export interface ButtonProps {
     title?: string;
     /** Why the button is off, shown on hover while `disabled`. Ignored otherwise. */
     disabledTooltip?: string;
+    /** Marks a toggle button as on or off for assistive technology. */
+    "aria-pressed"?: boolean;
 }
 
 function Button({ name, buttonRef, className, text, onClick, keyboardShortcut, icon, kind, disabled, disabledTooltip, size, style, triggerCommand, ...restProps }: ButtonProps) {

@@ -57,6 +57,7 @@ import {
     loadEmbeddedNote,
     openContentEmbedMenu,
     refreshEmbeddedNote,
+    setupTodoCheckboxTaps,
     showsAttachmentSave,
     watchContentEmbeds
 } from "./utils";
@@ -587,5 +588,122 @@ describe("getAttachmentHref", () => {
         expect(await getAttachmentHref("att1"))
             .toBe("#root/owner?viewMode=attachments&attachmentId=att1");
         expect(await getAttachmentHref("att1")).toBeNull();
+    });
+});
+
+describe("setupTodoCheckboxTaps", () => {
+    let container: HTMLDivElement;
+    let cleanup: () => void;
+
+    beforeEach(() => {
+        // Two items, their 16px checkboxes in the gutter of the list, 24px apart.
+        container = document.createElement("div");
+        container.innerHTML = `
+            <ul class="todo-list">
+                <li><span class="todo-list__label"><span contenteditable="false"><input type="checkbox"></span></span>First</li>
+                <li><span class="todo-list__label"><span contenteditable="false"><input type="checkbox"></span></span>Second</li>
+            </ul>`;
+        document.body.appendChild(container);
+        for (const [ index, checkbox ] of checkboxes().entries()) {
+            const top = 100 + index * 24;
+            vi.spyOn(checkbox, "getBoundingClientRect").mockReturnValue(
+                { left: 15, right: 31, top, bottom: top + 16, width: 16, height: 16 } as DOMRect);
+        }
+        cleanup = setupTodoCheckboxTaps(container);
+    });
+
+    afterEach(() => {
+        cleanup();
+        container.remove();
+        document.getElementById("root-widget")?.remove();
+    });
+
+    function checkboxes() {
+        return [ ...container.querySelectorAll<HTMLInputElement>("input[type=checkbox]") ];
+    }
+
+    function touch(target: Element, type: string, clientX: number, clientY: number) {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        const point = [ { clientX, clientY } ];
+        Object.defineProperty(event, "touches", { value: type === "touchend" ? [] : point });
+        Object.defineProperty(event, "changedTouches", { value: point });
+        target.dispatchEvent(event);
+        return event;
+    }
+
+    function tap(target: Element, clientX: number, clientY: number) {
+        const start = touch(target, "touchstart", clientX, clientY);
+        const end = touch(target, "touchend", clientX, clientY);
+        return { start, end };
+    }
+
+    it("toggles the nearest checkbox, cancelling the touch so the editor does not take the focus", () => {
+        const list = container.querySelector("ul");
+        expect(list).not.toBeNull();
+        if (!list) return;
+        const onChange = vi.fn();
+        container.addEventListener("change", onChange);
+        const [ first, second ] = checkboxes();
+
+        const direct = tap(first, 23, 108);
+        expect(first.checked).toBe(true);
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(direct.start.defaultPrevented).toBe(true);
+        expect(direct.end.defaultPrevented).toBe(true);
+
+        // 6px left of the first box, outside every label.
+        const nearMiss = tap(list, 9, 108);
+        expect(first.checked).toBe(false);
+        expect(second.checked).toBe(false);
+        expect(nearMiss.start.defaultPrevented).toBe(true);
+
+        // Between the rows, closer to the second box.
+        tap(list, 23, 122);
+        expect(first.checked).toBe(false);
+        expect(second.checked).toBe(true);
+    });
+
+    it("blurs a focused editor whose keyboard is closed, so the toggle does not bring it back", () => {
+        const editable = document.createElement("div");
+        editable.tabIndex = 0;
+        container.appendChild(editable);
+        const root = document.createElement("div");
+        root.id = "root-widget";
+        document.body.appendChild(root);
+        const [ first ] = checkboxes();
+
+        root.classList.add("virtual-keyboard-opened");
+        editable.focus();
+        tap(first, 23, 108);
+        expect(first.checked).toBe(true);
+        expect(document.activeElement).toBe(editable);
+
+        root.classList.remove("virtual-keyboard-opened");
+        tap(first, 23, 108);
+        expect(first.checked).toBe(false);
+        expect(document.activeElement).not.toBe(editable);
+    });
+
+    it("leaves taps away from a checkbox, drags and long presses alone", () => {
+        const [ first ] = checkboxes();
+        const text = container.querySelector("li");
+        expect(text).not.toBeNull();
+        if (!text) return;
+
+        const away = tap(text, 120, 108);
+        expect(first.checked).toBe(false);
+        expect(away.start.defaultPrevented).toBe(false);
+        expect(away.end.defaultPrevented).toBe(false);
+
+        touch(first, "touchstart", 23, 108);
+        touch(first, "touchmove", 23, 140);
+        touch(first, "touchend", 23, 140);
+        expect(first.checked).toBe(false);
+
+        // A long press.
+        touch(first, "touchstart", 23, 108);
+        first.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true }));
+        touch(first, "touchend", 23, 108);
+        expect(first.checked).toBe(false);
     });
 });

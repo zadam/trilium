@@ -389,7 +389,7 @@ describe("FNote attributes & inheritance", () => {
 
     it("__getCachedAttributes inherits from parents and templates, and breaks cycles", () => {
         // fresh notes that are NOT pre-cached by easy-froca for the parent/template relationship
-        const template = buildNote({ id: "tmplNote", title: "template", "#fromTemplate(inheritable)": "yes", "#template": "marker" });
+        const template = buildNote({ id: "tmplNote", title: "template", "#fromTemplate(inheritable)": "yes", "#template": "marker", "#workspaceTemplate": "" });
         const parent = buildNote({ id: "parentInh", title: "parent", "#fromParent(inheritable)": "p" });
         const instance = buildNote({ id: "instanceNote", title: "instance", "~template": "tmplNote" });
         // wire parent
@@ -412,8 +412,10 @@ describe("FNote attributes & inheritance", () => {
         const names = instance.getAttributes().map((a) => a.name);
         expect(names).toContain("fromParent");
         expect(names).toContain("fromTemplate");
-        // the "template" marker label must not be inherited
-        expect(instance.getAttributes("label").some((a) => a.name === "template")).toBe(false);
+        // the marker labels must not be inherited
+        const labelNames = instance.getAttributes("label").map((a) => a.name);
+        expect(labelNames).not.toContain("template");
+        expect(labelNames).not.toContain("workspaceTemplate");
     });
 
     it("__getCachedAttributes ignores a template relation pointing at the note itself", () => {

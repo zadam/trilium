@@ -1,6 +1,6 @@
 import "./PopupEditor.css";
 
-import { ComponentChildren } from "preact";
+import { ComponentChildren, type RefObject } from "preact";
 import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../components/app_context";
@@ -8,10 +8,13 @@ import NoteContext from "../../components/note_context";
 import FNote from "../../entities/fnote";
 import froca from "../../services/froca";
 import { t } from "../../services/i18n";
+import keyboard_actions from "../../services/keyboard_actions";
 import type { ViewScope } from "../../services/link";
+import shortcutService, { removeIndividualBinding, type ShortcutBinding } from "../../services/shortcuts";
 import tree from "../../services/tree";
 import utils from "../../services/utils";
 import NoteList from "../collections/NoteList";
+import FindWidget from "../find";
 import FormattingToolbar from "../layout/FormattingToolbar";
 import NoteActions from "../layout/NoteActions";
 import NoteTypeSwitcher from "../layout/NoteTypeSwitcher";
@@ -19,7 +22,10 @@ import TitleRow from "../layout/TitleRow";
 import NoteDetail from "../NoteDetail";
 import PromotedAttributes from "../PromotedAttributes";
 import { DropdownPanel, type DropdownHandle } from "../react/Dropdown";
-import { useContainedLinkNavigation, useDetachedNoteContext, useNoteContext, useNoteLabel, useTriliumEvent } from "../react/hooks";
+import {
+    useContainedLinkNavigation, useDetachedNoteContext, useLegacyWidget, useNoteContext, useNoteLabel,
+    useTriliumEvent
+} from "../react/hooks";
 import Modal from "../react/Modal";
 import { NoteContextContext, ParentComponent, POPUP_EDITOR_NTX_ID } from "../react/react_utils";
 import { BacklinksWidget, useBacklinkCount } from "../sidebar/Backlinks";
@@ -98,6 +104,8 @@ export default function PopupEditor({ ntxId = POPUP_EDITOR_NTX_ID, openCommand =
         }
     }, [ noteContext ]);
     useContainedLinkNavigation(modalRef, navigateInPopup);
+    useFindShortcut(modalRef, ntxId);
+    const [ findBar ] = useLegacyWidget(() => new FindWidget(ntxId), { noteContext });
 
     // Add a global class to be able to handle issues with z-index due to rendering in a popup.
     useEffect(() => {
@@ -208,6 +216,7 @@ export default function PopupEditor({ ntxId = POPUP_EDITOR_NTX_ID, openCommand =
                     </div>
                     {switchable && <NoteTypeSwitcher note={noteContext.note} />}
                     {isMobile && <MobileEditorToolbar />}
+                    {findBar}
                 </Modal>
             </DialogWrapper>
         </NoteContextContext.Provider>
@@ -256,6 +265,34 @@ function BacklinksInPopup({ note, onNavigate }: { note: FNote, onNavigate: (note
             <BacklinksWidget note={note} />
         </div>
     );
+}
+
+/**
+ * Binds `findInText` on the popup for its own context. The window binding targets the active tab,
+ * which is the one behind the popup.
+ */
+function useFindShortcut(modalRef: RefObject<HTMLDivElement | null>, ntxId: string) {
+    useEffect(() => {
+        const modal = modalRef.current;
+        if (!modal) return;
+
+        let bindings: ShortcutBinding[] = [];
+        let isDisposed = false;
+        void keyboard_actions.getAction("findInText", true).then((action) => {
+            if (isDisposed) return;
+            bindings = (action?.effectiveShortcuts ?? []).flatMap((shortcut) =>
+                shortcutService.bindElShortcut($(modal), shortcut, () => {
+                    void appContext.triggerCommand("findInText", { ntxId });
+                }) ?? []);
+        });
+
+        return () => {
+            isDisposed = true;
+            for (const binding of bindings) {
+                removeIndividualBinding(binding);
+            }
+        };
+    }, [ modalRef, ntxId ]);
 }
 
 function syncPopupClasses() {

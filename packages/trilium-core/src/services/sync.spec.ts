@@ -453,9 +453,15 @@ describe("sync service", () => {
         await expect(runSync()).resolves.toEqual({ success: false, message: "Got no response." });
     });
 
-    it("reports a connection failure without a stack-trace message", async () => {
-        config.loginThrows = new Error("connect ECONNREFUSED 127.0.0.1:8080");
-        await expect(runSync()).resolves.toEqual({ success: false, message: "No connection to sync server." });
+    it("reports a connection failure together with its cause", async () => {
+        config.loginThrows = new Error(
+            "Request to POST https://sync.example:8443/api/login/sync failed, error: connect ECONNREFUSED 10.0.0.5:8443"
+        );
+        await expect(runSync()).resolves.toEqual({
+            success: false,
+            message: "No connection to sync server: Request to POST https://sync.example:8443/api/login/sync failed, "
+                + "error: connect ECONNREFUSED 10.0.0.5:8443"
+        });
     });
 
     it("reports other sync errors with their message", async () => {
@@ -481,10 +487,14 @@ describe("sync service", () => {
             );
         });
 
-        it("records connection failures with the user-facing message", async () => {
-            config.loginThrows = new Error("connect ECONNREFUSED 127.0.0.1:8080");
+        it("records connection failures with their cause and the host redacted", async () => {
+            config.loginThrows = new Error(
+                "Request to POST https://sync.example:8443/api/login/sync failed, error: 502 Bad Gateway"
+            );
             await expect(runSync()).resolves.toMatchObject({ success: false });
-            expect(syncService.getLastSyncError()).toBe("No connection to sync server.");
+            expect(syncService.getLastSyncError()).toBe(
+                "No connection to sync server: Request to POST https://[redacted]/api/login/sync failed, error: 502 Bad Gateway"
+            );
         });
 
         it("clears the recorded error once a subsequent sync succeeds", async () => {

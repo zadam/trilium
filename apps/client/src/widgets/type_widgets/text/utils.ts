@@ -380,6 +380,96 @@ export function setupImageOpening(container: HTMLDivElement, singleClickOpens: b
     });
 }
 
+/**
+ * Toggles a to-do checkbox on a tap within `TODO_CHECKBOX_HIT_PAD` of it, about a 44px target.
+ * The touch is cancelled from `touchstart` on, as the browser focuses the editor before `touchend`
+ * and so opens the keyboard. The iOS WebView also dispatches no `change` on a first tap into an
+ * unfocused editor. The synthetic `change` reaches CKEditor's `TodoCheckboxChangeObserver`.
+ */
+export function setupTodoCheckboxTaps(container: HTMLElement) {
+    let tapped: HTMLInputElement | null = null;
+    let startX = 0;
+    let startY = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+        const touch = e.touches[0];
+        const target = e.target instanceof Element ? e.target : null;
+        // The checkbox sits in the list's gutter, outside its label and item, so the tap is
+        // matched by position rather than by its target.
+        tapped = touch && e.touches.length === 1 && target?.closest(".todo-list")
+            ? findTodoCheckboxAt(container, touch.clientX, touch.clientY)
+            : null;
+        startX = touch?.clientX ?? 0;
+        startY = touch?.clientY ?? 0;
+        if (tapped) {
+            e.preventDefault();
+        }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+        const touch = e.touches[0];
+        if (touch && Math.hypot(touch.clientX - startX, touch.clientY - startY) > TAP_SLOP) {
+            tapped = null;
+        }
+    };
+
+    // A long press is no tap.
+    const onContextMenu = () => {
+        tapped = null;
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+        if (!tapped) return;
+        const checkbox = tapped;
+        tapped = null;
+        e.preventDefault();
+        // The system back gesture closes the keyboard but leaves the editor focused, and the
+        // browser opens the keyboard again as the toggle re-renders the focused editor.
+        const active = document.activeElement;
+        const isKeyboardOpen = document.getElementById("root-widget")
+            ?.classList.contains("virtual-keyboard-opened");
+        if (active instanceof HTMLElement && container.contains(active) && !isKeyboardOpen) {
+            active.blur();
+        }
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+
+    container.addEventListener("touchstart", onTouchStart, { passive: false });
+    container.addEventListener("touchmove", onTouchMove, { passive: true });
+    container.addEventListener("touchend", onTouchEnd, { passive: false });
+    container.addEventListener("contextmenu", onContextMenu);
+    return () => {
+        container.removeEventListener("touchstart", onTouchStart);
+        container.removeEventListener("touchmove", onTouchMove);
+        container.removeEventListener("touchend", onTouchEnd);
+        container.removeEventListener("contextmenu", onContextMenu);
+    };
+}
+
+const TODO_CHECKBOX_HIT_PAD = 14;
+/** How far a touch can move and still count as a tap rather than a scroll. */
+const TAP_SLOP = 10;
+
+/** The to-do checkbox nearest to the point, if it lies within `TODO_CHECKBOX_HIT_PAD` of it. */
+function findTodoCheckboxAt(container: HTMLElement, x: number, y: number) {
+    let nearest: HTMLInputElement | null = null;
+    let nearestDistance = Infinity;
+    const checkboxes = container.querySelectorAll<HTMLInputElement>(
+        '.todo-list__label input[type="checkbox"]');
+    for (const checkbox of checkboxes) {
+        const rect = checkbox.getBoundingClientRect();
+        const dx = Math.max(rect.left - x, 0, x - rect.right);
+        const dy = Math.max(rect.top - y, 0, y - rect.bottom);
+        const distance = Math.hypot(dx, dy);
+        if (dx <= TODO_CHECKBOX_HIT_PAD && dy <= TODO_CHECKBOX_HIT_PAD && distance < nearestDistance) {
+            nearest = checkbox;
+            nearestDistance = distance;
+        }
+    }
+    return nearest;
+}
+
 async function openImageInCurrentTab($img: JQuery<HTMLElement>) {
     const parsedImage  = await parseFromImage($img);
 

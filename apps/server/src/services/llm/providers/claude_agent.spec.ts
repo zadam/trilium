@@ -38,6 +38,10 @@ vi.mock("../../port.js", () => ({ default: 8080 }));
 const buildNoteHintMock = vi.hoisted(() => vi.fn((noteId: string): string | null => `NOTE_META(${noteId})`));
 vi.mock("@triliumnext/core/src/services/llm/note_hint.js", () => ({ buildNoteHint: buildNoteHintMock }));
 
+// The stored selection names the models a chat can use; no provider is configured here.
+const getSelectedModelMock = vi.hoisted(() => vi.fn((_providerId: string | undefined, _modelId: string): { id: string; name: string } | undefined => undefined));
+vi.mock("@triliumnext/core/src/services/llm/index.js", () => ({ getSelectedModel: getSelectedModelMock }));
+
 // BYO binary resolution shells out to the user's `claude`; stub it so tests
 // don't depend on a real install. Resolves a path by default; can be made to
 // reject (missing binary) per-test.
@@ -283,7 +287,7 @@ describe("ClaudeAgentProvider.chatChunks", () => {
                 type: "usage",
                 // No cost even though the SDK result carries total_cost_usd: usage is
                 // covered by the subscription, so a per-turn dollar figure isn't shown.
-                usage: { promptTokens: 100, completionTokens: 40, totalTokens: 140, model: "Claude Sonnet 5", provider: "claude-agent" }
+                usage: { promptTokens: 100, completionTokens: 40, totalTokens: 140, provider: "claude-agent" }
             },
             { type: "done" }
         ]);
@@ -291,20 +295,34 @@ describe("ClaudeAgentProvider.chatChunks", () => {
 
     it("reports the friendly model name in usage, falling back to the raw ID for unknown models", async () => {
         const provider = new ClaudeAgentProvider();
-        const usageModel = async (config: { model?: string }) => {
+        const usageModel = async (config: { providerId?: string; model?: string }) => {
             scriptAgent([successResult()]);
             const chunks = await collect(provider.chatChunks([{ role: "user", content: "hi" }], config));
             const usage = chunks.find(c => c.type === "usage");
             return usage?.type === "usage" ? usage.usage.model : undefined;
         };
+        getSelectedModelMock.mockImplementation((providerId, modelId) =>
+            providerId === "claude-1" && modelId === "claude-opus-4-8[1m]" ? { id: modelId, name: "Opus 4.8 (1M context)" } : undefined);
 
-        // A known model ID is mapped to its display name (the chat pane renders it verbatim).
-        expect(await usageModel({ model: "claude-fable-5" })).toBe("Claude Fable 5");
-        // A long-context ID is named after the model it varies, rather than falling
-        // through to the raw `claude-opus-4-8[1m]`.
-        expect(await usageModel({ model: "claude-opus-4-8[1m]" })).toBe("Claude Opus 4.8 (1M)");
-        // An unrecognized ID passes through unchanged rather than becoming undefined.
-        expect(await usageModel({ model: "some-unknown-model" })).toBe("some-unknown-model");    });
+        try {
+            // The stored selection names the model (the chat pane renders it verbatim).
+            expect(await usageModel({ providerId: "claude-1", model: "claude-opus-4-8[1m]" })).toBe("Opus 4.8 (1M context)");
+            // An ID no selection names passes through unchanged rather than becoming undefined.
+            expect(await usageModel({ providerId: "claude-1", model: "some-unknown-model" })).toBe("some-unknown-model");
+        } finally {
+            getSelectedModelMock.mockReset();
+        }
+    });
+
+    it("leaves the model to Claude Code when the chat names none, or names the default", async () => {
+        const provider = new ClaudeAgentProvider();
+        for (const config of [{}, { model: "default" }]) {
+            queryMock.mockClear();
+            scriptAgent([successResult()]);
+            await collect(provider.chatChunks([{ role: "user", content: "hi" }], config));
+            expect(queryMock.mock.calls[0][0].options.model).toBeUndefined();
+        }
+    });
 
     it("ignores subagent traffic (non-null parent_tool_use_id)", async () => {
         scriptAgent([
@@ -739,11 +757,14 @@ describe("ClaudeAgentProvider.chatChunks", () => {
         expect(queryMock).not.toHaveBeenCalled();
     });
 
-    it("exposes the subscription model list, zero pricing, and no chat() implementation", () => {
+    it("exposes only Claude Code's default offline, zero pricing, and no chat() implementation", () => {
         const provider = new ClaudeAgentProvider();
-        const models = provider.getAvailableModels();
-        expect(models.some(m => m.id === "claude-sonnet-5" && m.isDefault)).toBe(true);
-        expect(provider.getModelPricing("claude-sonnet-5")).toEqual(expect.objectContaining({ input: 0, output: 0 }));
+        expect(provider.getAvailableModels()).toEqual([
+            { id: "default", name: "Default", pricing: { input: 0, output: 0 }, isDefault: true, isSubscription: true }
+        ]);
+        // Any model the price table knows is free on the subscription, as is the default.
+        expect(provider.getModelPricing("claude-sonnet-5-5")).toEqual({ input: 0, output: 0 });
+        expect(provider.getModelPricing("default")).toEqual({ input: 0, output: 0 });
         // A long-context variant prices like its base model, not as an unknown.
         expect(provider.getModelPricing("claude-opus-4-8[1m]")).toEqual(expect.objectContaining({ input: 0, output: 0 }));
         expect(provider.getModelPricing("no-such-model")).toBeUndefined();
@@ -1414,64 +1435,43 @@ describe("transcript helpers", () => {
 });
 
 describe("buildSubscriptionModelList", () => {
-    const curated = [
-        { id: "claude-sonnet-5", name: "Claude Sonnet 5", pricing: { input: 0, output: 0 }, contextWindow: 1000000, isDefault: true, isSubscription: true },
-        { id: "claude-opus-4-6", name: "Claude Opus 4.6", pricing: { input: 0, output: 0 }, contextWindow: 1000000, isLegacy: true, isSubscription: true },
-        { id: "claude-haiku-4-5-20251001", name: "Claude Haiku 4.5", pricing: { input: 0, output: 0 }, contextWindow: 200000, isSubscription: true }
-    ];
+    const prices = {
+        "claude-opus-5-5": { input: 5, output: 25, ctx: 1000000 },
+        "claude-sonnet-5": { input: 3, output: 15, ctx: 1000000 },
+        "claude-haiku-4-5-20251001": { input: 1, output: 5, ctx: 200000 }
+    };
 
-    it("resolves aliases to canonical ids, dedupes, and keeps curated metadata", () => {
-        const merged = buildSubscriptionModelList([
+    it("resolves aliases to canonical ids, dedupes, and takes the context window from the price table", () => {
+        const models = buildSubscriptionModelList([
             { value: "sonnet", resolvedModel: "claude-sonnet-5", displayName: "Sonnet 5" },
             { value: "claude-sonnet-5", displayName: "Sonnet 5 (again)" }, // dup of the resolved alias → dropped
-            { value: "claude-opus-4-6", displayName: "Opus 4.6" }
-        ], curated);
+            { value: "claude-haiku-4-5-20251001", displayName: "Haiku 4.5" },
+            { value: "claude-fable-9" }
+        ], prices);
 
-        expect(merged.map(m => m.id)).toEqual(["claude-sonnet-5", "claude-opus-4-6"]);
-        // The CLI's display name wins; curated flags/context window survive.
-        expect(merged[0]).toMatchObject({ name: "Sonnet 5", isDefault: true, isSubscription: true, contextWindow: 1000000, pricing: { input: 0, output: 0 } });
-        expect(merged[1]).toMatchObject({ id: "claude-opus-4-6", isLegacy: true });
-        // Haiku is curated but absent from the live catalog → dropped.
-        expect(merged.some(m => m.id === "claude-haiku-4-5-20251001")).toBe(false);
+        // Claude Code's order and names; the subscription makes every row free, whatever the API costs.
+        expect(models).toEqual([
+            { id: "claude-sonnet-5", name: "Sonnet 5", contextWindow: 1000000, pricing: { input: 0, output: 0 }, isSubscription: true, isDefault: true },
+            { id: "claude-haiku-4-5-20251001", name: "Haiku 4.5", contextWindow: 200000, pricing: { input: 0, output: 0 }, isSubscription: true },
+            // A model the price table has never heard of keeps its id as its name and has no context window.
+            { id: "claude-fable-9", name: "claude-fable-9", contextWindow: undefined, pricing: { input: 0, output: 0 }, isSubscription: true }
+        ]);
     });
 
-    it("passes through unknown models with subscription invariants and no pricing/context window", () => {
-        const merged = buildSubscriptionModelList([
+    it("flags the model the `default` alias resolves to, without listing the alias itself", () => {
+        const models = buildSubscriptionModelList([
+            { value: "default", resolvedModel: "claude-opus-5-5", displayName: "Default (recommended)" },
             { value: "sonnet", resolvedModel: "claude-sonnet-5", displayName: "Sonnet 5" },
-            { value: "claude-fable-9", displayName: "Claude Fable 9" }
-        ], curated);
+            { value: "opus", resolvedModel: "claude-opus-5-5", displayName: "Opus 5.5" }
+        ], prices);
 
-        const fable = merged.find(m => m.id === "claude-fable-9");
-        expect(fable).toEqual({ id: "claude-fable-9", name: "Claude Fable 9", contextWindow: undefined, isSubscription: true, pricing: { input: 0, output: 0 } });
+        expect(models.map(m => m.name)).toEqual(["Sonnet 5", "Opus 5.5"]);
+        expect(models.filter(m => m.isDefault).map(m => m.id)).toEqual(["claude-opus-5-5"]);
     });
 
-    it("drops the `default` alias so the concrete row it shadows keeps its own name", () => {
-        // Claude Code lists `default` first, resolving to the same id as `opus[1m]`.
-        // Kept, it would win the dedupe and label the row "Default (recommended)".
-        const merged = buildSubscriptionModelList([
-            { value: "default", resolvedModel: "claude-opus-4-6[1m]", displayName: "Default (recommended)" },
-            { value: "opus[1m]", resolvedModel: "claude-opus-4-6[1m]", displayName: "Opus" },
-            { value: "sonnet", resolvedModel: "claude-sonnet-5", displayName: "Sonnet" }
-        ], curated);
-
-        expect(merged.map(m => m.name)).toEqual(["Sonnet", "Opus"]);
-        expect(merged.some(m => m.id === "claude-opus-4-6")).toBe(false);
-    });
-
-    it("treats a long-context id as a variant of its base model, next to it and without its default flag", () => {
-        const merged = buildSubscriptionModelList([
-            { value: "sonnet", resolvedModel: "claude-sonnet-5", displayName: "Sonnet" },
-            { value: "sonnet[1m]", resolvedModel: "claude-sonnet-5[1m]" },
-            { value: "claude-opus-4-6[1m]", displayName: "Opus" }
-        ], curated);
-
-        // Curated ordering survives: each variant sits directly after its base.
-        expect(merged.map(m => m.id)).toEqual(["claude-sonnet-5", "claude-sonnet-5[1m]", "claude-opus-4-6[1m]"]);
-        // Curated metadata is inherited, and the CLI's silence leaves the derived name.
-        expect(merged[1]).toMatchObject({ name: "Claude Sonnet 5 (1M)", contextWindow: 1000000, isSubscription: true, isDefault: false });
-        // ...including flags the base carries — but never a second default.
-        expect(merged[2]).toMatchObject({ name: "Opus", contextWindow: 1000000, isLegacy: true, isDefault: false });
-        expect(merged.filter(m => m.isDefault)).toHaveLength(1);
+    it("gives a long-context id the context window of its base model when the table lacks the variant", () => {
+        const [variant] = buildSubscriptionModelList([{ value: "sonnet[1m]", resolvedModel: "claude-sonnet-5[1m]" }], prices);
+        expect(variant).toMatchObject({ id: "claude-sonnet-5[1m]", contextWindow: 1000000, isDefault: true });
     });
 });
 
@@ -1498,8 +1498,8 @@ describe("ClaudeAgentProvider.listModels", () => {
 
         expect(models.map(m => m.id)).toEqual(["claude-sonnet-5", "claude-fable-9"]);
         expect(models.every(m => m.isSubscription)).toBe(true);
-        // Curated models the CLI didn't report are gone (unlike getAvailableModels).
-        expect(models.some(m => m.id === "claude-haiku-4-5-20251001")).toBe(false);
+        // The committed price table supplies the context window.
+        expect(models[0].contextWindow).toBe(1000000);
 
         // The probe uses a streaming prompt that yields nothing — never a string,
         // so no user turn (and no tokens) is sent — capped at a single turn.
@@ -1659,7 +1659,7 @@ describe("ClaudeAgentProvider.recommendedModelIds", () => {
                 .map(id => ({ id, name: id }))
         );
         expect([...ids].sort()).toEqual([
-            "claude-fable-5", "claude-haiku-4-5-20251001", "claude-opus-4-8", "claude-sonnet-5"
+            "claude-haiku-4-5-20251001", "claude-opus-4-8", "claude-sonnet-5"
         ]);
     });
 

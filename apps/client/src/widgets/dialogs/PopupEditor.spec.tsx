@@ -77,6 +77,19 @@ vi.mock("../../services/utils", async (importActual) => {
 
 vi.mock("../../services/experimental_features", () => ({ isExperimentalFeatureEnabled: () => false }));
 
+vi.mock("../../services/keyboard_actions", async (importActual) => {
+    const actual = await importActual<typeof import("../../services/keyboard_actions")>();
+    return {
+        ...actual,
+        default: {
+            ...actual.default,
+            getAction: async (actionName: string) => (actionName === "findInText"
+                ? { actionName, effectiveShortcuts: [ "Ctrl+F" ] }
+                : undefined)
+        }
+    };
+});
+
 // The modal itself is Bootstrap-driven; the popup's own state is what it hands over.
 interface ModalStubProps {
     title?: ComponentChildren;
@@ -530,5 +543,26 @@ describe("PopupEditor", () => {
 
         render(null, mobileContainer);
         mobileContainer.remove();
+    });
+
+    it("searches its own note on Ctrl+F, leaving the tab behind alone", async () => {
+        await openPopup({ noteIdOrPath: "root/n1" });
+        const findBar = modal()?.querySelector(".find-replace-widget");
+        expect(findBar).not.toBeNull();
+        expect(container.querySelector(".popup-editor-scroll")?.contains(findBar ?? null)).toBe(false);
+
+        const onDocument = vi.fn();
+        document.addEventListener("keydown", onDocument);
+        const detail = modal()?.querySelector(".note-detail-stub");
+        expect(detail).not.toBeNull();
+        await vi.waitFor(() => {
+            detail?.dispatchEvent(new KeyboardEvent("keydown", {
+                key: "f", code: "KeyF", ctrlKey: true, bubbles: true, cancelable: true
+            }));
+            expect(mocks.triggerCommand).toHaveBeenCalledWith("findInText", { ntxId: "_popup-editor" });
+        });
+        // The global binding would name the active tab instead.
+        expect(onDocument).not.toHaveBeenCalled();
+        document.removeEventListener("keydown", onDocument);
     });
 });
