@@ -59,8 +59,6 @@
     "help_on_links": "Hjælp til links",
     "note": "Note",
     "search_note": "Søg efter en note ud fra dens navn",
-    "link_title_mirrors": "Linkets titel afspejler notens aktuelle titel",
-    "link_title_arbitrary": "Linkets titel kan ændres frit",
     "link_title": "Link titel",
     "anchor": "Anker (valgfrit)",
     "anchor_none": "Ingen (link til note)",

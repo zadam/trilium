@@ -40,8 +40,6 @@
     "add_link": "Adaugă legătură",
     "help_on_links": "Informații despre legături",
     "link_title": "Titlu legătură",
-    "link_title_arbitrary": "titlul legăturii poate fi schimbat în mod arbitrar",
-    "link_title_mirrors": "titlul legăturii corespunde titlul curent al notiței",
     "note": "Notiță",
     "search_note": "căutați notița după nume",
     "button_add_link": "Adaugă legătură",
@@ -1079,8 +1077,7 @@
     "show_panel": "Afișează panoul"
   },
   "limit": {
-    "limit": "Limită",
-    "take_first_x_results": "Obține doar primele X rezultate."
+    "limit": "Limită"
   },
   "markdown_import": {
     "dialog_title": "Importă Markdown",
@@ -1386,23 +1383,13 @@
     "action": "acțiune",
     "actions_executed": "Acțiunile au fost executate.",
     "add_search_option": "Adaugă opțiune de căutare:",
-    "ancestor": "ascendent",
-    "debug": "depanare",
-    "debug_description": "Modul de depanare va afișa informații adiționale în consolă pentru a ajuta la depanarea interogărilor complexe",
-    "fast_search": "căutare rapidă",
-    "fast_search_description": "Căutarea rapidă dezactivează căutarea la nivel de conținut al notițelor cu scopul de a îmbunătăți performanța de căutare pentru baze de date mari.",
-    "include_archived": "include arhivate",
     "include_archived_notes_description": "Notițele arhivate sunt excluse în mod implicit din rezultatele de căutare, această opțiune le include.",
-    "limit": "limită",
     "limit_description": "Limitează numărul de rezultate",
-    "order_by": "ordonează după",
     "save_to_note": "Salvează în notiță",
     "search_button": "Căutare",
     "search_execute": "Caută și execută acțiunile",
     "search_note_saved": "Notița de căutare a fost salvată în {{- notePathTitle}}",
     "search_parameters": "Parametrii de căutare",
-    "search_script": "script de căutare",
-    "search_string": "șir de căutat",
     "unknown_search_option": "Opțiune de căutare necunoscută „{{searchOptionName}}”",
     "view_options": "Opțiuni de afișare:",
     "option": "opțiune"

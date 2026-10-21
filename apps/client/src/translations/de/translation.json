@@ -58,8 +58,6 @@
     "help_on_links": "Hilfe zu Links",
     "note": "Notiz",
     "search_note": "Suche nach einer Notiz anhand ihres Namens",
-    "link_title_mirrors": "Der Linktitel spiegelt den aktuellen Titel der Notiz wider",
-    "link_title_arbitrary": "Der Linktitel kann beliebig geändert werden",
     "link_title": "Linktitel",
     "button_add_link": "Link hinzufügen",
     "anchor": "Anker (optional)",
@@ -1047,18 +1045,8 @@
   },
   "search_definition": {
     "add_search_option": "Suchoption hinzufügen:",
-    "search_string": "Suchzeichenfolge",
-    "search_script": "Suchskript",
-    "ancestor": "Vorfahre",
-    "fast_search": "schnelle Suche",
-    "fast_search_description": "Die Option „Schnellsuche“ deaktiviert die Volltextsuche von Notizinhalten, was die Suche in großen Datenbanken beschleunigen könnte.",
-    "include_archived": "archiviert einschließen",
     "include_archived_notes_description": "Archivierte Notizen sind standardmäßig von den Suchergebnissen ausgeschlossen, mit dieser Option werden sie einbezogen.",
-    "order_by": "Sortieren nach",
-    "limit": "Limit",
     "limit_description": "Begrenze die Anzahl der Ergebnisse",
-    "debug": "debuggen",
-    "debug_description": "Debug gibt zusätzliche Protokolleinträge in der Konsole aus, um die Fehlerdiagnose komplexer Abfragen zu erleichtern",
     "action": "Aktion",
     "search_button": "Suchen",
     "search_execute": "Aktionen suchen und ausführen",
@@ -1101,8 +1089,7 @@
     "include_archived_notes": "Archivierte Notizen einbeziehen"
   },
   "limit": {
-    "limit": "Limit",
-    "take_first_x_results": "Nehmen Sie nur die ersten X angegebenen Ergebnisse."
+    "limit": "Limit"
   },
   "order_by": {
     "order_by": "Sortieren nach",

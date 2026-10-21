@@ -60,14 +60,16 @@
     "button_add_link": "リンクを追加",
     "help_on_links": "リンクに関するヘルプ",
     "search_note": "ノート名で検索",
-    "link_title_mirrors": "リンクタイトルはノートタイトルの変更を反映します",
-    "link_title_arbitrary": "リンクタイトルは自由に変更可能",
     "anchor": "アンカー（任意）",
     "anchor_none": "なし（ノートへのリンク）",
     "edit_link": "リンクを編集",
     "button_edit_link": "リンクを保存",
     "fix_link": "リンクを修正",
-    "button_fix_link": "リンクを修正"
+    "button_fix_link": "リンクを修正",
+    "web_link": "Web リンク",
+    "url": "URL",
+    "mirror_title": "ノートのタイトルを反映",
+    "mirror_title_description": "リンクにはノートの現在のタイトルが表示され、ノートの名前が変更されるとタイトルも変わります。"
   },
   "branch_prefix": {
     "save": "保存",
@@ -297,18 +299,9 @@
     }
   },
   "search_definition": {
-    "add_search_option": "検索オプションを追加:",
-    "search_string": "文字列検索",
-    "search_script": "スクリプト検索",
-    "fast_search": "高速検索",
-    "fast_search_description": "高速検索オプションは、ノートの全文検索を無効にし、大規模データベースでの検索を高速化します。",
-    "include_archived": "アーカイブを含む",
+    "add_search_option": "検索オプションを追加",
     "include_archived_notes_description": "アーカイブされたノートはデフォルトで検索結果から除外されますが、このオプションを使用すると含まれるようになります。",
-    "order_by": "並べ替え",
-    "limit": "リミット",
     "limit_description": "検索結果の数を制限する",
-    "debug": "デバッグ",
-    "debug_description": "デバッグは複雑なクエリのデバッグを支援するために、追加のデバッグ情報をコンソールに出力します",
     "action": "アクション",
     "search_button": "検索",
     "search_execute": "検索とアクションの実行",
@@ -317,7 +310,6 @@
     "unknown_search_option": "不明な検索オプション {{searchOptionName}}",
     "search_note_saved": "検索ノートが {{- notePathTitle}} に保存されました",
     "actions_executed": "アクションが実行されました。",
-    "ancestor": "祖先:",
     "view_options": "表示オプション:",
     "option": "オプション"
   },
@@ -839,7 +831,8 @@
     "open_all_confirm_other": "{{count}} 件のノートを新しいタブで開きます。続行しますか？",
     "dashboard": "ダッシュボード",
     "open_all_limit_exceeded": "一度に開こうとしているノートが多すぎます（{{count}}）。上限は {{max}} です。先に検索結果を絞り込んでください。",
-    "included_notes": "含まれるノート"
+    "included_notes": "含まれるノート",
+    "search-preview": "検索プレビュー"
   },
   "note_types": {
     "geo-map": "ジオマップ",
@@ -962,19 +955,19 @@
   },
   "debug": {
     "debug": "デバッグ",
-    "debug_info": "デバッグは、複雑なクエリのデバッグを支援するために、追加のデバッグ情報をコンソールに表示します。",
-    "access_info": "デバッグ情報にアクセスするには、クエリを実行し、左上隅にある \"バックエンドログを表示 \"をクリックしてください。"
+    "debug_info": "複雑なクエリのデバッグを支援するため、追加のデバッグ情報をコンソールに出力します。",
+    "access_info": "検索を実行した後、グローバルメニューの \"バックエンドログを表示\" をクリックしてください。"
   },
   "fast_search": {
     "fast_search": "高速検索",
-    "description": "高速検索オプションは、ノートの全文検索を無効にし、大規模データベースでの検索を高速化します。"
+    "description": "ノート本文の全文検索を無効にします。これにより、大規模なデータベースでの検索が高速化されます。"
   },
   "include_archived_notes": {
     "include_archived_notes": "アーカイブされたノートを含む"
   },
   "limit": {
     "limit": "リミット",
-    "take_first_x_results": "最初からX個の結果のみを取得。"
+    "max_results": "最大結果数"
   },
   "order_by": {
     "order_by": "並べ替え",
@@ -986,10 +979,10 @@
     "children_count": "子ノートの数",
     "parent_count": "クローンの数",
     "random": "ランダムな順番",
-    "asc": "昇順（デフォルト）",
+    "asc": "昇順",
     "desc": "降順",
     "content_and_attachments_size": "添付ファイルを含むノート内容のサイズ",
-    "content_and_attachments_and_revisions_size": "添付ファイルと編集履歴を含むノート内容のサイズ",
+    "content_and_attachments_and_revisions_size": "添付ファイルと変更履歴を含むノートサイズ",
     "revision_count": "編集履歴の回数",
     "owned_label_count": "ラベルの数",
     "owned_relation_count": "リレーションの数",
@@ -1018,7 +1011,7 @@
     "properties-title": "表 プロパティ"
   },
   "search_script": {
-    "title": "検索スクリプト:",
+    "title": "検索スクリプト",
     "placeholder": "ノート名で検索",
     "description1": "検索スクリプトは、スクリプトを実行することによって検索結果を定義することができます。標準の検索では不十分な場合に、最大限の柔軟性を提供します。",
     "description2": "検索スクリプトはノートタイプが \"code\" かつ \"JavaScript backend\" でなければならない。スクリプトは、 noteIds または note の配列を返す必要があります。",
@@ -1042,11 +1035,11 @@
     "placeholder": "ノート名で検索",
     "label": "祖先",
     "depth_label": "深さ",
-    "depth_doesnt_matter": "関係なし",
-    "depth_eq": "ちょうど {{count}} つ下の階層",
-    "direct_children": "直接の子",
-    "depth_gt": "{{count}} より下の階層",
-    "depth_lt": "{{count}} より上の階層"
+    "depth_doesnt_matter": "すべて",
+    "depth_eq": "= {{count}}",
+    "direct_children": "子のみ",
+    "depth_gt": "> {{count}}",
+    "depth_lt": "< {{count}}"
   },
   "move_to": {
     "search_placeholder": "ノート名で検索",
@@ -1779,7 +1772,9 @@
     "result_count_other": "{{count}} 件の結果",
     "page_size": "1 ページあたりの表示数",
     "snippet_unavailable": "プレビューは利用できません。",
-    "searching": "検索中..."
+    "searching": "検索中...",
+    "show_more": "さらに表示",
+    "show_less": "表示を減らす"
   },
   "sql_result": {
     "no_rows": "このクエリでは行が返されませんでした",
@@ -2147,7 +2142,7 @@
     "tab_width_unit": "スペース"
   },
   "search_string": {
-    "title_column": "文字列検索:",
+    "title_column": "文字列検索",
     "search_syntax": "検索構文",
     "also_see": "詳しくは",
     "complete_help": "検索構文に関する完全なヘルプ",
@@ -3836,7 +3831,6 @@
       "insert-titled-tabs-that-show-one-panel-at-a-time": "一度に 1 つのパネルを表示する、タイトル付きタブを挿入。",
       "multicolumn-layout": "複数列レイアウト",
       "multicolumn-layout-toolbar": "複数列レイアウトツールバー",
-      "multiple-column-layout": "複数列レイアウト",
       "0-columns": "%0 列",
       "column-layout": "列レイアウト",
       "0-columns-layout": "%0 列レイアウト",
@@ -3877,7 +3871,16 @@
       "add-a-tab-before-the-current-one": "現在のタブの前にタブを追加",
       "scroll-to-the-previous-tabs": "前のタブエリアへスクロール",
       "scroll-to-the-next-tabs": "次のタブエリアへスクロール",
-      "box-size-0": "ボックスサイズ: %0"
+      "box-size-0": "ボックスサイズ: %0",
+      "text-formatting": "テキスト書式",
+      "block-type": "ブロックタイプ",
+      "apply-formatting": "書式を適用",
+      "camera": "カメラ",
+      "move-up": "上に移動",
+      "move-down": "下に移動",
+      "image-position": "画像の位置",
+      "list": "リスト",
+      "list-type": "リストタイプ"
     },
     "toolbar-groups": {
       "text-formatting": "テキストの書式設定",
@@ -3886,6 +3889,10 @@
     },
     "colors": {
       "pink": "ピンク"
+    },
+    "color-menu": {
+      "text-color": "文字色",
+      "background-color": "背景色"
     }
   },
   "security": {
@@ -4756,6 +4763,7 @@
     "default_parent_placeholder": "作成される場所"
   },
   "hide_keyboard_button": {
-    "title": "キーボードを隠す"
+    "title": "キーボードを隠す",
+    "close_menu": "メニューを閉じる"
   }
 }

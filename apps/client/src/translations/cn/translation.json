@@ -58,8 +58,6 @@
     "help_on_links": "链接帮助",
     "note": "笔记",
     "search_note": "按名称搜索笔记",
-    "link_title_mirrors": "链接标题跟随笔记标题变化",
-    "link_title_arbitrary": "链接标题可随意修改",
     "link_title": "链接标题",
     "button_add_link": "添加链接",
     "anchor": "锚点（可选）",
@@ -1133,19 +1131,9 @@
     "conflicting_tooltip": "这些条目以多种方式定义该属性，因此它按文本排序，且无法从条目菜单中设置。"
   },
   "search_definition": {
-    "add_search_option": "添加搜索选项：",
-    "search_string": "搜索字符串",
-    "search_script": "搜索脚本",
-    "ancestor": "上级笔记",
-    "fast_search": "快速搜索",
-    "fast_search_description": "快速搜索选项禁用笔记内容的全文搜索，这可能会加速大数据库中的搜索。",
-    "include_archived": "包含归档",
+    "add_search_option": "添加搜索选项",
     "include_archived_notes_description": "归档的笔记默认不包含在搜索结果中，使用此选项将包含它们。",
-    "order_by": "排序方式",
-    "limit": "限制",
     "limit_description": "限制结果数量",
-    "debug": "调试",
-    "debug_description": "调试将打印额外的调试信息到控制台，以帮助调试复杂查询",
     "action": "操作",
     "search_button": "搜索",
     "search_execute": "搜索并执行操作",
@@ -1170,7 +1158,7 @@
     "placeholder": "按名称搜索笔记",
     "depth_label": "深度",
     "depth_doesnt_matter": "任意",
-    "depth_eq": "正好是 {{count}}",
+    "depth_eq": "= {{count}}",
     "direct_children": "直接子代",
     "depth_gt": "大于 {{count}}",
     "depth_lt": "小于 {{count}}"
@@ -1188,8 +1176,7 @@
     "include_archived_notes": "包括已归档的笔记"
   },
   "limit": {
-    "limit": "限制",
-    "take_first_x_results": "仅取前 X 个指定结果。"
+    "limit": "限制"
   },
   "order_by": {
     "order_by": "排序依据",
@@ -3852,7 +3839,6 @@
       "insert-titled-tabs-that-show-one-panel-at-a-time": "插入带标题的标签页，一次显示一个面板。",
       "multicolumn-layout": "多栏布局",
       "multicolumn-layout-toolbar": "多栏布局工具栏",
-      "multiple-column-layout": "多栏布局",
       "0-columns": "%0 栏",
       "column-layout": "分栏布局",
       "0-columns-layout": "%0 栏布局",

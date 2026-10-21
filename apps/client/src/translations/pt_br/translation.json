@@ -68,8 +68,6 @@
     "help_on_links": "Ajuda sobre links",
     "note": "Nota",
     "search_note": "pesquisar nota pelo nome",
-    "link_title_mirrors": "o título do link reflete o título atual da nota",
-    "link_title_arbitrary": "o título do link pode ser alterado livremente",
     "link_title": "Titulo do link",
     "button_add_link": "Adicionar link",
     "edit_link": "Editar link",
@@ -1177,15 +1175,7 @@
   },
   "search_definition": {
     "add_search_option": "Adicionar opção de pesquisa:",
-    "search_string": "pesquisa de texto",
-    "search_script": "pesquisa de script",
-    "ancestor": "ancestral",
-    "fast_search": "pesquisa rápida",
-    "include_archived": "incluir arquivados",
-    "order_by": "ordenar por",
-    "limit": "limite",
     "limit_description": "Limitar número de resultados",
-    "debug": "depurar",
     "action": "ação",
     "search_button": "Pesquisar",
     "search_execute": "Pesquisar & Executar ações",
@@ -1194,9 +1184,7 @@
     "unknown_search_option": "Opção de pesquisa desconhecida {{searchOptionName}}",
     "actions_executed": "As ações foram executadas.",
     "search_note_saved": "Nota de pesquisa foi salva em {{- notePathTitle}}",
-    "fast_search_description": "A opção de pesquisa rápida desabilita a pesquisa de texto completo do conteúdo de nota, o que pode acelerar a pesquisa em grandes bancos de dados.",
     "include_archived_notes_description": "As notas arquivadas são por padrão excluídas dos resultados da pesquisa, com esta opção elas serão incluídas.",
-    "debug_description": "A depuração irá imprimir informações adicionais no console para ajudar na depuração de consultas complexas",
     "view_options": "Ver opções:",
     "option": "Opção"
   },
@@ -1221,8 +1209,7 @@
     "include_archived_notes": "Incluir notas arquivadas"
   },
   "limit": {
-    "limit": "Limite",
-    "take_first_x_results": "Pegar apenas os X primeiros resultados."
+    "limit": "Limite"
   },
   "order_by": {
     "order_by": "Ordenar por",
