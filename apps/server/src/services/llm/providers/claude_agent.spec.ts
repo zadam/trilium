@@ -1659,7 +1659,7 @@ describe("ClaudeAgentProvider.recommendedModelIds", () => {
                 .map(id => ({ id, name: id }))
         );
         expect([...ids].sort()).toEqual([
-            "claude-fable-5", "claude-haiku-4-5-20251001", "claude-opus-4-8", "claude-sonnet-5"
+            "claude-haiku-4-5-20251001", "claude-opus-4-8", "claude-sonnet-5"
         ]);
     });
 
