@@ -387,6 +387,11 @@ export function setupTodoCheckboxTaps(container: HTMLElement) {
         }
     };
 
+    // A long press is no tap.
+    const onContextMenu = () => {
+        tapped = null;
+    };
+
     const onTouchEnd = (e: TouchEvent) => {
         if (!tapped) return;
         const checkbox = tapped;
@@ -407,10 +412,12 @@ export function setupTodoCheckboxTaps(container: HTMLElement) {
     container.addEventListener("touchstart", onTouchStart, { passive: false });
     container.addEventListener("touchmove", onTouchMove, { passive: true });
     container.addEventListener("touchend", onTouchEnd, { passive: false });
+    container.addEventListener("contextmenu", onContextMenu);
     return () => {
         container.removeEventListener("touchstart", onTouchStart);
         container.removeEventListener("touchmove", onTouchMove);
         container.removeEventListener("touchend", onTouchEnd);
+        container.removeEventListener("contextmenu", onContextMenu);
     };
 }
 

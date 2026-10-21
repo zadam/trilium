@@ -144,6 +144,16 @@ export default class ContextToolbar extends Plugin {
             });
         }
 
+        // The row of a to-do list holds the task states, so a long press of a checkbox opens neither
+        // the balloon of `TodoListMultistateToolbar` nor the browser's menu.
+        this.listenTo(editor.editing.view.document, "contextmenu", (evt, data: { target: ViewNode; preventDefault(): void }) => {
+            const target = data.target;
+            if (target.is("element", "input") && target.findAncestor({ classes: "todo-list__label" })) {
+                data.preventDefault();
+                evt.stop();
+            }
+        }, { priority: "high" });
+
         // A list command runs as a list is started from the block type menu or by autoformat. Ahead
         // of the command, whose change renders and so updates the UI before it returns.
         for (const name of LIST_COMMANDS) {

@@ -639,7 +639,7 @@ describe("setupTodoCheckboxTaps", () => {
         expect(document.activeElement).not.toBe(editable);
     });
 
-    it("leaves taps away from a checkbox and drags alone", () => {
+    it("leaves taps away from a checkbox, drags and long presses alone", () => {
         const [ first ] = checkboxes();
         const text = container.querySelector("li");
         expect(text).not.toBeNull();
@@ -653,6 +653,12 @@ describe("setupTodoCheckboxTaps", () => {
         touch(first, "touchstart", 23, 108);
         touch(first, "touchmove", 23, 140);
         touch(first, "touchend", 23, 140);
+        expect(first.checked).toBe(false);
+
+        // A long press.
+        touch(first, "touchstart", 23, 108);
+        first.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true }));
+        touch(first, "touchend", 23, 108);
         expect(first.checked).toBe(false);
     });
 });

@@ -14,6 +14,7 @@ import ImagePosition from "./image_position.js";
 import LinkEmbedToolbar from "./link_embed/link_embed_toolbar.js";
 import MobileToolbarItems from "./mobile_toolbar_items.js";
 import { getActiveTaskStates } from "./todo_list_multistate/todo_list_multistate_editing.js";
+import TodoListMultistateToolbar from "./todo_list_multistate/todo_list_multistate_toolbar.js";
 import TodoListMultistateUI from "./todo_list_multistate/todo_list_multistate_ui.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
@@ -289,6 +290,34 @@ describe("ContextToolbar", () => {
         expect(edit).toMatchObject({ icon: bxPencil, withText: false });
         (edit as ButtonView).fire("execute");
         expect(editTaskStates).toHaveBeenCalledOnce();
+    });
+
+    it("keeps the balloon of task states closed on a long press of a checkbox", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoListMultistateToolbar, MobileToolbarItems, ContextToolbar], {
+            toolbar: ["contextToolbar"],
+            listToolbar: ["listTypeMenu"]
+        });
+        const plugin = editor.plugins.get(ContextToolbar);
+        setModelData(editor.model, "<paragraph>[]Intro</paragraph>"
+            + "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"todo\">a</paragraph>"
+            + "<paragraph listIndent=\"0\" listItemId=\"b\" listType=\"todo\">b</paragraph>");
+        const checkboxes = editor.editing.view.getDomRoot()
+            ?.querySelectorAll<HTMLInputElement>(".todo-list__label input[type=\"checkbox\"]");
+        const checkbox = checkboxes?.[1];
+        expect(checkbox).toBeDefined();
+        if (!checkbox) return;
+
+        const onText = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+        editor.editing.view.getDomRoot()?.querySelector("p")?.dispatchEvent(onText);
+        expect([onText.defaultPrevented, plugin.isActive]).toStrictEqual([false, false]);
+
+        const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
+        checkbox.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(true);
+        expect(editor.plugins.get(ContextualBalloon).visibleView).toBeNull();
+        expect(plugin.isActive).toBe(false);
+        expect(editor.model.document.selection.getFirstPosition()?.parent)
+            .toBe(editor.model.document.getRoot()?.getChild(0));
     });
 
     describe("for a link", () => {
