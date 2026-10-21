@@ -1,3 +1,4 @@
+import bxCamera from "boxicons/svg/regular/bx-camera.svg?raw";
 import {
     _getLocalizedHeadingOptions as getLocalizedHeadingOptions,
     addListToDropdown,
@@ -70,8 +71,8 @@ interface BlockType {
  * - `fontSizeMenu`: the `fontSize` dropdown.
  * - `alignmentMenu`: the `alignment` dropdown, whose button shows the current alignment, with the
  *   alignments as a row of tiles.
- * - `attachMenu`: the image upload and the rows of the `fileUpload` list as a row of tiles, under
- *   a paperclip. A row whose feature the editor lacks is left out.
+ * - `attachMenu`: the image upload, a photo taken with the camera and the rows of the `fileUpload`
+ *   list as a row of tiles, under a paperclip. A row whose feature the editor lacks is left out.
  * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
  *   which needs a pointer that hovers over its cells.
  */
@@ -145,6 +146,15 @@ export default class MobileToolbarItems extends Plugin {
             const image = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView;
             image.label = t("Image");
             buttons.push(image);
+
+            const camera = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView & {
+                allowMultipleFiles: boolean;
+            };
+            camera.set({ label: t("Camera"), icon: bxCamera, allowMultipleFiles: false });
+            // Rendering adds the file input, which `capture` points at the rear camera.
+            camera.render();
+            camera.element?.querySelector("input[type=file]")?.setAttribute("capture", "environment");
+            buttons.push(camera);
         }
         if (editor.plugins.has(FileUploadUI)) {
             buttons.push(...editor.plugins.get(FileUploadUI).createListButtons(locale));

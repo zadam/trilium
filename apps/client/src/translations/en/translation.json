@@ -4595,7 +4595,10 @@
       "scroll-to-the-previous-tabs": "Scroll to the previous tabs",
       "scroll-to-the-next-tabs": "Scroll to the next tabs",
       "text-formatting": "Text formatting",
-      "block-type": "Block type"
+      "block-type": "Block type",
+      "camera": "Camera",
+      "move-up": "Move up",
+      "move-down": "Move down"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

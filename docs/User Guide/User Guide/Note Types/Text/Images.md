@@ -9,6 +9,7 @@ To add an image to the note:
 
 *   Simply drag it from file explorer onto the note editor inside Trilium and the image will be uploaded.
 *   Alternatively, from the <a class="reference-link" href="Formatting%20toolbar.md">Formatting toolbar</a> look for the <span class="tn-icon cke cke-image-upload"></span> _Upload image from computer_ button.
+*   On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, press the <span class="tn-icon cke cke-paper-clip"></span> button of the formatting toolbar and select _Camera_ to take a photo and insert it.
 *   You can also copy and paste an image from web (see section below).
 
 > [!TIP]

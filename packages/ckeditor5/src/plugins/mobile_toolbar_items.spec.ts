@@ -34,6 +34,7 @@ import {
     Table,
     TodoList
 } from "ckeditor5";
+import bxCamera from "boxicons/svg/regular/bx-camera.svg?raw";
 import bxLink from "boxicons/svg/regular/bx-link.svg?raw";
 import bxShapeSquare from "boxicons/svg/regular/bx-shape-square.svg?raw";
 import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
@@ -342,7 +343,7 @@ describe("attachMenu", () => {
         return input;
     }
 
-    it("opens the image and file uploads as a row of tiles under a paperclip", async () => {
+    it("opens the image, camera and file uploads as a row of tiles under a paperclip", async () => {
         const { editor, requests } = await createAttachEditor();
 
         const dropdown = getDropdown(editor, 0);
@@ -352,21 +353,27 @@ describe("attachMenu", () => {
         const request = requests.at(-1);
         expect(request?.layout).toBe("tiles");
         const tiles = request?.items ?? [];
-        expect(tiles.map(rowText)).toStrictEqual(["Image", "Attach and embed file", "Attach file as a link"]);
-        expect(icons(tiles)).toStrictEqual([IconImageUpload, bxShapeSquare, bxLink]);
+        expect(tiles.map(rowText)).toStrictEqual(["Image", "Camera", "Attach and embed file", "Attach file as a link"]);
+        expect(icons(tiles)).toStrictEqual([IconImageUpload, bxCamera, bxShapeSquare, bxLink]);
     });
 
-    it("picks images for the image tile, and any file for the others, which attach them", async () => {
+    it("picks images for the image tile, takes a photo for the camera tile, and any file for the others", async () => {
         const { editor, requests } = await createAttachEditor();
         const upload = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
         getDropdown(editor, 0).buttonView.fire("open");
         const tiles = requests.at(-1)?.items ?? [];
         const file = new File(["a"], "a.pdf", { type: "application/pdf" });
+        const photo = new File(["p"], "photo.jpg", { type: "image/jpeg" });
 
-        expect(pick(entry(tiles, "Image"), []).accept).toContain("image/png");
+        const image = pick(entry(tiles, "Image"), []);
+        expect([image.accept, image.hasAttribute("capture")]).toStrictEqual([expect.stringContaining("image/png"), false]);
+        const camera = pick(entry(tiles, "Camera"), [photo]);
+        expect([camera.accept, camera.getAttribute("capture"), camera.multiple])
+            .toStrictEqual([expect.stringContaining("image/jpeg"), "environment", false]);
         expect(pick(entry(tiles, "Attach and embed file"), [file]).accept).toBe("");
         pick(entry(tiles, "Attach file as a link"), [file]);
         expect(upload.mock.calls).toStrictEqual([
+            ["uploadImage", { file: [photo] }],
             ["fileUpload", { file: [file], asEmbed: true }],
             ["fileUpload", { file: [file] }]
         ]);
