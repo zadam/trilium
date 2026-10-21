@@ -85,7 +85,7 @@ interface BlockType {
  *   button shows an icon of the current block rather than its name, which takes 8em.
  * - `fontSizeMenu`: the `fontSize` dropdown.
  * - `alignmentMenu`: the `alignment` dropdown, whose button shows the current alignment, with the
- *   alignments as a row of tiles.
+ *   alignments as a list.
  * - `attachMenu`: the image upload, a photo taken with the camera and the rows of the `fileUpload`
  *   list as a list, under a paperclip. A row whose feature the editor lacks is left out.
  * - `addLink`: one link button, which opens the link dialog of the internal link button for a link to
@@ -120,7 +120,7 @@ export default class MobileToolbarItems extends Plugin {
 
         editor.ui.componentFactory.add("alignmentMenu", () => {
             const dropdown = editor.ui.componentFactory.create("alignment") as DropdownView;
-            openListAsMenu(dropdown, { layout: "tiles" });
+            openListAsMenu(dropdown);
             return dropdown;
         });
 

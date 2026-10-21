@@ -250,7 +250,7 @@ describe("MobileToolbarItems", () => {
         expect(menuEditor.getData()).toBe("<p><span class=\"text-huge\">foo</span></p>");
     });
 
-    it("opens the alignments as a row of tiles, its button showing the current one", async () => {
+    it("opens the alignments as a list, its button showing the current one", async () => {
         const requests: ToolbarGroupMenuRequest[] = [];
         const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
         const menuEditor = await createTestEditor([Essentials, Paragraph, Alignment, MobileToolbarItems, ToolbarGroupMenu], {
@@ -267,7 +267,8 @@ describe("MobileToolbarItems", () => {
         expect(dropdown.isOpen).toBe(false);
 
         const request = requests.at(-1);
-        expect(request?.layout).toBe("tiles");
+        expect(request).toBeDefined();
+        expect(request?.layout).toBeUndefined();
         const tiles = request?.items ?? [];
         expect(tiles.map(rowText)).toStrictEqual(["Align left", "Align center ✓", "Align right", "Justify"]);
         expect(icons(tiles)).toStrictEqual([IconAlignLeft, IconAlignCenter, IconAlignRight, IconAlignJustify]);
