@@ -31,8 +31,6 @@
     "note": "Ghi chú",
     "edit_link": "Sửa liên kết",
     "search_note": "Tìm kiếm ghi chú theo tên",
-    "link_title_mirrors": "Tiêu đề liên kết phản chiếu tiêu đề hiện tại của ghi chú",
-    "link_title_arbitrary": "Tiêu đề liên kết có thể thay đổi tùy ý",
     "anchor": "Neo (tùy chọn)",
     "anchor_none": "Không (liên kết đến ghi chú)",
     "button_edit_link": "Lưu liên kết",
@@ -1378,18 +1376,8 @@
   },
   "search_definition": {
     "add_search_option": "Thêm tùy chọn tìm kiếm:",
-    "search_string": "Chuỗi tìm kiếm",
-    "search_script": "Mã kịch bản tìm kiếm",
-    "ancestor": "Tổ tiên",
-    "fast_search": "Tìm kiếm nhanh",
-    "fast_search_description": "Tùy chọn tìm kiếm nhanh vô hiệu hóa tìm kiếm toàn bộ nội dung ghi chú, có thể tăng tốc độ tìm kiếm trong các cơ sở dữ liệu lớn.",
-    "include_archived": "Bao gồm đã lưu trữ",
     "include_archived_notes_description": "Các ghi chú đã lưu trữ mặc định bị loại khỏi kết quả tìm kiếm, với tùy chọn này chúng sẽ được bao gồm.",
-    "order_by": "Sắp xếp theo",
-    "limit": "Giới hạn",
     "limit_description": "Giới hạn số lượng kết quả",
-    "debug": "Gỡ lỗi",
-    "debug_description": "Gỡ lỗi sẽ in thêm thông tin gỡ lỗi vào console để hỗ trợ gỡ lỗi các truy vấn phức tạp",
     "action": "Hành động",
     "option": "Tùy chọn",
     "search_button": "Tìm kiếm",
@@ -1444,8 +1432,7 @@
     "include_archived_notes": "Bao gồm các ghi chú đã lưu trữ"
   },
   "limit": {
-    "limit": "Giới hạn",
-    "take_first_x_results": "Chỉ lấy X kết quả đầu tiên được chỉ định."
+    "limit": "Giới hạn"
   },
   "order_by": {
     "order_by": "Sắp xếp theo",
@@ -4032,7 +4019,6 @@
       "insert-titled-tabs-that-show-one-panel-at-a-time": "Chèn các tab có tiêu đề, mỗi tab hiển thị một bảng.",
       "multicolumn-layout": "Bố cục nhiều cột",
       "multicolumn-layout-toolbar": "Thanh công cụ bố cục nhiều cột",
-      "multiple-column-layout": "Bố cục nhiều cột",
       "0-columns": "%0 Cột",
       "column-layout": "Bố cục cột",
       "0-columns-layout": "Bố cục %0 cột",

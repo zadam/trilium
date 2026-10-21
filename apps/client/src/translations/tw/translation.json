@@ -58,8 +58,6 @@
     "help_on_links": "連結說明",
     "note": "筆記",
     "search_note": "依名稱搜尋筆記",
-    "link_title_mirrors": "連結標題跟隨筆記標題變化",
-    "link_title_arbitrary": "連結標題可隨意修改",
     "link_title": "連結標題",
     "button_add_link": "新增連結",
     "anchor": "錨點（可選）",
@@ -882,18 +880,8 @@
   },
   "search_definition": {
     "add_search_option": "新增搜尋選項：",
-    "search_string": "搜尋字串",
-    "search_script": "搜尋腳本",
-    "ancestor": "祖先",
-    "fast_search": "快速搜尋",
-    "fast_search_description": "快速搜尋選項禁用筆記內容的全文搜尋，這可能會加速大資料庫中的搜尋。",
-    "include_archived": "包含封存",
     "include_archived_notes_description": "封存的筆記預設不包含在搜尋結果中，使用此選項將包含它們。",
-    "order_by": "排序方式",
-    "limit": "限制",
     "limit_description": "限制結果數量",
-    "debug": "除錯",
-    "debug_description": "除錯將顯示額外的除錯資訊至控制台，以幫助除錯複雜查詢",
     "action": "操作",
     "search_button": "搜尋",
     "search_execute": "搜尋並執行操作",
@@ -936,8 +924,7 @@
     "include_archived_notes": "包括已封存的筆記"
   },
   "limit": {
-    "limit": "限制",
-    "take_first_x_results": "僅取前 X 個指定結果。"
+    "limit": "限制"
   },
   "order_by": {
     "order_by": "排序方式",

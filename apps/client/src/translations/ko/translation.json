@@ -58,8 +58,6 @@
     "note": "노트",
     "search_note": "이름으로 노트 검색하기",
     "help_on_links": "링크 관련 도움말",
-    "link_title_mirrors": "링크 제목은 노트의 현재 제목을 반영합니다",
-    "link_title_arbitrary": "링크 제목을 자유롭게 변경할 수 있습니다",
     "link_title": "링크 제목",
     "button_add_link": "링크 추가",
     "anchor": "앵커(선택)",
@@ -1127,7 +1125,7 @@
     "switch_to_mobile_version": "모바일 버전으로 전환",
     "switch_to_desktop_version": "데스크톱 버전으로 전환",
     "zoom": "확대/축소",
-    "toggle_fullscreen": "전체 화면 토글",
+    "toggle_fullscreen": "전체 화면 전환",
     "zoom_out": "축소",
     "reset_zoom_level": "확대/축소 수준 초기화",
     "zoom_in": "확대",
@@ -1148,8 +1146,8 @@
     "logout": "로그아웃",
     "show-cheatsheet": "단축키 도움말 보기",
     "toggle-zen-mode": "젠 모드",
-    "new-version-available": "새로운 업데이트 제공 가능",
-    "download-update": "버전 {{latestVersion}} 받기",
+    "new-version-available": "새 업데이트가 있습니다",
+    "download-update": "버전 {{latestVersion}} 다운로드",
     "search_notes": "노트 검색",
     "show_space_usage": "공간 사용량 표시"
   },
@@ -1211,7 +1209,10 @@
     "export_as_image_png": "PNG (래스터)",
     "export_as_image_svg": "SVG (벡터)",
     "note_map": "노트 맵",
-    "note_attributes_title": "노트 속성"
+    "note_attributes_title": "노트 속성",
+    "search_in_note_short": "찾기",
+    "note_attachments_short": "첨부 파일",
+    "note_settings": "노트 설정"
   },
   "onclick_button": {
     "no_click_handler": "버튼 위젯 '{{componentId}}'에는 정의된 클릭 핸들러가 없습니다"
@@ -1268,7 +1269,9 @@
     "error_cannot_get_branch_id": "노트 경로 '{{notePath}}'의 branchId를 가져올 수 없습니다",
     "error_unrecognized_command": "인식되지 않은 명령 {{command}}",
     "backlinks": "백링크",
-    "content_language_switcher": "콘텐츠 언어: {{language}}"
+    "content_language_switcher": "콘텐츠 언어: {{language}}",
+    "insert_child_note_short": "하위 노트",
+    "create_new_split_short": "새 분할"
   },
   "note_icon": {
     "change_note_icon": "노트 아이콘 변경",
@@ -1313,7 +1316,8 @@
     "open_all_in_tabs_tooltip": "새 탭에서 모든 결과를 열기",
     "open_all_confirm_other": "노트 {{count}}개를 새 탭에서 엽니다. 계속하시겠습니까?",
     "open_all_limit_exceeded": "한 번에 열 수 있는 노트가 너무 많습니다({{count}}). 최대 {{max}}개까지 열 수 있으므로 먼저 결과 범위를 좁혀보세요.",
-    "included_notes": "포함된 노트"
+    "included_notes": "포함된 노트",
+    "search-preview": "검색 미리보기"
   },
   "edited_notes": {
     "no_edited_notes_found": "아직 이날 편집한 노트가 없습니다..."
@@ -1394,19 +1398,9 @@
     "conflicting_tooltip": "항목마다 이 속성을 서로 다른 방식으로 정의하고 있어 텍스트로 정렬되며, 항목 메뉴에서는 값을 설정할 수 없습니다."
   },
   "search_definition": {
-    "add_search_option": "검색 옵션 추가:",
-    "search_string": "검색 문자열",
-    "search_script": "검색 스크립트",
-    "ancestor": "조상",
-    "fast_search": "빠른 검색",
-    "fast_search_description": "빠른 검색 옵션은 노트 내용의 전체 텍스트 검색을 비활성화하여 대규모 데이터베이스 검색 속도를 높일 수 있습니다.",
-    "include_archived": "보관된 노트 포함",
+    "add_search_option": "검색 옵션 추가",
     "include_archived_notes_description": "보관된 노트는 기본적으로 검색 결과에서 제외되며, 이 옵션을 통해 포함됩니다.",
-    "order_by": "정렬 기준",
-    "limit": "개수 제한",
     "limit_description": "결과 수 제한",
-    "debug": "디버그",
-    "debug_description": "디버그는 복잡한 쿼리를 디버깅하는 데 도움을 주기 위해 추가 디버깅 정보를 콘솔에 출력합니다",
     "action": "작업",
     "option": "옵션",
     "search_button": "검색",
@@ -1431,26 +1425,26 @@
     "placeholder": "이름으로 노트 검색하기",
     "depth_label": "깊이",
     "depth_doesnt_matter": "상관없음",
-    "depth_eq": "정확히 {{count}}",
+    "depth_eq": "= {{count}}",
     "direct_children": "바로 아래 하위 노트",
-    "depth_gt": "{{count}}보다 크다",
-    "depth_lt": "{{count}}보다 작음"
+    "depth_gt": "> {{count}}",
+    "depth_lt": "< {{count}}"
   },
   "debug": {
     "debug": "디버그",
-    "debug_info": "디버그는 복잡한 쿼리를 디버깅하는 데 도움을 주기 위해 추가 디버깅 정보를 콘솔에 출력합니다.",
-    "access_info": "디버그 정보를 얻으려면 쿼리를 실행하고 왼쪽 상단의 \"백엔드 로그 표시\"를 클릭하세요."
+    "debug_info": "복잡한 검색어를 디버깅할 수 있도록 추가 디버그 정보를 콘솔에 출력합니다.",
+    "access_info": "검색을 실행한 다음 전체 메뉴에서 \"백엔드 로그 표시\"를 클릭하세요."
   },
   "fast_search": {
     "fast_search": "빠른 검색",
-    "description": "빠른 검색 옵션은 노트 내용의 전체 텍스트 검색을 비활성화하여 대규모 데이터베이스 검색 속도를 높일 수 있습니다."
+    "description": "노트 내용의 전체 텍스트 검색을 비활성화하여 대규모 데이터베이스에서 검색 속도를 높입니다."
   },
   "include_archived_notes": {
     "include_archived_notes": "보관된 노트 포함"
   },
   "limit": {
     "limit": "개수 제한",
-    "take_first_x_results": "지정한 결과 중 처음 X개만 가져옵니다."
+    "max_results": "최대 결과 수"
   },
   "order_by": {
     "order_by": "정렬 기준",
@@ -1468,11 +1462,11 @@
     "owned_relation_count": "관계의 수",
     "target_relation_count": "이 노트를 대상으로 하는 관계 수",
     "random": "무작위 순서",
-    "asc": "오름차순(기본값)",
+    "asc": "오름차순",
     "desc": "내림차순"
   },
   "search_script": {
-    "title": "검색 스크립트:",
+    "title": "검색 스크립트",
     "placeholder": "이름으로 노트 검색하기",
     "description1": "검색 스크립트는 스크립트를 실행하여 검색 결과를 정의할 수 있게 해줍니다. 표준 검색만으로는 부족할 때 최대 유연성을 제공합니다.",
     "description2": "검색 스크립트는 \"code\" 타입이어야 하며, 하위 타입은 \"JavaScript backend\"여야 합니다. 스크립트는 noteId 또는 노트 배열을 반환해야 합니다.",
@@ -1481,7 +1475,7 @@
     "note": "검색 스크립트와 검색 문자열은 서로 결합할 수 없다는 점에 유의하세요."
   },
   "search_string": {
-    "title_column": "검색 문자열:",
+    "title_column": "검색 문자열",
     "placeholder": "Ctrl+Space로 제안 보기, @로 노트 지정, Shift+Enter로 새 줄 입력, Enter로 검색",
     "search_syntax": "검색 문법",
     "also_see": "참고",
@@ -2683,7 +2677,9 @@
     "result_count_other": "{{count}}개 결과",
     "page_size": "페이지당",
     "snippet_unavailable": "미리보기를 사용할 수 없습니다.",
-    "searching": "검색 중..."
+    "searching": "검색 중...",
+    "show_more": "더 보기",
+    "show_less": "접기"
   },
   "sql_result": {
     "not_executed": "쿼리는 아직 실행되지 않았습니다.",
@@ -4256,7 +4252,6 @@
       "insert-titled-tabs-that-show-one-panel-at-a-time": "한 번에 하나의 패널을 표시하는 제목 있는 탭을 삽입합니다.",
       "multicolumn-layout": "다중 열 레이아웃",
       "multicolumn-layout-toolbar": "다중 열 레이아웃 도구 모음",
-      "multiple-column-layout": "여러 열 레이아웃",
       "0-columns": "%0열",
       "column-layout": "열 레이아웃",
       "0-columns-layout": "%0열 레이아웃",
@@ -4297,7 +4292,9 @@
       "add-a-tab-before-the-current-one": "현재 탭 앞에 탭 추가",
       "scroll-to-the-previous-tabs": "이전 탭으로 스크롤",
       "scroll-to-the-next-tabs": "다음 탭으로 스크롤",
-      "box-size-0": "상자 크기: %0"
+      "box-size-0": "상자 크기: %0",
+      "text-formatting": "텍스트 서식",
+      "block-type": "블록 유형"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",
@@ -4306,6 +4303,10 @@
     },
     "colors": {
       "pink": "분홍색"
+    },
+    "color-menu": {
+      "text-color": "텍스트 색상",
+      "background-color": "배경색"
     }
   },
   "contextual_help": {
@@ -4749,5 +4750,9 @@
     "task_state": "<p>이 노트는 할 일의 작업 상태를 정의합니다. 노트의 아이콘은 해당 상태를 나타내기 위해 체크박스 안에 표시되며, 노트의 제목은 표시 이름으로 사용됩니다.</p><p>작업 상태는 다음 주요 속성을 통해 설정합니다.</p><ul><li><code>Identifier</code> — 필수 항목. 노트 마크업의 메타데이터에 저장되는 내부 이름입니다. 영문자, 숫자, <code>-</code> 및 <code>_</code> 문자만 사용할 수 있습니다.<p class=\"admonition warning\">향후 Trilium 버전에서 추가될 수 있는 작업 상태와의 충돌을 방지하려면 사용자 지정 작업 상태의 식별자 앞에 밑줄 <code>_</code> 또는 하이픈 <code>-</code> 문자를 붙이세요.</p>예시: <code>_postponed</code>, <code>_awaiting-feedback</code>, <code>_validated</code>.</li><li><code>Markdown symbol</code> — Markdown으로 내보낼 때 작업 상태를 나타내는 단일 문자입니다. 예를 들어 <code>/</code> 문자를 지정하면 <code>- [/]</code> 형식으로 표시됩니다.</li><li><code>Counts as completed</code> — 활성화하면 해당 상태의 작업을 완료된 것으로 처리합니다.</li><li><code>Color</code> — 해당 상태를 나타내는 체크박스 색상입니다.</li><li><code>Hidden from toolbar</code> — 활성화하면 해당 상태가 상태 목록과 키보드 순환 선택에서 제외됩니다. 이미 해당 상태를 사용하는 노트는 계속 정상적으로 표시됩니다.</li></ul><p class=\"admonition warning\">변경 사항은 애플리케이션을 다시 불러온 후 적용됩니다.</p>",
     "task_states": "<p>이 노트에는 텍스트 편집기의 할 일 체크박스에서 사용할 수 있는 작업 상태가 포함되어 있습니다. 각 하위 노트는 하나의 작업 상태를 나타냅니다.</p><p>작업 상태는 추가, 수정, 순서 변경 또는 삭제할 수 있습니다. 새 작업 상태를 추가하려면 하위 노트를 만들고 주요 속성을 설정하세요.</p><p class=\"admonition warning\">변경 사항은 애플리케이션을 다시 불러온 후 적용됩니다.</p>",
     "user_hidden": "<p>이 노트는 사용자 스크립트가 생성하는 데이터를 저장하기 위한 전용 하위 트리입니다. 사용자 스크립트가 숨겨진 하위 트리에 데이터를 임의로 생성하지 않도록 이 영역을 별도로 마련했습니다.</p>"
+  },
+  "hide_keyboard_button": {
+    "title": "키보드 숨기기",
+    "close_menu": "메뉴 닫기"
   }
 }

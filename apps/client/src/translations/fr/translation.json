@@ -58,8 +58,6 @@
     "help_on_links": "Aide sur les liens",
     "note": "Note",
     "search_note": "rechercher une note par son nom",
-    "link_title_mirrors": "le titre du lien reflète le titre actuel de la note",
-    "link_title_arbitrary": "le titre du lien peut être modifié arbitrairement",
     "link_title": "Titre du lien",
     "button_add_link": "Ajouter un lien",
     "anchor": "Ancre (optionnel)",
@@ -834,18 +832,8 @@
   },
   "search_definition": {
     "add_search_option": "Ajouter une option de recherche :",
-    "search_string": "chaîne de caractères à rechercher",
-    "search_script": "script de recherche",
-    "ancestor": "ancêtre",
-    "fast_search": "recherche rapide",
-    "fast_search_description": "L'option de recherche rapide désactive la recherche dans le texte intégral du contenu des notes, ce qui peut accélérer la recherche dans les grandes bases de données.",
-    "include_archived": "inclure les archivées",
     "include_archived_notes_description": "Par défaut, les notes archivées sont exclues des résultats de recherche : avec cette option, elles seront incluses.",
-    "order_by": "trier par",
-    "limit": "limite",
     "limit_description": "Limiter le nombre de résultats",
-    "debug": "debug",
-    "debug_description": "Debug imprimera des informations supplémentaires dans la console pour faciliter le débogage des requêtes complexes",
     "action": "action",
     "search_button": "Recherche",
     "search_execute": "Rechercher et exécuter des actions",
@@ -888,8 +876,7 @@
     "include_archived_notes": "Inclure les notes archivées"
   },
   "limit": {
-    "limit": "Limite",
-    "take_first_x_results": "Ne prendre que les X premiers résultats spécifiés."
+    "limit": "Limite"
   },
   "order_by": {
     "order_by": "Trier par",

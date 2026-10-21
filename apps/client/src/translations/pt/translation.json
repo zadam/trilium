@@ -43,8 +43,6 @@
     "help_on_links": "Ajuda sobre ligações",
     "note": "Nota",
     "search_note": "pesquisar nota pelo nome",
-    "link_title_mirrors": "o título da ligação reflete o título atual da nota",
-    "link_title_arbitrary": "o título da ligação pode ser alterado livremente",
     "link_title": "Titulo da ligação",
     "button_add_link": "Adicionar ligação"
   },
@@ -739,18 +737,8 @@
   },
   "search_definition": {
     "add_search_option": "Adicionar opção de pesquisa:",
-    "search_string": "pesquisar cadeia",
-    "search_script": "pesquisa de script",
-    "ancestor": "ancestral",
-    "fast_search": "pesquisa rápida",
-    "fast_search_description": "A opção de pesquisa rápida desativa a pesquisa de texto completo do conteúdo de nota, o que pode acelerar a pesquisa em grandes bases de dados.",
-    "include_archived": "incluir arquivados",
     "include_archived_notes_description": "As notas arquivadas são por padrão excluídas dos resultados da pesquisa, com esta opção elas serão incluídas.",
-    "order_by": "ordenar por",
-    "limit": "limite",
     "limit_description": "Limitar quantidade de resultados",
-    "debug": "depurar",
-    "debug_description": "A depuração irá imprimir informações adicionais no console para ajudar na depuração de consultas complexas",
     "action": "ação",
     "search_button": "Pesquisar",
     "search_execute": "Pesquisar & Executar ações",
@@ -792,8 +780,7 @@
     "include_archived_notes": "Incluir notas arquivadas"
   },
   "limit": {
-    "limit": "Limite",
-    "take_first_x_results": "Escolher apenas os X primeiros resultados."
+    "limit": "Limite"
   },
   "order_by": {
     "order_by": "Ordenar por",
