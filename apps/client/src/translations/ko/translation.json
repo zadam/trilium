@@ -65,7 +65,11 @@
     "edit_link": "링크 편집",
     "button_edit_link": "링크 저장",
     "fix_link": "링크 수정",
-    "button_fix_link": "링크 수정"
+    "button_fix_link": "링크 수정",
+    "web_link": "웹 링크",
+    "url": "URL",
+    "mirror_title": "노트 제목과 동기화",
+    "mirror_title_description": "링크에 노트의 현재 제목이 표시되며, 노트 이름을 변경하면 링크의 제목도 변경됩니다."
   },
   "branch_prefix": {
     "save": "저장",
@@ -360,7 +364,21 @@
   "include_note": {
     "dialog_title": "노트 포함",
     "label_note": "노트",
-    "button_include": "노트 포함"
+    "button_include": "노트 포함",
+    "box_size": "상자 크기",
+    "size_tiny": "아주 작게",
+    "size_tiny_description": "제목과 작업 버튼을 한 줄로 표시합니다.",
+    "size_small": "작게",
+    "size_small_description": "약 10줄 높이의 상자입니다.",
+    "size_medium": "중간",
+    "size_medium_description": "약 30줄 높이의 상자입니다.",
+    "size_full": "전체",
+    "size_full_description": "전체 내용을 표시합니다.",
+    "size_expandable": "확장 가능",
+    "size_expandable_description": "펼치기 전에는 제목만 표시합니다.",
+    "inserted_as_image": "이 노트는 이미지로 삽입되었습니다.",
+    "size_hint": "크기는 나중에 변경할 수 있습니다.",
+    "image_size_hint": "이미지 크기는 나중에 조절할 수 있습니다."
   },
   "info": {
     "modalTitle": "정보 메시지",
@@ -436,7 +454,9 @@
   },
   "note_type_chooser": {
     "modal_title": "노트 유형 선택",
-    "templates": "템플릿"
+    "templates": "템플릿",
+    "location": "위치",
+    "location_placeholder": "비워 두면 기본 위치를 사용합니다."
   },
   "password_not_set": {
     "title": "비밀번호가 설정되지 않았습니다",
@@ -1855,7 +1875,8 @@
   "code-editor-options": {
     "title": "편집기",
     "tab_width": "탭 폭",
-    "tab_width_unit": "칸"
+    "tab_width_unit": "칸",
+    "line_numbers": "줄 번호"
   },
   "code_mime_types": {
     "title": "드롭다운에서 사용 가능한 MIME 유형",
@@ -2851,7 +2872,8 @@
     "line_numbers": "줄 번호",
     "line_numbers_auto": "자동",
     "line_numbers_on": "켜기",
-    "line_numbers_off": "끄기"
+    "line_numbers_off": "끄기",
+    "line_numbers_auto_description": "전역 설정을 따릅니다."
   },
   "electron_integration": {
     "desktop-application": "데스크톱 애플리케이션",
@@ -3692,7 +3714,13 @@
     "tab_width_reindent_header": "콘텐츠 재들여쓰기",
     "tab_width_style_header": "들여쓰기 사용",
     "tab_width_style_spaces": "공백",
-    "tab_width_style_tabs": "탭"
+    "tab_width_style_tabs": "탭",
+    "cursor_line_title": "현재 줄",
+    "cursor_column_title": "현재 열",
+    "cursor_selection_title": "선택한 문자 수",
+    "cursor_line": "줄: <Value />",
+    "cursor_column": "열: <Value />",
+    "cursor_selection": "선택됨: <Value />"
   },
   "attributes_panel": {
     "title": "노트 속성",
@@ -4284,7 +4312,14 @@
       "scroll-to-the-next-tabs": "다음 탭으로 스크롤",
       "box-size-0": "상자 크기: %0",
       "text-formatting": "텍스트 서식",
-      "block-type": "블록 유형"
+      "block-type": "블록 유형",
+      "apply-formatting": "서식 적용",
+      "camera": "카메라",
+      "move-up": "위로 이동",
+      "move-down": "아래로 이동",
+      "image-position": "이미지 위치",
+      "list": "목록",
+      "list-type": "목록 유형"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",
@@ -4744,5 +4779,31 @@
   "hide_keyboard_button": {
     "title": "키보드 숨기기",
     "close_menu": "메뉴 닫기"
+  },
+  "code_editor_context_menu": {
+    "transform": "변환",
+    "sort_ascending": "오름차순 정렬",
+    "sort_descending": "내림차순 정렬",
+    "shuffle_lines": "줄 순서 무작위 섞기",
+    "reverse_lines": "줄 순서 뒤집기",
+    "deduplicate_lines": "중복 줄 제거",
+    "trim_leading": "앞쪽 공백 제거",
+    "trim_leading_tooltip": "각 줄의 시작 부분에 있는 공백 문자를 제거합니다.",
+    "trim_trailing": "뒤쪽 공백 제거",
+    "trim_trailing_tooltip": "각 줄의 끝 부분에 있는 공백 문자를 제거합니다.",
+    "trim_both": "양쪽 공백 제거",
+    "trim_both_tooltip": "각 줄의 시작과 끝에 있는 공백 문자를 제거합니다.",
+    "remove_blank_lines": "빈 줄 제거",
+    "to_uppercase": "대문자로 변환",
+    "to_lowercase": "소문자로 변환",
+    "to_sentence_case": "문장형 대소문자로 변환",
+    "to_title_case": "제목형 대소문자로 변환",
+    "remove_diacritics": "발음 구별 기호 제거"
+  },
+  "date_picker": {
+    "today": "오늘",
+    "tomorrow": "내일",
+    "next-week": "다음 주",
+    "clear": "지우기"
   }
 }
