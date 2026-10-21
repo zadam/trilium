@@ -1,8 +1,8 @@
 import {
     _setModelData as setModelData,
     ButtonView, type ClassicEditor, ContextualBalloon, DropdownView, Essentials, IconLink, Image, ImageStyle, ImageToolbar,
-    IconBulletedList, IconNumberedList, IconPreviousArrow, IconTodoList, IconTable, Link, LinkUI, List, ListProperties, Paragraph, TodoList, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
-    WidgetToolbarRepository
+    IconBulletedList, IconNumberedList, IconPreviousArrow, IconThreeVerticalDots, IconTodoList, IconTable, Link, LinkUI, List, ListProperties, Paragraph, TodoList, Table, TableCaption, TableToolbar, ToolbarSeparatorView,
+    type ViewElement, WidgetToolbarRepository
 } from "ckeditor5";
 import bxPencil from "boxicons/svg/regular/bx-pencil.svg?raw";
 import { describe, expect, it, vi } from "vitest";
@@ -237,6 +237,12 @@ describe("ContextToolbar", () => {
         setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\">a[]</paragraph>");
         editor.ui.update();
         expect([plugin.source?.id, plugin.isActive]).toStrictEqual(["bulletedList", false]);
+
+        // Drawn anew while its row was never shown, the list still waits for the chip.
+        const element = plugin.source?.element;
+        editor.execute("listStyle", { type: "circle" });
+        expect([plugin.source?.id, plugin.source?.element === element, plugin.isActive])
+            .toStrictEqual(["bulletedList", false, false]);
     });
 
     it("adds the task states to the row of a to-do list", async () => {
@@ -286,10 +292,10 @@ describe("ContextToolbar", () => {
     });
 
     describe("for a link", () => {
-        async function createLinkEditor(toolbar = ["undo", "contextToolbar"]) {
+        async function createLinkEditor(toolbar = ["undo", "contextToolbar"], decorators = {}) {
             const editor = await createTestEditor([Essentials, Paragraph, Link, ContextToolbar], {
                 toolbar,
-                link: { toolbar: ["editLink", "linkProperties", "unlink"] }
+                link: { toolbar: ["editLink", "linkProperties", "unlink"], decorators }
             });
             editor.ui.focusTracker.isFocused = true;
             setModelData(editor.model, "<paragraph><$text linkHref=\"https://a.b\">li[]nk</$text> text</paragraph>");
@@ -313,6 +319,14 @@ describe("ContextToolbar", () => {
             editor.ui.update();
             expect(plugin.isActive).toBe(false);
             expect(button.isVisible).toBe(false);
+
+            // With a property a link can be given, the toolbar keeps its button.
+            const withDecorators = await createLinkEditor(undefined, {
+                openInNewTab: { mode: "manual", label: "Open in a new tab", attributes: { target: "_blank" } }
+            });
+            getButton(withDecorators).fire("execute");
+            expect([...withDecorators.plugins.get(ContextToolbar).toolbarView.items].slice(3).map((item) => (item as ButtonView).label))
+                .toStrictEqual(["Edit link", "Link properties", "Unlink"]);
         });
 
         it("swaps in on a tap in the link, which is about the link rather than its text", async () => {
@@ -375,9 +389,51 @@ describe("ContextToolbar", () => {
         expect([...editor.plugins.get(ContextToolbar).toolbarView.items][2]).toMatchObject({ label: "Link" });
     });
 
-    it("leaves the balloons alone in an editor without its button", async () => {
+    it("names the toolbar of each widget, or takes the toolbar's own label for a widget it has no name for", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, ContextToolbar], { toolbar: ["contextToolbar"] });
+        editor.ui.focusTracker.isFocused = true;
+        const plugin = editor.plugins.get(ContextToolbar);
+        const names: Record<string, string | undefined> = {
+            codeblock: "Code block", inlineCode: "Code", admonition: "Admonition", tabs: "Tabs",
+            multicolumnLayout: "Columns", contentEmbed: "Embed", other: undefined
+        };
+        // Stand-ins for the toolbars of those widgets, each for the paragraph while it is the current one.
+        let current = "";
+        for (const id of Object.keys(names)) {
+            editor.plugins.get(WidgetToolbarRepository).register(id, {
+                ariaLabel: `${id} toolbar`, items: ["undo"],
+                getRelatedElement: (selection) => (current === id ? selection.getFirstPosition()?.parent as ViewElement : null)
+            });
+        }
+        setModelData(editor.model, "<paragraph>a[]</paragraph>");
+        const button = getButton(editor);
+
+        for (const [id, name] of Object.entries(names)) {
+            current = id;
+            editor.ui.update();
+            button.fire("execute");
+            const title = [...plugin.toolbarView.items][2];
+            if (name) {
+                expect(button).toMatchObject({ label: name, withText: true, tooltip: `${id} toolbar` });
+                expect(title).toMatchObject({ isVisible: true, label: name });
+            } else {
+                expect(button).toMatchObject({ label: "other toolbar", withText: false, icon: IconThreeVerticalDots });
+                expect(title).toMatchObject({ isVisible: false, label: "", icon: "" });
+            }
+        }
+    });
+
+    it("takes over the balloons only in an editor whose toolbar holds its button, at any depth", async () => {
         const { editor } = await createEditor(["undo"]);
         expect(editor.plugins.get(WidgetToolbarRepository).isEnabled).toBe(true);
+
+        const unset = await createTestEditor([Essentials, Paragraph, Table, TableToolbar, ContextToolbar], {});
+        expect(unset.plugins.get(WidgetToolbarRepository).isEnabled).toBe(true);
+
+        const nested = await createTestEditor([Essentials, Paragraph, Table, TableToolbar, ContextToolbar], {
+            toolbar: { items: ["undo", { label: "More", items: ["contextToolbar"] }] }
+        });
+        expect(nested.plugins.get(WidgetToolbarRepository).isEnabled).toBe(false);
     });
 });
 

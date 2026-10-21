@@ -140,9 +140,9 @@ export async function replaceLinkAtSelection(editor: Editor, href: string, text:
     }
 
     model.change((writer) => {
+        // A link ends where its attribute does, so its range starts at the boundary of a node.
         const start = found.range.start;
-        const first = start.textNode ?? start.nodeAfter;
-        const attributes = new Map(first?.getAttributes() ?? []);
+        const attributes = new Map(start.nodeAfter?.getAttributes());
         writer.remove(found.range);
         attributes.set('linkHref', href);
         writer.insertText(text, attributes, start);

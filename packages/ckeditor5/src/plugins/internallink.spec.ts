@@ -95,6 +95,18 @@ describe("the link at the selection", () => {
         setModelData(editor.model,
             "<paragraph>a[] <$text linkHref=\"https://a.example\">foo</$text></paragraph>");
         expect(getLinkAtSelection(editor)).toBeNull();
+        // Nothing to replace there either.
+        replaceLinkAtSelection(editor, "#root/abc", "See there");
+        expect(getModelData(editor.model, { withoutSelection: true }))
+            .toBe("<paragraph>a <$text linkHref=\"https://a.example\">foo</$text></paragraph>");
+    });
+
+    it("reads only the text of a link that holds an inline object", () => {
+        editor.model.schema.extend("reference", { allowAttributes: "linkHref" });
+        setModelData(editor.model, "<paragraph><$text linkHref=\"https://a.example\">a[]b</$text>"
+            + "<reference href=\"#root/abc\" linkHref=\"https://a.example\"></reference>"
+            + "<$text linkHref=\"https://a.example\">c</$text></paragraph>");
+        expect(getLinkAtSelection(editor)).toStrictEqual({ href: "https://a.example", text: "abc" });
     });
 
     it("replaces the address and the text of the whole link, keeping its formatting", () => {
@@ -133,6 +145,17 @@ describe("the link at the selection", () => {
         const replacing = replaceLinkAtSelection(editor, "#root/abc", null);
         await expect(replacing).rejects.toThrow("not found");
         expect(data()).toBe(original);
+    });
+
+    it("makes no reference once the link is gone by the time the title loads", async () => {
+        setModelData(editor.model, LINKED);
+        const replacing = replaceLinkAtSelection(editor, "#root/abc", null);
+        editor.model.change((writer) => {
+            const paragraph = editor.model.document.getRoot()?.getChild(0);
+            if (paragraph) writer.remove(paragraph);
+        });
+        await replacing;
+        expect(getModelData(editor.model, { withoutSelection: true })).not.toContain("<reference");
     });
 });
 

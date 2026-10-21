@@ -45,7 +45,7 @@ import {
     UIModel
 } from "ckeditor5";
 import type {
-    Command, DropdownView, Editor, ListDropdownItemDefinition, ListStyleCommand, Locale
+    Command, DropdownView, Editor, ListDropdownItemDefinition, ListStyleCommand, Locale, ModelElement
 } from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
@@ -451,8 +451,9 @@ const DEFAULT_LIST_STYLES: Record<string, string | undefined> = { bulleted: "dis
  * with, or `undefined` outside a bulleted or numbered list.
  */
 function getCurrentListStyle(editor: Editor) {
-    const block = editor.model.document.selection.getFirstPosition()?.parent;
-    const listType = block?.is("element") ? block.getAttribute("listType") : undefined;
+    // In the document, a position is always in an element.
+    const block = editor.model.document.selection.getFirstPosition()?.parent as ModelElement | undefined;
+    const listType = block?.getAttribute("listType");
     const value = editor.commands.get("listStyle")?.value;
     const type = !value || value === "default" ? DEFAULT_LIST_STYLES[String(listType)] : value;
     return LIST_STYLES.find((style) => style.listType === listType && style.type === type);

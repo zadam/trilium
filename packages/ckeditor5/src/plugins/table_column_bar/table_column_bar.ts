@@ -252,7 +252,8 @@ export default class TableColumnBar extends Plugin {
         // `position: fixed` places the bar against the layout viewport, which iOS shifts away
         // from the viewport that `getBoundingClientRect()` measures while the keyboard is up.
         view.set({ left: area.left, top: barTop, width: area.right - area.left });
-        const shift = getFixedShift(view.element, view.left, view.top);
+        // Rendered as `init()` adds it to the body collection.
+        const shift = getFixedShift(view.element as HTMLElement, view.left, view.top);
         view.set({ left: area.left - shift.x, top: barTop - shift.y });
         view.setTrack(trackLeft - area.left, trackRight - trackLeft, tableRect.left - trackLeft);
         this.trackBox = { left: trackLeft, right: trackRight };
@@ -706,7 +707,7 @@ declare module "ckeditor5" {
  * How far `position: fixed` places `element` from where its `left` and `top` put it in the
  * viewport, in pixels.
  */
-function getFixedShift(element: HTMLElement | null, left: number, top: number) {
-    const rect = element?.getBoundingClientRect();
-    return rect ? { x: rect.left - left, y: rect.top - top } : { x: 0, y: 0 };
+function getFixedShift(element: HTMLElement, left: number, top: number) {
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left - left, y: rect.top - top };
 }

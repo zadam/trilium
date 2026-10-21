@@ -370,7 +370,8 @@ function getLinkToolbarItems(editor: Editor): ToolbarConfigItem[] {
     if (!editor.plugins.has(LinkUI)) {
         return [];
     }
-    const items = editor.config.get("link.toolbar") ?? [];
+    // `LinkUI` defines a default.
+    const items = editor.config.get("link.toolbar") as ToolbarConfigItem[];
     const command = editor.commands.get("link") as LinkCommand | undefined;
     return command?.manualDecorators.length ? items : items.filter((item) => item !== "linkProperties");
 }

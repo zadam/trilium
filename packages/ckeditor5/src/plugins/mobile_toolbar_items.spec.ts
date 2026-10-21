@@ -352,6 +352,11 @@ describe("addLink", () => {
         editor.enableReadOnlyMode("spec");
         expect(button.isEnabled).toBe(false);
     });
+
+    it("is off in an editor without the internal link button, whose dialog it opens", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, MobileToolbarItems], { toolbar: ["addLink"] });
+        expect((editor.ui.view.toolbar.items.get(0) as ButtonView).isEnabled).toBe(false);
+    });
 });
 
 describe("list properties", () => {
@@ -407,6 +412,9 @@ describe("list properties", () => {
         expect(listType()).toBe("todo");
         expect(style.buttonView.icon).toBe(IconTodoList);
         expect(open().map(rowText)).toContain("To-do List ✓");
+        // Picked again, it keeps the to-do list.
+        entry(open(), "To-do List").run?.();
+        expect(listType()).toBe("todo");
         entry(open(), "Square").run?.();
         expect([listType(), editor.commands.get("listStyle")?.value]).toStrictEqual(["bulleted", "square"]);
 
@@ -439,6 +447,39 @@ describe("list properties", () => {
         reversed.fire("execute");
         expect(reversed.isOn).toBe(true);
         expect(editor.commands.get("listReversed")?.value).toBe(true);
+    });
+
+    it("leaves out the markers the list's `type` attribute cannot hold", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["listTypeMenu"],
+            list: { properties: { styles: { useAttribute: true } } },
+            toolbarGroupMenu: { host: () => host }
+        });
+        setModelData(editor.model, BULLETED_LIST);
+        (editor.ui.view.toolbar.items.first as DropdownView).buttonView.fire("open");
+        const labels = (requests.at(-1)?.items ?? []).map(rowText);
+        expect(labels).toContain("Decimal");
+        expect(labels).not.toContain("Decimal with leading zero");
+        expect(labels).not.toContain("Arabic-indic");
+    });
+
+    it("asks for the start from 1 while the list has none, and only with a prompt to ask", async () => {
+        const { editor, promptListStart, start } = await createListEditor();
+        setModelData(editor.model, "<paragraph>a[]</paragraph>");
+        start.fire("execute");
+        expect(promptListStart).toHaveBeenCalledExactlyOnceWith("Start at", 1);
+
+        const withoutPrompt = await createTestEditor([Essentials, Paragraph, List, ListProperties, MobileToolbarItems], {
+            toolbar: ["listStartAt"],
+            list: { properties: { startIndex: true } }
+        });
+        setModelData(withoutPrompt.model, NUMBERED_LIST);
+        const execute = vi.spyOn(withoutPrompt, "execute");
+        (withoutPrompt.ui.view.toolbar.items.first as ButtonView).fire("execute");
+        await Promise.resolve();
+        expect(execute).not.toHaveBeenCalled();
     });
 });
 

@@ -53,6 +53,13 @@ describe("ImagePosition", () => {
         setModelData(editor.model, "<paragraph>b[]</paragraph>");
         expect(dropdown.isEnabled).toBe(false);
     });
+
+    it("leaves out a group with no style, and shows the first style while none of them is set", async () => {
+        const { editor, dropdown } = await createEditor(["alignLeft", "alignRight"]);
+        setModelData(editor.model, BLOCK_IMAGE);
+        expect(rows(dropdown)).toStrictEqual(["# Wrap text", "Align left", "Align right"]);
+        expect(dropdown.buttonView.icon).toBe(styleIcon(editor, "alignLeft"));
+    });
 });
 
 function getDropdown(editor: ClassicEditor) {

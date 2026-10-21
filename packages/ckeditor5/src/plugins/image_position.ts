@@ -35,8 +35,9 @@ export default class ImagePosition extends Plugin {
         const t = editor.t;
         // Always registered: `ImageStyleEditing` adds it.
         const command = editor.commands.get("imageStyle") as Command;
-        const styles = new Map((editor.plugins.get(ImageStyleEditing).normalizedStyles ?? [])
-            .map((style) => [style.name, style]));
+        // Set by `ImageStyleEditing.init()`, which runs first as a plugin this one requires.
+        const normalizedStyles = editor.plugins.get(ImageStyleEditing).normalizedStyles as ImageStyleOptionDefinition[];
+        const styles = new Map(normalizedStyles.map((style) => [style.name, style]));
 
         const groups: { label?: string; rows: [string, string][] }[] = [
             { rows: [["inline", t("In line")]] },
