@@ -796,11 +796,15 @@ export function revealLinkTargetWhenReady(
 /**
  * Whether focus is in an editable element that holds the selection. Focus taken by something else,
  * such as a menu, leaves the selection behind in the editor, which is then no caret to scroll to.
+ * Neither is the fake selection CKEditor puts in a hidden element pinned to the top of the viewport
+ * while a widget, such as an image, is selected.
  */
 export function isCaretInFocus(focused: Element | null, selection: Selection | null) {
     const focusNode = selection?.focusNode;
+    const focusElement = focusNode instanceof Element ? focusNode : focusNode?.parentElement;
     return focused instanceof HTMLElement && focused.isContentEditable
-        && !!focusNode && focused.contains(focusNode);
+        && !!focusNode && focused.contains(focusNode)
+        && !focusElement?.closest(".ck-fake-selection-container");
 }
 
 /** The blocks that an editor of the blocks `block` holds, preferring the ids of `block`. */

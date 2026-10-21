@@ -376,6 +376,22 @@ describe("isCaretInFocus", () => {
         editable.remove();
         menu.remove();
     });
+
+    it("does not hold for the fake selection of a selected widget, which sits at the top of the viewport", () => {
+        const editable = document.createElement("div");
+        editable.contentEditable = "true";
+        editable.innerHTML = "<figure class=\"image ck-widget ck-widget_selected\"></figure>"
+            + "<div class=\"ck-fake-selection-container\" style=\"position: fixed; top: 0\"> </div>";
+        document.body.append(editable);
+        const container = editable.querySelector(".ck-fake-selection-container");
+        expect(container?.firstChild).toBeTruthy();
+
+        editable.focus();
+        window.getSelection()?.selectAllChildren(container as Node);
+        expect(isCaretInFocus(document.activeElement, window.getSelection())).toBe(false);
+
+        editable.remove();
+    });
 });
 
 describe("parseLinkHref", () => {
