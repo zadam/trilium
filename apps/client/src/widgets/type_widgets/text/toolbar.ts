@@ -103,6 +103,9 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "strikethrough",
             "code",
             "|",
+            // Turns the selection into a link.
+            "addLink",
+            "|",
             "superscript",
             "subscript",
             "kbd",

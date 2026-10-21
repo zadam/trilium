@@ -165,6 +165,8 @@ describe("buildMobileToolbar", () => {
         expect(textFormattingToolbar).toStrictEqual([
             "bold", "italic", "underline", "strikethrough", "code",
             "|",
+            "addLink",
+            "|",
             "superscript", "subscript", "kbd",
             "|",
             "fontSizeMenu", "colorMenu",
@@ -174,7 +176,9 @@ describe("buildMobileToolbar", () => {
             // Acts on the selection, which brings this row up.
             "cuttonote"
         ]);
-        expect(collectItems({ items: toolbar.items }).filter((item) => textFormattingToolbar.includes(item))).toStrictEqual([]);
+        // A link is made at the caret from the main row and from a selection here.
+        expect(collectItems({ items: toolbar.items }).filter((item) => textFormattingToolbar.includes(item)))
+            .toStrictEqual([ "addLink" ]);
         // Turned into from the block type menu instead.
         for (const item of [ "bulletedList", "numberedList", "todoList", "codeBlock", "blockQuote", "admonition" ]) {
             expect(toolbar.items).not.toContain(item);
