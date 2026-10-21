@@ -9,6 +9,7 @@ import type {
 } from "ckeditor5";
 
 import admonitionIcon from "../icons/admonition.svg?raw";
+import TodoListMultistateUI, { getTaskStateToolbarItems } from "./todo_list_multistate/todo_list_multistate_ui.js";
 import { isListMenu, openListAsMenu } from "./toolbar_group_menu.js";
 
 /** The icons of the `contextToolbar` button, by the id a widget toolbar is registered under. */
@@ -303,7 +304,9 @@ function* getDefinitions(editor: Editor): Generator<[string, ContextToolbarDefin
                     const list = getInnermostList(selection);
                     return list && getListKind(list) === id ? list : null;
                 },
-                itemsConfig: listItems
+                itemsConfig: id === "todoList" && editor.plugins.has(TodoListMultistateUI)
+                    ? [...listItems, "|", ...getTaskStateToolbarItems(editor)]
+                    : listItems
             }];
         }
     }

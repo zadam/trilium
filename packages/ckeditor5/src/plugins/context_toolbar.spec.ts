@@ -12,6 +12,8 @@ import ContextToolbar from "./context_toolbar.js";
 import ImagePosition from "./image_position.js";
 import LinkEmbedToolbar from "./link_embed/link_embed_toolbar.js";
 import MobileToolbarItems from "./mobile_toolbar_items.js";
+import { getActiveTaskStates } from "./todo_list_multistate/todo_list_multistate_editing.js";
+import TodoListMultistateUI from "./todo_list_multistate/todo_list_multistate_ui.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
 const TABLE = "<table><tableRow><tableCell><paragraph>a[]</paragraph></tableCell></tableRow></table><paragraph>b</paragraph>";
@@ -198,6 +200,47 @@ describe("ContextToolbar", () => {
         setModelData(editor.model, "<paragraph>a[]</paragraph>");
         editor.ui.update();
         expect(button.isVisible).toBe(false);
+    });
+
+    it("adds the task states to the row of a to-do list", async () => {
+        const editTaskStates = vi.fn();
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoListMultistateUI, MobileToolbarItems, ContextToolbar], {
+            toolbar: ["contextToolbar"],
+            list: { properties: { styles: true } },
+            listToolbar: ["listTypeMenu"],
+            editTaskStates
+        });
+        editor.ui.focusTracker.isFocused = true;
+        const plugin = editor.plugins.get(ContextToolbar);
+        const button = getButton(editor);
+        const rowLabels = () => [...plugin.toolbarView.items].slice(3)
+            .map((item) => (item instanceof ButtonView ? item.label : item instanceof DropdownView ? "menu" : "|"));
+
+        setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\">a[]</paragraph>");
+        editor.ui.update();
+        button.fire("execute");
+        expect(rowLabels()).toStrictEqual(["menu"]);
+
+        setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"todo\">a[]</paragraph>");
+        editor.ui.update();
+        button.fire("execute");
+        const states = getActiveTaskStates(editor);
+        expect(states.length).toBeGreaterThan(2);
+        expect(rowLabels()).toStrictEqual([
+            "menu", "|", ...states.map((state) => state.title || state.name), "|", "Edit task states"
+        ]);
+
+        const last = states.at(-1);
+        const stateButton = [...plugin.toolbarView.items].find((item): item is ButtonView =>
+            item instanceof ButtonView && item.label === (last?.title || last?.name));
+        stateButton?.fire("execute");
+        expect(editor.commands.get("setTaskState")?.value).toBe(last?.name);
+        expect(stateButton?.isOn).toBe(true);
+
+        const edit = [...plugin.toolbarView.items].at(-1);
+        expect(edit).toBeInstanceOf(ButtonView);
+        (edit as ButtonView).fire("execute");
+        expect(editTaskStates).toHaveBeenCalledOnce();
     });
 
     describe("for a link", () => {
