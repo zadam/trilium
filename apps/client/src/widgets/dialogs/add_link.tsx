@@ -279,7 +279,6 @@ export default function AddLinkDialog() {
         <Modal
             className="add-link-dialog"
             size="lg"
-            maxWidth={1000}
             title={title}
             helpPageId="QEAPj01N5f7w"
             footer={<Button text={buttonText} keyboardShortcut="Enter" />}
