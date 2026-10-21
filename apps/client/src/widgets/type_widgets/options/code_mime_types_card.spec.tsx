@@ -114,7 +114,7 @@ describe("CodeMimeTypesCard", () => {
                 const picking = vi.spyOn(dialog, "pickSingleItem").mockResolvedValue(null);
                 const container = draw();
 
-                await click(container.querySelector(".tn-sortable-adder"));
+                await click(container.querySelector(".tn-card-adder"));
 
                 const items = picking.mock.calls.at(-1)?.[0].items as PickerItem[];
                 const keys = items.map((item) => item.key);
@@ -137,19 +137,19 @@ describe("CodeMimeTypesCard", () => {
                 .mockResolvedValue({ key: PYTHON, caption: "Python" });
             const container = draw();
 
-            await click(container.querySelector(".tn-sortable-adder"));
+            await click(container.querySelector(".tn-card-adder"));
 
             expect(stored()).toEqual([ PLAIN, JAVA, FRONTEND, C, PYTHON ]);
             expect(captions(container))
                 .toEqual([ "Plain text", "C", "Java", "JavaScript (Trilium frontend)", "Python" ]);
-            expect(container.querySelector(".tn-sortable-adder")?.textContent?.trim())
+            expect(container.querySelector(".tn-card-adder")?.textContent?.trim())
                 .toBe(`code_mime_types.add_another ${MIME_TYPES_DICT.length - 5}`);
         });
 
         it("says how many languages are left to add", () => {
             const container = draw();
 
-            expect(container.querySelector(".tn-sortable-adder")?.textContent?.trim())
+            expect(container.querySelector(".tn-card-adder")?.textContent?.trim())
                 .toBe(`code_mime_types.add_another ${MIME_TYPES_DICT.length - 4}`);
         });
     });

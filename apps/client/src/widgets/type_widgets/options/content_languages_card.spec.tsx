@@ -54,7 +54,7 @@ describe("ContentLanguagesCard", () => {
             const picking = vi.spyOn(dialog, "pickSingleItem").mockResolvedValue(null);
             const container = draw();
 
-            await click(container.querySelector(".tn-sortable-adder"));
+            await click(container.querySelector(".tn-card-adder"));
 
             const items = picking.mock.calls.at(-1)?.[0].items as PickerItem[];
             const keys = items.map((item) => item.key);
@@ -71,7 +71,7 @@ describe("ContentLanguagesCard", () => {
                 .mockResolvedValue({ key: "it", caption: "Italiano" });
             const container = draw();
 
-            await click(container.querySelector(".tn-sortable-adder"));
+            await click(container.querySelector(".tn-card-adder"));
 
             expect(stored()).toEqual([ "ro", "de", "fr", "it" ]);
             expect(names(container)).toEqual([ "Deutsch", "Français", "Italiano", "Română" ]);
@@ -83,7 +83,7 @@ describe("ContentLanguagesCard", () => {
                 .mockReturnValue(new Promise((resolve) => { answer = resolve; }));
             const container = draw();
 
-            await click(container.querySelector(".tn-sortable-adder"));
+            await click(container.querySelector(".tn-card-adder"));
             act(() => {
                 options.set("languages", JSON.stringify([ "ro", "de" ]));
                 reloadOption("languages");
@@ -96,11 +96,11 @@ describe("ContentLanguagesCard", () => {
         });
 
         it("says how many languages are left to add, as the first one or another", () => {
-            expect(draw().querySelector(".tn-sortable-adder")?.textContent?.trim())
+            expect(draw().querySelector(".tn-card-adder")?.textContent?.trim())
                 .toBe(`content_language.add_another ${LOCALES.length - 3}`);
 
             options.set("languages", "[]");
-            expect(draw().querySelector(".tn-sortable-adder")?.textContent?.trim())
+            expect(draw().querySelector(".tn-card-adder")?.textContent?.trim())
                 .toBe(`content_language.add_first ${LOCALES.length}`);
         });
     });

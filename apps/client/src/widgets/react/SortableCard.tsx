@@ -1,7 +1,7 @@
 import "./SortableCard.css";
 
 import clsx from "clsx";
-import { ComponentChildren } from "preact";
+import { ComponentChildren, type RefObject } from "preact";
 import { flushSync } from "preact/compat";
 import {
     useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState
@@ -57,18 +57,26 @@ export interface SortableItem {
     icon?: string;
 }
 
+/** One button of an {@link ItemCreationRow}. */
+export interface ItemCreationRowButton {
+    label: string;
+    /** An icon class, `bx` prefix included. */
+    icon?: string;
+    /** Turns the button off, for a caller that cannot make an entry yet. */
+    disabled?: boolean;
+    /** The button's `name` attribute, which tests find it by. */
+    name?: string;
+    onClick: (event: MouseEvent) => void;
+}
+
 /**
  * One way of creating an entry, rendered as a button at the foot of the card.
  *
  * `onCreateItem` decides what the entry is, and can open a dialog or a picker first. Returning
  * nothing creates no entry.
  */
-export interface ItemCreationButton<T extends SortableItem> {
-    label: string;
-    /** An icon class, `bx` prefix included. */
-    icon?: string;
-    /** Turns the button off, for a caller that cannot make an entry yet. */
-    disabled?: boolean;
+export interface ItemCreationButton<T extends SortableItem>
+    extends Pick<ItemCreationRowButton, "label" | "icon" | "disabled"> {
     /** Answers with the entry to add, or with nothing where none was made. */
     onCreateItem: (event?: MouseEvent) => T | undefined | Promise<T | undefined>;
 }
@@ -234,7 +242,7 @@ export function SortableCard<T extends SortableItem>({
         if (shown.length) {
             focusEntry(Math.min(focused.index, shown.length - 1));
         } else {
-            adderRef.current?.querySelector<HTMLElement>(".tn-sortable-adder")?.focus();
+            adderRef.current?.querySelector<HTMLElement>(".tn-card-adder")?.focus();
         }
     });
 
@@ -493,7 +501,7 @@ export function SortableCard<T extends SortableItem>({
             // Ctrl+Down moves nothing there.
             if (!control && event.key === "ArrowDown" && index === last) {
                 event.preventDefault();
-                adderRef.current?.querySelector<HTMLElement>(".tn-sortable-adder")?.focus();
+                adderRef.current?.querySelector<HTMLElement>(".tn-card-adder")?.focus();
             }
 
             return;
@@ -610,33 +618,55 @@ export function SortableCard<T extends SortableItem>({
                     </section>
                 ))}
 
-                {/* Transparent: each button paints itself, and the gaps show the card through. */}
                 {!!itemCreationButtons?.length && (
-                    <section
-                        ref={adderRef}
-                        className="tn-card-section tn-sortable-adders"
+                    <ItemCreationRow
+                        elementRef={adderRef}
                         onKeyDown={onAddKeyDown}
-                    >
-                        {itemCreationButtons.map((button, index) => (
-                            <Button
-                                // The position in the row: two buttons can share a label.
-                                key={index}
-                                // Not a command button: the theme gives those a background, a
-                                // shadow and a minimum width, none of which suit a segment.
-                                kind="lowProfile"
-                                className="tn-sortable-adder"
-                                text={<>
-                                    {button.icon && <Icon icon={button.icon} />}
-                                    <span>{button.label}</span>
-                                </>}
-                                disabled={button.disabled}
-                                onClick={(event) => add(button.onCreateItem, undefined, event)}
-                            />
-                        ))}
-                    </section>
+                        buttons={itemCreationButtons.map((button) => ({
+                            label: button.label,
+                            icon: button.icon,
+                            disabled: button.disabled,
+                            onClick: (event) => add(button.onCreateItem, undefined, event)
+                        }))}
+                    />
                 )}
             </div>
         </Card>
+    );
+}
+
+interface ItemCreationRowProps {
+    buttons: ItemCreationRowButton[];
+    elementRef?: RefObject<HTMLElement | null>;
+    onKeyDown?: (event: KeyboardEvent) => void;
+}
+
+/**
+ * The buttons that create an entry, as the last section of a card. Each is painted as a segment of
+ * the card rather than as a button, so the row reads as the foot of the list above it.
+ */
+export function ItemCreationRow({ buttons, elementRef, onKeyDown }: ItemCreationRowProps) {
+    return (
+        // Transparent: each button paints itself, and the gaps show the card through.
+        <section ref={elementRef} className="tn-card-section tn-card-adders" onKeyDown={onKeyDown}>
+            {buttons.map((button, index) => (
+                <Button
+                    // The position in the row: two buttons can share a label.
+                    key={index}
+                    name={button.name}
+                    // Not a command button: the theme gives those a background, a shadow and a
+                    // minimum width, none of which suit a segment.
+                    kind="lowProfile"
+                    className="tn-card-adder"
+                    text={<>
+                        {button.icon && <Icon icon={button.icon} />}
+                        <span>{button.label}</span>
+                    </>}
+                    disabled={button.disabled}
+                    onClick={button.onClick}
+                />
+            ))}
+        </section>
     );
 }
 

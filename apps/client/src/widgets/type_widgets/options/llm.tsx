@@ -8,7 +8,6 @@ import { t } from "../../../services/i18n";
 import server from "../../../services/server";
 import { isStandalone } from "../../../services/utils";
 import ActionButton from "../../react/ActionButton";
-import Button from "../../react/Button";
 import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import CodeBlock from "../../react/CodeBlock";
 import Collapsible from "../../react/Collapsible";
@@ -17,6 +16,7 @@ import FormToggle from "../../react/FormToggle";
 import { useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import Icon from "../../react/Icon";
 import NoItems from "../../react/NoItems";
+import { ItemCreationRow } from "../../react/SortableCard";
 import { shortModelName } from "../llm_chat/model_name";
 import OptionsPageHeader from "./components/OptionsPageHeader";
 import AddProviderModal, { findProviderType, type LlmProviderConfig } from "./llm/AddProviderModal";
@@ -112,14 +112,12 @@ function ProviderSettings({ kind, allProviders, setAllProviders }: {
                 onDelete={handleDeleteProvider}
             />
 
-            <CardSection className="llm-add-provider">
-                <Button
-                    name={isSearch ? "add-search-provider-button" : "add-llm-provider-button"}
-                    size="micro" icon="bx-plus"
-                    text={isSearch ? t("llm.add_search_provider") : t("llm.add_model_provider")}
-                    onClick={() => openModal()}
-                />
-            </CardSection>
+            <ItemCreationRow buttons={[ {
+                name: isSearch ? "add-search-provider-button" : "add-llm-provider-button",
+                label: isSearch ? t("llm.add_search_provider") : t("llm.add_model_provider"),
+                icon: "bx bx-plus",
+                onClick: () => openModal()
+            } ]} />
         </Card>
 
         <AddProviderModal

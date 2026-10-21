@@ -433,7 +433,7 @@ describe("SortableCard", () => {
     describe("adding an entry", () => {
         it("draws no segment for adding unless it is given one", () => {
             draw();
-            expect(container.querySelector(".tn-sortable-adders")).toBeNull();
+            expect(container.querySelector(".tn-card-adders")).toBeNull();
 
             draw({ itemCreationButtons: [ makes("d", "Delta") ] });
             expect(adder()?.textContent).toContain("Add");
@@ -838,16 +838,16 @@ describe("SortableCard", () => {
     }
 
     function row() {
-        return container.querySelector<HTMLElement>(".tn-sortable-adders");
+        return container.querySelector<HTMLElement>(".tn-card-adders");
     }
 
     /** The first of the buttons at the foot of the card, there being at least one in these. */
     function adder() {
-        return container.querySelector<HTMLElement>(".tn-sortable-adder");
+        return container.querySelector<HTMLElement>(".tn-card-adder");
     }
 
     function adders() {
-        return [ ...container.querySelectorAll<HTMLElement>(".tn-sortable-adder") ];
+        return [ ...container.querySelectorAll<HTMLElement>(".tn-card-adder") ];
     }
 
     /** A way of making one entry, named so a test can tell which button made what. */

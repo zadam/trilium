@@ -2846,7 +2846,7 @@ describe("Board column rename", () => {
             .map(element => element.textContent);
         expect(named).toEqual([ "Text", "Markdown", "Canvas", "Spreadsheet" ]);
         expect(templates?.querySelectorAll(".tn-sortable-grip").length).toBe(4);
-        expect(templates?.querySelectorAll(".tn-sortable-adder").length).toBe(2);
+        expect(templates?.querySelectorAll(".tn-card-adder").length).toBe(2);
 
         // And the attributes the cards show, which the same dialog arranges.
         expect(dialog?.querySelector(".promoted-attributes-card")).toBeTruthy();
