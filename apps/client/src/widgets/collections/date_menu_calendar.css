@@ -1,0 +1,23 @@
+.calendar-dropdown-widget.date-menu-calendar {
+    width: 260px;
+    padding: 4px 8px 8px;
+
+    .calendar-header {
+        padding: 0 0 4px;
+        justify-content: space-between;
+    }
+
+    .date-menu-calendar-title {
+        font-weight: 500;
+    }
+
+    .calendar-body {
+        min-height: 0;
+    }
+
+    .calendar-date,
+    .calendar-week-number-disabled {
+        padding: 0.25rem 0;
+        font-size: 100%;
+    }
+}

@@ -7,6 +7,7 @@ import { t } from "../../services/i18n";
 import { clearLabelOnNotes, setLabelOnNotes, shared } from "../../services/note_set";
 import options from "../../services/options";
 import { promotedAttributeIcon } from "../attribute_widgets/attribute_types";
+import DateMenuCalendar from "./date_menu_calendar";
 import type { PromotedAttribute } from "./promoted_attributes";
 
 /** Marks the value an item holds, at the trailing edge as the other menus place it. */
@@ -130,9 +131,9 @@ function buildSelectItem<T>(
 }
 
 /**
- * A `date`, with Not set and then today, tomorrow and the first day of next week in a submenu,
- * stored as `YYYY-MM-DD` like the field's own date input. The entry the items' value matches is
- * marked; a date the submenu does not offer marks nothing.
+ * A `date`, with Not set, then today, tomorrow and the first day of next week, then a month grid
+ * for any other day, in a submenu. Dates are stored as `YYYY-MM-DD` like the field's own date
+ * input. The entry the items' value matches is marked, and the grid marks that day.
  */
 function buildDateItem<T>(notes: FNote[], attribute: PromotedAttribute): MenuCommandItem<T> {
     const current = shared(notes, (note) => note.getLabelValue(attribute.name));
@@ -159,7 +160,15 @@ function buildDateItem<T>(notes: FNote[], attribute: PromotedAttribute): MenuCom
                     trailingIcon: current.agreed && current.value === value ? CHECK : undefined,
                     handler: () => { void setLabelOnNotes(notes, attribute.name, value); }
                 };
-            })
+            }),
+            { kind: "separator" },
+            {
+                kind: "custom",
+                componentFn: () => DateMenuCalendar({
+                    value: current.agreed ? current.value || undefined : undefined,
+                    onPick: (date) => { void setLabelOnNotes(notes, attribute.name, date); }
+                })
+            }
         ]
     };
 }

@@ -5,6 +5,7 @@ import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
 import froca from "../../services/froca";
 import { buildNote } from "../../test/easy-froca";
 import { buildAttributeMenuItems } from "./attribute_menu";
+import DateMenuCalendar from "./date_menu_calendar";
 import type { PromotedAttribute } from "./promoted_attributes";
 
 // The writes alone, so the rest of the service reads a note the way the application does.
@@ -13,6 +14,9 @@ vi.mock("../../services/attributes", async (importOriginal) => ({
     ...await importOriginal<object>(),
     ...writes
 }));
+
+// The month grid is a component of its own, with its own spec; here only what it is handed counts.
+vi.mock("./date_menu_calendar", () => ({ default: vi.fn(() => null) }));
 
 // i18next is never initialised under test, so `t` echoes the key it is given.
 vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
@@ -252,8 +256,11 @@ describe("buildAttributeMenuItems", () => {
                 "separator",
                 `<span class="tn-menu-name">attribute_menu.today</span>`,
                 `<span class="tn-menu-name">attribute_menu.tomorrow</span>`,
-                `<span class="tn-menu-name">attribute_menu.next-week</span>`
+                `<span class="tn-menu-name">attribute_menu.next-week</span>`,
+                "separator",
+                "separator"
             ]);
+            expect(items.slice(-2)).toMatchObject([ { kind: "separator" }, { kind: "custom" } ]);
             expect(marked(items)).toEqual([
                 `<span class="tn-menu-name">attribute_menu.not-set</span>`
             ]);
@@ -289,6 +296,28 @@ describe("buildAttributeMenuItems", () => {
             expect(marked(entries(buildNote({ title: "Card", "#due": "2026-12-01" }))))
                 .toEqual([]);
         });
+
+        it("ends with a month grid on the date the items hold, which writes the day picked", () => {
+            const note = buildNote({ title: "Card", "#due": "2026-12-01" });
+            const calendar = calendarOf(entries(note, buildNote({ title: "Two", "#due": "2026-12-01" })));
+
+            expect(calendar.value).toBe("2026-12-01");
+            calendar.onPick("2026-12-24");
+            expect(writes.setLabelValues).toHaveBeenCalledWith(note, "due", [ "2026-12-24" ]);
+
+            expect(calendarOf(entries(note, buildNote({ title: "Three" }))).value).toBeUndefined();
+        });
+
+        /** What the submenu's custom row hands the month grid. */
+        function calendarOf(items: MenuItem<string>[]) {
+            const row = items.at(-1);
+            if (!row || !("kind" in row) || row.kind !== "custom") throw new Error("expected a grid");
+            vi.mocked(DateMenuCalendar).mockClear();
+            row.componentFn();
+            const props = vi.mocked(DateMenuCalendar).mock.calls[0]?.[0];
+            if (!props) throw new Error("expected the grid to render");
+            return props;
+        }
 
         it("leaves out a date and time, which a menu cannot set without its time", () => {
             expect(build({ title: "Card" }, [
