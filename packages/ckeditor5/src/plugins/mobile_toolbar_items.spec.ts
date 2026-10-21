@@ -43,6 +43,7 @@ import {
 import bxCamera from "boxicons/svg/regular/bx-camera.svg?raw";
 import bxLink from "boxicons/svg/regular/bx-link.svg?raw";
 import bxShapeSquare from "boxicons/svg/regular/bx-shape-square.svg?raw";
+import bxSortDown from "boxicons/svg/regular/bx-sort-down.svg?raw";
 import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -422,7 +423,7 @@ describe("list properties", () => {
 
         setModelData(editor.model, NUMBERED_LIST);
         expect(start).toMatchObject({ isVisible: true, label: "Start at 3", withText: true });
-        expect(reversed).toMatchObject({ isVisible: true, label: "Reversed order", isOn: false });
+        expect(reversed).toMatchObject({ isVisible: true, label: "Reversed order", icon: bxSortDown, withText: false, tooltip: true, isOn: false });
 
         start.fire("execute");
         expect(promptListStart).toHaveBeenCalledExactlyOnceWith("Start at", 3);

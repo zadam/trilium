@@ -1,4 +1,5 @@
 import bxCamera from "boxicons/svg/regular/bx-camera.svg?raw";
+import bxSortDown from "boxicons/svg/regular/bx-sort-down.svg?raw";
 import {
     _getLocalizedHeadingOptions as getLocalizedHeadingOptions,
     addListToDropdown,
@@ -225,7 +226,7 @@ export default class MobileToolbarItems extends Plugin {
         const editor = this.editor;
         const command = editor.commands.get("listReversed") as Command & { value: boolean | null };
         const button = new ButtonView(locale);
-        button.set({ label: editor.t("Reversed order"), withText: true, isToggleable: true });
+        button.set({ label: editor.t("Reversed order"), icon: bxSortDown, tooltip: true, isToggleable: true });
         button.bind("isOn").to(command, "value", (value: boolean | null) => !!value);
         button.bind("isEnabled").to(command);
         button.bind("isVisible").to(command, "isEnabled");
