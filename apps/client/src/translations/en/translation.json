@@ -60,8 +60,6 @@
     "help_on_links": "Help on links",
     "note": "Note",
     "search_note": "search for note by its name",
-    "link_title_mirrors": "link title mirrors the note's current title",
-    "link_title_arbitrary": "link title can be changed arbitrarily",
     "link_title": "Link title",
     "anchor": "Anchor (optional)",
     "anchor_none": "None (link to note)",
@@ -69,7 +67,9 @@
     "button_edit_link": "Save link",
     "button_fix_link": "Fix link",
     "web_link": "Web link",
-    "url": "URL"
+    "url": "URL",
+    "mirror_title": "Mirror the note's title",
+    "mirror_title_description": "The link shows the note's current title, and changes when the note is renamed."
   },
   "branch_prefix": {
     "edit_branch_prefix": "Edit branch prefix",

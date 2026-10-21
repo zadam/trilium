@@ -1,3 +1,40 @@
-.modal.add-link-dialog .add-link-target {
-    margin-bottom: 1rem;
+.modal.add-link-dialog {
+    .tn-card {
+        margin-bottom: 1rem;
+    }
+
+    .tn-card:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Above the width at which Card.css stacks a wide control under its label. */
+    @container (min-width: 501px) {
+        :is(.add-link-note, .add-link-url, .add-link-text) {
+            --add-link-label-width: 8em;
+
+            > .tn-card-option-label {
+                flex: 0 0 var(--add-link-label-width);
+                min-width: max-content;
+            }
+
+            > :is(.form-control, .input-group) {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+        }
+
+        /* Narrower by the indent of the nested row, so its field lines up with the one above. */
+        .add-link-text.tn-card-section-nested {
+            --add-link-label-width: calc(8em - var(--card-nested-section-indent));
+        }
+    }
+
+    .add-link-target {
+        display: flex;
+        width: 100%;
+
+        .btn {
+            flex: 1;
+        }
+    }
 }

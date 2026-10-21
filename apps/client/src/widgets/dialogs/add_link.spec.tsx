@@ -1,3 +1,4 @@
+import type { RefObject } from "preact";
 import { act } from "preact/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -14,9 +15,12 @@ const autocomplete = vi.hoisted(() => ({
 
 vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
 vi.mock("../react/NoteAutocomplete", () => ({
-    default: ({ onChange }: { onChange: (suggestion: Suggestion | null) => void }) => {
+    default: ({ onChange, inputRef }: {
+        onChange: (suggestion: Suggestion | null) => void;
+        inputRef?: RefObject<HTMLInputElement>;
+    }) => {
         autocomplete.onChange = onChange;
-        return <input className="note-autocomplete" />;
+        return <input ref={inputRef} className="note-autocomplete" />;
     }
 }));
 
@@ -62,6 +66,24 @@ describe("AddLinkDialog", () => {
         return choice().find((button) => button.classList.contains("active"))?.textContent?.trim();
     }
 
+    function headings() {
+        return [ ...container.querySelectorAll(".tn-card-heading") ].map((heading) => heading.textContent);
+    }
+
+    function mirrorToggle() {
+        return container.querySelector<HTMLInputElement>(".add-link-mirror input.switch-toggle");
+    }
+
+    /** Whether the row of the field is indented under the row it depends on. */
+    function nested(name: "url" | "text") {
+        return container.querySelector(`.add-link-${name}`)?.classList.contains("tn-card-section-nested");
+    }
+
+    /** The rows that put their control under the label rather than beside it. */
+    function stacked() {
+        return [ ...container.querySelectorAll(".tn-card-option-stacked") ];
+    }
+
     function field(name: "url" | "text") {
         return container.querySelector<HTMLInputElement>(`.add-link-${name} input`);
     }
@@ -86,6 +108,8 @@ describe("AddLinkDialog", () => {
 
     it("inserts a typed web link, titled by its URL unless given a text", async () => {
         await open();
+        expect(headings()).toStrictEqual([]);
+        expect(container.querySelector(".tn-card .tn-segmented-choice")).not.toBeNull();
         expect(choice().map((button) => button.textContent?.trim()))
             .toStrictEqual([ "add_link.note", "add_link.web_link" ]);
         expect(current()).toBe("add_link.note");
@@ -104,17 +128,35 @@ describe("AddLinkDialog", () => {
         await open();
         await act(async () => choice()[1]?.click());
         await type(field("url"), "https://trilium.cc");
+        expect(nested("text")).toBe(true);
+        expect(stacked()).toStrictEqual([]);
         await type(field("text"), "Trilium");
         await submit();
         expect(addLink).toHaveBeenLastCalledWith("https://trilium.cc", "Trilium", true);
     });
 
-    it("still links a note picked on the note side", async () => {
+    it("links a note by its title, or by a text of its own once the title stops mirroring it", async () => {
         const note = buildNote({ title: "Target" });
         await open();
         await act(async () => autocomplete.onChange?.({ notePath: `root/${note.noteId}` }));
+        expect(mirrorToggle()?.checked).toBe(true);
+        expect(field("text")).toBeNull();
         await submit();
-        expect(addLink).toHaveBeenCalledExactlyOnceWith(`root/${note.noteId}`, null);
+        expect(addLink).toHaveBeenLastCalledWith(`root/${note.noteId}`, null);
+
+        await open();
+        await act(async () => autocomplete.onChange?.({ notePath: `root/${note.noteId}` }));
+        const toggle = mirrorToggle();
+        if (!toggle) throw new Error("No toggle to mirror the note's title.");
+        await act(async () => {
+            toggle.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        await vi.waitFor(() => expect(field("text")?.value).toBe("Target"));
+        expect(nested("text")).toBe(true);
+        expect(stacked()).toStrictEqual([]);
+        await type(field("text"), "See there");
+        await submit();
+        expect(addLink).toHaveBeenLastCalledWith(`root/${note.noteId}`, "See there");
     });
 
     it("opens on the web link side for an edited external link or a selected URL", async () => {

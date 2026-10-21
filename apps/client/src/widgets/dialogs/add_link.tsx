@@ -8,9 +8,10 @@ import type { Suggestion } from "../../services/note_autocomplete";
 import tree from "../../services/tree";
 import { logError } from "../../services/ws";
 import Button from "../react/Button";
-import FormGroup from "../react/FormGroup.js";
-import FormRadioGroup from "../react/FormRadioGroup";
+import { Card, CardSection, OptionCardSection } from "../react/Card";
+import FormSelect from "../react/FormSelect";
 import FormTextBox from "../react/FormTextBox";
+import FormToggle from "../react/FormToggle";
 import { useTriliumEvent } from "../react/hooks";
 import Modal from "../react/Modal";
 import NoteAutocomplete, { type NoteAutocompleteHandle } from "../react/NoteAutocomplete";
@@ -135,6 +136,22 @@ export default function AddLinkDialog() {
         }
     }, [ target ]);
 
+    // A URL pasted on the note side moves to the web link side.
+    useEffect(() => {
+        const input = autocompleteRef.current;
+        if (!input || target !== "note" || opts?.fixLink) return;
+
+        const onPaste = (e: ClipboardEvent) => {
+            const text = e.clipboardData?.getData("text/plain").trim();
+            if (text && hasScheme(text)) {
+                e.preventDefault();
+                changeTarget("url", text);
+            }
+        };
+        input.addEventListener("paste", onPaste);
+        return () => input.removeEventListener("paste", onPaste);
+    }, [ target, opts ]);
+
     async function setDefaultLinkTitle(noteId: string) {
         const title = await tree.getNoteTitle(noteId);
         setNoteTitle(title);
@@ -245,110 +262,17 @@ export default function AddLinkDialog() {
     const buttonText = opts?.fixLink ? t("add_link.button_fix_link")
         : opts?.currentLink ? t("add_link.button_edit_link") : t("add_link.button_add_link");
 
-    const webLinkFields = (
-        <>
-            <FormGroup className="add-link-url" label={t("add_link.url")} name="url">
-                <FormTextBox
-                    inputRef={webLinkRef}
-                    inputMode="url"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    spellcheck={false}
-                    placeholder="https://"
-                    currentValue={webLink}
-                    onChange={changeWebLink}
-                />
-            </FormGroup>
-
-            {!opts?.hasSelection && !opts?.targetOnly && (
-                <FormGroup
-                    className="add-link-text" label={t("add_link.link_title")} name="link-title"
-                >
-                    <FormTextBox
-                        currentValue={linkTitle}
-                        placeholder={suggestion?.externalLink}
-                        onChange={setLinkTitle}
-                    />
-                </FormGroup>
-            )}
-        </>
-    );
-
-    const noteFields = (
-        <>
-            <div
-                onPaste={(e) => {
-                    if (opts?.fixLink) return;
-                    const text = e.clipboardData?.getData("text/plain").trim();
-                    if (text && hasScheme(text)) {
-                        e.preventDefault();
-                        changeTarget("url", text);
-                    }
-                }}
-            >
-                <FormGroup label={t("add_link.note")} name="note">
-                    <NoteAutocomplete
-                        inputRef={autocompleteRef}
-                        handleRef={handleRef}
-                        // A URL picked from the search belongs on the web link side.
-                        onChange={(picked) => (picked?.externalLink
-                            ? changeTarget("url", picked.externalLink)
-                            : setSuggestion(picked))}
-                        opts={{
-                            allowExternalLinks: !opts?.fixLink,
-                            allowCreatingNotes: true
-                        }}
-                    />
-                </FormGroup>
-            </div>
-
-            {bookmarks.length > 0 && !opts?.targetOnly && (
-                <FormGroup label={t("add_link.anchor")} name="anchor">
-                    <select
-                        className="form-select"
-                        value={selectedBookmark}
-                        onChange={(e) => setSelectedBookmark((e.target as HTMLSelectElement).value)}
-                    >
-                        <option value="">{t("add_link.anchor_none")}</option>
-                        {bookmarks.map((bk) => (
-                            <option key={bk} value={bk}>{bk}</option>
-                        ))}
-                    </select>
-                </FormGroup>
-            )}
-
-            {!opts?.hasSelection && !opts?.targetOnly && !opts?.fixLink && (
-                <div className="add-link-title-settings">
-                    {(linkType !== "external-link") && (
-                        <>
-                            <FormRadioGroup
-                                name="link-type"
-                                currentValue={linkType}
-                                values={[
-                                    { value: "reference-link", label: t("add_link.link_title_mirrors") },
-                                    { value: "hyper-link", label: t("add_link.link_title_arbitrary") }
-                                ]}
-                                onChange={(newValue) => setLinkType(newValue as LinkType)}
-                            />
-                        </>
-                    )}
-
-                    {(linkType !== "reference-link" && (
-                        <div className="add-link-title-form-group form-group">
-                            <br/>
-                            <label>
-                                {t("add_link.link_title")}
-
-                                <input className="link-title form-control" style={{ width: "100%" }}
-                                    value={linkTitle}
-                                    onInput={e => setLinkTitle((e.target as HTMLInputElement)?.value ?? "")}
-                                />
-                            </label>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </>
+    const showsTitle = !opts?.hasSelection && !opts?.targetOnly && !opts?.fixLink;
+    const titleSection = (
+        <OptionCardSection
+            className="add-link-text" name="link-title" label={t("add_link.link_title")}
+        >
+            <FormTextBox
+                currentValue={linkTitle}
+                placeholder={target === "url" ? suggestion?.externalLink : undefined}
+                onChange={setLinkTitle}
+            />
+        </OptionCardSection>
     );
 
     return (
@@ -387,19 +311,94 @@ export default function AddLinkDialog() {
             }}
             show={shown}
         >
-            {!opts?.fixLink && (
-                <SegmentedChoice<LinkTarget>
-                    className="add-link-target"
-                    options={[
-                        { value: "note", label: t("add_link.note"), icon: "bx-note" },
-                        { value: "url", label: t("add_link.web_link"), icon: "bx-globe" }
-                    ]}
-                    currentValue={target}
-                    onChange={(next) => changeTarget(next)}
-                />
-            )}
+            <Card>
+                {!opts?.fixLink && (
+                    <CardSection>
+                        <SegmentedChoice<LinkTarget>
+                            className="add-link-target"
+                            options={[
+                                { value: "note", label: t("add_link.note"), icon: "bx-note" },
+                                { value: "url", label: t("add_link.web_link"), icon: "bx-globe" }
+                            ]}
+                            currentValue={target}
+                            onChange={(next) => changeTarget(next)}
+                        />
+                    </CardSection>
+                )}
 
-            {target === "url" ? webLinkFields : noteFields}
+                {target === "url" ? (
+                    <OptionCardSection
+                        className="add-link-url" name="url" label={t("add_link.url")}
+                        subSectionsVisible={showsTitle}
+                        subSections={titleSection}
+                    >
+                        <FormTextBox
+                            inputRef={webLinkRef}
+                            inputMode="url"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            spellcheck={false}
+                            placeholder="https://"
+                            currentValue={webLink}
+                            onChange={changeWebLink}
+                        />
+                    </OptionCardSection>
+                ) : (
+                    <>
+                        <OptionCardSection
+                            className="add-link-note" name="note" label={t("add_link.note")}
+                        >
+                            <NoteAutocomplete
+                                inputRef={autocompleteRef}
+                                handleRef={handleRef}
+                                // A URL picked from the search belongs on the web link side.
+                                onChange={(picked) => (picked?.externalLink
+                                    ? changeTarget("url", picked.externalLink)
+                                    : setSuggestion(picked))}
+                                opts={{
+                                    allowExternalLinks: !opts?.fixLink,
+                                    allowCreatingNotes: true
+                                }}
+                            />
+                        </OptionCardSection>
+
+                        {bookmarks.length > 0 && !opts?.targetOnly && (
+                            <OptionCardSection name="anchor" label={t("add_link.anchor")}>
+                                <FormSelect
+                                    values={[
+                                        { value: "", title: t("add_link.anchor_none") },
+                                        ...bookmarks.map((bookmark) => ({
+                                            value: bookmark, title: bookmark
+                                        }))
+                                    ]}
+                                    keyProperty="value"
+                                    titleProperty="title"
+                                    currentValue={selectedBookmark}
+                                    onChange={setSelectedBookmark}
+                                />
+                            </OptionCardSection>
+                        )}
+
+                        {showsTitle && (
+                            <OptionCardSection
+                                className="add-link-mirror"
+                                name="mirror-title"
+                                label={t("add_link.mirror_title")}
+                                description={t("add_link.mirror_title_description")}
+                                subSectionsVisible={linkType === "hyper-link"}
+                                subSections={titleSection}
+                            >
+                                <FormToggle
+                                    currentValue={linkType === "reference-link"}
+                                    onChange={(mirror) => {
+                                        setLinkType(mirror ? "reference-link" : "hyper-link");
+                                    }}
+                                />
+                            </OptionCardSection>
+                        )}
+                    </>
+                )}
+            </Card>
         </Modal>
     );
 }
