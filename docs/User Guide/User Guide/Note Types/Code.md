@@ -53,7 +53,11 @@ An included code note or an embedded code file can show or hide them on its own 
 
 ## Adjusting options using the status bar
 
-The status bar at the bottom of the editor shows the current indentation settings and language. Clicking on the indentation indicator opens a menu with three sections:
+The status bar at the bottom of the editor shows the position of the cursor, the current indentation settings and language.
+
+The cursor position is shown as _Ln_ (the line) and _Col_ (the column), both counted from 1. A tab counts as many columns as the display width of tabs, so the column matches where the cursor appears on screen.
+
+Clicking on the indentation indicator opens a menu with three sections:
 
 1.  _Indent Using_ — switch between Spaces and Tabs (`#indentWithTabs`). If a per-note override is active, a "Reset to default" option appears.
 2.  _Display Width_ — choose from preset widths (1, 2, 3, 4, 6, 8). Changes are saved as a per-note `#tabWidth` label.

@@ -1,9 +1,12 @@
 import "./StatusBar.css";
 
+import type CodeMirror from "@triliumnext/codemirror";
+import type { CursorPosition } from "@triliumnext/codemirror";
 import { Locale, NOTE_TYPE_ICONS, NoteType, SimilarNoteResponse } from "@triliumnext/commons";
 import clsx from "clsx";
 import { type ComponentChildren, createPortal, RefObject } from "preact";
 import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { Trans } from "react-i18next";
 
 import appContext, { CommandNames } from "../../components/app_context";
 import NoteContext from "../../components/note_context";
@@ -25,8 +28,8 @@ import Dropdown, { type DropdownHandle, DropdownPanel, type DropdownPanelProps }
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import HelpDropdown from "../react/HelpDropdown";
 import {
-    useActiveNoteContext, useAttachments, useLegacyImperativeHandlers, useNoteLabel, useNoteProperty,
-    useStaticTooltip, useTriliumEvent, useTriliumEvents
+    useActiveNoteContext, useAttachments, useGetContextDataFrom, useLegacyImperativeHandlers,
+    useNoteLabel, useNoteProperty, useStaticTooltip, useTriliumEvent, useTriliumEvents
 } from "../react/hooks";
 import Icon from "../react/Icon";
 import LinkButton from "../react/LinkButton";
@@ -82,6 +85,7 @@ export default function StatusBar() {
                     <Breadcrumb />
 
                     <div className="actions-row">
+                        <CodeCursorPosition {...context} />
                         <CodeNoteSwitcher {...context} />
                         <TabWidthSwitcher {...context} />
                         <LanguageSwitcher {...context} />
@@ -551,6 +555,45 @@ function NotePaths({ note, hoistedNoteId, notePath }: StatusBarContext) {
             <NotePathsWidget sortedNotePaths={sortedNotePaths} currentNotePath={notePath} />
         </StatusBarDropdown>
     );
+}
+//#endregion
+
+//#region Cursor position
+function CodeCursorPosition({ note, noteContext }: StatusBarContext) {
+    const noteType = useNoteProperty(note, "type");
+    const editor = useGetContextDataFrom(noteContext, "codeEditor");
+    const position = useCursorPosition(noteType === "code" ? editor : undefined);
+
+    return (position &&
+        <span className="cursor-position">
+            <CursorPositionPart i18nKey="status_bar.cursor_line" value={position.line} />
+            <CursorPositionPart i18nKey="status_bar.cursor_column" value={position.column} />
+        </span>
+    );
+}
+
+/** One part of the cursor position, such as "Ln: 12", with the number emphasized. */
+function CursorPositionPart({ i18nKey, value }: { i18nKey: string; value: number }) {
+    return (
+        <span>
+            <Trans
+                i18nKey={i18nKey}
+                components={{ Value: <span className="value">{value}</span> as React.ReactElement }}
+            />
+        </span>
+    );
+}
+
+/** The cursor position of `editor`, updated as the cursor moves. */
+function useCursorPosition(editor: CodeMirror | undefined) {
+    const [ position, setPosition ] = useState<CursorPosition | null>(null);
+
+    useEffect(() => {
+        setPosition(null);
+        return editor?.addCursorPositionListener(setPosition);
+    }, [ editor ]);
+
+    return position;
 }
 //#endregion
 

@@ -101,6 +101,8 @@ export interface NoteContextDataMap {
     saveState: {
         state: SaveState;
     };
+    /** Published by the code editor of the note, so the status bar can show the cursor position. */
+    codeEditor: CodeMirror;
     /** Published by content widgets (via `useNoteBlob`) while the note's content is being fetched,
      * so the note detail can show a loading state instead of the previous note's content. */
     contentLoad: {

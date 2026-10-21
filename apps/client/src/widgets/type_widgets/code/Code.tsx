@@ -6,6 +6,7 @@ import { Ref } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { CommandListenerData } from "../../../components/app_context";
+import type NoteContext from "../../../components/note_context";
 import FNote from "../../../entities/fnote";
 import { t } from "../../../services/i18n";
 import { consumeSearchTerms } from "../../../services/search_jump";
@@ -35,8 +36,17 @@ export interface EditableCodeProps extends TypeWidgetProps {
     allowKeyboardSuggestions?: boolean;
 }
 
-export function ReadOnlyCode({ note, viewScope, ntxId, noteContext, editorRef }: TypeWidgetProps & { editorRef?: Ref<VanillaCodeMirror> }) {
+export function ReadOnlyCode({
+    note, viewScope, ntxId, noteContext, isVisible, editorRef
+}: TypeWidgetProps & { editorRef?: Ref<VanillaCodeMirror> }) {
     const [ content, setContent ] = useState("");
+    const [ editor, setEditor ] = useState<VanillaCodeMirror | null>(null);
+    const combinedEditorRef = useCallback((view: VanillaCodeMirror | null) => {
+        setEditor(view);
+        if (typeof editorRef === "function") editorRef(view);
+        else if (editorRef) editorRef.current = view;
+    }, [ editorRef ]);
+    usePublishedEditor(noteContext, note, isVisible, editor);
     const blob = useNoteBlob(note);
     // Read reactively so switching the language from the dropdown re-highlights live, rather than
     // only after the note is reloaded (unlike the editable view, read-only has no edits to trigger it).
@@ -64,7 +74,7 @@ export function ReadOnlyCode({ note, viewScope, ntxId, noteContext, editorRef }:
         <>
             <CodeEditor
                 ntxId={ntxId}
-                editorRef={editorRef}
+                editorRef={combinedEditorRef}
                 className="note-detail-readonly-code-content"
                 content={content}
                 mime={mime ?? "text/plain"}
@@ -94,14 +104,21 @@ function formatViewSource(note: FNote, content: string) {
     return content;
 }
 
-export function EditableCode({ note, ntxId, noteContext, debounceUpdate, parentComponent, updateInterval, noteType = "code", onContentChanged, dataSaved, placeholder, editorRef: externalEditorRef, ...editorProps }: EditableCodeProps) {
+export function EditableCode({
+    note, ntxId, noteContext, isVisible, debounceUpdate, parentComponent, updateInterval,
+    noteType = "code", onContentChanged, dataSaved, placeholder, editorRef: externalEditorRef,
+    ...editorProps
+}: EditableCodeProps) {
     const editorRef = useRef<VanillaCodeMirror>(null);
     const containerRef = useRef<HTMLPreElement>(null);
+    const [ editor, setEditor ] = useState<VanillaCodeMirror | null>(null);
     const combinedEditorRef = useCallback((view: VanillaCodeMirror | null) => {
         editorRef.current = view;
+        setEditor(view);
         if (typeof externalEditorRef === "function") externalEditorRef(view);
         else if (externalEditorRef) externalEditorRef.current = view;
     }, [externalEditorRef]);
+    usePublishedEditor(noteContext, note, isVisible, editor);
     const [ vimKeymapEnabled ] = useTriliumOptionBool("vimKeymapEnabled");
     const [ noteTabWidth ] = useNoteLabelInt(note, "tabWidth");
     const [ noteUseTabs ] = useNoteLabelOptionalBool(note, "indentWithTabs");
@@ -272,6 +289,23 @@ export function CodeEditor({
             onInitialized?.();
         }}
     />;
+}
+
+/**
+ * Publishes `editor` as the `codeEditor` context data while the type widget is displayed for the
+ * note of `noteContext`. A note switch clears the context data, and a displayed widget publishes
+ * it again.
+ */
+function usePublishedEditor(
+    noteContext: NoteContext | undefined,
+    note: FNote,
+    isVisible: boolean | undefined,
+    editor: VanillaCodeMirror | null
+) {
+    useEffect(() => {
+        if (!noteContext || !editor || !isVisible || noteContext.noteId !== note.noteId) return;
+        noteContext.setContextData("codeEditor", editor);
+    }, [ noteContext, note.noteId, isVisible, editor ]);
 }
 
 /** Applies a `default:`-prefixed code note theme, the only kind the editor knows how to load. */

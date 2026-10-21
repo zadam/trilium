@@ -672,6 +672,57 @@ describe("CodeMirror", () => {
         });
     });
 
+    describe("cursor position", () => {
+        it("counts the line and the displayed column from 1, at the moving end", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("one\n\ttwo");
+            const getPosition = (selection: EditorSelection) => {
+                instance.dispatch({ selection });
+                return instance.getCursorPosition();
+            };
+
+            expect(getPosition(EditorSelection.single(0))).toEqual({ line: 1, column: 1 });
+            expect(getPosition(EditorSelection.single(2))).toEqual({ line: 1, column: 3 });
+            // The tab before "two" is four columns wide.
+            expect(getPosition(EditorSelection.single(8))).toEqual({ line: 2, column: 8 });
+            expect(getPosition(EditorSelection.single(8, 1))).toEqual({ line: 1, column: 2 });
+
+            instance.setIndentSize(2);
+            expect(getPosition(EditorSelection.single(8))).toEqual({ line: 2, column: 6 });
+        });
+
+        it("reports the position at once and then each change of it", () => {
+            const instance = build();
+            editor = instance;
+            instance.setText("one\n\ttwo");
+            instance.dispatch({ selection: EditorSelection.cursor(0) });
+            const listener = vi.fn();
+
+            const unsubscribe = instance.addCursorPositionListener(listener);
+            expect(listener.mock.calls).toEqual([ [ { line: 1, column: 1 } ] ]);
+
+            instance.dispatch({ selection: EditorSelection.cursor(5) });
+            expect(listener).toHaveBeenLastCalledWith({ line: 2, column: 5 });
+            instance.setIndentSize(8);
+            expect(listener).toHaveBeenLastCalledWith({ line: 2, column: 9 });
+
+            // Hiding the line numbers keeps the document and the selection, so nothing is counted.
+            const getCursorPosition = vi.spyOn(instance, "getCursorPosition");
+            listener.mockClear();
+            instance.setLineNumbers(false);
+            expect(getCursorPosition).not.toHaveBeenCalled();
+            // An edit on another line keeps the line and the column of the cursor.
+            instance.dispatch({ changes: { from: 0, insert: "x" } });
+            expect(getCursorPosition).toHaveBeenCalled();
+            expect(listener).not.toHaveBeenCalled();
+
+            unsubscribe();
+            instance.dispatch({ selection: EditorSelection.cursor(0) });
+            expect(listener).not.toHaveBeenCalled();
+        });
+    });
+
     describe("find and replace", () => {
         it("reports the matches it found", async () => {
             editor = build();

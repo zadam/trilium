@@ -2,7 +2,8 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tooltips, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
 import {
-    Compartment, EditorSelection, EditorState, Prec, StateEffect, Transaction, type Extension
+    Compartment, countColumn, EditorSelection, EditorState, Prec, StateEffect, Transaction,
+    type Extension
 } from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
@@ -99,6 +100,13 @@ export interface EditorConfig {
 
 /** An end of the document, where the cursor enters or leaves the editor. */
 export type DocumentEdge = "start" | "end";
+
+/** Where the cursor is, with the line and the column both counted from 1. */
+export interface CursorPosition {
+    line: number;
+    /** The column as displayed, with a tab as wide as the tab size. */
+    column: number;
+}
 
 function buildIndentUnit(indentSize: number, useTabs: boolean) {
     return useTabs ? "\t" : " ".repeat(indentSize);
@@ -280,6 +288,41 @@ export default class CodeMirror extends EditorView {
         return () => {
             const i = this.#updateListeners.indexOf(listener);
             if (i >= 0) this.#updateListeners.splice(i, 1);
+        };
+    }
+
+    /**
+     * Calls `listener` with the cursor position now and each time it changes. Returns an
+     * unsubscribe function.
+     */
+    addCursorPositionListener(listener: (position: CursorPosition) => void): () => void {
+        let { doc, selection, tabSize } = this.state;
+        let position = this.getCursorPosition();
+        listener(position);
+
+        return this.addUpdateListener(() => {
+            const { state } = this;
+            // Counting the column is linear in the line, so updates such as scrolling skip it.
+            if (state.doc === doc && state.selection === selection && state.tabSize === tabSize) {
+                return;
+            }
+            ({ doc, selection, tabSize } = state);
+
+            const next = this.getCursorPosition();
+            if (next.line === position.line && next.column === position.column) return;
+            position = next;
+            listener(position);
+        });
+    }
+
+    /** The position of the main cursor, which is the end of the main selection that moves. */
+    getCursorPosition(): CursorPosition {
+        const { doc, selection, tabSize } = this.state;
+        const { head } = selection.main;
+        const line = doc.lineAt(head);
+        return {
+            line: line.number,
+            column: countColumn(line.text, tabSize, head - line.from) + 1
         };
     }
 
