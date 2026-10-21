@@ -103,13 +103,14 @@ class NoteContentFulltextExp extends Expression {
 
         const resultNoteSet = new NoteSet();
 
-        // Search through notes with content
+        // Search through notes with content, reading only those of `inputNoteSet`.
         for (const row of getSql().iterateRows<SearchRow>(`
                 SELECT noteId, type, mime, content, isProtected
                 FROM notes JOIN blobs USING (blobId)
                 WHERE type IN (${SEARCHABLE_TYPES.map((type) => `'${type}'`).join(", ")})
                   AND isDeleted = 0
-                  AND LENGTH(content) < ${MAX_SEARCH_CONTENT_SIZE}`)) {
+                  AND LENGTH(content) < ${MAX_SEARCH_CONTENT_SIZE}
+                  AND noteId IN (SELECT value FROM json_each(?))`, [ inputNoteSet.toSqlParam() ])) {
             this.findInText(row, inputNoteSet, resultNoteSet, searchContext);
         }
 
