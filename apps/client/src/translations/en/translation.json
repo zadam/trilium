@@ -453,10 +453,9 @@
     "move_success_message": "Selected notes have been moved into "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Change where to create the new note:",
-    "search_placeholder": "search path by name (default if empty)",
+    "location": "Location",
+    "location_placeholder": "Default location if left empty",
     "modal_title": "Choose note type",
-    "modal_body": "Choose note type / template of the new note:",
     "templates": "Templates"
   },
   "password_not_set": {

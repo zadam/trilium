@@ -1,0 +1,6 @@
+.modal.note-type-chooser-dialog {
+    .note-type-chooser-types .dropdown-menu.tn-menu-inline {
+        border: 0;
+        background: transparent !important;
+    }
+}
