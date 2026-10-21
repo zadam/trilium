@@ -143,6 +143,9 @@ describe("Dropdown", () => {
             key(onMobile ? "Enter" : "ArrowRight");
             await vi.waitFor(() => expect(input()).not.toBeNull());
             expect(titles()).toEqual([ "Python", "JavaScript" ]);
+            // Above the list the rows scroll in, on a page as in a layer.
+            const header = input()?.closest(".tn-menu-filter");
+            expect(header?.nextElementSibling?.className).toBe("tn-menu-scroll");
 
             key("j");
             await vi.waitFor(() => expect(document.activeElement).toBe(input()));

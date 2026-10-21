@@ -8,11 +8,10 @@ import { useCallback, useContext, useLayoutEffect, useRef, useState } from "prea
 import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
 import { t } from "../../services/i18n";
 import { isMobile } from "../../services/utils";
-import { FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListHeader, FormListItem } from "./FormList";
-import FormTextBox from "./FormTextBox";
+import { FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListHeader, FormListItem, MenuList } from "./FormList";
 import { useStaticTooltipWithKeyboardShortcut, useUniqueName } from "./hooks";
 import { SvgIcon } from "./Icon";
-import { type ActiveRow, isRightToLeft, MenuContext, type MenuContextValue, type MenuFilter, MenuFilterContext, MenuLevelContext, type OpenSubmenu, pointerMoved, type RowEntry, shouldDropStart, useMenu } from "./menu_context";
+import { type ActiveRow, isRightToLeft, MenuContext, type MenuContextValue, type MenuFilter, MenuFilterContext, MenuLevelContext, type OpenSubmenu, pointerMoved, type RowEntry, shouldDropStart } from "./menu_context";
 import Popup, { type PopupProps } from "./Popup";
 
 /**
@@ -131,7 +130,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         setActiveRow({ level, id: rowId });
         const element = rows.get(rowId)?.element;
         // The first row of a scrolling list brings what stands above it back into view, such as a
-        // filter input or a header, which scrolling only as far as the row would leave hidden.
+        // header, which scrolling only as far as the row would leave hidden.
         const list = element?.parentElement;
         if (list?.classList.contains("tn-menu-scroll") && !hasRowBefore(element)) list.scrollTo?.({ top: 0 });
         else element?.scrollIntoView?.({ block: "nearest" });
@@ -386,6 +385,10 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         setKeyboardDriven(true);
     }
 
+    const topLevelFilter = items && filterable
+        ? { ...TOP_LEVEL, text: filter?.level === TOP_LEVEL.level ? filter.text : "" }
+        : undefined;
+
     return (
         <MenuContext.Provider value={context}>
             <Popup
@@ -425,18 +428,9 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
                     e.stopPropagation();
                 }}
             >
-                {/* The rows scroll in here rather than the menu itself, so the theme's blur on the
-                    menu's `::before` stays behind them. A `<menu>`, as rows are its list items, out of
-                    the accessibility tree so they read as the menu's own. */}
-                <menu className="tn-menu-scroll" role="none">
-                    {items && filterable && (
-                        <MenuFilterContext.Provider value={{ ...TOP_LEVEL, text: filter?.level === TOP_LEVEL.level ? filter.text : "" }}>
-                            <MenuItems items={items} onSelect={onSelect} />
-                        </MenuFilterContext.Provider>
-                    )}
-                    {items && !filterable && <MenuItems items={items} onSelect={onSelect} />}
-                    {!items && children}
-                </menu>
+                <MenuList filter={topLevelFilter}>
+                    {items ? <MenuItems items={items} onSelect={onSelect} /> : children}
+                </MenuList>
                 {/* The submenus' layers follow the scroller in here, portaled by their rows. */}
             </Popup>
         </MenuContext.Provider>
@@ -463,39 +457,12 @@ function MenuItems<T>({ items, onSelect }: {
     onSelect: MenuProps<T>["onSelect"]
 }) {
     const filter = useContext(MenuFilterContext);
-    const rows = filter?.text
-        ? <FilteredMenuItems items={items} text={filter.text} onSelect={onSelect} />
-        : menuRows(items).map((row, index) => <MenuItemRow key={index} row={row} onSelect={onSelect} />);
-    return <>{filter && <MenuFilterInput filter={filter} />}{rows}</>;
-}
-
-/**
- * The input at the top of a filterable submenu. It edits as any input does; the menu keeps Up,
- * Down, Enter, Escape and Tab, to pick from the matches while focus stays here.
- */
-function MenuFilterInput({ filter }: { filter: MenuFilter }) {
-    const menu = useMenu();
-    const inputRef = useRef<HTMLInputElement | null>(null);
-
-    // Leaving with focus, as when the pointer moves on and closes the submenu, it hands the keys
-    // back to the menu rather than to the page.
-    useLayoutEffect(() => () => {
-        if (document.activeElement === inputRef.current) menu.layerHost?.focus({ preventScroll: true });
-    }, [ menu.layerHost ]);
-
-    return (
-        <li className="tn-menu-filter-row" role="none">
-            <label className="tn-menu-filter-box tn-input-field">
-                <FormTextBox
-                    inputRef={inputRef} className="tn-menu-filter-input" data-level={filter.level + 1}
-                    currentValue={filter.text} placeholder={t("menu.filter_placeholder")} aria-label={t("menu.filter")}
-                    autoComplete="off" spellcheck={false}
-                    onChange={(text) => menu.setFilter(text ? { rowId: filter.rowId, level: filter.level, text } : undefined)}
-                />
-                <span className="bx bx-search" aria-hidden="true" />
-            </label>
-        </li>
-    );
+    if (filter?.text) {
+        return <FilteredMenuItems items={items} text={filter.text} onSelect={onSelect} />;
+    }
+    return <>{menuRows(items).map((row, index) => (
+        <MenuItemRow key={index} row={row} onSelect={onSelect} />
+    ))}</>;
 }
 
 /**
