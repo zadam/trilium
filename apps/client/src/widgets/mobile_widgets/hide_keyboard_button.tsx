@@ -5,7 +5,7 @@ import { RefObject } from "preact";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import { t } from "../../services/i18n";
-import { isIOS } from "../../services/utils";
+import { isIOS, isMobileApp } from "../../services/utils";
 import ActionButton from "../react/ActionButton";
 
 /**
@@ -70,9 +70,7 @@ export function usePositioningOniOS(
     // Safari shrinks `visualViewport` for the keyboard but not the layout, so the element rises by
     // how far its anchor reaches below the visible bottom. With the keyboard up Safari scrolls the
     // fixed page itself, and client coordinates move with that scroll, so the visible bottom is
-    // `pageTop - scrollY + height`: `offsetTop + height` elsewhere, `height` in Safari. Under
-    // Capacitor `resize: native` the layout shrinks too, so `obscured` is 0 and CSS stays in
-    // charge.
+    // `pageTop - scrollY + height`: `offsetTop + height` elsewhere, `height` in Safari.
     const adjustPosition = useCallback(() => {
         if (!wrapperRef.current) return;
         const viewport = window.visualViewport;
@@ -91,7 +89,9 @@ export function usePositioningOniOS(
     }, [ wrapperRef ]);
 
     useEffect(() => {
-        if (!isIOS()) return;
+        // Under Capacitor `resize: native` the layout shrinks for the keyboard, so CSS places the
+        // element. `visualViewport` shrinks before the layout does, which would lift it twice.
+        if (!isIOS() || isMobileApp()) return;
         // Run once in case the keyboard is already up when mounting
         // (e.g. returning from a dialog).
         adjustPosition();
