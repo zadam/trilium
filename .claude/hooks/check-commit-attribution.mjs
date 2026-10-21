@@ -1,7 +1,8 @@
 // A `PreToolUse` hook (see `.claude/settings.json`) for the `Assisted-by` trailer that CLAUDE.md
 // requires on a `git commit` or `git commit-tree`, naming the model. A commit without it gets the
 // trailer added through `--trailer`, with the model read from the transcript. A commit crediting
-// Claude with `Co-Authored-By`, or one the hook cannot fix, is blocked.
+// Claude with `Co-Authored-By`, one whose message file the hook cannot read, or one the hook cannot
+// fix, is blocked.
 //
 // Dry run, which prints what the hook does with a command and runs nothing:
 //     node .claude/hooks/check-commit-attribution.mjs --dry-run [--model <id>] [--cwd <dir>] -- <command>
@@ -28,6 +29,9 @@ const VARIABLE = /\$\{(\w+)\}|\$(\w+)/g;
 const GIT_DIR = /\s-C\s+("[^"]*"|'[^']*'|\S+)/g;
 const SEPARATOR = /&&|\|\|?|;|\n/;
 const HEREDOC = /<<-?\s*(["']?)(\w+)\1/;
+/** A `cat` line, which writes a heredoc to a file with `cat > file <<EOF` or `cat <<EOF > file`. */
+const CAT_LINE = /(?:^|[;&|(\n]\s*)cat\b([^\n]*)\n/g;
+const REDIRECT = /(?<!>)>(?!>)\s*("[^"]*"|'[^']*'|[^\s;&|<>]+)/;
 /** A model id such as `claude-opus-5-5`, `claude-fable-5-1[1m]` or `claude-haiku-4-5-20251001`. */
 const MODEL_ID = /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{8})?(?:\[[^\]]*\])?$/;
 /** How much of the end of the transcript is searched for the model of the last reply. */
@@ -53,9 +57,10 @@ export function checkCommand(command, cwd, modelName = null) {
         const start = match.index;
         const commandEnd = start + match[0].length;
         const variables = readAssignments(command.slice(0, start));
+        const written = readHeredocFiles(command.slice(0, start), cwd, variables);
         const gitCwd = readGitDirectory(command.slice(start, commandEnd), cwd, variables);
         const end = findCommitEnd(command, unquoted, commandEnd);
-        const verdict = checkCommit(command.slice(start, end), gitCwd, variables);
+        const verdict = checkCommit(command.slice(start, end), gitCwd, variables, written);
         if (verdict.action === "pass") {
             continue;
         }
@@ -154,11 +159,12 @@ function findCommitEnd(command, unquoted, from) {
 
 /**
  * `{ action: "pass" }` for a commit that carries the trailer or has no message of its own,
- * `{ action: "block", reason }` for one crediting Claude as co-author, and otherwise
- * `{ action: "fix", reason, ifExists }`, where `ifExists` is the `trailer.ifexists` mode that
- * adds the trailer without repeating it.
+ * `{ action: "block", reason }` for one crediting Claude as co-author or whose message file cannot
+ * be read, and otherwise `{ action: "fix", reason, ifExists }`, where `ifExists` is the
+ * `trailer.ifexists` mode that adds the trailer without repeating it. `written` maps the absolute
+ * paths of the files the command writes from a heredoc before the commit to their contents.
  */
-function checkCommit(args, cwd, variables) {
+function checkCommit(args, cwd, variables, written) {
     if (!MESSAGE_FLAG.test(args)) {
         // No message of its own, as with `--amend --no-edit`.
         return { action: "pass" };
@@ -171,7 +177,7 @@ function checkCommit(args, cwd, variables) {
         if (path === "-") {
             continue;
         }
-        const text = readMessage(path, cwd);
+        const text = written.get(resolve(cwd, toNativePath(path))) ?? readMessage(path, cwd);
         if (text === null) {
             unreadablePath ??= path;
         } else {
@@ -185,15 +191,42 @@ function checkCommit(args, cwd, variables) {
     if (messages.some((text) => TRAILER.test(text))) {
         return { action: "pass" };
     }
+    // An unread file can end with a Claude line that `addIfDifferent` keeps beside the new one.
+    if (unreadablePath) {
+        return { action: "block", reason: unreadable(unreadablePath) };
+    }
     // `replace` swaps the `Assisted-by` line nearest the end, so it applies only when that line
-    // is a Claude one, such as `Assisted-by: Claude Opus 5.5`; `addIfDifferent` leaves a matching
-    // line written to an unread file.
+    // is a Claude one, such as `Assisted-by: Claude Opus 5.5`.
     const lastTrailer = messages.flatMap((text) => text.match(ANY_TRAILER) ?? []).at(-1);
     return {
         action: "fix",
-        reason: unreadablePath ? unreadable(unreadablePath) : EXPECTED,
+        reason: EXPECTED,
         ifExists: lastTrailer && CLAUDE_TRAILER.test(lastTrailer) ? "replace" : "addIfDifferent"
     };
+}
+
+/**
+ * The files `command` writes from a heredoc through `cat`, as a map from each absolute path to
+ * the heredoc's body.
+ */
+function readHeredocFiles(command, cwd, variables) {
+    const written = new Map();
+    for (const match of command.matchAll(CAT_LINE)) {
+        const heredoc = HEREDOC.exec(match[1]);
+        const target = REDIRECT.exec(match[1].replace(HEREDOC, ""));
+        if (!heredoc || !target) {
+            continue;
+        }
+        const bodyStart = match.index + match[0].length;
+        const delimiter = new RegExp(`^[ \\t]*${heredoc[2]}[ \\t]*$`, "m");
+        const end = delimiter.exec(command.slice(bodyStart));
+        if (!end) {
+            continue;
+        }
+        const path = resolve(cwd, toNativePath(unquote(target[1], variables)));
+        written.set(path, command.slice(bodyStart, bodyStart + end.index));
+    }
+    return written;
 }
 
 /**
