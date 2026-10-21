@@ -3496,7 +3496,13 @@
   },
   "content_language": {
     "title": "Content languages",
-    "description": "Select one or more languages that should appear in the language selection in the Basic Properties section of a read-only or editable text note. This will allow features such as spell-checking, right-to-left support, quotation marks and text extraction (OCR)."
+    "description": "The languages offered when you choose the language of a text note, which enables features such as spell-checking, right-to-left support, quotation marks and text extraction (OCR).",
+    "add_title": "Add a language",
+    "add_first_one": "Add a language ({{count}} available)",
+    "add_first_other": "Add a language ({{count}} available)",
+    "add_another_one": "Add another language ({{count}} available)",
+    "add_another_other": "Add another language ({{count}} available)",
+    "remove": "Remove from the list"
   },
   "switch_layout_button": {
     "title_vertical": "Move editing pane to the bottom",
