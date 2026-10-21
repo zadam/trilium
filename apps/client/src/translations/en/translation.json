@@ -683,6 +683,7 @@
     "execute_button": "Title of the button which will execute the current code note.",
     "execute_description": "Longer description of the current code note displayed together with the execute button.",
     "exclude_from_note_map": "Notes with this label will be hidden from the Note Map.",
+    "exclude_from_llm": "Hides this note from the AI chat and the MCP server. Make the label inheritable to hide the notes below it as well.",
     "new_notes_on_top": "New notes will be created at the top of the parent note, not on the bottom.",
     "run_on_note_creation": "Executes when note is created on backend. Use this relation if you want to run the script for all notes created under a specific subtree. In that case, create it on the subtree root note and make it inheritable. A new note created within the subtree (any depth) will trigger the script.",
     "run_on_child_note_creation": "Executes when new note is created under the note where this relation is defined.",

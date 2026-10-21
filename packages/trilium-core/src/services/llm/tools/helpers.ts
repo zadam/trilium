@@ -3,6 +3,7 @@
  */
 
 import type BAttachment from "../../../becca/entities/battachment.js";
+import type BAttribute from "../../../becca/entities/battribute.js";
 import becca from "../../../becca/becca.js";
 import type BNote from "../../../becca/entities/bnote.js";
 import blobService from "../../../services/blob.js";
@@ -30,6 +31,50 @@ const SVG_SOURCE_RE = /^\s*(?:<\?xml[\s\S]*?\?>\s*)?(?:(?:<!--(?:(?!-->)[\s\S])*
 
 /** Note IDs that must not be deleted, moved, or cloned by the LLM. */
 export const PROTECTED_SYSTEM_NOTES = new Set(["root", "_hidden", "_share", "_lbRoot", "_globalNoteMap"]);
+
+/** Label that keeps a note out of reach of the LLM tools; made inheritable, it covers the subtree too. */
+export const EXCLUDE_FROM_LLM_LABEL = "excludeFromLlm";
+
+/** Whether the LLM must not see a note: it owns or inherits a truthy {@link EXCLUDE_FROM_LLM_LABEL}. */
+export function isExcludedFromLlm(note: BNote) {
+    return note.isLabelTruthy(EXCLUDE_FROM_LLM_LABEL);
+}
+
+/** Look a note up for the LLM; an excluded note is reported as missing so its existence does not leak. */
+export function getLlmNote(noteId: string): BNote | null {
+    const note = becca.getNote(noteId);
+    return note && !isExcludedFromLlm(note) ? note : null;
+}
+
+/** The note's children the LLM may see. */
+export function getLlmChildNotes(note: BNote) {
+    return note.getChildNotes().filter((child) => !isExcludedFromLlm(child));
+}
+
+/** The note's parents the LLM may see. */
+export function getLlmParentNotes(note: BNote) {
+    return note.getParentNotes().filter((parent) => !isExcludedFromLlm(parent));
+}
+
+/** Whether an attribute may be shown to the LLM: neither its owner nor, for a relation, its target is excluded. */
+export function isAttributeVisibleToLlm(attribute: BAttribute) {
+    const owner = becca.getNote(attribute.noteId);
+    if (!owner || isExcludedFromLlm(owner)) {
+        return false;
+    }
+    const target = attribute.type === "relation" ? becca.getNote(attribute.value) : null;
+    return !target || !isExcludedFromLlm(target);
+}
+
+/** Look an attachment up for the LLM; one whose owning note (directly or through a revision) is excluded is reported as missing. */
+export function getLlmAttachment(attachmentId: string): BAttachment | null {
+    const attachment = becca.getAttachment(attachmentId);
+    if (!attachment) {
+        return null;
+    }
+    const owner = becca.getNote(attachment.ownerId) ?? becca.getRevision(attachment.ownerId)?.getNote();
+    return owner && !isExcludedFromLlm(owner) ? attachment : null;
+}
 
 /**
  * Return `true` if the value is truthy, otherwise `undefined`.
@@ -243,12 +288,12 @@ function truncated<T>(items: T[], limit: number) {
  *   {@link TOOL_LIMITS} for the `get_note` tool.
  */
 export function getNoteMeta(note: BNote, limits: NoteMetaLimits) {
-    const allChildNotes = note.getChildNotes().map((ch) => ({
+    const allChildNotes = getLlmChildNotes(note).map((ch) => ({
         noteId: ch.noteId,
         title: ch.getTitleOrProtected()
     }));
 
-    const allAttributes = note.getAttributes().map((attr) => ({
+    const allAttributes = note.getAttributes().filter(isAttributeVisibleToLlm).map((attr) => ({
         attributeId: attr.attributeId,
         type: attr.type,
         name: attr.name,
@@ -273,7 +318,7 @@ export function getNoteMeta(note: BNote, limits: NoteMetaLimits) {
         mime: note.mime,
         dateCreated: note.dateCreated,
         dateModified: note.dateModified,
-        parentNoteIds: note.getParentNotes().map((p) => p.noteId),
+        parentNoteIds: getLlmParentNotes(note).map((p) => p.noteId),
         childNotes: truncated(allChildNotes, limits.childNotes),
         attributes: truncated(allAttributes, limits.attributes),
         contentPreview: getContentPreview(note),

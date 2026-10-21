@@ -3,13 +3,14 @@ import type BNote from "../../../becca/entities/bnote.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getBlobMock = vi.hoisted(() => vi.fn());
+const getNoteMock = vi.hoisted(() => vi.fn());
 
 // getContentPreview / getNoteContentForLlm consult becca.getBlob (SQL-backed);
 // partial-mock core so it returns deterministic blobs while markdown
 // import/export services keep their real implementations.
 vi.mock("../../../becca/becca.js", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../../../becca/becca.js")>();
-    return { default: { ...actual.default, getBlob: getBlobMock } };
+    return { default: { ...actual.default, getBlob: getBlobMock, getNote: getNoteMock } };
 });
 
 import blobService from "../../blob.js";
@@ -253,7 +254,10 @@ describe("getNoteMeta", () => {
 
     it("builds metadata with truncated children/attributes/attachments and total counts", () => {
         getBlobMock.mockReturnValue({ contentLength: 5 });
+        const visible = { isLabelTruthy: () => false };
+        getNoteMock.mockReturnValue(visible);
         const children = Array.from({ length: 3 }, (_, i) => ({
+            ...visible,
             noteId: `c${i}`,
             getTitleOrProtected: () => `Child ${i}`
         }));
@@ -269,7 +273,7 @@ describe("getNoteMeta", () => {
             isProtected: true,
             getContent: () => "body",
             getChildNotes: () => children,
-            getParentNotes: () => [{ noteId: "root" }],
+            getParentNotes: () => [{ ...visible, noteId: "root" }],
             getAttributes: () => attrs,
             getAttachments: () => attachments
         });

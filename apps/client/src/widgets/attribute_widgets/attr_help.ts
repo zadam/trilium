@@ -68,6 +68,7 @@ export const ATTR_HELP: AttrHelpMap = {
         executeButton: t("attribute_detail.execute_button"),
         executeDescription: t("attribute_detail.execute_description"),
         excludeFromNoteMap: t("attribute_detail.exclude_from_note_map"),
+        excludeFromLlm: t("attribute_detail.exclude_from_llm"),
         newNotesOnTop: t("attribute_detail.new_notes_on_top"),
         printLandscape: t("attribute_detail.print_landscape"),
         printPageSize: t("attribute_detail.print_page_size"),
