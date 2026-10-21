@@ -3,6 +3,7 @@ import "./StatusBar.css";
 import type CodeMirror from "@triliumnext/codemirror";
 import type { CursorPosition } from "@triliumnext/codemirror";
 import { Locale, NOTE_TYPE_ICONS, NoteType, SimilarNoteResponse } from "@triliumnext/commons";
+import type { Tooltip } from "bootstrap";
 import clsx from "clsx";
 import { type ComponentChildren, createPortal, RefObject } from "preact";
 import { useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
@@ -145,16 +146,18 @@ interface StatusBarButtonBaseProps {
 type StatusBarButtonWithCommand = StatusBarButtonBaseProps & { triggerCommand: CommandNames; };
 type StatusBarButtonWithClick = StatusBarButtonBaseProps & { onClick: () => void; };
 
+/** The tooltip options of the status bar items, which open above the bar. */
+const TOOLTIP_OPTIONS: Partial<Tooltip.Options> = {
+    placement: "top",
+    fallbackPlacements: [ "top" ],
+    popperConfig: { strategy: "fixed" },
+    animation: false
+};
+
 function StatusBarButton({ className, icon, text, title, active, ...restProps }: StatusBarButtonWithCommand | StatusBarButtonWithClick) {
     const parentComponent = useContext(ParentComponent);
     const buttonRef = useRef<HTMLButtonElement>(null);
-    useStaticTooltip(buttonRef, {
-        placement: "top",
-        fallbackPlacements: [ "top" ],
-        popperConfig: { strategy: "fixed" },
-        animation: false,
-        title
-    });
+    useStaticTooltip(buttonRef, { ...TOOLTIP_OPTIONS, title });
 
     return (
         <button
@@ -566,10 +569,19 @@ function CodeCursorPosition({ note, noteContext }: StatusBarContext) {
 
     return (position &&
         <span className="cursor-position">
-            <CursorPositionPart i18nKey="status_bar.cursor_line" value={position.line} />
-            <CursorPositionPart i18nKey="status_bar.cursor_column" value={position.column} />
+            <CursorPositionPart
+                i18nKey="status_bar.cursor_line"
+                title={t("status_bar.cursor_line_title")}
+                value={position.line}
+            />
+            <CursorPositionPart
+                i18nKey="status_bar.cursor_column"
+                title={t("status_bar.cursor_column_title")}
+                value={position.column}
+            />
             {position.selectionLength > 0 && <CursorPositionPart
                 i18nKey="status_bar.cursor_selection"
+                title={t("status_bar.cursor_selection_title")}
                 value={position.selectionLength}
             />}
         </span>
@@ -577,9 +589,19 @@ function CodeCursorPosition({ note, noteContext }: StatusBarContext) {
 }
 
 /** One part of the cursor position, such as "Ln: 12", with the number emphasized. */
-function CursorPositionPart({ i18nKey, value }: { i18nKey: string; value: number }) {
+function CursorPositionPart({ i18nKey, title, value }: {
+    i18nKey: string;
+    title: string;
+    value: number;
+}) {
+    const partRef = useRef<HTMLSpanElement>(null);
+    // `useStaticTooltip()` rebuilds the tooltip when its config changes, and `value` changes as
+    // the cursor moves.
+    const tooltipOptions = useMemo(() => ({ ...TOOLTIP_OPTIONS, title }), [ title ]);
+    useStaticTooltip(partRef, tooltipOptions);
+
     return (
-        <span>
+        <span ref={partRef}>
             <Trans
                 i18nKey={i18nKey}
                 components={{ Value: <span className="value">{value}</span> as React.ReactElement }}

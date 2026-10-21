@@ -1,5 +1,6 @@
 import type { CursorPosition } from "@triliumnext/codemirror";
 import type { NoteType } from "@triliumnext/commons";
+import { Tooltip } from "bootstrap";
 import { render, type VNode } from "preact";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -22,7 +23,12 @@ vi.mock("../react/hooks", async (importOriginal) => {
     };
 });
 
-// i18next is not initialized under test, so the stub renders the components of `Trans` in order.
+// i18next is not initialized under test, so `t()` returns the key and the stub renders the
+// components of `Trans` in order.
+vi.mock("../../services/i18n", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../services/i18n")>()),
+    t: (key: string) => key
+}));
 vi.mock("react-i18next", async (importOriginal) => ({
     ...(await importOriginal<typeof import("react-i18next")>()),
     Trans: ({ i18nKey, components }: { i18nKey: string; components: Record<string, VNode> }) => (
@@ -157,6 +163,17 @@ describe("StatusBar panels", () => {
                 part.querySelector(".value")?.textContent
             ]);
         };
+        const getTooltip = (index: number) => {
+            const part = container.querySelectorAll(".cursor-position > *")[index];
+            return part ? Tooltip.getInstance(part) : null;
+        };
+        const getTooltipText = (index: number) => {
+            const tooltip = getTooltip(index);
+            tooltip?.show();
+            const text = document.querySelector(".tooltip-inner")?.textContent;
+            tooltip?.hide();
+            return text;
+        };
 
         renderBar(true, "code");
         const position = container.querySelector(".actions-row > .cursor-position");
@@ -167,11 +184,19 @@ describe("StatusBar panels", () => {
             [ "status_bar.cursor_column", "32" ]
         ]);
 
+        const lineTooltip = getTooltip(0);
+        expect(lineTooltip).not.toBeNull();
         act(() => report?.({ line: 3, column: 1, selectionLength: 120 }));
         expect(getParts()).toEqual([
             [ "status_bar.cursor_line", "3" ],
             [ "status_bar.cursor_column", "1" ],
             [ "status_bar.cursor_selection", "120" ]
+        ]);
+        expect(getTooltip(0)).toBe(lineTooltip);
+        expect([ 0, 1, 2 ].map(getTooltipText)).toEqual([
+            "status_bar.cursor_line_title",
+            "status_bar.cursor_column_title",
+            "status_bar.cursor_selection_title"
         ]);
         act(() => report?.({ line: 3, column: 1, selectionLength: 0 }));
         expect(getParts().map(([ key ]) => key)).not.toContain("status_bar.cursor_selection");
