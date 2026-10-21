@@ -730,8 +730,10 @@ function SubmenuPage({ rowId, level, title, slide, filter, children }: {
  * One level of a menu: its rows in a scrolling list and, for a level with a {@link filter}, the
  * filter input above that list. The input stays in place while the rows scroll.
  */
-export function MenuList({ filter, children }: {
+export function MenuList({ filter, bottomUp, children }: {
     filter: MenuFilter | undefined,
+    /** Puts the filter input below the list, for a menu that opens above its anchor. */
+    bottomUp?: boolean,
     children: ComponentChildren
 }) {
     // The rows scroll here and not in the frame, so the theme's `::before` blur stays behind
@@ -742,8 +744,9 @@ export function MenuList({ filter, children }: {
             {/* One box, so a phone's submenu page hides and slides the input with the rows. */}
             {filter ? (
                 <div className="tn-menu-filterable">
-                    <MenuFilterInput filter={filter} />
+                    {!bottomUp && <MenuFilterInput filter={filter} />}
                     {list}
+                    {bottomUp && <MenuFilterInput filter={filter} />}
                 </div>
             ) : list}
         </MenuFilterContext.Provider>

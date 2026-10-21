@@ -206,6 +206,10 @@ body.desktop .dropdown-item.dropdown-submenu.submenu-open,
         scroll-padding-top: 0;
     }
 
+    .tn-menu-scroll + & {
+        padding: 4px var(--tn-popup-padding) var(--tn-popup-padding);
+    }
+
     .tn-menu-filter-box {
         display: flex;
         align-items: center;
@@ -230,6 +234,13 @@ body.desktop .dropdown-item.dropdown-submenu.submenu-open,
         color: var(--menu-text-color);
         font: inherit;
     }
+}
+
+.tn-menu-scroll:has(+ .tn-menu-filter) {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    padding-bottom: 0;
+    scroll-padding-bottom: 0;
 }
 
 .tn-menu-filter-empty {

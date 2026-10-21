@@ -55,8 +55,11 @@ export interface PopupProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | 
      * of suggestions that changes as the user types.
      */
     reveal?: boolean;
-    /** Called once it is first placed and shown: a browser focuses nothing inside it before. */
-    onPlaced?(): void;
+    /**
+     * Called once it is first placed and shown: a browser focuses nothing inside it before. Gets
+     * the placement Floating UI chose, or `"stylesheet"` when {@link placedByStylesheet}.
+     */
+    onPlaced?(placement: Placement | "stylesheet"): void;
     /**
      * Called on a press outside it and its anchor, and on Escape. A press on the anchor is left to
      * the anchor, as a dropdown's toggle closes its own popup. A popup opened inside it counts as
@@ -91,11 +94,11 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
     const reveals = useRef(reveal);
     reveals.current = reveal;
     /** Says it is placed, and names the side it reveals itself from, which CSS animates once. */
-    const reportPlaced = (side: string) => {
+    const reportPlaced = (side: Placement | "stylesheet") => {
         if (hasPlaced.current) return;
         hasPlaced.current = true;
         if (reveals.current && popupRef.current) popupRef.current.dataset.reveal = side;
-        placed.current?.();
+        placed.current?.(side);
     };
     // A popup opened inside this one stands in the page's body too, so it registers here to
     // count as inside this one.
