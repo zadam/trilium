@@ -91,8 +91,18 @@ describe("DatePicker", () => {
         expect(get).not.toHaveBeenCalled();
     });
 
+    it("puts low-profile buttons below the grid", () => {
+        renderPicker({ value: undefined });
+
+        expect(document.querySelector(".date-picker-grid ~ .date-picker-presets")).toBeTruthy();
+        const today = preset("date_picker.today");
+        expect(today?.classList.contains("tn-low-profile")).toBe(true);
+        // The Next theme draws every `.btn-sm` as a command button, 120px wide.
+        expect(today?.classList.contains("btn-sm")).toBe(false);
+    });
+
     describe("from the keyboard", () => {
-        it("moves across the presets, and down into the grid on the value's day", () => {
+        it("moves across the buttons, and up into the grid on the value's day", () => {
             renderPicker({ value: "2026-10-14" });
             const today = preset("date_picker.today");
             expect(today?.tabIndex).toBe(0);
@@ -102,37 +112,45 @@ describe("DatePicker", () => {
             expect(document.activeElement).toBe(preset("date_picker.tomorrow"));
             expect(preset("date_picker.today")?.tabIndex).toBe(-1);
 
-            press("ArrowDown");
+            press("ArrowUp");
             expect(document.activeElement).toBe(day("2026-10-14"));
         });
 
-        it("moves by day, week and month, and up from the first week to the presets", () => {
+        it("moves by day, week and month, and down from the last week to the buttons", () => {
             renderPicker({ value: "2026-10-14" });
             preset("date_picker.today")?.focus();
-            press("ArrowDown");
+            press("ArrowUp");
 
             press("ArrowRight");
             expect(document.activeElement).toBe(day("2026-10-15"));
-            press("ArrowDown");
-            expect(document.activeElement).toBe(day("2026-10-22"));
+            press("ArrowUp");
+            expect(document.activeElement).toBe(day("2026-10-08"));
             press("PageDown");
-            expect(document.activeElement).toBe(day("2026-11-22"));
+            expect(document.activeElement).toBe(day("2026-11-08"));
             press("PageUp");
             press("PageUp");
-            expect(document.activeElement).toBe(day("2026-09-22"));
-            // The grid of September 2026 starts on Monday 31 August.
+            expect(document.activeElement).toBe(day("2026-09-08"));
             press("ArrowUp");
             press("ArrowUp");
-            press("ArrowUp");
-            expect(document.activeElement).toBe(day("2026-09-01"));
-            press("ArrowUp");
+            expect(document.activeElement).toBe(day("2026-08-25"));
+            press("End");
+            expect(document.activeElement).toBe(day("2026-08-30"));
+            press("Home");
+            expect(document.activeElement).toBe(day("2026-08-24"));
+
+            // The grid of October 2026 ends on Sunday 1 November.
+            press("PageDown");
+            press("PageDown");
+            press("ArrowDown");
+            expect(document.activeElement).toBe(day("2026-10-31"));
+            press("ArrowDown");
             expect(document.activeElement).toBe(preset("date_picker.today"));
         });
 
         it("writes the focused day on Enter", () => {
             const { onChange } = renderPicker({ value: "2026-10-14" });
             preset("date_picker.today")?.focus();
-            press("ArrowDown");
+            press("ArrowUp");
             press("ArrowLeft");
 
             press("Enter");
@@ -174,7 +192,7 @@ describe("DatePicker", () => {
             const { onChange, onClose } = renderInMenu();
             preset("date_picker.today")?.focus();
 
-            press("ArrowDown");
+            press("ArrowUp");
             expect(document.activeElement).toBe(day("2026-10-14"));
             press("ArrowDown");
             expect(document.activeElement).toBe(day("2026-10-21"));

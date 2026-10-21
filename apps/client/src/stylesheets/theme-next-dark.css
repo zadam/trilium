@@ -308,6 +308,8 @@
     --calendar-day-hover-color: var(--hover-item-text-color);
     --calendar-day-hover-background: var(--active-item-background-color);
     --calendar-day-highlight-background: #8080805a;
+    --calendar-day-selected-background: var(--menu-text-color);
+    --calendar-day-selected-color: var(--menu-background-color-no-backdrop);
 
     --timeline-bullet-color: gray;
     --timeline-bullet-hover-color: white;

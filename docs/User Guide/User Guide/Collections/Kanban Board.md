@@ -340,7 +340,7 @@ Here is an example of the attributes you can define for a typical Kanban board u
 
 To set the value of a custom attribute, click or tap the card, and then enter or select the desired value in the dialog header.
 
-For attributes of the “select”, “checkbox” or “date” type, you can quickly change the value by using the card's context menu under the _Attributes_ section. A date attribute's submenu offers _Not set_ to clear the value, and a date picker with buttons for _Today_, _Tomorrow_ and _Next week_ (the first day of next week, as set in the first day of the week option) above a calendar for any other day. Use the arrows to change the month, and click a day to set it. From the keyboard, <kbd>←</kbd> and <kbd>→</kbd> move between the buttons and <kbd>↓</kbd> moves into the calendar, where the arrow keys move by day and week, <kbd>Page Up</kbd> and <kbd>Page Down</kbd> by month, and <kbd>Enter</kbd> sets the day.
+For attributes of the “select”, “checkbox” or “date” type, you can quickly change the value by using the card's context menu under the _Attributes_ section. A date attribute's submenu offers _Not set_ to clear the value, and a date picker: a calendar to pick any day, with buttons below it for _Today_, _Tomorrow_ and _Next week_ (the first day of next week, as set in the first day of the week option). Use the arrows to change the month, and click a day to set it. From the keyboard, the arrow keys move by day and week, <kbd>Page Up</kbd> and <kbd>Page Down</kbd> by month, and <kbd>Enter</kbd> sets the day; <kbd>↓</kbd> from the last week moves to the buttons, <kbd>←</kbd> and <kbd>→</kbd> move between them, and <kbd>↑</kbd> returns to the calendar.
 
 #### Reordering, hiding, redefining, and deleting custom attributes
 

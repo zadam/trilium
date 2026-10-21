@@ -23,13 +23,13 @@ export interface DatePickerProps {
 const DATE_FORMAT = "YYYY-MM-DD";
 
 /**
- * A date picker: buttons for today, tomorrow and the first day of next week above a month grid,
- * opening on the month of {@link DatePickerProps.value} with that day marked.
+ * A date picker: a month grid, opening on the month of {@link DatePickerProps.value} with that day
+ * marked, above buttons for today, tomorrow and the first day of next week.
  *
- * From the keyboard, Left and Right move across the buttons and Down enters the grid. In the
- * grid, the arrows move by day and week, Page Up and Page Down by month, Home and End to the ends
- * of the week, Enter or Space picks the day, and Up from the first week returns to the buttons.
- * Inside a `Menu`, the grid keeps Up and Down and the buttons keep Down through `data-menu-keys`,
+ * From the keyboard, Left and Right move across the buttons and Up enters the grid. In the grid,
+ * the arrows move by day and week, Page Up and Page Down by month, Home and End to the ends of
+ * the week, Enter or Space picks the day, and Down from the last week returns to the buttons.
+ * Inside a `Menu`, the grid keeps Up and Down and the buttons keep Up through `data-menu-keys`,
  * and a click on a button or a day closes the menu, as a click on a custom row's control does.
  */
 export default function DatePicker({ value, onChange, onClear }: DatePickerProps) {
@@ -89,7 +89,7 @@ export default function DatePicker({ value, onChange, onClear }: DatePickerProps
         const back = isRightToLeft() ? "ArrowRight" : "ArrowLeft";
         if (e.key === forward) focusPreset((focusedPreset + 1) % count);
         else if (e.key === back) focusPreset((focusedPreset - 1 + count) % count);
-        else if (e.key === "ArrowDown") focusDay(focusDate);
+        else if (e.key === "ArrowUp") focusDay(focusDate);
         else return;
         e.preventDefault();
         e.stopPropagation();
@@ -97,16 +97,16 @@ export default function DatePicker({ value, onChange, onClear }: DatePickerProps
 
     function onGridKeyDown(e: KeyboardEvent) {
         const rtl = isRightToLeft();
-        const gridStart = getWeekStartDate(month, isoWeekday(firstDayOfWeek));
+        const gridEnd = getWeekStartDate(month.endOf("month"), isoWeekday(firstDayOfWeek)).add(6, "day");
         const weekStart = getWeekStartDate(focusDate, isoWeekday(firstDayOfWeek));
         switch (e.key) {
             case "ArrowLeft": focusDay(focusDate.add(rtl ? 1 : -1, "day")); break;
             case "ArrowRight": focusDay(focusDate.add(rtl ? -1 : 1, "day")); break;
-            case "ArrowUp":
-                if (focusDate.subtract(7, "day").isBefore(gridStart)) focusPreset(focusedPreset);
-                else focusDay(focusDate.subtract(7, "day"));
+            case "ArrowUp": focusDay(focusDate.subtract(7, "day")); break;
+            case "ArrowDown":
+                if (focusDate.add(7, "day").isAfter(gridEnd, "day")) focusPreset(focusedPreset);
+                else focusDay(focusDate.add(7, "day"));
                 break;
-            case "ArrowDown": focusDay(focusDate.add(7, "day")); break;
             case "PageUp": focusDay(focusDate.subtract(1, "month")); break;
             case "PageDown": focusDay(focusDate.add(1, "month")); break;
             case "Home": focusDay(weekStart); break;
@@ -124,26 +124,6 @@ export default function DatePicker({ value, onChange, onClear }: DatePickerProps
 
     return (
         <div ref={rootRef} className="calendar-dropdown-widget date-picker">
-            <div className="date-picker-presets" role="group" data-menu-keys="ArrowDown">
-                {presets.map(({ title, date }, index) => {
-                    const pressed = !!activeDate?.isSame(date, "day");
-                    return (
-                        <Button
-                            key={title} text={title} size="small"
-                            className={pressed ? "active" : undefined} aria-pressed={pressed}
-                            tabIndex={index === focusedPreset ? 0 : -1}
-                            onClick={() => onChange(date.format(DATE_FORMAT))}
-                        />
-                    );
-                })}
-                {onClear && (
-                    <Button
-                        text={t("date_picker.clear")} size="small"
-                        tabIndex={focusedPreset === presets.length ? 0 : -1}
-                        onClick={onClear}
-                    />
-                )}
-            </div>
             <div className="calendar-header">
                 <AdjustDateButton date={month} setDate={setFocusDate} direction="prev" unit="month" />
                 <span className="date-picker-title">{MONTHS[month.month()]} {month.year()}</span>
@@ -159,6 +139,26 @@ export default function DatePicker({ value, onChange, onClear }: DatePickerProps
                     markDayNotes={false}
                     onDateClicked={(date) => onChange(date)}
                 />
+            </div>
+            <div className="date-picker-presets" role="group" data-menu-keys="ArrowUp">
+                {presets.map(({ title, date }, index) => {
+                    const pressed = !!activeDate?.isSame(date, "day");
+                    return (
+                        <Button
+                            key={title} text={title} kind="lowProfile"
+                            className={pressed ? "active" : undefined} aria-pressed={pressed}
+                            tabIndex={index === focusedPreset ? 0 : -1}
+                            onClick={() => onChange(date.format(DATE_FORMAT))}
+                        />
+                    );
+                })}
+                {onClear && (
+                    <Button
+                        text={t("date_picker.clear")} kind="lowProfile"
+                        tabIndex={focusedPreset === presets.length ? 0 : -1}
+                        onClick={onClear}
+                    />
+                )}
             </div>
         </div>
     );

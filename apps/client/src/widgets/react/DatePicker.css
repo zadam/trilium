@@ -5,8 +5,26 @@
     .date-picker-presets {
         display: flex;
         flex-wrap: wrap;
+        justify-content: space-evenly;
         gap: 4px;
-        padding-bottom: 8px;
+        margin-top: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--main-border-color);
+
+        .btn {
+            padding: 2px 8px;
+            font-size: 0.85em;
+            color: var(--muted-text-color);
+        }
+
+        .btn:hover,
+        .btn.active {
+            color: var(--calendar-color);
+        }
+
+        .btn.active {
+            background: var(--calendar-day-highlight-background);
+        }
     }
 
     .calendar-header {
