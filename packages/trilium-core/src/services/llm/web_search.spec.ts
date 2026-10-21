@@ -208,6 +208,10 @@ describe("createWebSearchTool", () => {
             searchProvider: { type: "tavily", name: "My Tavily" },
             sources: [ { ...PAGE, snippet: "Hit" } ]
         });
+
+        respond({ results: [ { ...PAGE, summary: "Hit" } ] });
+        expect(await run(createWebSearchTool({ provider: "deepseek", apiKey: "dk" }, { builtIn: true }), "trilium"))
+            .toEqual({ query: "trilium", sources: [ { ...PAGE, snippet: "Hit" } ] });
     });
 
     it("points the model at read_web_page after any failure, and has it report one only the user can fix", async () => {

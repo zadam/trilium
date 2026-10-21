@@ -323,6 +323,8 @@ describe("DeepSeekProvider web search", () => {
 
         const followUp = String((fetchMock.mock.calls[2] as [ string, RequestInit ])[1].body);
         expect(followUp).toContain("https://triliumnotes.org");
+        // A result without `searchProvider` shows the magnifier, as other built-in searches do.
+        expect(followUp).not.toContain("searchProvider");
     });
 });
 

@@ -39,8 +39,11 @@ const DEEPSEEK_MAX_QUERY_CHARS = 128;
  * line and the `searchProvider` whose mark the line shows, and a failure is returned as
  * `{ error, instruction }`: the chat shows `error` on the tool's line, and `instruction` directs the
  * model to `read_web_page` and, for a {@link SearchSetupError}, to tell the user about it.
+ *
+ * With `builtIn`, the tool is a model provider's own search, whose result has no `searchProvider`,
+ * so the chat shows the magnifier on its line.
  */
-export function createWebSearchTool(setup: WebSearchSetup) {
+export function createWebSearchTool(setup: WebSearchSetup, { builtIn = false } = {}) {
     return tool({
         description: "Search the web for current information. Returns the title, URL and a short excerpt of each matching page. "
             + "The excerpts rarely hold specific facts such as numbers, dates or versions, so before answering a factual "
@@ -52,7 +55,7 @@ export function createWebSearchTool(setup: WebSearchSetup) {
             try {
                 return {
                     query,
-                    searchProvider: { type: setup.provider, name: setup.name ?? setup.provider },
+                    ...(!builtIn && { searchProvider: { type: setup.provider, name: setup.name ?? setup.provider } }),
                     sources: await searchWeb(setup, query, options.abortSignal)
                 };
             } catch (e) {

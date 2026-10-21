@@ -84,7 +84,7 @@ export class DeepSeekProvider extends BaseProvider {
      * Search API with the provider's key, through the same tools a search provider gets.
      */
     protected override addWebSearchTool(tools: ToolSet): void {
-        tools.web_search = createWebSearchTool({ provider: "deepseek", name: "DeepSeek", apiKey: this.apiKey, baseURL: this.baseURL });
+        tools.web_search = createWebSearchTool({ provider: "deepseek", apiKey: this.apiKey, baseURL: this.baseURL }, { builtIn: true });
         tools.read_web_page = createReadWebPageTool();
     }
 
