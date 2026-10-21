@@ -1,7 +1,7 @@
 // Run with `node --test .claude/hooks/check-commit-attribution.test.mjs`.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -57,6 +57,37 @@ ${TRAILER}
             `S="${dir}"; T="$S/good.txt"; git commit -F "$T"`
         ]) {
             assert.equal(checkCommand(command, "."), null, command);
+        }
+    });
+
+    it("reads a message file relative to the directories `git -C` names", () => {
+        mkdirSync(join(dir, "sub", "deeper"), { recursive: true });
+        message(join("sub", "in-sub.txt"), `fix(x): y\n\n${TRAILER}\n`);
+        message(join("sub", "deeper", "in-deeper.txt"), `fix(x): y\n\n${TRAILER}\n`);
+        for (const command of [
+            "git -C sub commit -F in-sub.txt",
+            "git -C sub -C deeper commit --file=in-deeper.txt",
+            `git -C sub -C "${join(dir, "sub", "deeper")}" commit -F in-deeper.txt`
+        ]) {
+            assert.equal(checkCommand(command, dir), null, command);
+        }
+    });
+
+    it("reads the message from the commit alone, not from the commands after it", () => {
+        for (const command of [
+            `git commit -m "fix(x): y" -m "${TRAILER}" && echo "Co-Authored-By: Claude"`,
+            `git commit -F - <<'EOF'\nfix(x): y\n\n${TRAILER}\nEOF\n`
+                + "git log -1 | grep \"Co-Authored-By: Claude\""
+        ]) {
+            assert.equal(checkCommand(command, dir), null, command);
+        }
+        for (const command of [
+            `git commit -m wip && echo "${TRAILER}"`,
+            `git commit -m wip; echo "${TRAILER}"`,
+            `git commit -m wip | tee log.txt "${TRAILER}"`,
+            `git commit -m wip\necho "${TRAILER}"`
+        ]) {
+            assert.match(checkCommand(command, dir) ?? "", /Assisted-by: Claude Code \(/, command);
         }
     });
 
