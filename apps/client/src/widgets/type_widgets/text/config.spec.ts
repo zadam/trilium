@@ -511,6 +511,12 @@ describe("CK config - language & emoji", () => {
 });
 
 describe("CK config - image actions", () => {
+    it("places the image in one position menu, in place of the style buttons", async () => {
+        const toolbar = ((await buildConfig(baseOpts())).image as { toolbar: unknown[] }).toolbar;
+        expect(toolbar[0]).toBe("imagePosition");
+        expect(JSON.stringify(toolbar)).not.toContain("imageStyle:");
+    });
+
     it("adds the copy-image toolbar action only when raw image copy is supported", async () => {
         const unsupported = await buildConfig(baseOpts());
         const unsupportedToolbar = (unsupported.image as { toolbar: unknown[] }).toolbar;

@@ -114,21 +114,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
                 }
             ],
             toolbar: [
-                // Image styles, see https://ckeditor.com/docs/ckeditor5/latest/features/images/images-styles.html#demo.
-                "imageStyle:inline",
-                "imageStyle:alignCenter",
-                {
-                    name: "imageStyle:wrapText",
-                    title: "Wrap text",
-                    items: ["imageStyle:alignLeft", "imageStyle:alignRight"],
-                    defaultItem: "imageStyle:alignRight"
-                },
-                {
-                    name: "imageStyle:block",
-                    title: "Block align",
-                    items: ["imageStyle:alignBlockLeft", "imageStyle:alignBlockRight"],
-                    defaultItem: "imageStyle:alignBlockLeft"
-                },
+                "imagePosition",
                 "|",
                 "imageResize:25",
                 "imageResize:50",

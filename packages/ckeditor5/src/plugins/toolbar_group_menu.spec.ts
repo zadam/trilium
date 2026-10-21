@@ -92,7 +92,7 @@ class SampleDropdown extends Plugin {
             items.add({ type: "button", model: new UIModel({ withText: true }) });
             items.add({
                 type: "group",
-                model: new UIModel({ label: "Grouped" }),
+                label: "Grouped",
                 items: new Collection([{
                     type: "button" as const,
                     model: new UIModel({ label: "Inside", withText: true })
@@ -493,8 +493,10 @@ describe("ToolbarGroupMenu", () => {
 
         groupDropdown(getToolbar(editor), "Insert").isOpen = true;
         expect(labels(last().items)).toStrictEqual(["Bold", "—", "Italic", "Odd list", ""]);
-        // A list's groups are passed over, and an unlabeled button or dropdown is named "".
-        expect(labels(entry(last().items, "Odd list").children ?? [])).toStrictEqual(["First", "—", ""]);
+        // A list's group is a heading over its rows, and an unlabeled button or dropdown is named "".
+        const odd = entry(last().items, "Odd list").children ?? [];
+        expect(labels(odd)).toStrictEqual(["First", "—", "", "Grouped", "Inside"]);
+        expect(odd[3]?.kind).toBe("heading");
         expect(labels(entry(last().items, "").children ?? [])).toStrictEqual(["Row"]);
     });
 

@@ -1,6 +1,6 @@
 import {
     BalloonToolbar, BlockToolbar, ButtonView, DropdownView, type Editor, type FocusTracker,
-    ListItemView, ListSeparatorView, ListView, Plugin, SearchTextView, SplitButtonView, SwitchButtonView,
+    ListItemGroupView, ListItemView, ListSeparatorView, ListView, Plugin, SearchTextView, SplitButtonView, SwitchButtonView,
     type ToolbarConfig, type ToolbarConfigItem, ToolbarSeparatorView, type ToolbarView, type View
 } from "ckeditor5";
 
@@ -428,6 +428,8 @@ function describeListEntries(dropdown: DropdownView, run: (view: View) => () => 
     for (const entry of entries) {
         if (entry instanceof ListSeparatorView) {
             addRule(rows);
+        } else if (entry instanceof ListItemGroupView) {
+            rows.push({ kind: "heading", label: entry.label });
         } else {
             rows.push(describeButton(entry, run(entry)));
         }
@@ -479,15 +481,21 @@ function listEntriesOf(dropdown: DropdownView) {
         return undefined;
     }
 
-    const entries: Array<ButtonView | ListSeparatorView> = [];
-    for (const item of listView.items) {
+    return listItemEntries(listView.items);
+}
+
+/** The buttons and separators of a list's items, a group's label before its own. */
+function listItemEntries(items: Iterable<View>) {
+    const entries: Array<ButtonView | ListSeparatorView | ListItemGroupView> = [];
+    for (const item of items) {
         if (item instanceof ListSeparatorView) {
             entries.push(item);
+        } else if (item instanceof ListItemGroupView) {
+            entries.push(item, ...listItemEntries(item.items));
         } else if (item instanceof ListItemView && item.children.first instanceof ButtonView) {
             entries.push(item.children.first);
         }
     }
-
     return entries;
 }
 

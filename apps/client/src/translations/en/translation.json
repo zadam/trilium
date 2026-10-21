@@ -4600,7 +4600,8 @@
       "block-type": "Block type",
       "camera": "Camera",
       "move-up": "Move up",
-      "move-down": "Move down"
+      "move-down": "Move down",
+      "image-position": "Image position"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

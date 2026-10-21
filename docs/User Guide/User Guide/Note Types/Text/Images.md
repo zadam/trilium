@@ -33,14 +33,13 @@ Clicking on an image will reveal a popup with multiple options:
 
 ### Alignment
 
-The first set of options configure the alignment are, in order:
+The first button of the popup, _Image position_, shows the icon of the image's current position. It opens a menu that groups the positions by how text runs around the image:
 
 | Icon | Option | Preview | Description |
 | --- | --- | --- | --- |
-| <span class="tn-icon cke cke-object-inline"></span> | Inline | ![](Images_image.jpg) | As the name suggests, the name can be put inside a paragraph and moved around similarly as if it was a block of text. Use drag & drop or cut-paste to move it around. |
-| <span class="tn-icon cke cke-object-center"></span> | Centered image | ![](1_Images_image.jpg) | The image will be displayed as a block and centered, not allowing text in either the left or right of it. |
-| <span class="tn-icon cke cke-object-inline-right"></span> | Wrap text | ![](3_Images_image.jpg) | The image will be displayed to the left or the right of the text. |
-| <span class="tn-icon cke cke-object-left"></span> | Block align | ![](2_Images_image.jpg) | Similarly to _Centered image_, the image will be displayed as a block and aligned either to the left or to the right, but not allowing text to flow on either of its sides. |
+| <span class="tn-icon cke cke-object-inline"></span> | _In line_ | ![](Images_image.jpg) | The image sits inside a paragraph, like a large character, and moves with the text around it. Use drag & drop or cut-paste to move it around. |
+| <span class="tn-icon cke cke-object-center"></span> | _Break text_ → _Align left_, _Align center_ or _Align right_ | ![](1_Images_image.jpg) ![](2_Images_image.jpg) | The image is displayed on a line of its own, at the left, in the center or at the right; text continues above and below it but not beside it. |
+| <span class="tn-icon cke cke-object-inline-right"></span> | _Wrap text_ → _Align left_ or _Align right_ | ![](3_Images_image.jpg) | The image is displayed at the left or the right, and the text flows beside it. |
 
 ### Drawing over an image
 
