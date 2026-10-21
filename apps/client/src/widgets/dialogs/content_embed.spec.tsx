@@ -132,6 +132,25 @@ describe("ContentEmbedDialog", () => {
         expect(editorApi.addContentEmbed).toHaveBeenCalledWith(song.noteId, "expandable");
     });
 
+    it("explains instead of offering sizes for a note inserted as an image", async () => {
+        const picture = buildNote({ title: "Picture", type: "image", mime: "image/png" });
+        const script = buildNote({ title: "Script", type: "code", mime: "text/javascript" });
+        const notice = () => container.querySelector(".include-note-size .include-note-as-image");
+
+        await pick(picture);
+        expect(sizeButtons()).toHaveLength(0);
+        expect(container.querySelector(".include-note-size-description")).toBeNull();
+        expect(notice()?.textContent).toBe("include_note.inserted_as_image");
+        await submit();
+        expect(editorApi.addImage).toHaveBeenCalledExactlyOnceWith(picture.noteId);
+        expect(editorApi.addContentEmbed).not.toHaveBeenCalled();
+
+        await open();
+        await pick(script);
+        expect(notice()).toBeNull();
+        expect(checkedSize()).toBe("full");
+    });
+
     it("keeps the include button disabled while no note is picked", async () => {
         const script = buildNote({ title: "Script", type: "code", mime: "text/javascript" });
         const button = container.querySelector<HTMLButtonElement>(".modal-footer button");

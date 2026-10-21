@@ -6,7 +6,7 @@
                 min-width: max-content;
             }
 
-            > :is(.input-group, .include-note-size-control) {
+            > :is(.input-group, .include-note-size-control, .include-note-as-image) {
                 flex: 1 1 auto;
                 min-width: 0;
             }
@@ -17,6 +17,11 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
+    }
+
+    .include-note-as-image {
+        margin: 0;
+        opacity: .7;
     }
 
     .include-note-size-description {

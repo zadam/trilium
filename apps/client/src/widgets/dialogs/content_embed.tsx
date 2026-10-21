@@ -12,6 +12,7 @@ import Button from "../react/Button";
 import { Suggestion } from "../../services/note_autocomplete";
 import tree from "../../services/tree";
 import froca from "../../services/froca";
+import type FNote from "../../entities/fnote";
 import { useNote, useTriliumEvent } from "../react/hooks";
 import SegmentedChoice from "../react/SegmentedChoice";
 import type { BoxSize, CKEditorApi } from "../type_widgets/text/CKEditor";
@@ -79,30 +80,34 @@ export default function ContentEmbedDialog() {
                 </OptionCardSection>
 
                 <OptionCardSection className="include-note-size" label={t("include_note.box_size")}>
-                    <div className="include-note-size-control">
-                        <SegmentedChoice<BoxSize>
-                            className="include-note-size-choice"
-                            options={BOX_SIZES.map((size) => ({
-                                value: size,
-                                label: t(`include_note.size_${size}`),
-                                glyph: <BoxSizeGlyph size={size} />
-                            }))}
-                            currentValue={boxSize}
-                            onChange={setChosenBoxSize}
-                        />
-                        {/* All laid out in one cell, so the row has the height of the longest. */}
-                        <div className="include-note-size-description">
-                            {BOX_SIZES.map((size) => (
-                                <small
-                                    key={size}
-                                    className={clsx({ active: size === boxSize })}
-                                    aria-hidden={size !== boxSize}
-                                >
-                                    {t(`include_note.size_${size}_description`)}
-                                </small>
-                            ))}
+                    {note && insertsAsImage(note) ? (
+                        <p className="include-note-as-image">{t("include_note.inserted_as_image")}</p>
+                    ) : (
+                        <div className="include-note-size-control">
+                            <SegmentedChoice<BoxSize>
+                                className="include-note-size-choice"
+                                options={BOX_SIZES.map((size) => ({
+                                    value: size,
+                                    label: t(`include_note.size_${size}`),
+                                    glyph: <BoxSizeGlyph size={size} />
+                                }))}
+                                currentValue={boxSize}
+                                onChange={setChosenBoxSize}
+                            />
+                            {/* All laid out in one cell, so the row has the height of the longest. */}
+                            <div className="include-note-size-description">
+                                {BOX_SIZES.map((size) => (
+                                    <small
+                                        key={size}
+                                        className={clsx({ active: size === boxSize })}
+                                        aria-hidden={size !== boxSize}
+                                    >
+                                        {t(`include_note.size_${size}_description`)}
+                                    </small>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </OptionCardSection>
             </Card>
         </Modal>
@@ -145,11 +150,14 @@ async function embedNote(notePath: string, editorApi: Pick<CKEditorApi, "addCont
     }
     const note = await froca.getNote(noteId);
 
-    if (["image", "canvas", "mermaid"].includes(note?.type ?? "")) {
-        // there's no benefit to use insert note functionlity for images,
-        // so we'll just add an IMG tag
+    if (note && insertsAsImage(note)) {
         editorApi.addImage(noteId);
     } else {
         editorApi.addContentEmbed(noteId, boxSize);
     }
+}
+
+/** Whether a note is inserted as an image rather than included, having no use for a box. */
+function insertsAsImage(note: FNote) {
+    return [ "image", "canvas", "mermaid" ].includes(note.type);
 }
