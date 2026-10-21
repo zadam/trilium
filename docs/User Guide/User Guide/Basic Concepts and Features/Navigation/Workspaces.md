@@ -7,6 +7,7 @@ So far workspace consists of these features:
 *   easy entering of workspace: 
     
     ![](1_Workspaces_image.jpg)
+*   opening a workspace in a new tab: right-click the <span class="tn-icon bx bx-plus"></span> button of the <a class="reference-link" href="../UI%20Elements/Tabs.md">Tabs</a> bar and select the workspace.
 *   visual identification of workspace in tabs:  
     ![](Workspaces_image.jpg)
 
