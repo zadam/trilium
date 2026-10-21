@@ -42,7 +42,8 @@ export interface AttributeMenuOptions {
  * apply to another.
  *
  * Returns an empty array when no attribute qualifies, so a caller can spread the result without
- * checking for an empty section.
+ * checking for an empty section. The section opens with a heading, which draws its own line, so a
+ * caller puts no separator directly above it.
  */
 export function buildAttributeMenuItems<T>({
     notes, attributes, title

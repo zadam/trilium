@@ -35,6 +35,7 @@ import { useEffectiveReadOnly, useNoteContext, useNoteLabel, useNoteLabelBoolean
 import { ParentComponent } from "../../react/react_utils";
 import { offeredTemplateIds, useTemplateChoice } from "../../react/TemplateDropdown";
 import { ViewModeProps } from "../interface";
+import type { PromotedAttributeSetting } from "../promoted_attributes";
 import { type CalendarViewData, changeEvent, DEFAULT_EVENT_TEMPLATES, newEvent } from "./api";
 import Calendar from "./calendar";
 import { openCalendarContextMenu } from "./context_menu";
@@ -176,7 +177,8 @@ export default function CalendarView({
         return true;
     }, []);
 
-    const { eventContent, eventDidMount, eventInnerClass } = useEventDisplayCustomization(note, parentComponent?.componentId, dismissSurface, isReadOnly);
+    const { eventContent, eventDidMount, eventInnerClass } = useEventDisplayCustomization(note, parentComponent?.componentId, dismissSurface, isReadOnly,
+        viewConfig?.promotedAttributes);
     const editingProps = useEditing(note, isEditable, isCalendarRoot, parentComponent?.componentId,
         setSelection, effectiveSlotDuration);
 
@@ -734,7 +736,13 @@ function useEventDisplayCustomization(parentNote: FNote, componentId: string | u
     /** Puts away whatever surface stands over the calendar, answering whether there was one. */
     dismissSurface: () => boolean,
     /** Whether the calendar is read-only, whose events' menu offers only the places to open them in. */
-    isReadOnly: boolean) {
+    isReadOnly: boolean,
+    /** How the calendar arranges its promoted attributes, which the events' menu offers to set. */
+    attributeSettings: PromotedAttributeSetting[] | undefined) {
+    // Read when the menu opens, as a chip's listener outlives the render it was attached in.
+    const attributeSettingsRef = useRef(attributeSettings);
+    attributeSettingsRef.current = attributeSettings;
+
     /**
      * The chip's own content, drawn so the note's icon can lead its title.
      *
@@ -798,7 +806,8 @@ function useEventDisplayCustomization(parentNote: FNote, componentId: string | u
             const note = await froca.getNote(e.event.extendedProps.noteId);
             if (!note) return;
 
-            openCalendarContextMenu(contextMenuEvent, note, parentNote, componentId, isReadOnly);
+            openCalendarContextMenu(contextMenuEvent, note, parentNote, componentId, isReadOnly,
+                attributeSettingsRef.current);
         }
 
         // A long press raises it on a phone, as a right-click does on a desktop; the tap itself now

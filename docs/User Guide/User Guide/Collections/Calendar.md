@@ -122,6 +122,8 @@ Events can show the values of their attributes below their title, in the month v
 
 The dates, times and recurrence of the events are not listed, as the calendar always shows them itself.
 
+To change an attribute's value without opening the event, right-click the event (or long-press it on a phone) and use the _Attributes_ section of its context menu. It lists the shown attributes of the “checkbox”, “select” and “date” types, and works as on a [Kanban Board](Kanban%20Board.md).
+
 If an event has a `#calendar:displayedAttributes` label, including one inherited from the calendar, the attributes listed in that label are shown instead.
 
 ## Configuring the calendar using attributes
