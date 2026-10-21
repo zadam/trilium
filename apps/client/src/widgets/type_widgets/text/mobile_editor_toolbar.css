@@ -84,7 +84,7 @@ body.mobile {
     /* A menu of the toolbar in the place of the keyboard (see `useKeyboardPanel`). */
     &.keyboard-panel-open {
         --mobile-toolbar-clearance: calc(
-            var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap)
+            var(--mobile-toolbar-height) + var(--mobile-toolbar-gap)
             + var(--tn-keyboard-height, 0px)
         );
 
@@ -94,6 +94,18 @@ body.mobile {
 
         .classic-toolbar-island {
             bottom: var(--tn-keyboard-height, 0px);
+            margin-bottom: 0;
+            border-end-start-radius: 0;
+            border-end-end-radius: 0;
+
+            .classic-toolbar-widget {
+                border-end-start-radius: 0;
+                border-end-end-radius: 0;
+            }
+
+            .hide-keyboard-action .icon-action {
+                border-end-end-radius: 0;
+            }
         }
     }
 
