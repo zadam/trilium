@@ -21,6 +21,7 @@ import diffAiResponse from "./ai_diff.js";
 import { createColorMenuHost } from "./color_menu.js";
 import { buildFontColorConfig, buildTableColorConfig } from "./color_palette.js";
 import { createEmojiList, createNoteMentionList, createSlashCommandList } from "./mention_list_view.js";
+import { getShownToolbarIsland } from "./mobile_editor_toolbar.js";
 import { buildQuoteTransformation, resolveQuoteSetting } from "./quotes.js";
 import { buildCustomTransformations, parseCustomReplacements } from "./replacements.js";
 import { buildToolbarConfig } from "./toolbar.js";
@@ -333,6 +334,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
 
     config.toolbarGroupMenu = { host: () => createToolbarGroupMenuHost() };
     config.colorMenu = { host: () => createColorMenuHost() };
+    config.tableColumnBar = { bottomObstacle: getShownToolbarIsland };
 
     return {
         ...config,

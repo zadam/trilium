@@ -54,6 +54,7 @@ import "./plugins/tabs/tabs.js";
 import "./plugins/multicolumn/multicolumn.js";
 import "./plugins/mermaid/mermaid.js";
 import "./plugins/referencelink.js";
+import "./plugins/table_column_bar/table_column_bar.js";
 import "./plugins/table_context_menu.js";
 import "./plugins/table_paste_rows.js";
 

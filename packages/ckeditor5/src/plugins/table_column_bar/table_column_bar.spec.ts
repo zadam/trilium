@@ -214,6 +214,55 @@ describe("TableColumnBar", () => {
             expect(withToolbar.ui.viewportOffset.bottom ?? 0).toBe(initialOffset ?? 0);
         });
 
+        it("sits above the element of `tableColumnBar.bottomObstacle`, wherever it floats", async () => {
+            const card = document.createElement("div");
+            card.style.cssText = "position: fixed; bottom: 6px; left: 6px; right: 6px; height: 44px";
+            document.body.appendChild(card);
+            let obstacle: HTMLElement | null = card;
+            const floating = await createTestEditor(PLUGINS, {
+                tableColumnBar: { bottomObstacle: () => obstacle }
+            });
+
+            await showBar(floating, modelTable([["a[]", "b"]]));
+            expectNear(barRectOf(floating).bottom, card.getBoundingClientRect().top);
+
+            // Without one, the bar goes back to the bottom of the viewport.
+            obstacle = null;
+            window.dispatchEvent(new Event("resize"));
+            await expect.poll(() => Math.abs(barRectOf(floating).bottom - document.documentElement.clientHeight))
+                .toBeLessThan(1.5);
+            card.remove();
+        });
+
+        it("corrects for `position: fixed` placing it off the measured viewport", async () => {
+            const card = document.createElement("div");
+            card.style.cssText = "position: fixed; bottom: 6px; left: 6px; right: 6px; height: 44px";
+            document.body.appendChild(card);
+            const shifted = await createTestEditor(PLUGINS, {
+                tableColumnBar: { bottomObstacle: () => card }
+            });
+            // iOS places fixed elements against the layout viewport while the keyboard scrolls
+            // the visual viewport, which a transformed container reproduces.
+            const container = barView(shifted).element?.parentElement;
+            expect(container).toBeInstanceOf(HTMLElement);
+            container?.style.setProperty("transform", "translate(-30px, -40px)");
+
+            try {
+                await showBar(shifted, modelTable([["a[]", "b"]], 'tableWidth="80%"'));
+                expectNear(barRectOf(shifted).bottom, card.getBoundingClientRect().top);
+                expectAligned(shifted);
+
+                const { x, y } = press(dividers(shifted)[0]);
+                moveTo(x + 50, y);
+                await expect.poll(() => isEdgeShown(shifted)).toBe(true);
+                expectNear(edgeRectOf(shifted).left + 1, endEdgeOf(shifted, 0));
+                release();
+            } finally {
+                container?.style.removeProperty("transform");
+                card.remove();
+            }
+        });
+
         it("works with an editor without a toolbar and with a detached one", async () => {
             const balloon = await createTestEditorOf(BalloonEditor, PLUGINS);
             const decoupled = await createTestEditorOf(DecoupledEditor, PLUGINS);

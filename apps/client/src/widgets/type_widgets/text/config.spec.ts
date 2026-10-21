@@ -298,6 +298,23 @@ describe("CK config - HTML support", () => {
 });
 
 describe("CK config - tables", () => {
+    it("keeps the column bar above the phone's toolbar while it is shown", async () => {
+        const bottomObstacle = (await buildConfig(baseOpts())).tableColumnBar?.bottomObstacle;
+        expect(bottomObstacle?.()).toBeNull();
+
+        const container = document.createElement("div");
+        container.className = "classic-toolbar-outer-container visible active";
+        const island = document.createElement("div");
+        island.className = "classic-toolbar-island";
+        container.appendChild(island);
+        document.body.appendChild(container);
+        expect(bottomObstacle?.()).toBe(island);
+
+        container.classList.remove("active");
+        expect(bottomObstacle?.()).toBeNull();
+        container.remove();
+    });
+
     it("offers the Sort dropdown just before the table properties", async () => {
         const toolbar = (await buildConfig(baseOpts())).table?.contentToolbar ?? [];
         expect(toolbar).toContain("tableSort");

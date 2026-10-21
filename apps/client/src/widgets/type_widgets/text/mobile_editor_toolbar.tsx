@@ -182,6 +182,11 @@ export function useKeyboardPanel(enabled: boolean) {
 /** The row of buttons of the phone's toolbar, which scrolls sideways under a menu of it. */
 export const MOBILE_TOOLBAR_ROW = ".classic-toolbar-island .classic-toolbar-widget";
 
+/** The card of the phone's toolbar while it is shown, for `tableColumnBar.bottomObstacle`. */
+export function getShownToolbarIsland() {
+    return document.querySelector<HTMLElement>(".classic-toolbar-outer-container.active .classic-toolbar-island");
+}
+
 /**
  * Closes a menu of the toolbar as a tap on another item of {@link MOBILE_TOOLBAR_ROW} clicks, before
  * the item runs. The menu's `Popup` keeps it open on a press there, which can start a scroll; the
