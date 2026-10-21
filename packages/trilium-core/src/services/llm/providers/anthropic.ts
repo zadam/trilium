@@ -178,7 +178,7 @@ const ANTHROPIC_MODEL = /^claude-([a-z]+)-(\d+)(?:-(\d{1,2}))?(?:-\d{8})?$/;
  * Recommend the newest version within each Claude family (Opus, Sonnet, Haiku,
  * Fable, and any future one) — one model per family, so today's Opus 4.8,
  * Sonnet 5, Haiku 4.5 and Fable 5. Older revisions and dated snapshots stay in
- * the picker, unchecked.
+ * the picker, unchecked. Mythos is never recommended; the user ticks it.
  *
  * Exported because the Claude Code subscription provider serves the same
  * `claude-*` catalog and must apply the same rule, without inheriting from
@@ -188,7 +188,7 @@ export function anthropicRecommendedIds(models: ModelInfo[]): Set<string> {
     const byFamily = new Map<string, { id: string; version: number }[]>();
     for (const model of models) {
         const parsed = parseAnthropicModel(model.id);
-        if (!parsed) {
+        if (!parsed || parsed.family === "mythos") {
             continue;
         }
         const members = byFamily.get(parsed.family) ?? [];

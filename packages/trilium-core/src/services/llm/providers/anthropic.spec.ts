@@ -434,6 +434,10 @@ describe("AnthropicProvider recommendedModelIds", () => {
         ]);
     });
 
+    it("never recommends a Mythos model", () => {
+        expect([...recommend(["claude-mythos-5-1", "claude-mythos-5", "claude-opus-5-5"])]).toEqual(["claude-opus-5-5"]);
+    });
+
     it("treats a snapshot date as the version, not a minor bump", () => {
         // sonnet-4-20250514 is 4.0, so sonnet-4-6 (4.6) must outrank it.
         expect([...recommend(["claude-sonnet-4-20250514", "claude-sonnet-4-6"])]).toEqual(["claude-sonnet-4-6"]);
