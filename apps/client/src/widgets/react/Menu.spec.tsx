@@ -202,6 +202,32 @@ describe("Menu with declared rows", () => {
         expect(onClose).not.toHaveBeenCalled();
     });
 
+    it("unmarks the pointer's row as the pointer leaves, but not an open submenu's row or the keys' row", async () => {
+        const { menu } = renderMenu();
+        const leave = () => menu.dispatchEvent(new PointerEvent("pointerleave"));
+
+        rowTitled("Copy").dispatchEvent(new PointerEvent("pointerenter"));
+        await vi.waitFor(() => expect(activeTitle(menu)).toBe("Copy"));
+        leave();
+        await vi.waitFor(() => expect(activeTitle(menu)).toBeUndefined());
+
+        rowTitled("Advanced").dispatchEvent(new PointerEvent("pointerenter"));
+        await vi.waitFor(() => expect(layers(menu)).toHaveLength(1));
+        rowTitled("Reload").dispatchEvent(new PointerEvent("pointerenter"));
+        await vi.waitFor(() => expect(activeTitle(menu)).toBe("Reload"));
+        leave();
+        // The keys go on from the row the open submenu stands beside.
+        await vi.waitFor(() => expect(activeTitle(menu)).toBe("Advanced"));
+        expect(layers(menu)).toEqual([ [ "Show log", "Reload" ] ]);
+        expect(rowTitled("Advanced").classList).toContain("submenu-open");
+
+        key(menu, "ArrowUp");
+        await vi.waitFor(() => expect(activeTitle(menu)).toBe("Copy"));
+        leave();
+        await new Promise((resolve) => setTimeout(resolve));
+        expect(activeTitle(menu)).toBe("Copy");
+    });
+
     it("starts at the last row when asked to, and takes no focus once it is no longer wanted", async () => {
         const { menu } = renderMenu({ startAt: "last" });
         await vi.waitFor(() => expect(activeTitle(menu)).toBe("Advanced"));

@@ -13,7 +13,7 @@ import { useCallback, useContext, useLayoutEffect, useMemo, useRef } from "preac
  * places itself, keeps inside the viewport, and says when it is dismissed.
  */
 export interface PopupProps extends Pick<HTMLAttributes<HTMLDivElement>, "id" | "className" | "role" | "style" | "tabIndex"
-        | "onClick" | "onPointerMove" | "onContextMenu" | "aria-labelledby"> {
+        | "onClick" | "onPointerMove" | "onPointerLeave" | "onContextMenu" | "aria-labelledby"> {
     /**
      * What it stands beside: an element, a point in the viewport such as where a right-click landed,
      * or a rect that is no element, such as a text editor's caret.

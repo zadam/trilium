@@ -516,7 +516,7 @@ function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDrop
                         ? { level, element, custom: false, disabled: !!disabled, hasSubmenu: true, inline: true, filterable, select: () => {} }
                         : undefined);
                 }}
-                className={clsx("tn-menu-action", isActive && "tn-menu-active", className)}
+                className={clsx("tn-menu-action", open && "submenu-open", isActive && "tn-menu-active", className)}
                 role="menuitem" aria-haspopup="menu" aria-expanded={open}
                 disabled={disabled} tabIndex={-1}
                 onPointerMove={(e) => {

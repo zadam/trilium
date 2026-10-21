@@ -277,6 +277,7 @@ describe("createToolbarGroupMenuHost", () => {
             await vi.waitFor(() => expect(menu.querySelector(":scope > div.dropdown-submenu > .dropdown-menu")?.textContent)
                 .toBe("2026-10-05"));
             expect(tile.getAttribute("aria-expanded")).toBe("true");
+            expect(tile.classList).toContain("submenu-open");
             expect(runs).toEqual([]);
 
             press(rowTitled("2026-10-05"));

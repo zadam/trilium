@@ -1070,6 +1070,24 @@ describe("contextMenu", () => {
                 expect(contextMenu.isShown).toBe(false);
             });
 
+            it("keeps the match typed into the input as the pointer leaves the menu", async () => {
+                const picked: string[] = [];
+                await openFilterable(picked);
+                const parent = [ ...menuElement()?.querySelectorAll<HTMLElement>("li.dropdown-submenu") ?? [] ]
+                    .find((row) => row.textContent?.includes("Insert child note"));
+                parent?.dispatchEvent(new PointerEvent("pointerenter"));
+                await vi.waitFor(() => expect(filterInput()).not.toBeNull());
+
+                filterInput()?.focus();
+                edit("boa");
+                await vi.waitFor(() => expect(activeRow()).toMatch(/^Board/));
+                menuElement()?.dispatchEvent(new PointerEvent("pointerleave"));
+                await new Promise((resolve) => setTimeout(resolve));
+                expect(activeRow()).toMatch(/^Board/);
+                key("Enter");
+                expect(picked).toEqual([ "Board" ]);
+            });
+
             it("gives Right and Left to the menu where the caret has nowhere to go", async () => {
                 await openFilterable();
                 await openSubmenuByKeys();

@@ -202,6 +202,8 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         lastFilter.current = filter;
         if (level === undefined) return;
         if (!activateFirstRow(level + 1)) pendingFirstRow.current = level + 1;
+        // Typing into the input moves the active row, as the keys do.
+        if (filter) setKeyboardDriven(true);
 
         const input = filterInputIn(menuRef.current);
         if (filter && input && document.activeElement !== input) {
@@ -407,6 +409,14 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
                     keyboardDriven && "tn-menu-keyboard", className)}
                 onPointerMove={(e) => {
                     if (pointerMoved(e)) setKeyboardDriven(false);
+                }}
+                // Fires only when the pointer is off every level, as the submenu layers are children
+                // of this element. Unless the keys drive the menu, only the deepest open submenu's
+                // row stays active.
+                onPointerLeave={() => {
+                    if (keyboardDriven) return;
+                    const deepest = open.at(-1);
+                    setActiveRow(deepest && { level: open.length - 1, id: deepest.id });
                 }}
                 // Neither the browser's menu nor another of the app's opens over this one. Every level
                 // is inside this element, so one handler covers them all.

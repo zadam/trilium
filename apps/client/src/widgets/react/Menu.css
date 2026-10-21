@@ -260,12 +260,13 @@ body.desktop .dropdown-item.dropdown-submenu.submenu-open,
     line-height: 1.2;
 
     &:hover:not(:disabled),
-    &.tn-menu-active {
+    &.tn-menu-active,
+    body.desktop &.submenu-open {
         color: var(--hover-item-text-color);
         background-color: var(--hover-item-background-color);
     }
 
-    .tn-menu-keyboard &:hover:not(.tn-menu-active) {
+    .tn-menu-keyboard &:hover:not(.tn-menu-active, .submenu-open) {
         color: var(--menu-text-color);
         background-color: transparent;
     }
