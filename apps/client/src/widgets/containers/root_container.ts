@@ -6,7 +6,7 @@ import { applyCustomFontsFromOptions, hasCustomFontContentChanged } from "../../
 import { applyFontsFromOptions } from "../../services/font.js";
 import options from "../../services/options.js";
 import { applyThemeFromOptions, onEffectiveThemeStyleChange, updateColorSchemeClasses, updateThemeCapabilities } from "../../services/theme.js";
-import utils, { isIOS, isMobile } from "../../services/utils.js";
+import utils, { isIOS, isMobile, isMobileApp } from "../../services/utils.js";
 import type BasicWidget from "../basic_widget.js";
 import FlexContainer from "./flex_container.js";
 
@@ -66,7 +66,11 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         this.#setExperimentalFeatures();
         this.#initThemeColor();
 
-        return super.render();
+        const $widget = super.render();
+        if (isIOS() && isMobileApp()) {
+            this.#trackLayoutInsets();
+        }
+        return $widget;
     }
 
     entitiesReloadedEvent({ loadResults }: EventData<"entitiesReloaded">) {
@@ -122,13 +126,7 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
     }
 
     #onMobileResize() {
-        // The virtual keyboard never changes the window width, so a width change means the device was
-        // rotated (or the window resized) and the stored height no longer describes this orientation.
-        // Keeping it would make the shorter landscape window look like an open keyboard (#10835).
-        if (window.innerWidth !== this.baselineWindowWidth) {
-            this.baselineWindowWidth = window.innerWidth;
-            this.baselineWindowHeight = window.innerHeight;
-        }
+        this.#syncBaseline();
 
         const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
         const windowHeight = Math.max(window.innerHeight, this.baselineWindowHeight); // inner height changes when keyboard is opened, we need to compare with the original height to detect it.
@@ -142,6 +140,38 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
             const keyboardHeight = Math.round(windowHeight - viewportHeight);
             document.body.style.setProperty("--tn-keyboard-height", `${keyboardHeight}px`);
         }
+    }
+
+    #syncBaseline() {
+        // The virtual keyboard never changes the window width, so a width change means the device was
+        // rotated (or the window resized) and the stored height no longer describes this orientation.
+        // Keeping it would make the shorter landscape window look like an open keyboard (#10835).
+        if (window.innerWidth !== this.baselineWindowWidth) {
+            this.baselineWindowWidth = window.innerWidth;
+            this.baselineWindowHeight = window.innerHeight;
+        }
+    }
+
+    /**
+     * In the iOS app, `Keyboard.resize: "native"` resizes the web view for the keyboard, and the
+     * layout follows `innerHeight` only some time later. `--tn-layout-shrink` is how much shorter
+     * than the window the layout is, and `--tn-layout-overhang` how far it reaches below the visible
+     * bottom, so `mobile_editor_toolbar.css` places the toolbar and its menus for the layout as it
+     * stands.
+     */
+    #trackLayoutInsets() {
+        const root = this.$widget[0];
+        const style = document.body.style;
+        const update = () => {
+            this.#syncBaseline();
+            const height = root.getBoundingClientRect().height;
+            const windowHeight = Math.max(window.innerHeight, this.baselineWindowHeight);
+            style.setProperty("--tn-layout-shrink", `${Math.max(0, Math.round(windowHeight - height))}px`);
+            style.setProperty("--tn-layout-overhang", `${Math.max(0, Math.round(height - window.innerHeight))}px`);
+        };
+        update();
+        new ResizeObserver(update).observe(root);
+        window.visualViewport?.addEventListener("resize", update);
     }
 
     #setMaxContentWidth() {

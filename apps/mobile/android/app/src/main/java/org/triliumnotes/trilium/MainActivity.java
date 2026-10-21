@@ -54,22 +54,23 @@ public class MainActivity extends BridgeActivity {
     }
 
     /**
-     * Injects system bar insets into the WebView as CSS custom properties,
+     * Injects system bar and display cutout insets into the WebView as CSS custom properties,
      * since Android's WebView doesn't populate env(safe-area-inset-*).
      * Also handles IME (keyboard) insets to shrink the viewport instead of scrolling.
      */
     private void forwardInsetsToWebView() {
         View decorView = getWindow().getDecorView();
         ViewCompat.setOnApplyWindowInsetsListener(decorView, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            Insets safeArea = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
             boolean isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
             float density = getResources().getDisplayMetrics().density;
 
-            int top = Math.round(systemBars.top / density);
-            int bottom = Math.round(systemBars.bottom / density);
-            int left = Math.round(systemBars.left / density);
-            int right = Math.round(systemBars.right / density);
+            int top = Math.round(safeArea.top / density);
+            int bottom = Math.round(safeArea.bottom / density);
+            int left = Math.round(safeArea.left / density);
+            int right = Math.round(safeArea.right / density);
             int keyboardHeight = Math.round(ime.bottom / density);
 
             String js = "document.documentElement.style.setProperty('--safe-area-inset-top', '" + top + "px');"

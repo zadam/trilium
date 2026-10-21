@@ -5,9 +5,11 @@ import appContext, { type CommandListenerData, type CommandNames, type EventData
 import type NoteContext from "../components/note_context.js";
 import contextMenu from "../menus/context_menu.js";
 import attributeService from "../services/attributes.js";
+import cssClassManager from "../services/css_class_manager.js";
 import froca from "../services/froca.js";
 import { t } from "../services/i18n.js";
 import keyboardActionService from "../services/keyboard_actions.js";
+import search from "../services/search.js";
 import { clampDragDestination } from "../services/tab_pinning.js";
 import { buildTabTitle, TAB_TITLE_SEPARATOR } from "../services/tab_title.js";
 import utils from "../services/utils.js";
@@ -899,6 +901,40 @@ export default class TabRowWidget extends BasicWidget {
             placement: "bottom",
             container: "body",
             delay: { show: 500, hide: 0 }
+        });
+
+        this.$newTab.on("contextmenu", (e) => {
+            e.preventDefault();
+            void this.showNewTabContextMenu(e.pageX, e.pageY);
+        });
+    }
+
+    async showNewTabContextMenu(x: number, y: number) {
+        const workspaceNotes = await search.searchForNotes("#workspace #!template");
+
+        contextMenu.show<CommandNames>({
+            x,
+            y,
+            items: [
+                { title: t("tab_row.new_tab"), command: "openNewTab", uiIcon: "bx bx-plus", keyboardShortcut: "openNewTab" },
+                ...(workspaceNotes.length ? [ { kind: "separator" } as const ] : []),
+                ...workspaceNotes.map((workspaceNote) => ({
+                    title: utils.escapeHtml(workspaceNote.title),
+                    uiIcon: workspaceNote.getWorkspaceIconClass() || workspaceNote.getIcon(),
+                    iconColorClass: cssClassManager.createClassForColor(workspaceNote.getWorkspaceTabBackgroundColor()) || undefined,
+                    handler: () => {
+                        void appContext.tabManager.openContextWithNote(workspaceNote.noteId, {
+                            activate: true,
+                            hoistedNoteId: workspaceNote.noteId
+                        });
+                    }
+                }))
+            ],
+            selectMenuItemHandler: ({ command }) => {
+                if (command) {
+                    this.triggerCommand(command);
+                }
+            }
         });
     }
 

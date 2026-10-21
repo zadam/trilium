@@ -129,58 +129,83 @@ export function useEditorsFocused(
 }
 
 /**
- * The element of the toolbar `editor` shows: the `TextFormattingToolbar` while it is active, and
- * the editor's own toolbar otherwise.
+ * The element of the toolbar `editor` shows: the `ContextToolbar` while it is active, the
+ * `TextFormattingToolbar` while that is, and the editor's own toolbar otherwise.
  */
 export function useShownToolbarElement(editor: CKTextEditor | undefined) {
-    const formatting = editor?.plugins.has("TextFormattingToolbar")
-        ? editor.plugins.get("TextFormattingToolbar")
-        : undefined;
-    const [ formattingActive, setFormattingActive ] = useState(false);
+    const context = useActiveToolbarElement(editor, "ContextToolbar");
+    const formatting = useActiveToolbarElement(editor, "TextFormattingToolbar");
+    return context ?? formatting ?? editor?.ui.view.toolbar?.element ?? undefined;
+}
+
+/** The toolbar of a plugin that swaps it in for the editor's own, while the plugin is active. */
+function useActiveToolbarElement(editor: CKTextEditor | undefined, pluginName: "ContextToolbar" | "TextFormattingToolbar") {
+    const plugin = editor?.plugins.has(pluginName) ? editor.plugins.get(pluginName) : undefined;
+    const [ isActive, setIsActive ] = useState(false);
 
     useEffect(() => {
-        if (!formatting) {
-            setFormattingActive(false);
+        if (!plugin) {
+            setIsActive(false);
             return;
         }
-        const update = () => setFormattingActive(formatting.isActive);
+        const update = () => setIsActive(plugin.isActive);
         update();
-        formatting.on("change:isActive", update);
-        return () => formatting.off("change:isActive", update);
-    }, [ formatting ]);
+        plugin.on("change:isActive", update);
+        return () => plugin.off("change:isActive", update);
+    }, [ plugin ]);
 
-    const element = formatting && formattingActive
-        ? formatting.toolbarView.element
-        : editor?.ui.view.toolbar?.element;
-    return element ?? undefined;
+    return plugin && isActive ? plugin.toolbarView.element ?? undefined : undefined;
 }
 
 /**
- * Whether a menu of the formatting toolbar opens in the place of the keyboard, as it does when the
- * keyboard is up as it opens: the keyboard closes as the menu takes focus, and the menu fills its
- * `--tn-keyboard-height`. While such a menu is mounted, `keyboard-panel-open` on the body keeps
- * the layout of an open keyboard. `replacesPanel` is set for a menu that opens as another one
- * leaves the place, which it takes over without a reveal.
+ * Whether a menu of the formatting toolbar opens in the place of the keyboard: the keyboard closes
+ * as the menu takes focus, and the menu fills its `--tn-keyboard-height`. While such a menu is
+ * mounted, `keyboard-panel-open` on the body keeps the layout of an open keyboard, with the
+ * toolbar on top of the menu. `replacesPanel` is set for a menu that opens as another one leaves
+ * the place, which it takes over without a reveal.
+ *
+ * With no keyboard up, the menu takes a place of its own height (`isOwnHeight`): `measureRef` on
+ * its element sets `--tn-keyboard-height` to that height while it is open.
  */
 export function useKeyboardPanel(enabled: boolean) {
-    const [ { isPanel, replacesPanel } ] = useState(() => {
+    const [ { isPanel, replacesPanel, isOwnHeight } ] = useState(() => {
         const root = document.getElementById("root-widget");
         const isKeyboardUp = !!root?.classList.contains("virtual-keyboard-opened");
-        const isPanel = enabled && (isKeyboardUp || isKeyboardPanelOpen());
-        return { isPanel, replacesPanel: isPanel && !!pendingHandBack };
+        // A menu taking over the place of a closed one keeps the way it was sized.
+        const isOwnHeight = enabled && (isKeyboardPanelOpen() ? hasOwnHeightPlace : !isKeyboardUp);
+        return { isPanel: enabled, replacesPanel: enabled && !!pendingHandBack, isOwnHeight };
     });
 
     useLayoutEffect(() => {
         if (!isPanel) return;
-        takeKeyboardPlace();
+        takeKeyboardPlace(isOwnHeight);
         return handBackKeyboardPlace;
     }, [ isPanel ]);
 
-    return { isPanel, replacesPanel };
+    // Measured once the place is taken, which saves the keyboard's height first.
+    const [ element, measureRef ] = useState<HTMLElement | null>(null);
+    useLayoutEffect(() => {
+        if (!element || !isOwnHeight) return;
+
+        const measure = () => {
+            document.body.style.setProperty("--tn-keyboard-height", `${element.offsetHeight}px`);
+        };
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [ element, isOwnHeight ]);
+
+    return { isPanel, replacesPanel, isOwnHeight, measureRef };
 }
 
 /** The row of buttons of the phone's toolbar, which scrolls sideways under a menu of it. */
 export const MOBILE_TOOLBAR_ROW = ".classic-toolbar-island .classic-toolbar-widget";
+
+/** The card of the phone's toolbar while it is shown, for `tableColumnBar.bottomObstacle`. */
+export function getShownToolbarIsland() {
+    return document.querySelector<HTMLElement>(".classic-toolbar-outer-container.active .classic-toolbar-island");
+}
 
 /**
  * Closes a menu of the toolbar as a tap on another item of {@link MOBILE_TOOLBAR_ROW} clicks, before
@@ -230,6 +255,10 @@ const PRESS_TIMEOUT = 500;
 
 /** The hand-back of a closed panel's place, while it waits for the keyboard. */
 let pendingHandBack: { cancel(): void } | undefined;
+/** Whether the place was taken with no keyboard up, sized by the menu in it. */
+let hasOwnHeightPlace = false;
+/** The `--tn-keyboard-height` of the keyboard, which a place of the menu's own height covers. */
+let keyboardHeight = "";
 /** Called as `keyboard-panel-open` is set on the body or cleared. */
 const keyboardPanelListeners = new Set<() => void>();
 
@@ -237,11 +266,15 @@ const keyboardPanelListeners = new Set<() => void>();
  * Lays the page out as for an open keyboard, or keeps the layout a closed panel still holds for
  * the keyboard, with the visible bottom it was taken at.
  */
-function takeKeyboardPlace() {
+function takeKeyboardPlace(isOwnHeight: boolean) {
     if (pendingHandBack) {
         pendingHandBack.cancel();
         pendingHandBack = undefined;
         return;
+    }
+    hasOwnHeightPlace = isOwnHeight;
+    if (isOwnHeight) {
+        keyboardHeight = document.body.style.getPropertyValue("--tn-keyboard-height");
     }
     setKeyboardPanelOpen(true);
     holdVisibleBottom(true);
@@ -269,6 +302,10 @@ function handBackKeyboardPlace() {
     const release = () => {
         stopWaiting();
         if (pendingHandBack === handBack) pendingHandBack = undefined;
+        if (hasOwnHeightPlace) {
+            hasOwnHeightPlace = false;
+            document.body.style.setProperty("--tn-keyboard-height", keyboardHeight);
+        }
         setKeyboardPanelOpen(false);
         holdVisibleBottom(false);
     };
@@ -289,9 +326,10 @@ function handBackKeyboardPlace() {
             clearTimeout(timer);
         };
     };
+    // Only a keyboard that was up as the place was taken comes back for it.
     const settle = () => {
         if (isCancelled) return;
-        if (isTextFocused()) {
+        if (isTextFocused() && !hasOwnHeightPlace) {
             waitForKeyboard();
         } else {
             release();
@@ -302,7 +340,11 @@ function handBackKeyboardPlace() {
     queueMicrotask(() => {
         if (isCancelled) return;
         if (isTextFocused()) {
-            waitForKeyboard();
+            if (hasOwnHeightPlace) {
+                release();
+            } else {
+                waitForKeyboard();
+            }
             return;
         }
         // What the click runs, such as opening another menu, runs before `settle`.
@@ -350,13 +392,26 @@ function repositionDropdowns(editor: CKTextEditor) {
         toolbarViews.push(editor.plugins.get("TextFormattingToolbar").toolbarView);
     }
     for (const item of toolbarViews.flatMap((toolbarView) => [ ...toolbarView.items ])) {
-        if (!("panelView" in item)) continue;
-
-        item.on("change:isOpen", () => {
-            if (!("isOpen" in item) || !item.isOpen) return;
-
-            // @ts-ignore
-            item.panelView.position = item.panelView.position.replace("s", "n");
-        });
+        openUpwards(item);
     }
+
+    // The `ContextToolbar` fills its items as it swaps in.
+    if (editor.plugins.has("ContextToolbar")) {
+        const { items } = editor.plugins.get("ContextToolbar").toolbarView;
+        items.on("add", (_evt, item: ToolbarItem) => openUpwards(item));
+    }
+}
+
+/** A toolbar item, as the items of a CKEditor `ToolbarView` are. */
+type ToolbarItem = ClassicEditor["ui"]["view"]["toolbar"]["items"]["first"] & object;
+
+function openUpwards(item: ToolbarItem) {
+    if (!("panelView" in item)) return;
+
+    item.on("change:isOpen", () => {
+        if (!("isOpen" in item) || !item.isOpen) return;
+
+        // @ts-ignore
+        item.panelView.position = item.panelView.position.replace("s", "n");
+    });
 }

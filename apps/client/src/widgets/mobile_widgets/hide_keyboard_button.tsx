@@ -5,7 +5,7 @@ import { RefObject } from "preact";
 import { useCallback, useEffect, useRef } from "preact/hooks";
 
 import { t } from "../../services/i18n";
-import { isIOS } from "../../services/utils";
+import { isIOS, isMobileApp } from "../../services/utils";
 import ActionButton from "../react/ActionButton";
 
 /**
@@ -13,8 +13,8 @@ import ActionButton from "../react/ActionButton";
  * corner, just above the keyboard, while `RootContainer` marks the keyboard as open with
  * `virtual-keyboard-opened`. While `MobileEditorToolbar` is shown, which it is while its editor has
  * the focus, the toolbar carries the button instead (see `hide_keyboard_button.css`).
- * In the iOS app, blurring also hides the keyboard's input accessory bar (see
- * `ViewController.hideKeyboardInputAccessoryView()`).
+ * In the iOS app, the keyboard has no _Done_ button of its own, as `@capacitor/keyboard` hides the
+ * bar that holds it.
  */
 export default function HideKeyboardButton() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -70,9 +70,7 @@ export function usePositioningOniOS(
     // Safari shrinks `visualViewport` for the keyboard but not the layout, so the element rises by
     // how far its anchor reaches below the visible bottom. With the keyboard up Safari scrolls the
     // fixed page itself, and client coordinates move with that scroll, so the visible bottom is
-    // `pageTop - scrollY + height`: `offsetTop + height` elsewhere, `height` in Safari. Under
-    // Capacitor `resize: native` the layout shrinks too, so `obscured` is 0 and CSS stays in
-    // charge.
+    // `pageTop - scrollY + height`: `offsetTop + height` elsewhere, `height` in Safari.
     const adjustPosition = useCallback(() => {
         if (!wrapperRef.current) return;
         const viewport = window.visualViewport;
@@ -91,7 +89,9 @@ export function usePositioningOniOS(
     }, [ wrapperRef ]);
 
     useEffect(() => {
-        if (!isIOS()) return;
+        // Under Capacitor `resize: native` the layout shrinks for the keyboard, so CSS places the
+        // element. `visualViewport` shrinks before the layout does, which would lift it twice.
+        if (!isIOS() || isMobileApp()) return;
         // Run once in case the keyboard is already up when mounting
         // (e.g. returning from a dialog).
         adjustPosition();

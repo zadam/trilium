@@ -81,6 +81,8 @@ import TableTouchSelection from "./plugins/table_touch_selection/table_touch_sel
 import ToolbarGroupMenu from "./plugins/toolbar_group_menu.js";
 import MobileToolbarItems from "./plugins/mobile_toolbar_items.js";
 import TextFormattingToolbar from "./plugins/text_formatting_toolbar.js";
+import ContextToolbar from "./plugins/context_toolbar.js";
+import ImagePosition from "./plugins/image_position.js";
 import ColorMenu from "./plugins/color_menu.js";
 import BlockDragHandle from "./plugins/block_drag_handle.js";
 
@@ -133,6 +135,8 @@ const TRILIUM_PLUGINS: typeof Plugin[] = [
     ToolbarGroupMenu,
     MobileToolbarItems,
     TextFormattingToolbar,
+    ContextToolbar,
+    ImagePosition,
     ColorMenu,
     CopyAnchorLinkButton,
     CopyLinkUrlButton,

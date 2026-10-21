@@ -2,7 +2,10 @@
  * https://github.com/TriliumNext/Trilium/issues/1002
  */
 
-import { Command, ModelDocumentSelection, ModelElement, ModelLiveRange, ModelNode, Plugin, _isMac, Editor } from 'ckeditor5';
+import {
+	ButtonView, Command, IconArrowDown, IconArrowUp, ModelDocumentSelection, ModelElement, ModelLiveRange,
+	ModelNode, Plugin, _isMac, Editor
+} from 'ckeditor5';
 
 import { isSelectionInTable } from "./table_move/table_move_commands.js";
 
@@ -11,24 +14,78 @@ interface MoveKeyCommands {
     block: "moveBlockUp" | "moveBlockDown";
 }
 
+const MOVE_UP: MoveKeyCommands = { table: "moveTableRowUp", block: "moveBlockUp" };
+const MOVE_DOWN: MoveKeyCommands = { table: "moveTableRowDown", block: "moveBlockDown" };
+
 const keyMap = new Map<string, MoveKeyCommands>([
-    ["ArrowUp", { table: "moveTableRowUp", block: "moveBlockUp" }],
-    ["ArrowDown", { table: "moveTableRowDown", block: "moveBlockDown" }]
+    ["ArrowUp", MOVE_UP],
+    ["ArrowDown", MOVE_DOWN]
 ]);
 
+/**
+ * Registers the `moveBlockUp` and `moveBlockDown` commands, their Alt+↑/↓ shortcuts and buttons
+ * of the same names. The shortcuts and the buttons move the table row instead in a table.
+ */
 export default class MoveBlockUpDownPlugin extends Plugin {
     init() {
         const editor = this.editor;
+        const t = editor.t;
 
         editor.commands.add('moveBlockUp', new MoveBlockUpCommand(editor));
         editor.commands.add('moveBlockDown', new MoveBlockDownCommand(editor));
 
 		// Use native DOM capturing to intercept Ctrl/Alt + ↑/↓,
 		// as plugin-level keystroke handling may fail when the selection is near an object.
-        this.bindMoveBlockShortcuts(editor);
+        this.bindMoveBlockShortcuts();
+
+        this.addButton('moveBlockUp', t('Move up'), IconArrowUp, MOVE_UP);
+        this.addButton('moveBlockDown', t('Move down'), IconArrowDown, MOVE_DOWN);
     }
 
-	bindMoveBlockShortcuts(editor: Editor) {
+    private addButton(name: string, label: string, icon: string, commands: MoveKeyCommands) {
+        const editor = this.editor;
+        editor.ui.componentFactory.add(name, (locale) => {
+            const button = new ButtonView(locale);
+            button.set({ label, icon, tooltip: true });
+
+            const refresh = () => {
+                button.isEnabled = this.canMove(commands);
+            };
+            refresh();
+            button.listenTo(editor.model.document, 'change', refresh);
+            button.listenTo(editor, 'change:isReadOnly', refresh);
+
+            button.on('execute', () => {
+                this.move(commands);
+                editor.editing.view.focus();
+            });
+            return button;
+        });
+    }
+
+    /**
+     * The command that moves the selection: the row of the table it is in, or its blocks. Inside
+     * a table the block commands would only shuffle paragraphs inside one cell. The block commands
+     * still serve editor builds without the TableMove plugin.
+     */
+    private getMoveCommandName(commands: MoveKeyCommands) {
+        const editor = this.editor;
+        return editor.commands.get(commands.table) && isSelectionInTable(editor.model.document.selection)
+            ? commands.table
+            : commands.block;
+    }
+
+    private canMove(commands: MoveKeyCommands) {
+        return !!this.editor.commands.get(this.getMoveCommandName(commands))?.isEnabled;
+    }
+
+    private move(commands: MoveKeyCommands) {
+        if (this.canMove(commands)) {
+            this.editor.execute(this.getMoveCommandName(commands));
+        }
+    }
+
+	bindMoveBlockShortcuts() {
 		addEditingKeydownCapture(this, (e) => {
 			const commands = keyMap.get(e.key);
 			if (!commands || !hasMoveModifier(e)) {
@@ -37,17 +94,7 @@ export default class MoveBlockUpDownPlugin extends Plugin {
 			e.preventDefault();
 			e.stopImmediatePropagation();
 
-			// Inside a table the whole row moves; the block commands would only shuffle
-			// paragraphs inside one cell. The guard keeps block moves working in editor
-			// builds without the TableMove plugin.
-			const tableCommand = editor.commands.get(commands.table);
-			if (tableCommand && isSelectionInTable(editor.model.document.selection)) {
-				if (tableCommand.isEnabled) {
-					editor.execute(commands.table);
-				}
-				return;
-			}
-			editor.execute(commands.block);
+			this.move(commands);
 		});
 	}
 
@@ -110,6 +157,11 @@ abstract class MoveBlockUpDownCommand extends Command {
 
 	abstract getSibling(selectedBlock: ModelElement): ModelNode | null;
     abstract get offset(): "before" | "after";
+
+	override refresh() {
+		const blocks = this.getSelectedBlocks(this.editor.model.document.selection);
+		this.isEnabled = blocks.length > 0 && blocks.every(block => !!this.getSibling(block));
+	}
 
 	override execute() {
 		const model = this.editor.model;

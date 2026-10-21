@@ -54,12 +54,22 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             items: [
                 "undo",
                 "redo",
+                // Shown while the selection is in a widget, in place of the widget's balloon toolbar.
+                "contextToolbar",
                 "|",
+                "blockType",
                 {
                     ...buildInsertGroup(),
                     // Groups of three fill the rows of tiles.
                     asMenu: { layout: "tiles" },
                     items: [
+                        // The image and the to-do list are also under the paperclip and in the block
+                        // type menu, and these blocks in the latter, where a reader might not look.
+                        // The size grid of `insertTable` needs a pointer that hovers over its cells.
+                        "addImage", "insertTableMenu", "todoList",
+                        "|",
+                        "codeBlock", "blockQuote", "admonition",
+                        "|",
                         "collapsible", "tabs", "multicolumnLayout",
                         "|",
                         "horizontalLine", "pageBreak", "footnote",
@@ -73,20 +83,18 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                         "dateTime", "insertTemplate", "markdownImport"
                     ]
                 },
-                "blockType",
                 "textFormatting",
+                "|",
+                // The most used after the blocks and text formatting, so they show without scrolling.
+                // One button for links to notes and to addresses, which the link dialog tells apart.
+                "addLink",
+                "attachMenu",
                 "|",
                 "outdent",
                 "indent",
-                "|",
-                "link",
-                "internallink",
-                ...(aiAssistant ? ["aiAssistantMenu"] : []),
-                "attachMenu",
-                // The size grid of `insertTable` needs a pointer that hovers over its cells.
-                "insertTableForm",
-                "|",
-                "alignmentMenu"
+                "moveBlockUp",
+                "moveBlockDown",
+                ...(aiAssistant ? ["|", "aiAssistantMenu"] : [])
             ]
         },
         textFormattingToolbar: [
@@ -95,6 +103,9 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "underline",
             "strikethrough",
             "code",
+            "|",
+            // Turns the selection into a link.
+            "addLink",
             "|",
             "superscript",
             "subscript",
@@ -106,9 +117,23 @@ export function buildMobileToolbar(aiAssistant: boolean) {
             "removeFormat",
             "formatPainter",
             "|",
+            // Of the block, but set as the look of selected text is.
+            "alignment:left",
+            "alignment:center",
+            "alignment:right",
+            "alignment:justify",
+            "|",
             // Acts on the selection, which brings this row up.
             "cuttonote"
-        ]
+        ],
+        // The row of the `contextToolbar` button in a list, as a list has no toolbar of its own. It
+        // replaces the main row, so it repeats the indentation and the moves, used most in a list.
+        listToolbar: [
+            "outdent", "indent", "moveBlockUp", "moveBlockDown",
+            "|",
+            "listTypeMenu", "listStartAt", "listReversed"
+        ],
+        attachMenu: { camera: true }
     };
 }
 
@@ -140,8 +165,7 @@ export function buildClassicToolbar(multilineToolbar: boolean, aiAssistant: bool
                 // down among the last items the assistant was grouped away at every ordinary note
                 // width.
                 ...(aiAssistant ? ["aiAssistant"] : []),
-                "imageUpload",
-                "fileUpload",
+                "attachMenu",
                 "blockQuote",
                 "admonition",
                 "insertTable",
@@ -214,8 +238,7 @@ export function buildFloatingToolbar(aiAssistant: boolean) {
             "numberedList",
             "todoList",
             "|",
-            "imageUpload",
-            "fileUpload",
+            "attachMenu",
             "blockQuote",
             "admonition",
             "codeBlock",

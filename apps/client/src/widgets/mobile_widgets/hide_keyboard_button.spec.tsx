@@ -9,9 +9,11 @@ vi.mock("../react/hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../react/hooks")>()),
     useStaticTooltip: vi.fn()
 }));
+const platform = vi.hoisted(() => ({ isMobileApp: false }));
 vi.mock("../../services/utils", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../../services/utils")>()),
-    isIOS: () => true
+    isIOS: () => true,
+    isMobileApp: () => platform.isMobileApp
 }));
 
 import HideKeyboardButton, {
@@ -71,6 +73,7 @@ describe("usePositioningOniOS", () => {
     const originalScrollY = Object.getOwnPropertyDescriptor(window, "scrollY");
 
     afterEach(() => {
+        platform.isMobileApp = false;
         for (const [ key, descriptor ] of [
             [ "visualViewport", originalViewport ],
             [ "innerHeight", originalInnerHeight ],
@@ -159,6 +162,19 @@ describe("usePositioningOniOS", () => {
 
         act(() => holdVisibleBottom(false));
         expect(element().style.bottom).toBe("");
+    });
+
+    it("leaves the element to CSS in the iOS app, which resizes the page for the keyboard", () => {
+        // As logged in the app: `visualViewport` and `innerHeight` shrink to 549px before the
+        // layout does, so the anchor still ends at 896px as the resize event fires.
+        platform.isMobileApp = true;
+        const viewport = fakeViewport(896);
+        const { element, anchor } = renderPositioned(true);
+        anchor().getBoundingClientRect = () => new DOMRect(0, 0, 414, 896);
+        Object.defineProperty(window, "innerHeight", { configurable: true, value: 549 });
+        act(() => viewport.set({ height: 549, offsetTop: 0 }, "resize"));
+        expect(element().style.bottom).toBe("");
+        expect(viewport.listenerCount()).toBe(0);
     });
 });
 

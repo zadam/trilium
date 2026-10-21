@@ -1,9 +1,10 @@
 import {
     BalloonToolbar, BlockToolbar, ButtonView, DropdownView, type Editor, type FocusTracker,
-    ListItemView, ListSeparatorView, ListView, Plugin, SearchTextView, SplitButtonView, type ToolbarConfig,
-    type ToolbarConfigItem, ToolbarSeparatorView, type ToolbarView, type View
+    ListItemGroupView, ListItemView, ListSeparatorView, ListView, Plugin, SearchTextView, SplitButtonView, SwitchButtonView,
+    type ToolbarConfig, type ToolbarConfigItem, ToolbarSeparatorView, type ToolbarView, type View
 } from "ckeditor5";
 
+import ContextToolbar from "./context_toolbar.js";
 import TextFormattingToolbar from "./text_formatting_toolbar.js";
 
 declare module "ckeditor5" {
@@ -66,6 +67,8 @@ export interface ToolbarGroupMenuEntry {
      * `heading` list. Left out for any other.
      */
     isOn?: boolean;
+    /** Whether the item is a switch, as the "Header row" row of `tableRow` is, for the host to draw as one. */
+    isSwitch?: boolean;
     /** The classes CKEditor gives the item, such as `ck-fontsize-option text-tiny`, for the host to style. */
     className?: string;
     /** Runs the toolbar item. An entry with `children` and no action only opens them. */
@@ -94,6 +97,11 @@ const listMenuDropdowns = new WeakMap<DropdownView, ListMenuOptions>();
  */
 export function openListAsMenu(dropdown: DropdownView, options: ListMenuOptions = {}) {
     listMenuDropdowns.set(dropdown, options);
+}
+
+/** Whether `dropdown` was handed to {@link openListAsMenu}. */
+export function isListMenu(dropdown: DropdownView) {
+    return listMenuDropdowns.has(dropdown);
 }
 
 /**
@@ -154,8 +162,8 @@ export default class ToolbarGroupMenu extends Plugin {
 
     /**
      * The toolbars an editor can hold: the fixed bar of a `DecoupledEditor`, the selection balloon
-     * of a `BalloonEditor`, the block toolbar either of them can carry, and the
-     * `TextFormattingToolbar`.
+     * of a `BalloonEditor`, the block toolbar either of them can carry, the `TextFormattingToolbar`
+     * and the `ContextToolbar`.
      */
     private getToolbarViews() {
         const editor = this.editor;
@@ -173,6 +181,9 @@ export default class ToolbarGroupMenu extends Plugin {
         }
         if (editor.plugins.has(TextFormattingToolbar)) {
             toolbars.push(editor.plugins.get(TextFormattingToolbar).toolbarView);
+        }
+        if (editor.plugins.has(ContextToolbar)) {
+            toolbars.push(editor.plugins.get(ContextToolbar).toolbarView);
         }
 
         return toolbars;
@@ -422,6 +433,8 @@ function describeListEntries(dropdown: DropdownView, run: (view: View) => () => 
     for (const entry of entries) {
         if (entry instanceof ListSeparatorView) {
             addRule(rows);
+        } else if (entry instanceof ListItemGroupView) {
+            rows.push({ kind: "heading", label: entry.label });
         } else {
             rows.push(describeButton(entry, run(entry)));
         }
@@ -447,7 +460,10 @@ function describeButton(view: ButtonView, run: () => void): ToolbarGroupMenuEntr
     const entry: ToolbarGroupMenuEntry = {
         kind: "entry", label: view.label ?? "", icon: view.icon, isEnabled: view.isEnabled, run
     };
-    if (view.isToggleable || view.role === "menuitemradio" || view.role === "menuitemcheckbox") {
+    if (view instanceof SwitchButtonView) {
+        entry.isSwitch = true;
+        entry.isOn = view.isOn;
+    } else if (view.isToggleable || view.role === "menuitemradio" || view.role === "menuitemcheckbox") {
         entry.isOn = view.isOn;
     }
     if (view.class) {
@@ -470,15 +486,21 @@ function listEntriesOf(dropdown: DropdownView) {
         return undefined;
     }
 
-    const entries: Array<ButtonView | ListSeparatorView> = [];
-    for (const item of listView.items) {
+    return listItemEntries(listView.items);
+}
+
+/** The buttons and separators of a list's items, a group's label before its own. */
+function listItemEntries(items: Iterable<View>) {
+    const entries: Array<ButtonView | ListSeparatorView | ListItemGroupView> = [];
+    for (const item of items) {
         if (item instanceof ListSeparatorView) {
             entries.push(item);
+        } else if (item instanceof ListItemGroupView) {
+            entries.push(item, ...listItemEntries(item.items));
         } else if (item instanceof ListItemView && item.children.first instanceof ButtonView) {
             entries.push(item.children.first);
         }
     }
-
     return entries;
 }
 

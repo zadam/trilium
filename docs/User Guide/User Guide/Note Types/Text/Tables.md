@@ -13,13 +13,15 @@ Since v0.107.0, the same menu starts with an _Insert table…_ item, for a table
 
 To close the form without inserting a table, press <kbd>Esc</kbd> or click outside it. From the keyboard, <kbd>Tab</kbd> moves between _Insert table…_ and the grid while the menu is open.
 
-On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the <span class="tn-icon cke cke-table"></span>button opens the form directly, without the grid.
+On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the table is inserted from the <span class="tn-icon cke cke-plus"></span> button of the formatting toolbar: its _Insert table_ tile lists common sizes, from 2 × 2 to 3 × 4 (rows × columns). Tap one to insert a table of that size; to make it larger, insert rows and columns afterwards.
 
 ## Formatting toolbar
 
 When a table is selected, a special formatting toolbar will appear:
 
 <img src="3_Tables_image.png" width="384" height="100">
+
+On the <a class="reference-link" href="../../Installation%20%26%20Setup/Mobile%20Frontend.md">Mobile Frontend</a>, the toolbar does not float over the table. Instead, press the <span class="tn-icon cke cke-table"></span> button after _Undo_ and _Redo_ in the formatting toolbar at the bottom of the screen to show the table's toolbar there.
 
 ## Context menu
 

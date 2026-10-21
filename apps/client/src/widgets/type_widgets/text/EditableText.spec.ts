@@ -32,10 +32,12 @@ vi.mock("@triliumnext/ckeditor5", () => ({}));
 
 const {
     applyPendingAttachmentChanges,
+    getAddLinkOpts,
     getBlockData,
     isCaretInFocus,
     notifyAttachmentChanges,
     onNotificationInfo,
+    parseLinkHref,
     onNotificationWarning,
     reportEditorError,
     revealLinkTargetWhenReady,
@@ -373,5 +375,77 @@ describe("isCaretInFocus", () => {
 
         editable.remove();
         menu.remove();
+    });
+
+    it("does not hold for the fake selection of a selected widget, which sits at the top of the viewport", () => {
+        const editable = document.createElement("div");
+        editable.contentEditable = "true";
+        editable.innerHTML = "<figure class=\"image ck-widget ck-widget_selected\"></figure>"
+            + "<div class=\"ck-fake-selection-container\" style=\"position: fixed; top: 0\"> </div>";
+        document.body.append(editable);
+        const container = editable.querySelector(".ck-fake-selection-container");
+        expect(container?.firstChild).toBeTruthy();
+
+        editable.focus();
+        window.getSelection()?.selectAllChildren(container as Node);
+        expect(isCaretInFocus(document.activeElement, window.getSelection())).toBe(false);
+
+        editable.remove();
+    });
+});
+
+describe("parseLinkHref", () => {
+    it("reads a note link with its anchor, keeping its other parameters, or an address", () => {
+        expect(parseLinkHref("#root/abc?bookmark=part")).toStrictEqual({
+            currentLink: { notePath: "root/abc" }, currentBookmark: "part"
+        });
+        expect(parseLinkHref("#root/abc?viewMode=attachments&attachmentId=x")).toStrictEqual({
+            currentLink: { notePath: "root/abc?viewMode=attachments&attachmentId=x" },
+            currentBookmark: undefined
+        });
+        expect(parseLinkHref("https://example.com/#top")).toStrictEqual({
+            currentLink: { externalLink: "https://example.com/#top" }, currentBookmark: undefined
+        });
+    });
+});
+
+describe("getAddLinkOpts", () => {
+    function createApi(currentLink: { href: string; text: string } | null) {
+        return {
+            hasSelection: vi.fn(() => true),
+            getSelectedText: vi.fn(() => "chosen words"),
+            getCurrentLink: vi.fn(() => currentLink),
+            addLink: vi.fn(),
+            updateLink: vi.fn(),
+            addLinkToEditor: vi.fn(),
+            addHtmlToEditor: vi.fn(),
+            addContentEmbed: vi.fn(),
+            addImage: vi.fn(async () => {})
+        };
+    }
+    const ready = async () => {};
+
+    it("edits the link at the caret, rewriting it on save", async () => {
+        const api = createApi({ href: "#root/abc?bookmark=part", text: "See there" });
+        const opts = getAddLinkOpts(api, ready);
+        expect(opts).toMatchObject({
+            text: "See there", hasSelection: false, currentTitle: "See there",
+            currentLink: { notePath: "root/abc" }, currentBookmark: "part"
+        });
+
+        await opts.addLink("root/def", "Elsewhere");
+        expect(api.updateLink).toHaveBeenCalledExactlyOnceWith("root/def", "Elsewhere", undefined);
+        expect(api.addLink).not.toHaveBeenCalled();
+    });
+
+    it("adds a link from the selection outside one", async () => {
+        const api = createApi(null);
+        const opts = getAddLinkOpts(api, ready);
+        expect(opts).toMatchObject({ text: "chosen words", hasSelection: true });
+        expect(opts.currentLink).toBeUndefined();
+
+        await opts.addLink("https://example.com", "Example", true);
+        expect(api.addLink).toHaveBeenCalledExactlyOnceWith("https://example.com", "Example", true);
+        expect(api.updateLink).not.toHaveBeenCalled();
     });
 });

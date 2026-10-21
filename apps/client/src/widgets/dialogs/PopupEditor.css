@@ -178,11 +178,11 @@ body.mobile .modal.popup-editor-dialog .modal-body {
 }
 
 @media (max-width: 991px) {
-    body.mobile .modal.popup-editor-dialog {
+    body.mobile:not(.keyboard-panel-open) .modal.popup-editor-dialog {
         --mobile-toolbar-clearance: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap) + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)));
     }
 
-    body.mobile .modal.popup-editor-dialog .classic-toolbar-island {
+    body.mobile:not(.keyboard-panel-open) .modal.popup-editor-dialog .classic-toolbar-island {
         bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom));
     }
 

@@ -52,6 +52,31 @@ describe("createToolbarGroupMenuHost", () => {
         element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
     };
 
+    it("takes a place of its own height under the toolbar on a phone with no keyboard", async () => {
+        window.glob.device = "mobile";
+        const narrow = vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+            matches: true, media: query, onchange: null, dispatchEvent: () => true,
+            addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}
+        }));
+        const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(320);
+        try {
+            const { menu, setElement } = show();
+            expect(setElement).toHaveBeenCalledWith(menu);
+            expect([ ...menu.classList ]).toEqual(expect.arrayContaining([
+                "mobile-bottom-menu", "keyboard-panel", "keyboard-panel-own-height"
+            ]));
+            await vi.waitFor(() => {
+                expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("320px");
+            });
+            expect(document.body.classList).toContain("keyboard-panel-open");
+        } finally {
+            host.hide();
+            window.glob.device = "desktop";
+            narrow.mockRestore();
+            height.mockRestore();
+        }
+    });
+
     it("draws the entries as the app's menu, with their SVG icons, and hands the editor its element", () => {
         const { menu, setElement } = show();
 
@@ -117,6 +142,25 @@ describe("createToolbarGroupMenuHost", () => {
         expect(paragraph.querySelector(".bx-check")).toBeNull();
     });
 
+    it("draws a switch as a toggle, which runs its entry", () => {
+        const run = vi.fn(() => host.hide());
+        const items: ToolbarGroupMenuItem[] = [
+            { kind: "entry", label: "Header row", isEnabled: true, isOn: true, isSwitch: true, run },
+            { kind: "entry", label: "Insert row", icon: ICON, isEnabled: true }
+        ];
+        host.show({ anchor, items, setElement: vi.fn(), onClose: vi.fn() });
+
+        const header = [ ...document.querySelectorAll<HTMLElement>("li.dropdown-item") ]
+            .find((item) => item.textContent?.includes("Header row"));
+        expect(header?.classList).toContain("tn-menu-toggle");
+        expect(header?.querySelector<HTMLInputElement>("input.switch-toggle")?.checked).toBe(true);
+        expect(header?.querySelector(".bx-check")).toBeNull();
+        expect(rowTitled("Insert row").classList).not.toContain("tn-menu-toggle");
+
+        header?.click();
+        expect(run).toHaveBeenCalledTimes(1);
+    });
+
     it("draws the tiles layout as a grid of tiles per group, the one on checked", () => {
         const runs: string[] = [];
         const run = (name: string) => () => {
@@ -147,6 +191,25 @@ describe("createToolbarGroupMenuHost", () => {
         tiles[0]?.click();
         expect(runs).toEqual([ "paragraph" ]);
         expect(menu?.isConnected).toBe(false);
+    });
+
+    it("draws a heading over the tiles it starts, in the tiles layout", () => {
+        const items: ToolbarGroupMenuItem[] = [
+            { kind: "entry", label: "In line", icon: ICON, isEnabled: true },
+            { kind: "heading", label: "Break text" },
+            { kind: "entry", label: "Align left", icon: ICON, isEnabled: true },
+            { kind: "entry", label: "Align center", icon: ICON, isEnabled: true },
+            { kind: "heading", label: "Wrap text" },
+            { kind: "entry", label: "Align left", icon: ICON, isEnabled: true }
+        ];
+        host.show({ anchor, items, layout: "tiles", setElement: vi.fn(), onClose: vi.fn() });
+
+        const menu = document.querySelector<HTMLElement>(".tn-popup.tn-menu");
+        const rows = [ ...menu?.querySelectorAll(":scope > .tn-menu-scroll > li") ?? [] ].map((row) =>
+            (row.classList.contains("toolbar-group-menu-tiles")
+                ? [ ...row.querySelectorAll(".tn-menu-action") ].map((tile) => tile.textContent).join(", ")
+                : `# ${row.textContent}`));
+        expect(rows).toEqual([ "In line", "# Break text", "Align left, Align center", "# Wrap text", "Align left" ]);
     });
 
     describe("an entry with a submenu, in the tiles layout", () => {

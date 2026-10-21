@@ -227,7 +227,7 @@ export default class TableColumnBar extends Plugin {
      */
     private layOut(target: BarTarget): number | null {
         const view = this.view;
-        const area = getBarArea(target.domRoot, this.getToolbarElement());
+        const area = getBarArea(target.domRoot, this.getToolbarElement(), this.getBottomObstacle());
         const barTop = area.bottom - view.track.offsetHeight;
         const tableRect = target.domTable.getBoundingClientRect();
         const clip = getClientBox(findScroller(target.domTable, "overflowX"));
@@ -249,7 +249,12 @@ export default class TableColumnBar extends Plugin {
 
         // The track spans the scroller, so the divider at the table's end shows in full and the
         // auto-scroll starts only near the edges of the scroller.
+        // `position: fixed` places the bar against the layout viewport, which iOS shifts away
+        // from the viewport that `getBoundingClientRect()` measures while the keyboard is up.
         view.set({ left: area.left, top: barTop, width: area.right - area.left });
+        // Rendered as `init()` adds it to the body collection.
+        const shift = getFixedShift(view.element as HTMLElement, view.left, view.top);
+        view.set({ left: area.left - shift.x, top: barTop - shift.y });
         view.setTrack(trackLeft - area.left, trackRight - trackLeft, tableRect.left - trackLeft);
         this.trackBox = { left: trackLeft, right: trackRight };
 
@@ -257,7 +262,11 @@ export default class TableColumnBar extends Plugin {
         view.setActiveDivider(column);
         view.setEdge(column === null
             ? null
-            : { left: tableRect.left + edges[column + 1], top, height: bottom - top });
+            : {
+                left: tableRect.left + edges[column + 1] - shift.x,
+                top: top - shift.y,
+                height: bottom - top
+            });
         return barTop;
     }
 
@@ -298,6 +307,11 @@ export default class TableColumnBar extends Plugin {
 
     private getToolbarElement() {
         return (this.editor.ui.view as { toolbar?: ToolbarView }).toolbar?.element ?? null;
+    }
+
+    private getBottomObstacle() {
+        const element = this.editor.config.get("tableColumnBar")?.bottomObstacle?.();
+        return element?.isConnected ? element : null;
     }
 
     /** Keeps the balloons of the editor and the caret above the bar. */
@@ -599,11 +613,16 @@ interface Tap {
 
 /**
  * The part of the viewport that the bar spans: the visible part of the scroll container of
- * `domRoot`, up to the top of a toolbar at its bottom.
+ * `domRoot`, up to the top of a toolbar at its bottom, or of `obstacle` wherever it is.
  */
-function getBarArea(domRoot: HTMLElement, toolbar: HTMLElement | null): ClientBox {
+function getBarArea(
+    domRoot: HTMLElement, toolbar: HTMLElement | null, obstacle: HTMLElement | null
+): ClientBox {
     const area = getClientBox(findScroller(domRoot, "overflowY"));
     let bottom = Math.min(area.bottom, getViewportBottom());
+    if (obstacle) {
+        return { ...area, bottom: Math.min(bottom, obstacle.getBoundingClientRect().top) };
+    }
     const toolbarRect = toolbar?.isConnected ? toolbar.getBoundingClientRect() : null;
     const isToolbarAtBottom = !!toolbarRect
         && toolbarRect.top < bottom && toolbarRect.bottom >= bottom - 1;
@@ -668,7 +687,27 @@ function vibrate() {
 }
 
 declare module "ckeditor5" {
+    interface EditorConfig {
+        tableColumnBar?: {
+            /**
+             * The element the bar stays above while it is on the page, such as a toolbar that
+             * floats over the bottom of the editing area. Without one, the bar stays above the
+             * editor's toolbar when that is at the bottom of the viewport.
+             */
+            bottomObstacle?: () => HTMLElement | null;
+        };
+    }
+
     interface PluginsMap {
         [TableColumnBar.pluginName]: TableColumnBar;
     }
+}
+
+/**
+ * How far `position: fixed` places `element` from where its `left` and `top` put it in the
+ * viewport, in pixels.
+ */
+function getFixedShift(element: HTMLElement, left: number, top: number) {
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left - left, y: rect.top - top };
 }

@@ -39,6 +39,9 @@ async function bootstrap() {
     // sequence of its own before this one, so these phases only take effect on server and desktop.
     initSplashProgress(CLIENT_STARTUP_PHASES);
     reportSplashPhase("bootstrap");
+    // Only iOS sets `navigator.standalone`, and only for a web app added to the home screen.
+    const isIosWebApp = (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    document.documentElement.classList.toggle("ios-web-app", isIosWebApp);
     await setupGlob();
     await Promise.all([
         initJQuery(),

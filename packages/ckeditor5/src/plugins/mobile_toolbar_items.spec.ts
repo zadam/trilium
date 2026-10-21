@@ -1,7 +1,6 @@
 import {
     _getModelData as getModelData,
     _setModelData as setModelData,
-    Alignment,
     BlockQuote,
     ClassicEditor,
     CodeBlock,
@@ -11,36 +10,45 @@ import {
     FontSize,
     Heading,
     HorizontalLine,
-    IconAlignCenter,
-    IconAlignJustify,
-    IconAlignLeft,
-    IconAlignRight,
     IconBulletedList,
     IconCodeBlock,
     IconHeading2,
     IconHeading3,
     IconImageUpload,
+    IconLink,
     IconNumberedList,
     IconPaperClip,
     IconParagraph,
     IconQuote,
+    IconTable,
     IconTodoList,
     Image,
     ImageUpload,
     List,
+    ListProperties,
+    IconListStyleCircle,
+    IconListStyleDecimal,
+    IconListStyleDisc,
+    IconListStyleLowerRoman,
     Paragraph,
     Plugin,
+    Table,
     TodoList
 } from "ckeditor5";
+import bxCamera from "boxicons/svg/regular/bx-camera.svg?raw";
 import bxLink from "boxicons/svg/regular/bx-link.svg?raw";
 import bxShapeSquare from "boxicons/svg/regular/bx-shape-square.svg?raw";
+import bxSortDown from "boxicons/svg/regular/bx-sort-down.svg?raw";
 import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
+import { installGlobMock } from "../../test/globals-test-kit.js";
 import admonitionIcon from "../icons/admonition.svg?raw";
+import blockTypeIcon from "../icons/block-type.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
 import FileUploadUI from "./file_upload/file_upload_ui.js";
+import InternalLinkPlugin from "./internallink.js";
 import MobileToolbarItems from "./mobile_toolbar_items.js";
 import ToolbarGroupMenu, { type ToolbarGroupMenuEntry, type ToolbarGroupMenuItem, type ToolbarGroupMenuRequest } from "./toolbar_group_menu.js";
 
@@ -73,31 +81,31 @@ describe("MobileToolbarItems", () => {
     });
 
     describe("blockType", () => {
-        it("shows the type of the current block as an icon, with its name in the accessible label", () => {
+        it("keeps one icon for every block, with the name of the current one in the accessible label", () => {
             const { buttonView } = getDropdown(editor, 1);
             expect(buttonView.withText).toBe(false);
             expect(buttonView.tooltip).toBe("Block type");
 
-            const icons: [string, string, string][] = [
-                ["<paragraph>foo[]</paragraph>", IconParagraph, "Paragraph"],
-                ["<heading2>foo[]</heading2>", IconHeading2, "Heading 2"],
-                [BULLETED, IconBulletedList, "Bulleted List"],
-                [BULLETED.replace("bulleted", "numbered"), IconNumberedList, "Numbered List"],
-                [BULLETED.replace("bulleted", "todo"), IconTodoList, "To-do List"],
-                ["<codeBlock language=\"plaintext\">foo[]</codeBlock>", IconCodeBlock, "Code block"],
-                // A wrapper leaves the button to the block inside it.
-                ["<blockQuote><heading2>foo[]</heading2></blockQuote>", IconHeading2, "Heading 2"]
+            const names: [string, string][] = [
+                ["<paragraph>foo[]</paragraph>", "Paragraph"],
+                ["<heading2>foo[]</heading2>", "Heading 2"],
+                [BULLETED, "Bulleted List"],
+                [BULLETED.replace("bulleted", "numbered"), "Numbered List"],
+                [BULLETED.replace("bulleted", "todo"), "To-do List"],
+                ["<codeBlock language=\"plaintext\">foo[]</codeBlock>", "Code block"],
+                // A wrapper leaves the label to the block inside it.
+                ["<blockQuote><heading2>foo[]</heading2></blockQuote>", "Heading 2"]
             ];
-            for (const [data, icon, name] of icons) {
+            for (const [data, name] of names) {
                 setModelData(editor.model, data);
-                expect(buttonView.icon).toBe(icon);
+                expect(buttonView.icon).toBe(blockTypeIcon);
                 expect(buttonView.ariaLabel).toBe(`${name}, Block type`);
             }
             expect(buttonView.element?.querySelector(".ck-button__icon")).not.toBeNull();
 
             // A block that is none of them, such as a horizontal line.
             setModelData(editor.model, "<paragraph>foo</paragraph>[<horizontalLine></horizontalLine>]");
-            expect(buttonView.icon).toBe(IconParagraph);
+            expect(buttonView.icon).toBe(blockTypeIcon);
             expect(buttonView.ariaLabel).toBe("Block type");
         });
 
@@ -240,31 +248,205 @@ describe("MobileToolbarItems", () => {
         expect(menuEditor.getData()).toBe("<p><span class=\"text-huge\">foo</span></p>");
     });
 
-    it("opens the alignments as a row of tiles, its button showing the current one", async () => {
+    it("opens table sizes as tiles, each inserting a table of that size", async () => {
         const requests: ToolbarGroupMenuRequest[] = [];
         const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
-        const menuEditor = await createTestEditor([Essentials, Paragraph, Alignment, MobileToolbarItems, ToolbarGroupMenu], {
-            toolbar: ["alignmentMenu"],
-            // The order of the app's configuration, which the tiles follow.
-            alignment: { options: ["left", "center", "right", "justify"] },
+        const menuEditor = await createTestEditor([Essentials, Paragraph, Table, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["insertTableMenu"],
             toolbarGroupMenu: { host: () => host }
         });
-        setModelData(menuEditor.model, "<paragraph alignment=\"center\">foo[]</paragraph>");
+        setModelData(menuEditor.model, "<paragraph>foo[]</paragraph>");
 
         const dropdown = getDropdown(menuEditor, 0);
-        expect(dropdown.buttonView.icon).toBe(IconAlignCenter);
+        expect(dropdown.buttonView).toMatchObject({ label: "Insert table", icon: IconTable });
+        menuEditor.enableReadOnlyMode("spec");
+        expect(dropdown.isEnabled).toBe(false);
+        menuEditor.disableReadOnlyMode("spec");
+        expect(dropdown.isEnabled).toBe(true);
+
         dropdown.buttonView.fire("open");
         expect(dropdown.isOpen).toBe(false);
-
         const request = requests.at(-1);
         expect(request?.layout).toBe("tiles");
         const tiles = request?.items ?? [];
-        expect(tiles.map(rowText)).toStrictEqual(["Align left", "Align center ✓", "Align right", "Justify"]);
-        expect(icons(tiles)).toStrictEqual([IconAlignLeft, IconAlignCenter, IconAlignRight, IconAlignJustify]);
+        expect(tiles.map(rowText)).toStrictEqual(["2 × 2", "2 × 3", "2 × 4", "3 × 2", "3 × 3", "3 × 4"]);
+        // Each tile draws its own grid.
+        expect(new Set(icons(tiles)).size).toBe(6);
 
-        entry(tiles, "Align right").run?.();
-        expect(menuEditor.getData()).toBe("<p style=\"text-align:right;\">foo</p>");
-        expect(dropdown.buttonView.icon).toBe(IconAlignRight);
+        entry(tiles, "2 × 3").run?.();
+        const data = menuEditor.getData();
+        expect(data.match(/<tr>/g)).toHaveLength(2);
+        expect(data.match(/<td>/g)).toHaveLength(6);
+    });
+
+    it("offers table sizes as a tile with a submenu in a group of tiles", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const menuEditor = await createTestEditor([Essentials, Paragraph, Table, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: [{ label: "Insert", icon: "plus", asMenu: { layout: "tiles" }, items: ["insertTableMenu"] }],
+            toolbarGroupMenu: { host: () => host }
+        });
+        setModelData(menuEditor.model, "<paragraph>foo[]</paragraph>");
+
+        getDropdown(menuEditor, 0).isOpen = true;
+        const table = entry(requests.at(-1)?.items ?? [], "Insert table");
+        expect(table.icon).toBe(IconTable);
+        expect((table.children ?? []).map(rowText)).toStrictEqual(["2 × 2", "2 × 3", "2 × 4", "3 × 2", "3 × 3", "3 × 4"]);
+
+        const size = (table.children ?? []).find((child) => child.kind === "entry" && child.label === "3 × 3");
+        if (size?.kind !== "entry") throw new Error("expected a 3 × 3 row");
+        size.run?.();
+        expect(menuEditor.getData().match(/<td>/g)).toHaveLength(9);
+    });
+});
+
+describe("addLink", () => {
+    it("opens the link dialog of the internal link button, under the link icon", async () => {
+        const triggerCommand = vi.fn();
+        installGlobMock({ getComponentByEl: () => ({ triggerCommand }) });
+        const editor = await createTestEditor([Essentials, Paragraph, InternalLinkPlugin, MobileToolbarItems], {
+            toolbar: ["addLink"]
+        });
+        setModelData(editor.model, "<paragraph>foo[]</paragraph>");
+
+        const button = editor.ui.view.toolbar.items.get(0) as unknown as {
+            label: string; icon: string; isEnabled: boolean; fire(name: string): void;
+        };
+        expect([button.label, button.icon, button.isEnabled]).toStrictEqual(["Link", IconLink, true]);
+        button.fire("execute");
+        expect(triggerCommand).toHaveBeenCalledExactlyOnceWith("addLinkToText");
+
+        editor.enableReadOnlyMode("spec");
+        expect(button.isEnabled).toBe(false);
+    });
+
+    it("is off in an editor without the internal link button, whose dialog it opens", async () => {
+        const editor = await createTestEditor([Essentials, Paragraph, MobileToolbarItems], { toolbar: ["addLink"] });
+        expect((editor.ui.view.toolbar.items.get(0) as ButtonView).isEnabled).toBe(false);
+    });
+});
+
+describe("list properties", () => {
+    const BULLETED_LIST = "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\" listStyle=\"circle\">a[]</paragraph>";
+    const NUMBERED_LIST = "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"numbered\" listStart=\"3\">a[]</paragraph>";
+
+    async function createListEditor() {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const promptListStart = vi.fn(async () => 7 as number | null);
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, TodoList, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["listTypeMenu", "listStartAt", "listReversed"],
+            list: { properties: { styles: true, startIndex: true, reversed: true } },
+            toolbarGroupMenu: { host: () => host },
+            listStartPrompt: promptListStart
+        });
+        const [style, start, reversed] = [...editor.ui.view.toolbar.items] as [DropdownView, ButtonView, ButtonView];
+        return { editor, requests, promptListStart, style, start, reversed };
+    }
+
+    it("opens every list type as tiles under its kind, the current marker on", async () => {
+        const { editor, requests, style } = await createListEditor();
+        const open = () => {
+            style.buttonView.fire("open");
+            return requests.at(-1)?.items ?? [];
+        };
+        const listType = () => (["bulleted", "numbered", "todo"] as const)
+            .find((type) => editor.commands.get(`${type}List`)?.value === true);
+        setModelData(editor.model, BULLETED_LIST);
+        expect(style.buttonView).toMatchObject({ label: "List type", icon: IconListStyleCircle });
+
+        const tiles = open();
+        expect(requests.at(-1)?.layout).toBe("tiles");
+        expect(tiles.map(rowText)).toStrictEqual([
+            "To-do List",
+            "Bulleted List", "Disc", "Circle ✓", "Square",
+            "Numbered List", "Decimal", "Decimal with leading zero", "Lower–roman", "Upper-roman",
+            "Lower-latin", "Upper-latin", "Arabic-indic"
+        ]);
+        expect(icons(tiles)).toStrictEqual(expect.arrayContaining([IconListStyleDisc, IconListStyleLowerRoman, IconTodoList]));
+
+        entry(tiles, "Disc").run?.();
+        expect(editor.commands.get("listStyle")?.value).toBe("disc");
+        expect(style.buttonView.icon).toBe(IconListStyleDisc);
+
+        // A marker of the other kind converts the list, in one undo step.
+        entry(open(), "Lower–roman").run?.();
+        expect([listType(), editor.commands.get("listStyle")?.value]).toStrictEqual(["numbered", "lower-roman"]);
+        editor.execute("undo");
+        expect([listType(), editor.commands.get("listStyle")?.value]).toStrictEqual(["bulleted", "disc"]);
+
+        entry(open(), "To-do List").run?.();
+        expect(listType()).toBe("todo");
+        expect(style.buttonView.icon).toBe(IconTodoList);
+        expect(open().map(rowText)).toContain("To-do List ✓");
+        // Picked again, it keeps the to-do list.
+        entry(open(), "To-do List").run?.();
+        expect(listType()).toBe("todo");
+        entry(open(), "Square").run?.();
+        expect([listType(), editor.commands.get("listStyle")?.value]).toStrictEqual(["bulleted", "square"]);
+
+        // A list with no marker of its own shows the one it is drawn with.
+        setModelData(editor.model, NUMBERED_LIST);
+        expect(style.buttonView.icon).toBe(IconListStyleDecimal);
+        expect(open().map(rowText)).toContain("Decimal ✓");
+    });
+
+    it("sets the start and the order of a numbered list, and shows neither for a bulleted one", async () => {
+        const { editor, promptListStart, start, reversed } = await createListEditor();
+        setModelData(editor.model, BULLETED_LIST);
+        expect([start.isVisible, reversed.isVisible]).toStrictEqual([false, false]);
+
+        setModelData(editor.model, NUMBERED_LIST);
+        expect(start).toMatchObject({ isVisible: true, label: "Start at 3", withText: true });
+        expect(reversed).toMatchObject({ isVisible: true, label: "Reversed order", icon: bxSortDown, withText: false, tooltip: true, isOn: false });
+
+        start.fire("execute");
+        expect(promptListStart).toHaveBeenCalledExactlyOnceWith("Start at", 3);
+        await vi.waitFor(() => expect(editor.commands.get("listStart")?.value).toBe(7));
+        expect(start.label).toBe("Start at 7");
+
+        // A prompt closed without a number leaves the list as it is.
+        promptListStart.mockResolvedValueOnce(null);
+        start.fire("execute");
+        await Promise.resolve();
+        expect(editor.commands.get("listStart")?.value).toBe(7);
+
+        reversed.fire("execute");
+        expect(reversed.isOn).toBe(true);
+        expect(editor.commands.get("listReversed")?.value).toBe(true);
+    });
+
+    it("leaves out the markers the list's `type` attribute cannot hold", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const editor = await createTestEditor([Essentials, Paragraph, List, ListProperties, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: ["listTypeMenu"],
+            list: { properties: { styles: { useAttribute: true } } },
+            toolbarGroupMenu: { host: () => host }
+        });
+        setModelData(editor.model, BULLETED_LIST);
+        (editor.ui.view.toolbar.items.first as DropdownView).buttonView.fire("open");
+        const labels = (requests.at(-1)?.items ?? []).map(rowText);
+        expect(labels).toContain("Decimal");
+        expect(labels).not.toContain("Decimal with leading zero");
+        expect(labels).not.toContain("Arabic-indic");
+    });
+
+    it("asks for the start from 1 while the list has none, and only with a prompt to ask", async () => {
+        const { editor, promptListStart, start } = await createListEditor();
+        setModelData(editor.model, "<paragraph>a[]</paragraph>");
+        start.fire("execute");
+        expect(promptListStart).toHaveBeenCalledExactlyOnceWith("Start at", 1);
+
+        const withoutPrompt = await createTestEditor([Essentials, Paragraph, List, ListProperties, MobileToolbarItems], {
+            toolbar: ["listStartAt"],
+            list: { properties: { startIndex: true } }
+        });
+        setModelData(withoutPrompt.model, NUMBERED_LIST);
+        const execute = vi.spyOn(withoutPrompt, "execute");
+        (withoutPrompt.ui.view.toolbar.items.first as ButtonView).fire("execute");
+        await Promise.resolve();
+        expect(execute).not.toHaveBeenCalled();
     });
 });
 
@@ -280,14 +462,15 @@ describe("attachMenu", () => {
         }
     }
 
-    async function createAttachEditor() {
+    async function createAttachEditor(camera = true) {
         const requests: ToolbarGroupMenuRequest[] = [];
         const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
         const editor = await createTestEditor([
             Essentials, Paragraph, Image, ImageUpload, UploadCommands, FileUploadUI, MobileToolbarItems, ToolbarGroupMenu
         ], {
             toolbar: ["attachMenu"],
-            toolbarGroupMenu: { host: () => host }
+            toolbarGroupMenu: { host: () => host },
+            ...(camera ? { attachMenu: { camera: true } } : {})
         });
         return { editor, requests };
     }
@@ -309,7 +492,7 @@ describe("attachMenu", () => {
         return input;
     }
 
-    it("opens the image and file uploads as a row of tiles under a paperclip", async () => {
+    it("opens the image, camera and file uploads as a list under a paperclip", async () => {
         const { editor, requests } = await createAttachEditor();
 
         const dropdown = getDropdown(editor, 0);
@@ -317,26 +500,57 @@ describe("attachMenu", () => {
         dropdown.buttonView.fire("open");
 
         const request = requests.at(-1);
-        expect(request?.layout).toBe("tiles");
+        expect(request).toBeDefined();
+        expect(request?.layout).toBeUndefined();
         const tiles = request?.items ?? [];
-        expect(tiles.map(rowText)).toStrictEqual(["Image", "Attach and embed file", "Attach file as a link"]);
-        expect(icons(tiles)).toStrictEqual([IconImageUpload, bxShapeSquare, bxLink]);
+        expect(tiles.map(rowText)).toStrictEqual(["Image", "Camera", "Attach and embed file", "Attach file as a link"]);
+        expect(icons(tiles)).toStrictEqual([IconImageUpload, bxCamera, bxShapeSquare, bxLink]);
     });
 
-    it("picks images for the image tile, and any file for the others, which attach them", async () => {
+    it("leaves out the camera unless it is asked for", async () => {
+        const { editor, requests } = await createAttachEditor(false);
+        getDropdown(editor, 0).buttonView.fire("open");
+        expect((requests.at(-1)?.items ?? []).map(rowText))
+            .toStrictEqual(["Image", "Attach and embed file", "Attach file as a link"]);
+    });
+
+    it("picks images for the image tile, takes a photo for the camera tile, and any file for the others", async () => {
         const { editor, requests } = await createAttachEditor();
         const upload = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
         getDropdown(editor, 0).buttonView.fire("open");
         const tiles = requests.at(-1)?.items ?? [];
         const file = new File(["a"], "a.pdf", { type: "application/pdf" });
+        const photo = new File(["p"], "photo.jpg", { type: "image/jpeg" });
 
-        expect(pick(entry(tiles, "Image"), []).accept).toContain("image/png");
+        const image = pick(entry(tiles, "Image"), []);
+        expect([image.accept, image.hasAttribute("capture")]).toStrictEqual([expect.stringContaining("image/png"), false]);
+        const camera = pick(entry(tiles, "Camera"), [photo]);
+        expect([camera.accept, camera.getAttribute("capture"), camera.multiple])
+            .toStrictEqual([expect.stringContaining("image/jpeg"), "environment", false]);
         expect(pick(entry(tiles, "Attach and embed file"), [file]).accept).toBe("");
         pick(entry(tiles, "Attach file as a link"), [file]);
         expect(upload.mock.calls).toStrictEqual([
+            ["uploadImage", { file: [photo] }],
             ["fileUpload", { file: [file], asEmbed: true }],
             ["fileUpload", { file: [file] }]
         ]);
+    });
+
+    it("offers the image upload on its own as a tile of a group", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const editor = await createTestEditor([Essentials, Paragraph, Image, ImageUpload, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: [{ label: "Insert", icon: "plus", asMenu: { layout: "tiles" }, items: ["addImage"] }],
+            toolbarGroupMenu: { host: () => host }
+        });
+        const upload = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
+        getDropdown(editor, 0).isOpen = true;
+
+        const image = entry(requests.at(-1)?.items ?? [], "Image");
+        expect(image.icon).toBe(IconImageUpload);
+        const photo = new File(["p"], "photo.jpg", { type: "image/jpeg" });
+        expect(pick(image, [photo]).hasAttribute("capture")).toBe(false);
+        expect(upload.mock.calls).toStrictEqual([["uploadImage", { file: [photo] }]]);
     });
 
     it("leaves out the tiles of the features the editor lacks", async () => {

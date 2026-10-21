@@ -40,7 +40,7 @@ body.mobile .hide-keyboard-button {
     contain: none;
     position: fixed;
     bottom: 0;
-    inset-inline-end: 0;
+    right: var(--safe-area-inset-right, env(safe-area-inset-right));
     margin-inline-end: var(--mobile-toolbar-gap);
     margin-bottom: var(--mobile-toolbar-gap);
     /* Above every dialog (2000, plus 10 per stacked one in `dialog.ts`) and menu,
@@ -53,6 +53,11 @@ body.mobile .hide-keyboard-button {
         border-radius: 6px;
         background-color: var(--main-background-color);
     }
+}
+
+body.mobile[dir="rtl"] .hide-keyboard-button {
+    right: auto;
+    left: var(--safe-area-inset-left, env(safe-area-inset-left));
 }
 
 body.mobile:has(.classic-toolbar-outer-container.active) .hide-keyboard-button,
