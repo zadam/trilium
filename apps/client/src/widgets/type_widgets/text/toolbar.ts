@@ -62,11 +62,14 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                     // Groups of three fill the rows of tiles.
                     asMenu: { layout: "tiles" },
                     items: [
-                        // Also in the block type menu, where a reader might not look for them.
+                        // The image and the to-do list are also under the paperclip and in the block
+                        // type menu, and these blocks in the latter, where a reader might not look.
+                        // The size grid of `insertTable` needs a pointer that hovers over its cells.
+                        "addImage", "insertTableMenu", "todoList",
+                        "|",
                         "codeBlock", "blockQuote", "admonition",
                         "|",
-                        // The size grid of `insertTable` needs a pointer that hovers over its cells.
-                        "insertTableMenu", "collapsible", "tabs", "multicolumnLayout",
+                        "collapsible", "tabs", "multicolumnLayout",
                         "|",
                         "horizontalLine", "pageBreak", "footnote",
                         "|",

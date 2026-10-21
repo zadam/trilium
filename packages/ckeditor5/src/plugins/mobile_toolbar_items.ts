@@ -89,6 +89,8 @@ interface BlockType {
  *   alignments as a list.
  * - `attachMenu`: the image upload, a photo taken with the camera and the rows of the `fileUpload`
  *   list as a list, under a paperclip. A row whose feature the editor lacks is left out.
+ * - `addImage`: the image upload of the menu bar, labelled "Image", which the `attachMenu` row
+ *   is too, for the insert menu.
  * - `addLink`: one link button, which opens the link dialog of the internal link button for a link to
  *   a note or to an address, in place of the separate `link` and `internalLink` buttons.
  * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
@@ -125,6 +127,13 @@ export default class MobileToolbarItems extends Plugin {
             return dropdown;
         });
 
+        if (editor.ui.componentFactory.has("menuBar:uploadImage")) {
+            editor.ui.componentFactory.add("addImage", () => {
+                const button = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView;
+                button.label = editor.t("Image");
+                return button;
+            });
+        }
         editor.ui.componentFactory.add("attachMenu", (locale) => this.createAttachDropdown(locale));
         editor.ui.componentFactory.add("insertTableMenu", (locale) => this.createInsertTableDropdown(locale));
         editor.ui.componentFactory.add("addLink", (locale) => this.createAddLinkButton(locale));
@@ -250,10 +259,8 @@ export default class MobileToolbarItems extends Plugin {
         const t = editor.t;
         const buttons: ButtonView[] = [];
 
-        if (editor.ui.componentFactory.has("menuBar:uploadImage")) {
-            const image = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView;
-            image.label = t("Image");
-            buttons.push(image);
+        if (editor.ui.componentFactory.has("addImage")) {
+            buttons.push(editor.ui.componentFactory.create("addImage") as ButtonView);
 
             const camera = editor.ui.componentFactory.create("menuBar:uploadImage") as ButtonView & {
                 allowMultipleFiles: boolean;

@@ -519,6 +519,23 @@ describe("attachMenu", () => {
         ]);
     });
 
+    it("offers the image upload on its own as a tile of a group", async () => {
+        const requests: ToolbarGroupMenuRequest[] = [];
+        const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };
+        const editor = await createTestEditor([Essentials, Paragraph, Image, ImageUpload, MobileToolbarItems, ToolbarGroupMenu], {
+            toolbar: [{ label: "Insert", icon: "plus", asMenu: { layout: "tiles" }, items: ["addImage"] }],
+            toolbarGroupMenu: { host: () => host }
+        });
+        const upload = vi.spyOn(editor, "execute").mockImplementation(() => undefined);
+        getDropdown(editor, 0).isOpen = true;
+
+        const image = entry(requests.at(-1)?.items ?? [], "Image");
+        expect(image.icon).toBe(IconImageUpload);
+        const photo = new File(["p"], "photo.jpg", { type: "image/jpeg" });
+        expect(pick(image, [photo]).hasAttribute("capture")).toBe(false);
+        expect(upload.mock.calls).toStrictEqual([["uploadImage", { file: [photo] }]]);
+    });
+
     it("leaves out the tiles of the features the editor lacks", async () => {
         const requests: ToolbarGroupMenuRequest[] = [];
         const host = { show: vi.fn((request: ToolbarGroupMenuRequest) => requests.push(request)), hide: vi.fn(), destroy: vi.fn() };

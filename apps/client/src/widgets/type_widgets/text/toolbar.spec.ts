@@ -132,9 +132,11 @@ describe("buildMobileToolbar", () => {
             icon: "plus",
             asMenu: { layout: "tiles" },
             items: [
+                "addImage", "insertTableMenu", "todoList",
+                "|",
                 "codeBlock", "blockQuote", "admonition",
                 "|",
-                "insertTableMenu", "collapsible", "tabs", "multicolumnLayout",
+                "collapsible", "tabs", "multicolumnLayout",
                 "|",
                 "horizontalLine", "pageBreak", "footnote",
                 "|",
@@ -225,8 +227,9 @@ describe("buildMobileToolbar", () => {
             "alignment:justify": "alignmentMenu",
             aiAssistant: "aiAssistantMenu"
         };
-        // Alt+Up and Alt+Down move blocks on a keyboard.
-        const MOBILE_ONLY = [ "moveBlockUp", "moveBlockDown", "contextToolbar" ];
+        // Alt+Up and Alt+Down move blocks on a keyboard, and the insert menu repeats the image upload
+        // and the to-do list, where a reader might look for them.
+        const MOBILE_ONLY = [ "moveBlockUp", "moveBlockDown", "contextToolbar", "addImage", "todoList" ];
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
                 .map((item) => MOBILE_VARIANTS[item] ?? item);
