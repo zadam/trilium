@@ -20,6 +20,8 @@ There are two link types, chosen with the _Mirror the note's title_ switch of th
 2.  With the switch off, the link has a title of its own, typed in the _Link title_ field.
     1.  This will create a traditional hyperlink, where the text of the link can be different from the note title.
 
+Since v0.107.0, to change a link whose title does not mirror the note's, place the cursor inside it and press <kbd>Ctrl</kbd> + <kbd>L</kbd> or the <span class="tn-icon cke cke-trilium"></span> button. The _Edit link_ dialog opens on the linked note, with its anchor and the link's text; _Save link_ changes the whole link. Turning _Mirror the note's title_ on there turns it into a link that mirrors the title.
+
 ## In-place linking
 
 You can also insert internal links “inline” by using the `@` symbol:

@@ -1,9 +1,14 @@
-import { _setModelData as setModelData, ClassicEditor, CodeBlock, Essentials, Paragraph } from "ckeditor5";
+import {
+    _getModelData as getModelData, _setModelData as setModelData, Bold, ClassicEditor, CodeBlock, Essentials,
+    LinkEditing, Paragraph
+} from "ckeditor5";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
 import { installGlobMock } from "../../test/globals-test-kit.js";
-import InternalLinkPlugin, { COMMAND_NAME } from "./internallink.js";
+import InternalLinkPlugin, {
+    COMMAND_NAME, getLinkAtSelection, replaceLinkAtSelection
+} from "./internallink.js";
 
 describe("InternalLinkPlugin", () => {
     let editor: ClassicEditor;
@@ -65,5 +70,46 @@ describe("InternalLinkPlugin", () => {
         editor.enableReadOnlyMode("test");
         expect(editor.commands.get(COMMAND_NAME)?.isEnabled).toBe(false);
         editor.disableReadOnlyMode("test");
+    });
+});
+
+describe("the link at the selection", () => {
+    let editor: ClassicEditor;
+
+    beforeEach(async () => {
+        installGlobMock({
+            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined }),
+            getReferenceLinkTitle: async () => "Target",
+            getReferenceLinkTitleSync: () => "Target"
+        });
+        editor = await createTestEditor([Essentials, Paragraph, Bold, LinkEditing, InternalLinkPlugin]);
+    });
+
+    const LINKED = "<paragraph>a <$text bold=\"true\" linkHref=\"https://a.example\">fo[]o</$text> b"
+        + "</paragraph>";
+
+    it("reads the address and whole text of the link around the caret, and none outside", () => {
+        setModelData(editor.model, LINKED);
+        expect(getLinkAtSelection(editor)).toStrictEqual({ href: "https://a.example", text: "foo" });
+
+        setModelData(editor.model,
+            "<paragraph>a[] <$text linkHref=\"https://a.example\">foo</$text></paragraph>");
+        expect(getLinkAtSelection(editor)).toBeNull();
+    });
+
+    it("replaces the address and the text of the whole link, keeping its formatting", () => {
+        setModelData(editor.model, LINKED);
+        replaceLinkAtSelection(editor, "#root/abc", "See there");
+        expect(getModelData(editor.model)).toBe(
+            "<paragraph>a <$text bold=\"true\" linkHref=\"#root/abc\">See there[]</$text> b</paragraph>"
+        );
+    });
+
+    it("turns the link into a reference when it is to mirror the note's title", async () => {
+        setModelData(editor.model, LINKED);
+        replaceLinkAtSelection(editor, "#root/abc", null);
+        const data = () => getModelData(editor.model, { withoutSelection: true });
+        await vi.waitFor(() => expect(data()).toContain("<reference href=\"#root/abc\""));
+        expect(data()).not.toContain("foo");
     });
 });

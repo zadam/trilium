@@ -1,4 +1,7 @@
-import { type CKEditorError, CKTextEditor, ClassicEditor, onTextEditorError, PopupEditor, SnippetDefinition } from "@triliumnext/ckeditor5";
+import {
+    type CKEditorError, CKTextEditor, ClassicEditor, getLinkAtSelection, onTextEditorError,
+    PopupEditor, replaceLinkAtSelection, SnippetDefinition
+} from "@triliumnext/ckeditor5";
 import { DISPLAYABLE_LOCALE_IDS } from "@triliumnext/commons";
 import { HTMLAttributes, RefObject } from "preact";
 import { useEffect, useImperativeHandle, useRef, useState } from "preact/hooks";
@@ -17,7 +20,11 @@ export interface CKEditorApi {
     /** returns true if user selected some text, false if there's no selection */
     hasSelection(): boolean;
     getSelectedText(): string;
+    /** The address and the whole text of the link around the caret, or `null` outside one. */
+    getCurrentLink(): { href: string; text: string } | null;
     addLink(notePath: string, linkTitle: string | null, externalLink?: boolean): void;
+    /** Rewrites the link around the caret, as {@link addLink} would write a new one. */
+    updateLink(notePath: string, linkTitle: string | null, externalLink?: boolean): void;
     addLinkToEditor(linkHref: string, linkTitle: string): void;
     addHtmlToEditor(html: string): void;
     addContentEmbed(noteId: string, boxSize?: BoxSize): void;
@@ -151,6 +158,17 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
             }
 
             return text;
+        },
+        getCurrentLink() {
+            const editor = editorRef.current;
+            return editor ? getLinkAtSelection(editor) : null;
+        },
+        updateLink(notePath, linkTitle, externalLink) {
+            const editor = editorRef.current;
+            if (!editor) return;
+
+            replaceLinkAtSelection(editor, externalLink ? notePath : `#${notePath}`, linkTitle);
+            editor.editing.view.focus();
         },
         addLink(notePath, linkTitle, externalLink) {
             const editor = editorRef.current;

@@ -1,4 +1,5 @@
-import { ButtonView, Command, Plugin } from 'ckeditor5';
+import { ButtonView, Command, findAttributeRange, Plugin } from 'ckeditor5';
+import type { Editor, ModelRange } from 'ckeditor5';
 import internalLinkIcon from '../icons/trilium.svg?raw';
 import ReferenceLink from './referencelink';
 
@@ -58,4 +59,64 @@ class InsertInternalLinkCommand extends Command {
 
         component.triggerCommand('addLinkToText');
     }
+}
+
+/** The address and the whole text of the link around the selection, or `null` outside one. */
+export function getLinkAtSelection(editor: Editor): { href: string; text: string } | null {
+    const found = findLinkAtSelection(editor);
+    if (!found) {
+        return null;
+    }
+
+    let text = '';
+    for (const item of found.range.getItems()) {
+        if (item.is('$textProxy')) {
+            text += item.data;
+        }
+    }
+    return { href: found.href, text };
+}
+
+/**
+ * Replaces the link around the selection with `text` linking to `href`, keeping the formatting of
+ * its start, or with a reference to the note at `href` when `text` is `null`.
+ */
+export function replaceLinkAtSelection(editor: Editor, href: string, text: string | null) {
+    const found = findLinkAtSelection(editor);
+    if (!found) {
+        return;
+    }
+
+    const model = editor.model;
+    model.change((writer) => {
+        const start = found.range.start;
+        const first = start.textNode ?? start.nodeAfter;
+        const attributes = new Map(first?.getAttributes() ?? []);
+        writer.remove(found.range);
+
+        if (text === null) {
+            writer.setSelection(start);
+            return;
+        }
+
+        attributes.set('linkHref', href);
+        writer.insertText(text, attributes, start);
+        writer.setSelection(start.getShiftedBy(text.length));
+    });
+
+    if (text === null) {
+        editor.execute('referenceLink', { href });
+    }
+}
+
+function findLinkAtSelection(editor: Editor): { href: string; range: ModelRange } | null {
+    const model = editor.model;
+    const selection = model.document.selection;
+    const href = selection.getAttribute('linkHref');
+    const position = selection.getFirstPosition();
+    if (typeof href !== 'string' || !position) {
+        return null;
+    }
+
+    return { href, range: findAttributeRange(position, 'linkHref', href, model) };
 }

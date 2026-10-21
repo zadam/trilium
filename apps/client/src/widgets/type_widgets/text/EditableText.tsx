@@ -31,6 +31,7 @@ import { consumeSearchTerms } from "../../../services/search_jump";
 import { getNoteShareLink } from "../../../services/share_link";
 import toast from "../../../services/toast";
 import utils, { isMobile } from "../../../services/utils";
+import type { AddLinkOpts } from "../../dialogs/add_link";
 import type { IconPickerOpts } from "../../dialogs/icon_picker";
 import {
     useEditorSpacedUpdate, useLegacyImperativeHandlers, useNoteLabel, useSameNoteSwitch,
@@ -231,14 +232,8 @@ export default function EditableText({
     useLegacyImperativeHandlers({
         addLinkToTextCommand() {
             if (!editorApiRef.current) return;
-            parentComponent?.triggerCommand("showAddLinkDialog", {
-                text: editorApiRef.current.getSelectedText(),
-                hasSelection: editorApiRef.current.hasSelection(),
-                async addLink(notePath, linkTitle, externalLink) {
-                    await waitForEditor();
-                    return editorApiRef.current?.addLink(notePath, linkTitle, externalLink);
-                }
-            });
+            const opts = getAddLinkOpts(editorApiRef.current, waitForEditor);
+            parentComponent?.triggerCommand("showAddLinkDialog", opts);
         },
         fixReferenceLink(storedTitle: string, fix: (href: string) => void) {
             parentComponent?.triggerCommand("showAddLinkDialog", {
@@ -711,6 +706,53 @@ export default function EditableText({
  * The content of an editor of the blocks of a note that `block` points at, and the blocks it holds
  * now. An empty editor still holds a block, whose id keeps the place of the blocks in the note.
  */
+/**
+ * What the Add link dialog opens on: the link around the caret, which saving rewrites, or a new
+ * link at the selection.
+ */
+export function getAddLinkOpts(api: CKEditorApi, ready: () => Promise<unknown>): AddLinkOpts {
+    const currentLink = api.getCurrentLink();
+    if (currentLink) {
+        return {
+            text: currentLink.text,
+            hasSelection: false,
+            currentTitle: currentLink.text,
+            ...parseLinkHref(currentLink.href),
+            async addLink(notePath, linkTitle, externalLink) {
+                await ready();
+                api.updateLink(notePath, linkTitle, externalLink);
+            }
+        };
+    }
+
+    return {
+        text: api.getSelectedText(),
+        hasSelection: api.hasSelection(),
+        async addLink(notePath, linkTitle, externalLink) {
+            await ready();
+            api.addLink(notePath, linkTitle, externalLink);
+        }
+    };
+}
+
+/**
+ * What a link's `href` opens the Add link dialog on: the note, with the anchor it points at, or
+ * the address.
+ */
+export function parseLinkHref(href: string): Pick<AddLinkOpts, "currentLink" | "currentBookmark"> {
+    if (!href.startsWith("#")) {
+        return { currentLink: { externalLink: href }, currentBookmark: undefined };
+    }
+
+    const [ path, query = "" ] = href.slice(1).split("?", 2);
+    const params = new URLSearchParams(query);
+    const bookmark = params.get("bookmark") ?? undefined;
+    params.delete("bookmark");
+    const rest = params.toString();
+    const notePath = rest ? `${path}?${rest}` : path;
+    return { currentLink: { notePath }, currentBookmark: bookmark };
+}
+
 export function getBlockData(editor: CKTextEditor, block: string) {
     return {
         content: editor.getData({ trim: "none" }),

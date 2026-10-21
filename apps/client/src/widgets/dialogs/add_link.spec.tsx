@@ -174,6 +174,27 @@ describe("AddLinkDialog", () => {
         expect(current()).toBe("add_link.note");
     });
 
+    it("edits a link with its own text, keeping that text and its anchor", async () => {
+        const note = buildNote({ title: "Target", "#internalBookmark": "part" });
+        await open({
+            currentLink: { notePath: `root/${note.noteId}` },
+            currentTitle: "See there",
+            currentBookmark: "part"
+        });
+        expect(mirrorToggle()?.checked).toBe(false);
+        await vi.waitFor(() => expect(container.querySelector("select")?.value).toBe("part"));
+        expect(field("text")?.value).toBe("See there");
+        await submit();
+        expect(addLink).toHaveBeenLastCalledWith(`root/${note.noteId}?bookmark=part`, "See there");
+
+        await open({
+            currentLink: { externalLink: "https://example.com" }, currentTitle: "Example"
+        });
+        expect(field("text")?.value).toBe("Example");
+        await submit();
+        expect(addLink).toHaveBeenLastCalledWith("https://example.com", "Example", true);
+    });
+
     it("moves a URL typed or pasted on the note side over to the web link side", async () => {
         await open();
         await act(async () => autocomplete.onChange?.({ externalLink: "https://typed.example" }));

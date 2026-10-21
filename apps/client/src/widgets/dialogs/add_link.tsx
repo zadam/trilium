@@ -64,6 +64,13 @@ export interface AddLinkOpts {
      */
     currentLink?: Suggestion;
     /**
+     * The text of the link being edited. The dialog opens with the title not mirroring the note's,
+     * and keeps this text until another note or anchor is picked.
+     */
+    currentTitle?: string;
+    /** The anchor within the note that the link being edited points at. */
+    currentBookmark?: string;
+    /**
      * Repoints a reference link to a missing note. The dialog is titled "Fix link", searches for
      * `text`, and offers only notes, always as a reference link.
      */
@@ -84,6 +91,9 @@ export default function AddLinkDialog() {
     const [ webLink, setWebLink ] = useState("");
     const hasSubmittedRef = useRef(false);
     const webLinkRef = useRef<HTMLInputElement>(null);
+    // The text of the link being edited, while it stands in for the picked note's title.
+    const keptTitleRef = useRef<string | null>(null);
+    const initialBookmarkRef = useRef("");
 
     useTriliumEvent("showAddLinkDialog", opts => {
         setOpts(opts);
@@ -91,7 +101,7 @@ export default function AddLinkDialog() {
     });
 
     useEffect(() => {
-        if (opts?.hasSelection) {
+        if (opts?.hasSelection || opts?.currentTitle !== undefined) {
             setLinkType("hyper-link");
         } else {
             setLinkType("reference-link");
@@ -100,7 +110,9 @@ export default function AddLinkDialog() {
         const initialWebLink = opts ? getInitialWebLink(opts) : null;
         setTarget(initialWebLink !== null ? "url" : "note");
         setWebLink(initialWebLink ?? "");
-        setLinkTitle("");
+        keptTitleRef.current = opts?.currentTitle ?? null;
+        initialBookmarkRef.current = opts?.currentBookmark ?? "";
+        setLinkTitle(opts?.currentTitle ?? "");
 
         // Taken as though it had just been picked, so that a dialog opened on a link and left alone
         // has one to apply — and so that everything a pick settles (the title, the anchors a note
@@ -116,6 +128,7 @@ export default function AddLinkDialog() {
     }
 
     function changeTarget(next: LinkTarget, text = "") {
+        keptTitleRef.current = null;
         setTarget(next);
         setNoteTitle("");
         setLinkTitle("");
@@ -155,7 +168,9 @@ export default function AddLinkDialog() {
     async function setDefaultLinkTitle(noteId: string) {
         const title = await tree.getNoteTitle(noteId);
         setNoteTitle(title);
-        setLinkTitle(title);
+        if (keptTitleRef.current === null) {
+            setLinkTitle(title);
+        }
     }
 
     useEffect(() => {
@@ -192,7 +207,8 @@ export default function AddLinkDialog() {
                     }
 
                     setBookmarks(bkms);
-                    setSelectedBookmark("");
+                    setSelectedBookmark(initialBookmarkRef.current);
+                    initialBookmarkRef.current = "";
                 })();
             }
             resetExternalLink();
@@ -206,6 +222,7 @@ export default function AddLinkDialog() {
     }, [suggestion]);
 
     useEffect(() => {
+        if (keptTitleRef.current !== null) return;
         if (selectedBookmark) {
             setLinkTitle(`${noteTitle} - ${selectedBookmark}`);
         } else {
@@ -351,9 +368,17 @@ export default function AddLinkDialog() {
                                 inputRef={autocompleteRef}
                                 handleRef={handleRef}
                                 // A URL picked from the search belongs on the web link side.
-                                onChange={(picked) => (picked?.externalLink
-                                    ? changeTarget("url", picked.externalLink)
-                                    : setSuggestion(picked))}
+                                onChange={(picked) => {
+                                    if (picked?.externalLink) {
+                                        changeTarget("url", picked.externalLink);
+                                        return;
+                                    }
+                                    // Another note takes its own title over the edited link's text.
+                                    if (picked?.notePath !== suggestion?.notePath) {
+                                        keptTitleRef.current = null;
+                                    }
+                                    setSuggestion(picked);
+                                }}
                                 opts={{
                                     allowExternalLinks: !opts?.fixLink,
                                     allowCreatingNotes: true
@@ -373,7 +398,10 @@ export default function AddLinkDialog() {
                                     keyProperty="value"
                                     titleProperty="title"
                                     currentValue={selectedBookmark}
-                                    onChange={setSelectedBookmark}
+                                    onChange={(bookmark) => {
+                                        keptTitleRef.current = null;
+                                        setSelectedBookmark(bookmark);
+                                    }}
                                 />
                             </OptionCardSection>
                         )}
