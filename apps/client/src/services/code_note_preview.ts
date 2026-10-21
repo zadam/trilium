@@ -31,13 +31,13 @@ const mountedThemes = new Set<string>();
 export interface CodePreviewLines {
     /** Whether to wrap the lines, over the `#wrapLines` label of the note and the option. */
     isWrapped?: boolean;
-    /** Whether to number the lines. Defaults to true. */
+    /** Whether to number the lines, over the option. */
     hasLineNumbers?: boolean;
 }
 
 /**
  * Renders `content` as CodeMirror shows it in a code note: in the colors of the code note themes,
- * with line numbers.
+ * with line numbers unless the option turns them off.
  *
  * @param note the note whose `#wrapLines` label sets the line wrapping, over the option.
  */
@@ -52,7 +52,7 @@ export async function renderCodeNotePreview(
         shouldSyntaxHighlight(content) ? loadPreviewLanguage(mime) : null
     ]);
     const isWrapped = lines.isWrapped ?? isLineWrapped(note);
-    const hasLineNumbers = lines.hasLineNumbers ?? true;
+    const hasLineNumbers = lines.hasLineNumbers ?? options.is("codeLineNumbersEnabled");
     const cacheKey = [
         ...themes.map(({ theme, key }) => `${key}:${theme.id}`), mime, isWrapped, hasLineNumbers,
         content

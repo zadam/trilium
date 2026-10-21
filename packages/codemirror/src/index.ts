@@ -2,7 +2,8 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { EditorView, highlightActiveLine, keymap, lineNumbers, placeholder, tooltips, ViewPlugin, ViewUpdate, type EditorViewConfig, KeyBinding } from "@codemirror/view";
 import { defaultHighlightStyle, StreamLanguage, syntaxHighlighting, indentUnit, bracketMatching, foldGutter, codeFolding } from "@codemirror/language";
 import {
-    Compartment, EditorSelection, EditorState, Prec, StateEffect, Transaction, type Extension
+    Compartment, countColumn, EditorSelection, EditorState, Prec, StateEffect, Transaction,
+    type Extension
 } from "@codemirror/state";
 import { highlightSelectionMatches } from "@codemirror/search";
 import { autocompletion, completionStatus, type CompletionSource } from "@codemirror/autocomplete";
@@ -22,6 +23,9 @@ export { default as ColorThemes, type ThemeDefinition, type ThemeVariant, getThe
 export {
     default as SharedHistory, type HostHistory, type HostHistoryStep
 } from "./shared_history.js";
+export {
+    hasSelectedText, runLineOperation, runTextTransform, type TextToolTarget
+} from "./text_tools.js";
 export {
     isScriptMime, type ScriptApiContext, SCRIPT_MIME_BACKEND, SCRIPT_MIME_FRONTEND,
     type TypeCompletionEntry
@@ -96,6 +100,15 @@ export interface EditorConfig {
 
 /** An end of the document, where the cursor enters or leaves the editor. */
 export type DocumentEdge = "start" | "end";
+
+/** Where the cursor is, with the line and the column both counted from 1. */
+export interface CursorPosition {
+    line: number;
+    /** The column as displayed, with a tab as wide as the tab size. */
+    column: number;
+    /** The number of selected characters, all ranges of the selection together. */
+    selectionLength: number;
+}
 
 function buildIndentUnit(indentSize: number, useTabs: boolean) {
     return useTabs ? "\t" : " ".repeat(indentSize);
@@ -277,6 +290,53 @@ export default class CodeMirror extends EditorView {
         return () => {
             const i = this.#updateListeners.indexOf(listener);
             if (i >= 0) this.#updateListeners.splice(i, 1);
+        };
+    }
+
+    /**
+     * Calls `listener` with the cursor position now and each time it changes. Returns an
+     * unsubscribe function.
+     */
+    addCursorPositionListener(listener: (position: CursorPosition) => void): () => void {
+        let { doc, selection, tabSize } = this.state;
+        let position = this.getCursorPosition();
+        listener(position);
+
+        return this.addUpdateListener(() => {
+            const { state } = this;
+            // Counting the column is linear in the line, so updates such as scrolling skip it.
+            if (state.doc === doc && state.selection === selection && state.tabSize === tabSize) {
+                return;
+            }
+            ({ doc, selection, tabSize } = state);
+
+            const next = this.getCursorPosition();
+            if (next.line === position.line && next.column === position.column
+                && next.selectionLength === position.selectionLength) {
+                return;
+            }
+            position = next;
+            listener(position);
+        });
+    }
+
+    /**
+     * The position of the main cursor, which is the end of the main selection that moves, and the
+     * length of the selection.
+     */
+    getCursorPosition(): CursorPosition {
+        const { doc, selection, tabSize } = this.state;
+        const { head } = selection.main;
+        const line = doc.lineAt(head);
+        let selectionLength = 0;
+        for (const range of selection.ranges) {
+            selectionLength += range.to - range.from;
+        }
+
+        return {
+            line: line.number,
+            column: countColumn(line.text, tabSize, head - line.from) + 1,
+            selectionLength
         };
     }
 
@@ -765,11 +825,13 @@ const loadedThemes = new WeakMap<ThemeDefinition, Extension>();
 
 /**
  * Merges the gutter, which still holds the fold markers, into the code area while the line
- * numbers are off. `Prec.highest` outranks the `.cm-gutters` rule of the color theme.
+ * numbers are off, and keeps the markers off the edge of the editor. `Prec.highest` outranks the
+ * `.cm-gutters` rule of the color theme.
  */
 const hiddenLineNumbersTheme = Prec.highest(EditorView.theme({
     ".cm-gutters": {
         border: "none",
+        paddingInlineStart: "8px",
         backgroundColor: "transparent"
     }
 }));

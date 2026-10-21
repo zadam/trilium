@@ -25,8 +25,9 @@ vi.mock("react-zoom-pan-pinch", () => ({
     TransformComponent: (props: { children?: ComponentChildren }) => <div>{props.children}</div>
 }));
 
-// `CodeEditor` reads the theme as a string.
+// `CodeEditor` reads the theme as a string, and the line numbers set to Auto from the option.
 options.set("codeNoteTheme", "");
+options.set("codeLineNumbersEnabled", "true");
 
 const figures: HTMLElement[] = [];
 

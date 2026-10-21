@@ -183,6 +183,7 @@ const defaultOptions: DefaultOption[] = [
     { name: "autoFixConsistencyIssues", value: "true", isSynced: false },
     { name: "vimKeymapEnabled", value: "false", isSynced: false },
     { name: "codeLineWrapEnabled", value: "true", isSynced: false },
+    { name: "codeLineNumbersEnabled", value: "true", isSynced: false },
     { name: "transcriptCleanupEnabled", value: "true", isSynced: true },
     { name: "transcriptionEnabled", value: "false", isSynced: true },
     { name: "transcriptionModel", value: DEFAULT_TRANSCRIPTION_MODEL, isSynced: false },

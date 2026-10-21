@@ -1973,7 +1973,8 @@
   "code-editor-options": {
     "title": "Editor",
     "tab_width": "Tab width",
-    "tab_width_unit": "spaces"
+    "tab_width_unit": "spaces",
+    "line_numbers": "Line numbers"
   },
   "code_mime_types": {
     "title": "Available MIME types in the dropdown",
@@ -3101,7 +3102,8 @@
     "line_numbers": "Line numbers",
     "line_numbers_auto": "Auto",
     "line_numbers_on": "On",
-    "line_numbers_off": "Off"
+    "line_numbers_off": "Off",
+    "line_numbers_auto_description": "Follow the global setting"
   },
   "electron_integration": {
     "desktop-application": "Desktop Application",
@@ -4001,6 +4003,12 @@
     "note_paths_other": "{{count}} paths",
     "note_paths_title": "Note paths",
     "code_note_switcher": "Change language mode",
+    "cursor_line": "Ln: <Value />",
+    "cursor_column": "Col: <Value />",
+    "cursor_selection": "Selected: <Value />",
+    "cursor_line_title": "Current line",
+    "cursor_column_title": "Current column",
+    "cursor_selection_title": "Selection length in characters",
     "tab_width": "Tab Width: {{width}}",
     "tab_width_title": "Change tab width",
     "tab_width_spaces_one": "{{count}} space",
@@ -4848,5 +4856,25 @@
   "hide_keyboard_button": {
     "title": "Hide keyboard",
     "close_menu": "Close menu"
+  },
+  "code_editor_context_menu": {
+    "transform": "Transform",
+    "sort_ascending": "Sort ascending",
+    "sort_descending": "Sort descending",
+    "shuffle_lines": "Shuffle lines",
+    "reverse_lines": "Reverse line order",
+    "deduplicate_lines": "Deduplicate lines",
+    "trim_leading": "Trim leading",
+    "trim_leading_tooltip": "Removes the whitespace at the start of each line",
+    "trim_trailing": "Trim trailing",
+    "trim_trailing_tooltip": "Removes the whitespace at the end of each line",
+    "trim_both": "Trim both",
+    "trim_both_tooltip": "Removes the whitespace at the start and at the end of each line",
+    "remove_blank_lines": "Remove blank lines",
+    "to_uppercase": "To uppercase",
+    "to_lowercase": "To lowercase",
+    "to_sentence_case": "To sentence case",
+    "to_title_case": "To title case",
+    "remove_diacritics": "Remove diacritics"
   }
 }

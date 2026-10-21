@@ -45,9 +45,19 @@ Long lines can be displayed on multiple lines:
 > [!NOTE]
 > Word wrapping can also be adjusted at note level through the `#wrapLines` [label](../Advanced%20Usage/Attributes/Labels.md), which can also be inherited.
 
+## Line numbers
+
+The numbers at the start of each line can be hidden from <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Code Notes_ → _Editor_ → _Line numbers_. The setting applies to every code editor, such as the source of a [Markdown](Markdown.md) note, and to code shown without its editor (see _Color schemes_ below).
+
+An included code note or an embedded code file can show or hide them on its own through the _Line numbers_ submenu of its _More actions_ menu, see <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>. Its _Auto_ entry follows the setting.
+
 ## Adjusting options using the status bar
 
-The status bar at the bottom of the editor shows the current indentation settings and language. Clicking on the indentation indicator opens a menu with three sections:
+The status bar at the bottom of the editor shows the position of the cursor, the current indentation settings and language.
+
+The cursor position is shown as _Ln_ (the line) and _Col_ (the column), both counted from 1. A tab counts as many columns as the display width of tabs, so the column matches where the cursor appears on screen. While text is selected, _Selected_ shows the number of selected characters, counting each line break as one.
+
+Clicking on the indentation indicator opens a menu with three sections:
 
 1.  _Indent Using_ — switch between Spaces and Tabs (`#indentWithTabs`). If a per-note override is active, a "Reset to default" option appears.
 2.  _Display Width_ — choose from preset widths (1, 2, 3, 4, 6, 8). Changes are saved as a per-note `#tabWidth` label.
@@ -66,11 +76,26 @@ When you re-indent content, the editor:
 *   Rebuilds the leading whitespace in the target style
 *   Preserves non-leading whitespace, blank lines, and content without indentation
 
+## Transforming text
+
+To change the selected lines or text, right-click the selection and open _Transform_. Its commands come in three groups:
+
+*   _Sort ascending_, _Sort descending_, _Shuffle lines_, _Reverse line order_ and _Deduplicate lines_, which keeps the first copy of each line.
+*   _Trim leading_, _Trim trailing_ and _Trim both_ remove the whitespace at the start, at the end or at both ends of each line. _Remove blank lines_ also removes the lines that hold only whitespace.
+*   _To uppercase_, _To lowercase_, _To sentence case_, _To title case_ and _Remove diacritics_.
+
+The commands of the first two groups change every line that the selection touches, even partly. Those of the third group change only the selected text. Each change is undone in one step with <kbd>Ctrl</kbd>+<kbd>Z</kbd>.
+
+*   Sorting reads numbers, dates and times by their value, as sorting a table does (see <a class="reference-link" href="Text/Tables.md">Tables</a>), and ignores the case of letters and the indentation. Blank lines go last.
+*   _To sentence case_ lowercases the text and capitalizes the first word of each sentence and of each line. _To title case_ capitalizes every word except minor words such as "of" and "the", which stay lowercase unless they start or end a sentence.
+*   _Remove diacritics_ turns letters such as `é`, `ș` and `ł` into `e`, `s` and `l`, and removes the vowel points of Hebrew and Arabic. Letters such as `ß` and `æ` stay as they are.
+*   Sorting and the case changes follow the language set in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Language & Region_ → _Default content language_. In Turkish, for example, an uppercase `i` is `İ`.
+
 ## Color schemes
 
 Since Trilium 0.94.0 the colors of code notes can be customized by going <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → Code Notes and looking for the _Appearance_ section.
 
-A code note or a code file shown without its editor, such as in an <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>, on the cards of <a class="reference-link" href="../Collections.md">Collections</a> or in a tooltip, uses the same colors and shows line numbers, as the editor does. A printout uses the _Light theme_. A [shared page](../Advanced%20Usage/Sharing.md) uses the VS Code light or dark theme, following the mode of the page.
+A code note or a code file shown without its editor, such as in an <a class="reference-link" href="Text/Include%20Note.md">Include Note</a>, on the cards of <a class="reference-link" href="../Collections.md">Collections</a> or in a tooltip, uses the same colors and line numbers as the editor does. A printout uses the _Light theme_. A [shared page](../Advanced%20Usage/Sharing.md) uses the VS Code light or dark theme, following the mode of the page.
 
 > [!NOTE]
 > **Why are there only a few themes whereas the code block themes for text notes have a lot?**  

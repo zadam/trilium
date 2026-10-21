@@ -5,6 +5,7 @@ import { useEffect, useState } from "preact/hooks";
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type NoteContext from "../../../components/note_context";
 import FNote from "../../../entities/fnote";
 import options from "../../../services/options";
 import search from "../../../services/search";
@@ -74,6 +75,39 @@ describe("EditableCode", () => {
         await act(async () => { renderInto(show(noteA, onContentChanged)); });
         await vi.waitFor(() => expect(onContentChanged).toHaveBeenCalledWith("# Note A"));
         expect(onContentChanged).toHaveBeenCalledTimes(1);
+    });
+
+    it("publishes its editor while it is displayed for the note of its context", async () => {
+        const setContextData = vi.fn();
+        const noteContext = { noteId: noteA.noteId, setContextData } as unknown as NoteContext;
+        let editor: VanillaCodeMirror | null = null;
+        const showIn = (isVisible: boolean) => (
+            <ParentComponent.Provider value={parent}>
+                <EditableCode
+                    note={noteA} ntxId="ntx" parentComponent={parent}
+                    noteContext={noteContext} viewScope={undefined} isVisible={isVisible}
+                    editorRef={(view: VanillaCodeMirror | null) => { editor = view; }}
+                />
+            </ParentComponent.Provider>
+        );
+        const getPublished = () => setContextData.mock.calls
+            .filter(([ key ]) => key === "codeEditor")
+            .map(([ , value ]) => value);
+
+        let container: HTMLElement | undefined;
+        await act(async () => { container = renderInto(showIn(false)); });
+        expect(editor).toBeInstanceOf(VanillaCodeMirror);
+        expect(getPublished()).toEqual([]);
+
+        // Displayed while the context still shows another note.
+        noteContext.noteId = "other";
+        await act(async () => { if (container) render(showIn(true), container); });
+        expect(getPublished()).toEqual([]);
+
+        noteContext.noteId = noteA.noteId;
+        await act(async () => { if (container) render(showIn(false), container); });
+        await act(async () => { if (container) render(showIn(true), container); });
+        expect(getPublished()).toEqual([ editor ]);
     });
 });
 

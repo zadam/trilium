@@ -87,10 +87,11 @@ export function getWordWrapMenu<T>(
 }
 
 /**
- * The "Line numbers" submenu of a code embed: shown as in a code note, on, or off.
+ * The "Line numbers" submenu of a code embed: follow the global option, on, or off.
  *
- * @param lineNumbers whether the embed shows line numbers, or `undefined` for the default.
- * @param setLineNumbers sets them, or the default again for `null`.
+ * @param lineNumbers whether the embed shows line numbers, or `undefined` to follow the global
+ * option.
+ * @param setLineNumbers sets them, or follows the global option again for `null`.
  */
 export function getLineNumbersMenu<T>(
     lineNumbers: boolean | undefined,
@@ -101,6 +102,7 @@ export function getLineNumbersMenu<T>(
         uiIcon: "bx bx-list-ol",
         items: getAutoOnOffItems(lineNumbers, setLineNumbers, {
             auto: t("link_context_menu.line_numbers_auto"),
+            autoDescription: t("link_context_menu.line_numbers_auto_description"),
             on: t("link_context_menu.line_numbers_on"),
             off: t("link_context_menu.line_numbers_off")
         })

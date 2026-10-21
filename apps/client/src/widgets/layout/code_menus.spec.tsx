@@ -197,6 +197,8 @@ describe("getWordWrapMenu and getLineNumbersMenu", () => {
             "link_context_menu.line_numbers_on ☐",
             "link_context_menu.line_numbers_off ✓"
         ]);
+        expect(lineNumbers.items?.[0])
+            .toMatchObject({ description: "link_context_menu.line_numbers_auto_description" });
 
         for (const title of [ "link_context_menu.line_numbers_auto",
             "link_context_menu.line_numbers_on", "link_context_menu.line_numbers_off" ]) {

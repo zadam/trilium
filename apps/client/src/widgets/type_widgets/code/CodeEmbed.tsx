@@ -40,7 +40,7 @@ interface CodeEmbedProps {
     codeLanguage?: string;
     /** The line wrapping that the embed of a file sets, in place of the option. */
     isCodeWrapped?: boolean;
-    /** Whether the embed shows line numbers. Shown by default. */
+    /** Whether the embed shows line numbers, in place of the option. */
     hasCodeLineNumbers?: boolean;
 }
 
@@ -123,7 +123,8 @@ export default function CodeEmbed({
 export interface EmbedLines {
     /** Whether to wrap the lines, or `undefined` to follow the global option. */
     wrapLines: boolean | undefined;
-    hasLineNumbers: boolean;
+    /** Whether to show the line numbers, or `undefined` to follow the global option. */
+    hasLineNumbers: boolean | undefined;
     /** The "Word wrap" and "Line numbers" submenus, for the menu of the embed. */
     menuItems: MenuItem<CommandNames>[];
 }
@@ -155,7 +156,7 @@ export function useEmbedLines(
 
     return {
         wrapLines,
-        hasLineNumbers: lineNumbers ?? true,
+        hasLineNumbers: lineNumbers,
         menuItems: [
             getWordWrapMenu(wrapLines, setWrapLines),
             getLineNumbersMenu(lineNumbers, (value) => {

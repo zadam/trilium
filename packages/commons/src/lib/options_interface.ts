@@ -202,6 +202,8 @@ export interface OptionDefinitions extends KeyboardShortcutsOptions<KeyboardActi
     autoFixConsistencyIssues: boolean;
     vimKeymapEnabled: boolean;
     codeLineWrapEnabled: boolean;
+    /** Whether code editors show line numbers where a note or an embed does not set them. */
+    codeLineNumbersEnabled: boolean;
     /** Whether meetings can be transcribed: shows the launcher and the transcription settings. */
     transcriptionEnabled: boolean;
     /** Whether a meeting transcript is shown without filler words and stutters. */

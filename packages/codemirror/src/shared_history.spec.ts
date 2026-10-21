@@ -1,3 +1,4 @@
+import { isolateHistory } from "@codemirror/commands";
 import { EditorSelection, Transaction, type TransactionSpec } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -138,6 +139,31 @@ describe("SharedHistory", () => {
         const unattached = createView("");
         orphan.record(unattached.state.update({ changes: { from: 0, insert: "a" } }));
         expect(host.undo()).toBe(false);
+    });
+
+    it("ends a step around a change marked with `isolateHistory`, as `history()` does", () => {
+        const host = createHost();
+        const { view } = setUp(host, "");
+        const isolatedType = (at: number, text: string, isolate: "before" | "after" | "full") =>
+            view.dispatch({
+                changes: { from: at, insert: text },
+                selection: EditorSelection.cursor(at + text.length),
+                userEvent: "input.type",
+                annotations: isolateHistory.of(isolate)
+            });
+
+        type(view, 0, "a");
+        isolatedType(1, "b", "full");
+        type(view, 2, "c");
+        expect(host.done).toHaveLength(3);
+
+        isolatedType(3, "d", "before");
+        type(view, 4, "e");
+        expect(host.done).toHaveLength(4);
+
+        isolatedType(5, "f", "after");
+        type(view, 6, "g");
+        expect(host.done).toHaveLength(5);
     });
 
     it("leaves loaded content out of the history, and ends the step before it", () => {
