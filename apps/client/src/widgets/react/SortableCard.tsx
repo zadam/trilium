@@ -1,15 +1,14 @@
 import "./SortableCard.css";
 
 import clsx from "clsx";
-import { ComponentChildren, type RefObject } from "preact";
+import { ComponentChildren } from "preact";
 import { flushSync } from "preact/compat";
 import {
     useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState
 } from "preact/hooks";
 
 import { t } from "../../services/i18n";
-import Button from "./Button";
-import { Card, type CardProps } from "./Card";
+import { Card, type CardProps, ItemCreationRow, type ItemCreationRowButton } from "./Card";
 import { createEdgeScroller, type Insets, type ScrollTarget } from "./edge_scroll";
 import { useFlip } from "./flip";
 import Icon from "./Icon";
@@ -55,18 +54,6 @@ export interface SortableItem {
     caption?: ComponentChildren;
     /** An icon class, `bx` prefix included, drawn before the caption. */
     icon?: string;
-}
-
-/** One button of an {@link ItemCreationRow}. */
-export interface ItemCreationRowButton {
-    label: string;
-    /** An icon class, `bx` prefix included. */
-    icon?: string;
-    /** Turns the button off, for a caller that cannot make an entry yet. */
-    disabled?: boolean;
-    /** The button's `name` attribute, which tests find it by. */
-    name?: string;
-    onClick: (event: MouseEvent) => void;
 }
 
 /**
@@ -632,41 +619,6 @@ export function SortableCard<T extends SortableItem>({
                 )}
             </div>
         </Card>
-    );
-}
-
-interface ItemCreationRowProps {
-    buttons: ItemCreationRowButton[];
-    elementRef?: RefObject<HTMLElement | null>;
-    onKeyDown?: (event: KeyboardEvent) => void;
-}
-
-/**
- * The buttons that create an entry, as the last section of a card. Each is painted as a segment of
- * the card rather than as a button, so the row reads as the foot of the list above it.
- */
-export function ItemCreationRow({ buttons, elementRef, onKeyDown }: ItemCreationRowProps) {
-    return (
-        // Transparent: each button paints itself, and the gaps show the card through.
-        <section ref={elementRef} className="tn-card-section tn-card-adders" onKeyDown={onKeyDown}>
-            {buttons.map((button, index) => (
-                <Button
-                    // The position in the row: two buttons can share a label.
-                    key={index}
-                    name={button.name}
-                    // Not a command button: the theme gives those a background, a shadow and a
-                    // minimum width, none of which suit a segment.
-                    kind="lowProfile"
-                    className="tn-card-adder"
-                    text={<>
-                        {button.icon && <Icon icon={button.icon} />}
-                        <span>{button.label}</span>
-                    </>}
-                    disabled={button.disabled}
-                    onClick={button.onClick}
-                />
-            ))}
-        </section>
     );
 }
 

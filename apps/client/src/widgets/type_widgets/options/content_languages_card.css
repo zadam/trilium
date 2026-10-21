@@ -3,6 +3,12 @@
 }
 
 .tn-card.content-languages-card {
+    .content-languages-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+    }
+
     .content-languages-title {
         flex-grow: 1;
         overflow: hidden;

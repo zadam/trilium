@@ -37,7 +37,7 @@ describe("ContentLanguagesCard", () => {
         expect(names(container)).toEqual([ "Deutsch", "Français", "Română" ]);
         expect(segments(container).map((element) => element.querySelector(".bx-globe")))
             .not.toContain(null);
-        expect(container.querySelector(".tn-sortable-grip")).toBeNull();
+        expect(container.querySelector(".tn-sortable-card")).toBeNull();
         expect(container.querySelector(".content-languages-english-name")).toBeNull();
     });
 
@@ -105,18 +105,14 @@ describe("ContentLanguagesCard", () => {
         });
     });
 
-    it("removes a language with its button or Delete, focusing the next one", async () => {
+    it("removes a language with its button", async () => {
         const container = draw();
+        const remove = segment(container, "Français")?.querySelector(".content-languages-remove");
+        expect(remove).toBeInstanceOf(HTMLElement);
 
-        await click(segment(container, "Français")?.querySelector(".content-languages-remove")
-            ?? null);
+        await click(remove ?? null);
         expect(stored()).toEqual([ "ro", "de" ]);
-
-        act(() => segment(container, "Deutsch")?.focus());
-        press(segment(container, "Deutsch"), "Delete");
-        expect(stored()).toEqual([ "ro" ]);
-        expect(names(container)).toEqual([ "Română" ]);
-        expect(document.activeElement).toBe(segment(container, "Română"));
+        expect(names(container)).toEqual([ "Deutsch", "Română" ]);
     });
 });
 
@@ -156,8 +152,10 @@ function stored() {
     return JSON.parse(options.get("languages"));
 }
 
+/** The enabled languages, each a section of the card. */
 function segments(container: HTMLElement) {
-    return [ ...container.querySelectorAll<HTMLElement>(".tn-sortable-segment") ];
+    return [ ...container.querySelectorAll<HTMLElement>(
+        ".content-languages-card > .tn-card-body > .tn-card-section.content-languages-item") ];
 }
 
 function names(container: HTMLElement) {
@@ -168,13 +166,6 @@ function names(container: HTMLElement) {
 function segment(container: HTMLElement, name: string) {
     return segments(container).find((element) =>
         element.querySelector(".content-languages-native-name")?.textContent === name) ?? null;
-}
-
-function press(target: Element | null, key: string) {
-    act(() => {
-        target?.dispatchEvent(
-            new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
-    });
 }
 
 /** Clicks and waits for what the click awaits, such as the picker. */

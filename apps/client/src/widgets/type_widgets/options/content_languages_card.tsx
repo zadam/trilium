@@ -8,9 +8,9 @@ import dialog from "../../../services/dialog";
 import { getAvailableLocales, getEnglishAnnotation, t } from "../../../services/i18n";
 import options from "../../../services/options";
 import ActionButton from "../../react/ActionButton";
+import { Card, CardSection, ItemCreationRow } from "../../react/Card";
 import { useTriliumOption } from "../../react/hooks";
 import Icon from "../../react/Icon";
-import { type SortableItem, SortableCard } from "../../react/SortableCard";
 
 const LANGUAGE_ICON = "bx bx-globe";
 
@@ -18,10 +18,6 @@ interface ContentLanguagesCardProps {
     /** Left out in a dialog whose title already names the card. */
     heading?: string;
     actions?: ComponentChildren;
-}
-
-interface LanguageItem extends SortableItem {
-    englishName: string | null;
 }
 
 /**
@@ -33,27 +29,26 @@ interface LanguageItem extends SortableItem {
 export function ContentLanguagesCard({ heading, actions }: ContentLanguagesCardProps) {
     const [ storedLanguages, setStoredLanguages ] = useTriliumOption("languages");
     const languages = useMemo(
-        () => (options.getJson("languages") as string[] | null) ?? [],
+        () => readLanguages(),
         [ storedLanguages ]); // eslint-disable-line react-hooks/exhaustive-deps
     const setLanguages = useCallback(
         (ids: string[]) => setStoredLanguages(JSON.stringify(ids)), [ setStoredLanguages ]);
 
-    const items = useMemo<LanguageItem[]>(() => LOCALES
+    const enabled = useMemo(() => LOCALES
         .filter((locale) => languages.includes(locale.id))
         .map((locale) => ({
-            key: locale.id,
-            caption: locale.name,
-            icon: LANGUAGE_ICON,
+            id: locale.id,
+            name: locale.name,
             englishName: getEnglishAnnotation(locale)
         })), [ languages ]);
-    const availableCount = LOCALES.length - items.length;
+    const availableCount = LOCALES.length - enabled.length;
 
     const remove = useCallback((id: string) => {
         setLanguages(languages.filter((candidate) => candidate !== id));
     }, [ languages, setLanguages ]);
 
-    /** Opens the item picker on the languages that are not enabled yet. */
-    const pick = useCallback(async () => {
+    /** Opens the item picker on the languages that are not enabled yet, and adds the one picked. */
+    const add = useCallback(async () => {
         const picked = await dialog.pickSingleItem({
             title: t("content_language.add_title"),
             items: getAvailableLocales()
@@ -61,58 +56,52 @@ export function ContentLanguagesCard({ heading, actions }: ContentLanguagesCardP
                 .map((locale) => ({ key: locale.id, caption: locale.name, icon: LANGUAGE_ICON }))
         });
 
-        return picked
-            ? { key: picked.key, caption: picked.caption, icon: picked.icon, englishName: null }
-            : undefined;
-    }, [ languages ]);
+        // Read again: another window can change the list while the picker is open.
+        const current = readLanguages();
+        if (picked && !current.includes(picked.key)) {
+            setLanguages([ ...current, picked.key ]);
+        }
+    }, [ languages, setLanguages ]);
 
     return (
-        <SortableCard
+        <Card
             className="content-languages-card"
             heading={heading}
             actions={actions}
             description={t("content_language.description")}
-            items={items}
-            // The card reports additions only, since it cannot be reordered.
-            onChange={(order) => setLanguages([
-                ...languages,
-                ...order.map((item) => item.key).filter((id) => !languages.includes(id))
-            ])}
-            isReorderable={false}
-            onItemKeyDown={(item, event) => {
-                if (event.key === "Delete") {
-                    event.preventDefault();
-                    remove(item.key);
-                }
-            }}
-            renderItem={(item) => <>
-                <Icon icon={LANGUAGE_ICON} />
-                <span className="content-languages-title">
-                    <span className="content-languages-native-name">{item.caption}</span>
-                    {item.englishName && (
-                        <span className="content-languages-english-name">
-                            {item.englishName}
-                        </span>
-                    )}
-                </span>
-                <ActionButton
-                    className="content-languages-remove"
-                    icon="bx bx-x"
-                    text={t("content_language.remove")}
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        remove(item.key);
-                    }}
-                />
-            </>}
-            itemCreationButtons={[ {
-                label: items.length
+        >
+            {enabled.map((language) => (
+                <CardSection key={language.id} className="content-languages-item">
+                    <Icon icon={LANGUAGE_ICON} />
+                    <span className="content-languages-title">
+                        <span className="content-languages-native-name">{language.name}</span>
+                        {language.englishName && (
+                            <span className="content-languages-english-name">
+                                {language.englishName}
+                            </span>
+                        )}
+                    </span>
+                    <ActionButton
+                        className="content-languages-remove"
+                        icon="bx bx-x"
+                        text={t("content_language.remove")}
+                        onClick={() => remove(language.id)}
+                    />
+                </CardSection>
+            ))}
+
+            <ItemCreationRow buttons={[ {
+                label: enabled.length
                     ? t("content_language.add_another", { count: availableCount })
                     : t("content_language.add_first", { count: availableCount }),
                 icon: "bx bx-plus",
                 disabled: !availableCount,
-                onCreateItem: pick
-            } ]}
-        />
+                onClick: add
+            } ]} />
+        </Card>
     );
+}
+
+function readLanguages() {
+    return (options.getJson("languages") as string[] | null) ?? [];
 }
