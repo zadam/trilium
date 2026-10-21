@@ -105,14 +105,30 @@ describe("ContentLanguagesCard", () => {
         });
     });
 
-    it("removes a language with its button", async () => {
+    it("removes a language with its button, handing its focus to the nearest one left", async () => {
+        options.set("languages", JSON.stringify([ "ro", "de", "fr", "it" ]));
         const container = draw();
-        const remove = segment(container, "Français")?.querySelector(".content-languages-remove");
-        expect(remove).toBeInstanceOf(HTMLElement);
+        const removeButton = (name: string) => segment(container, name)
+            ?.querySelector<HTMLElement>(".content-languages-remove") ?? null;
+        expect(removeButton("Français")).toBeInstanceOf(HTMLElement);
 
-        await click(remove ?? null);
-        expect(stored()).toEqual([ "ro", "de" ]);
+        // Without the focus, there is none to hand on.
+        await click(removeButton("Français"));
+        expect(stored()).toEqual([ "ro", "de", "it" ]);
+        expect(names(container)).toEqual([ "Deutsch", "Italiano", "Română" ]);
+        expect(document.activeElement).toBe(document.body);
+
+        act(() => removeButton("Italiano")?.focus());
+        await click(removeButton("Italiano"));
         expect(names(container)).toEqual([ "Deutsch", "Română" ]);
+        expect(document.activeElement).toBe(removeButton("Română"));
+
+        await click(removeButton("Română"));
+        expect(document.activeElement).toBe(removeButton("Deutsch"));
+
+        await click(removeButton("Deutsch"));
+        expect(stored()).toEqual([]);
+        expect(document.activeElement).toBe(container.querySelector(".tn-card-adder"));
     });
 });
 

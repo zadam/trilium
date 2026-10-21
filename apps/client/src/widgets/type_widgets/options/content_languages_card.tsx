@@ -85,7 +85,12 @@ export function ContentLanguagesCard({ heading, actions }: ContentLanguagesCardP
                         className="content-languages-remove"
                         icon="bx bx-x"
                         text={t("content_language.remove")}
-                        onClick={() => remove(language.id)}
+                        onClick={(event) => {
+                            if (document.activeElement === event.currentTarget) {
+                                focusNearestLanguage(event.currentTarget);
+                            }
+                            remove(language.id);
+                        }}
                     />
                 </CardSection>
             ))}
@@ -104,4 +109,18 @@ export function ContentLanguagesCard({ heading, actions }: ContentLanguagesCardP
 
 function readLanguages() {
     return (options.getJson("languages") as string[] | null) ?? [];
+}
+
+/**
+ * Moves the focus off a remove button whose language is about to go: to the next language's remove
+ * button, else the previous one's, else the add button. The rows are keyed, so the one focused here
+ * stays in the document when the other is removed.
+ */
+function focusNearestLanguage(removeButton: HTMLElement) {
+    const row = removeButton.closest(".content-languages-item");
+    const nearest = [ row?.nextElementSibling, row?.previousElementSibling ]
+        .find((sibling) => sibling?.classList.contains("content-languages-item"));
+    const target = nearest?.querySelector<HTMLElement>(".content-languages-remove")
+        ?? row?.parentElement?.querySelector<HTMLElement>(".tn-card-adder");
+    target?.focus();
 }
