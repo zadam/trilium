@@ -148,7 +148,7 @@ describe("buildMobileToolbar", () => {
             ]
         } ]);
         expect((textFormattingToolbar as unknown[]).every((item) => typeof item === "string")).toBe(true);
-        expect(toolbar.items.slice(9)).toStrictEqual([
+        expect(toolbar.items.slice(11)).toStrictEqual([
             "|",
             "link", "internallink", "aiAssistantMenu", "attachMenu", "insertTableMenu",
             "|",
@@ -158,8 +158,9 @@ describe("buildMobileToolbar", () => {
 
     it("keeps text formatting on a row of its own, opened from the main row", () => {
         const { toolbar, textFormattingToolbar } = buildMobileToolbar(true);
-        expect(toolbar.items.slice(0, 9).map(itemName)).toStrictEqual([
-            "undo", "redo", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting", "|", "outdent", "indent"
+        expect(toolbar.items.slice(0, 11).map(itemName)).toStrictEqual([
+            "undo", "redo", "|", "text-editor.toolbar-groups.insert", "blockType", "textFormatting",
+            "|", "outdent", "indent", "moveBlockUp", "moveBlockDown"
         ]);
         expect(textFormattingToolbar).toStrictEqual([
             "bold", "italic", "underline", "strikethrough", "code",
@@ -212,12 +213,14 @@ describe("buildMobileToolbar", () => {
             "alignment:justify": "alignmentMenu",
             aiAssistant: "aiAssistantMenu"
         };
+        // Alt+Up and Alt+Down move blocks on a keyboard.
+        const MOBILE_ONLY = [ "moveBlockUp", "moveBlockDown" ];
         for (const aiAssistant of [ true, false ]) {
             const classicItems = collectItems({ items: buildClassicToolbar(false, aiAssistant).toolbar.items })
                 .map((item) => MOBILE_VARIANTS[item] ?? item);
             const { toolbar, textFormattingToolbar } = buildMobileToolbar(aiAssistant);
             const mobileItems = collectItems({ items: [ ...toolbar.items, ...textFormattingToolbar ] })
-                .filter((item) => item !== "textFormatting");
+                .filter((item) => item !== "textFormatting" && !MOBILE_ONLY.includes(item));
             expect([ ...new Set(mobileItems) ].toSorted()).toStrictEqual([ ...new Set(classicItems) ].toSorted());
         }
     });

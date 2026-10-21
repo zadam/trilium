@@ -81,6 +81,8 @@ export function buildMobileToolbar(aiAssistant: boolean) {
                 "|",
                 "outdent",
                 "indent",
+                "moveBlockUp",
+                "moveBlockDown",
                 "|",
                 "link",
                 "internallink",
