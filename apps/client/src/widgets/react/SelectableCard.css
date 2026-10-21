@@ -22,7 +22,8 @@ body.mobile .selectable-card-grid {
     cursor: pointer;
 }
 
-.selectable-card:hover:not(:disabled) {
+/* `:where()` keeps this below the theme's `:root .selectable-card:hover`, which this file loads after. */
+.selectable-card:hover:where(:not(:disabled)) {
     border-color: var(--main-text-color);
 }
 
