@@ -12,6 +12,12 @@ Interaction since v0.104.0:
 
 Backend logs are stored on the file system. To find them, open the <a class="reference-link" href="../../Installation%20%26%20Setup/Data%20directory.md">Data directory</a>, go to the `log` subdirectory and find the latest log file, e.g. `trilium-2022-12-14.log`. 
 
+## In the terminal
+
+The server also prints every log entry to its standard output, which is what `docker logs` or `journalctl` show. When that output is a terminal, each entry starts with its time and is colored the same way as the backend log in the app: request status codes by class, slow SQL queries, and errors in red. Output to a file, a pipe or a container log stays plain text without the time, since those tools add their own.
+
+To turn the colors off in a terminal, set the `NO_COLOR` environment variable; to force them on elsewhere, set `FORCE_COLOR=1`.
+
 ## Reporting backend bugs
 
 You can attach the whole file to the bug report (preferable) or open it and copy-paste only the last lines / lines you believe are relevant.
