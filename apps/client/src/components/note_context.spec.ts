@@ -105,4 +105,30 @@ describe("NoteContext view scope", () => {
         if (noteContext.viewScope) noteContext.viewScope.block = undefined;
         expect(viewScope).toEqual({ block: "a" });
     });
+
+    it("stays on the open note when it is navigated to again", async () => {
+        buildNote({
+            id: "root", title: "root", children: [ { id: "reopened", title: "Reopened" } ]
+        });
+        const noteContext = new NoteContext();
+        const navigate = (viewScope?: ViewScope) => noteContext.setNote("root/reopened", {
+            viewScope, skipRecentNotes: true, triggerSwitchEvent: false
+        });
+
+        await navigate();
+        expect(await noteContext.isReadOnly()).toBe(false);
+        const shownScope = noteContext.viewScope;
+        expect(shownScope).toEqual({ viewMode: "default", isReadOnly: false });
+        // What the "Edit" button of a read-only note and `consumeBookmark()` write into the scope.
+        if (shownScope) {
+            shownScope.readOnlyTemporarilyDisabled = true;
+            shownScope.bookmark = undefined;
+        }
+
+        await navigate();
+        expect(noteContext.viewScope).toBe(shownScope);
+
+        await navigate({ bookmark: "intro" });
+        expect(noteContext.viewScope).toEqual({ viewMode: "default", bookmark: "intro" });
+    });
 });
