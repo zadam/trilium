@@ -27,7 +27,7 @@ body.mobile {
 
     .classic-toolbar-island {
         position: absolute;
-        bottom: 0;
+        bottom: var(--tn-layout-overhang, 0px);
         inset-inline-start: 0;
         inset-inline-end: 0;
         height: var(--mobile-toolbar-height);
@@ -83,9 +83,12 @@ body.mobile {
 
     /* A menu of the toolbar in the place of the keyboard (see `useKeyboardPanel`). */
     &.keyboard-panel-open {
+        --keyboard-panel-lift: max(
+            0px,
+            calc(var(--tn-keyboard-height, 0px) - var(--tn-layout-shrink, 0px))
+        );
         --mobile-toolbar-clearance: calc(
-            var(--mobile-toolbar-height) + var(--mobile-toolbar-gap)
-            + var(--tn-keyboard-height, 0px)
+            var(--mobile-toolbar-height) + var(--mobile-toolbar-gap) + var(--keyboard-panel-lift)
         );
 
         #mobile-bottom-bar {
@@ -93,7 +96,7 @@ body.mobile {
         }
 
         .classic-toolbar-island {
-            bottom: var(--tn-keyboard-height, 0px);
+            bottom: var(--keyboard-panel-lift);
             margin-bottom: 0;
             border-end-start-radius: 0;
             border-end-end-radius: 0;
@@ -110,6 +113,7 @@ body.mobile {
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
+        --dropdown-bottom: calc(-1 * var(--tn-layout-shrink, 0px));
         height: var(--tn-keyboard-height);
         max-height: var(--tn-keyboard-height);
     }
