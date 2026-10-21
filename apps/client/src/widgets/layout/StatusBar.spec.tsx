@@ -145,24 +145,36 @@ describe("StatusBar panels", () => {
         contextData.set("codeEditor", {
             addCursorPositionListener(listener: (position: CursorPosition) => void) {
                 report = listener;
-                listener({ line: 12, column: 32 });
+                listener({ line: 12, column: 32, selectionLength: 0 });
                 return unsubscribe;
             }
         });
-        const getValues = () => [ ...container.querySelectorAll(".cursor-position .value") ]
-            .map((value) => value.textContent);
+        // Each part is an element of its own, so the gap of the row falls between the parts.
+        const getParts = () => {
+            const parts = container.querySelectorAll(".cursor-position > * > [data-i18n-key]");
+            return [ ...parts ].map((part) => [
+                part.getAttribute("data-i18n-key"),
+                part.querySelector(".value")?.textContent
+            ]);
+        };
 
         renderBar(true, "code");
         const position = container.querySelector(".actions-row > .cursor-position");
         expect(position).not.toBeNull();
         expect(position?.previousElementSibling).toBeNull();
-        const i18nKeys = [ ...position?.querySelectorAll(":scope > * > [data-i18n-key]") ?? [] ]
-            .map((part) => part.getAttribute("data-i18n-key"));
-        expect(i18nKeys).toEqual([ "status_bar.cursor_line", "status_bar.cursor_column" ]);
-        expect(getValues()).toEqual([ "12", "32" ]);
+        expect(getParts()).toEqual([
+            [ "status_bar.cursor_line", "12" ],
+            [ "status_bar.cursor_column", "32" ]
+        ]);
 
-        act(() => report?.({ line: 3, column: 1 }));
-        expect(getValues()).toEqual([ "3", "1" ]);
+        act(() => report?.({ line: 3, column: 1, selectionLength: 120 }));
+        expect(getParts()).toEqual([
+            [ "status_bar.cursor_line", "3" ],
+            [ "status_bar.cursor_column", "1" ],
+            [ "status_bar.cursor_selection", "120" ]
+        ]);
+        act(() => report?.({ line: 3, column: 1, selectionLength: 0 }));
+        expect(getParts().map(([ key ]) => key)).not.toContain("status_bar.cursor_selection");
 
         act(() => render(null, container));
         expect(unsubscribe).toHaveBeenCalled();

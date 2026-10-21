@@ -4003,6 +4003,7 @@
     "code_note_switcher": "Change language mode",
     "cursor_line": "Ln: <Value />",
     "cursor_column": "Col: <Value />",
+    "cursor_selection": "Selected: <Value />",
     "tab_width": "Tab Width: {{width}}",
     "tab_width_title": "Change tab width",
     "tab_width_spaces_one": "{{count}} space",

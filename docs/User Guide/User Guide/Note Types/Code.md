@@ -55,7 +55,7 @@ An included code note or an embedded code file can show or hide them on its own 
 
 The status bar at the bottom of the editor shows the position of the cursor, the current indentation settings and language.
 
-The cursor position is shown as _Ln_ (the line) and _Col_ (the column), both counted from 1. A tab counts as many columns as the display width of tabs, so the column matches where the cursor appears on screen.
+The cursor position is shown as _Ln_ (the line) and _Col_ (the column), both counted from 1. A tab counts as many columns as the display width of tabs, so the column matches where the cursor appears on screen. While text is selected, _Selected_ shows the number of selected characters, counting each line break as one.
 
 Clicking on the indentation indicator opens a menu with three sections:
 

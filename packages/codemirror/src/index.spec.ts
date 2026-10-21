@@ -679,7 +679,8 @@ describe("CodeMirror", () => {
             instance.setText("one\n\ttwo");
             const getPosition = (selection: EditorSelection) => {
                 instance.dispatch({ selection });
-                return instance.getCursorPosition();
+                const { line, column } = instance.getCursorPosition();
+                return { line, column };
             };
 
             expect(getPosition(EditorSelection.single(0))).toEqual({ line: 1, column: 1 });
@@ -692,6 +693,23 @@ describe("CodeMirror", () => {
             expect(getPosition(EditorSelection.single(8))).toEqual({ line: 2, column: 6 });
         });
 
+        it("counts the selected characters of every range, with a line break as one", () => {
+            const instance = build();
+            editor = instance;
+            instance.setNamedExtension("multi", EditorState.allowMultipleSelections.of(true));
+            instance.setText("one\ntwo");
+            const getLength = (selection: EditorSelection) => {
+                instance.dispatch({ selection });
+                return instance.getCursorPosition().selectionLength;
+            };
+
+            expect(getLength(EditorSelection.single(2))).toBe(0);
+            expect(getLength(EditorSelection.single(5, 2))).toBe(3);
+            expect(getLength(EditorSelection.create([
+                EditorSelection.range(0, 2), EditorSelection.range(4, 7)
+            ]))).toBe(5);
+        });
+
         it("reports the position at once and then each change of it", () => {
             const instance = build();
             editor = instance;
@@ -700,19 +718,22 @@ describe("CodeMirror", () => {
             const listener = vi.fn();
 
             const unsubscribe = instance.addCursorPositionListener(listener);
-            expect(listener.mock.calls).toEqual([ [ { line: 1, column: 1 } ] ]);
+            expect(listener.mock.calls).toEqual([ [ { line: 1, column: 1, selectionLength: 0 } ] ]);
 
             instance.dispatch({ selection: EditorSelection.cursor(5) });
-            expect(listener).toHaveBeenLastCalledWith({ line: 2, column: 5 });
+            expect(listener).toHaveBeenLastCalledWith({ line: 2, column: 5, selectionLength: 0 });
             instance.setIndentSize(8);
-            expect(listener).toHaveBeenLastCalledWith({ line: 2, column: 9 });
+            expect(listener).toHaveBeenLastCalledWith({ line: 2, column: 9, selectionLength: 0 });
+            // The cursor stays where it is, and the selection grows behind it.
+            instance.dispatch({ selection: EditorSelection.single(4, 5) });
+            expect(listener).toHaveBeenLastCalledWith({ line: 2, column: 9, selectionLength: 1 });
 
             // Hiding the line numbers keeps the document and the selection, so nothing is counted.
             const getCursorPosition = vi.spyOn(instance, "getCursorPosition");
             listener.mockClear();
             instance.setLineNumbers(false);
             expect(getCursorPosition).not.toHaveBeenCalled();
-            // An edit on another line keeps the line and the column of the cursor.
+            // An edit on another line keeps the cursor position and the selection length.
             instance.dispatch({ changes: { from: 0, insert: "x" } });
             expect(getCursorPosition).toHaveBeenCalled();
             expect(listener).not.toHaveBeenCalled();

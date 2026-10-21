@@ -568,6 +568,10 @@ function CodeCursorPosition({ note, noteContext }: StatusBarContext) {
         <span className="cursor-position">
             <CursorPositionPart i18nKey="status_bar.cursor_line" value={position.line} />
             <CursorPositionPart i18nKey="status_bar.cursor_column" value={position.column} />
+            {position.selectionLength > 0 && <CursorPositionPart
+                i18nKey="status_bar.cursor_selection"
+                value={position.selectionLength}
+            />}
         </span>
     );
 }

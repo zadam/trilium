@@ -106,6 +106,8 @@ export interface CursorPosition {
     line: number;
     /** The column as displayed, with a tab as wide as the tab size. */
     column: number;
+    /** The number of selected characters, all ranges of the selection together. */
+    selectionLength: number;
 }
 
 function buildIndentUnit(indentSize: number, useTabs: boolean) {
@@ -309,20 +311,32 @@ export default class CodeMirror extends EditorView {
             ({ doc, selection, tabSize } = state);
 
             const next = this.getCursorPosition();
-            if (next.line === position.line && next.column === position.column) return;
+            if (next.line === position.line && next.column === position.column
+                && next.selectionLength === position.selectionLength) {
+                return;
+            }
             position = next;
             listener(position);
         });
     }
 
-    /** The position of the main cursor, which is the end of the main selection that moves. */
+    /**
+     * The position of the main cursor, which is the end of the main selection that moves, and the
+     * length of the selection.
+     */
     getCursorPosition(): CursorPosition {
         const { doc, selection, tabSize } = this.state;
         const { head } = selection.main;
         const line = doc.lineAt(head);
+        let selectionLength = 0;
+        for (const range of selection.ranges) {
+            selectionLength += range.to - range.from;
+        }
+
         return {
             line: line.number,
-            column: countColumn(line.text, tabSize, head - line.from) + 1
+            column: countColumn(line.text, tabSize, head - line.from) + 1,
+            selectionLength
         };
     }
 
