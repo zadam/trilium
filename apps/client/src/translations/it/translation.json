@@ -998,14 +998,7 @@
   "include_note": {
     "dialog_title": "Includi nota",
     "label_note": "Nota",
-    "placeholder_search": "cerca una nota per nome",
-    "box_size_prompt": "Dimensione della casella della nota inclusa:",
-    "box_size_small": "piccola (~ 10 righe)",
-    "box_size_medium": "media (~ 30 righe)",
-    "box_size_full": "completa (la casella mostra il testo completo)",
-    "button_include": "Includi nota",
-    "box_size_expandable": "espandibile (nascosto per impostazione predefinita)",
-    "box_size_tiny": "piccolo (una sola riga con il titolo e le azioni)"
+    "button_include": "Includi nota"
   },
   "jump_to_note": {
     "search_placeholder": "Cerca una nota per nome oppure digita > per i comandi..."
@@ -1026,10 +1019,7 @@
     "move_success_message": "Le note selezionate sono state spostate in "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Cambia dove creare la nuova nota:",
-    "search_placeholder": "cerca percorso per nome (predefinito se vuoto)",
     "modal_title": "Scegli il tipo di nota",
-    "modal_body": "Scegli il tipo / modello della nuova nota:",
     "templates": "Modelli"
   },
   "prompt": {

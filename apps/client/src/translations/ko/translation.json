@@ -360,14 +360,7 @@
   "include_note": {
     "dialog_title": "노트 포함",
     "label_note": "노트",
-    "placeholder_search": "이름으로 노트 검색하기",
-    "box_size_prompt": "포함된 노트의 상자 크기:",
-    "box_size_small": "소형(~10줄)",
-    "box_size_medium": "중형(~30줄)",
-    "box_size_full": "전체(상자에 전체 텍스트가 표시됨)",
-    "box_size_expandable": "확장 가능(기본적으로 축소됨)",
-    "button_include": "노트 포함",
-    "box_size_tiny": "작게 (제목과 작업만 한 줄로 표시)"
+    "button_include": "노트 포함"
   },
   "info": {
     "modalTitle": "정보 메시지",
@@ -442,10 +435,7 @@
     "move_success_message": "선택한 노트의 이동 위치: "
   },
   "note_type_chooser": {
-    "change_path_prompt": "새 노트를 생성할 위치 변경:",
-    "search_placeholder": "이름으로 경로 검색(비워 두면 기본 경로)",
     "modal_title": "노트 유형 선택",
-    "modal_body": "새 노트의 노트 유형/템플릿 선택:",
     "templates": "템플릿"
   },
   "password_not_set": {

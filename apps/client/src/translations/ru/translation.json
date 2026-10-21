@@ -447,10 +447,7 @@
   },
   "note_type_chooser": {
     "modal_title": "Выберите тип заметки",
-    "modal_body": "Выберите тип / шаблон новой заметки:",
-    "templates": "Шаблоны",
-    "change_path_prompt": "Изменить место создания новой заметки:",
-    "search_placeholder": "поиск пути по имени (по умолчанию, если пусто)"
+    "templates": "Шаблоны"
   },
   "password_not_set": {
     "title": "Пароль не установлен",
@@ -2193,14 +2190,7 @@
   "include_note": {
     "dialog_title": "Вставить заметку",
     "label_note": "Заметка",
-    "button_include": "Вставить заметку",
-    "placeholder_search": "поиск заметки по её названию",
-    "box_size_small": "небольшой (~ 10 строк)",
-    "box_size_medium": "средний (~ 30 строк)",
-    "box_size_full": "полный (в рамке показан полный текст)",
-    "box_size_prompt": "Размер блока вставленной заметки:",
-    "box_size_expandable": "разворачиваемый (по умолчанию свёрнут)",
-    "box_size_tiny": "крошечный (одна строка с названием и действиями)"
+    "button_include": "Вставить заметку"
   },
   "execute_script": {
     "execute_script": "Выполнить скрипт",

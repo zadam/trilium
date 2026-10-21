@@ -315,14 +315,7 @@
   "include_note": {
     "dialog_title": "Cuir nóta san áireamh",
     "label_note": "Nóta",
-    "placeholder_search": "cuardach nóta de réir a ainm",
-    "box_size_prompt": "Méid an bhosca den nóta atá san áireamh:",
-    "box_size_small": "beag (~ 10 líne)",
-    "box_size_medium": "meánach (~ 30 líne)",
-    "box_size_full": "lán (taispeánann an bosca an téacs iomlán)",
-    "button_include": "Cuir nóta san áireamh",
-    "box_size_expandable": "inleathnaithe (fillte de réir réamhshocraithe)",
-    "box_size_tiny": "bídeach (sraith amháin leis an teideal agus leis na gníomhartha)"
+    "button_include": "Cuir nóta san áireamh"
   },
   "info": {
     "modalTitle": "Teachtaireacht eolais",
@@ -349,10 +342,7 @@
     "move_success_message": "Tá nótaí roghnaithe bogtha isteach "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Athraigh cá háit le nóta nua a chruthú:",
-    "search_placeholder": "cuardaigh cosán de réir ainm (réamhshocraithe má tá sé folamh)",
     "modal_title": "Roghnaigh cineál nóta",
-    "modal_body": "Roghnaigh cineál nóta / teimpléad don nóta nua:",
     "templates": "Teimpléid"
   },
   "password_not_set": {

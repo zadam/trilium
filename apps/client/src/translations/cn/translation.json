@@ -282,14 +282,7 @@
   "include_note": {
     "dialog_title": "包含笔记",
     "label_note": "笔记",
-    "placeholder_search": "按名称搜索笔记",
-    "box_size_prompt": "包含笔记的框大小：",
-    "box_size_small": "小型 (显示大约10行)",
-    "box_size_medium": "中型 (显示大约30行)",
-    "box_size_full": "完整显示（完整文本框）",
-    "button_include": "包含笔记",
-    "box_size_expandable": "可展开（默认折叠）",
-    "box_size_tiny": "紧凑"
+    "button_include": "包含笔记"
   },
   "info": {
     "modalTitle": "信息消息",
@@ -317,10 +310,7 @@
   },
   "note_type_chooser": {
     "modal_title": "选择笔记类型",
-    "modal_body": "选择新笔记的类型或模板：",
-    "templates": "模板",
-    "change_path_prompt": "更改创建新笔记的位置：",
-    "search_placeholder": "按名称搜索路径（默认为空）"
+    "templates": "模板"
   },
   "password_not_set": {
     "title": "密码未设置",

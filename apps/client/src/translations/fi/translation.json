@@ -124,9 +124,6 @@
   "include_note": {
     "dialog_title": "Sisällytä muistio",
     "label_note": "Muistio",
-    "placeholder_search": "etsi muistiota sen nimellä",
-    "box_size_small": "pieni (~ 10 riviä)",
-    "box_size_medium": "keskisuuri (~ 30 riviä)",
     "button_include": "Sisällytä muistio"
   },
   "info": {

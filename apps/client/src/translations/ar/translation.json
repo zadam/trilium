@@ -647,13 +647,7 @@
   "include_note": {
     "label_note": "ملاحظة",
     "dialog_title": "تضمين ملاحظة",
-    "button_include": "تضمين ملاحظة",
-    "box_size_small": "صغير (10 سطور تقريبا)",
-    "box_size_medium": "متوسط ( 30 سطر تقريبا)",
-    "placeholder_search": "البحث عن ملاحظة حسب اسمها",
-    "box_size_prompt": "حجم الصندوق للملاحظة المضمّنة:",
-    "box_size_full": "كامل (يعرض الصندوق النص بالكامل)",
-    "box_size_expandable": "قابل للتوسيع (مُطوى افتراضيًا)"
+    "button_include": "تضمين ملاحظة"
   },
   "info": {
     "closeButton": "أغلاق",
@@ -669,10 +663,7 @@
   },
   "note_type_chooser": {
     "templates": "قوالب",
-    "modal_title": "اختر نوع الملاحظة",
-    "search_placeholder": "البحث في المسار حسب الاسم (الافتراضي إذا كان فارغًا)",
-    "modal_body": "اختر نوع الملاحظة / قالب الملاحظة الجديدة:",
-    "change_path_prompt": "تغيير مكان إنشاء الملاحظة الجديدة:"
+    "modal_title": "اختر نوع الملاحظة"
   },
   "prompt": {
     "title": "ترقية",

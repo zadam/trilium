@@ -274,14 +274,7 @@
   "include_note": {
     "dialog_title": "Incluir nota",
     "label_note": "Nota",
-    "placeholder_search": "buscar nota por su nombre",
-    "box_size_prompt": "Tamaño de caja de la nota incluida:",
-    "box_size_small": "pequeño (~ 10 líneas)",
-    "box_size_medium": "medio (~ 30 líneas)",
-    "box_size_full": "completo (el cuadro muestra el texto completo)",
-    "button_include": "Incluir nota",
-    "box_size_expandable": "expandible (colapsado por defecto)",
-    "box_size_tiny": "pequeño (una sola fila con el título y las acciones)"
+    "button_include": "Incluir nota"
   },
   "info": {
     "modalTitle": "Mensaje informativo",
@@ -308,10 +301,7 @@
     "move_success_message": "Las notas seleccionadas se han movido a "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Cambiar donde se creará la nueva nota:",
-    "search_placeholder": "ruta de búsqueda por nombre (por defecto si está vacío)",
     "modal_title": "Elija el tipo de nota",
-    "modal_body": "Elija el tipo de nota/plantilla de la nueva nota:",
     "templates": "Plantillas"
   },
   "password_not_set": {

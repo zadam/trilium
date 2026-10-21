@@ -371,14 +371,8 @@
     "import": "Importeren"
   },
   "include_note": {
-    "placeholder_search": "zoek een notitie op naam",
-    "box_size_small": "kort (~ 10 regels)",
-    "box_size_medium": "gemiddeld (~ 30 regels)",
-    "box_size_full": "volledig (in het vak wordt de volledige tekst weergegeven)",
-    "box_size_expandable": "uitklapbaar (standaard ingeklapt)",
     "dialog_title": "Notitie bijvoegen",
     "label_note": "Notitie",
-    "box_size_prompt": "Box grootte van bijgevoegde notitie:",
     "button_include": "Bijgevoegde notitie"
   },
   "info": {
@@ -431,10 +425,7 @@
     "target_parent_note": "Doel oudernotitie"
   },
   "note_type_chooser": {
-    "change_path_prompt": "Pas aan waar de nieuwe notitie moet worden aangemaakt:",
-    "search_placeholder": "zoek pad op naam (standaard als dit veld leeg is)",
     "modal_title": "Kies notitietype",
-    "modal_body": "Kies het notitietype / de sjabloon voor de nieuwe notitie:",
     "templates": "Sjablonen"
   },
   "password_not_set": {

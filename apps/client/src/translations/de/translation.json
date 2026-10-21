@@ -260,14 +260,7 @@
   "include_note": {
     "dialog_title": "Notiz einbinden",
     "label_note": "Notiz",
-    "placeholder_search": "Suche nach einer Notiz anhand ihres Namens",
-    "box_size_prompt": "Boxgröße der eingebundenen Notiz:",
-    "box_size_small": "klein (~ 10 Zeilen)",
-    "box_size_medium": "mittel (~ 30 Zeilen)",
-    "box_size_full": "vollständig (Box zeigt vollständigen Text)",
-    "button_include": "Notiz einbinden",
-    "box_size_expandable": "ausklappbar (standardmäßig eingeklappt)",
-    "box_size_tiny": "winzig (einzelne Zeile mit Titel und Aktionen)"
+    "button_include": "Notiz einbinden"
   },
   "info": {
     "modalTitle": "Infonachricht",
@@ -295,10 +288,7 @@
   },
   "note_type_chooser": {
     "modal_title": "Notiztyp auswählen",
-    "modal_body": "Notiztyp / Vorlage der neuen Notiz auswählen:",
-    "templates": "Vorlagen",
-    "change_path_prompt": "Ändern, wo die neue Notiz erzeugt wird:",
-    "search_placeholder": "Pfad nach Namen durchsuchen (Standard falls leer)"
+    "templates": "Vorlagen"
   },
   "password_not_set": {
     "title": "Das Passwort ist nicht festgelegt",

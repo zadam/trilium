@@ -1020,16 +1020,9 @@
     "note": "検索スクリプトと文字列検索は、互いに組み合わせることはできません。"
   },
   "include_note": {
-    "placeholder_search": "ノート名で検索",
     "dialog_title": "埋め込みノート",
-    "box_size_prompt": "埋め込みノート枠のサイズ：",
     "button_include": "埋め込みノート",
-    "label_note": "ノート",
-    "box_size_small": "スモール (~ 10 行)",
-    "box_size_medium": "ミディアム (~ 30 行)",
-    "box_size_full": "フル (ボックスに全文が表示されます)",
-    "box_size_expandable": "展開可能 (デフォルトでは折りたたまれています)",
-    "box_size_tiny": "コンパクト（タイトルとアクションを 1 行に表示）"
+    "label_note": "ノート"
   },
   "ancestor": {
     "placeholder": "ノート名で検索",
@@ -2195,10 +2188,7 @@
     "import_success": "マークダウンコンテンツがドキュメントにインポートされました。"
   },
   "note_type_chooser": {
-    "change_path_prompt": "新しいノートを作成する場所を変更する:",
-    "search_placeholder": "名前によるパスの検索 （空の場合はデフォルト）",
     "modal_title": "ノートタイプを選択",
-    "modal_body": "新しいノートのノートタイプ / テンプレートを選択してください:",
     "templates": "テンプレート"
   },
   "prompt": {

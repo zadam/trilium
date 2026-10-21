@@ -712,14 +712,7 @@
   "include_note": {
     "dialog_title": "Bao gồm ghi chú",
     "label_note": "Ghi chú",
-    "placeholder_search": "Tìm kiếm ghi chú theo tên",
-    "box_size_prompt": "Kích thước hộp của ghi chú được bao gồm:",
-    "box_size_small": "Nhỏ (~ 10 dòng)",
-    "box_size_medium": "Trung bình (~ 30 dòng)",
-    "box_size_full": "Đầy đủ (hộp hiển thị toàn bộ văn bản)",
-    "box_size_expandable": "Có thể mở rộng (thu gọn theo mặc định)",
-    "button_include": "Bao gồm ghi chú",
-    "box_size_tiny": "Siêu nhỏ (một hàng duy nhất có tiêu đề và các hành động)"
+    "button_include": "Bao gồm ghi chú"
   },
   "jump_to_note": {
     "search_placeholder": "Tìm kiếm ghi chú theo tên hoặc nhập > để tìm lệnh..."
@@ -779,10 +772,7 @@
     "tabs": "Thêm các tab có tiêu đề (hiển thị từng khung nội dung)"
   },
   "note_type_chooser": {
-    "change_path_prompt": "Thay đổi nơi tạo ghi chú mới:",
-    "search_placeholder": "Tìm kiếm đường dẫn theo tên (mặc định nếu để trống)",
     "modal_title": "Chọn loại ghi chú",
-    "modal_body": "Chọn loại ghi chú / bản mẫu của ghi chú mới:",
     "templates": "Bản mẫu"
   },
   "password_not_set": {

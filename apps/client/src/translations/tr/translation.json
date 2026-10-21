@@ -596,12 +596,6 @@
   "include_note": {
     "dialog_title": "Not ekle",
     "label_note": "Not",
-    "placeholder_search": "Notu adına göre ara",
-    "box_size_prompt": "Eklenen notun kutu boyutu:",
-    "box_size_small": "kısa (~ 10 satır)",
-    "box_size_medium": "orta (~ 30 satır)",
-    "box_size_full": "tam (kutuda metnin tamamı gösterilir)",
-    "box_size_expandable": "genişletilebilir (varsayılan olarak daraltılmış)",
     "button_include": "Not ekle"
   },
   "jump_to_note": {
@@ -662,10 +656,7 @@
     "move_success_message": "Seçilen notlar şuraya taşındı:"
   },
   "note_type_chooser": {
-    "change_path_prompt": "Yeni notun oluşturulacağı yeri değiştirin:",
-    "search_placeholder": "İsimle arama yolu (boşsa varsayılan değer)",
     "modal_title": "Not türünü seçin",
-    "modal_body": "Yeni notun not türünü / şablonunu seçin:",
     "templates": "Şablonlar"
   },
   "password_not_set": {

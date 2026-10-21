@@ -265,12 +265,6 @@
   "include_note": {
     "dialog_title": "Sertakan catatan",
     "label_note": "Catatan",
-    "placeholder_search": "cari catatan berdasarkan namanya",
-    "box_size_prompt": "Ukuran kotak catatan yang disertakan:",
-    "box_size_small": "kecil (~ 10 baris)",
-    "box_size_medium": "sedang (~ 30 baris)",
-    "box_size_full": "penuh (kotak menampilkan seluruh teks)",
-    "box_size_expandable": "dapat diperluas (default dalam keadaan terlipat)",
     "button_include": "Sertakan catatan"
   },
   "info": {
@@ -323,10 +317,7 @@
     "move_success_message": "Catatan yang dipilih telah dipindahkan ke "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Ubah tempat membuat catatan baru:",
-    "search_placeholder": "cari jalur berdasarkan nama (default jika kosong)",
     "modal_title": "Pilih jenis catatan",
-    "modal_body": "Pilih jenis catatan / templat catatan baru:",
     "templates": "Templat"
   },
   "password_not_set": {

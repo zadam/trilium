@@ -260,13 +260,7 @@
   "include_note": {
     "dialog_title": "Inclure une note",
     "label_note": "Note",
-    "placeholder_search": "rechercher une note par son nom",
-    "box_size_prompt": "Taille de la boîte de la note incluse :",
-    "box_size_small": "petit (~ 10 lignes)",
-    "box_size_medium": "moyen (~ 30 lignes)",
-    "box_size_full": "complet (la boîte affiche le texte complet)",
-    "button_include": "Inclure une note",
-    "box_size_expandable": "déployable (replié par défaut)"
+    "button_include": "Inclure une note"
   },
   "info": {
     "modalTitle": "Message d'information",
@@ -294,10 +288,7 @@
   },
   "note_type_chooser": {
     "modal_title": "Choisissez le type de note",
-    "modal_body": "Choisissez le type de note/le modèle de la nouvelle note :",
-    "templates": "Modèles",
-    "change_path_prompt": "Modifier l’emplacement de création de la nouvelle note :",
-    "search_placeholder": "Rechercher le chemin par nom (par défaut si vide)"
+    "templates": "Modèles"
   },
   "password_not_set": {
     "title": "Le mot de passe n'est pas défini",
