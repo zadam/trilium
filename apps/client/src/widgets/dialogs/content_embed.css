@@ -56,7 +56,6 @@
         }
     }
 
-    /* Bootstrap's `.visually-hidden`, so a screen reader still names each button. */
     @container (max-width: 400px) {
         .include-note-size-choice .tn-segmented-choice-glyph-label {
             position: absolute;
