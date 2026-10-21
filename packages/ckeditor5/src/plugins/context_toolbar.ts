@@ -242,6 +242,14 @@ export default class ContextToolbar extends Plugin {
         if (next?.id === this.source?.id && next?.element === this.source?.element) {
             return;
         }
+        // The same widget drawn anew, as a list is when its style or an item's task state changes.
+        if (next && this.source && next.id === this.source.id && !this.source.element.root.is("rootElement")) {
+            if (this.shownSource === this.source) {
+                this.shownSource = next;
+            }
+            this.source = next;
+            return;
+        }
         this.source = next;
         if (next?.isSelected || (hasStartedList && next && isListCommand(next.id))) {
             this.fillToolbar();

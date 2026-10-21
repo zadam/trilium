@@ -189,6 +189,8 @@ describe("ContextToolbar", () => {
         button.fire("execute");
         expect([...plugin.toolbarView.items].slice(3).map((item) => (item as ButtonView).label))
             .toStrictEqual([undefined, "Reversed order"]);
+        ([...plugin.toolbarView.items].at(-1) as ButtonView).fire("execute");
+        expect([editor.commands.get("listReversed")?.value, plugin.isActive]).toStrictEqual([true, true]);
 
         setModelData(editor.model, "<paragraph listIndent=\"0\" listItemId=\"a\" listType=\"bulleted\">a[]</paragraph>");
         editor.ui.update();
@@ -268,9 +270,12 @@ describe("ContextToolbar", () => {
         const last = states.at(-1);
         const stateButton = [...plugin.toolbarView.items].find((item): item is ButtonView =>
             item instanceof ButtonView && item.label === (last?.title || last?.name));
+        const element = plugin.source?.element;
         stateButton?.fire("execute");
         expect(editor.commands.get("setTaskState")?.value).toBe(last?.name);
         expect(stateButton?.isOn).toBe(true);
+        // The list is drawn anew, and the row stays up for it.
+        expect([plugin.source?.element === element, plugin.isActive]).toStrictEqual([false, true]);
 
         const edit = [...plugin.toolbarView.items].at(-1);
         expect(edit).toBeInstanceOf(ButtonView);
