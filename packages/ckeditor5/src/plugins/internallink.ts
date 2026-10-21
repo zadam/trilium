@@ -109,7 +109,8 @@ export function getLinkAtSelection(editor: Editor): { href: string; text: string
 /**
  * Replaces the link around the selection with `text` linking to `href`, keeping the formatting of
  * its start, or with a reference to the note at `href` when `text` is `null`. A reference replaces
- * the link once `glob.getReferenceLinkTitle()` resolves, in one undo step with the removal.
+ * the link once `glob.getReferenceLinkTitle()` resolves, in one undo step with the removal, and
+ * takes the caret along only if the user has not moved it in the meantime.
  */
 export async function replaceLinkAtSelection(editor: Editor, href: string, text: string | null) {
     const found = findLinkAtSelection(editor);
@@ -120,6 +121,12 @@ export async function replaceLinkAtSelection(editor: Editor, href: string, text:
     const model = editor.model;
     if (text === null) {
         const range = ModelLiveRange.fromRange(found.range);
+        const selection = model.document.selection;
+        let selectionMoved = false;
+        const onSelectionChange = (_event: unknown, data: { directChange: boolean }) => {
+            selectionMoved = data.directChange || selectionMoved;
+        };
+        selection.on('change:range', onSelectionChange);
         try {
             const title = await glob.getReferenceLinkTitle(href);
             if (range.root.rootName === '$graveyard') {
@@ -131,9 +138,12 @@ export async function replaceLinkAtSelection(editor: Editor, href: string, text:
                 const start = range.start;
                 writer.remove(range);
                 writer.insert(reference, start);
-                writer.setSelection(reference, 'after');
+                if (!selectionMoved) {
+                    writer.setSelection(reference, 'after');
+                }
             });
         } finally {
+            selection.off('change:range', onSelectionChange);
             range.detach();
         }
         return;

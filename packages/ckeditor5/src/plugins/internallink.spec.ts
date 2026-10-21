@@ -147,6 +147,21 @@ describe("the link at the selection", () => {
         expect(data()).toBe(original);
     });
 
+    it("puts the caret after the reference, unless it moved while the title loaded", async () => {
+        setModelData(editor.model, LINKED);
+        await replaceLinkAtSelection(editor, "#root/abc", null);
+        expect(getModelData(editor.model)).toMatch(/<\/reference>\[\] b<\/paragraph>$/);
+
+        setModelData(editor.model, LINKED);
+        const replacing = replaceLinkAtSelection(editor, "#root/abc", null);
+        editor.model.change((writer) => {
+            const paragraph = editor.model.document.getRoot()?.getChild(0);
+            if (paragraph) writer.setSelection(paragraph, 0);
+        });
+        await replacing;
+        expect(getModelData(editor.model)).toMatch(/^<paragraph>\[\]a <reference/);
+    });
+
     it("makes no reference once the link is gone by the time the title loads", async () => {
         setModelData(editor.model, LINKED);
         const replacing = replaceLinkAtSelection(editor, "#root/abc", null);
