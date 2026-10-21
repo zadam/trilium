@@ -128,6 +128,8 @@ body.mobile.context-menu-shown * {
 
 body.mobile #root-widget {
     padding-top: var(--safe-area-inset-top, env(safe-area-inset-top));
+    padding-left: var(--safe-area-inset-left, env(safe-area-inset-left));
+    padding-right: var(--safe-area-inset-right, env(safe-area-inset-right));
 }
 
 body.mobile #root-widget.virtual-keyboard-opened #mobile-bottom-bar {
