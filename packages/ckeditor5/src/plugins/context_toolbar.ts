@@ -54,9 +54,9 @@ interface ContextToolbarSource {
  * The button shows while the selection is in a widget that has a toolbar. It swaps in
  * {@link toolbarView}: a back button, then a title naming the widget ahead of the items of the
  * toolbar the balloon would show, which is the one of the innermost widget. The toolbar swaps in on
- * its own as a widget is selected whole, since there is no text to format then, and swaps out as
- * the selection leaves the widget. Its dropdowns open as menus of `ToolbarGroupMenu`, like the
- * rest of a phone's toolbar.
+ * its own as a widget is selected whole, since there is no text to format then, and as a link is
+ * tapped; it swaps out as the selection leaves the widget or link. Its dropdowns open as menus of
+ * `ToolbarGroupMenu`, like the rest of a phone's toolbar.
  */
 export default class ContextToolbar extends Plugin {
 
@@ -127,6 +127,13 @@ export default class ContextToolbar extends Plugin {
         editor.plugins.get(WidgetToolbarRepository).forceDisabled(ContextToolbar.pluginName);
         if (editor.plugins.has(LinkUI)) {
             this.keepOutOfBalloon(editor.plugins.get(LinkUI));
+            // A tap in a link is about the link, as `LinkUI` takes it to be when it shows its toolbar.
+            this.listenTo(editor.editing.view.document, "click", () => {
+                this.updateSource();
+                if (this.source?.id === "link") {
+                    this.setActive(true);
+                }
+            });
         }
 
         // Grouping measures the rendered toolbar as items arrive.

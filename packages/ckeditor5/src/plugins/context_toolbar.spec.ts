@@ -195,6 +195,29 @@ describe("ContextToolbar", () => {
             expect(button.isVisible).toBe(false);
         });
 
+        it("swaps in on a tap in the link, which is about the link rather than its text", async () => {
+            const editor = await createLinkEditor();
+            const plugin = editor.plugins.get(ContextToolbar);
+
+            click(editor);
+            expect(plugin.isActive).toBe(true);
+            expect([...plugin.toolbarView.items].slice(3).map((item) => (item as ButtonView).label))
+                .toStrictEqual(["Edit link", "Unlink"]);
+
+            // The back button holds while the caret stays in the link, until the next tap.
+            ([...plugin.toolbarView.items][0] as ButtonView).fire("execute");
+            editor.ui.update();
+            expect(plugin.isActive).toBe(false);
+            click(editor);
+            expect(plugin.isActive).toBe(true);
+
+            // A tap outside any link swaps nothing in.
+            editor.model.change((writer) => writer.setSelection(editor.model.document.getRoot()?.getChild(0) ?? null, "end"));
+            editor.ui.update();
+            click(editor);
+            expect(plugin.isActive).toBe(false);
+        });
+
         it("keeps the link toolbar out of the balloon, and leaves its form there", async () => {
             const editor = await createLinkEditor();
             const balloon = editor.plugins.get(ContextualBalloon);
