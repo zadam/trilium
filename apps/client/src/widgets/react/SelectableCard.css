@@ -60,7 +60,7 @@ body.mobile .selectable-card-grid {
 }
 
 .selectable-card-name {
-    font-weight: bold;
+    font-weight: 500;
 }
 
 .selectable-card-description {
