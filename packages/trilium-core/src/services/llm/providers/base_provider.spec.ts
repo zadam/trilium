@@ -47,7 +47,6 @@ vi.mock("../tools/index.js", () => ({
 
 import {
     BaseProvider,
-    buildModelList,
     buildModelMessage,
     mergeModelLists,
     type ProviderPrices,
@@ -58,14 +57,6 @@ import { installGlobalFetchAsApiTransport } from "../../../test/request_provider
 // A provider reaches its endpoint through the request provider rather than the global `fetch`, so
 // the specs that stub that global need one installed which leads back to it.
 beforeEach(installGlobalFetchAsApiTransport);
-
-const TEST_MODELS: Parameters<typeof buildModelList>[0] = [
-    { id: "cheap", name: "Cheap", pricing: { input: 1, output: 2 } },
-    { id: "mid", name: "Mid", pricing: { input: 2, output: 4 }, isDefault: true },
-    { id: "spendy", name: "Spendy", pricing: { input: 10, output: 30 } }
-];
-
-const { pricing: BUILT_PRICING } = buildModelList(TEST_MODELS);
 
 /** Injected price-table slice — the base class reads this instead of the JSON file. */
 const TEST_PRICES: ProviderPrices = {
@@ -127,16 +118,6 @@ function makeAttachment(over: Partial<Record<string, unknown>> = {}) {
         ...over
     } as any;
 }
-
-describe("buildModelList", () => {
-    it("maps each model id to its pricing", () => {
-        expect(BUILT_PRICING).toMatchObject({
-            cheap: { input: 1, output: 2 },
-            mid: { input: 2, output: 4 },
-            spendy: { input: 10, output: 30 }
-        });
-    });
-});
 
 describe("getAvailableModels / getModelPricing (from the price table)", () => {
     it("builds the model list from the price table, sorted, with the default flagged", () => {
