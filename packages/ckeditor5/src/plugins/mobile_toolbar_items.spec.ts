@@ -367,7 +367,7 @@ describe("attachMenu", () => {
         return input;
     }
 
-    it("opens the image, camera and file uploads as a row of tiles under a paperclip", async () => {
+    it("opens the image, camera and file uploads as a list under a paperclip", async () => {
         const { editor, requests } = await createAttachEditor();
 
         const dropdown = getDropdown(editor, 0);
@@ -375,7 +375,8 @@ describe("attachMenu", () => {
         dropdown.buttonView.fire("open");
 
         const request = requests.at(-1);
-        expect(request?.layout).toBe("tiles");
+        expect(request).toBeDefined();
+        expect(request?.layout).toBeUndefined();
         const tiles = request?.items ?? [];
         expect(tiles.map(rowText)).toStrictEqual(["Image", "Camera", "Attach and embed file", "Attach file as a link"]);
         expect(icons(tiles)).toStrictEqual([IconImageUpload, bxCamera, bxShapeSquare, bxLink]);

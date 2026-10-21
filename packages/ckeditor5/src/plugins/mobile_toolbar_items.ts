@@ -75,7 +75,7 @@ interface BlockType {
  * - `alignmentMenu`: the `alignment` dropdown, whose button shows the current alignment, with the
  *   alignments as a row of tiles.
  * - `attachMenu`: the image upload, a photo taken with the camera and the rows of the `fileUpload`
- *   list as a row of tiles, under a paperclip. A row whose feature the editor lacks is left out.
+ *   list as a list, under a paperclip. A row whose feature the editor lacks is left out.
  * - `addLink`: one link button, which opens the link dialog of the internal link button for a link to
  *   a note or to an address, in place of the separate `link` and `internalLink` buttons.
  * - `insertTableMenu`: common table sizes as tiles, in place of the size grid of `insertTable`,
@@ -194,7 +194,7 @@ export default class MobileToolbarItems extends Plugin {
         dropdown.panelView.children.add(listView);
         dropdown.bind("isEnabled").toMany(buttons, "isEnabled", (...enabled) => enabled.some(Boolean));
 
-        openListAsMenu(dropdown, { layout: "tiles" });
+        openListAsMenu(dropdown);
         return dropdown;
     }
 
