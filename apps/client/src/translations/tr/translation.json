@@ -169,8 +169,6 @@
     "help_on_links": "Bağlantılar konusunda yardım",
     "note": "Not",
     "search_note": "notu isme göre ara",
-    "link_title_mirrors": "bağlantı başlığı, notun güncel başlığını yansıtır",
-    "link_title_arbitrary": "bağlantı başlığı isteğe bağlı olarak değiştirilebilir",
     "link_title": "Bağlantı başlığı",
     "button_add_link": "Bağlantı ekle",
     "anchor": "Bağlantı (isteğe bağlı)",

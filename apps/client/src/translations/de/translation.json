@@ -58,8 +58,6 @@
     "help_on_links": "Hilfe zu Links",
     "note": "Notiz",
     "search_note": "Suche nach einer Notiz anhand ihres Namens",
-    "link_title_mirrors": "Der Linktitel spiegelt den aktuellen Titel der Notiz wider",
-    "link_title_arbitrary": "Der Linktitel kann beliebig geändert werden",
     "link_title": "Linktitel",
     "button_add_link": "Link hinzufügen",
     "anchor": "Anker (optional)",

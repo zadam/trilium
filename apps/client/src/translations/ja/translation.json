@@ -60,8 +60,6 @@
     "button_add_link": "リンクを追加",
     "help_on_links": "リンクに関するヘルプ",
     "search_note": "ノート名で検索",
-    "link_title_mirrors": "リンクタイトルはノートタイトルの変更を反映します",
-    "link_title_arbitrary": "リンクタイトルは自由に変更可能",
     "anchor": "アンカー（任意）",
     "anchor_none": "なし（ノートへのリンク）",
     "edit_link": "リンクを編集",

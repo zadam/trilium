@@ -58,8 +58,6 @@
     "help_on_links": "連結說明",
     "note": "筆記",
     "search_note": "依名稱搜尋筆記",
-    "link_title_mirrors": "連結標題跟隨筆記標題變化",
-    "link_title_arbitrary": "連結標題可隨意修改",
     "link_title": "連結標題",
     "button_add_link": "新增連結",
     "anchor": "錨點（可選）",

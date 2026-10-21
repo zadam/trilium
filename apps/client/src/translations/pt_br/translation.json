@@ -68,8 +68,6 @@
     "help_on_links": "Ajuda sobre links",
     "note": "Nota",
     "search_note": "pesquisar nota pelo nome",
-    "link_title_mirrors": "o título do link reflete o título atual da nota",
-    "link_title_arbitrary": "o título do link pode ser alterado livremente",
     "link_title": "Titulo do link",
     "button_add_link": "Adicionar link",
     "edit_link": "Editar link",

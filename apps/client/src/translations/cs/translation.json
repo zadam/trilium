@@ -50,8 +50,6 @@
     "search_note": "hledat poznámku podle názvu",
     "link_title": "Název odkazu",
     "button_add_link": "Přidat odkaz",
-    "link_title_mirrors": "titulek odkazu odráží momentální titulek poznámky",
-    "link_title_arbitrary": "titulek odkazu může být změněn libovolně",
     "edit_link": "Upravit odkaz",
     "anchor": "Kotva (volitelné)",
     "button_edit_link": "Uložit odkaz"

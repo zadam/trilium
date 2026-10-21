@@ -58,8 +58,6 @@
     "help_on_links": "Ayuda sobre enlaces",
     "note": "Nota",
     "search_note": "buscar nota por su nombre",
-    "link_title_mirrors": "el título del enlace replica el título actual de la nota",
-    "link_title_arbitrary": "el título del enlace se puede cambiar arbitrariamente",
     "link_title": "Título del enlace",
     "button_add_link": "Agregar enlace",
     "anchor": "Ancla (opcional)",

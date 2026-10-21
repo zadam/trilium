@@ -31,8 +31,6 @@
     "note": "Ghi chú",
     "edit_link": "Sửa liên kết",
     "search_note": "Tìm kiếm ghi chú theo tên",
-    "link_title_mirrors": "Tiêu đề liên kết phản chiếu tiêu đề hiện tại của ghi chú",
-    "link_title_arbitrary": "Tiêu đề liên kết có thể thay đổi tùy ý",
     "anchor": "Neo (tùy chọn)",
     "anchor_none": "Không (liên kết đến ghi chú)",
     "button_edit_link": "Lưu liên kết",

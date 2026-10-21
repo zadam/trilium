@@ -58,8 +58,6 @@
     "note": "노트",
     "search_note": "이름으로 노트 검색하기",
     "help_on_links": "링크 관련 도움말",
-    "link_title_mirrors": "링크 제목은 노트의 현재 제목을 반영합니다",
-    "link_title_arbitrary": "링크 제목을 자유롭게 변경할 수 있습니다",
     "link_title": "링크 제목",
     "button_add_link": "링크 추가",
     "anchor": "앵커(선택)",

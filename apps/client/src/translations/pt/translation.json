@@ -43,8 +43,6 @@
     "help_on_links": "Ajuda sobre ligações",
     "note": "Nota",
     "search_note": "pesquisar nota pelo nome",
-    "link_title_mirrors": "o título da ligação reflete o título atual da nota",
-    "link_title_arbitrary": "o título da ligação pode ser alterado livremente",
     "link_title": "Titulo da ligação",
     "button_add_link": "Adicionar ligação"
   },

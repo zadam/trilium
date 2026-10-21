@@ -58,8 +58,6 @@
     "help_on_links": "Bantuan tentang tautan",
     "note": "Catatan",
     "search_note": "cari catatan berdasarkan namanya",
-    "link_title_mirrors": "judul tautan mencerminkan judul catatan saat ini",
-    "link_title_arbitrary": "judul tautan dapat diubah secara bebas",
     "link_title": "Judul tautan",
     "button_add_link": "Tambahkan tautan",
     "anchor": "Anchor (opsional)",

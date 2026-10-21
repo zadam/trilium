@@ -58,8 +58,6 @@
     "help_on_links": "链接帮助",
     "note": "笔记",
     "search_note": "按名称搜索笔记",
-    "link_title_mirrors": "链接标题跟随笔记标题变化",
-    "link_title_arbitrary": "链接标题可随意修改",
     "link_title": "链接标题",
     "button_add_link": "添加链接",
     "anchor": "锚点（可选）",
