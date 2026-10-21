@@ -5,6 +5,7 @@ import appContext, { type CommandListenerData, type CommandNames, type EventData
 import type NoteContext from "../components/note_context.js";
 import contextMenu from "../menus/context_menu.js";
 import attributeService from "../services/attributes.js";
+import cssClassManager from "../services/css_class_manager.js";
 import froca from "../services/froca.js";
 import { t } from "../services/i18n.js";
 import keyboardActionService from "../services/keyboard_actions.js";
@@ -920,6 +921,7 @@ export default class TabRowWidget extends BasicWidget {
                 ...workspaceNotes.map((workspaceNote) => ({
                     title: utils.escapeHtml(workspaceNote.title),
                     uiIcon: workspaceNote.getWorkspaceIconClass() || workspaceNote.getIcon(),
+                    iconColorClass: cssClassManager.createClassForColor(workspaceNote.getWorkspaceTabBackgroundColor()) || undefined,
                     handler: () => {
                         void appContext.tabManager.openContextWithNote(workspaceNote.noteId, {
                             activate: true,
