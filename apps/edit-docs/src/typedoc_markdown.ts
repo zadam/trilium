@@ -541,7 +541,7 @@ function fence(text: string) {
 }
 
 function table(headers: string[], rows: string[][]) {
-    const line = (cells: string[]) => `| ${cells.map((cell) => cell.replace(/\|/g, "\\|")).join(" | ")} |`;
+    const line = (cells: string[]) => `| ${cells.map(escapePipes).join(" | ")} |`;
     return [ line(headers), `| ${headers.map(() => "---").join(" | ")} |`, ...rows.map(line) ].join("\n");
 }
 
@@ -583,6 +583,15 @@ function markdownToHtml(markdown: string) {
             ? part.replace(/\n(?=[ \t]*(?:\n|$))/g, "&#10;")
             : part.replace(/\s*\n\s*/g, " "))
         .join("");
+}
+
+/**
+ * Escapes the pipes of a table cell's Markdown, which would otherwise end the cell, even inside a
+ * code span. A pipe after an odd number of backslashes is escaped already.
+ */
+function escapePipes(markdown: string) {
+    return markdown.replace(/(\\*)\|/g, (_, backslashes: string) =>
+        `${backslashes}${backslashes.length % 2 ? "" : "\\"}|`);
 }
 
 function escapeHtml(text: string) {

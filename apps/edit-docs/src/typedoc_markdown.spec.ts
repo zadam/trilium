@@ -28,6 +28,8 @@ export interface Unreached {
     flag: boolean;
     /** A use of \`Screen\` the page does not show, which leaves it used in one place. */
     screen: Screen;
+    /** Splits on a\\|b or c|d. */
+    separator: string;
 }
 
 /** A widget's constructor. */
@@ -271,6 +273,10 @@ describe("typeDocToMarkdown", () => {
         const exports = typeDocToMarkdown(project);
         expect(exports).toContain("type WidgetClass<T> = new (...args: unknown[]) => T");
         expect(exports).toContain("type Func = ((...args: unknown[]) => unknown) | string");
+    });
+
+    it("escapes the pipes of a table cell, leaving one escaped already as it is", () => {
+        expect(typeDocToMarkdown(project)).toContain("| `separator` | `string`<br>Splits on a\\|b or c\\|d. |");
     });
 
     it("refuses prefixes that would give two declarations one name", () => {

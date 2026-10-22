@@ -571,9 +571,14 @@ function table(headers: string[], rows: string[][]) {
         .join("\n");
 }
 
-/** A table cell holds one line, and a pipe would end it early, even inside a code span. */
+/**
+ * A table cell holds one line, and a pipe would end it early, even inside a code span. A pipe after
+ * an odd number of backslashes is escaped already.
+ */
 function cell(text: string) {
-    return text.replace(/\s*\n\s*/g, " ").replaceAll("|", "\\|").trim();
+    return text.replace(/\s*\n\s*/g, " ")
+        .replace(/(\\*)\|/g, (_, backslashes: string) => `${backslashes}${backslashes.length % 2 ? "" : "\\"}|`)
+        .trim();
 }
 
 /** The name cell of a parameter or property, marking it below the name when it is required. */

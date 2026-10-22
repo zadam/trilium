@@ -295,7 +295,8 @@ describe("openApiToMarkdown", () => {
                         type: "object",
                         properties: {
                             name: { type: "string", pattern: "^[^\\s]+", description: "The name" },
-                            dateCreated: { $ref: "#/components/schemas/LocalDateTime" }
+                            dateCreated: { $ref: "#/components/schemas/LocalDateTime" },
+                            separator: { type: "string", description: "Splits on a\\|b or c|d" }
                         }
                     }
                 }
@@ -313,7 +314,9 @@ describe("openApiToMarkdown", () => {
         ].join("\n"));
         expect(markdown).toContain([
             "| `name` | `string`<br>The name. Matches `^[^\\s]+`. |",
-            "| `dateCreated` | [`LocalDateTime`](#schema-LocalDateTime) |"
+            "| `dateCreated` | [`LocalDateTime`](#schema-LocalDateTime) |",
+            // A pipe escaped already stays escaped once.
+            "| `separator` | `string`<br>Splits on a\\|b or c\\|d |"
         ].join("\n"));
     });
 
