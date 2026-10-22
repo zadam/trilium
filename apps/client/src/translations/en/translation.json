@@ -1206,7 +1206,8 @@
   },
   "left_pane_toggle": {
     "show_panel": "Show panel",
-    "hide_panel": "Hide panel"
+    "hide_panel": "Hide panel",
+    "peek_panel": "Peek panel"
   },
   "move_pane_button": {
     "move_left": "Move left",

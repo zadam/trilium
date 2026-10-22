@@ -3,7 +3,7 @@ import type { WidgetsByParent } from "../services/bundle.js";
 import options from "../services/options.js";
 import utils from "../services/utils.js";
 import GlobalMenu from "../widgets/buttons/global_menu.jsx";
-import LeftPaneToggle from "../widgets/buttons/left_pane_toggle.js";
+import LeftPaneToggle, { LeftPanePeekButton } from "../widgets/buttons/left_pane_toggle.js";
 import RightPaneToggle from "../widgets/buttons/right_pane_toggle.jsx";
 import CloseZenModeButton from "../widgets/close_zen_button.jsx";
 import NoteList from "../widgets/collections/NoteList.jsx";
@@ -83,8 +83,9 @@ export default class DesktopLayout {
                     .css("flex-grow", "1")
                     .id("horizontal-main-container")
                     .optChild(!launcherPaneIsHorizontal, launcherPane)
+                    .optChild(launcherPaneIsHorizontal, <LeftPanePeekButton />)
                     .child(
-                        new LeftPaneContainer()
+                        new LeftPaneContainer(launcherPaneIsHorizontal)
                             .optChild(!launcherPaneIsHorizontal, <QuickSearch />)
                             .child(appContext.noteTreeWidget)
                             .child(...this.customWidgets.get("left-pane"))

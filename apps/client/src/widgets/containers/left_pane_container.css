@@ -1,0 +1,46 @@
+:where(:root) {
+    --left-pane-peek-background: var(--left-pane-background-color);
+    --left-pane-peek-backdrop-filter: blur(12px) saturate(1.5);
+    --left-pane-peek-border-radius: 8px;
+
+    --left-pane-peek-button-collapse-background-color: var(--left-pane-background-color);
+}
+
+#left-pane {
+    display: flex;
+    flex-direction: column;
+}
+
+/* The gutter holds `.left-pane-peek-button`; Split sizes the panes inside the padding. */
+body.layout-horizontal #horizontal-main-container {
+    --left-pane-peek-button-width: 12px;
+    --left-pane-peek-button-gutter: calc(var(--left-pane-peek-button-width) + 2px);
+
+    position: relative;
+    padding-inline-start: var(--left-pane-peek-button-gutter);
+}
+
+.left-pane-peek-button {
+    --peek-pane-button-width: var(--left-pane-peek-button-width);
+    --peek-button-collapse-background-color: var(--left-pane-peek-button-collapse-background-color);
+}
+
+body.desktop.background-effects #horizontal-main-container:has(.note-split.visible.bgfx:not(.visible ~ .visible)) > .left-pane-peek-button {
+    --peek-button-expand-background-color: var(--center-pane-background-color-bgfx, var(--main-background-color));
+}
+
+#left-pane-host.peek {
+    inset-inline-start: var(--left-pane-peek-button-gutter, 0);
+    inset-inline-end: 0;
+
+    > #left-pane {
+        border-start-end-radius: var(--left-pane-peek-border-radius);
+        border-end-end-radius: var(--left-pane-peek-border-radius);
+        background: var(--left-pane-peek-background);
+        backdrop-filter: var(--left-pane-peek-backdrop-filter);
+    }
+}
+
+body.backdrop-effects-disabled #left-pane-host.peek > #left-pane {
+    background: var(--left-pane-background-color);
+}

@@ -40,6 +40,20 @@ Click the tree icon in the tree toolbar to open the tree settings popup. Each op
 *   _Automatically collapse notes_: When enabled, notes are collapsed after a period of inactivity to keep the tree tidy.
 *   _Follow active note_: When enabled (default), the tree automatically scrolls and expands parent nodes to keep the currently active note visible. When disabled, the tree is fully detached from navigation — only the background highlight of the active note is updated, but the tree viewport and its expanded/collapsed state are never changed by navigation. Use the crosshair button to manually jump the tree to the active note at any time.
 
+## Hiding and peeking the tree
+
+To hide or show the note tree, press the <span class="tn-icon bx bx-sidebar"></span> button to the left of the first tab in the horizontal layout, or the <span class="tn-icon bx bx-chevrons-left"></span> button at the bottom of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a> in the vertical layout. The _Toggle Left Pane_ [keyboard shortcut](../Keyboard%20Shortcuts.md), which is not assigned by default, does the same. See <a class="reference-link" href="Vertical%20and%20horizontal%20layout.md">Vertical and horizontal layout</a>.
+
+In the horizontal layout, there is also a small strip on the left edge of the app which shows an arrow icon:
+
+*   When the tree is hidden, pressing the edge will _peek_ the tree.
+    *   In this mode the tree is shown temporarily above the content, without shifting the content of your notes.
+    *   Clicking outside the tree, pressing <kbd>Esc</kbd> or pressing the edge again will hide the tree.
+    *   Pressing the <span class="tn-icon bx bx-sidebar"></span> button to the left of the first tab will dock the tree.
+*   When the tree is docked, pressing the edge will hide the tree.
+
+The _Peek Tree Pane_ [keyboard shortcut](../Keyboard%20Shortcuts.md), <kbd>Alt</kbd>+<kbd>[</kbd> by default, does the same as pressing the edge. Only one panel is peeked at a time: peeking the tree hides a peeked <a class="reference-link" href="Right%20Sidebar.md">Right Sidebar</a>, and the other way around.
+
 ## Keyboard shortcuts
 
 The note tree comes with multiple keyboard shortcuts to make editing faster, consult the dedicated <a class="reference-link" href="Note%20Tree/Keyboard%20shortcuts.md">Keyboard shortcuts</a> section.

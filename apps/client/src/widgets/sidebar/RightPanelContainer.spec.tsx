@@ -28,7 +28,7 @@ vi.mock("./pdf/PdfPages", () => stubWidget("pdf-pages-stub"));
 vi.mock("./pdf/PdfAttachments", () => stubWidget("pdf-attachments-stub"));
 vi.mock("./pdf/PdfLayers", () => stubWidget("pdf-layers-stub"));
 vi.mock("./pdf/PdfAnnotations", () => stubWidget("pdf-annotations-stub"));
-vi.mock("./RightPanePeekButton", () => stubWidget("peek-button-stub"));
+vi.mock("../react/PeekPaneButton", () => stubWidget("peek-button-stub"));
 vi.mock("../../services/keyboard_actions", () => ({
     default: { getAction: vi.fn().mockResolvedValue({ effectiveShortcuts: [] }) }
 }));

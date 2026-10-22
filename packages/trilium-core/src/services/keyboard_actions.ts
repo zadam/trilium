@@ -843,6 +843,14 @@ function getDefaultKeyboardActions() {
             scope: "window"
         },
         {
+            actionName: "peekLeftPane",
+            friendlyName: t("keyboard_action_names.peek-left-pane"),
+            iconClass: "bx bx-sidebar",
+            defaultShortcuts: ["Alt+["],
+            description: t("keyboard_actions.peek-left-pane"),
+            scope: "window"
+        },
+        {
             actionName: "toggleFullscreen",
             friendlyName: t("keyboard_action_names.toggle-full-screen"),
             iconClass: "bx bx-fullscreen",

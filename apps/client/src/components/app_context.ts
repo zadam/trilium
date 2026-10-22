@@ -33,6 +33,7 @@ import type { NotePickerDialogOptions } from "../widgets/dialogs/note_picker.js"
 import type { ItemPickerDialogOptions } from "../widgets/dialogs/item_picker.js";
 import type { PromptDialogOptions } from "../widgets/dialogs/prompt.js";
 import type NoteTreeWidget from "../widgets/note_tree.js";
+import type { PaneId, PaneMode } from "../widgets/react/peek_pane.js";
 import type { RightPaneTabId } from "../widgets/sidebar/RightPaneTabs.jsx";
 import type { ToolCall } from "../widgets/type_widgets/llm_chat/llm_chat_types.js";
 import Component from "./component.js";
@@ -427,6 +428,7 @@ export type CommandMappings = {
     openDevTools: CommandData;
     findInText: CommandData & { searchTerms?: string[] };
     toggleLeftPane: CommandData;
+    peekLeftPane: CommandData;
     toggleFullscreen: CommandData;
     zoomOut: CommandData;
     zoomIn: CommandData;
@@ -472,6 +474,11 @@ type EventMappings = {
     frocaReloaded: {};
     setLeftPaneVisibility: {
         leftPaneVisible: boolean | null;
+    }
+    /** Raised by a side pane after it is closed, peeked or docked. See `peek_pane.ts`. */
+    paneModeChanged: {
+        pane: PaneId;
+        mode: PaneMode;
     }
     protectedSessionStarted: {};
     notesReloaded: {
