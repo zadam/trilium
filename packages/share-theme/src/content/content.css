@@ -310,4 +310,9 @@ body:not(.math-loaded) .math-tex {
 .ck-content .trilium-tabs {
     --card-background-color: var(--background-secondary);
     --main-text-color: var(--text-primary);
+
+    /* Translucent, like the app's `--card-background-color`, so each level stacks a shade. */
+    & .trilium-tabs {
+        --card-background-color: color-mix(in srgb, var(--text-primary) 5%, transparent);
+    }
 }
