@@ -41,6 +41,8 @@ Login, logout, and session management
 
 `POST /api/login` · `login`
 
+Responds with 401 when the password is wrong or, with two-factor authentication enabled, the TOTP token is missing or wrong.
+
 **Authorization**: none
 
 **Request body** (required)
@@ -58,7 +60,7 @@ Login, logout, and session management
 
     No content.
 
-=== "401: Invalid credentials or TOTP token"
+=== "401: Invalid credentials"
 
     No content.
 
@@ -2747,7 +2749,7 @@ File attachments
 
 **Responses**
 
-=== "200: Complete attachment information"
+=== "200: Attachment information"
 
     *   `application/json`: `object`
 
@@ -2800,7 +2802,7 @@ File attachments
 
 **Responses**
 
-=== "200: Attachment saved to temporary directory"
+=== "200: Attachment saved"
 
     *   `application/json`: `object`
 
@@ -4573,6 +4575,8 @@ Database operations
 
 `GET /api/database/anonymized/download` · `downloadAnonymizedDatabase`
 
+Only files inside the anonymized database directory can be downloaded; any other path is refused with 403.
+
 **Authorization**: `sessionAuth` or `tokenAuth`
 
 **Query parameters**
@@ -4591,7 +4595,7 @@ Database operations
 
     No content.
 
-=== "403: Path outside the anonymized database directory"
+=== "403: Path not allowed"
 
     No content.
 
@@ -5432,11 +5436,13 @@ Commits a verified secret together with its recovery codes, activating TOTP. Thi
 
 `GET /api/totp/get` · `getTotpSecret`
 
+Returns `null` when no secret is set.
+
 **Authorization**: `sessionAuth` or `tokenAuth`
 
 **Responses**
 
-=== "200: The stored TOTP secret, or `null` if none is set."
+=== "200: TOTP secret"
 
     *   `application/json`: `string | null`
 
@@ -5551,11 +5557,13 @@ Issues a fresh batch of recovery codes for the already-enrolled TOTP secret, rep
 
 `GET /api/totp_recovery/used` · `getUsedTotpRecoveryCodes`
 
+Returns an empty array if no recovery codes are set, otherwise an object listing each code's status.
+
 **Authorization**: `sessionAuth` or `tokenAuth`
 
 **Responses**
 
-=== "200: Used recovery codes status. Returns an empty array if no recovery codes are set, otherwise an object listing each code's status."
+=== "200: Recovery code status"
 
     *   `application/json`: `array of any | object`
 
@@ -7590,7 +7598,7 @@ Miscellaneous utilities
 
 **Responses**
 
-=== "200: The input text rendered as Markdown"
+=== "200: Rendered Markdown"
 
     *   `text/plain`: `string`
 

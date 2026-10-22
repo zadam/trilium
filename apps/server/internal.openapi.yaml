@@ -103,6 +103,7 @@ paths:
     post:
       tags: [Sessions]
       summary: Login with password
+      description: Responds with 401 when the password is wrong or, with two-factor authentication enabled, the TOTP token is missing or wrong.
       operationId: login
       security: []
       requestBody:
@@ -128,7 +129,7 @@ paths:
                 type: string
                 example: trilium.sid=s%3A...
         '401':
-          description: Invalid credentials or TOTP token
+          description: Invalid credentials
           
   /api/login/token:
     post:
@@ -1657,7 +1658,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Complete attachment information
+          description: Attachment information
           content:
             application/json:
               schema:
@@ -1697,7 +1698,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Attachment saved to temporary directory
+          description: Attachment saved
           content:
             application/json:
               schema:
@@ -2913,6 +2914,7 @@ paths:
     get:
       tags: [Database]
       summary: Download an anonymized database file
+      description: Only files inside the anonymized database directory can be downloaded; any other path is refused with 403.
       operationId: downloadAnonymizedDatabase
       parameters:
         - name: filePath
@@ -2931,7 +2933,7 @@ paths:
         '400':
           description: Missing filePath
         '403':
-          description: Path outside the anonymized database directory
+          description: Path not allowed
         '404':
           description: File not found
 
@@ -4178,10 +4180,11 @@ paths:
     get:
       tags: [Security]
       summary: Get the stored TOTP secret
+      description: Returns `null` when no secret is set.
       operationId: getTotpSecret
       responses:
         '200':
-          description: The stored TOTP secret, or `null` if none is set.
+          description: TOTP secret
           content:
             application/json:
               schema:
@@ -4252,12 +4255,11 @@ paths:
     get:
       tags: [Security]
       summary: Get used TOTP recovery codes
+      description: Returns an empty array if no recovery codes are set, otherwise an object listing each code's status.
       operationId: getUsedTotpRecoveryCodes
       responses:
         '200':
-          description: >-
-            Used recovery codes status. Returns an empty array if no recovery codes are set, otherwise
-            an object listing each code's status.
+          description: Recovery code status
           content:
             application/json:
               schema:
@@ -4579,7 +4581,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: The input text rendered as Markdown
+          description: Rendered Markdown
           content:
             text/plain:
               schema:
