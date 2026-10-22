@@ -284,6 +284,20 @@ describe("triliumLogHighlighter", () => {
             expect(logDecorationsOf(s)).toBe(logDecorations);
         });
 
+        it("keeps the SQL marks through a reconfigure that leaves the code theme alone", () => {
+            // `performFind()` reconfigures the editor on every search.
+            const doc = "00:10:01.540 Slow query took 78ms: SELECT 1";
+            const search = new Compartment();
+            const s = sqlState(doc, [ syntaxHighlighting(classHighlighter), search.of([]) ]);
+            const sets = s.facet(EditorView.decorations);
+            const next = s.update({ effects: search.reconfigure(EditorView.lineWrapping) }).state;
+
+            expect(sliceOf(doc, decorationsOf(next), "tok-keyword")).toBe("SELECT");
+            const nextSets = next.facet(EditorView.decorations);
+            expect(nextSets).toHaveLength(sets.length);
+            expect(nextSets.every((set, index) => set === sets[index])).toBe(true);
+        });
+
         it("keeps every decoration set unless the document or the configuration changes", () => {
             const doc = "00:10:01.540 Slow query took 78ms: SELECT 1";
             for (const s of [ state(doc), sqlState(doc) ]) {

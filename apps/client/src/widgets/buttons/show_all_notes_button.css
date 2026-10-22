@@ -28,7 +28,6 @@
         height: calc(var(--tab-bar-height) + var(--classic-toolbar-height) - 42px);
     }
 
-    /* `button.btn` outranks `#left-pane .btn:not(.btn-primary)` in style.css. */
     > button.btn {
         display: flex;
         flex: 1 1 auto;

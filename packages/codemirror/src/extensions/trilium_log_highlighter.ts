@@ -1,7 +1,7 @@
 import { highlightingFor, type Language } from "@codemirror/language";
 import { type EditorState, type Extension, RangeSetBuilder, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
-import { type Highlighter, highlightTree } from "@lezer/highlight";
+import { type Highlighter, highlightTree, type Tag } from "@lezer/highlight";
 
 import { decorateSearchQuery, searchHighlightTheme } from "./trilium_search_highlighter.js";
 
@@ -128,12 +128,17 @@ interface SqlStatement {
     text: string;
 }
 
-interface LogHighlights {
+interface SqlHighlights {
+    /** The tokens of the statements, with the classes of the active code theme. */
+    sql: DecorationSet;
+    /** The class of each tag set in `sql`, in the code theme that `sql` was built with. */
+    styles: Map<readonly Tag[], string | null>;
+}
+
+interface LogHighlights extends SqlHighlights {
     log: DecorationSet;
     /** The statements in the highlighted lines; empty without a SQL language. */
     statements: SqlStatement[];
-    /** The tokens of `statements`, with the classes of the active code theme. */
-    sql: DecorationSet;
 }
 
 /**
@@ -145,11 +150,11 @@ export function triliumLogHighlighter(sqlLanguage: Language | null = null): Exte
         create: (state) => buildHighlights(state, sqlLanguage),
         update(highlights, tr) {
             if (tr.docChanged) return buildHighlights(tr.state, sqlLanguage);
-            // A new code theme changes the token classes. `performFind()` also reconfigures, on
-            // every search, so a reconfigure rebuilds only the SQL marks.
-            if (tr.reconfigured && sqlLanguage) {
-                const sql = buildSqlDecorations(tr.state, highlights.statements, sqlLanguage);
-                return { ...highlights, sql };
+            // `performFind()` reconfigures on every search, so a reconfigure rebuilds the SQL marks
+            // only when the code theme gives one of their tag sets another class.
+            if (tr.reconfigured && sqlLanguage && isRestyled(tr.state, highlights.styles)) {
+                const sql = buildSqlHighlights(tr.state, highlights.statements, sqlLanguage);
+                return { ...highlights, ...sql };
             }
             return highlights;
         },
@@ -177,25 +182,38 @@ function buildHighlights(state: EditorState, sqlLanguage: Language | null): LogH
         blockLine = decorateLine(builder, doc.line(n), blockLine, collectedStatements);
     }
 
-    return {
-        log: builder.finish(),
-        statements,
-        sql: sqlLanguage ? buildSqlDecorations(state, statements, sqlLanguage) : Decoration.none
-    };
+    const sql = sqlLanguage
+        ? buildSqlHighlights(state, statements, sqlLanguage)
+        : { sql: Decoration.none, styles: new Map() };
+    return { log: builder.finish(), statements, ...sql };
 }
 
 /** Marks the tokens of each statement with the classes that the active code theme gives them. */
-function buildSqlDecorations(
+function buildSqlHighlights(
     state: EditorState, statements: SqlStatement[], language: Language
-): DecorationSet {
+): SqlHighlights {
     const builder = new RangeSetBuilder<Decoration>();
-    const highlighter: Highlighter = { style: (tags) => highlightingFor(state, tags) };
+    const styles: SqlHighlights["styles"] = new Map();
+    const highlighter: Highlighter = {
+        style(tags) {
+            if (!styles.has(tags)) styles.set(tags, highlightingFor(state, tags));
+            return styles.get(tags) ?? null;
+        }
+    };
     for (const { from, text } of statements) {
         highlightTree(language.parser.parse(text), highlighter, (start, end, classes) => {
             builder.add(from + start, from + end, sqlTokenMark(classes));
         });
     }
-    return builder.finish();
+    return { sql: builder.finish(), styles };
+}
+
+/** Whether the code theme of `state` gives a tag set in `styles` another class. */
+function isRestyled(state: EditorState, styles: SqlHighlights["styles"]) {
+    for (const [ tags, classes ] of styles) {
+        if (highlightingFor(state, tags) !== classes) return true;
+    }
+    return false;
 }
 
 function sqlTokenMark(classes: string) {
