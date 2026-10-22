@@ -8,6 +8,28 @@ noteMappings:
     # the application injects, and the build renders the page content from the same files.
     helpMeta: "apps/server/src/assets/help/help_meta.json"
     helpContent: "apps/server/src/assets/help/help_content.json"
+    # Generated from the spec on every import, so edits to these pages are overwritten.
+    openApiPages:
+      - noteId: "9qPsTWBorUhQ" # ETAPI (REST API) › API Reference
+        spec: "apps/server/src/assets/etapi.openapi.yaml"
+      - noteId: "z8O2VG4ZZJD7" # Internal API › API Reference
+        spec: "apps/server/internal.openapi.yaml"
+    typeDocPages:
+      - noteId: "GFXVHyblVN3d" # Scripting › Script API › Electron API
+        entryPoint: "packages/commons/src/lib/electron_api_interface.ts"
+        tsconfig: "packages/commons/tsconfig.lib.json"
+        root: "ElectronApi"
+        stripPrefixes: [ "Electron" ]
+      - noteId: "MEtfsqa5VwNi" # Scripting › Script API › Backend API
+        entryPoint: "packages/commons/src/lib/script_api.ts"
+        tsconfig: "packages/commons/tsconfig.lib.json"
+        root: "BackendApi"
+        stripPrefixes: [ "Script" ]
+      - noteId: "Q2z6av6JZVWm" # Scripting › Script API › Frontend API
+        entryPoint: "packages/commons/src/lib/script_api.ts"
+        tsconfig: "packages/commons/tsconfig.lib.json"
+        root: "FrontendApi"
+        stripPrefixes: [ "Script" ]
 
   - rootNoteId: "jdjRLhLV3TtI"
     path: "docs/Developer Guide"

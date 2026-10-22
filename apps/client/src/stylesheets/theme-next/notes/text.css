@@ -849,6 +849,15 @@ html .note-detail-editable-text > :not(figure, .include-note, hr):first-child {
     white-space: pre;
 }
 
+:root .ck-content td pre {
+    --padding-size: 0.5em;
+}
+
+:root .ck-content td pre code {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
 .code-sample-wrapper .hljs {
     transition: background-color linear 100ms;
 }

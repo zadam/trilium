@@ -82,7 +82,6 @@ function toMarkdown(content: string, options: ToMarkdownOptions = {}) {
                 if (isMulticolumnLayout(node) || isMulticolumnColumn(node)) {
                     return blankMulticolumnReplacement(node);
                 }
-
                 // Original implementation as per https://github.com/mixmark-io/turndown/blob/master/src/turndown.js.
                 return ("isBlock" in node && node.isBlock) ? '\n\n' : '';
             },
@@ -96,6 +95,7 @@ function toMarkdown(content: string, options: ToMarkdownOptions = {}) {
         instance.addRule("tabPanel", buildTabPanelFilter());
         instance.addRule("multicolumn", buildMulticolumnFilter());
         instance.addRule("inlineLink", buildInlineLinkFilter());
+        instance.addRule("bookmark", buildBookmarkFilter());
         instance.addRule("figure", buildFigureFilter());
         instance.addRule("linkPreview", buildLinkPreviewFilter());
         instance.addRule("inlineIcon", buildInlineIconFilter());
@@ -301,6 +301,21 @@ function buildInlineLinkFilter(): Rule {
             let title = cleanAttribute(node.getAttribute('title'));
             if (title) title = ` "${title.replace(/"/g, '\\"')}"`;
             return `[${content}](${href}${title})`;
+        }
+    };
+}
+
+/**
+ * Keeps a bookmark, an `<a>` with an `id` and no `href`, as HTML: Markdown has no syntax for it,
+ * and links to `#<id>` find it only by that `id`.
+ */
+function buildBookmarkFilter(): Rule {
+    return {
+        filter(node) {
+            return node.nodeName === "A" && node.hasAttribute("id") && !node.hasAttribute("href");
+        },
+        replacement(content, node) {
+            return `<a id="${escapeHtml((node as HTMLElement).id)}"></a>${content}`;
         }
     };
 }

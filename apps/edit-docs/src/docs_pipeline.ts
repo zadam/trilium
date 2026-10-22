@@ -18,6 +18,8 @@ import path from "path";
 import { deferred } from "../../../packages/commons/src/index.js";
 import { buildHelpBundle } from "./help_bundle_generator.js";
 import { buildHelpMeta, serializeHelpMeta, stripAppVersion } from "./help_meta_generator.js";
+import { openApiToMarkdown, type OpenApiSpec } from "./openapi_markdown.js";
+import { runTypeDoc, type TypeDocMarkdownOptions, typeDocToMarkdown } from "./typedoc_markdown.js";
 
 export interface NoteMapping {
     rootNoteId: string;
@@ -32,6 +34,26 @@ export interface NoteMapping {
     helpMeta?: string;
     /** Where to write the rendered content of that tree. Relative to the configuration file. */
     helpContent?: string;
+    /** Pages whose Markdown is generated from an OpenAPI document before every import. */
+    openApiPages?: OpenApiPage[];
+    /** Pages whose Markdown is generated from TypeScript declarations before every import. */
+    typeDocPages?: TypeDocPage[];
+}
+
+export interface OpenApiPage {
+    /** A text note of this mapping with a Markdown data file. */
+    noteId: string;
+    /** The OpenAPI document in YAML. Relative to the configuration file. */
+    spec: string;
+}
+
+export interface TypeDocPage extends TypeDocMarkdownOptions {
+    /** A text note of this mapping with a Markdown data file. */
+    noteId: string;
+    /** The module whose exports the page documents. Relative to the configuration file. */
+    entryPoint: string;
+    /** The tsconfig that compiles it. Relative to the configuration file. */
+    tsconfig: string;
 }
 
 export interface Config {
@@ -61,7 +83,13 @@ export async function loadConfig(configPath?: string): Promise<Config> {
             ...mapping,
             path: path.resolve(configDir, mapping.path),
             helpMeta: mapping.helpMeta ? path.resolve(configDir, mapping.helpMeta) : undefined,
-            helpContent: mapping.helpContent ? path.resolve(configDir, mapping.helpContent) : undefined
+            helpContent: mapping.helpContent ? path.resolve(configDir, mapping.helpContent) : undefined,
+            openApiPages: mapping.openApiPages?.map((page) => ({ ...page, spec: path.resolve(configDir, page.spec) })),
+            typeDocPages: mapping.typeDocPages?.map((page) => ({
+                ...page,
+                entryPoint: path.resolve(configDir, page.entryPoint),
+                tsconfig: path.resolve(configDir, page.tsconfig)
+            }))
         }))
     };
 }
@@ -138,6 +166,7 @@ export async function importData(path: string) {
 export async function importMappings(mappings: NoteMapping[]) {
     for (const mapping of mappings) {
         if (!mapping.exportOnly) {
+            await writeGeneratedPages(mapping);
             await importData(mapping.path);
         }
     }
@@ -148,6 +177,49 @@ export async function exportMappings(mappings: NoteMapping[], baseUrl: string) {
     for (const mapping of mappings) {
         await exportData(mapping, baseUrl);
     }
+}
+
+/** Regenerates the Markdown of the mapping's `openApiPages` and `typeDocPages` from their sources. */
+async function writeGeneratedPages(mapping: NoteMapping) {
+    const pages = [
+        ...(mapping.openApiPages ?? []).map((page) => ({
+            noteId: page.noteId,
+            render: async () => openApiToMarkdown(load(await fs.readFile(page.spec, "utf-8")) as OpenApiSpec)
+        })),
+        ...(mapping.typeDocPages ?? []).map((page) => ({
+            noteId: page.noteId,
+            render: async () => typeDocToMarkdown(await runTypeDoc(page.entryPoint, page.tsconfig), page)
+        }))
+    ];
+    if (!pages.length) {
+        return;
+    }
+
+    const meta = JSON.parse(await fs.readFile(path.join(mapping.path, "!!!meta.json"), "utf-8")) as NoteMetaFile;
+    for (const page of pages) {
+        const dataFile = findDataFile(meta.files, page.noteId);
+        if (!dataFile?.endsWith(".md")) {
+            throw new Error(`Generated page ${page.noteId} needs a Markdown data file in ${mapping.path}.`);
+        }
+
+        await fs.writeFile(path.join(mapping.path, dataFile), await page.render());
+    }
+}
+
+/** The path of a note's data file relative to the export root, built from its ancestors' folders. */
+function findDataFile(notes: NoteMeta[], noteId: string, dir = ""): string | undefined {
+    for (const note of notes) {
+        if (note.noteId === noteId) {
+            return note.dataFileName ? path.join(dir, note.dataFileName) : undefined;
+        }
+
+        const found = findDataFile(note.children ?? [], noteId, path.join(dir, note.dirFileName ?? ""));
+        if (found) {
+            return found;
+        }
+    }
+
+    return undefined;
 }
 
 export async function exportData(mapping: NoteMapping, baseUrl: string) {

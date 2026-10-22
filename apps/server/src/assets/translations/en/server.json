@@ -477,7 +477,8 @@
     "next": "Next",
     "page-navigation": "Previous and next pages",
     "previous-tabs": "Scroll to the previous tabs",
-    "next-tabs": "Scroll to the next tabs"
+    "next-tabs": "Scroll to the next tabs",
+    "copy-code": "Copy code"
   },
   "hidden_subtree_templates": {
     "text-snippet": "Text Snippet",

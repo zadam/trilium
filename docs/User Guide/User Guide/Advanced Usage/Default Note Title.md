@@ -26,7 +26,7 @@ A template can name the notes created from it, wherever they are created. To do 
 
 The value of `#titleTemplate` is evaluated at the point of note's creation as a JavaScript string, which means it can be enriched with the help of JS string interpolation with dynamic data.
 
-Second variable injected is `parentNote` which gives access to the parent [`FNote`](../Scripting/Script%20API/Frontend%20API/FNote.dat).
+Second variable injected is `parentNote` which gives access to the parent [`FNote`](../Scripting/Script%20API/Frontend%20API.md).
 
 See also <a class="reference-link" href="Templates.md">Templates</a> which provides similar capabilities, including default note's content.
 

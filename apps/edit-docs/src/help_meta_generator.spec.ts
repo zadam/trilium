@@ -119,6 +119,20 @@ describe("buildHelpMeta", () => {
         expect(labelOf(items[0], "webViewSrc")).toBe("https://docs.triliumnotes.org/user-guide/embedded");
     });
 
+    it("keeps the full content width of a page", () => {
+        const page = (noteId: string, attributes: NoteMeta["attributes"]): NoteMeta => ({
+            isClone: false, noteId, title: noteId, type: "text", mime: "text/html",
+            attributes, format: "markdown", dataFileName: `${noteId}.md`, children: []
+        });
+        const wide = page("wide", [{ type: "label", name: "fullContentWidth", value: "", isInheritable: false, position: 10 }]);
+        const narrow = page("narrow", []);
+
+        const { meta: items } = buildHelpMeta(metaFileOf([ wide, narrow ]));
+
+        expect(items[0]?.attributes?.find((a) => a.name === "fullContentWidth")).toBeDefined();
+        expect(items[1]?.attributes?.find((a) => a.name === "fullContentWidth")).toBeUndefined();
+    });
+
     it("keeps the mime of code notes so their content is not treated as markdown", () => {
         const script: NoteMeta = {
             isClone: false, noteId: "script", title: "Example", type: "code", mime: "application/javascript;env=backend",

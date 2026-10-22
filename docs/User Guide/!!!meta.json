@@ -9809,13 +9809,13 @@
                                     "notePosition": 10,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
                                         {
                                             "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/rest-api/etapi/",
+                                            "name": "iconClass",
+                                            "value": "bx bx-book-content",
                                             "isInheritable": false,
                                             "position": 10
                                         },
@@ -9825,9 +9825,17 @@
                                             "value": "api-reference",
                                             "isInheritable": false,
                                             "position": 20
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "fullContentWidth",
+                                            "value": "",
+                                            "isInheritable": false,
+                                            "position": 30
                                         }
                                     ],
-                                    "dataFileName": "API Reference.dat",
+                                    "format": "markdown",
+                                    "dataFileName": "API Reference.md",
                                     "attachments": []
                                 }
                             ]
@@ -10384,13 +10392,13 @@
                                     "notePosition": 10,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
                                         {
                                             "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/rest-api/internal/",
+                                            "name": "iconClass",
+                                            "value": "bx bx-book-content",
                                             "isInheritable": false,
                                             "position": 10
                                         },
@@ -10402,7 +10410,8 @@
                                             "position": 20
                                         }
                                     ],
-                                    "dataFileName": "API Reference.dat",
+                                    "format": "markdown",
+                                    "dataFileName": "API Reference.md",
                                     "attachments": []
                                 }
                             ]
@@ -11909,63 +11918,34 @@
                                     "notePosition": 10,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
-                                        {
-                                            "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/script-api/frontend",
-                                            "isInheritable": false,
-                                            "position": 10
-                                        },
                                         {
                                             "type": "label",
                                             "name": "shareAlias",
                                             "value": "frontend-api",
                                             "isInheritable": false,
+                                            "position": 10
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "iconClass",
+                                            "value": "bx bx-window",
+                                            "isInheritable": false,
                                             "position": 20
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "fullContentWidth",
+                                            "value": "",
+                                            "isInheritable": false,
+                                            "position": 30
                                         }
                                     ],
-                                    "attachments": [],
-                                    "dirFileName": "Frontend API",
-                                    "children": [
-                                        {
-                                            "isClone": false,
-                                            "noteId": "habiZ3HU8Kw8",
-                                            "notePath": [
-                                                "pOsGYCXsbNQG",
-                                                "CdNpE2pqjmI6",
-                                                "GLks18SNjxmC",
-                                                "Q2z6av6JZVWm",
-                                                "habiZ3HU8Kw8"
-                                            ],
-                                            "title": "FNote",
-                                            "notePosition": 10,
-                                            "prefix": null,
-                                            "isExpanded": false,
-                                            "type": "webView",
-                                            "mime": "",
-                                            "attributes": [
-                                                {
-                                                    "type": "label",
-                                                    "name": "webViewSrc",
-                                                    "value": "/script-api/frontend/interfaces/FNote.html",
-                                                    "isInheritable": false,
-                                                    "position": 10
-                                                },
-                                                {
-                                                    "type": "label",
-                                                    "name": "shareAlias",
-                                                    "value": "fnote",
-                                                    "isInheritable": false,
-                                                    "position": 20
-                                                }
-                                            ],
-                                            "dataFileName": "FNote.dat",
-                                            "attachments": []
-                                        }
-                                    ]
+                                    "format": "markdown",
+                                    "dataFileName": "Frontend API.md",
+                                    "attachments": []
                                 },
                                 {
                                     "isClone": false,
@@ -11980,25 +11960,33 @@
                                     "notePosition": 20,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
-                                        {
-                                            "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/script-api/backend",
-                                            "isInheritable": false,
-                                            "position": 10
-                                        },
                                         {
                                             "type": "label",
                                             "name": "shareAlias",
                                             "value": "backend-api",
                                             "isInheritable": false,
+                                            "position": 10
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "iconClass",
+                                            "value": "bx bx-server",
+                                            "isInheritable": false,
                                             "position": 20
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "fullContentWidth",
+                                            "value": "",
+                                            "isInheritable": false,
+                                            "position": 30
                                         }
                                     ],
-                                    "dataFileName": "Backend API.dat",
+                                    "format": "markdown",
+                                    "dataFileName": "Backend API.md",
                                     "attachments": []
                                 },
                                 {
@@ -12014,32 +12002,33 @@
                                     "notePosition": 30,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
-                                        {
-                                            "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/script-api/electron",
-                                            "isInheritable": false,
-                                            "position": 10
-                                        },
                                         {
                                             "type": "label",
                                             "name": "shareAlias",
                                             "value": "electron-api",
                                             "isInheritable": false,
-                                            "position": 20
+                                            "position": 10
                                         },
                                         {
                                             "type": "label",
                                             "name": "iconClass",
                                             "value": "bx bx-window-alt",
                                             "isInheritable": false,
+                                            "position": 20
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "fullContentWidth",
+                                            "value": "",
+                                            "isInheritable": false,
                                             "position": 30
                                         }
                                     ],
-                                    "dataFileName": "Electron API.dat",
+                                    "format": "markdown",
+                                    "dataFileName": "Electron API.md",
                                     "attachments": []
                                 },
                                 {

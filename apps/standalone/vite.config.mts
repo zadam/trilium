@@ -373,8 +373,9 @@ export default defineConfig(() => ({
                 replacement: join(__dirname, "src/stubs/empty.ts")
             },
             // EJS renders the share pages. Its ESM entry imports `node:fs` and `node:path` for the
-            // file-loading it only reaches without an `includer`; the share renderer always passes
-            // one, so the package's own browser build serves it and resolves in this bundle.
+            // file-loading it only reaches through its own `include()` without an `includer`; the
+            // share renderer resolves includes itself or passes an `includer`, so the package's own
+            // browser build serves it and resolves in this bundle.
             {
                 find: /^ejs$/,
                 replacement: join(__dirname, "../../node_modules/ejs/ejs.min.js")

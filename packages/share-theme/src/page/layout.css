@@ -2,22 +2,21 @@ html {
     --page-top-spacing: 2rem;
 }
 
-/* Past 90rem the navigation pane widens into the space beside the layout, up to 24rem; the padding
-   keeps the content where the 90rem layout puts it. */
+/* Past 90rem the navigation pane widens into the space beside the layout, up to 24rem, and the
+   layout widens by twice as much to keep the content centered. The pane spans the full width and
+   centers the layout with its start padding; `#toc-pane` fills the space after the layout. */
 #split-pane {
     --left-pane-width: clamp(min(18rem, 25vw), 18rem + (100vw - 90rem) / 2, 24rem);
     --left-pane-growth: max(0rem, var(--left-pane-width) - 18rem);
+    --layout-width: calc(90rem + 2 * var(--left-pane-growth));
 
     display: flex;
     flex-direction: row;
-    max-width: calc(90rem + 2 * var(--left-pane-growth));
-    margin-inline: auto;
-    padding-inline-end: var(--left-pane-growth);
+    padding-inline-start: max(0px, (100% - var(--layout-width)) / 2);
 }
 
 #split-pane:has(#content.full-content-width) {
-    max-width: none;
-    padding-inline-end: 0;
+    padding-inline-start: 0;
 }
 
 #left-pane {

@@ -30,6 +30,8 @@ export interface Request<P = Record<string, string | string[]>, Q = QueryString>
     body: any;
     headers: RequestHeaders;
     method: string;
+    /** The path and query string the route sees, such as `/custom/echo?x=1`. */
+    url: string;
     originalUrl: string;
     /** The parsed multipart upload — multer on the server, `BrowserRouter` in standalone. */
     file?: File;

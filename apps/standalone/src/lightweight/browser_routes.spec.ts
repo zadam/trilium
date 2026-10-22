@@ -216,8 +216,8 @@ describe("route wrapper branches (via controlled handlers)", () => {
 
     it("runs transactional and non-transactional api routes (and reads originalUrl)", async () => {
         const router = buildRouter();
-        const apiRes = await router.dispatch("GET", "http://localhost/t/api");
-        expect((parseJson(apiRes.body) as { url: string }).url).toBe("http://localhost/t/api");
+        const apiRes = await router.dispatch("GET", "http://localhost/t/api?x=1");
+        expect((parseJson(apiRes.body) as { url: string }).url).toBe("/t/api?x=1");
         expect(parseJson((await router.dispatch("GET", "http://localhost/t/asyncapi")).body)).toEqual({ ok: true });
     });
 
@@ -324,7 +324,7 @@ describe("custom request handlers and resource providers", () => {
         cls.init(() => {
             createHandler("Greeter", "greet/([a-z]+)", `api.res.status(200).send("handled:" + api.pathParams[0]);`);
             createHandler("Thrower", "explode", `throw new Error("boom in handler");`);
-            createHandler("Echo", "echo", `api.res.json({ method: api.req.method, body: api.req.body });`);
+            createHandler("Echo", "echo", `api.res.json({ method: api.req.method, url: api.req.url, body: api.req.body });`);
             // A handler that answers after an await: what the server gets for free by holding the
             // connection open, this runtime has to wait for.
             createHandler("Deferred", "deferred", `
@@ -370,15 +370,17 @@ return (async () => {
         expect(text(res.body)).toBe("handled:world");
     });
 
-    it("reaches a handler over a method other than GET, carrying the parsed body", async () => {
+    it("reaches a handler over a method other than GET, carrying the URL and the parsed body", async () => {
         const body = new TextEncoder().encode(JSON.stringify({ hello: "there" })).buffer as ArrayBuffer;
-        const res = await router.dispatch("POST", "http://localhost/custom/echo", body, {
+        const res = await router.dispatch("POST", "http://localhost/custom/echo?x=1", body, {
             "content-type": "application/json"
         });
 
         expect(res.status).toBe(200);
         expect(res.headers["Content-Type"]).toContain("application/json");
-        expect(parseJson(res.body)).toEqual({ method: "POST", body: { hello: "there" } });
+        expect(parseJson(res.body)).toEqual({
+            method: "POST", url: "/custom/echo?x=1", body: { hello: "there" }
+        });
     });
 
     // `send()` leaving a number in the body would reach BrowserRouter as something it cannot

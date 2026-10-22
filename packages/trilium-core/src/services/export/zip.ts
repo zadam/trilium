@@ -589,13 +589,15 @@ async function exportToZip(taskContext: TaskContext<"export">, branch: BBranch, 
 
 /**
  * Whether the importer discards the attribute and rebuilds it from the note's content, which
- * `saveLinks()` does for `internalLink` and `imageLink`. Exporting those writes a set nothing reads
- * back, in an order that differs between a note the editor has appended a link to and the same note
- * derived on import. `includeNoteLink` and `relationMapLink` stay: `services/import/zip.ts` reads
- * them to remap note ids inside the content it imports.
+ * `saveLinks()` does for `internalLink`, `imageLink` and the `internalBookmark` labels. Exporting
+ * those writes a set nothing reads back, in an order that differs between a note the editor has
+ * appended a link to and the same note derived on import. `includeNoteLink` and `relationMapLink`
+ * stay: `services/import/zip.ts` reads them to remap note ids inside the content it imports.
  */
 function isRebuiltOnImport(attribute: BAttribute): boolean {
-    return attribute.type === "relation" && ["internalLink", "imageLink"].includes(attribute.name);
+    return attribute.type === "relation"
+        ? [ "internalLink", "imageLink" ].includes(attribute.name)
+        : attribute.name === "internalBookmark";
 }
 
 /** Counts the notes in a metadata tree — i.e. the number of `saveNote()` calls the content-writing pass will make. */

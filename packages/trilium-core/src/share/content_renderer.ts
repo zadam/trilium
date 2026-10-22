@@ -372,9 +372,7 @@ function renderNoteContentInternal(note: SNote | BNote, renderArgs: RenderArgs) 
         toc: getTableOfContents(headings),
         isPageInNavigation: hasActiveItem(navigation)
     };
-    return ejs.render(readShareTemplate("page"), pageOpts, {
-        includer: (path) => ({ template: readShareTemplate(path) })
-    });
+    return renderShareTemplate("page", pageOpts);
 }
 
 /**
@@ -410,8 +408,10 @@ export function preparePageContent(
     const headings = elements.map((element) => {
         const slug = element.id || slugs[slugIndex++];
         const text = element.text.replace(/\s+/g, " ").trim();
+        const html = sanitize.sanitizeHtmlCustom(element.innerHTML, HEADING_FORMATTING)
+            .replace(/\s+/g, " ").trim();
         const href = `#${encodeURIComponent(slug)}`;
-        const heading = { level: Number(element.tagName.slice(1)), text, slug, href };
+        const heading = { level: Number(element.tagName.slice(1)), text, html, slug, href };
         element.setAttribute("id", slug);
         element.insertAdjacentHTML("beforeend", `<a class="toc-anchor" href="${href}"`
             + ` aria-label="${escapeHtml(options.headingLinkLabel)}">`
@@ -422,12 +422,45 @@ export function preparePageContent(
 }
 
 /**
+ * The inline formatting a table of contents entry keeps, without attributes. Any other element
+ * gives up its tag but keeps its text, a link included, since the entry is a link itself.
+ */
+const HEADING_FORMATTING = {
+    allowedTags: [ "b", "code", "em", "i", "kbd", "mark", "s", "strong", "sub", "sup", "u" ],
+    allowedAttributes: {}
+};
+
+/**
  * Returns the share theme's EJS template of that name, such as `page` or `404`. The platform
  * decides where it comes from: the server reads it from disk, the browser build from its bundle.
  */
 export function readShareTemplate(name: string) {
     return getShareProvider().readTemplate(name);
 }
+
+/**
+ * Renders the share theme's EJS template of that name with `data`. Each template text compiles
+ * once, so a template edited in development compiles again. The templates' `include()` resolves
+ * to the `include` passed in `data`, which the template's `with (locals)` block finds before EJS's
+ * own: EJS compiles an included template again on every call, and its `filename` cache needs
+ * `fs.existsSync`, which the browser build of EJS lacks.
+ */
+export function renderShareTemplate(name: string, data: ejs.Data): string {
+    const template = readShareTemplate(name);
+    let render = compiledShareTemplates.get(template);
+    if (!render) {
+        render = ejs.compile(template);
+        compiledShareTemplates.set(template, render);
+    }
+
+    return render({
+        ...data,
+        include: (path: string, includeData?: ejs.Data) =>
+            renderShareTemplate(path, { ...data, ...includeData })
+    });
+}
+
+const compiledShareTemplates = new Map<string, ejs.TemplateFunction>();
 
 /**
  * Returns the prefix the share theme resolves built-in assets against. The share pages live one
@@ -675,8 +708,8 @@ function renderText(result: Result, note: SNote | BNote, options: ShareRenderOpt
         for (const linkEl of document.querySelectorAll("a")) {
             const href = linkEl.getAttribute("href");
 
-            // Preserve footnotes.
-            if (href?.startsWith("#fn")) {
+            // Preserve in-page anchors (footnotes, bookmarks): a link to a note starts with `#root`.
+            if (href?.startsWith("#") && !href.startsWith("#root")) {
                 continue;
             }
 

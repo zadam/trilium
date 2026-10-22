@@ -266,6 +266,7 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
             getContext().init(() => {
                 note.addRelation("internalLink", target.noteId);
                 note.addRelation("imageLink", target.noteId);
+                note.addLabel("internalBookmark", "intro");
                 // The importer reads these two back to remap note ids inside the content.
                 note.addRelation("includeNoteLink", target.noteId);
                 note.addRelation("relationMapLink", target.noteId);
@@ -279,6 +280,7 @@ describe.skipIf(isBrowserRuntime)("zip export (real DB)", () => {
 
             expect(names).not.toContain("internalLink");
             expect(names).not.toContain("imageLink");
+            expect(names).not.toContain("internalBookmark");
             expect(names).toContain("includeNoteLink");
             expect(names).toContain("relationMapLink");
             expect(names).toContain("userRelation");

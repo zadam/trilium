@@ -777,6 +777,19 @@ describe("Markdown export", () => {
         expect(markdownExportService.toMarkdown(html)).toBe(expected);
     });
 
+    it("keeps bookmarks as HTML anchors, so links to them still resolve after an import", () => {
+        const html = `<h3><a id="schema-note"></a><code>Note</code></h3>`
+            + `<p>See <a href="#schema-note">the note</a>.<a id="end"></a></p>`
+            + `<p><a id="say-&quot;hi&quot;"></a>Quoted</p>`;
+
+        expect(markdownExportService.toMarkdown(html)).toBe(trimIndentation`\
+            ### <a id="schema-note"></a>\`Note\`
+
+            See [the note](#schema-note).<a id="end"></a>
+
+            <a id="say-&quot;hi&quot;"></a>Quoted`);
+    });
+
     it("drops the block ids of a text note, which Markdown has no syntax for", () => {
         const html = `<h2 data-trilium-block-id="h1">Title</h2>`
             + `<p data-trilium-block-id="p1">Text</p>`;
