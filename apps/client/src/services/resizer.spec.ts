@@ -216,6 +216,45 @@ describe("setupLeftPaneResizer", () => {
         expect(config.minSize).toEqual([ 150, 300 ]);
     });
 
+    it("in the vertical layout, reserves the peek button while it shows", async () => {
+        setLauncherPaneWidth(120);
+        const { resizer } = await loadResizer({ layoutOrientation: "vertical", leftPaneWidth: 30 });
+        const peekButton = document.createElement("button");
+        peekButton.className = "left-pane-peek-button";
+        document.body.append(peekButton);
+        let peekButtonWidth = 12;
+        Object.defineProperty(peekButton, "offsetWidth", { get: () => peekButtonWidth });
+
+        resizer.setupLeftPaneResizer("closed");
+        expect($("#rest-pane").css("width")).toBe(`${100 - (132 / window.innerWidth) * 100}%`);
+
+        // Docked, the button is not displayed.
+        peekButtonWidth = 0;
+        resizer.setupLeftPaneResizer("docked");
+        flushRaf();
+        const [ , restWidth ] = SplitMock.mock.calls[0][1].sizes;
+        expect(restWidth).toBeCloseTo(100 - 30 - (120 / window.innerWidth) * 100);
+    });
+
+    it("in the vertical layout, peeks the pane as wide as it docks", async () => {
+        setLauncherPaneWidth(120);
+        const { resizer, options } = await loadResizer({
+            layoutOrientation: "vertical", leftPaneWidth: 30
+        });
+
+        resizer.setupLeftPaneResizer("peek");
+        flushRaf();
+
+        // The host starts after the launcher pane, so the pane takes a larger share of it.
+        const scale = 100 / (100 - (120 / window.innerWidth) * 100);
+        const { sizes, onDragEnd } = SplitMock.mock.calls[0][1];
+        expect(sizes[0]).toBeCloseTo(30 * scale);
+        expect(sizes[0] + sizes[1]).toBeCloseTo(100);
+
+        onDragEnd([ 40 * scale, 100 - 40 * scale ]);
+        expect(options.save).toHaveBeenCalledWith("leftPaneWidth", 40);
+    });
+
     it("drops a split still waiting for its frame when the mode changes again", async () => {
         const { resizer } = await loadResizer({
             layoutOrientation: "horizontal", leftPaneWidth: 30

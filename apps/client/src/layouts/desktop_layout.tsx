@@ -86,7 +86,7 @@ export default class DesktopLayout {
                     .css("flex-grow", "1")
                     .id("horizontal-main-container")
                     .optChild(!launcherPaneIsHorizontal, launcherPane)
-                    .optChild(launcherPaneIsHorizontal, <LeftPanePeekButton />)
+                    .child(<LeftPanePeekButton />)
                     .child(
                         new LeftPaneContainer(launcherPaneIsHorizontal)
                             .optChild(!launcherPaneIsHorizontal, <QuickSearch />)

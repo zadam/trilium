@@ -68,21 +68,29 @@ describe("LeftPaneContainer", () => {
         );
     });
 
-    it("starts docked where the option says so", () => {
+    it("starts docked where the option says so, and its peek edge hides it", () => {
         mount(true);
 
         expect(container.$widget.hasClass("hidden-int")).toBe(false);
         expect(parent.$widget.hasClass("left-pane-hidden")).toBe(false);
         expect(setupLeftPaneResizer).toHaveBeenLastCalledWith("docked");
-    });
-
-    it("does not peek where the layout cannot", () => {
-        mount(false, false);
 
         container.peekLeftPaneEvent();
         expect(container.$widget.hasClass("hidden-int")).toBe(true);
+        expect(save).toHaveBeenCalledWith("leftPaneVisible", "false");
+    });
+
+    it("peeks only a hidden pane in the vertical layout", () => {
+        mount(true, false);
+
+        container.peekLeftPaneEvent();
+        expect(container.$widget.hasClass("hidden-int")).toBe(false);
         expect(container.$widget.hasClass("peek")).toBe(false);
         expect(triggerEvent).not.toHaveBeenCalled();
+
+        container.setLeftPaneVisibilityEvent({ leftPaneVisible: false });
+        container.peekLeftPaneEvent();
+        expect(container.$widget.hasClass("peek")).toBe(true);
     });
 
     it("dismisses a peek on a press outside the tree and its buttons, or on Escape", () => {
@@ -168,9 +176,9 @@ describe("LeftPaneContainer", () => {
         expect(host.hasClass("hidden-int")).toBe(false);
     });
 
-    function mount(docked: boolean, isPeekable = true) {
+    function mount(docked: boolean, isHorizontalLayout = true) {
         options.set("leftPaneVisible", docked.toString());
-        container = new LeftPaneContainer(isPeekable);
+        container = new LeftPaneContainer(isHorizontalLayout);
         container.child(new FlexContainer("column").class("tree-stub"));
         parent = new FlexContainer<LeftPaneContainer>("row").child(container);
         document.body.append(parent.render()[0]);

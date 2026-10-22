@@ -6,7 +6,6 @@ import options from "./options.js";
 export const DEFAULT_GUTTER_SIZE = 5;
 
 let leftPaneWidth: number;
-let reservedPx: number;
 let layoutOrientation: string;
 let leftInstance: ReturnType<typeof Split> | null;
 let leftRafId: number | undefined;
@@ -18,7 +17,7 @@ let splitNoteContainer: HTMLElement | undefined;
 /**
  * Sizes the left pane for its mode. Docked, a Split sizes `#left-pane-host` against `#rest-pane`;
  * peeking, the host covers `#rest-pane` and a Split sizes `#left-pane` against the host's spacer.
- * Both share the `leftPaneWidth` option.
+ * Both share the `leftPaneWidth` option, a percentage of `#horizontal-main-container`.
  */
 function setupLeftPaneResizer(mode: PaneMode) {
     if (leftRafId !== undefined) {
@@ -31,7 +30,12 @@ function setupLeftPaneResizer(mode: PaneMode) {
     }
 
     layoutOrientation = layoutOrientation ?? options.get("layoutOrientation");
-    reservedPx = reservedPx ?? (layoutOrientation === "vertical" ? ($("#launcher-pane").outerWidth() || 0) : 0);
+    // `.left-pane-peek-button` follows `#launcher-pane` in the vertical layout, and is not
+    // displayed while the pane is docked.
+    const reservedPx = layoutOrientation === "vertical"
+        ? ($("#launcher-pane").outerWidth() || 0)
+            + ($(".left-pane-peek-button").get(0)?.offsetWidth ?? 0)
+        : 0;
     // Window resizing causes `window.innerWidth` to change, so `reservedWidth` needs to be recalculated each time.
     const reservedWidth = reservedPx / window.innerWidth * 100;
     if (mode !== "docked") {
@@ -50,20 +54,23 @@ function setupLeftPaneResizer(mode: PaneMode) {
     const elements = isDocked
         ? [ "#left-pane-host", "#rest-pane" ]
         : [ "#left-pane", "#left-pane-host > .peek-pane-spacer" ];
-    const otherWidth = isDocked ? 100 - leftPaneWidth - reservedWidth : 100 - leftPaneWidth;
+    // The peeking host starts after the launcher pane, so the pane takes a larger share of it.
+    const scale = isDocked ? 1 : 100 / (100 - reservedWidth);
+    const size = leftPaneWidth * scale;
+    const otherWidth = isDocked ? 100 - size - reservedWidth : 100 - size;
 
     // Deferred a frame so that Split.js measures #left-pane once it is laid out; otherwise
     // `minSize` has no effect.
     leftRafId = requestAnimationFrame(() => {
         leftRafId = undefined;
         leftInstance = Split(elements, {
-            sizes: [ leftPaneWidth, otherWidth ],
+            sizes: [ size, otherWidth ],
             gutterSize: DEFAULT_GUTTER_SIZE,
             minSize: [ 150, 300 ],
             rtl: glob.isRtl,
             onDragEnd: (sizes) => {
-                leftPaneWidth = Math.round(sizes[0]);
-                options.save("leftPaneWidth", Math.round(sizes[0]));
+                leftPaneWidth = Math.round(sizes[0] / scale);
+                options.save("leftPaneWidth", leftPaneWidth);
             }
         });
     });

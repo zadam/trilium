@@ -15,15 +15,18 @@ import Container from "./container.js";
  */
 export default class LeftPaneContainer extends Container<Component> {
 
-    private readonly isPeekable: boolean;
+    private readonly isHorizontalLayout: boolean;
     private mode: PaneMode;
     private stopPeekDismiss?: () => void;
 
-    /** @param isPeekable whether the pane can peek, which only the horizontal layout supports. */
-    constructor(isPeekable: boolean) {
+    /**
+     * @param isHorizontalLayout whether the layout is horizontal, where the peek edge also hides a
+     * docked pane. The vertical layout shows the peek edge only while the pane is hidden.
+     */
+    constructor(isHorizontalLayout: boolean) {
         super();
 
-        this.isPeekable = isPeekable;
+        this.isHorizontalLayout = isHorizontalLayout;
         this.mode = options.is("leftPaneVisible") ? "docked" : "closed";
 
         this.id("left-pane-host");
@@ -54,7 +57,7 @@ export default class LeftPaneContainer extends Container<Component> {
     }
 
     peekLeftPaneEvent() {
-        if (this.isPeekable) {
+        if (this.isHorizontalLayout || this.mode !== "docked") {
             this.changeMode("togglePeek");
         }
     }

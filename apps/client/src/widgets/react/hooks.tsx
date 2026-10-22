@@ -1517,12 +1517,14 @@ export function useStaticTooltipWithKeyboardShortcut(
     opts?: Omit<Partial<Tooltip.Options>, "title">
 ) {
     const [ keyboardShortcut, setKeyboardShortcut ] = useState<string[]>();
-    useStaticTooltip(elRef, {
+    // Memoized, since `useStaticTooltip` recreates the tooltip whenever its config changes.
+    const config = useMemo(() => ({
         title: keyboardShortcut?.length
             ? `${title} (${keyboardShortcut.map((shortcut) => joinShortcut(formatShortcut(shortcut))).join(", ")})`
             : title,
         ...opts
-    });
+    }), [ title, keyboardShortcut, opts ]);
+    useStaticTooltip(elRef, config);
 
     useEffect(() => {
         if (actionName) {

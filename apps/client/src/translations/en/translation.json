@@ -1207,7 +1207,7 @@
   "left_pane_toggle": {
     "show_panel": "Show panel",
     "hide_panel": "Hide panel",
-    "peek_panel": "Peek panel"
+    "peek_panel": "Peek tree panel"
   },
   "move_pane_button": {
     "move_left": "Move left",
