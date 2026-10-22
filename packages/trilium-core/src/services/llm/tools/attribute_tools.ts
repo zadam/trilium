@@ -6,7 +6,7 @@ import attributeService from "../../../services/attributes.js";
 import becca from "../../../becca/becca.js";
 import { z } from "zod";
 
-import { flag } from "./helpers.js";
+import { flag, getLlmNote, isAttributeVisibleToLlm } from "./helpers.js";
 import { defineTools } from "./tool_registry.js";
 
 export const attributeTools = defineTools({
@@ -16,13 +16,13 @@ export const attributeTools = defineTools({
             noteId: z.string().describe("The ID of the note")
         }),
         execute: ({ noteId }) => {
-            const note = becca.getNote(noteId);
+            const note = getLlmNote(noteId);
             if (!note) {
                 return { error: "Note not found" };
             }
 
             return note.getOwnedAttributes()
-                .filter((attr) => !attr.isAutoLink())
+                .filter((attr) => !attr.isAutoLink() && isAttributeVisibleToLlm(attr))
                 .map((attr) => ({
                     attributeId: attr.attributeId,
                     type: attr.type,
@@ -40,7 +40,7 @@ export const attributeTools = defineTools({
         }),
         execute: ({ attributeId }) => {
             const attribute = becca.getAttribute(attributeId);
-            if (!attribute) {
+            if (!attribute || !isAttributeVisibleToLlm(attribute)) {
                 return { error: "Attribute not found" };
             }
 
@@ -65,14 +65,14 @@ export const attributeTools = defineTools({
         }),
         mutates: true,
         execute: ({ noteId, type, name, value = "" }) => {
-            const note = becca.getNote(noteId);
+            const note = getLlmNote(noteId);
             if (!note) {
                 return { error: "Note not found" };
             }
             if (note.isProtected) {
                 return { error: "Note is protected and cannot be modified" };
             }
-            if (type === "relation" && value && !becca.getNote(value)) {
+            if (type === "relation" && value && !getLlmNote(value)) {
                 return { error: "Target note not found for relation" };
             }
 
@@ -123,14 +123,14 @@ export const attributeTools = defineTools({
         mutates: true,
         execute: ({ noteId, attributeId }) => {
             const attribute = becca.getAttribute(attributeId);
-            if (!attribute) {
+            if (!attribute || !isAttributeVisibleToLlm(attribute)) {
                 return { error: "Attribute not found" };
             }
             if (attribute.noteId !== noteId) {
                 return { error: "Attribute does not belong to the specified note" };
             }
 
-            const note = becca.getNote(noteId);
+            const note = getLlmNote(noteId);
             if (note?.isProtected) {
                 return { error: "Note is protected and cannot be modified" };
             }

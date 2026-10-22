@@ -79,6 +79,7 @@ This is a list of labels that Trilium natively supports.
 | `executeButton` | Title of the button which will execute the current code note |
 | `executeDescription` | Longer description of the current code note displayed together with the execute button |
 | `excludeFromNoteMap` | Notes with this label will be hidden from the <a class="reference-link" href="../../Note%20Types/Note%20Map.md">Note Map</a>. |
+| `excludeFromLlm` | Hides this note from the AI chat and the MCP server. Make it inheritable to hide the notes below it as well. See <a class="reference-link" href="../../AI/Privacy.md">Privacy</a>. |
 | `newNotesOnTop` | New notes will be created at the top of the parent note, not on the bottom. |
 | `hideChildrenOverview` | Hides the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/Notes/Note%20List.md">Note List</a> for that particular note. |
 | `subtreeHidden` | Hides all child notes of this note from the tree, displaying a badge with the count of hidden children. Children remain accessible via search or direct links. |

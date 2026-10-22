@@ -6,17 +6,16 @@
  * to the prompt text).
  */
 
-import becca from "../../becca/becca.js";
 import { dump } from "js-yaml";
 
-import { getNoteMeta, SYSTEM_PROMPT_LIMITS } from "./tools/helpers.js";
+import { getLlmNote, getNoteMeta, SYSTEM_PROMPT_LIMITS } from "./tools/helpers.js";
 
 /**
  * Build a context hint about the current note with full metadata (same shape as
- * get_note / ETAPI). Returns `null` when the note no longer exists.
+ * get_note / ETAPI). Returns `null` when the note no longer exists or is excluded from the LLM.
  */
 export function buildNoteHint(noteId: string, hasAttachments: boolean): string | null {
-    const note = becca.getNote(noteId);
+    const note = getLlmNote(noteId);
     if (!note) {
         return null;
     }

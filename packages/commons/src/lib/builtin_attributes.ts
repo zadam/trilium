@@ -149,6 +149,7 @@ const BUILTIN_ATTRIBUTES = [
     { type: "label", name: "mapIncludeRelation", valueType: "text" },
     // Keeps a note out of the note map -- unless the map is rooted at it, which journals rely on.
     { type: "label", name: "excludeFromNoteMap", valueType: "boolean" },
+    { type: "label", name: "excludeFromLlm", valueType: "boolean" },
     { type: "label", name: "bookmarkFolder", valueType: "boolean" },
     { type: "label", name: "sorted", valueType: "boolean" },
     { type: "label", name: "sortDirection", valueType: "select", selectOptions: [ "asc", "desc" ] },
