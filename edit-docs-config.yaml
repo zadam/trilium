@@ -19,14 +19,17 @@ noteMappings:
         entryPoint: "packages/commons/src/lib/electron_api_interface.ts"
         tsconfig: "packages/commons/tsconfig.lib.json"
         root: "ElectronApi"
+        stripPrefixes: [ "Electron" ]
       - noteId: "MEtfsqa5VwNi" # Scripting › Script API › Backend API
         entryPoint: "packages/commons/src/lib/script_api.ts"
         tsconfig: "packages/commons/tsconfig.lib.json"
         root: "BackendApi"
+        stripPrefixes: [ "Script" ]
       - noteId: "Q2z6av6JZVWm" # Scripting › Script API › Frontend API
         entryPoint: "packages/commons/src/lib/script_api.ts"
         tsconfig: "packages/commons/tsconfig.lib.json"
         root: "FrontendApi"
+        stripPrefixes: [ "Script" ]
 
   - rootNoteId: "jdjRLhLV3TtI"
     path: "docs/Developer Guide"

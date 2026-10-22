@@ -3,7 +3,7 @@ The Electron API is the bridge between Trilium's interface and Electron's main p
 
 It is not part of the `api` global of script notes, but frontend scripts running in the desktop application can call it directly. It is `undefined` in the browser and in the standalone build, so guard calls with `if (window.electronApi)`.
 
-## `ElectronApi`
+## `Api`
 
 The complete surface exposed to the renderer as `window.electronApi` via `contextBridge`. The renderer must access Electron-only functionality through this object — direct `require("electron")` and `@electron/remote` are unavailable because `nodeIntegration` is disabled and `contextIsolation` is enabled.
 
@@ -11,25 +11,25 @@ The runtime value lives in `apps/desktop/src/preload.ts`; this interface is the 
 
 | Property | Description |
 | --- | --- |
-| `window` | `ElectronWindowApi`  <br>Window chrome, zoom, theme, lifecycle, and main → renderer events. |
-| `clipboard` | `ElectronClipboardApi`  <br>System clipboard access beyond what the standard Web Clipboard API offers. |
-| `shell` | `ElectronShellApi`  <br>Shell integration — opening URLs, files, and downloads with OS handlers. |
-| `contextMenu` | `ElectronContextMenuApi`  <br>Native context-menu plumbing for right-click events on web contents. |
-| `spellcheck` | `ElectronSpellcheckApi`  <br>Chromium spell checker controls (dictionary, language list). |
-| `systemIntegration` | `ElectronSystemIntegrationApi`  <br>OS integration — system tray and autostart / launch-on-login. |
-| `printing` | `ElectronPrintingApi`  <br>Printing and PDF export pipeline. |
-| `navigation` | `ElectronNavigationApi`  <br>Read/write access to Chromium's back/forward navigation history. |
-| `ws` | `ElectronWsApi`  <br>In-process bridge that replaces the renderer↔server WebSocket. |
-| `security` | `ElectronSecurityApi`  <br>Security settings (backend scripting, SQL console) stored outside the DB. |
-| `backupPassphrase` | `ElectronBackupPassphraseApi`  <br>Write-only access to the backup passphrase, kept in the OS keyring. |
-| `onenote` | `ElectronOneNoteApi`  <br>OneNote importer sign-in via a loopback OAuth redirect (desktop only). |
-| `nativeExport` | `ElectronNativeExportApi`  <br>Desktop-native subtree export that streams a `.zip` straight to a file. |
-| `nativeImport` | `ElectronNativeImportApi`  <br>Desktop-native large-`.zip` import that reads the user's file in place via a capability token. |
-| `dialog` | `ElectronDialogApi`  <br>Native OS pickers that hand the renderer a location the user chose themselves. |
-| `restore` | `ElectronRestoreApi`  <br>Choosing a backup to restore during setup, read where it lies rather than uploaded. |
-| `transcription` | `ElectronTranscriptionApi`  <br>Meeting transcription: starting and stopping a recording, and following its state. |
+| `window` | `WindowApi`  <br>Window chrome, zoom, theme, lifecycle, and main → renderer events. |
+| `clipboard` | `ClipboardApi`  <br>System clipboard access beyond what the standard Web Clipboard API offers. |
+| `shell` | `ShellApi`  <br>Shell integration — opening URLs, files, and downloads with OS handlers. |
+| `contextMenu` | `ContextMenuApi`  <br>Native context-menu plumbing for right-click events on web contents. |
+| `spellcheck` | `SpellcheckApi`  <br>Chromium spell checker controls (dictionary, language list). |
+| `systemIntegration` | `SystemIntegrationApi`  <br>OS integration — system tray and autostart / launch-on-login. |
+| `printing` | `PrintingApi`  <br>Printing and PDF export pipeline. |
+| `navigation` | `NavigationApi`  <br>Read/write access to Chromium's back/forward navigation history. |
+| `ws` | `WsApi`  <br>In-process bridge that replaces the renderer↔server WebSocket. |
+| `security` | `SecurityApi`  <br>Security settings (backend scripting, SQL console) stored outside the DB. |
+| `backupPassphrase` | `BackupPassphraseApi`  <br>Write-only access to the backup passphrase, kept in the OS keyring. |
+| `onenote` | `OneNoteApi`  <br>OneNote importer sign-in via a loopback OAuth redirect (desktop only). |
+| `nativeExport` | `NativeExportApi`  <br>Desktop-native subtree export that streams a `.zip` straight to a file. |
+| `nativeImport` | `NativeImportApi`  <br>Desktop-native large-`.zip` import that reads the user's file in place via a capability token. |
+| `dialog` | `DialogApi`  <br>Native OS pickers that hand the renderer a location the user chose themselves. |
+| `restore` | `RestoreApi`  <br>Choosing a backup to restore during setup, read where it lies rather than uploaded. |
+| `transcription` | `TranscriptionApi`  <br>Meeting transcription: starting and stopping a recording, and following its state. |
 
-## `ElectronWindowApi`
+## `WindowApi`
 
 Window-level controls: zoom, theme, title bar, full screen, lifecycle, and a handful of main → renderer event subscriptions.
 
@@ -160,7 +160,7 @@ Window-level controls: zoom, theme, title bar, full screen, lifecycle, and a han
     </tbody>
 </table>
 
-## `ElectronClipboardApi`
+## `ClipboardApi`
 
 Renderer access to the system clipboard for cases the standard Web API can't cover.
 
@@ -187,7 +187,7 @@ Renderer access to the system clipboard for cases the standard Web API can't cov
     </tbody>
 </table>
 
-## `ElectronShellApi`
+## `ShellApi`
 
 Wrappers around Electron's `shell` module for interacting with the OS (default browser, default file handler, downloads, etc.).
 
@@ -228,7 +228,7 @@ Every method here is validated in the main process before dispatch — see `apps
     </tbody>
 </table>
 
-## `ElectronContextMenuApi`
+## `ContextMenuApi`
 
 Bridge for the native context menu shown over web contents.
 
@@ -242,7 +242,7 @@ Bridge for the native context menu shown over web contents.
     <tbody>
         <tr>
             <td><code>onContextMenu</code></td>
-            <td><pre><code class="language-application-typescript">onContextMenu(callback: (params: ElectronContextMenuParams) =&gt; void): void</code></pre><p>Subscribes to right-click events forwarded from the main process.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(params: ElectronContextMenuParams) =&gt; void</code><br>Receives where the user clicked and what is under the cursor.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">onContextMenu(callback: (params: ContextMenuParams) =&gt; void): void</code></pre><p>Subscribes to right-click events forwarded from the main process.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(params: ContextMenuParams) =&gt; void</code><br>Receives where the user clicked and what is under the cursor.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>webContentsAction</code></td>
@@ -251,7 +251,7 @@ Bridge for the native context menu shown over web contents.
     </tbody>
 </table>
 
-## `ElectronSpellcheckApi`
+## `SpellcheckApi`
 
 Renderer-side access to Chromium's built-in spell checker.
 
@@ -282,7 +282,7 @@ Renderer-side access to Chromium's built-in spell checker.
     </tbody>
 </table>
 
-## `ElectronSystemIntegrationApi`
+## `SystemIntegrationApi`
 
 OS integration controls — system tray and autostart / launch-on-login.
 
@@ -305,7 +305,7 @@ OS integration controls — system tray and autostart / launch-on-login.
     </tbody>
 </table>
 
-## `ElectronPrintingApi`
+## `PrintingApi`
 
 Printing and PDF export flow. Trilium drives Electron's printing pipeline through a small state machine that the main process owns, with progress and results pushed back to the renderer via IPC events.
 
@@ -360,7 +360,7 @@ Printing and PDF export flow. Trilium drives Electron's printing pipeline throug
     </tbody>
 </table>
 
-## `ElectronNavigationApi`
+## `NavigationApi`
 
 Accessors for the underlying Chromium navigation history of the current web contents (back/forward stack), exposed so the renderer can mirror it in custom UI such as the breadcrumb / tab back button.
 
@@ -415,7 +415,7 @@ Accessors for the underlying Chromium navigation history of the current web cont
     </tbody>
 </table>
 
-## `ElectronWsApi`
+## `WsApi`
 
 In-process replacement for the renderer↔server WebSocket. Backed by Chromium IPC instead of a TCP socket — no port is bound and no auth check is needed because the channel is only reachable from the renderer the BrowserWindow owns. Wire format is whatever the server's `MessagingProvider` accepts (currently `WebSocketMessage` / log-error / log-info / ping).
 
@@ -438,7 +438,7 @@ In-process replacement for the renderer↔server WebSocket. Backed by Chromium I
     </tbody>
 </table>
 
-## `ElectronSecurityApi`
+## `SecurityApi`
 
 Security settings that live outside the database (in `data_dir/security.json`) to prevent malicious scripts from modifying them. Changes require a native OS confirmation dialog and an app restart to take effect.
 
@@ -465,7 +465,7 @@ Security settings that live outside the database (in `data_dir/security.json`) t
     </tbody>
 </table>
 
-## `ElectronBackupPassphraseApi`
+## `BackupPassphraseApi`
 
 The backup passphrase, kept encrypted by the OS keyring in a file outside the database (the database is what ends up inside the backup, so a passphrase stored there would ride along inside the very container it protects).
 
@@ -496,7 +496,7 @@ Both changes are also gated on a native OS confirmation, which a script can requ
     </tbody>
 </table>
 
-## `ElectronOneNoteApi`
+## `OneNoteApi`
 
 Desktop-only OneNote importer sign-in, driven from the main process via a loopback OAuth redirect.
 
@@ -515,7 +515,7 @@ Desktop-only OneNote importer sign-in, driven from the main process via a loopba
     </tbody>
 </table>
 
-## `ElectronNativeExportApi`
+## `NativeExportApi`
 
 Desktop-native subtree export that streams a `.zip` straight to a file.
 
@@ -534,7 +534,7 @@ Desktop-native subtree export that streams a `.zip` straight to a file.
     </tbody>
 </table>
 
-## `ElectronNativeImportApi`
+## `NativeImportApi`
 
 Desktop-native import that reads the user's file **in place** (bounded memory, no temp copy) — the whole point being multi-GB `.zip` archives, though any importable file is accepted. The renderer never handles a filesystem path: `pickFiles` runs the OS dialog in the main process and returns opaque capability tokens, which `importFromToken` redeems. A script can't forge a token or pass a path, so it can never read an arbitrary file.
 
@@ -561,7 +561,7 @@ Desktop-native import that reads the user's file **in place** (bounded memory, n
     </tbody>
 </table>
 
-## `ElectronDialogApi`
+## `DialogApi`
 
 Native OS pickers that hand the renderer a location the user chose themselves.
 
@@ -584,7 +584,7 @@ Native OS pickers that hand the renderer a location the user chose themselves.
     </tbody>
 </table>
 
-## `ElectronRestoreApi`
+## `RestoreApi`
 
 Choosing a backup to restore from the desktop, where the file is already on the same disk as the database it is going to replace and has no business being uploaded to reach it.
 
@@ -605,7 +605,7 @@ Only usable during setup: what it puts forward is restored by the ordinary `POST
     </tbody>
 </table>
 
-## `ElectronTranscriptionApi`
+## `TranscriptionApi`
 
 Meeting transcription, recorded and transcribed on this computer by the main process. The renderer only starts and stops it; the audio never passes through the renderer.
 
@@ -654,7 +654,7 @@ Meeting transcription, recorded and transcribed on this computer by the main pro
 
 ## Types
 
-### `ElectronContextMenuParams`
+### `ContextMenuParams`
 
 Parameters delivered by the main process to the renderer when the user opens the system context menu (right-click) somewhere inside a web view.
 
@@ -694,7 +694,7 @@ What became of a request to change the stored backup passphrase.
 
 ### `OneNoteLoginResult`
 
-Outcome of a `ElectronOneNoteApi.login` attempt.
+Outcome of a `OneNoteApi.login` attempt.
 
 | Property | Description |
 | --- | --- |
@@ -704,7 +704,7 @@ Outcome of a `ElectronOneNoteApi.login` attempt.
 
 ### `NativeExportResult`
 
-Outcome of a `ElectronNativeExportApi.exportSubtreeToFile` request.
+Outcome of a `NativeExportApi.exportSubtreeToFile` request.
 
 | Property | Description |
 | --- | --- |
@@ -714,7 +714,7 @@ Outcome of a `ElectronNativeExportApi.exportSubtreeToFile` request.
 
 ### `NativeImportPickResult`
 
-Outcome of `ElectronNativeImportApi.pickFiles`: capability tokens, never paths.
+Outcome of `NativeImportApi.pickFiles`: capability tokens, never paths.
 
 | Property | Description |
 | --- | --- |
@@ -737,7 +737,7 @@ Import flags forwarded to the native importer (mirrors the HTTP route's options;
 
 ### `NativeImportResult`
 
-Outcome of `ElectronNativeImportApi.importFromToken`.
+Outcome of `NativeImportApi.importFromToken`.
 
 | Property | Description |
 | --- | --- |
@@ -747,7 +747,7 @@ Outcome of `ElectronNativeImportApi.importFromToken`.
 
 ### `NativeDirectoryPickResult`
 
-Outcome of `ElectronDialogApi.pickDirectory`.
+Outcome of `DialogApi.pickDirectory`.
 
 | Property | Description |
 | --- | --- |
@@ -756,7 +756,7 @@ Outcome of `ElectronDialogApi.pickDirectory`.
 
 ### `NativeBackupPickResult`
 
-Outcome of `ElectronRestoreApi.pickBackup`: what the chosen backup is, never where it is.
+Outcome of `RestoreApi.pickBackup`: what the chosen backup is, never where it is.
 
 The file itself stays with the main process, which holds it as the one waiting to be restored, so the renderer is given only what the screen has to show and decide with.
 
@@ -769,7 +769,7 @@ The file itself stays with the main process, which holds it as the one waiting t
 
 ### `TranscriptionState`
 
-What `ElectronTranscriptionApi` reports to every window.
+What `TranscriptionApi` reports to every window.
 
 | Property | Description |
 | --- | --- |

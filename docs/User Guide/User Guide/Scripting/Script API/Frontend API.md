@@ -17,11 +17,11 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>startNote</code></td>
-            <td><p><code>ScriptFNote</code><br>Note where the script execution started — the entry point of the current script bundle (in C terms, the file containing <code>main()</code>). When a script is spread across multiple code notes (descendant code notes loaded as modules via <code>require()</code>), every note in the bundle shares the same <code>startNote</code>, while <code>currentNote</code> differs per note. Messages from <code>api.log()</code> are grouped under this note.</p></td>
+            <td><p><code>FNote</code><br>Note where the script execution started — the entry point of the current script bundle (in C terms, the file containing <code>main()</code>). When a script is spread across multiple code notes (descendant code notes loaded as modules via <code>require()</code>), every note in the bundle shares the same <code>startNote</code>, while <code>currentNote</code> differs per note. Messages from <code>api.log()</code> are grouped under this note.</p></td>
         </tr>
         <tr>
             <td><code>currentNote</code></td>
-            <td><p><code>ScriptFNote</code><br>Note containing the source code that is currently executing (in C terms, <code>__FILE__</code>). Equal to <code>startNote</code> unless execution has moved into a descendant module note loaded via <code>require()</code>. Don't confuse this with the note open in the UI — use <code>api.getActiveContextNote()</code> for that.</p></td>
+            <td><p><code>FNote</code><br>Note containing the source code that is currently executing (in C terms, <code>__FILE__</code>). Equal to <code>startNote</code> unless execution has moved into a descendant module note loaded via <code>require()</code>. Don't confuse this with the note open in the UI — use <code>api.getActiveContextNote()</code> for that.</p></td>
         </tr>
         <tr>
             <td><code>originEntity</code></td>
@@ -29,7 +29,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>dayjs</code></td>
-            <td><p><code>ScriptDayjs</code><br>day.js library for date manipulation. See <code>https://day.js.org</code> for documentation</p></td>
+            <td><p><code>Dayjs</code><br>day.js library for date manipulation. See <code>https://day.js.org</code> for documentation</p></td>
         </tr>
         <tr>
             <td><code>RightPanelWidget</code></td>
@@ -77,19 +77,19 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>searchForNotes</code></td>
-            <td><pre><code class="language-application-typescript">searchForNotes(searchString: string): Promise&lt;ScriptFNote[]&gt;</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See full documentation for all options at: <a href="https://triliumnext.github.io/Docs/Wiki/search.html">https://triliumnext.github.io/Docs/Wiki/search.html</a></p></td>
+            <td><pre><code class="language-application-typescript">searchForNotes(searchString: string): Promise&lt;FNote[]&gt;</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See full documentation for all options at: <a href="https://triliumnext.github.io/Docs/Wiki/search.html">https://triliumnext.github.io/Docs/Wiki/search.html</a></p></td>
         </tr>
         <tr>
             <td><code>searchForNote</code></td>
-            <td><pre><code class="language-application-typescript">searchForNote(searchString: string): Promise&lt;ScriptFNote | null&gt;</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See full documentation for all options at: <a href="https://triliumnext.github.io/Docs/Wiki/search.html">https://triliumnext.github.io/Docs/Wiki/search.html</a></p></td>
+            <td><pre><code class="language-application-typescript">searchForNote(searchString: string): Promise&lt;FNote | null&gt;</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See full documentation for all options at: <a href="https://triliumnext.github.io/Docs/Wiki/search.html">https://triliumnext.github.io/Docs/Wiki/search.html</a></p></td>
         </tr>
         <tr>
             <td><code>getNote</code></td>
-            <td><pre><code class="language-application-typescript">getNote(noteId: string): Promise&lt;ScriptFNote | null&gt;</code></pre><p>Returns note by given noteId. If note is missing from the cache, it's loaded.</p></td>
+            <td><pre><code class="language-application-typescript">getNote(noteId: string): Promise&lt;FNote | null&gt;</code></pre><p>Returns note by given noteId. If note is missing from the cache, it's loaded.</p></td>
         </tr>
         <tr>
             <td><code>getNotes</code></td>
-            <td><pre><code class="language-application-typescript">getNotes(noteIds: string[], silentNotFoundError?: boolean): Promise&lt;ScriptFNote[]&gt;</code></pre><p>Returns list of notes. If note is missing from the cache, it's loaded.</p><p>This is often used to bulk-fill the cache with notes which would have to be picked one by one otherwise (by e.g. createLink())</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>noteIds</code></td><td><code>string[]</code></td></tr><tr><td><code>silentNotFoundError</code><br><em>optional</em></td><td><code>boolean</code><br>don't report error if the note is not found</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getNotes(noteIds: string[], silentNotFoundError?: boolean): Promise&lt;FNote[]&gt;</code></pre><p>Returns list of notes. If note is missing from the cache, it's loaded.</p><p>This is often used to bulk-fill the cache with notes which would have to be picked one by one otherwise (by e.g. createLink())</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>noteIds</code></td><td><code>string[]</code></td></tr><tr><td><code>silentNotFoundError</code><br><em>optional</em></td><td><code>boolean</code><br>don't report error if the note is not found</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>reloadNotes</code></td>
@@ -97,7 +97,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>createNote</code></td>
-            <td><pre><code class="language-application-typescript">createNote(parentNotePath: string, opts?: ScriptCreateNoteOpts): Promise&lt;{ note: ScriptFNote | null; branch: ScriptFBranch | undefined }&gt;</code></pre><p>Creates a new note as a child of the given parent, entirely on the frontend — no backend scripting required (unlike <code>api.runOnBackend(() =&gt; api.createTextNote(...))</code>). By default the new note is activated in the current tab with its title focused for editing; pass <code>{ activate: false }</code> to create it silently.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>parentNotePath</code></td><td><code>string</code><br>note path (or noteId) of the parent under which to create the note</td></tr><tr><td><code>opts</code><br><em>optional</em></td><td><code>ScriptCreateNoteOpts</code><br>creation options — e.g. <code>{ title, content, type, mime, activate }</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;{ note: ScriptFNote | null; branch: ScriptFBranch | undefined }&gt;</code>: the created note and its branch, resolved from the frontend cache</p></td>
+            <td><pre><code class="language-application-typescript">createNote(parentNotePath: string, opts?: CreateNoteOpts): Promise&lt;{ note: FNote | null; branch: FBranch | undefined }&gt;</code></pre><p>Creates a new note as a child of the given parent, entirely on the frontend — no backend scripting required (unlike <code>api.runOnBackend(() =&gt; api.createTextNote(...))</code>). By default the new note is activated in the current tab with its title focused for editing; pass <code>{ activate: false }</code> to create it silently.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>parentNotePath</code></td><td><code>string</code><br>note path (or noteId) of the parent under which to create the note</td></tr><tr><td><code>opts</code><br><em>optional</em></td><td><code>CreateNoteOpts</code><br>creation options — e.g. <code>{ title, content, type, mime, activate }</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;{ note: FNote | null; branch: FBranch | undefined }&gt;</code>: the created note and its branch, resolved from the frontend cache</p></td>
         </tr>
         <tr>
             <td><code>getInstanceName</code></td>
@@ -109,23 +109,23 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>getActiveContextNote</code></td>
-            <td><pre><code class="language-application-typescript">getActiveContextNote(): ScriptFNote</code></pre><p><strong>Returns</strong> <code>ScriptFNote</code>: active note (loaded into center pane)</p></td>
+            <td><pre><code class="language-application-typescript">getActiveContextNote(): FNote</code></pre><p><strong>Returns</strong> <code>FNote</code>: active note (loaded into center pane)</p></td>
         </tr>
         <tr>
             <td><code>getActiveContext</code></td>
-            <td><pre><code class="language-application-typescript">getActiveContext(): ScriptNoteContext</code></pre><p>Obtains the currently active/focused split in the current tab.</p><p>Note that this method does not return the note context of the "Quick edit" panel, it will return the note context behind it.</p></td>
+            <td><pre><code class="language-application-typescript">getActiveContext(): NoteContext</code></pre><p>Obtains the currently active/focused split in the current tab.</p><p>Note that this method does not return the note context of the "Quick edit" panel, it will return the note context behind it.</p></td>
         </tr>
         <tr>
             <td><code>getActiveMainContext</code></td>
-            <td><pre><code class="language-application-typescript">getActiveMainContext(): ScriptNoteContext</code></pre><p>Obtains the main context of the current tab. This is the left-most split.</p><p>Note that this method does not return the note context of the "Quick edit" panel, it will return the note context behind it.</p></td>
+            <td><pre><code class="language-application-typescript">getActiveMainContext(): NoteContext</code></pre><p>Obtains the main context of the current tab. This is the left-most split.</p><p>Note that this method does not return the note context of the "Quick edit" panel, it will return the note context behind it.</p></td>
         </tr>
         <tr>
             <td><code>getNoteContexts</code></td>
-            <td><pre><code class="language-application-typescript">getNoteContexts(): ScriptNoteContext[]</code></pre><p><strong>Returns</strong> <code>ScriptNoteContext[]</code>: returns all note contexts (splits) in all tabs</p></td>
+            <td><pre><code class="language-application-typescript">getNoteContexts(): NoteContext[]</code></pre><p><strong>Returns</strong> <code>NoteContext[]</code>: returns all note contexts (splits) in all tabs</p></td>
         </tr>
         <tr>
             <td><code>getMainNoteContexts</code></td>
-            <td><pre><code class="language-application-typescript">getMainNoteContexts(): ScriptNoteContext[]</code></pre><p><strong>Returns</strong> <code>ScriptNoteContext[]</code>: returns all main contexts representing tabs</p></td>
+            <td><pre><code class="language-application-typescript">getMainNoteContexts(): NoteContext[]</code></pre><p><strong>Returns</strong> <code>NoteContext[]</code>: returns all main contexts representing tabs</p></td>
         </tr>
         <tr>
             <td><code>getActiveContextTextEditor</code></td>
@@ -201,31 +201,31 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>getTodayNote</code></td>
-            <td><pre><code class="language-application-typescript">getTodayNote(): Promise&lt;ScriptFNote&gt;</code></pre><p>Returns date-note for today. If it doesn't exist, it is automatically created.</p></td>
+            <td><pre><code class="language-application-typescript">getTodayNote(): Promise&lt;FNote&gt;</code></pre><p>Returns date-note for today. If it doesn't exist, it is automatically created.</p></td>
         </tr>
         <tr>
             <td><code>getDayNote</code></td>
-            <td><pre><code class="language-application-typescript">getDayNote(date: string): Promise&lt;ScriptFNote&gt;</code></pre><p>Returns day note for a given date. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>e.g. "2019-04-29"</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getDayNote(date: string): Promise&lt;FNote&gt;</code></pre><p>Returns day note for a given date. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>e.g. "2019-04-29"</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getWeekFirstDayNote</code></td>
-            <td><pre><code class="language-application-typescript">getWeekFirstDayNote(date: string): Promise&lt;ScriptFNote&gt;</code></pre><p>Returns day note for the first date of the week of the given date. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>e.g. "2019-04-29"</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getWeekFirstDayNote(date: string): Promise&lt;FNote&gt;</code></pre><p>Returns day note for the first date of the week of the given date. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>e.g. "2019-04-29"</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getWeekNote</code></td>
-            <td><pre><code class="language-application-typescript">getWeekNote(date: string): Promise&lt;ScriptFNote&gt;</code></pre><p>Returns week note for given date. If such a note doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getWeekNote(date: string): Promise&lt;FNote&gt;</code></pre><p>Returns week note for given date. If such a note doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getMonthNote</code></td>
-            <td><pre><code class="language-application-typescript">getMonthNote(month: string): Promise&lt;ScriptFNote&gt;</code></pre><p>Returns month-note. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>month</code></td><td><code>string</code><br>e.g. "2019-04"</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getMonthNote(month: string): Promise&lt;FNote&gt;</code></pre><p>Returns month-note. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>month</code></td><td><code>string</code><br>e.g. "2019-04"</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getQuarterNote</code></td>
-            <td><pre><code class="language-application-typescript">getQuarterNote(date: string): Promise&lt;ScriptFNote&gt;</code></pre><p>Returns quarter note for given date. If such a note doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM format</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getQuarterNote(date: string): Promise&lt;FNote&gt;</code></pre><p>Returns quarter note for given date. If such a note doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM format</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getYearNote</code></td>
-            <td><pre><code class="language-application-typescript">getYearNote(year: string): Promise&lt;ScriptFNote&gt;</code></pre><p>Returns year-note. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>year</code></td><td><code>string</code><br>e.g. "2019"</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getYearNote(year: string): Promise&lt;FNote&gt;</code></pre><p>Returns year-note. If it doesn't exist, it is automatically created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>year</code></td><td><code>string</code><br>e.g. "2019"</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>setHoistedNoteId</code></td>
@@ -290,7 +290,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
     </tbody>
 </table>
 
-## `ScriptFNote`
+## `FNote`
 
 A note as seen by frontend scripts (subset of the client's `FNote`).
 
@@ -348,11 +348,11 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getParentNotes</code></td>
-            <td><pre><code class="language-application-typescript">getParentNotes(): ScriptFNote[]</code></pre><p>Returns the parent notes that the client has already loaded. A parent that is not loaded is skipped, and a search note that shows this note in its results counts as a parent.</p></td>
+            <td><pre><code class="language-application-typescript">getParentNotes(): FNote[]</code></pre><p>Returns the parent notes that the client has already loaded. A parent that is not loaded is skipped, and a search note that shows this note in its results counts as a parent.</p></td>
         </tr>
         <tr>
             <td><code>getChildNotes</code></td>
-            <td><pre><code class="language-application-typescript">getChildNotes(): Promise&lt;ScriptFNote[]&gt;</code></pre><p>Loads any missing child notes from the server, then returns all child notes in tree order. Archived children are included.</p></td>
+            <td><pre><code class="language-application-typescript">getChildNotes(): Promise&lt;FNote[]&gt;</code></pre><p>Loads any missing child notes from the server, then returns all child notes in tree order. Archived children are included.</p></td>
         </tr>
         <tr>
             <td><code>getParentNoteIds</code></td>
@@ -368,7 +368,7 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getSubtreeNotes</code></td>
-            <td><pre><code class="language-application-typescript">getSubtreeNotes(): Promise&lt;ScriptFNote[]&gt;</code></pre><p>Returns all descendants of the note, loading missing ones from the server one level at a time. An archived note and everything below it are left out, and the note itself is not included.</p></td>
+            <td><pre><code class="language-application-typescript">getSubtreeNotes(): Promise&lt;FNote[]&gt;</code></pre><p>Returns all descendants of the note, loading missing ones from the server one level at a time. An archived note and everything below it are left out, and the note itself is not included.</p></td>
         </tr>
         <tr>
             <td><code>getSubtreeNoteIds</code></td>
@@ -396,19 +396,19 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getParentBranches</code></td>
-            <td><pre><code class="language-application-typescript">getParentBranches(): ScriptFBranch[]</code></pre><p>Returns the branches that place this note under each of its parents. A branch the client has not loaded is skipped.</p></td>
+            <td><pre><code class="language-application-typescript">getParentBranches(): FBranch[]</code></pre><p>Returns the branches that place this note under each of its parents. A branch the client has not loaded is skipped.</p></td>
         </tr>
         <tr>
             <td><code>getChildBranches</code></td>
-            <td><pre><code class="language-application-typescript">getChildBranches(): ScriptFBranch[]</code></pre><p>Returns the branches to this note's children, in tree order. A branch the client has not loaded is skipped.</p></td>
+            <td><pre><code class="language-application-typescript">getChildBranches(): FBranch[]</code></pre><p>Returns the branches to this note's children, in tree order. A branch the client has not loaded is skipped.</p></td>
         </tr>
         <tr>
             <td><code>getBranches</code></td>
-            <td><pre><code class="language-application-typescript">getBranches(): ScriptFBranch[]</code></pre><p>Returns the branches that place the note under its parents.</p><aside class="admonition warning"><p>Deprecated. Use <code>getParentBranches()</code> instead.</p></aside></td>
+            <td><pre><code class="language-application-typescript">getBranches(): FBranch[]</code></pre><p>Returns the branches that place the note under its parents.</p><aside class="admonition warning"><p>Deprecated. Use <code>getParentBranches()</code> instead.</p></aside></td>
         </tr>
         <tr>
             <td><code>getFilteredChildBranches</code></td>
-            <td><pre><code class="language-application-typescript">getFilteredChildBranches(): ScriptFBranch[]</code></pre><p>Returns the same branches as <code>getChildBranches()</code>. Despite the name, archived children are not filtered out.</p></td>
+            <td><pre><code class="language-application-typescript">getFilteredChildBranches(): FBranch[]</code></pre><p>Returns the same branches as <code>getChildBranches()</code>. Despite the name, archived children are not filtered out.</p></td>
         </tr>
         <tr>
             <td><code>getAllNotePaths</code></td>
@@ -424,23 +424,23 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getSortedNotePathRecords</code></td>
-            <td><pre><code class="language-application-typescript">getSortedNotePathRecords(hoistedNoteId?: string, activeNotePath?: string | null): ScriptNotePathRecord[]</code></pre><p>Returns every path from the root to this note, best first. Paths inside the hoisted note come first, then paths that do not pass through an archived note or the hidden subtree, then paths that share the most with <code>activeNotePath</code>, then shorter paths. Paths through search notes are left out, and only parents the client has loaded are followed.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>hoistedNoteId</code><br><em>optional</em></td><td><code>string</code><br>the ID of the hoisted note. Defaults to <code>root</code>.</td></tr><tr><td><code>activeNotePath</code><br><em>optional</em></td><td><code>string | null</code><br>a note path such as <code>root/abc123/def456</code>, used to prefer paths close to it.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getSortedNotePathRecords(hoistedNoteId?: string, activeNotePath?: string | null): NotePathRecord[]</code></pre><p>Returns every path from the root to this note, best first. Paths inside the hoisted note come first, then paths that do not pass through an archived note or the hidden subtree, then paths that share the most with <code>activeNotePath</code>, then shorter paths. Paths through search notes are left out, and only parents the client has loaded are followed.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>hoistedNoteId</code><br><em>optional</em></td><td><code>string</code><br>the ID of the hoisted note. Defaults to <code>root</code>.</td></tr><tr><td><code>activeNotePath</code><br><em>optional</em></td><td><code>string | null</code><br>a note path such as <code>root/abc123/def456</code>, used to prefer paths close to it.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getAttributes</code></td>
-            <td><pre><code class="language-application-typescript">getAttributes(type?: string, name?: string): ScriptAttribute[]</code></pre><p>Returns the note's attributes, including inherited ones, optionally only those of the given type and name. The note's own attributes come first, then the ones inherited from its parents, then the ones from its templates.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code><br><em>optional</em></td><td><code>string</code><br><code>label</code> or <code>relation</code>; any other value throws an error.</td></tr><tr><td><code>name</code><br><em>optional</em></td><td><code>string</code><br>The attribute name, without the <code>#</code> or <code>~</code> prefix.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getAttributes(type?: string, name?: string): Attribute[]</code></pre><p>Returns the note's attributes, including inherited ones, optionally only those of the given type and name. The note's own attributes come first, then the ones inherited from its parents, then the ones from its templates.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code><br><em>optional</em></td><td><code>string</code><br><code>label</code> or <code>relation</code>; any other value throws an error.</td></tr><tr><td><code>name</code><br><em>optional</em></td><td><code>string</code><br>The attribute name, without the <code>#</code> or <code>~</code> prefix.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getOwnedAttributes</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedAttributes(type?: string, name?: string): ScriptAttribute[]</code></pre><p>Returns the note's own attributes, without inherited ones, optionally only those of the given type and name.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code><br><em>optional</em></td><td><code>string</code><br><code>label</code> or <code>relation</code>; any other value throws an error.</td></tr><tr><td><code>name</code><br><em>optional</em></td><td><code>string</code><br>The attribute name, without the <code>#</code> or <code>~</code> prefix.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getOwnedAttributes(type?: string, name?: string): Attribute[]</code></pre><p>Returns the note's own attributes, without inherited ones, optionally only those of the given type and name.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code><br><em>optional</em></td><td><code>string</code><br><code>label</code> or <code>relation</code>; any other value throws an error.</td></tr><tr><td><code>name</code><br><em>optional</em></td><td><code>string</code><br>The attribute name, without the <code>#</code> or <code>~</code> prefix.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getAttribute</code></td>
-            <td><pre><code class="language-application-typescript">getAttribute(type: string, name: string): ScriptAttribute | null</code></pre><p>Returns the first attribute of the given type and name, including inherited ones, or <code>undefined</code> if the note has none.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>label</code> or <code>relation</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getAttribute(type: string, name: string): Attribute | null</code></pre><p>Returns the first attribute of the given type and name, including inherited ones, or <code>undefined</code> if the note has none.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>label</code> or <code>relation</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getOwnedAttribute</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedAttribute(type: string, name: string): ScriptAttribute | null</code></pre><p>Returns the first of the note's own attributes with the given type and name, or <code>undefined</code> if the note has none.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>label</code> or <code>relation</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getOwnedAttribute(type: string, name: string): Attribute | null</code></pre><p>Returns the first of the note's own attributes with the given type and name, or <code>undefined</code> if the note has none.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>label</code> or <code>relation</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getAttributeValue</code></td>
@@ -460,27 +460,27 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getAttributeDefinitions</code></td>
-            <td><pre><code class="language-application-typescript">getAttributeDefinitions(): ScriptAttribute[]</code></pre><p>Returns the attribute definitions that apply to the note, at most one per defined name. When the note gets a definition from several places, such as its own, an ancestor's and a template's, the nearest one wins, in the order <code>getAttributes()</code> lists them.</p></td>
+            <td><pre><code class="language-application-typescript">getAttributeDefinitions(): Attribute[]</code></pre><p>Returns the attribute definitions that apply to the note, at most one per defined name. When the note gets a definition from several places, such as its own, an ancestor's and a template's, the nearest one wins, in the order <code>getAttributes()</code> lists them.</p></td>
         </tr>
         <tr>
             <td><code>getPromotedDefinitionAttributes</code></td>
-            <td><pre><code class="language-application-typescript">getPromotedDefinitionAttributes(): ScriptAttribute[]</code></pre><p>Returns the attribute definitions that are marked as promoted, at most one per name, grouped by the note that owns them and ordered by position. Returns an empty array if the note has a truthy <code>hidePromotedAttributes</code> label.</p></td>
+            <td><pre><code class="language-application-typescript">getPromotedDefinitionAttributes(): Attribute[]</code></pre><p>Returns the attribute definitions that are marked as promoted, at most one per name, grouped by the note that owns them and ordered by position. Returns an empty array if the note has a truthy <code>hidePromotedAttributes</code> label.</p></td>
         </tr>
         <tr>
             <td><code>getLabels</code></td>
-            <td><pre><code class="language-application-typescript">getLabels(name?: string): ScriptAttribute[]</code></pre><p>Returns the note's labels, including inherited ones, optionally only those with <code>name</code>.</p></td>
+            <td><pre><code class="language-application-typescript">getLabels(name?: string): Attribute[]</code></pre><p>Returns the note's labels, including inherited ones, optionally only those with <code>name</code>.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedLabels</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedLabels(name?: string): ScriptAttribute[]</code></pre><p>Returns the note's own labels, without inherited ones, optionally only those with <code>name</code>.</p></td>
+            <td><pre><code class="language-application-typescript">getOwnedLabels(name?: string): Attribute[]</code></pre><p>Returns the note's own labels, without inherited ones, optionally only those with <code>name</code>.</p></td>
         </tr>
         <tr>
             <td><code>getLabel</code></td>
-            <td><pre><code class="language-application-typescript">getLabel(name: string): ScriptAttribute | null</code></pre><p>Returns the first label with the given name, including inherited ones, or <code>undefined</code> if the note has none.</p></td>
+            <td><pre><code class="language-application-typescript">getLabel(name: string): Attribute | null</code></pre><p>Returns the first label with the given name, including inherited ones, or <code>undefined</code> if the note has none.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedLabel</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedLabel(name: string): ScriptAttribute | null</code></pre><p>Returns the first of the note's own labels with the given name, or <code>undefined</code> if the note has none.</p></td>
+            <td><pre><code class="language-application-typescript">getOwnedLabel(name: string): Attribute | null</code></pre><p>Returns the first of the note's own labels with the given name, or <code>undefined</code> if the note has none.</p></td>
         </tr>
         <tr>
             <td><code>getLabelValue</code></td>
@@ -508,19 +508,19 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getRelations</code></td>
-            <td><pre><code class="language-application-typescript">getRelations(name?: string): ScriptAttribute[]</code></pre><p>Returns the note's relations, including inherited ones, optionally only those with <code>name</code>.</p></td>
+            <td><pre><code class="language-application-typescript">getRelations(name?: string): Attribute[]</code></pre><p>Returns the note's relations, including inherited ones, optionally only those with <code>name</code>.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedRelations</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedRelations(name: string): ScriptAttribute[]</code></pre><p>Returns the note's own relations, without inherited ones, optionally only those with <code>name</code>.</p></td>
+            <td><pre><code class="language-application-typescript">getOwnedRelations(name: string): Attribute[]</code></pre><p>Returns the note's own relations, without inherited ones, optionally only those with <code>name</code>.</p></td>
         </tr>
         <tr>
             <td><code>getRelation</code></td>
-            <td><pre><code class="language-application-typescript">getRelation(name: string): ScriptAttribute | null</code></pre><p>Returns the first relation with the given name, including inherited ones, or <code>undefined</code> if the note has none.</p></td>
+            <td><pre><code class="language-application-typescript">getRelation(name: string): Attribute | null</code></pre><p>Returns the first relation with the given name, including inherited ones, or <code>undefined</code> if the note has none.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedRelation</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedRelation(name: string): ScriptAttribute | null</code></pre><p>Returns the first of the note's own relations with the given name, or <code>undefined</code> if the note has none.</p></td>
+            <td><pre><code class="language-application-typescript">getOwnedRelation(name: string): Attribute | null</code></pre><p>Returns the first of the note's own relations with the given name, or <code>undefined</code> if the note has none.</p></td>
         </tr>
         <tr>
             <td><code>getRelationValue</code></td>
@@ -544,19 +544,19 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getRelationTarget</code></td>
-            <td><pre><code class="language-application-typescript">getRelationTarget(name: string): Promise&lt;ScriptFNote | null&gt;</code></pre><p>Returns the target note of the first relation with the given name, including inherited ones. Returns <code>null</code> if the note has no such relation, the relation has no target, or the target note does not exist.</p></td>
+            <td><pre><code class="language-application-typescript">getRelationTarget(name: string): Promise&lt;FNote | null&gt;</code></pre><p>Returns the target note of the first relation with the given name, including inherited ones. Returns <code>null</code> if the note has no such relation, the relation has no target, or the target note does not exist.</p></td>
         </tr>
         <tr>
             <td><code>getRelationTargets</code></td>
-            <td><pre><code class="language-application-typescript">getRelationTargets(name: string): Promise&lt;(ScriptFNote | null)[]&gt;</code></pre><p>Returns the target notes of the note's relations with the given name, including inherited ones, in the order of the relations. A relation whose target is missing gives <code>null</code>.</p></td>
+            <td><pre><code class="language-application-typescript">getRelationTargets(name: string): Promise&lt;(FNote | null)[]&gt;</code></pre><p>Returns the target notes of the note's relations with the given name, including inherited ones, in the order of the relations. A relation whose target is missing gives <code>null</code>.</p></td>
         </tr>
         <tr>
             <td><code>getTargetRelations</code></td>
-            <td><pre><code class="language-application-typescript">getTargetRelations(): ScriptAttribute[]</code></pre><p>Returns the relations, owned by any note, that point at this note.</p></td>
+            <td><pre><code class="language-application-typescript">getTargetRelations(): Attribute[]</code></pre><p>Returns the relations, owned by any note, that point at this note.</p></td>
         </tr>
         <tr>
             <td><code>getTargetRelationSourceNotes</code></td>
-            <td><pre><code class="language-application-typescript">getTargetRelationSourceNotes(): Promise&lt;ScriptFNote[]&gt;</code></pre><p>Returns the notes that own a relation pointing at this note.</p></td>
+            <td><pre><code class="language-application-typescript">getTargetRelationSourceNotes(): Promise&lt;FNote[]&gt;</code></pre><p>Returns the notes that own a relation pointing at this note.</p></td>
         </tr>
         <tr>
             <td><code>getContent</code></td>
@@ -568,35 +568,35 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>getBlob</code></td>
-            <td><pre><code class="language-application-typescript">getBlob(): Promise&lt;ScriptBlob | null&gt;</code></pre><p>Fetches the note's content together with its blob ID, length and modification date. Resolves to <code>null</code> if the request fails.</p></td>
+            <td><pre><code class="language-application-typescript">getBlob(): Promise&lt;Blob | null&gt;</code></pre><p>Fetches the note's content together with its blob ID, length and modification date. Resolves to <code>null</code> if the request fails.</p></td>
         </tr>
         <tr>
             <td><code>getNoteComplement</code></td>
-            <td><pre><code class="language-application-typescript">getNoteComplement(): Promise&lt;ScriptBlob | null&gt;</code></pre><p>Returns the blob that holds the note's content.</p><aside class="admonition warning"><p>Deprecated. Use <code>getBlob()</code> instead.</p></aside></td>
+            <td><pre><code class="language-application-typescript">getNoteComplement(): Promise&lt;Blob | null&gt;</code></pre><p>Returns the blob that holds the note's content.</p><aside class="admonition warning"><p>Deprecated. Use <code>getBlob()</code> instead.</p></aside></td>
         </tr>
         <tr>
             <td><code>getMetadata</code></td>
-            <td><pre><code class="language-application-typescript">getMetadata(): Promise&lt;ScriptNoteMetadata&gt;</code></pre><p>Returns the note's creation and modification dates, which it requests from the server.</p></td>
+            <td><pre><code class="language-application-typescript">getMetadata(): Promise&lt;NoteMetadata&gt;</code></pre><p>Returns the note's creation and modification dates, which it requests from the server.</p></td>
         </tr>
         <tr>
             <td><code>attachments</code></td>
-            <td><p><code>ScriptAttachment[] | null</code><br>The note's attachments, or <code>null</code> until <code>getAttachments()</code> loads them. Use <code>getAttachments()</code> instead of reading this property.</p></td>
+            <td><p><code>Attachment[] | null</code><br>The note's attachments, or <code>null</code> until <code>getAttachments()</code> loads them. Use <code>getAttachments()</code> instead of reading this property.</p></td>
         </tr>
         <tr>
             <td><code>getAttachments</code></td>
-            <td><pre><code class="language-application-typescript">getAttachments(): Promise&lt;ScriptAttachment[]&gt;</code></pre><p>Returns the note's attachments. The first call loads them from the server, and later calls reuse that list.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachments(): Promise&lt;Attachment[]&gt;</code></pre><p>Returns the note's attachments. The first call loads them from the server, and later calls reuse that list.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentsByRole</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentsByRole(role: string): Promise&lt;ScriptAttachment[]&gt;</code></pre><p>Returns the note's attachments with the given role, such as <code>image</code> or <code>file</code>.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachmentsByRole(role: string): Promise&lt;Attachment[]&gt;</code></pre><p>Returns the note's attachments with the given role, such as <code>image</code> or <code>file</code>.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentById</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentById(attachmentId: string): Promise&lt;ScriptAttachment | undefined&gt;</code></pre><p>Returns the note's attachment with the given ID, or <code>undefined</code> if this note has no such attachment.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachmentById(attachmentId: string): Promise&lt;Attachment | undefined&gt;</code></pre><p>Returns the note's attachment with the given ID, or <code>undefined</code> if this note has no such attachment.</p></td>
         </tr>
         <tr>
             <td><code>getNotesToInheritAttributesFrom</code></td>
-            <td><pre><code class="language-application-typescript">getNotesToInheritAttributesFrom(): ScriptFNote[]</code></pre><p>Returns the target notes of this note's <code>~template</code> and <code>~inherit</code> relations, inherited relations included. A target note that the client has not loaded appears as <code>undefined</code>.</p></td>
+            <td><pre><code class="language-application-typescript">getNotesToInheritAttributesFrom(): FNote[]</code></pre><p>Returns the target notes of this note's <code>~template</code> and <code>~inherit</code> relations, inherited relations included. A target note that the client has not loaded appears as <code>undefined</code>.</p></td>
         </tr>
         <tr>
             <td><code>getIcon</code></td>
@@ -791,15 +791,15 @@ Instance shape of `RightPanelWidget` (subset) — a widget shown in the right si
         </tr>
         <tr>
             <td><code>note</code></td>
-            <td><p><code>ScriptFNote | null</code><br>The note currently shown in this widget's context.</p></td>
+            <td><p><code>FNote | null</code><br>The note currently shown in this widget's context.</p></td>
         </tr>
         <tr>
             <td><code>noteContext</code><br><em>optional</em></td>
-            <td><p><code>ScriptNoteContext</code><br>The note context (split) this widget is attached to.</p></td>
+            <td><p><code>NoteContext</code><br>The note context (split) this widget is attached to.</p></td>
         </tr>
         <tr>
             <td><code>refreshWithNote</code></td>
-            <td><pre><code class="language-application-typescript">refreshWithNote(note: ScriptFNote | null | undefined): void | Promise&lt;void&gt;</code></pre><p>Updates the widget for the note in its context. Override it to refresh the widget's content; it runs when that note changes and on <code>refresh()</code>, as long as <code>isEnabled()</code> returns <code>true</code>.</p></td>
+            <td><pre><code class="language-application-typescript">refreshWithNote(note: FNote | null | undefined): void | Promise&lt;void&gt;</code></pre><p>Updates the widget for the note in its context. Override it to refresh the widget's content; it runs when that note changes and on <code>refresh()</code>, as long as <code>isEnabled()</code> returns <code>true</code>.</p></td>
         </tr>
         <tr>
             <td><code>refresh</code></td>
@@ -866,15 +866,15 @@ Instance shape of `NoteContextAwareWidget` (subset) — reacts to the active not
         </tr>
         <tr>
             <td><code>note</code></td>
-            <td><p><code>ScriptFNote | null</code><br>The note currently shown in this widget's context.</p></td>
+            <td><p><code>FNote | null</code><br>The note currently shown in this widget's context.</p></td>
         </tr>
         <tr>
             <td><code>noteContext</code><br><em>optional</em></td>
-            <td><p><code>ScriptNoteContext</code><br>The note context (split) this widget is attached to.</p></td>
+            <td><p><code>NoteContext</code><br>The note context (split) this widget is attached to.</p></td>
         </tr>
         <tr>
             <td><code>refreshWithNote</code></td>
-            <td><pre><code class="language-application-typescript">refreshWithNote(note: ScriptFNote | null | undefined): void | Promise&lt;void&gt;</code></pre><p>Updates the widget for the note in its context. Override it to refresh the widget's content; it runs when that note changes and on <code>refresh()</code>, as long as <code>isEnabled()</code> returns <code>true</code>.</p></td>
+            <td><pre><code class="language-application-typescript">refreshWithNote(note: FNote | null | undefined): void | Promise&lt;void&gt;</code></pre><p>Updates the widget for the note in its context. Override it to refresh the widget's content; it runs when that note changes and on <code>refresh()</code>, as long as <code>isEnabled()</code> returns <code>true</code>.</p></td>
         </tr>
         <tr>
             <td><code>refresh</code></td>
@@ -934,7 +934,7 @@ Instance shape of `BasicWidget` (subset) — the base for custom frontend widget
     </tbody>
 </table>
 
-## `ScriptFBranch`
+## `FBranch`
 
 A branch (parent↔child link) as seen by frontend scripts (subset of `FBranch`).
 
@@ -972,15 +972,15 @@ A branch (parent↔child link) as seen by frontend scripts (subset of `FBranch`)
         </tr>
         <tr>
             <td><code>getNote</code></td>
-            <td><pre><code class="language-application-typescript">getNote(): Promise&lt;ScriptFNote | null&gt;</code></pre><p>Returns the child note, loading it from the server if the frontend cache does not hold it yet. Resolves to <code>null</code> if the note does not exist.</p></td>
+            <td><pre><code class="language-application-typescript">getNote(): Promise&lt;FNote | null&gt;</code></pre><p>Returns the child note, loading it from the server if the frontend cache does not hold it yet. Resolves to <code>null</code> if the note does not exist.</p></td>
         </tr>
         <tr>
             <td><code>getNoteFromCache</code></td>
-            <td><pre><code class="language-application-typescript">getNoteFromCache(): ScriptFNote | undefined</code></pre><p>Returns the child note from the frontend cache, without contacting the server. Returns <code>undefined</code> if the note is not loaded yet.</p></td>
+            <td><pre><code class="language-application-typescript">getNoteFromCache(): FNote | undefined</code></pre><p>Returns the child note from the frontend cache, without contacting the server. Returns <code>undefined</code> if the note is not loaded yet.</p></td>
         </tr>
         <tr>
             <td><code>getParentNote</code></td>
-            <td><pre><code class="language-application-typescript">getParentNote(): Promise&lt;ScriptFNote | null&gt;</code></pre><p>Returns the parent note, loading it from the server if the frontend cache does not hold it yet. Resolves to <code>null</code> if the note does not exist.</p></td>
+            <td><pre><code class="language-application-typescript">getParentNote(): Promise&lt;FNote | null&gt;</code></pre><p>Returns the parent note, loading it from the server if the frontend cache does not hold it yet. Resolves to <code>null</code> if the note does not exist.</p></td>
         </tr>
         <tr>
             <td><code>isTopLevel</code></td>
@@ -989,7 +989,7 @@ A branch (parent↔child link) as seen by frontend scripts (subset of `FBranch`)
     </tbody>
 </table>
 
-## `ScriptNoteContext`
+## `NoteContext`
 
 A split/tab context as seen by frontend scripts (subset of `NoteContext`).
 
@@ -1007,7 +1007,7 @@ A split/tab context as seen by frontend scripts (subset of `NoteContext`).
         </tr>
         <tr>
             <td><code>note</code></td>
-            <td><p><code>ScriptFNote | null</code><br>The note this context shows, or <code>null</code> if the context is empty.</p></td>
+            <td><p><code>FNote | null</code><br>The note this context shows, or <code>null</code> if the context is empty.</p></td>
         </tr>
         <tr>
             <td><code>notePath</code></td>
@@ -1024,7 +1024,7 @@ A split/tab context as seen by frontend scripts (subset of `NoteContext`).
     </tbody>
 </table>
 
-## `ScriptDayjsInstance`
+## `DayjsInstance`
 
 A date as day.js wraps it (subset).
 
@@ -1042,11 +1042,11 @@ A date as day.js wraps it (subset).
         </tr>
         <tr>
             <td><code>add</code></td>
-            <td><pre><code class="language-application-typescript">add(value: number, unit: string): ScriptDayjsInstance</code></pre><p>Returns a new date, <code>value</code> units later. The date it is called on stays unchanged.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>value</code></td><td><code>number</code></td></tr><tr><td><code>unit</code></td><td><code>string</code><br>The unit, such as <code>"day"</code>, <code>"week"</code>, <code>"month"</code> or <code>"year"</code>.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">add(value: number, unit: string): DayjsInstance</code></pre><p>Returns a new date, <code>value</code> units later. The date it is called on stays unchanged.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>value</code></td><td><code>number</code></td></tr><tr><td><code>unit</code></td><td><code>string</code><br>The unit, such as <code>"day"</code>, <code>"week"</code>, <code>"month"</code> or <code>"year"</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>subtract</code></td>
-            <td><pre><code class="language-application-typescript">subtract(value: number, unit: string): ScriptDayjsInstance</code></pre><p>Returns a new date, <code>value</code> units earlier. The date it is called on stays unchanged.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>value</code></td><td><code>number</code></td></tr><tr><td><code>unit</code></td><td><code>string</code><br>The unit, such as <code>"day"</code>, <code>"week"</code>, <code>"month"</code> or <code>"year"</code>.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">subtract(value: number, unit: string): DayjsInstance</code></pre><p>Returns a new date, <code>value</code> units earlier. The date it is called on stays unchanged.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>value</code></td><td><code>number</code></td></tr><tr><td><code>unit</code></td><td><code>string</code><br>The unit, such as <code>"day"</code>, <code>"week"</code>, <code>"month"</code> or <code>"year"</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>toDate</code></td>
@@ -1057,12 +1057,12 @@ A date as day.js wraps it (subset).
 
 ## Types
 
-### `ScriptDayjs`
+### `Dayjs`
 
 Minimal day.js surface (the real API exposes the full day.js factory).
 
 ```typescript
-type ScriptDayjs = (date?: string | number | Date) => ScriptDayjsInstance
+type Dayjs = (date?: string | number | Date) => DayjsInstance
 ```
 
 ### `WidgetClass`
@@ -1079,7 +1079,7 @@ type WidgetClass = (...args: unknown[]) => T
 type Func = (...args: unknown[]) => unknown | string
 ```
 
-### `ScriptCreateNoteOpts`
+### `CreateNoteOpts`
 
 Options accepted by `FrontendApi.createNote`.
 
@@ -1095,7 +1095,7 @@ Options accepted by `FrontendApi.createNote`.
 | `focus`  <br>_optional_ | `"title" \| "content"`  <br>Which part of the activated note to focus. Defaults to "title". |
 | `target`  <br>_optional_ | `string`  <br>Where to place the note relative to the parent/target: "into" (default) or "after". |
 | `targetBranchId`  <br>_optional_ | `string`  <br>Branch ID used together with `target: "after"`. |
-| `attributes`  <br>_optional_ | `ScriptCreateAttribute[]`  <br>Attributes to set atomically on creation. |
+| `attributes`  <br>_optional_ | `CreateAttribute[]`  <br>Attributes to set atomically on creation. |
 
 ### `PickerItem`
 
@@ -1118,7 +1118,7 @@ A run of picker items under a heading of their own.
 | `groupHeader` | `string`  <br>The heading shown above the group's items. An empty string shows the items without a heading. |
 | `items` | `PickerItem[]`  <br>The items in the group, in the order the picker shows them. |
 
-### `ScriptNotePathRecord`
+### `NotePathRecord`
 
 One resolved tree path to a note (subset of the client's `NotePathRecord`).
 
@@ -1130,7 +1130,7 @@ One resolved tree path to a note (subset of the client's `NotePathRecord`).
 | `notePath` | `string[]`  <br>The note IDs along the path, from `root` to the note itself. |
 | `isHidden` | `boolean`  <br>Whether the path passes through the hidden subtree, `_hidden`, which holds Trilium's system notes. |
 
-### `ScriptAttribute`
+### `Attribute`
 
 A label or relation attached to a note.
 
@@ -1143,7 +1143,7 @@ A label or relation attached to a note.
 | `isInheritable` | `boolean`  <br>Whether the note's descendants inherit the attribute. |
 | `isOwned` | `boolean`  <br>Not set by Trilium: neither frontend nor backend attributes carry this property, so it reads `undefined`. |
 
-### `ScriptBlob`
+### `Blob`
 
 A note's binary/text content blob (subset of the client's `FBlob`).
 
@@ -1155,9 +1155,9 @@ A note's binary/text content blob (subset of the client's `FBlob`).
 | `dateModified` | `string`  <br>The local date and time this content was first stored, with the UTC offset, such as `2026-10-22 14:03:05.123+0200`. A blob never changes, so new content gets a new blob. |
 | `utcDateModified` | `string`  <br>The date and time, in UTC, that this content was first stored, such as `2026-10-22 12:03:05.123Z`. |
 
-### `ScriptNoteMetadata`
+### `NoteMetadata`
 
-Creation/modification timestamps returned by `ScriptFNote.getMetadata`.
+Creation/modification timestamps returned by `FNote.getMetadata`.
 
 | Property | Description |
 | --- | --- |
@@ -1166,7 +1166,7 @@ Creation/modification timestamps returned by `ScriptFNote.getMetadata`.
 | `dateModified` | `string`  <br>The local date and time the note was last modified, with the UTC offset, such as `2026-10-22 14:03:05.123+0200`. A change to the note's content counts as a modification. |
 | `utcDateModified` | `string`  <br>The date and time, in UTC, that the note was last modified, such as `2026-10-22 12:03:05.123Z`. A change to the note's content counts as a modification. |
 
-### `ScriptAttachment`
+### `Attachment`
 
 An attachment as seen by frontend scripts (subset of the client's `FAttachment`).
 
@@ -1180,9 +1180,9 @@ An attachment as seen by frontend scripts (subset of the client's `FAttachment`)
 | `utcDateModified` | `string`  <br>The date and time, in UTC, that the attachment was last saved, such as `2026-10-22 12:03:05.123Z`. Replacing the content counts as saving. |
 | `contentLength` | `number`  <br>The length of the attachment's content. Only some ways of loading an attachment fill it in, such as `getAttachments()`; on the backend, `getAttachmentsByRole()` leaves it `undefined`. |
 
-### `ScriptCreateAttribute`
+### `CreateAttribute`
 
-An attribute to create together with a note (see `ScriptCreateNoteOpts.attributes`).
+An attribute to create together with a note (see `CreateNoteOpts.attributes`).
 
 | Property | Description |
 | --- | --- |
