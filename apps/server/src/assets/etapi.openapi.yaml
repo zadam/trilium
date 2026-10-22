@@ -36,6 +36,7 @@ tags:
 paths:
     /create-note:
         post:
+            summary: Create a note
             description: Create a note and place it into the note tree
             tags: [Notes]
             operationId: createNote
@@ -60,6 +61,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /notes:
         get:
+            summary: Search notes
             description: Search notes
             tags: [Notes]
             operationId: searchNotes
@@ -194,6 +196,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get a note
             description: Returns a note identified by its ID
             tags: [Notes]
             operationId: getNoteById
@@ -211,6 +214,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         patch:
+            summary: Update a note
             description: patch a note identified by the noteId with changes in the body
             tags: [Notes]
             operationId: patchNoteById
@@ -234,6 +238,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         delete:
+            summary: Delete a note
             description: deletes a single note based on the noteId supplied
             tags: [Notes]
             operationId: deleteNoteById
@@ -254,6 +259,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get the content of a note
             description: Returns note content identified by its ID
             tags: [Notes]
             operationId: getNoteContent
@@ -266,6 +272,7 @@ paths:
                                 type: string
                                 format: binary
         put:
+            summary: Replace the content of a note
             description: Updates note content identified by its ID
             tags: [Notes]
             operationId: putNoteContentById
@@ -303,6 +310,7 @@ paths:
                       - share
                   default: html
         get:
+            summary: Export a subtree
             description: Exports ZIP file export of a given note subtree. To export whole document, use "root" for noteId
             tags: [Notes]
             operationId: exportNoteSubtree
@@ -328,6 +336,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         post:
+            summary: Import a ZIP archive
             description: Imports ZIP file into a given note.
             tags: [Notes]
             operationId: importZip
@@ -360,6 +369,7 @@ paths:
                       - markdown
                   default: html
         post:
+            summary: Create a revision
             description: Create a note revision for the given note
             tags: [Revisions]
             operationId: createRevision
@@ -380,6 +390,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: List the revisions of a note
             description: |
                 Returns the revisions of a note identified by its ID. Protected revisions are
                 omitted, since they cannot be read through ETAPI individually either.
@@ -408,6 +419,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: List the attachments of a note
             description: Returns all attachments for a note identified by its ID
             tags: [Attachments]
             operationId: getNoteAttachments
@@ -434,6 +446,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         post:
+            summary: Restore a deleted note
             description: Restore a deleted note. The note must be deleted and must have at least one undeleted parent.
             tags: [Notes]
             operationId: undeleteNote
@@ -456,6 +469,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /notes/history:
         get:
+            summary: List recent changes
             description: Returns recent changes including note creations, modifications, and deletions
             tags: [Notes]
             operationId: getNoteHistory
@@ -489,6 +503,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get a revision
             description: Returns a revision identified by its ID
             tags: [Revisions]
             operationId: getRevisionById
@@ -513,6 +528,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get the content of a revision
             description: Returns revision content identified by its ID
             tags: [Revisions]
             operationId: getRevisionContent
@@ -531,6 +547,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /branches:
         post:
+            summary: Create a branch
             description: >
                 Create a branch (clone a note to a different location in the tree).
                 In case there is a branch between parent note and child note already,
@@ -570,6 +587,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get a branch
             description: Returns a branch identified by its ID
             tags: [Branches]
             operationId: getBranchById
@@ -587,6 +605,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         patch:
+            summary: Update a branch
             description: patch a branch identified by the branchId with changes in the body. Only prefix and notePosition can be updated. If you want to update other properties, you need to delete the old branch and create a new one.
             tags: [Branches]
             operationId: patchBranchById
@@ -610,6 +629,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         delete:
+            summary: Delete a branch
             description: >
                 deletes a branch based on the branchId supplied. If this is the last branch of the (child) note,
                 then the note is deleted as well.
@@ -626,6 +646,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /attachments:
         post:
+            summary: Create an attachment
             description: create an attachment
             tags: [Attachments]
             operationId: postAttachment
@@ -656,6 +677,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get an attachment
             description: Returns an attachment identified by its ID
             tags: [Attachments]
             operationId: getAttachmentById
@@ -673,6 +695,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         patch:
+            summary: Update an attachment
             description: patch an attachment identified by the attachmentId with changes in the body. Only role, mime, title, and position are patchable.
             tags: [Attachments]
             operationId: patchAttachmentById
@@ -696,6 +719,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         delete:
+            summary: Delete an attachment
             description: deletes an attachment based on the attachmentId supplied.
             tags: [Attachments]
             operationId: deleteAttachmentById
@@ -716,6 +740,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get the content of an attachment
             description: Returns attachment content identified by its ID
             tags: [Attachments]
             operationId: getAttachmentContent
@@ -728,6 +753,7 @@ paths:
                                 type: string
                                 format: binary
         put:
+            summary: Replace the content of an attachment
             description: Updates attachment content identified by its ID
             tags: [Attachments]
             operationId: putAttachmentContentById
@@ -750,6 +776,7 @@ paths:
                     description: attachment content updated
     /attributes:
         post:
+            summary: Create an attribute
             description: create an attribute for a given note
             tags: [Attributes]
             operationId: postAttribute
@@ -780,6 +807,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         get:
+            summary: Get an attribute
             description: Returns an attribute identified by its ID
             tags: [Attributes]
             operationId: getAttributeById
@@ -797,6 +825,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         patch:
+            summary: Update an attribute
             description: patch an attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
             tags: [Attributes]
             operationId: patchAttributeById
@@ -820,6 +849,7 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Error"
         delete:
+            summary: Delete an attribute
             description: deletes an attribute based on the attributeId supplied.
             tags: [Attributes]
             operationId: deleteAttributeById
@@ -840,6 +870,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/EntityId"
         post:
+            summary: Refresh the order of child notes
             description: >
                 notePositions in branches are not automatically pushed to connected clients and need a specific instruction.
                 If you want your changes to be in effect immediately, call this service after setting branches' notePosition.
@@ -857,6 +888,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /inbox/{date}:
         get:
+            summary: Get the inbox note
             description: >
                 returns an "inbox" note, into which note can be created. Date will be used depending on whether the inbox
                 is a fixed note (identified with #inbox label) or a day note in a journal. A database with neither
@@ -886,6 +918,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /calendar/days/{date}:
         get:
+            summary: Get a day note
             description: returns a day note for a given date. Gets created if doesn't exist.
             tags: [Calendar]
             operationId: getDayNote
@@ -1026,6 +1059,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /auth/login:
         post:
+            summary: Log in
             description: get an ETAPI token based on password for further use with ETAPI
             tags: [Tokens]
             operationId: login
@@ -1059,6 +1093,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /auth/logout:
         post:
+            summary: Log out
             description: logout (delete/deactivate) an ETAPI token
             tags: [Tokens]
             operationId: logout
@@ -1073,6 +1108,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
     /app-info:
         get:
+            summary: Get application info
             description: returns information about the running Trilium instance
             tags: [Application]
             operationId: getAppInfo
@@ -1098,6 +1134,7 @@ paths:
               schema:
                   $ref: "#/components/schemas/StringId"
         put:
+            summary: Create a backup
             description: Create a database backup under a given name
             tags: [Application]
             operationId: createBackup
