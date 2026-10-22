@@ -65,7 +65,11 @@
     "edit_link": "编辑链接",
     "button_edit_link": "保存链接",
     "fix_link": "修复链接",
-    "button_fix_link": "修复链接"
+    "button_fix_link": "修复链接",
+    "web_link": "网页链接",
+    "url": "URL",
+    "mirror_title": "跟随笔记标题",
+    "mirror_title_description": "链接显示笔记当前的标题，笔记重命名时会随之变化。"
   },
   "branch_prefix": {
     "edit_branch_prefix": "编辑分支前缀",
@@ -282,7 +286,21 @@
   "include_note": {
     "dialog_title": "包含笔记",
     "label_note": "笔记",
-    "button_include": "包含笔记"
+    "button_include": "包含笔记",
+    "box_size": "框尺寸",
+    "size_tiny": "极小",
+    "size_tiny_description": "只占一行，显示标题和操作按钮。",
+    "size_small": "小",
+    "size_small_description": "约 10 行高的方框。",
+    "size_medium": "中等",
+    "size_medium_description": "约 30 行高的方框。",
+    "size_full": "全宽",
+    "size_full_description": "显示全部内容。",
+    "size_expandable": "可展开",
+    "size_expandable_description": "未展开时只显示标题。",
+    "inserted_as_image": "此笔记以图片形式插入。",
+    "size_hint": "之后可以更改尺寸。",
+    "image_size_hint": "之后可以调整图片大小。"
   },
   "info": {
     "modalTitle": "信息消息",
@@ -310,7 +328,9 @@
   },
   "note_type_chooser": {
     "modal_title": "选择笔记类型",
-    "templates": "模板"
+    "templates": "模板",
+    "location": "位置",
+    "location_placeholder": "留空则使用默认位置"
   },
   "password_not_set": {
     "title": "密码未设置",
@@ -907,7 +927,8 @@
   },
   "left_pane_toggle": {
     "show_panel": "显示面板",
-    "hide_panel": "隐藏面板"
+    "hide_panel": "隐藏面板",
+    "peek_panel": "速览面板"
   },
   "move_pane_button": {
     "move_left": "向左移动",
@@ -1040,7 +1061,8 @@
     "open_all_confirm_other": "这将在新标签页中打开 {{count}} 个笔记。继续吗？",
     "dashboard": "仪表板",
     "open_all_limit_exceeded": "一次性打开的笔记过多（{{count}} 个）。上限为 {{max}} 个，请先缩小结果范围。",
-    "included_notes": "包含的笔记"
+    "included_notes": "包含的笔记",
+    "search-preview": "搜索预览"
   },
   "edited_notes": {
     "no_edited_notes_found": "今天还没有编辑过的笔记..."
@@ -1149,24 +1171,25 @@
     "depth_label": "深度",
     "depth_doesnt_matter": "任意",
     "depth_eq": "= {{count}}",
-    "direct_children": "直接子代",
-    "depth_gt": "大于 {{count}}",
-    "depth_lt": "小于 {{count}}"
+    "direct_children": "仅直接子笔记",
+    "depth_gt": "> {{count}}",
+    "depth_lt": "< {{count}}"
   },
   "debug": {
     "debug": "调试",
-    "debug_info": "调试将打印额外的调试信息到控制台，以帮助调试复杂的查询。",
-    "access_info": "要访问调试信息，请执行查询并点击左上角的“显示后端日志”。"
+    "debug_info": "将额外的调试信息输出到控制台，帮助调试复杂查询。",
+    "access_info": "运行搜索后，在全局菜单中点击「显示后端日志」。"
   },
   "fast_search": {
     "fast_search": "快速搜索",
-    "description": "快速搜索选项禁用笔记内容的全文搜索，这可能会加快在大型数据库中的搜索速度。"
+    "description": "禁用笔记内容的全文搜索，可加快大型数据库中的搜索速度。"
   },
   "include_archived_notes": {
     "include_archived_notes": "包括已归档的笔记"
   },
   "limit": {
-    "limit": "限制"
+    "limit": "限制",
+    "max_results": "最大结果数"
   },
   "order_by": {
     "order_by": "排序依据",
@@ -1176,7 +1199,7 @@
     "date_modified": "最后修改日期",
     "content_size": "笔记内容大小",
     "content_and_attachments_size": "笔记内容大小（包括附件）",
-    "content_and_attachments_and_revisions_size": "笔记内容大小（包括附件和笔记修订历史）",
+    "content_and_attachments_and_revisions_size": "笔记大小（含附件和修订）",
     "revision_count": "修订版本数量",
     "children_count": "子笔记数量",
     "parent_count": "克隆数量",
@@ -1184,11 +1207,11 @@
     "owned_relation_count": "关系数量",
     "target_relation_count": "指向笔记的关系数量",
     "random": "随机顺序",
-    "asc": "升序（默认）",
+    "asc": "升序",
     "desc": "降序"
   },
   "search_script": {
-    "title": "搜索脚本：",
+    "title": "搜索脚本",
     "placeholder": "按名称搜索笔记",
     "description1": "搜索脚本允许通过运行脚本来定义搜索结果。这在标准搜索不足时提供了最大的灵活性。",
     "description2": "搜索脚本必须是类型为“代码”和子类型为“JavaScript 后端”。脚本需要返回一个 noteIds 或 notes 数组。",
@@ -1197,7 +1220,7 @@
     "note": "注意，搜索脚本和搜索字符串不能相互结合使用。"
   },
   "search_string": {
-    "title_column": "搜索字符串:",
+    "title_column": "搜索字符串",
     "placeholder": "按 Ctrl+Space 查看建议，@ 引用笔记，Shift+Enter 换行，Enter 搜索",
     "search_syntax": "搜索语法",
     "also_see": "另见",
@@ -1466,7 +1489,17 @@
     "tooltip_syntax_highlighting": "语法高亮",
     "tooltip_code_block_syntax": "文本笔记中的代码块",
     "tooltip_code_note_syntax": "代码笔记",
-    "trilium_log": "Trilium 日志"
+    "trilium_log": "Trilium 日志",
+    "description": "为代码笔记或代码块选择语言时提供的选项。",
+    "sort_alphabetically": "按字母顺序排序",
+    "badge_code_blocks": "代码块",
+    "badge_code_notes": "代码笔记",
+    "remove": "从列表中移除",
+    "badge_code_blocks_tooltip": "文本笔记中的代码块可用的语法高亮",
+    "badge_code_notes_tooltip": "代码笔记可用的语法高亮",
+    "add_title": "添加语言",
+    "add_another_other": "添加其他语言（可用 {{count}} 种）",
+    "trilium_search_query": "Trilium 搜索查询"
   },
   "vim_key_bindings": {
     "use_vim_keybindings_in_code_notes": "Vim 快捷键",
@@ -2055,7 +2088,9 @@
     "result_count_other": "{{count}} 个结果",
     "page_size": "每页",
     "snippet_unavailable": "无法预览。",
-    "searching": "正在搜索…"
+    "searching": "正在搜索…",
+    "show_more": "显示更多",
+    "show_less": "显示更少"
   },
   "sql_result": {
     "no_rows": "此查询没有返回任何数据",
@@ -2225,7 +2260,8 @@
     "line_numbers": "行号",
     "line_numbers_auto": "自动",
     "line_numbers_on": "开",
-    "line_numbers_off": "关"
+    "line_numbers_off": "关",
+    "line_numbers_auto_description": "跟随全局设置"
   },
   "electron_integration": {
     "desktop-application": "桌面应用程序",
@@ -2396,7 +2432,8 @@
   "code-editor-options": {
     "title": "编辑器",
     "tab_width": "制表符宽度",
-    "tab_width_unit": "空格"
+    "tab_width_unit": "空格",
+    "line_numbers": "行号"
   },
   "custom_date_time_format": {
     "title": "日期/时间格式",
@@ -2417,7 +2454,11 @@
   },
   "content_language": {
     "title": "内容语言",
-    "description": "在只读或可编辑文本笔记的「基本属性」部分，选择一种或多种语言以显示在语言选择列表中。这将启用拼写检查、从右到左支持、引号样式和文本提取（OCR）等功能。"
+    "description": "为文本笔记选择语言时提供的选项，会启用拼写检查、从右到左支持、引号样式和文本提取（OCR）等功能。",
+    "add_title": "添加语言",
+    "add_first_other": "添加语言（可用 {{count}} 种）",
+    "add_another_other": "添加其他语言（可用 {{count}} 种）",
+    "remove": "从列表中移除"
   },
   "switch_layout_button": {
     "title_vertical": "将编辑面板移至底部",
@@ -2879,7 +2920,13 @@
     "tab_width_reindent_header": "将内容重新缩进为",
     "tab_width_style_header": "缩进方式",
     "tab_width_style_spaces": "空格",
-    "tab_width_style_tabs": "制表符"
+    "tab_width_style_tabs": "制表符",
+    "cursor_line": "行: <Value />",
+    "cursor_column": "列: <Value />",
+    "cursor_selection": "已选: <Value />",
+    "cursor_line_title": "当前行",
+    "cursor_column_title": "当前列",
+    "cursor_selection_title": "选中内容的字符数"
   },
   "breadcrumb": {
     "workspace_badge": "工作空间",
@@ -3556,7 +3603,8 @@
     "exit_fullscreen": "退出全屏",
     "open_in_new_tab": "在新标签页中打开",
     "more_actions": "更多操作",
-    "beta": "Beta"
+    "beta": "Beta",
+    "close": "关闭"
   },
   "spreadsheet": {
     "read-only": "此注释为只读。",
@@ -3868,7 +3916,16 @@
       "add-a-tab-before-the-current-one": "在当前标签页之前添加一个标签页",
       "scroll-to-the-previous-tabs": "滚动到前面的标签页",
       "scroll-to-the-next-tabs": "滚动到后面的标签页",
-      "box-size-0": "框大小：%0"
+      "box-size-0": "框大小：%0",
+      "apply-formatting": "应用格式",
+      "text-formatting": "文本格式",
+      "block-type": "块类型",
+      "camera": "相机",
+      "move-up": "上移",
+      "move-down": "下移",
+      "image-position": "图片位置",
+      "list": "列表",
+      "list-type": "列表类型"
     },
     "toolbar-groups": {
       "text-formatting": "文本格式",
@@ -3877,6 +3934,10 @@
     },
     "colors": {
       "pink": "粉色"
+    },
+    "color-menu": {
+      "text-color": "文字颜色",
+      "background-color": "背景颜色"
     }
   },
   "image_navigation": {
@@ -4731,6 +4792,33 @@
     "default_parent_placeholder": "它们的创建位置"
   },
   "hide_keyboard_button": {
-    "title": "隐藏键盘"
+    "title": "隐藏键盘",
+    "close_menu": "关闭菜单"
+  },
+  "code_editor_context_menu": {
+    "transform": "变换",
+    "sort_ascending": "升序排序",
+    "sort_descending": "降序排序",
+    "shuffle_lines": "打乱行序",
+    "reverse_lines": "反转行序",
+    "deduplicate_lines": "去除重复行",
+    "trim_leading": "去除开头空白",
+    "trim_trailing": "去除末尾空白",
+    "trim_leading_tooltip": "去除每行开头的空白",
+    "trim_trailing_tooltip": "去除每行末尾的空白",
+    "trim_both": "去除两端空白",
+    "trim_both_tooltip": "去除每行开头和末尾的空白",
+    "remove_blank_lines": "删除空行",
+    "to_uppercase": "转为大写",
+    "to_lowercase": "转为小写",
+    "to_sentence_case": "转为句首大写",
+    "to_title_case": "转为词首大写",
+    "remove_diacritics": "去除变音符号"
+  },
+  "date_picker": {
+    "today": "今天",
+    "tomorrow": "明天",
+    "next-week": "下周",
+    "clear": "清除"
   }
 }
