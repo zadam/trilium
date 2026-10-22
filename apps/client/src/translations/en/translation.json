@@ -2841,7 +2841,8 @@
     "subtree-hidden-tooltip_other": "{{count}} child notes that are hidden from the tree",
     "subtree-hidden-moved-title": "Added to {{title}}",
     "subtree-hidden-moved-description-collection": "This collection hides its child notes in the tree.",
-    "subtree-hidden-moved-description-other": "Child notes are hidden in the tree for this note."
+    "subtree-hidden-moved-description-other": "Child notes are hidden in the tree for this note.",
+    "show-all-notes": "Show all notes"
   },
   "mobile_note_navigator": {
     "back": "Go up one level",
