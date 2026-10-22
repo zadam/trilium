@@ -230,6 +230,29 @@ async function loadModules(): Promise<void> {
 }
 
 /**
+ * Starts loading the modules `initialize()` imports one after another, so that each `await
+ * import()` there finds its module already loaded. Rejections are dropped here because the
+ * import at the point of use reports them.
+ */
+function prefetchStartupModules(): void {
+    const modules = [
+        import("@triliumnext/core"),
+        import("@triliumnext/core/src/assets/schema.sql?raw"),
+        import('./lightweight/bridged_request_provider.js'),
+        import('./lightweight/in_app_help_provider.js'),
+        import('./lightweight/security_settings.js'),
+        import('./lightweight/database_restore.js'),
+        import('./lightweight/setup_marker.js'),
+        import('./lightweight/zip_export_provider_factory.js'),
+        import('./services/image_provider.js'),
+        import('./lightweight/llm_skills.js')
+    ];
+    for (const module of modules) {
+        module.catch(() => undefined);
+    }
+}
+
+/**
  * Initialize SQLite WASM and load the core module.
  * This happens once at worker startup.
  */
@@ -243,8 +266,18 @@ async function initialize(): Promise<void> {
 
     initPromise = (async () => {
         try {
+            // Every module the boot imports further down, fetched now so they arrive in parallel
+            // instead of one round trip at a time. The `await import()` at each point of use
+            // still reports a failure.
+            prefetchStartupModules();
+
             // First, load all modules dynamically
             await loadModules();
+
+            // Compiling the WASM binary touches no OPFS file, so it runs while the boot waits for
+            // the security settings and the pool below. Its rejection is reported by the `await`.
+            const wasmReady = sqlProvider!.initWasm();
+            wasmReady.catch(() => undefined);
 
             // Before the database, and before anything that can take time: the window in which
             // this file is locked by nobody is the window in which a page that outlived the
@@ -271,7 +304,7 @@ async function initialize(): Promise<void> {
 
             reportStartupPhase("sqlite");
             logService.info("[Worker] Initializing SQLite WASM...");
-            await sqlProvider!.initWasm();
+            await wasmReady;
 
             // A failure past the wait is a broken environment rather than a transient, so it
             // ends the boot: throwing from initialize() reaches the page as WORKER_ERROR.
