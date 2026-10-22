@@ -23,6 +23,8 @@ export interface PickerItem {
     caption: string;
     /** An icon class, `bx` prefix included. */
     icon?: string;
+    /** HTML shown in a tooltip while the item is hovered. */
+    tooltip?: string;
 }
 
 /** A run of picker items under a heading of their own. */

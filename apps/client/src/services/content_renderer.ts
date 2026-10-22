@@ -193,6 +193,12 @@ const PREVIEWED_TYPES = new Set([
     "llmChat"
 ]);
 
+/**
+ * Content types whose interactive rendering reloads itself after each save: `CanvasDrawing`, and
+ * `useSavedContent()` in `CodeEmbed` and `MarkdownEmbed`.
+ */
+const SELF_UPDATING_TYPES = new Set([ "canvasDrawing", "code", "markdown" ]);
+
 /** The box size a new embed of blocks of a note, an excerpt, starts with. */
 export const EXCERPT_BOX_SIZE: BoxSize = "full";
 
@@ -727,9 +733,9 @@ async function renderSourceEmbed(
     const $container = $('<div class="source-embed">');
     const container = $container.get(0);
     if (container) {
-        await mountInteractiveWidget(
-            h(AttachmentSourceEmbed, { entity, editor, content, component }), container
-        );
+        await mountInteractiveWidget(h(AttachmentSourceEmbed, {
+            entity, editor, content, component, containerRef: { current: container }
+        }), container);
     }
     $renderedContent.append($container);
 }
@@ -1166,6 +1172,15 @@ function getBoxSize(type: string, hasPreview: boolean): BoxSize {
     return "medium";
 }
 
+/**
+ * Whether the interactive rendering of `type`, as `getRenderedContent()` returns it, reloads itself
+ * after each save of the note or attachment. Source embeds use `useSavedContent()` too.
+ */
+function isSelfUpdatingType(type: string) {
+    return SELF_UPDATING_TYPES.has(type) || !!getSourceEmbedTypeByContentType(type);
+}
+
+/** The type of content that `getRenderedContent()` renders `entity` as. */
 function getRenderingType(entity: FNote | FAttachment) {
     const type = getContentType(entity);
     if (!entity.isProtected) {
@@ -1223,6 +1238,8 @@ function getAttachedFileContentType(mime: string, size = 0, fileName?: string) {
 
 export default {
     getRenderedContent,
+    getRenderingType,
+    isSelfUpdatingType,
     disposeInteractiveContent,
     mountInteractiveWidget
 };

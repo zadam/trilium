@@ -399,8 +399,7 @@ function getEnglishEditorMessages(): Record<string, string> {
 
 function buildListOfLanguages() {
     const userLanguages = mimeTypesService
-        .getMimeTypes()
-        .filter((mt) => mt.enabled)
+        .getEnabledMimeTypes()
         // The `env=frontend`/`env=backend` JavaScript variants are Trilium script environments,
         // which are meaningless inside a (display-only) code block. Plain `text/javascript`
         // already provides JavaScript highlighting, so omit the script-specific variants here.

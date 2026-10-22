@@ -20,8 +20,8 @@ export function hasSelectedText(state: EditorState) {
 
 /**
  * Applies `operation` to the whole lines that the selection touches, in one undo step, and selects
- * the changed lines. Each range of the selection changes its own lines. Returns `false` when
- * nothing is selected or the editor is read-only.
+ * the changed lines in the direction of each range. Each range of the selection changes its own
+ * lines. Returns `false` when nothing is selected or the editor is read-only.
  */
 export function runLineOperation(
     target: TextToolTarget,
@@ -43,8 +43,11 @@ export function runLineOperation(
         return true;
     }
 
-    const ranges = blocks.map((block) =>
-        EditorSelection.range(changes.mapPos(block.from, -1), changes.mapPos(block.to, 1)));
+    const ranges = blocks.map((block) => {
+        const from = changes.mapPos(block.from, -1);
+        const to = changes.mapPos(block.to, 1);
+        return block.isBackward ? EditorSelection.range(to, from) : EditorSelection.range(from, to);
+    });
     target.dispatch(state.update({
         changes,
         selection: EditorSelection.create(ranges, mainIndex),
@@ -99,6 +102,8 @@ export function runTextTransform(
 interface LineBlock {
     from: number;
     to: number;
+    /** Whether the first range in the block has its head before its anchor. */
+    isBackward: boolean;
 }
 
 /** The text tools change the document as one undo step, which later typing does not join. */
@@ -131,7 +136,7 @@ function getLineBlocks(state: EditorState) {
         if (previous && first.from <= previous.to) {
             previous.to = Math.max(previous.to, last.to);
         } else {
-            blocks.push({ from: first.from, to: last.to });
+            blocks.push({ from: first.from, to: last.to, isBackward: range.head < range.anchor });
         }
         if (index === selection.mainIndex) {
             mainIndex = blocks.length - 1;

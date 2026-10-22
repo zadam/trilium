@@ -66,6 +66,20 @@ describe("runLineOperation", () => {
         expect(shuffled.marked).toBe("[b\nc\nd\na]");
     });
 
+    it("keeps the direction of each range", () => {
+        const target = createTarget("c\nb\na\n\nz\ny");
+        target.dispatch(target.state.update({
+            selection: EditorSelection.create([
+                EditorSelection.range(5, 0), EditorSelection.range(7, 10)
+            ])
+        }));
+        runLineOperation(target, "sortAscending");
+        expect(target.state.sliceDoc()).toBe("a\nb\nc\n\ny\nz");
+        expect(target.state.selection.ranges).toMatchObject([
+            { anchor: 5, head: 0 }, { anchor: 7, head: 10 }
+        ]);
+    });
+
     it("removes the line break of a block that has no line left", () => {
         expect(run("a\n[\n ]\nb", "removeBlankLines")).toBe("a\n|b");
         expect(run("a\n[\n ]", "removeBlankLines")).toBe("a|");
@@ -131,6 +145,7 @@ describe("runTextTransform", () => {
         expect(transform("[FIRST\nSECOND]", "sentenceCase")).toBe("[First\nSecond]");
         expect(transform("the lord [OF THE] rings", "titleCase")).toBe("the lord [of the] rings");
         expect(transform("the lord of the [rings]", "titleCase")).toBe("the lord of the [Rings]");
+        expect(transform("Ο[Σ] x", "lowerCase", "el")).toBe("Ο[ς] x");
     });
 
     it("uses the locale", () => {

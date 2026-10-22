@@ -262,6 +262,55 @@ describe("TextEmbed", () => {
             .toBe("<div><p>Newer</p></div>");
     });
 
+    it("shows the newest content once shown, when hidden reads land out of order", async () => {
+        const note = buildTextNote("hidden");
+        const { figure } = await mount(note, buildEditor());
+        await settle();
+        const host = figure.parentElement;
+        if (!host) throw new Error("Expected the host editor.");
+        const resizeCallbacks: (() => void)[] = [];
+        const { ResizeObserver } = globalThis;
+        globalThis.ResizeObserver = class {
+            constructor(callback: () => void) {
+                resizeCallbacks.push(callback);
+            }
+            observe() {}
+            disconnect() {}
+        } as unknown as typeof ResizeObserver;
+
+        try {
+            host.style.display = "none";
+            let slowRead = () => {};
+            note.getBlob = () => new Promise((resolve) => {
+                slowRead = () => resolve(buildBlob("<p>Older</p>"));
+            });
+            await act(async () => {
+                await reloadNoteContent(note);
+            });
+            note.getBlob = async () => buildBlob("<p>Newer</p>");
+            await act(async () => {
+                await reloadNoteContent(note);
+            });
+            await settle();
+            await act(async () => {
+                slowRead();
+            });
+            await settle();
+            expect(figure.querySelector(".editable-embed-preview")?.innerHTML)
+                .toBe("<div><p>hidden</p></div>");
+
+            host.style.display = "";
+            await act(async () => {
+                for (const callback of resizeCallbacks) callback();
+            });
+            await settle();
+            expect(figure.querySelector(".editable-embed-preview")?.innerHTML)
+                .toBe("<div><p>Newer</p></div>");
+        } finally {
+            globalThis.ResizeObserver = ResizeObserver;
+        }
+    });
+
     it("shows a save that landed before it listened for saves", async () => {
         const note = buildTextNote("late");
         note.getBlob = async () => buildBlob("<p>Saved meanwhile</p>");

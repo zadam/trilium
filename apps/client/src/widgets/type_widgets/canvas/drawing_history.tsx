@@ -38,6 +38,11 @@ export interface DrawingMount {
     attach(api: ExcalidrawImperativeAPI, root: HTMLElement | null, store: DrawingStore): void;
     /** Records the change of the drawing that Excalidraw ended, if any. */
     record(): void;
+    /**
+     * Shows `scene`, saved elsewhere, outside the undo history. Before `attach()`, it shows nothing
+     * and returns `false`.
+     */
+    show(scene: DrawingScene): boolean;
     /** Stops recording, before Excalidraw unmounts. */
     detach(): void;
 }
@@ -118,6 +123,11 @@ export default class DrawingHistory {
             },
             record: () => {
                 if (drawing) this.record(drawing);
+            },
+            show: (scene) => {
+                if (!drawing) return false;
+                showScene(drawing, scene);
+                return true;
             },
             detach: () => {
                 if (drawing) this.detach(drawing);
@@ -417,16 +427,30 @@ function watchInput() {
 
 /** Shows `scene` in `drawing`, outside the undo history. */
 function showScene(drawing: AttachedDrawing, scene: DrawingScene) {
-    const { api } = drawing;
     const background = scene.appState.viewBackgroundColor ?? drawing.background;
-    addMissingFiles(api, scene.files);
-    api.updateScene({
-        elements: scene.elements,
-        appState: { viewBackgroundColor: background },
-        captureUpdate: CaptureUpdateAction.NEVER
+    showDrawingScene(drawing.api, {
+        ...scene,
+        appState: { ...scene.appState, viewBackgroundColor: background }
     });
     commitElements(drawing);
     drawing.background = background;
+}
+
+/**
+ * Shows `scene` in `api`, outside Excalidraw's undo history, with the background and the grid that
+ * the scene sets, if any. The view stays where it is.
+ */
+export function showDrawingScene(api: ExcalidrawImperativeAPI, scene: DrawingScene) {
+    const shown = api.getAppState();
+    addMissingFiles(api, scene.files);
+    api.updateScene({
+        elements: scene.elements,
+        appState: {
+            viewBackgroundColor: scene.appState.viewBackgroundColor ?? shown.viewBackgroundColor,
+            gridModeEnabled: scene.appState.gridModeEnabled ?? shown.gridModeEnabled
+        },
+        captureUpdate: CaptureUpdateAction.NEVER
+    });
 }
 
 function applyToScene(scene: DrawingScene, step: DrawingStep, isUndo: boolean): DrawingScene {

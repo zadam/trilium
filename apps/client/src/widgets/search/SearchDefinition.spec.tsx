@@ -1,6 +1,7 @@
 import { act } from "preact/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import FAttribute from "../../entities/fattribute";
 import FNote from "../../entities/fnote";
 import attributes from "../../services/attributes";
 import bulk_action from "../../services/bulk_action";
@@ -8,6 +9,8 @@ import search from "../../services/search";
 import server from "../../services/server";
 import toast from "../../services/toast";
 import { renderInto } from "../../test/render";
+import { ActionDefinition } from "../bulk_actions/abstract_bulk_action";
+import DeleteNoteBulkAction from "../bulk_actions/note/delete_note";
 import SearchDefinition from "./SearchDefinition";
 
 // Echoes the key, so a spec can find a button by its label.
@@ -44,16 +47,35 @@ afterEach(() => {
 });
 
 describe("the search definition", () => {
-    it("lays the parameters out as rows of a card, as the bulk actions dialog does", () => {
+    it("lays each parameter and bulk action out as a segment of the card", () => {
+        vi.spyOn(bulk_action, "parseActions").mockReturnValue([
+            new DeleteNoteBulkAction({ attributeId: "action1" } as FAttribute, {} as ActionDefinition)
+        ]);
+        const container = renderDefinition([ "searchString", "fastSearch" ]);
+        const segments = [
+            ...container.querySelectorAll(".search-definition-widget > .tn-card > .tn-card-body > *")
+        ];
+
+        expect(segments.map((segment) => segment.matches(".tn-card-section")))
+            .toStrictEqual([ true, true, true, true ]);
+        expect(segments[0]?.matches(".search-option.searchString")).toBe(true);
+        expect(segments[1]?.matches(".search-option.fastSearch")).toBe(true);
+        expect(segments[2]?.matches(".bulk-action")).toBe(true);
+        expect(segments[3]?.matches(".search-definition-actions")).toBe(true);
+        expect(segments[3]?.querySelector(".search-definition-add")).not.toBeNull();
+        expect(segments[3]?.querySelector(".tn-split-button")).not.toBeNull();
+    });
+
+    it("shows a search error as a segment under the search string", async () => {
+        vi.spyOn(search, "runSearchNote").mockResolvedValue({ error: "Unexpected token" });
         const container = renderDefinition();
-        const card = container.querySelector(".search-definition-widget > .tn-card");
 
-        expect(card).not.toBeNull();
-        expect(card?.querySelector(".search-definition-options .search-option.searchString")).not.toBeNull();
+        act(() => editorProps?.onEnter());
+        await settle();
 
-        const actionsRow = card?.querySelector(".tn-card-section.search-definition-actions");
-        expect(actionsRow?.querySelector(".search-definition-add")).not.toBeNull();
-        expect(actionsRow?.querySelector(".tn-split-button")).not.toBeNull();
+        const error = container.querySelector(
+            ".search-option.searchString + .tn-card-section.search-definition-error");
+        expect(error?.textContent).toContain("Unexpected token");
     });
 
     it("describes an option that configures nothing instead of offering help", () => {

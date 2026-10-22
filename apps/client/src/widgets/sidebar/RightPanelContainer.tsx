@@ -16,6 +16,7 @@ import { useActiveNoteContext, useGetContextData, useLegacyWidget, useNoteProper
 import LazyComponent from "../react/LazyComponent";
 import NoItems from "../react/NoItems";
 import { PaneMode, usePaneMode, usePeekDismiss } from "../react/peek_pane";
+import PeekPaneButton from "../react/PeekPaneButton";
 import LegacyRightPanelWidget from "../right_panel_widget";
 import AttributeList from "./AttributeList";
 import Backlinks from "./Backlinks";
@@ -29,7 +30,6 @@ import PdfAttachments from "./pdf/PdfAttachments";
 import PdfLayers from "./pdf/PdfLayers";
 import PdfPages from "./pdf/PdfPages";
 import RightPanelWidget, { CollapsibleWidgets, ExpandWidgetRequest, ExpandWidgetRequests } from "./RightPanelWidget";
-import RightPanePeekButton from "./RightPanePeekButton";
 import RightPaneTabs, { RIGHT_PANE_TABS, RightPaneTabDefinition, RightPaneTabId } from "./RightPaneTabs";
 import TableOfContents from "./TableOfContents";
 
@@ -50,7 +50,7 @@ export interface RightPaneTabContents extends RightPaneTabDefinition {
 }
 
 export default function RightPanelContainer({ widgetsByParent }: { widgetsByParent: WidgetsByParent }) {
-    const { mode, visible, mounted, togglePeek, toggleDocked, dock, close, dismiss } = usePaneMode("rightPaneVisible");
+    const { mode, visible, mounted, togglePeek, toggleDocked, dock, close, dismiss } = usePaneMode("rightPaneVisible", "right");
     const tabs = useItems(mounted, widgetsByParent);
     // This window's own choice, seeded from the option and written back for the next window to start
     // from — the same treatment usePaneMode gives the pane's visibility. Subscribing to the option
@@ -128,19 +128,29 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
         <>
             {/* Absolutely positioned in a reserved gutter on the viewport's right edge, so it
                 stays put regardless of the right pane's open/collapsed state (see RightPanelContainer.css). */}
-            <RightPanePeekButton rightPaneVisible={visible} onToggle={togglePeek} />
+            <PeekPaneButton
+                side="end"
+                className="right-pane-peek-button"
+                isOpen={visible}
+                onToggle={togglePeek}
+                hideText={t("right_pane.hide")}
+                peekText={t("right_pane.peek")}
+            />
             {/* Persistent host so #right-pane never reparents between modes (which would remount the
                 right pane widgets). Docked: an in-flow flex child Split resizes against #center-pane.
                 Peek: an absolute layer over the content where Split resizes the spacer vs the pane.
                 `hidden` (display:none) keeps soft-dismissed peek content mounted but out of layout. */}
-            <div id="right-pane-host" class={clsx(mode === "peek" && "peek", !visible && "hidden")}>
+            <div
+                id="right-pane-host"
+                class={clsx("peek-pane-host side-end", mode === "peek" && "peek", !visible && "hidden")}
+            >
                 {/* The spacer is both the left Split target and the dismiss backdrop in peek mode:
                     it covers the content (a click dismisses) and shields the PDF iframe so Split's
                     drag tracking isn't interrupted. Always rendered + CSS-toggled to keep the host's
                     child list structurally stable for Split's gutter injection. */}
-                <div class="right-pane-peek-spacer" />
+                <div class="peek-pane-spacer" />
                 {/* Mode class (right-pane-mode-docked / -peek) as a styling hook; none when closed. */}
-                <div id="right-pane" class={visible ? `right-pane-mode-${mode}` : undefined}>
+                <div id="right-pane" class={clsx("peek-pane", visible && `right-pane-mode-${mode}`)}>
                     {mounted && (
                         <>
                             {/* One flex row holding the tab strip and the pane's own actions, so a
@@ -396,7 +406,7 @@ function useSplit(mode: PaneMode) {
         // they're always present; #center-pane is untouched, so it never reflows.
         const selectors = mode === "docked"
             ? [ "#center-pane", "#right-pane-host" ]
-            : [ ".right-pane-peek-spacer", "#right-pane" ];
+            : [ "#right-pane-host > .peek-pane-spacer", "#right-pane" ];
         const minSize = mode === "docked" ? [ 300, 230 ] : [ 0, 230 ];
 
         const createSplit = () => Split(selectors, {

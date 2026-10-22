@@ -4,10 +4,6 @@
     gap: 0.5em;
 }
 
-.llm-add-provider {
-    text-align: end;
-}
-
 /* One line, cut off at the row's width; the full list is in its tooltip. */
 .llm-provider-models {
     display: block;

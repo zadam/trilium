@@ -78,7 +78,13 @@ describe("BulkActionsDialog", () => {
     }
 
     function labelNameInputs() {
-        return [ ...container.querySelectorAll<HTMLInputElement>(".bulk-existing-action-list input.bulk-action-name") ];
+        return [ ...container.querySelectorAll<HTMLInputElement>(".bulk-action input.bulk-action-name") ];
+    }
+
+    /** The chosen actions, each a segment of the actions card. */
+    function chosenActionRows() {
+        return [ ...container.querySelectorAll<HTMLElement>(
+            ".bulk-actions-chosen-actions > .tn-card-body > .tn-card-section.bulk-action") ];
     }
 
     /** Types `value` into `input`, lets the debounced lookup run and returns the suggestion rows. Needs fake timers. */
@@ -146,15 +152,15 @@ describe("BulkActionsDialog", () => {
     it("marks each chosen action with its icon", async () => {
         buildNote({ id: "_bulkAction", title: "Bulk action", "#action": JSON.stringify({ name: "deleteNote" }) });
         await open([ "n1" ]);
-        expect(container.querySelectorAll(".bulk-existing-action-list tr")).toHaveLength(1);
+        expect(chosenActionRows()).toHaveLength(1);
 
-        const icon = container.querySelector(".bulk-existing-action-list .bulk-action-icon");
+        const icon = container.querySelector(".bulk-action .bulk-action-icon");
         expect(icon?.classList.contains("bx-note")).toBe(true);
         expect(icon?.classList.contains("bulk-action-marker-delete")).toBe(true);
         expect(icon?.classList.contains("destructive-action-icon")).toBe(true);
-        expect(container.querySelector(".bulk-existing-action-list .tn-chip-remove, .bulk-existing-action-list .search-option-del"))
+        expect(container.querySelector(".bulk-action .tn-chip-remove, .bulk-action .search-option-del"))
             .not.toBeNull();
-        expect(container.querySelector(".bulk-existing-action-list .help-dropdown")).toBeNull();
+        expect(container.querySelector(".bulk-action .help-dropdown")).toBeNull();
     });
 
     it("names each chosen action by its menu title alone, with an arrow only between two fields", async () => {
@@ -164,12 +170,12 @@ describe("BulkActionsDialog", () => {
             "#action": bulk_action.ACTION_CLASSES.map(({ actionName }) => JSON.stringify({ name: actionName }))
         });
         await open([ "n1" ]);
-        const rows = [ ...container.querySelectorAll<HTMLTableRowElement>(".bulk-existing-action-list tr") ];
+        const rows = chosenActionRows();
         expect(rows).toHaveLength(bulk_action.ACTION_CLASSES.length);
 
         for (const [ index, ActionClass ] of bulk_action.ACTION_CLASSES.entries()) {
             const row = rows[index];
-            const content = row.cells[0].cloneNode(true) as HTMLElement;
+            const content = row.children[0].cloneNode(true) as HTMLElement;
             for (const field of content.querySelectorAll("select, .template-field")) field.remove();
             expect(content.textContent?.trim(), ActionClass.actionName).toBe(ActionClass.actionTitle);
             expect(row.querySelectorAll(".tn-icon:not(.bulk-action-arrow)"), ActionClass.actionName).toHaveLength(1);
@@ -205,22 +211,28 @@ describe("BulkActionsDialog", () => {
             "#action": bulk_action.ACTION_CLASSES.map(({ actionName }) => JSON.stringify({ name: actionName }))
         });
         await open([ "n1" ]);
-        const rows = [ ...container.querySelectorAll<HTMLTableRowElement>(".bulk-existing-action-list tr") ];
+        const rows = chosenActionRows();
         expect(rows).toHaveLength(bulk_action.ACTION_CLASSES.length);
 
         for (const [ index, ActionClass ] of bulk_action.ACTION_CLASSES.entries()) {
             const { actionName, actionDescription } = ActionClass;
             const row = rows[index];
-            expect([ ...row.cells ].map((cell) => cell.className), actionName)
-                .toStrictEqual([ "title-column", "bulk-action-fields-column", "button-column" ]);
+            expect([ ...row.children ].map((child) => child.className), actionName)
+                .toStrictEqual([
+                    "bulk-action-title",
+                    "bulk-action-fields",
+                    "help-remove-buttons bulk-action-actions"
+                ]);
 
-            const fields = [ ...row.cells[1].querySelectorAll<HTMLInputElement>("input:not([type=hidden]), select") ];
+            const fields = [
+                ...row.children[1].querySelectorAll<HTMLInputElement>("input:not([type=hidden]), select")
+            ];
             expect(fields.map((field) => field.required), actionName).toStrictEqual(expected[actionName].required);
             expect(fields.map((field) => field.classList.contains("bulk-action-name")), actionName)
                 .toStrictEqual(expected[actionName].names);
             expect(row.querySelector("[style*='flex-shrink']"), actionName).toBeNull();
 
-            const hasFields = row.cells[1].querySelector(".bulk-action-fields > *:not(.bulk-action-description)");
+            const hasFields = row.querySelector(".bulk-action-fields > *:not(.bulk-action-description)");
             expect(row.querySelector(".bulk-action-description")?.textContent, actionName)
                 .toBe(hasFields ? undefined : actionDescription);
         }
@@ -339,7 +351,7 @@ describe("BulkActionsDialog", () => {
             await open([ "n1" ]);
 
             const valueInput = container.querySelector<HTMLInputElement>(
-                ".bulk-existing-action-list .bulk-action-fields input:not(.bulk-action-name)");
+                ".bulk-action .bulk-action-fields input:not(.bulk-action-name)");
             const suggestions = await typeAndSuggest(valueInput ?? undefined, "doi");
             expect(suggestions.map((li) => li.textContent)).toStrictEqual([ "doing" ]);
             expect(await savedAction()).toStrictEqual({ name: "updateLabelValue", labelName: "status", labelValue: "doi" });
@@ -375,7 +387,7 @@ describe("BulkActionsDialog", () => {
                 input.value = "ab";
                 input.dispatchEvent(new Event("input", { bubbles: true }));
             });
-            const remove = container.querySelector<HTMLElement>(".bulk-existing-action-list .search-option-del");
+            const remove = container.querySelector<HTMLElement>(".bulk-action .search-option-del");
             expect(remove).not.toBeNull();
             await act(async () => remove?.click());
             expect(server.remove).toHaveBeenCalledWith(`notes/_bulkAction/attributes/${attributeId}`);
@@ -398,7 +410,7 @@ describe("BulkActionsDialog", () => {
             await open([ "n1" ]);
 
             server.remove.mockRejectedValueOnce(new Error("offline"));
-            await act(async () => container.querySelector<HTMLElement>(".bulk-existing-action-list .search-option-del")?.click());
+            await act(async () => container.querySelector<HTMLElement>(".bulk-action .search-option-del")?.click());
             expect(server.remove).toHaveBeenCalledOnce();
 
             const [ input ] = labelNameInputs();

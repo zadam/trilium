@@ -10,11 +10,12 @@ import { useContext, useLayoutEffect, useMemo, useRef } from "preact/hooks";
 import { t } from "../../services/i18n";
 import { getActionSync } from "../../services/keyboard_actions";
 import { handleRightToLeftPlacement, isMobile, openInAppHelpFromUrl } from "../../services/utils";
+import FormTextBox from "./FormTextBox";
 import FormToggle from "./FormToggle";
 import { useStaticTooltip, useSyncedRef, useUniqueName } from "./hooks";
 import Icon, { SvgIcon } from "./Icon";
 import { MasterDetailHeader } from "./master_detail";
-import { isRightToLeft, MenuContext, type MenuContextValue, MenuFilterContext, MenuLevelContext, type OpenSubmenu, pointerMoved, shouldDropStart, useMenu } from "./menu_context";
+import { isRightToLeft, MenuContext, type MenuContextValue, type MenuFilter, MenuFilterContext, MenuLevelContext, type OpenSubmenu, pointerMoved, shouldDropStart, useMenu } from "./menu_context";
 import { placeFloating } from "./Popup";
 import { joinElements } from "./react_utils";
 import { renderShortcutKbds } from "./shortcut_kbd";
@@ -497,13 +498,15 @@ function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDrop
     const layer = isMobile()
         // A phone has no room beside the menu, so a submenu replaces it as a page of its own.
         ? (open || pageSlide.from !== undefined) && menu.layerHost && createPortal((
-            <SubmenuPage rowId={id} level={level + 1} title={title} slide={pageSlide}>
-                <MenuFilterContext.Provider value={filter}>{children}</MenuFilterContext.Provider>
+            <SubmenuPage
+                rowId={id} level={level + 1} title={title} slide={pageSlide} filter={filter}
+            >
+                {children}
             </SubmenuPage>
         ), menu.layerHost)
         : open && openSubmenu && menu.layerHost && createPortal((
-            <SubmenuLayer level={level + 1} submenu={openSubmenu} pinned={!!filter?.text}>
-                <MenuFilterContext.Provider value={filter}>{children}</MenuFilterContext.Provider>
+            <SubmenuLayer level={level + 1} submenu={openSubmenu} filter={filter}>
+                {children}
             </SubmenuLayer>
         ), menu.layerHost);
 
@@ -516,7 +519,7 @@ function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDrop
                         ? { level, element, custom: false, disabled: !!disabled, hasSubmenu: true, inline: true, filterable, select: () => {} }
                         : undefined);
                 }}
-                className={clsx("tn-menu-action", isActive && "tn-menu-active", className)}
+                className={clsx("tn-menu-action", open && "submenu-open", isActive && "tn-menu-active", className)}
                 role="menuitem" aria-haspopup="menu" aria-expanded={open}
                 disabled={disabled} tabIndex={-1}
                 onPointerMove={(e) => {
@@ -603,19 +606,19 @@ function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDrop
 
 /**
  * A submenu opened on the desktop, placed beside the row it opened from rather than nested in it,
- * so a scrolling menu neither clips it nor scrolls it away. While {@link pinned}, as while it is
- * filtered, it keeps the top it had when pinned, relative to its row, and only its height follows
- * its content.
+ * so a scrolling menu neither clips it nor scrolls it away. While its {@link filter} has text, the
+ * layer keeps its top position relative to its row, and only its height changes with the matches.
  */
-function SubmenuLayer({ level, submenu, pinned, children }: {
+function SubmenuLayer({ level, submenu, filter, children }: {
     level: number,
     submenu: OpenSubmenu,
-    pinned?: boolean,
+    filter: MenuFilter | undefined,
     children: ComponentChildren
 }) {
     const layerRef = useRef<HTMLDivElement>(null);
     const { dropStart: dropStartLevels, setDropStart } = useMenu();
     const dropStart = !!dropStartLevels[level - 1];
+    const pinned = !!filter?.text;
     /** How far below its row's top the layer stands while pinned. */
     const pinnedOffset = useRef<number | undefined>(undefined);
 
@@ -674,8 +677,7 @@ function SubmenuLayer({ level, submenu, pinned, children }: {
                     ref={layerRef} role="menu" aria-labelledby={titleId(submenu.anchor.id)}
                     className={clsx("dropdown-menu show tn-menu", submenu.immediate && "tn-menu-immediate")}
                 >
-                    {/* Like the top level, so the blur on the layer's `::before` stays behind its rows. */}
-                    <menu className="tn-menu-scroll" role="none">{children}</menu>
+                    <MenuList filter={filter}>{children}</MenuList>
                 </div>
             </div>
         </MenuLevelContext.Provider>
@@ -686,12 +688,13 @@ function SubmenuLayer({ level, submenu, pinned, children }: {
  * A submenu opened on a phone: a page that takes the menu's place, headed by the submenu's title and
  * a way back. The level it covers stays mounted, as the row that owns this page stands in it.
  */
-function SubmenuPage({ rowId, level, title, slide, children }: {
+function SubmenuPage({ rowId, level, title, slide, filter, children }: {
     rowId: string,
     level: number,
     title: ComponentChildren,
     /** The slide of whether the page is open: from closed as it arrives, from open as it leaves. */
     slide: Slide<boolean>,
+    filter: MenuFilter | undefined,
     children: ComponentChildren
 }) {
     const menu = useMenu();
@@ -717,9 +720,69 @@ function SubmenuPage({ rowId, level, title, slide, children }: {
                 >
                     <MasterDetailHeader inPage onBack={back} backTitle={t("menu.back")} pageTitle={title} listTitle={title} />
                 </div>
-                <menu className="tn-menu-scroll" role="none">{children}</menu>
+                <MenuList filter={filter}>{children}</MenuList>
             </div>
         </MenuLevelContext.Provider>
+    );
+}
+
+/**
+ * One level of a menu: its rows in a scrolling list and, for a level with a {@link filter}, the
+ * filter input above that list. The input stays in place while the rows scroll.
+ */
+export function MenuList({ filter, bottomUp, children }: {
+    filter: MenuFilter | undefined,
+    /** Puts the filter input below the list, for a menu that opens above its anchor. */
+    bottomUp?: boolean,
+    children: ComponentChildren
+}) {
+    // The rows scroll here and not in the frame, so the theme's `::before` blur stays behind
+    // them. `role="none"` exposes the rows as the menu's own items.
+    const list = <menu className="tn-menu-scroll" role="none">{children}</menu>;
+    return (
+        <MenuFilterContext.Provider value={filter}>
+            {/* One box, so a phone's submenu page hides and slides the input with the rows. */}
+            {filter ? (
+                <div className="tn-menu-filterable">
+                    {!bottomUp && <MenuFilterInput filter={filter} />}
+                    {list}
+                    {bottomUp && <MenuFilterInput filter={filter} />}
+                </div>
+            ) : list}
+        </MenuFilterContext.Provider>
+    );
+}
+
+/**
+ * The filter input above a filterable level's rows. The input handles the editing keys; the menu
+ * handles Up, Down, Enter, Escape and Tab, so a match can be picked while focus is in the input.
+ */
+function MenuFilterInput({ filter }: { filter: MenuFilter }) {
+    const menu = useMenu();
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
+    // An input unmounted while focused, as when the pointer closes its submenu, returns focus to
+    // the menu and not to the page.
+    useLayoutEffect(() => () => {
+        if (document.activeElement !== inputRef.current) return;
+        menu.layerHost?.focus({ preventScroll: true });
+    }, [ menu.layerHost ]);
+
+    return (
+        <div className="tn-menu-filter">
+            <label className="tn-menu-filter-box tn-input-field">
+                <FormTextBox
+                    inputRef={inputRef} className="tn-menu-filter-input"
+                    data-level={filter.level + 1} currentValue={filter.text}
+                    autoComplete="off" spellcheck={false}
+                    placeholder={t("menu.filter_placeholder")} aria-label={t("menu.filter")}
+                    onChange={(text) => menu.setFilter(text
+                        ? { rowId: filter.rowId, level: filter.level, text }
+                        : undefined)}
+                />
+                <span className="bx bx-search" aria-hidden="true" />
+            </label>
+        </div>
     );
 }
 

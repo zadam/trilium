@@ -1206,7 +1206,8 @@
   },
   "left_pane_toggle": {
     "show_panel": "Show panel",
-    "hide_panel": "Hide panel"
+    "hide_panel": "Hide panel",
+    "peek_panel": "Peek panel"
   },
   "move_pane_button": {
     "move_left": "Move left",
@@ -1987,7 +1988,18 @@
     "tooltip_syntax_highlighting": "Syntax highlighting",
     "tooltip_code_block_syntax": "Code blocks in Text notes",
     "tooltip_code_note_syntax": "Code notes",
-    "trilium_log": "Trilium Log"
+    "trilium_log": "Trilium Log",
+    "description": "The languages offered when you choose the language of a code note or a code block.",
+    "sort_alphabetically": "Sort alphabetically",
+    "badge_code_blocks": "Code blocks",
+    "badge_code_notes": "Code notes",
+    "remove": "Remove from the list",
+    "badge_code_blocks_tooltip": "Syntax highlighting available for code blocks in text notes",
+    "badge_code_notes_tooltip": "Syntax highlighting available for code notes",
+    "add_title": "Add a language",
+    "add_another_one": "Add another language ({{count}} available)",
+    "add_another_other": "Add another language ({{count}} available)",
+    "trilium_search_query": "Trilium Search Query"
   },
   "vim_key_bindings": {
     "use_vim_keybindings_in_code_notes": "Vim keybindings",
@@ -2813,7 +2825,6 @@
     "automatically-collapse-notes-title": "Notes will be collapsed after period of inactivity to declutter the tree.",
     "follow-active-note": "Follow active note",
     "follow-active-note-title": "Scrolls the tree and expands parent nodes to show the active note. When disabled, the tree stays in place and only the background highlight is updated.",
-    "save-changes": "Save & apply changes",
     "auto-collapsing-notes-after-inactivity": "Auto collapsing notes after inactivity...",
     "saved-search-note-refreshed": "Saved search note refreshed.",
     "hoist-this-note-workspace": "Hoist this note (workspace)",
@@ -3491,7 +3502,13 @@
   },
   "content_language": {
     "title": "Content languages",
-    "description": "Select one or more languages that should appear in the language selection in the Basic Properties section of a read-only or editable text note. This will allow features such as spell-checking, right-to-left support, quotation marks and text extraction (OCR)."
+    "description": "The languages offered when you choose the language of a text note, which enables features such as spell-checking, right-to-left support, quotation marks and text extraction (OCR).",
+    "add_title": "Add a language",
+    "add_first_one": "Add a language ({{count}} available)",
+    "add_first_other": "Add a language ({{count}} available)",
+    "add_another_one": "Add another language ({{count}} available)",
+    "add_another_other": "Add another language ({{count}} available)",
+    "remove": "Remove from the list"
   },
   "switch_layout_button": {
     "title_vertical": "Move editing pane to the bottom",
@@ -4366,7 +4383,8 @@
     "exit_fullscreen": "Exit fullscreen",
     "open_in_new_tab": "Open in new tab",
     "more_actions": "More actions",
-    "beta": "Beta"
+    "beta": "Beta",
+    "close": "Close"
   },
   "spreadsheet": {
     "read-only": "This note is read-only.",

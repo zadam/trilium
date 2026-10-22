@@ -6,6 +6,7 @@ import "../stylesheets/tree.css";
 import "./note_tree.css";
 
 import { GEO_LOCATION_ATTRIBUTE, MAP_POSITION_ATTRIBUTE } from "@triliumnext/commons";
+import { h } from "preact";
 
 import appContext, { type CommandListenerData, type EventData } from "../components/app_context.js";
 import type { SetNoteOpts } from "../components/note_context.js";
@@ -30,6 +31,8 @@ import treeService from "../services/tree.js";
 import utils from "../services/utils.js";
 import ws from "../services/ws.js";
 import NoteContextAwareWidget from "./note_context_aware_widget.js";
+import TreeSettings from "./note_tree_settings.jsx";
+import { disposeReactWidget, renderReactWidgetAtElement } from "./react/react_utils.jsx";
 
 const TPL = /*html*/`
 <div class="tree-wrapper">
@@ -91,17 +94,6 @@ const TPL = /*html*/`
         inset-inline-end: 10px;
     }
 
-    .tree-settings-popup {
-        display: none;
-        position: absolute;
-        background-color: var(--accented-background-color);
-        border: 1px solid var(--main-border-color);
-        padding: 20px;
-        z-index: 1000;
-        width: 340px;
-        border-radius: 10px;
-    }
-
     .tree .hidden-node-is-hidden {
         display: none;
     }
@@ -120,37 +112,6 @@ const TPL = /*html*/`
 
         <button class="tree-floating-button bx bxs-tree tree-settings-button"
                 title="${t("note_tree.tree-settings-title")}"></button>
-    </div>
-
-
-    <div class="tree-settings-popup">
-        <h4>${t("note_tree.tree-settings-title")}</h4>
-        <div class="form-check">
-            <label class="form-check-label tn-checkbox">
-                <input class="form-check-input hide-archived-notes" type="checkbox" value="">
-                ${t("note_tree.hide-archived-notes")}
-            </label>
-        </div>
-        <div class="form-check">
-            <label class="form-check-label tn-checkbox">
-                <input class="form-check-input auto-collapse-note-tree" type="checkbox" value="">
-                ${t("note_tree.automatically-collapse-notes")}
-                <span class="bx bx-info-circle"
-                      title="${t("note_tree.automatically-collapse-notes-title")}"></span>
-            </label>
-        </div>
-        <div class="form-check">
-            <label class="form-check-label tn-checkbox">
-                <input class="form-check-input follow-active-note" type="checkbox" value="">
-                ${t("note_tree.follow-active-note")}
-                <span class="bx bx-info-circle"
-                      title="${t("note_tree.follow-active-note-title")}"></span>
-            </label>
-        </div>
-
-        <br/>
-
-        <button class="btn btn-sm btn-primary save-tree-settings-button" type="submit">${t("note_tree.save-changes")}</button>
     </div>
 </div>
 `;
@@ -190,12 +151,8 @@ const BATCH_UPDATE_THRESHOLD = 10;
 export default class NoteTreeWidget extends NoteContextAwareWidget {
     private $tree!: JQuery<HTMLElement>;
     private $treeActions!: JQuery<HTMLElement>;
-    private $treeSettingsButton!: JQuery<HTMLElement>;
-    private $treeSettingsPopup!: JQuery<HTMLElement>;
-    private $saveTreeSettingsButton!: JQuery<HTMLElement>;
-    private $hideArchivedNotesCheckbox!: JQuery<HTMLElement>;
-    private $autoCollapseNoteTree!: JQuery<HTMLElement>;
-    private $followActiveNoteCheckbox!: JQuery<HTMLElement>;
+    private settingsContainer = document.createElement("div");
+    private isSettingsShown = false;
     private treeName: "main";
     private autoCollapseTimeoutId?: Timeout;
     private lastFilteredHoistedNotePath?: string | null;
@@ -262,50 +219,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             }
         });
 
-        this.$treeSettingsPopup = this.$widget.find(".tree-settings-popup");
-        this.$hideArchivedNotesCheckbox = this.$treeSettingsPopup.find(".hide-archived-notes");
-        this.$autoCollapseNoteTree = this.$treeSettingsPopup.find(".auto-collapse-note-tree");
-        this.$followActiveNoteCheckbox = this.$treeSettingsPopup.find(".follow-active-note");
-
-        this.$treeSettingsButton = this.$widget.find(".tree-settings-button");
-        this.$treeSettingsButton.on("click", (e) => {
-            if (this.$treeSettingsPopup.is(":visible")) {
-                this.$treeSettingsPopup.hide();
-                return;
-            }
-
-            this.$hideArchivedNotesCheckbox.prop("checked", this.hideArchivedNotes);
-            this.$autoCollapseNoteTree.prop("checked", this.autoCollapseNoteTree);
-            this.$followActiveNoteCheckbox.prop("checked", this.treeScrollFollowNavigation);
-
-            const top = this.$treeActions[0].offsetTop - (this.$treeSettingsPopup.outerHeight() ?? 0);
-            const left = Math.max(0, this.$treeActions[0].offsetLeft - (this.$treeSettingsPopup.outerWidth() ?? 0) + (this.$treeActions.outerWidth() ?? 0));
-
-            this.$treeSettingsPopup
-                .css({
-                    top,
-                    left
-                })
-                .show();
-
-            return false;
-        });
-
-        this.$treeSettingsPopup.on("click", (e) => {
-            e.stopPropagation();
-        });
-
-        $(document).on("click", () => this.$treeSettingsPopup.hide());
-
-        this.$saveTreeSettingsButton = this.$treeSettingsPopup.find(".save-tree-settings-button");
-        this.$saveTreeSettingsButton.on("click", async () => {
-            await this.setHideArchivedNotes(this.$hideArchivedNotesCheckbox.prop("checked"));
-            await this.setAutoCollapseNoteTree(this.$autoCollapseNoteTree.prop("checked"));
-            await this.setTreeScrollFollowNavigation(this.$followActiveNoteCheckbox.prop("checked"));
-
-            this.$treeSettingsPopup.hide();
-
-            this.reloadTreeFromCache();
+        this.$widget.find(".tree-settings-button").on("click", () => {
+            this.toggleSettings(!this.isSettingsShown);
         });
 
         // note tree starts initializing already during render which is atypical
@@ -349,24 +264,34 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         await this.reloadTreeFromCache();
     }
 
-    async setHideArchivedNotes(val: string) {
-        await options.save(`hideArchivedNotes_${this.treeName}`, val.toString());
-    }
-
     get autoCollapseNoteTree() {
         return options.is("autoCollapseNoteTree");
-    }
-
-    async setAutoCollapseNoteTree(val: string) {
-        await options.save("autoCollapseNoteTree", val.toString());
     }
 
     get treeScrollFollowNavigation() {
         return options.is("treeScrollFollowNavigation");
     }
 
-    async setTreeScrollFollowNavigation(val: boolean) {
-        await options.save("treeScrollFollowNavigation", val.toString());
+    private toggleSettings(isShown: boolean) {
+        if (isShown === this.isSettingsShown) {
+            return;
+        }
+
+        this.isSettingsShown = isShown;
+        if (!isShown) {
+            disposeReactWidget(this.settingsContainer);
+            return;
+        }
+
+        renderReactWidgetAtElement(this, h(TreeSettings, {
+            anchor: this.$treeActions[0],
+            onHideArchivedNotesChange: () => this.reloadTreeFromCache(),
+            onClose: () => this.toggleSettings(false)
+        }), this.settingsContainer);
+    }
+
+    cleanup() {
+        this.toggleSettings(false);
     }
 
     initFancyTree() {
@@ -1137,7 +1062,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
 
     async refresh() {
         this.toggleInt(this.isEnabled());
-        this.$treeSettingsPopup.hide();
+        this.toggleSettings(false);
 
         this.activityDetected();
 

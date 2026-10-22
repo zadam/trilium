@@ -5,6 +5,8 @@ body.zen {
     #launcher-container,
     #launcher-pane,
     #left-pane,
+    #left-pane-host,
+    .left-pane-peek-button,
     #right-pane,
     #right-pane-host,
     .right-pane-peek-button,
@@ -29,6 +31,10 @@ body.zen {
     #vertical-main-container {
         /* Remove the placeholder for the right pane peek button */
         --right-pane-peek-button-gutter: 0 !important;
+    }
+
+    #horizontal-main-container {
+        --left-pane-peek-button-gutter: 0 !important;
     }
 
     .split-note-container-widget > .gutter {

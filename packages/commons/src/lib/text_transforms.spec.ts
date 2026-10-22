@@ -147,6 +147,13 @@ describe("transformText", () => {
         expect(titleCase("the lo", "en", { after: "rd of" })).toBe("The Lo");
     });
 
+    it("lowercases a capital sigma by the end of its word in the whole line", () => {
+        expect(transformText("Σ", "lowerCase", { locale: "el", before: "Ο" })).toBe("ς");
+        expect(transformText("ΟΣ", "lowerCase", { locale: "el", after: "Α" })).toBe("οσ");
+        expect(sentenceCase("Σ", "el", { before: "Ο" })).toBe("ς");
+        expect(titleCase("ΟΣ", "el", { after: "Α" })).toBe("Οσ");
+    });
+
     it("removes the accents and marks of Latin, Greek and Cyrillic letters", () => {
         expect(removeDiacritics("Ștefan Țară façade Łódź Ærø")).toBe("Stefan Tara facade Lodz Æro");
         expect(removeDiacritics("Tiếng Việt, Đà Nẵng")).toBe("Tieng Viet, Da Nang");

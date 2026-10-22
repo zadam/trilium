@@ -1,18 +1,19 @@
 import "./Menu.css";
 import "./slide_animations.css";
 
+import type { Placement } from "@floating-ui/dom";
 import clsx from "clsx";
 import type { ComponentChildren } from "preact";
+import { flushSync } from "preact/compat";
 import { useCallback, useContext, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import type { MenuCommandItem, MenuItem } from "../../menus/context_menu";
 import { t } from "../../services/i18n";
 import { isMobile } from "../../services/utils";
-import { FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListHeader, FormListItem } from "./FormList";
-import FormTextBox from "./FormTextBox";
+import { FormDropdownDivider, FormDropdownSubmenu, FormListCustomItem, FormListHeader, FormListItem, MenuList } from "./FormList";
 import { useStaticTooltipWithKeyboardShortcut, useUniqueName } from "./hooks";
 import { SvgIcon } from "./Icon";
-import { type ActiveRow, isRightToLeft, MenuContext, type MenuContextValue, type MenuFilter, MenuFilterContext, MenuLevelContext, type OpenSubmenu, pointerMoved, type RowEntry, shouldDropStart, useMenu } from "./menu_context";
+import { type ActiveRow, isRightToLeft, MenuContext, type MenuContextValue, type MenuFilter, MenuFilterContext, MenuLevelContext, type OpenSubmenu, pointerMoved, type RowEntry, shouldDropStart } from "./menu_context";
 import Popup, { type PopupProps } from "./Popup";
 
 /**
@@ -53,7 +54,8 @@ export interface MenuProps<T> extends Pick<PopupProps, "anchor" | "offset" | "co
     items?: MenuItem<T>[];
     /**
      * For a menu of {@link items}: offers an input at its top that filters every item, at any depth,
-     * as `MenuCommandItem.filterable` does for a submenu.
+     * as `MenuCommandItem.filterable` does for a submenu. Placed above its anchor, the menu is
+     * drawn bottom-up: the input at the bottom, and the first row lowest and active as it opens.
      */
     filterable?: boolean;
     /** Called when one of {@link items} is pressed with the primary button, or run from the keyboard. */
@@ -123,6 +125,9 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
     }, []);
     /** Whether the keys moved the menu since the pointer last did. See `Menu.css`. */
     const [ keyboardDriven, setKeyboardDriven ] = useState(false);
+    /** The placement above its anchor of a filterable menu, which is then drawn bottom-up. */
+    const [ upwardPlacement, setUpwardPlacement ] = useState<Placement>();
+    const bottomUp = !!upwardPlacement;
     /** Whether the menu has asked to close, which it does once. */
     const closed = useRef(false);
     const close = useCallback(() => {
@@ -134,7 +139,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         setActiveRow({ level, id: rowId });
         const element = rows.get(rowId)?.element;
         // The first row of a scrolling list brings what stands above it back into view, such as a
-        // filter input or a header, which scrolling only as far as the row would leave hidden.
+        // header, which scrolling only as far as the row would leave hidden.
         const list = element?.parentElement;
         if (list?.classList.contains("tn-menu-scroll") && !hasRowBefore(element)) list.scrollTo?.({ top: 0 });
         else element?.scrollIntoView?.({ block: "nearest" });
@@ -169,9 +174,13 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         return found.map(([ rowId ]) => rowId);
     }
 
-    /** Makes the first row at `level` that runs something the active one, if the level has rendered. */
+    /**
+     * Makes the first row at `level` that runs something the active one, if the level has rendered.
+     * The first row of a bottom-up menu is the lowest one.
+     */
     function activateFirstRow(level: number) {
-        const first = navigableRows(level).find((rowId) => !rows.get(rowId)?.custom);
+        const runnable = navigableRows(level).filter((rowId) => !rows.get(rowId)?.custom);
+        const first = level === 0 && bottomUp ? runnable.at(-1) : runnable[0];
         if (first) setActive(level, first);
         return !!first;
     }
@@ -205,6 +214,8 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         lastFilter.current = filter;
         if (level === undefined) return;
         if (!activateFirstRow(level + 1)) pendingFirstRow.current = level + 1;
+        // Typing into the input moves the active row, as the keys do.
+        if (filter) setKeyboardDriven(true);
 
         const input = filterInputIn(menuRef.current);
         if (filter && input && document.activeElement !== input) {
@@ -376,32 +387,43 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
     // The keys go to the menu while it is up; `contextMenu` gives focus back once it is hidden. A
     // browser does not focus an element under `visibility: hidden`, so the menu takes focus only
     // once it is shown.
-    function takeFocus() {
+    function takeFocus(isBottomUp: boolean) {
         // A menu already closing, as one whose row ran before it was placed, leaves focus alone.
         if (closed.current || isWanted?.() === false) return;
         menuRef.current?.focus({ preventScroll: true });
-        if (!startAt) return;
+        if (!startAt && !isBottomUp) return;
         const rowIds = navigableRows(0);
-        const first = startAt === "first" ? rowIds[0] : rowIds.at(-1);
+        // A bottom-up menu starts at its lowest row, however it was opened.
+        const first = startAt === "first" && !isBottomUp ? rowIds[0] : rowIds.at(-1);
         if (first) setActive(0, first);
         setKeyboardDriven(true);
     }
+
+    const topLevelFilter = items && filterable
+        ? { ...TOP_LEVEL, text: filter?.level === TOP_LEVEL.level ? filter.text : "" }
+        : undefined;
+    const defaultPlacement = anchor instanceof HTMLElement ? "bottom-start" : "right-start";
 
     return (
         <MenuContext.Provider value={context}>
             <Popup
                 {...popupProps}
                 anchor={anchor}
-                placement={placement ?? (anchor instanceof HTMLElement ? "bottom-start" : "right-start")}
+                // A bottom-up menu keeps its side, so its input stays by the anchor as it shrinks.
+                placement={upwardPlacement ?? placement ?? defaultPlacement}
                 placedByStylesheet={popupProps.placedByStylesheet || bottomSheet || inline}
                 reveal={!inline}
-                onPlaced={() => {
+                onPlaced={(placed) => {
+                    const isBottomUp = !!topLevelFilter
+                        && placed !== "stylesheet" && placed.startsWith("top");
+                    // The rows reorder before `takeFocus()` picks the row to start at.
+                    if (isBottomUp) flushSync(() => setUpwardPlacement(placed));
                     const menu = menuRef.current;
                     if (menu) {
                         setDropStart(0, shouldDropStart(menu.getBoundingClientRect(),
                             document.documentElement.clientWidth, isRightToLeft(), false));
                     }
-                    takeFocus();
+                    takeFocus(isBottomUp);
                 }}
                 onDismiss={onDismiss && (() => onDismiss())}
                 escapeDismisses={false}
@@ -411,6 +433,14 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
                 onPointerMove={(e) => {
                     if (pointerMoved(e)) setKeyboardDriven(false);
                 }}
+                // Fires only when the pointer is off every level, as the submenu layers are children
+                // of this element. Unless the keys drive the menu, only the deepest open submenu's
+                // row stays active.
+                onPointerLeave={() => {
+                    if (keyboardDriven) return;
+                    const deepest = open.at(-1);
+                    setActiveRow(deepest && { level: open.length - 1, id: deepest.id });
+                }}
                 // Neither the browser's menu nor another of the app's opens over this one. Every level
                 // is inside this element, so one handler covers them all.
                 onContextMenu={(e) => {
@@ -418,18 +448,11 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
                     e.stopPropagation();
                 }}
             >
-                {/* The rows scroll in here rather than the menu itself, so the theme's blur on the
-                    menu's `::before` stays behind them. A `<menu>`, as rows are its list items, out of
-                    the accessibility tree so they read as the menu's own. */}
-                <menu className="tn-menu-scroll" role="none">
-                    {items && filterable && (
-                        <MenuFilterContext.Provider value={{ ...TOP_LEVEL, text: filter?.level === TOP_LEVEL.level ? filter.text : "" }}>
-                            <MenuItems items={items} onSelect={onSelect} />
-                        </MenuFilterContext.Provider>
-                    )}
-                    {items && !filterable && <MenuItems items={items} onSelect={onSelect} />}
-                    {!items && children}
-                </menu>
+                <MenuList filter={topLevelFilter} bottomUp={bottomUp}>
+                    {items
+                        ? <MenuItems items={items} bottomUp={bottomUp} onSelect={onSelect} />
+                        : children}
+                </MenuList>
                 {/* The submenus' layers follow the scroller in here, portaled by their rows. */}
             </Popup>
         </MenuContext.Provider>
@@ -451,59 +474,42 @@ export function MenuItemRows<T>({ items }: { items: MenuItem<T>[] }) {
     );
 }
 
-function MenuItems<T>({ items, onSelect }: {
+function MenuItems<T>({ items, bottomUp, onSelect }: {
     items: MenuItem<T>[],
+    /** Draws the rows from the bottom up, the first row lowest. See {@link bottomUpOrder}. */
+    bottomUp?: boolean,
     onSelect: MenuProps<T>["onSelect"]
 }) {
     const filter = useContext(MenuFilterContext);
-    const rows = filter?.text
-        ? <FilteredMenuItems items={items} text={filter.text} onSelect={onSelect} />
-        : menuRows(items).map((row, index) => <MenuItemRow key={index} row={row} onSelect={onSelect} />);
-    return <>{filter && <MenuFilterInput filter={filter} />}{rows}</>;
-}
-
-/**
- * The input at the top of a filterable submenu. It edits as any input does; the menu keeps Up,
- * Down, Enter, Escape and Tab, to pick from the matches while focus stays here.
- */
-function MenuFilterInput({ filter }: { filter: MenuFilter }) {
-    const menu = useMenu();
-    const inputRef = useRef<HTMLInputElement | null>(null);
-
-    // Leaving with focus, as when the pointer moves on and closes the submenu, it hands the keys
-    // back to the menu rather than to the page.
-    useLayoutEffect(() => () => {
-        if (document.activeElement === inputRef.current) menu.layerHost?.focus({ preventScroll: true });
-    }, [ menu.layerHost ]);
-
-    return (
-        <li className="tn-menu-filter-row" role="none">
-            <label className="tn-menu-filter-box tn-input-field">
-                <FormTextBox
-                    inputRef={inputRef} className="tn-menu-filter-input" data-level={filter.level + 1}
-                    currentValue={filter.text} placeholder={t("menu.filter_placeholder")} aria-label={t("menu.filter")}
-                    autoComplete="off" spellcheck={false}
-                    onChange={(text) => menu.setFilter(text ? { rowId: filter.rowId, level: filter.level, text } : undefined)}
-                />
-                <span className="bx bx-search" aria-hidden="true" />
-            </label>
-        </li>
-    );
+    if (filter?.text) {
+        return <FilteredMenuItems
+            items={items} text={filter.text} bottomUp={bottomUp} onSelect={onSelect}
+        />;
+    }
+    const rows = menuRows(items);
+    // Keyed by their place in `rows`, so a row keeps its element as the order changes.
+    const order = bottomUp ? bottomUpOrder(rows) : [ ...rows.keys() ];
+    return <>{order.map((index) => (
+        <MenuItemRow key={index} row={rows[index]} onSelect={onSelect} />
+    ))}</>;
 }
 
 /**
  * The items of a filtered submenu: every item inside it, at any depth, that matches what was
  * typed, each with the submenus it stands in and the matching part of its title marked.
  */
-function FilteredMenuItems<T>({ items, text, onSelect }: {
+function FilteredMenuItems<T>({ items, text, bottomUp, onSelect }: {
     items: MenuItem<T>[],
     text: string,
+    /** Draws the best match lowest. */
+    bottomUp?: boolean,
     onSelect: MenuProps<T>["onSelect"]
 }) {
-    const matches = filterMenuItems(items, text);
+    const matches = [ ...filterMenuItems(items, text).entries() ];
+    if (bottomUp) matches.reverse();
     return <>
         {matches.length === 0 && <li className="tn-menu-filter-empty" role="none">{t("menu.no_matches")}</li>}
-        {matches.map(({ item, title, path }, index) => (
+        {matches.map(([ index, { item, title, path } ]) => (
             <FormListItem
                 key={index}
                 icon={item.uiIcon ?? "bx bx-empty"} iconClassName={item.iconColorClass}
@@ -751,6 +757,33 @@ function focusTarget(row: HTMLElement | undefined) {
     return row?.querySelector<HTMLElement>("[tabindex='0']") ?? null;
 }
 
+/**
+ * The indexes of `rows` in the order a bottom-up menu draws them, top to bottom: reversed, except
+ * that each header stays above the rows it introduces. Separators that ended a header's group stay
+ * between that group and the one now drawn above it.
+ */
+export function bottomUpOrder<T>(rows: MenuItem<T>[]): number[] {
+    // A group starts at each header, and at the first row.
+    const groups: number[][] = [];
+    for (const [ index, row ] of rows.entries()) {
+        const group = groups.at(-1);
+        if (!group || isHeader(row)) groups.push([ index ]);
+        else group.push(index);
+    }
+
+    const order: number[] = [];
+    for (const group of groups.reverse()) {
+        const header = isHeader(rows[group[0]]) ? group.shift() : undefined;
+        group.reverse();
+        const firstRow = group.findIndex((index) => !isSeparator(rows[index]));
+        const separators = group.splice(0, firstRow < 0 ? group.length : firstRow);
+        order.push(...separators);
+        if (header !== undefined) order.push(header);
+        order.push(...group);
+    }
+    return order;
+}
+
 /** The items with a run of separators reduced to one. */
 function menuRows<T>(items: MenuItem<T>[]) {
     const rows: MenuItem<T>[] = [];
@@ -764,4 +797,8 @@ function menuRows<T>(items: MenuItem<T>[]) {
 
 function isSeparator<T>(item: MenuItem<T>) {
     return "kind" in item && item.kind === "separator";
+}
+
+function isHeader<T>(item: MenuItem<T>) {
+    return "kind" in item && item.kind === "header";
 }

@@ -178,15 +178,9 @@ function ExistingActionsList({ existingActions }: { existingActions: AbstractBul
         );
     }
 
-    return (
-        <CardSection noPadding>
-            <table class="bulk-existing-action-list">
-                <tbody>
-                    {existingActions.map((action) => (
-                        <Fragment key={action.attribute.attributeId}>{action.doRender()}</Fragment>
-                    ))}
-                </tbody>
-            </table>
-        </CardSection>
-    );
+    return <>
+        {existingActions.map((action) => (
+            <Fragment key={action.attribute.attributeId}>{action.doRender()}</Fragment>
+        ))}
+    </>;
 }

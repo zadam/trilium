@@ -24,6 +24,7 @@ beforeEach(() => {
     options.set("codeNoteTabWidth", "4");
     options.set("codeNoteIndentWithTabs", "false");
     options.set("codeNotesMimeTypes", JSON.stringify([ "text/x-python" ]));
+    options.set("codeNotesMimeTypesSortAlphabetically", "true");
 });
 
 afterEach(() => {
@@ -172,6 +173,26 @@ describe("useCodeLanguageMenu", () => {
         expect(document.querySelector(".code-mime-types-modal .modal-dialog")).toBeNull();
         await act(async () => select(menu().items, "basic_properties.configure_code_notes"));
         expect(document.querySelector(".code-mime-types-modal .modal-dialog")).not.toBeNull();
+    });
+
+    it("lists the languages in the stored order, or by name", () => {
+        options.set("codeNotesMimeTypes",
+            JSON.stringify([ "text/x-python", "text/plain", "text/css" ]));
+        const note = buildCodeNote();
+        const languages = (isSortedAlphabetically: boolean) => {
+            options.set("codeNotesMimeTypesSortAlphabetically", String(isSortedAlphabetically));
+            let items: MenuItem<unknown>[] = [];
+            function Harness() {
+                items = useCodeLanguageMenu(useNoteCodeSettings(note)).menu.items;
+                return null;
+            }
+            act(() => render(<Harness />, container));
+            act(() => render(null, container));
+            return describeItems(items).slice(0, 3);
+        };
+
+        expect(languages(false)).toEqual([ "Python ✓", "Plain text ☐", "CSS ☐" ]);
+        expect(languages(true)).toEqual([ "Plain text ☐", "CSS ☐", "Python ✓" ]);
     });
 });
 

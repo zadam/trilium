@@ -68,6 +68,8 @@ The autocomplete offers:
 
 The search input features syntax highlighting, making recognized fields such as `note.` and operators like `NOT` stand out.
 
+The same highlighting is available in <a class="reference-link" href="../../Note%20Types/Code.md">Code</a> notes, for example to keep a collection of queries: set the language of the note to _Trilium Search Query_. The language is not enabled by default; add it from <a class="reference-link" href="../UI%20Elements/Options.md">Options</a> → _Code Notes_ → _Available MIME types in the dropdown_.
+
 ### Error highlighting & linting
 
 The search is also checked for errors in two phases, which will be displayed as a red squiggle:

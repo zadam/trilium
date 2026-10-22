@@ -138,7 +138,7 @@ body[dir=rtl] .tn-popup[data-reveal]:is([data-reveal="bottom-end"], [data-reveal
  * `::before` covers it whatever its content scrolls to. The content scrolls inside, in the height
  * `placeFloating()` caps the frame to.
  */
-.dropdown-menu:has(> :is(.tn-menu-scroll, .tn-panel-scroll)) {
+.dropdown-menu:has(> :is(.tn-menu-scroll, .tn-menu-filterable, .tn-panel-scroll)) {
     display: flex;
     flex-direction: column;
 }

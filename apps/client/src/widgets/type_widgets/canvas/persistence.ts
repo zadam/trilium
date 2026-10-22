@@ -1,4 +1,6 @@
-import { CaptureUpdateAction, exportToSvg, getSceneVersion } from "@excalidraw/excalidraw";
+import {
+    CaptureUpdateAction, exportToSvg, getSceneVersion, restoreElements
+} from "@excalidraw/excalidraw";
 import { ExcalidrawElement, NonDeletedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import {
     AppState, BinaryFileData, BinaryFiles, ExcalidrawImperativeAPI, ExcalidrawInitialDataState,
@@ -14,8 +16,12 @@ import FNote from "../../../entities/fnote";
 import type { ContentEditor } from "../../../services/content_renderer";
 import froca from "../../../services/froca";
 import server from "../../../services/server";
-import { SavedData, useEditorSpacedUpdate } from "../../react/hooks";
-import { type DrawingScene, getDrawingHistory, type SavedAppState } from "./drawing_history";
+import {
+    SavedData, useEditorSpacedUpdate, useTriliumEvent, useWhenShown
+} from "../../react/hooks";
+import {
+    type DrawingScene, getDrawingHistory, isInteracting, type SavedAppState, showDrawingScene
+} from "./drawing_history";
 import { type DrawingView, getBoundedView, getFittedView } from "./drawing_view";
 import {
     buildNewImageAttachments, CANVAS_EXPORT_TITLE, IMAGE_ROLE, loadImageAttachments, loadImageFiles
@@ -93,6 +99,7 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
         activeNoteIdRef.current = loadedNoteId;
 
         const content = parseContent(newContent, note);
+        const elements = restoreLoadedElements(content.elements);
 
         // Legacy notes carry inline images in `content.files` (a fileId-keyed record);
         // current notes store them as attachments. Both go into `initialData.files`.
@@ -113,13 +120,13 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
             libraryCache.current = libraryResult.libraryItems;
             attachmentMetadata.current = libraryResult.metadata;
 
-            const expectedSceneVersion = getSceneVersion(content.elements ?? []);
+            const expectedSceneVersion = getSceneVersion(elements);
             currentSceneVersion.current = expectedSceneVersion;
             initialSceneAppliedRef.current = expectedSceneVersion === 0;
             initialDataResolvedRef.current = true;
 
             initialData.resolve({
-                elements: content.elements ?? [],
+                elements,
                 appState: { ...content.appState, theme },
                 files,
                 libraryItems: libraryResult.libraryItems
@@ -131,7 +138,7 @@ export default function useCanvasPersistence(note: FNote, noteContext: NoteConte
             initialSceneAppliedRef.current = true;
             // Resolve anyway so Excalidraw does not stay on its loading screen forever.
             initialData.resolve({
-                elements: content.elements ?? [],
+                elements,
                 appState: { ...content.appState, theme },
                 files
             });
@@ -357,7 +364,10 @@ interface DrawingPersistenceOptions {
     initialView?: DrawingView | null;
     /** Called once Excalidraw shows the loaded scene. */
     onSceneShown?: () => void;
-    /** The element that holds Excalidraw, in which the undo history of the note watches input. */
+    /**
+     * The element that holds Excalidraw. The undo history of the note watches input in it, and a
+     * save made elsewhere shows once it is shown.
+     */
     rootRef?: RefObject<HTMLElement | null>;
 }
 
@@ -392,7 +402,7 @@ export function useCanvasDrawingPersistence(
         const loaded = await loadDrawingFiles(attachment, content);
         referencedFileIds.current = loaded.referencedFileIds;
 
-        const elements = content.elements ?? [];
+        const elements = restoreLoadedElements(content.elements);
         currentSceneVersion.current = getSceneVersion(elements);
         initialSceneAppliedRef.current = currentSceneVersion.current === 0;
         isLoadedSceneEmptyRef.current = !elements.some((element) => !element.isDeleted);
@@ -416,6 +426,87 @@ export function useCanvasDrawingPersistence(
     // the scene that `detach()` and `release()` read; a passive one runs after paint.
     useLayoutEffect(() => () => drawingMount?.detach(), [ drawingMount ]);
     useLayoutEffect(() => () => editor?.release(), [ editor ]);
+
+    /**
+     * Whether a save of the drawing waits until Excalidraw shows the loaded scene, or until the
+     * user ends a change.
+     */
+    const isSaveWaitingRef = useRef(false);
+    const showRequestRef = useRef(0);
+    const whenShown = useWhenShown(rootRef);
+
+    /** Reads the saved drawing now, and shows it once `rootRef` is shown. */
+    async function loadSavedDrawing() {
+        if (!apiRef.current || !isSceneShownRef.current) {
+            isSaveWaitingRef.current = true;
+            return;
+        }
+        isSaveWaitingRef.current = false;
+        const request = ++showRequestRef.current;
+        const blob = await attachment.getBlob();
+        if (blob && request === showRequestRef.current) {
+            whenShown(() => void showSavedDrawing(blob.content ?? "", request));
+        }
+    }
+
+    /**
+     * Shows `savedContent`, the saved drawing, in place. Does nothing while `editor` has unsaved
+     * changes of the drawing: they replace the saved drawing when they save.
+     */
+    async function showSavedDrawing(savedContent: string, request: number) {
+        const api = apiRef.current;
+        const isCurrent = () => request === showRequestRef.current && apiRef.current === api
+            && editor?.getUnsavedContent() === undefined;
+        if (!api || !isCurrent()) return;
+        // The save waits until the user ends the change in progress.
+        const isUserChanging = () => {
+            if (!isInteracting(api.getAppState())) return false;
+            isSaveWaitingRef.current = true;
+            return true;
+        };
+        if (isUserChanging()) return;
+
+        const content = parseContent(savedContent, attachment);
+        const elements = restoreLoadedElements(content.elements);
+        const appState: ImportantAppState = {
+            gridModeEnabled: content.appState?.gridModeEnabled ?? false,
+            viewBackgroundColor: content.appState?.viewBackgroundColor ?? "transparent"
+        };
+        const shownAppState = getImportantAppState(api.getAppState());
+        // A restore deletes an empty text element, so the shown elements are restored as well.
+        if (isSameScene(restoreLoadedElements(api.getSceneElements()), elements)
+            && appState.gridModeEnabled === shownAppState.gridModeEnabled
+            && appState.viewBackgroundColor === shownAppState.viewBackgroundColor) {
+            return;
+        }
+
+        const shownFiles = api.getFiles();
+        const loaded = await loadDrawingFiles(attachment, {
+            ...content,
+            elements: elements.filter((element) =>
+                "fileId" in element && element.fileId && !shownFiles[element.fileId])
+        });
+        if (!isCurrent() || isUserChanging()) return;
+
+        referencedFileIds.current = new Set([
+            ...referencedFileIds.current, ...loaded.referencedFileIds
+        ]);
+        const scene = { elements, appState, files: loaded.files };
+        if (!drawingMount?.show(scene)) {
+            showDrawingScene(api, scene);
+        }
+        // Excalidraw replaces the elements at once and renders the app state later.
+        currentSceneVersion.current = getSceneVersion(api.getSceneElements());
+        appStateToCompare.current = appState;
+    }
+
+    useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
+        const isSaved = loadResults.getAttachmentRows().some((row) =>
+            row.attachmentId === attachment.attachmentId && !row.isDeleted);
+        if (isSaved) {
+            void loadSavedDrawing();
+        }
+    });
 
     return {
         initialData,
@@ -443,6 +534,10 @@ export function useCanvasDrawingPersistence(
                     )
                 });
                 onSceneShown?.();
+            }
+            if (isSaveWaitingRef.current && isSceneShownRef.current
+                && !isInteracting(api.getAppState())) {
+                void loadSavedDrawing();
             }
             if (!editor) return;
 
@@ -667,6 +762,26 @@ function serializeDrawing(scene: DrawingScene, referencedFileIds: ReadonlySet<st
         delete files[fileId];
     }
     return JSON.stringify(buildSceneContent(elements, scene.appState, files));
+}
+
+/**
+ * Loaded `elements` as Excalidraw restores them when it loads a scene: a text element without text
+ * is deleted, with a new version, and elements without a size are dropped. A second restore
+ * changes nothing, so the scene that Excalidraw shows has the version of the result.
+ */
+function restoreLoadedElements(elements: readonly ExcalidrawElement[] | undefined) {
+    return restoreElements(elements ?? [], null, { repairBindings: true });
+}
+
+/** Whether `shown` and `saved` hold the same elements, deleted ones aside, at the same versions. */
+function isSameScene(shown: readonly ExcalidrawElement[], saved: readonly ExcalidrawElement[]) {
+    const getVersion = (element: ExcalidrawElement) => `${element.version}:${element.versionNonce}`;
+    const shownVersions = new Map(shown
+        .filter((element) => !element.isDeleted)
+        .map((element) => [ element.id, getVersion(element) ]));
+    const savedElements = saved.filter((element) => !element.isDeleted);
+    return savedElements.length === shownVersions.size
+        && savedElements.every((element) => shownVersions.get(element.id) === getVersion(element));
 }
 
 export function parseContent(newContent: string, entity: FNote | FAttachment): CanvasContent {

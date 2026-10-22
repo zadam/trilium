@@ -114,7 +114,10 @@ export interface SavedData {
     }[];
 }
 
-export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, block }: {
+export function useEditorSpacedUpdate({
+    note, noteType, noteContext, getData, onContentChange, dataSaved, updateInterval, block,
+    shownRef
+}: {
     noteType: NoteType;
     note: FNote | null | undefined,
     noteContext: NoteContext | null | undefined,
@@ -128,6 +131,8 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
      * replaces.
      */
     block?: string;
+    /** The element of the editor. Content saved elsewhere loads into it once it is shown. */
+    shownRef?: RefObject<Element | null>;
 }) {
     const parentComponent = useContext(ParentComponent);
     const blockRef = useRef(block ?? "");
@@ -135,7 +140,8 @@ export function useEditorSpacedUpdate({ note, noteType, noteContext, getData, on
         reportLoadStateTo: noteContext,
         load: block === undefined
             ? undefined
-            : (loadedNote) => loadBlocks(loadedNote, blockRef.current)
+            : (loadedNote) => loadBlocks(loadedNote, blockRef.current),
+        shownRef
     });
 
     // The note whose content is currently loaded in the editor. Editor instances are reused
@@ -543,48 +549,6 @@ export function useNoteContext() {
 }
 
 /**
- * Whether the tab holding `noteContext` has been shown since the component mounted. A tab
- * restored or opened in the background reads `false` until the user switches to it. Every split
- * of a tab is shown with it, so the check is keyed on the tab's main context. Special contexts (an
- * ntxId starting with "_", such as the popup editor) always read `true`.
- */
-export function useHasTabBeenShown(noteContext: NoteContext | undefined) {
-    const isShown = () => (noteContext?.ntxId?.startsWith("_") ?? false)
-        || isContextInActiveTab(noteContext, appContext.tabManager.getActiveMainContext()?.ntxId);
-    const [ hasBeenShown, setHasBeenShown ] = useState(isShown);
-
-    useEffect(() => {
-        if (!hasBeenShown && isShown()) {
-            setHasBeenShown(true);
-        }
-    }, [ noteContext, hasBeenShown ]); // eslint-disable-line react-hooks/exhaustive-deps
-    useTriliumEvent("activeNoteChanged", () => {
-        if (!hasBeenShown && isShown()) {
-            setHasBeenShown(true);
-        }
-    });
-
-    return hasBeenShown;
-}
-
-/**
- * True when the given context belongs to the active tab, identified by `activeMainNtxId` (the
- * ntxId of the active tab's main context). A tab can hold several splits, but only one of them is
- * the "active" context at a time; every split of the active tab is visible and must load eagerly,
- * so the deferral check is keyed on the tab (the main context), not the individual split.
- */
-export function isContextInActiveTab(
-    noteContext: NoteContext | undefined,
-    activeMainNtxId: string | null | undefined
-): boolean {
-    if (!noteContext || activeMainNtxId == null) {
-        return false;
-    }
-
-    return activeMainNtxId === noteContext.getMainContext().ntxId;
-}
-
-/**
  * Registers `noteContext`, built outside the tab row, with `TabManager` for as long as the component
  * uses it, so that commands naming its `ntxId` resolve to it.
  */
@@ -879,10 +843,18 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
     refreshOnShow?: boolean;
     /** Reads the content instead of the blob of the note, resolving to `null` when it fails. */
     load?: (note: FNote) => Promise<T | null>;
+    /**
+     * The element that displays the content. While it is hidden, content saved elsewhere loads at
+     * once, and the blob changes once the element is shown (`useWhenShown()`).
+     */
+    shownRef?: RefObject<Element | null>;
 }): T | null | undefined {
     const [ blob, setBlob ] = useState<T | null>();
     const requestIdRef = useRef(0);
+    /** The request whose content, saved elsewhere, waits for `shownRef` to show. */
+    const waitingRequestIdRef = useRef<number | undefined>(undefined);
     const missedContentChangeRef = useRef(false);
+    const whenShown = useWhenShown(opts?.shownRef);
 
     function reportLoadState(state: "loading" | "loaded" | "error") {
         if (opts?.isVisible === false) {
@@ -891,9 +863,12 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
         opts?.reportLoadStateTo?.setContextData("contentLoad", { state, retry: () => refresh() });
     }
 
-    async function refresh() {
+    /** Loads the blob. With `isSavedElsewhere`, it applies once `shownRef` is shown. */
+    async function refresh(isSavedElsewhere = false) {
         const requestId = ++requestIdRef.current;
-        if (note) {
+        const isWaiting = isSavedElsewhere && !!opts?.shownRef;
+        waitingRequestIdRef.current = isWaiting ? requestId : undefined;
+        if (note && !isWaiting) {
             reportLoadState("loading");
         }
         const newBlob = note && opts?.load
@@ -901,12 +876,19 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
             : await note?.getBlob() as T | null | undefined;
 
         // Only update if this is the latest request.
-        if (requestId === requestIdRef.current) {
+        if (requestId !== requestIdRef.current) return;
+        const update = () => {
+            if (requestId !== requestIdRef.current) return;
             setBlob(newBlob);
             if (note) {
                 // froca.getBlob() resolves to null when the fetch failed.
                 reportLoadState(newBlob ? "loaded" : "error");
             }
+        };
+        if (isWaiting) {
+            whenShown(update);
+        } else {
+            update();
         }
     }
 
@@ -922,11 +904,15 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
         }
 
         if (loadResults.isNoteContentReloaded(note.noteId, componentId)) {
-            refresh();
+            refresh(true);
         } else if (opts?.refreshOnShow && loadResults.isNoteContentReloaded(note.noteId)) {
             // The change came from our own component, so the refetch was skipped; remember it so
             // the content is brought up to date when the widget is displayed again.
             missedContentChangeRef.current = true;
+        } else if (loadResults.isNoteContentReloaded(note.noteId)
+            && waitingRequestIdRef.current === requestIdRef.current) {
+            // A later save here outdates the content that waits to show.
+            requestIdRef.current++;
         }
     });
 
@@ -1061,6 +1047,47 @@ export function useElementSize(ref: RefObject<HTMLElement | null>) {
     }, [ ref ]);
 
     return size;
+}
+
+/**
+ * Returns a function that runs a callback at once while the element of `ref` is shown, and
+ * otherwise once it is shown again, for example when its tab is selected. While the element is
+ * hidden, only the last callback runs, so a stale result must be dropped before it is passed.
+ * Without an element, or with one that is not in the page yet, the callback runs at once.
+ */
+export function useWhenShown(ref: RefObject<Element | null> | undefined) {
+    const waitingRef =
+        useRef<{ callback: () => void; observer: ResizeObserver } | undefined>(undefined);
+    useEffect(() => () => waitingRef.current?.observer.disconnect(), []);
+
+    return useCallback((callback: () => void) => {
+        const element = ref?.current;
+        const waiting = waitingRef.current;
+        if (!element || isShown(element)) {
+            waiting?.observer.disconnect();
+            waitingRef.current = undefined;
+            callback();
+        } else if (waiting) {
+            waiting.callback = callback;
+        } else {
+            // `display: none` gives the element no size, so showing it resizes it.
+            const observer = new ResizeObserver(() => {
+                const current = waitingRef.current;
+                if (current && isShown(element)) {
+                    observer.disconnect();
+                    waitingRef.current = undefined;
+                    current.callback();
+                }
+            });
+            waitingRef.current = { callback, observer };
+            observer.observe(element);
+        }
+    }, [ ref ]);
+}
+
+/** Whether `element` is laid out, or not in the page yet. */
+function isShown(element: Element) {
+    return !element.isConnected || element.checkVisibility();
 }
 
 /**
@@ -1404,26 +1431,47 @@ export function useStaticTooltip(
                     }
                     shownDelegates.delete(target);
                 }
-                if (!shownDelegates.size) delegateObserver.disconnect();
+                if (!shownDelegates.size) stopWatching();
             });
+            // Hides a shown delegate once a scroll moves it partly out of the view of the element
+            // that scrolled, so that its popup does not follow it outside that element.
+            const onScroll = (event: Event) => {
+                const scroller = event.target;
+                if (!(scroller instanceof Element)) return;
+                const view = scroller.getBoundingClientRect();
+                for (const target of shownDelegates) {
+                    const box = target.getBoundingClientRect();
+                    const isInView = box.top >= view.top && box.bottom <= view.bottom
+                        && box.left >= view.left && box.right <= view.right;
+                    if (!isInView && scroller.contains(target)) {
+                        Tooltip.getInstance(target)?.hide();
+                    }
+                }
+            };
+            const startWatching = () => {
+                delegateObserver.observe(element, { childList: true, subtree: true });
+                document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+            };
+            const stopWatching = () => {
+                delegateObserver.disconnect();
+                document.removeEventListener("scroll", onScroll, { capture: true });
+            };
             // Bootstrap's component events bubble from the delegate up to the container.
             const onDelegateShown = (event: Event) => {
                 if (!(event.target instanceof Element) || event.target === element) return;
-                if (!shownDelegates.size) {
-                    delegateObserver.observe(element, { childList: true, subtree: true });
-                }
+                if (!shownDelegates.size) startWatching();
                 shownDelegates.add(event.target);
             };
             const onDelegateHidden = (event: Event) => {
                 if (!(event.target instanceof Element)) return;
                 shownDelegates.delete(event.target);
-                if (!shownDelegates.size) delegateObserver.disconnect();
+                if (!shownDelegates.size) stopWatching();
             };
             element.addEventListener("inserted.bs.tooltip", onDelegateShown);
             element.addEventListener("hidden.bs.tooltip", onDelegateHidden);
 
             disposeDelegateTracking = () => {
-                delegateObserver.disconnect();
+                stopWatching();
                 element.removeEventListener("inserted.bs.tooltip", onDelegateShown);
                 element.removeEventListener("hidden.bs.tooltip", onDelegateHidden);
             };

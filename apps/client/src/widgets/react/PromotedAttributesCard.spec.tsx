@@ -632,7 +632,7 @@ describe("PromotedAttributesCard", () => {
     }
 
     function adder() {
-        return container.querySelector<HTMLElement>(".tn-sortable-adder");
+        return container.querySelector<HTMLElement>(".tn-card-adder");
     }
 
     /** The editor reporting a definition and being told to save it. */

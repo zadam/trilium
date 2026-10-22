@@ -59,6 +59,9 @@ const READ_ONLY_CAPABLE_VIEW_TYPES: string[] = [
     "table"
 ];
 
+/** View scope keys that hold the context's own state rather than what a navigation asks for. */
+const VIEW_STATE_KEYS: string[] = [ "isReadOnly", "readOnlyTemporarilyDisabled" ];
+
 export interface NoteContextDataMap {
     toc: HeadingContext;
     highlights: HighlightContext;
@@ -188,8 +191,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             return;
         }
 
-        const isSameView = utils.areObjectsEqual(this.viewScope, viewScope);
-        if (this.notePath === resolvedNotePath && isSameView) {
+        if (this.notePath === resolvedNotePath && isSameViewScope(this.viewScope, viewScope)) {
             return this;
         }
 
@@ -694,6 +696,20 @@ export function openInCurrentNoteContext(evt: MouseEvent | JQuery.ClickEvent | J
     } else {
         appContext.tabManager.openContextWithNote(notePath, { viewScope, activate: true });
     }
+}
+
+/**
+ * Whether navigating with `requested` shows what `current` already shows. Ignores the
+ * `VIEW_STATE_KEYS` and the keys a reader such as `consumeBookmark()` set to `undefined`.
+ */
+function isSameViewScope(current: ViewScope | undefined, requested: ViewScope) {
+    return utils.areObjectsEqual(
+        getNavigationTarget(current ?? {}), getNavigationTarget(requested));
+}
+
+function getNavigationTarget(viewScope: ViewScope) {
+    return Object.fromEntries(Object.entries(viewScope).filter(([ key, value ]) =>
+        value !== undefined && !VIEW_STATE_KEYS.includes(key)));
 }
 
 export default NoteContext;

@@ -294,7 +294,7 @@ export function CodeEditor({
 /**
  * Publishes `editor` as the `codeEditor` context data while the type widget is displayed for the
  * note of `noteContext`. A note switch clears the context data, and a displayed widget publishes
- * it again.
+ * it again. A hidden widget clears it, unless another widget has published its editor since.
  */
 function usePublishedEditor(
     noteContext: NoteContext | undefined,
@@ -305,6 +305,11 @@ function usePublishedEditor(
     useEffect(() => {
         if (!noteContext || !editor || !isVisible || noteContext.noteId !== note.noteId) return;
         noteContext.setContextData("codeEditor", editor);
+        return () => {
+            if (noteContext.getContextData("codeEditor") === editor) {
+                noteContext.clearContextData("codeEditor");
+            }
+        };
     }, [ noteContext, note.noteId, isVisible, editor ]);
 }
 

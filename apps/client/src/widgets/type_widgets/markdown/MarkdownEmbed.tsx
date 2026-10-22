@@ -60,7 +60,7 @@ export default function MarkdownEmbed({
     const { tabWidth, useTabs } = useNoteCodeSettings(note);
 
     const [ content, setContent ] = useState(initialContent);
-    useSavedContent(entity, editor, setContent);
+    useSavedContent(entity, editor, setContent, rootRef);
     const renderedContent = useDebouncedValue(content, PREVIEW_DELAY);
     const shownPreview = useEmbedPreview(
         preview, renderedContent, () => renderPreview(renderedContent)

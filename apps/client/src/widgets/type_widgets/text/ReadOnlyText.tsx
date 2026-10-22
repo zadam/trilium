@@ -51,13 +51,14 @@ export default function ReadOnlyText({ note, noteContext, ntxId, parentComponent
     // hidden while the user temporarily edits an auto-read-only note — would refetch the whole blob
     // after every save and flash the loading overlay over the editor (#10575). Skipped own-component
     // changes are caught up on via refreshOnShow when this view is displayed again.
+    const readOnlyContentRef = usePreactRef<HTMLDivElement>(null);
     const blob = useNoteBlob(note, parentComponent?.componentId, {
         reportLoadStateTo: noteContext,
         isVisible,
-        refreshOnShow: true
+        refreshOnShow: true,
+        shownRef: readOnlyContentRef
     });
     const { isRtl } = useNoteLanguage(note);
-    const readOnlyContentRef = usePreactRef<HTMLDivElement>(null);
     const renderedNoteIdRef = usePreactRef<string | undefined>(undefined);
 
     // Scroll to the bookmark or the blocks a link points at. The blob gate skips the mount run,

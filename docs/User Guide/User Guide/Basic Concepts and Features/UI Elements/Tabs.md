@@ -30,6 +30,12 @@ Since tabs are a commonly used feature, there are multiple keyboard shortcuts th
 *   <kbd>Ctrl</kbd>+<kbd>1</kbd>, <kbd>Ctrl</kbd>+<kbd>2</kbd>, up to <kbd>Ctrl</kbd>+<kbd>9</kbd> to activate the first, second and up to ninth tab.
 *   There is also a shortcut to go to the last tab, but it is not assigned a key by default.
 
+## Background tabs
+
+When Trilium starts, it reopens the tabs from the previous session. Only the active tab loads its note right away; every other tab loads its note the first time you switch to it. This keeps startup fast when many tabs are open, especially tabs that show collections.
+
+The same applies to a tab opened in the background, for example with a middle click or <kbd>Ctrl</kbd>+click on a link.
+
 ## Mobile
 
 <figure class="image image-style-align-right image_resized" style="width:34.12%;"><img style="aspect-ratio:1242/2688;" src="Tabs_IMG_1767.PNG" width="1242" height="2688"></figure>

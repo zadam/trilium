@@ -16,7 +16,9 @@ import {
     useNoteCodeSettings, useTabWidthMenu
 } from "../../layout/code_menus";
 import { SaveStateBadge } from "../../layout/NoteBadges";
-import { useNoteBlob, useNoteLabelOptionalBool, useTriliumEvent } from "../../react/hooks";
+import {
+    useNoteBlob, useNoteLabelOptionalBool, useTriliumEvent, useWhenShown
+} from "../../react/hooks";
 import { useContentEmbedMenus } from "../text/content_embed_menus";
 import { useContentEmbedAttribute, useContentEmbedFlag } from "../text/content_embed_tools";
 import {
@@ -67,7 +69,7 @@ export default function CodeEmbed({
     });
     const [ content, setContent ] = useState(initialContent);
     const mime = settings.mime ?? initialMime;
-    useSavedContent(entity, editor, setContent);
+    useSavedContent(entity, editor, setContent, rootRef);
     // The editor while the content is edited, otherwise the content with the unsaved changes of any
     // embed of it, which a change saves.
     const getCodeText = (): CodeText => (isEditing ? viewRef.current : null) ?? {
@@ -253,17 +255,20 @@ export function SaveStatus({ rootRef, editor, isShown }: SaveStatusProps) {
 }
 
 /**
- * Shows the content of `entity` each time it saves, also when another embed of it saved it.
- * Unsaved changes made in the embed are kept, and replace that content when they save.
+ * Shows the content of `entity` after each save, also one made by another embed of it, once
+ * `shownRef` is shown. Unsaved changes made in the embed are kept, and replace that content when
+ * they save.
  */
 export function useSavedContent(
     entity: FNote | FAttachment,
     editor: ContentEditor | undefined,
-    setContent: (content: string) => void
+    setContent: (content: string) => void,
+    shownRef: RefObject<Element | null>
 ) {
-    const noteBlob = useNoteBlob(entity instanceof FNote ? entity : null);
+    const noteBlob = useNoteBlob(entity instanceof FNote ? entity : null, undefined, { shownRef });
     const [ attachmentContent, setAttachmentContent ] = useState<string>();
     const requestIdRef = useRef(0);
+    const whenShown = useWhenShown(shownRef);
     const content = entity instanceof FNote ? noteBlob?.content : attachmentContent;
 
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
@@ -272,9 +277,12 @@ export function useSavedContent(
         if (rows.some((row) => row.attachmentId === entity.attachmentId)) {
             const requestId = ++requestIdRef.current;
             void entity.getBlob().then((blob) => {
-                if (requestId === requestIdRef.current) {
-                    setAttachmentContent(blob?.content);
-                }
+                if (requestId !== requestIdRef.current) return;
+                whenShown(() => {
+                    if (requestId === requestIdRef.current) {
+                        setAttachmentContent(blob?.content);
+                    }
+                });
             });
         }
     });

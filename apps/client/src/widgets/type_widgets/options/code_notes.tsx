@@ -10,7 +10,7 @@ import { FormTextBoxWithUnit } from "../../react/FormTextBox";
 import FormToggle from "../../react/FormToggle";
 import { useColorScheme, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import { CODE_THEME_DEFAULT_PREFIX as DEFAULT_PREFIX } from "../constants";
-import { CodeMimeTypesList } from "./code_mime_types_list";
+import { CodeMimeTypesCard } from "./code_mime_types_card";
 import OptionsPageHeader from "./components/OptionsPageHeader";
 import ThemeModeSelector from "./components/ThemeModeSelector";
 import codeNoteSample from "./samples/code_note.txt?raw";
@@ -34,7 +34,7 @@ export default function CodeNoteSettings() {
                 wordWrapping={codeLineWrapEnabled} lineNumbers={codeLineNumbersEnabled}
                 indentSize={parseInt(codeNoteTabWidth) || 4}
             />
-            <CodeMimeTypes />
+            <CodeMimeTypesCard heading={t("code_mime_types.title")} />
         </>
     );
 }
@@ -241,15 +241,5 @@ function reindentSample(sample: string, indentSize: number): string {
         const level = match.length / SAMPLE_BASE_INDENT;
         return " ".repeat(Math.round(level) * indentSize);
     });
-}
-
-function CodeMimeTypes() {
-    return (
-        <Card heading={t("code_mime_types.title")}>
-            <CardSection>
-                <CodeMimeTypesList />
-            </CardSection>
-        </Card>
-    );
 }
 

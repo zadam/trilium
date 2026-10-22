@@ -50,7 +50,9 @@ function menuElement() {
 
 /** The top level's rows, which scroll inside the menu. */
 function menuRows() {
-    return [ ...menuElement()?.querySelector(":scope > .tn-menu-scroll")?.children ?? [] ];
+    const list = menuElement()
+        ?.querySelector(":scope > .tn-menu-scroll, :scope > .tn-menu-filterable > .tn-menu-scroll");
+    return [ ...list?.children ?? [] ];
 }
 
 /** Puts an element on a screen of its own, as the browser reports one. */
@@ -336,7 +338,7 @@ describe("contextMenu", () => {
             ]);
         });
 
-        it("offers an input above the items of a filterable menu, which filters them", async () => {
+        it("filters a filterable menu from an input above its scrolling list", async () => {
             buildPage();
             const contextMenu = await buildContextMenu();
 
@@ -345,13 +347,17 @@ describe("contextMenu", () => {
                 items: [ { title: "Plain text" }, { title: "Python" } ]
             });
 
-            const input = menuRows()[0]
-                ?.querySelector<HTMLInputElement>("input.tn-menu-filter-input");
+            // The input stays in place above the list its rows scroll in.
+            const box = menuElement()?.querySelector(":scope > .tn-menu-filterable");
+            expect([ ...box?.children ?? [] ].map((child) => child.className))
+                .toEqual([ "tn-menu-filter", "tn-menu-scroll" ]);
+            const input = box?.querySelector<HTMLInputElement>("input.tn-menu-filter-input");
             if (!input) throw new Error("no filter input");
+            expect(menuRows().map((row) => row.textContent)).toEqual([ "Plain text", "Python" ]);
             input.value = "pyt";
             input.dispatchEvent(new Event("input", { bubbles: true }));
             await vi.waitFor(() => {
-                expect(menuRows().slice(1).map((row) => row.textContent)).toEqual([ "Python" ]);
+                expect(menuRows().map((row) => row.textContent)).toEqual([ "Python" ]);
             });
         });
 
@@ -980,6 +986,10 @@ describe("contextMenu", () => {
                 // There before anything is typed, empty, and with the keys still on the rows.
                 expect(layer()).toEqual({ filter: "", rows: unfiltered, empty: false });
                 expect(document.activeElement).toBe(menuElement());
+                // Above the list the rows scroll in, so it stays in place as they scroll.
+                const box = menuElement()?.querySelector(".dropdown-submenu .tn-menu-filterable");
+                expect([ ...box?.children ?? [] ].map((child) => child.className))
+                    .toEqual([ "tn-menu-filter", "tn-menu-scroll" ]);
 
                 type("p");
                 await vi.waitFor(() => expect(document.activeElement).toBe(filterInput()));
@@ -1070,6 +1080,24 @@ describe("contextMenu", () => {
                 expect(contextMenu.isShown).toBe(false);
             });
 
+            it("keeps the match typed into the input as the pointer leaves the menu", async () => {
+                const picked: string[] = [];
+                await openFilterable(picked);
+                const parent = [ ...menuElement()?.querySelectorAll<HTMLElement>("li.dropdown-submenu") ?? [] ]
+                    .find((row) => row.textContent?.includes("Insert child note"));
+                parent?.dispatchEvent(new PointerEvent("pointerenter"));
+                await vi.waitFor(() => expect(filterInput()).not.toBeNull());
+
+                filterInput()?.focus();
+                edit("boa");
+                await vi.waitFor(() => expect(activeRow()).toMatch(/^Board/));
+                menuElement()?.dispatchEvent(new PointerEvent("pointerleave"));
+                await new Promise((resolve) => setTimeout(resolve));
+                expect(activeRow()).toMatch(/^Board/);
+                key("Enter");
+                expect(picked).toEqual([ "Board" ]);
+            });
+
             it("gives Right and Left to the menu where the caret has nowhere to go", async () => {
                 await openFilterable();
                 await openSubmenuByKeys();
@@ -1150,7 +1178,7 @@ describe("contextMenu", () => {
                 }
             });
 
-            it("scrolls back to the input when the keys come round to the first row", async () => {
+            it("scrolls the list to the top when the keys wrap to the first row", async () => {
                 await openFilterable();
                 await openSubmenuByKeys();
                 const list = menuElement()?.querySelector<HTMLElement>("div.dropdown-submenu .tn-menu-scroll");
@@ -1164,7 +1192,7 @@ describe("contextMenu", () => {
                 await vi.waitFor(() => expect(activeRow()).toBe("Meeting & notes"));
                 key("ArrowDown");
                 await vi.waitFor(() => expect(activeRow()).toBe("Text"));
-                // As far up as the list goes, so the input above the first row shows again.
+                // As far up as the list goes, so anything above the first row shows too.
                 expect(scrollTo).toHaveBeenLastCalledWith({ top: 0 });
 
                 // From the input, as Up and Down go through the rows from there too.

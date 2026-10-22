@@ -193,9 +193,10 @@ const defaultOptions: DefaultOption[] = [
     { name: "codeNoteIndentWithTabs", value: "false", isSynced: true },
     {
         name: "codeNotesMimeTypes",
-        value: '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-elixir","text/x-go","text/x-groovy","text/x-haskell","text/html","message/http","text/x-java","text/javascript","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/x-kotlin","text/x-markdown","text/x-perl","text/x-php","text/x-python","text/x-ruby",null,"text/x-sql","text/x-sqlite;schema=trilium","text/x-swift","text/xml","text/x-yaml","text/x-sh","application/typescript"]',
+        value: '["text/x-csrc","text/x-c++src","text/x-csharp","text/css","text/x-dockerfile","text/x-go","text/html","text/x-java","text/javascript","application/javascript;env=frontend","application/javascript;env=backend","application/json","text/jsx","text/x-kotlin","text/x-markdown","text/x-php","application/x-powershell","text/x-python","text/x-ruby","text/x-rustsrc",null,"text/x-sql","text/x-sqlite;schema=trilium","text/x-swift","text/xml","text/x-yaml","text/x-sh","application/typescript","text/typescript-jsx"]',
         isSynced: true
     },
+    { name: "codeNotesMimeTypesSortAlphabetically", value: "true", isSynced: true },
     { name: "contentManagerSortOrder", value: "title", isSynced: true },
     { name: "contentManagerViewMode", value: "category", isSynced: true },
     { name: "leftPaneWidth", value: "25", isSynced: false },

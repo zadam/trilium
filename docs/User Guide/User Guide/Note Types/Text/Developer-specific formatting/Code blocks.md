@@ -66,7 +66,7 @@ Simply click anywhere inside the code block and press again the code block butto
 
 The code blocks feature shares the list of languages with the <a class="reference-link" href="../../Code.md">Code</a> note type.
 
-The supported languages can be adjusted by going to <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a>, then _Code Notes_ and looking for the _Available MIME types in the dropdown_ section. Simply check any of the items to add them to the list, or uncheck them to remove them from the list.
+The supported languages, and the order in which they are listed, can be adjusted by going to <a class="reference-link" href="../../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _Code Notes_ → _Available MIME types in the dropdown_. See <a class="reference-link" href="../../Code.md">Code</a> for how to add, remove and reorder them.
 
 Note that the list of languages is not immediately refreshed, you'd have to manually [refresh the application](../../../Troubleshooting/Refreshing%20the%20application.md).
 

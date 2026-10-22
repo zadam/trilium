@@ -9,6 +9,8 @@
 import type { CKEditorError, CKTextEditor, FileUploadData } from "@triliumnext/ckeditor5";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type FAttachment from "../../../entities/fattachment";
+import froca from "../../../services/froca";
 import type LoadResults from "../../../services/load_results";
 
 const showError = vi.hoisted(() => vi.fn());
@@ -29,6 +31,13 @@ vi.mock("../../../services/dialog", () => ({ default: { info: showInfoDialog } }
 
 // Imported by EditableText for editor types and content styles; irrelevant (and heavy) here.
 vi.mock("@triliumnext/ckeditor5", () => ({}));
+
+const showsAttachmentSave =
+    vi.hoisted(() => vi.fn((_root: HTMLElement, _attachment: object) => false));
+vi.mock("./utils", async (importOriginal) => ({
+    ...await importOriginal<typeof import("./utils")>(),
+    showsAttachmentSave
+}));
 
 const {
     applyPendingAttachmentChanges,
@@ -209,8 +218,10 @@ describe("notifyAttachmentChanges", () => {
     type Row = { attachmentId?: string; isDeleted?: boolean };
 
     const updateAttachmentLinks = vi.fn();
+    const root = document.createElement("div");
     const editor = {
-        plugins: { get: () => ({ updateAttachmentLinks }) }
+        plugins: { get: () => ({ updateAttachmentLinks }) },
+        editing: { view: { getDomRoot: () => root } }
     } as unknown as CKTextEditor;
 
     function loadResultsOf(rows: Row[], isContentReloaded = false) {
@@ -245,6 +256,29 @@ describe("notifyAttachmentChanges", () => {
             { attachmentId: "renamed", isDeleted: false },
             { attachmentId: "deleted", isDeleted: true }
         ]);
+    });
+
+    it("leaves out the saves that every embed of the attachment shows by itself", () => {
+        const drawing = { attachmentId: "drawing" } as FAttachment;
+        const renamed = { attachmentId: "renamed" } as FAttachment;
+        froca.attachments.drawing = drawing;
+        froca.attachments.renamed = renamed;
+        showsAttachmentSave.mockImplementation((_root, attachment) => attachment === drawing);
+
+        notify(loadResultsOf([
+            { attachmentId: "drawing" },
+            { attachmentId: "renamed" },
+            { attachmentId: "drawing", isDeleted: true }
+        ]), { current: undefined });
+
+        expect(showsAttachmentSave).toHaveBeenCalledWith(root, drawing);
+        expect(updateAttachmentLinks).toHaveBeenCalledExactlyOnceWith([
+            { attachmentId: "renamed", isDeleted: false },
+            { attachmentId: "drawing", isDeleted: true }
+        ]);
+        showsAttachmentSave.mockReset().mockReturnValue(false);
+        delete froca.attachments.drawing;
+        delete froca.attachments.renamed;
     });
 
     it("leaves the links alone when no attachment changed", () => {

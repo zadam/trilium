@@ -207,7 +207,6 @@ export function AttachmentDetail({ note, viewScope, noteContext }: TypeWidgetPro
 }
 
 function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, viewScope }: { attachment: FAttachment, isFullDetail?: boolean, ownerNote?: FNote, noteContext?: NoteContext, viewScope?: ViewScope }) {
-    const parentComponent = useContext(ParentComponent);
     const contentWrapper = useRef<HTMLDivElement>(null);
     const imageViewerWrapper = useRef<HTMLDivElement>(null);
     const [ title, setTitle ] = useState(attachment.title);
@@ -219,8 +218,6 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
     // Same reason, for the content itself: replacing an attachment changes neither its id nor its title, so
     // without this nothing here re-renders and the viewer/player would keep showing what it first loaded.
     const [ modified, setModified ] = useState(attachment.utcDateModified);
-    // Counts the changes that another component saved, which the drawing editor loads again.
-    const [ externalRevision, setExternalRevision ] = useState(0);
     // "importSource" attachments (e.g. OneNote debug source) behave like ordinary files for
     // preview, OCR and link-copying purposes.
     const isFileLike = isFileLikeAttachment(attachment);
@@ -274,12 +271,9 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
     }, [ attachment, rendersItself ]);
     useTriliumEvent("entitiesReloaded", ({ loadResults }) => {
         const isThis = (row: AttachmentRow) => row.attachmentId === attachment.attachmentId;
-        if (!loadResults.getAttachmentRows().some(isThis)) return;
-
-        if (loadResults.getAttachmentRows(parentComponent?.componentId).some(isThis)) {
-            setExternalRevision((revision) => revision + 1);
+        if (loadResults.getAttachmentRows().some(isThis)) {
+            refresh();
         }
-        refresh();
     });
 
     // Electron right-click menu (copy image / reference) for the interactive image viewer.
@@ -360,7 +354,6 @@ function AttachmentInfo({ attachment, isFullDetail, ownerNote, noteContext, view
                         <Suspense fallback={null}>
                             <CanvasDrawingDetail
                                 key={attachment.attachmentId}
-                                revision={externalRevision}
                                 attachment={attachment}
                                 note={ownerNote}
                                 noteContext={noteContext}

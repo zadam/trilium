@@ -177,6 +177,40 @@ describe("ReadOnlyText reacting to content changes (#10575)", () => {
         expect(harness.contentLoadStates).not.toContain("loading");
     });
 
+    it("shows a change saved elsewhere once its tab shows, having loaded it at once", async () => {
+        const resizeCallbacks: (() => void)[] = [];
+        const { ResizeObserver } = globalThis;
+        globalThis.ResizeObserver = class {
+            constructor(callback: () => void) {
+                resizeCallbacks.push(callback);
+            }
+            observe() {}
+            disconnect() {}
+        } as unknown as typeof ResizeObserver;
+        try {
+            const harness = setupHarness({ isVisible: true });
+            cleanupContainer = harness.container;
+            await harness.mount();
+            harness.contentLoadStates.length = 0;
+
+            // A tab in the background, hidden as `SplitNoteContainer` hides one.
+            harness.container.style.display = "none";
+            harness.getBlobSpy.mockResolvedValue({ content: "<p>changed</p>" } as never);
+            await harness.fireContentChange("ReactWrappedWidget-remote");
+            expect(harness.getBlobSpy).toHaveBeenCalledTimes(2);
+            expect(harness.container.textContent).toContain("hello");
+
+            harness.container.style.display = "";
+            await act(async () => {
+                for (const callback of resizeCallbacks) callback();
+            });
+            expect(harness.container.textContent).toContain("changed");
+            expect(harness.contentLoadStates).toEqual([ "loaded" ]);
+        } finally {
+            globalThis.ResizeObserver = ResizeObserver;
+        }
+    });
+
     it("catches up on skipped own-component changes when displayed again, but only then", async () => {
         const harness = setupHarness({ isVisible: false });
         cleanupContainer = harness.container;

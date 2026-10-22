@@ -20,7 +20,7 @@ The horizontal layout is a more traditional layout, since it bears similarity wi
 *   The <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a> is at the top of the screen, with the buttons laid horizontally.
 *   The tab bar is at the top of the screen, but now covers the entirety of the width, allowing for more tabs to be displayed at once.
 *   The <a class="reference-link" href="../Navigation/Quick%20search.md">Quick search</a> is now part of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a>. It can be moved around according to preference and even removed if needed.
-*   The <a class="reference-link" href="Note%20Tree.md">Note Tree</a> can be collapsed by pressing the small <span class="tn-icon bx bx-sidebar"></span> button to the left of the first tab.
+*   The <a class="reference-link" href="Note%20Tree.md">Note Tree</a> can be collapsed by pressing the small <span class="tn-icon bx bx-sidebar"></span> button to the left of the first tab. While collapsed, it can be peeked temporarily above the content by pressing the strip on the left edge of the app.
 *   The <a class="reference-link" href="Global%20menu.md">Global menu</a> can be accessed via the <span class="tn-icon bx bx-menu"></span> button at the end of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a>.
 
 ![](Vertical%20and%20horizontal%20layout_image.jpg)

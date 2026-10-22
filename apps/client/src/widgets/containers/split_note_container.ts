@@ -9,6 +9,8 @@ import FlexContainer from "./flex_container.js";
 
 interface SplitNoteWidget extends BasicWidget {
     hasBeenAlreadyShown?: boolean;
+    /** Whether the widget has received `setNoteContext`. */
+    hasNoteContext?: boolean;
     ntxId?: string;
 }
 
@@ -48,7 +50,9 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
             this.widgets[noteContext.ntxId] = widget;
         }
 
-        await widget.handleEvent("setNoteContext", { noteContext });
+        if (appContext.tabManager.getActiveMainContext() === noteContext.getMainContext()) {
+            await this.provideNoteContext(widget, noteContext);
+        }
 
         this.child(widget);
 
@@ -288,9 +292,10 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
     }
 
     /**
-     * widget.hasBeenAlreadyShown is intended for lazy loading of cached tabs - initial note switches of new tabs
-     * are not executed, we're waiting for the first tab activation, and then we update the tab. After this initial
-     * activation, further note switches are always propagated to the tabs.
+     * Delays the panes of a background tab until the tab is first shown, for tabs restored at
+     * startup and for tabs the user opens in the background. Until then a pane gets no
+     * `setNoteContext` and no `noteSwitched`, so its widgets have no note and load nothing. After
+     * the first showing, every `noteSwitched` is passed on.
      */
     async handleEventInChildren<T extends EventNames>(name: T, data: EventData<T>) {
         if (["noteSwitched", "noteSwitchedAndActivated"].includes(name)) {
@@ -307,6 +312,7 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
 
             if (widget.hasBeenAlreadyShown || name === "noteSwitchedAndActivated" || appContext.tabManager.getActiveMainContext() === noteSwitchedContext.noteContext.getMainContext()) {
                 widget.hasBeenAlreadyShown = true;
+                await this.provideNoteContext(widget, noteSwitchedContext.noteContext);
 
                 // Promise.all (not a bare array) so that awaiting triggerEvent("noteSwitched")
                 // genuinely waits for the tab's widgets to process the switch.
@@ -335,13 +341,24 @@ export default class SplitNoteContainer extends FlexContainer<SplitNoteWidget> {
             if (!widget.hasBeenAlreadyShown) {
                 widget.hasBeenAlreadyShown = true;
 
-                promises.push(widget.handleEvent("activeContextChanged", { noteContext: subContext }));
+                promises.push(this.provideNoteContext(widget, subContext)
+                    .then(() => widget.handleEvent("activeContextChanged", { noteContext: subContext })));
             }
         }
 
         this.refresh();
 
         return Promise.all(promises);
+    }
+
+    /** Sends `setNoteContext` to the widget, unless the widget has already received it. */
+    private async provideNoteContext(widget: SplitNoteWidget, noteContext: NoteContext) {
+        if (widget.hasNoteContext) {
+            return;
+        }
+
+        widget.hasNoteContext = true;
+        await widget.handleEvent("setNoteContext", { noteContext });
     }
 }
 

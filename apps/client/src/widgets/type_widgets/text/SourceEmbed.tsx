@@ -1,5 +1,5 @@
 import type { InlineEmbedSource } from "@triliumnext/ckeditor5";
-import type { ComponentType } from "preact";
+import type { ComponentType, RefObject } from "preact";
 import { useSyncExternalStore } from "preact/compat";
 import { useEffect, useMemo, useState } from "preact/hooks";
 
@@ -17,14 +17,16 @@ interface AttachmentSourceEmbedProps {
     /** The source shown first. */
     content: string;
     component: ComponentType<SourceEmbedProps>;
+    /** The element that holds the embed. A save shows once it is shown. */
+    containerRef: RefObject<HTMLElement | null>;
 }
 
 /** The component of a source embed type, over a source kept in a note or an attachment. */
 export default function AttachmentSourceEmbed({
-    entity, editor, content: initialContent, component: Component
+    entity, editor, content: initialContent, component: Component, containerRef
 }: AttachmentSourceEmbedProps) {
     const [ content, setContent ] = useState(initialContent);
-    useSavedContent(entity, editor, setContent);
+    useSavedContent(entity, editor, setContent, containerRef);
 
     return <Component content={content} editor={editor} />;
 }
