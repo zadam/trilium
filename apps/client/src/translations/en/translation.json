@@ -1205,7 +1205,7 @@
     "in_progress": "Sync with the server is in progress."
   },
   "left_pane_toggle": {
-    "show_panel": "Show panel",
+    "toggle": "Toggle tree pane",
     "hide_panel": "Hide panel",
     "peek_panel": "Peek tree panel"
   },

@@ -22,7 +22,8 @@ export default function LeftPaneToggle({ isHorizontalLayout }: { isHorizontalLay
                 "left-pane-toggle-button",
                 isDocked ? "action-collapse" : "action-expand"
             )}
-            text={isDocked ? t("left_pane_toggle.hide_panel") : t("left_pane_toggle.show_panel")}
+            text={t("left_pane_toggle.toggle")}
+            titlePosition={isHorizontalLayout ? "bottom" : "right"}
             triggerCommand={isDocked ? "hideLeftPane" : "showLeftPane"}
             icon={isHorizontalLayout ? "bx bx-sidebar" : "bx bx-chevrons-left"}
             onContextMenu={showLaunchBarManagementContextMenu}
