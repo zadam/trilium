@@ -1,11 +1,25 @@
 # API Reference
 External Trilium API
 
+## Authentication
+
+### `EtapiTokenAuth`
+
+API key in the `Authorization` header.
+
+### `EtapiBasicAuth`
+
+HTTP `basic` authentication.
+
+Basic Auth where username is arbitrary string (e.g. "trilium", not checked), username is the ETAPI token. To emphasize, do not use Trilium password here (won't work), only the generated ETAPI token (from Options -> ETAPI)
+
 ## Endpoints
 
 ### `POST /create-note`
 
 Create a note and place it into the note tree
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Request body** (required)
 
@@ -48,6 +62,8 @@ Create a note and place it into the note tree
 
 Search notes
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -82,6 +98,8 @@ Search notes
 ### `GET /notes/{noteId}`
 
 Returns a note identified by its ID
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -123,6 +141,8 @@ Returns a note identified by its ID
 
 deletes a single note based on the noteId supplied
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -143,6 +163,8 @@ deletes a single note based on the noteId supplied
 ### `PATCH /notes/{noteId}`
 
 patch a note identified by the noteId with changes in the body
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -206,6 +228,8 @@ patch a note identified by the noteId with changes in the body
 
 Returns note content identified by its ID
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -219,6 +243,8 @@ Returns note content identified by its ID
 ### `PUT /notes/{noteId}/content`
 
 Updates note content identified by its ID
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -241,6 +267,8 @@ New content of the note. Send text (such as the HTML of a text note) as `text/pl
 
 Exports ZIP file export of a given note subtree. To export whole document, use "root" for noteId
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -262,6 +290,8 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 ### `POST /notes/{noteId}/import`
 
 Imports ZIP file into a given note.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -290,6 +320,8 @@ Imports ZIP file into a given note.
 
 Create a note revision for the given note
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -312,6 +344,8 @@ Create a note revision for the given note
 
 Returns the revisions of a note identified by its ID. Protected revisions are omitted, since they cannot be read through ETAPI individually either.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -333,6 +367,8 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 
 Returns all attachments for a note identified by its ID
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -353,6 +389,8 @@ Returns all attachments for a note identified by its ID
 ### `POST /notes/{noteId}/undelete`
 
 Restore a deleted note. The note must be deleted and must have at least one undeleted parent.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -380,6 +418,8 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 
 Returns recent changes including note creations, modifications, and deletions
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -400,6 +440,8 @@ Returns recent changes including note creations, modifications, and deletions
 ### `GET /revisions/{revisionId}`
 
 Returns a revision identified by its ID
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -439,6 +481,8 @@ Returns a revision identified by its ID
 
 Returns revision content identified by its ID
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -459,6 +503,8 @@ Returns revision content identified by its ID
 ### `POST /branches`
 
 Create a branch (clone a note to a different location in the tree). In case there is a branch between parent note and child note already, then this will update the existing branch with prefix, notePosition and isExpanded.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Request body** (required)
 
@@ -512,6 +558,8 @@ Create a branch (clone a note to a different location in the tree). In case ther
 
 Returns a branch identified by its ID
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -544,6 +592,8 @@ Returns a branch identified by its ID
 
 deletes a branch based on the branchId supplied. If this is the last branch of the (child) note, then the note is deleted as well.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -564,6 +614,8 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 ### `PATCH /branches/{branchId}`
 
 patch a branch identified by the branchId with changes in the body. Only prefix and notePosition can be updated. If you want to update other properties, you need to delete the old branch and create a new one.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -611,6 +663,8 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 
 create an attachment
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Request body** (required)
 
 *   `application/json`: `CreateAttachment`
@@ -654,6 +708,8 @@ create an attachment
 
 Returns an attachment identified by its ID
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -690,6 +746,8 @@ Returns an attachment identified by its ID
 
 deletes an attachment based on the attachmentId supplied.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -710,6 +768,8 @@ deletes an attachment based on the attachmentId supplied.
 ### `PATCH /attachments/{attachmentId}`
 
 patch an attachment identified by the attachmentId with changes in the body. Only role, mime, title, and position are patchable.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -765,6 +825,8 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 Returns attachment content identified by its ID
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -778,6 +840,8 @@ Returns attachment content identified by its ID
 ### `PUT /attachments/{attachmentId}/content`
 
 Updates attachment content identified by its ID
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -799,6 +863,8 @@ New content of the attachment. Send text as `text/plain` and binary data (such a
 ### `POST /attributes`
 
 create an attribute for a given note
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Request body** (required)
 
@@ -842,6 +908,8 @@ create an attribute for a given note
 
 Returns an attribute identified by its ID
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -875,6 +943,8 @@ Returns an attribute identified by its ID
 
 deletes an attribute based on the attributeId supplied.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -895,6 +965,8 @@ deletes an attribute based on the attributeId supplied.
 ### `PATCH /attributes/{attributeId}`
 
 patch an attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -944,6 +1016,8 @@ patch an attribute identified by the attributeId with changes in the body. For l
 
 notePositions in branches are not automatically pushed to connected clients and need a specific instruction. If you want your changes to be in effect immediately, call this service after setting branches' notePosition. Note that you need to supply "parentNoteId" of branch(es) with changed positions.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -964,6 +1038,8 @@ notePositions in branches are not automatically pushed to connected clients and 
 ### `GET /inbox/{date}`
 
 returns an "inbox" note, into which note can be created. Date will be used depending on whether the inbox is a fixed note (identified with #inbox label) or a day note in a journal. A database with neither returns the root note, and ignores the date, rather than creating a journal to hold a day note.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -1004,6 +1080,8 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 ### `GET /calendar/days/{date}`
 
 returns a day note for a given date. Gets created if doesn't exist.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -1047,6 +1125,8 @@ Get the day note starting the week
 
 Returns the day note for the first day of the week containing the given date, honouring the configured first day of week. The note is created if it doesn't exist. This returns a day note, not a week note, so unlike /calendar/weeks/{week} it does not require the enableWeekNote label on the calendar root.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -1088,6 +1168,8 @@ Returns the day note for the first day of the week containing the given date, ho
 Get a week note
 
 Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The note is created if it doesn't exist.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 
@@ -1131,6 +1213,8 @@ Get a month note
 
 Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note is created if it doesn't exist.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -1173,6 +1257,8 @@ Get a year note
 
 Returns a year note for a given year (format YYYY, e.g., 2022). The note is created if it doesn't exist.
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -1213,6 +1299,8 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 
 get an ETAPI token based on password for further use with ETAPI
 
+**Authorization**: none
+
 **Request body** (required)
 
 *   `application/json`: `object`
@@ -1242,6 +1330,8 @@ get an ETAPI token based on password for further use with ETAPI
 
 logout (delete/deactivate) an ETAPI token
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Responses**
 
 *   `204`: logout successful
@@ -1256,6 +1346,8 @@ logout (delete/deactivate) an ETAPI token
 ### `GET /app-info`
 
 returns information about the running Trilium instance
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Responses**
 
@@ -1284,6 +1376,8 @@ returns information about the running Trilium instance
 
 Create a database backup under a given name
 
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
 **Parameters**
 
 | Name | In | Type | Required | Description |
@@ -1308,6 +1402,8 @@ Get instance metrics
 Returns instance and database metrics for monitoring: note, attachment, revision, branch, attribute and blob counts, note and attachment type breakdowns, version information and database size. Counts only — no note titles, content or attributes.
 
 The same data is served by GET /api/metrics to the web session.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
 **Parameters**
 

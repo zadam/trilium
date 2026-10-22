@@ -6,12 +6,27 @@
 export interface OpenApiSpec {
     info: { title: string; description?: string };
     paths: Record<string, PathItem>;
+    security?: SecurityRequirement[];
     components?: {
         schemas?: Record<string, Schema>;
         parameters?: Record<string, Parameter>;
         requestBodies?: Record<string, RequestBody>;
         responses?: Record<string, Response>;
+        securitySchemes?: Record<string, SecurityScheme>;
     };
+}
+
+/** Scheme names mapped to their scopes; every scheme of one requirement is needed. */
+type SecurityRequirement = Record<string, string[]>;
+
+interface SecurityScheme {
+    type: string;
+    description?: string;
+    /** For `apiKey`: where the key goes and under which name. */
+    in?: string;
+    name?: string;
+    /** For `http`: the authorization scheme, e.g. `basic` or `bearer`. */
+    scheme?: string;
 }
 
 interface Reference {
@@ -61,6 +76,7 @@ interface Operation {
     parameters?: (Parameter | Reference)[];
     requestBody?: RequestBody | Reference;
     responses?: Record<string, Response | Reference>;
+    security?: SecurityRequirement[];
 }
 
 type PathItem = { parameters?: (Parameter | Reference)[] } & Partial<Record<HttpMethod, Operation>>;
@@ -73,6 +89,17 @@ export function openApiToMarkdown(spec: OpenApiSpec): string {
     const blocks: string[] = [];
     if (spec.info.description) {
         blocks.push(spec.info.description.trim());
+    }
+
+    const securitySchemes = Object.entries(spec.components?.securitySchemes ?? {});
+    if (securitySchemes.length) {
+        blocks.push("## Authentication");
+        for (const [ name, scheme ] of securitySchemes) {
+            blocks.push(`### ${code(name)}`, describeSecurityScheme(scheme));
+            if (scheme.description) {
+                blocks.push(scheme.description.trim());
+            }
+        }
     }
 
     for (const [ group, operations ] of groupOperations(spec)) {
@@ -126,6 +153,11 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         if (text) {
             blocks.push(text.trim());
         }
+    }
+
+    const security = operation.security ?? spec.security;
+    if (security) {
+        blocks.push(`**Authorization**: ${describeSecurity(security)}`);
     }
 
     const parameters = [ ...pathItem.parameters ?? [], ...operation.parameters ?? [] ]
@@ -205,6 +237,28 @@ function propertyTable(spec: OpenApiSpec, { properties, required }: Schema) {
             ];
         })
     );
+}
+
+function describeSecurityScheme({ type, in: location, name, scheme }: SecurityScheme) {
+    if (type === "apiKey" && location && name) {
+        const where = location === "query" ? "query parameter" : location;
+        return `API key in the ${code(name)} ${where}.`;
+    }
+    if (type === "http" && scheme) {
+        return `HTTP ${code(scheme)} authentication.`;
+    }
+    return `Type: ${code(type)}.`;
+}
+
+/** Requirements are alternatives; an empty one (or none at all) lets the call go unauthenticated. */
+function describeSecurity(requirements: SecurityRequirement[]) {
+    if (!requirements.length) {
+        return "none";
+    }
+
+    return requirements
+        .map((requirement) => Object.keys(requirement).map(code).join(" and ") || "none")
+        .join(" or ");
 }
 
 /** The type of a schema as one line, naming referenced schemas instead of expanding them. */

@@ -8,6 +8,7 @@ describe("openApiToMarkdown", () => {
     it("renders an operation with its parameters, request body and responses", () => {
         const spec: OpenApiSpec = {
             info: { title: "ETAPI", description: "External Trilium API" },
+            security: [ { TokenAuth: [] }, { BasicAuth: [] } ],
             paths: {
                 "/notes/{noteId}": {
                     parameters: [{ name: "noteId", in: "path", required: true, schema: ENTITY_ID }],
@@ -34,15 +35,41 @@ describe("openApiToMarkdown", () => {
                 },
                 schemas: {
                     Note: { type: "object", required: [ "title" ], properties: { title: { type: "string" } } }
+                },
+                securitySchemes: {
+                    TokenAuth: { type: "apiKey", in: "header", name: "Authorization" },
+                    BasicAuth: { type: "http", scheme: "basic", description: "The token as the password." }
                 }
             }
         };
 
         const markdown = openApiToMarkdown(spec);
 
-        expect(markdown).toContain("External Trilium API");
-        expect(markdown).toContain("## Endpoints");
-        expect(markdown).toContain("### `PATCH /notes/{noteId}`\n\nPatch a note");
+        expect(markdown).toContain([
+            "External Trilium API",
+            "",
+            "## Authentication",
+            "",
+            "### `TokenAuth`",
+            "",
+            "API key in the `Authorization` header.",
+            "",
+            "### `BasicAuth`",
+            "",
+            "HTTP `basic` authentication.",
+            "",
+            "The token as the password.",
+            "",
+            "## Endpoints"
+        ].join("\n"));
+        // Operations without a `security` of their own inherit the spec's.
+        expect(markdown).toContain([
+            "### `PATCH /notes/{noteId}`",
+            "",
+            "Patch a note",
+            "",
+            "**Authorization**: `TokenAuth` or `BasicAuth`"
+        ].join("\n"));
         // Path-level parameters come first, then the operation's own, resolved through `$ref`.
         expect(markdown).toContain([
             "| Name | In | Type | Required | Description |",
@@ -81,7 +108,8 @@ describe("openApiToMarkdown", () => {
             info: { title: "Internal" },
             paths: {
                 "/api/notes": { get: { tags: [ "Notes" ], summary: "List notes", responses: {} } },
-                "/api/sync": { post: { tags: [ "Sync" ], responses: {} } },
+                "/api/sync": { post: { tags: [ "Sync" ], security: [ { A: [], B: [] }, {} ], responses: {} } },
+                "/api/login": { post: { tags: [ "Sync" ], security: [], responses: {} } },
                 "/api/tree": { get: { tags: [ "Notes" ], responses: {} } }
             }
         };
@@ -91,7 +119,11 @@ describe("openApiToMarkdown", () => {
         expect(markdown).not.toContain("## Endpoints");
         expect(markdown.indexOf("## Notes")).toBeLessThan(markdown.indexOf("### `GET /api/tree`"));
         expect(markdown.indexOf("### `GET /api/tree`")).toBeLessThan(markdown.indexOf("## Sync"));
-        expect(markdown).toContain("### `GET /api/notes`\n\nList notes");
+        expect(markdown).toContain("### `GET /api/notes`\n\nList notes\n\n### `GET /api/tree`");
+
+        // Schemes of one requirement are all needed; an empty requirement makes them optional.
+        expect(markdown).toContain("**Authorization**: `A` and `B` or none");
+        expect(markdown).toContain("### `POST /api/login`\n\n**Authorization**: none");
     });
 
     it("renders the schemas with their property types", () => {
