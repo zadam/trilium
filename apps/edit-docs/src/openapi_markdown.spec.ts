@@ -124,7 +124,9 @@ describe("openApiToMarkdown", () => {
     it("groups operations by their first tag when the spec has tags", () => {
         const spec: OpenApiSpec = {
             info: { title: "Internal" },
+            tags: [ { name: "Sync", description: "Synchronization between instances." }, { name: "Notes" } ],
             paths: {
+                "/api/misc": { get: { tags: [ "Misc" ], responses: {} } },
                 "/api/notes": { get: { tags: [ "Notes" ], summary: "List notes", operationId: "getNotes", responses: {} } },
                 "/api/sync": { post: { tags: [ "Sync" ], security: [ { A: [], B: [] }, {} ], responses: {} } },
                 "/api/login": { post: { tags: [ "Sync" ], security: [], responses: {} } },
@@ -134,9 +136,13 @@ describe("openApiToMarkdown", () => {
 
         const markdown = openApiToMarkdown(spec);
 
+        // Declared tags come first, in their declared order and with their description; the
+        // others follow in order of appearance.
         expect(markdown).not.toContain("## Endpoints");
-        expect(markdown.indexOf("## Notes")).toBeLessThan(markdown.indexOf("### `GET /api/tree`"));
-        expect(markdown.indexOf("### `GET /api/tree`")).toBeLessThan(markdown.indexOf("## Sync"));
+        expect(markdown).toContain("## Sync\n\nSynchronization between instances.\n\n### `POST /api/sync`");
+        expect(markdown.indexOf("### `POST /api/login`")).toBeLessThan(markdown.indexOf("## Notes"));
+        expect(markdown.indexOf("### `GET /api/tree`")).toBeLessThan(markdown.indexOf("## Misc"));
+        expect(markdown.indexOf("## Misc")).toBeLessThan(markdown.indexOf("### `GET /api/misc`"));
         // A summary wins over the operation ID; an operation with neither is named by its route.
         expect(markdown).toContain("### List notes\n\n`GET /api/notes`\n\n### `GET /api/tree`");
 

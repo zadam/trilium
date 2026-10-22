@@ -6,6 +6,8 @@
 export interface OpenApiSpec {
     info: { title: string; description?: string };
     paths: Record<string, PathItem>;
+    /** Declares the order of the operation groups and describes them. */
+    tags?: { name: string; description?: string }[];
     security?: SecurityRequirement[];
     components?: {
         schemas?: Record<string, Schema>;
@@ -115,6 +117,10 @@ export function openApiToMarkdown(spec: OpenApiSpec): string {
 
     for (const [ group, operations ] of groupOperations(spec)) {
         blocks.push(`## ${group}`);
+        const description = spec.tags?.find((tag) => tag.name === group)?.description;
+        if (description) {
+            blocks.push(description.trim());
+        }
         for (const operation of operations) {
             blocks.push(...renderOperation(spec, operation));
         }
@@ -138,9 +144,12 @@ interface OperationEntry {
     operation: Operation;
 }
 
-/** Groups operations by their first tag, in order of appearance; a spec without tags gets one group. */
+/**
+ * Groups operations by their first tag: the tags the spec declares first, in that order, then the
+ * others in order of appearance. Operations without a tag share one group.
+ */
 function groupOperations(spec: OpenApiSpec) {
-    const groups = new Map<string, OperationEntry[]>();
+    const groups = new Map<string, OperationEntry[]>((spec.tags ?? []).map((tag) => [ tag.name, [] ]));
     for (const [ path, pathItem ] of Object.entries(spec.paths)) {
         for (const method of HTTP_METHODS) {
             const operation = pathItem[method];
@@ -155,7 +164,7 @@ function groupOperations(spec: OpenApiSpec) {
         }
     }
 
-    return groups;
+    return [ ...groups ].filter(([ , entries ]) => entries.length);
 }
 
 function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation }: OperationEntry) {
