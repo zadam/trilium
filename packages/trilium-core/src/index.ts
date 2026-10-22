@@ -165,7 +165,9 @@ export { default as imageService } from "./services/image";
 export { t } from "i18next";
 export type { RequestProvider, ExecOpts, CookieJar, FetchApiOpts, FetchResourceOpts, FetchedResource } from "./services/request";
 export type * from "./meta";
-export type { QueryString, QueryValue, Request, RequestHeaders, Response } from "./http_interface";
+export type {
+    QueryString, QueryValue, Request, RequestHeaders, Response, ResponseLocals
+} from "./http_interface";
 export * as routeHelpers from "./routes/helpers";
 export { resolveYouTubePreview, storeFavicon } from "./routes/api/link_embed";
 

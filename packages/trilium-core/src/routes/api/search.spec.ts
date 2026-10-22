@@ -44,6 +44,17 @@ describe("Search API (core)", () => {
         expect(res.body).toContain(createdNoteId);
     });
 
+    it("describes a full search on one line for the request log", async () => {
+        const token = "ZzLoggedSearchQwerty";
+        await createTextNote(api, { title: `${token} one` });
+        await createTextNote(api, { title: `${token} two` });
+
+        const res = await api.get("/api/search", {
+            query: { searchString: `  note.title *=*\n   ${token} ` }
+        });
+        expect(res.locals?.logSummary).toBe(`Search: note.title *=* ${token}  (returned 2 items)`);
+    });
+
     it("restricts a full search to the given ancestor's subtree", async () => {
         const token = "ZzScopedSearchQwerty";
         const board = await createTextNote(api, { title: "Board" });
