@@ -1,7 +1,10 @@
 import "./tooltip.css";
 
 import type { CKTextEditor } from "@triliumnext/ckeditor5";
-import { FilterLabelsByType, HighlightedTokenInfo, KeyboardActionNames, NoteType, OptionNames, RelationNames } from "@triliumnext/commons";
+import {
+    FilterLabelsByType, HighlightedTokenInfo, KeyboardActionNames, NoteType, OptionNames, RelationNames,
+    UserTheme
+} from "@triliumnext/commons";
 import { Tooltip } from "bootstrap";
 import Mark from "mark.js";
 import { CSSProperties, Ref, RefObject, VNode } from "preact";
@@ -455,6 +458,23 @@ export function useTriliumOptions<T extends OptionNames>(...names: T[]) {
         values as Record<T, string>,
         options.saveMany
     ] as const;
+}
+
+/** The custom themes (notes with `#appTheme`), fetched once when the component mounts. */
+export function useUserThemes() {
+    const [ userThemes, setUserThemes ] = useState<UserTheme[]>([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        void server.get<UserTheme[] | undefined>("options/user-themes").then((themes) => {
+            if (!cancelled) setUserThemes(themes ?? []);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    return userThemes;
 }
 
 /**

@@ -1191,7 +1191,8 @@
     "toggle-zen-mode": "Zen mode",
     "new-version-available": "New update available",
     "download-update": "Get version {{latestVersion}}",
-    "search_notes": "Search notes"
+    "search_notes": "Search notes",
+    "theme": "Theme"
   },
   "zen_mode": {
     "button_exit": "Exit Zen Mode"

@@ -4,7 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Shared, mutable control state for the mocks below. `vi.hoisted` runs before the hoisted `vi.mock`
 // factories, so they can safely reference it.
-const ctrl = vi.hoisted(() => ({ standalone: false, checkForUpdates: true, mobile: false }));
+const ctrl = vi.hoisted(() => ({
+    standalone: false, checkForUpdates: true, mobile: false, theme: "next", setTheme: vi.fn()
+}));
 
 // `isStandalone` is a const in the target, read here as a live getter so each scenario can flip the
 // kind of client we are pretending to be. Partial-mock so the rest of utils stays real — in
@@ -22,12 +24,21 @@ vi.mock("../../services/i18n", () => ({ t: (key: string) => key }));
 
 // The hook reads the user's preference through `useTriliumOptionBool`; stub just that one, so the
 // other hooks the menu pulls in keep their real implementation.
-vi.mock("../react/hooks", async (importOriginal) => ({
-    ...(await importOriginal<typeof import("../react/hooks")>()),
-    useTriliumOptionBool: () => [ ctrl.checkForUpdates, vi.fn() ]
-}));
+vi.mock("../react/hooks", async (importOriginal) => {
+    const original = await importOriginal<typeof import("../react/hooks")>();
+    return {
+        ...original,
+        useTriliumOptionBool: () => [ ctrl.checkForUpdates, vi.fn() ],
+        useTriliumOption: (...args: Parameters<typeof original.useTriliumOption>) => (args[0] === "theme"
+            ? [ ctrl.theme, ctrl.setTheme ]
+            : original.useTriliumOption(...args))
+    };
+});
 
 // Import AFTER the mocks (vi.mock is hoisted, but the import must resolve the mocked deps).
+import type { UserTheme } from "@triliumnext/commons";
+
+import server from "../../services/server";
 import GlobalMenu, { parseLatestVersion, RELEASES_API_URL, UPDATE_CHECK_INTERVAL, useTriliumUpdateStatus } from "./global_menu";
 
 let status: ReturnType<typeof useTriliumUpdateStatus> | undefined;
@@ -161,26 +172,51 @@ describe("GlobalMenu", () => {
     const rows = (scope: Element | null | undefined) => [ ...scope?.querySelectorAll(":scope > li.dropdown-item, :scope > .dropdown-item") ?? [] ]
         .map((row) => row.textContent?.trim());
 
-    async function openAdvanced() {
+    let userThemes: UserTheme[] = [];
+
+    /** Opens the menu, then the submenu whose title is `titleKey`. */
+    async function openSubmenu(titleKey: string) {
         await act(async () => {
             if (container) render(<GlobalMenu isHorizontalLayout />, container);
         });
         const toggle = container?.querySelector<HTMLButtonElement>("button.global-menu-button");
         await act(async () => toggle?.click());
         await vi.waitFor(() => expect(popup()).not.toBeNull());
-        const topLevel = rows(popup()?.querySelector(".tn-menu-scroll"));
+        const topLevelScroll = popup()?.querySelector(".tn-menu-scroll");
+        const topLevel = rows(topLevelScroll);
 
-        const advanced = [ ...popup()?.querySelectorAll<HTMLElement>("li.dropdown-submenu") ?? [] ]
-            .find((row) => row.textContent?.includes("global_menu.advanced"));
+        const submenuRow = [ ...popup()?.querySelectorAll<HTMLElement>("li.dropdown-submenu") ?? [] ]
+            .find((row) => row.textContent?.includes(titleKey));
         // A phone opens a submenu as a page over the menu; a desktop beside it, on hover.
         const opened = () => popup()?.querySelector(":scope > .tn-menu-page .tn-menu-scroll")
             ?? popup()?.querySelector(":scope > div.dropdown-submenu > .dropdown-menu .tn-menu-scroll");
         await act(async () => {
-            if (ctrl.mobile) advanced?.click();
-            else advanced?.dispatchEvent(new PointerEvent("pointerenter"));
+            if (ctrl.mobile) submenuRow?.click();
+            else submenuRow?.dispatchEvent(new PointerEvent("pointerenter"));
         });
         await vi.waitFor(() => expect(opened()).toBeTruthy());
-        return { topLevel, advanced: rows(opened()) };
+        return { topLevel, topLevelScroll, submenuRow, submenu: opened() };
+    }
+
+    async function openAdvanced() {
+        const { topLevel, submenu } = await openSubmenu("global_menu.advanced");
+        return { topLevel, advanced: rows(submenu) };
+    }
+
+    /** Opens the theme submenu once the custom themes have loaded into it. */
+    async function openThemes() {
+        const opened = await openSubmenu("global_menu.theme");
+        const items = () => [ ...opened.submenu?.querySelectorAll<HTMLElement>(":scope > li") ?? [] ];
+        await vi.waitFor(() => expect(items().length).toBe(6 + userThemes.length));
+        const row = (text: string) => items().find((item) => item.textContent?.trim() === text);
+        return {
+            ...opened,
+            entries: items().map((item) => item.textContent?.trim()),
+            checked: items().filter((item) => item.getAttribute("aria-checked") === "true")
+                .map((item) => item.textContent?.trim()),
+            row,
+            click: (text: string) => act(async () => row(text)?.click())
+        };
     }
 
     beforeEach(() => {
@@ -188,10 +224,68 @@ describe("GlobalMenu", () => {
         container = document.body.appendChild(document.createElement("div"));
         // Without slides, a submenu's page goes as soon as it closes.
         document.body.classList.add("motion-disabled");
+
+        ctrl.theme = "next";
+        ctrl.setTheme.mockReset();
+        userThemes = [ { val: "solarized", title: "Solarized", noteId: "solarizedNote", icon: "bx bx-paint" } ];
+        const get = server.get.bind(server);
+        vi.spyOn(server, "get").mockImplementation((async (url: string) => (url === "options/user-themes"
+            ? userThemes
+            : get(url))) as typeof server.get);
     });
 
     afterEach(() => {
         document.body.classList.remove("motion-disabled");
+    });
+
+    it("puts the theme submenu right above Advanced", async () => {
+        const { topLevelScroll, submenuRow } = await openSubmenu("global_menu.theme");
+
+        expect(submenuRow?.querySelector(".bx-palette")).not.toBeNull();
+        const rowsInOrder = [ ...topLevelScroll?.querySelectorAll(":scope > li") ?? [] ];
+        const next = submenuRow ? rowsInOrder[rowsInOrder.indexOf(submenuRow) + 1] : undefined;
+        expect(next?.textContent?.trim()).toBe("global_menu.advanced");
+    });
+
+    it("lists the color schemes, then Modern and the custom themes, with the active ones checked", async () => {
+        ctrl.theme = "next-dark";
+        const { entries, checked, row, click } = await openThemes();
+
+        expect(entries).toEqual([
+            "theme.color_scheme",
+            "theme.color_scheme_system", "theme.color_scheme_light", "theme.color_scheme_dark",
+            "global_menu.theme",
+            "theme.modern_themes", "Solarized"
+        ]);
+        expect(checked).toEqual([ "theme.color_scheme_dark", "theme.modern_themes" ]);
+        expect(row("theme.color_scheme_dark")?.querySelector(".menu-trailing-icon.bx-check")).not.toBeNull();
+        expect(row("theme.modern_themes")?.querySelector(".menu-trailing-icon.bx-check")).not.toBeNull();
+        expect(row("Solarized")?.querySelector(".menu-trailing-icon")).toBeNull();
+        expect(row("Solarized")?.querySelector(".tn-icon.bx-paint")).not.toBeNull();
+
+        await click("theme.color_scheme_light");
+        expect(ctrl.setTheme).toHaveBeenCalledWith("next-light");
+    });
+
+    it("leaves the legacy theme out, and keeps its color scheme when switching to Modern", async () => {
+        ctrl.theme = "dark";
+        const { entries, checked, click } = await openThemes();
+
+        expect(entries).not.toContain("theme.legacy_themes");
+        expect(checked).toEqual([ "theme.color_scheme_dark" ]);
+
+        await click("theme.modern_themes");
+        expect(ctrl.setTheme).toHaveBeenCalledWith("next-dark");
+    });
+
+    it("disables the color schemes while a custom theme is active", async () => {
+        ctrl.theme = "solarized";
+        const { checked, row } = await openThemes();
+
+        expect(checked).toEqual([ "Solarized" ]);
+        for (const scheme of [ "theme.color_scheme_system", "theme.color_scheme_light", "theme.color_scheme_dark" ]) {
+            expect(row(scheme)?.getAttribute("aria-disabled")).toBe("true");
+        }
     });
 
     it("keeps the shared notes and space usage views in Advanced", async () => {
