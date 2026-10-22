@@ -19,7 +19,7 @@ import { deferred } from "../../../packages/commons/src/index.js";
 import { buildHelpBundle } from "./help_bundle_generator.js";
 import { buildHelpMeta, serializeHelpMeta, stripAppVersion } from "./help_meta_generator.js";
 import { openApiToMarkdown, type OpenApiSpec } from "./openapi_markdown.js";
-import { runTypeDoc, typeDocToMarkdown } from "./typedoc_markdown.js";
+import { runTypeDoc, type TypeDocMarkdownOptions, typeDocToMarkdown } from "./typedoc_markdown.js";
 
 export interface NoteMapping {
     rootNoteId: string;
@@ -47,15 +47,13 @@ export interface OpenApiPage {
     spec: string;
 }
 
-export interface TypeDocPage {
+export interface TypeDocPage extends TypeDocMarkdownOptions {
     /** A text note of this mapping with a Markdown data file. */
     noteId: string;
     /** The module whose exports the page documents. Relative to the configuration file. */
     entryPoint: string;
     /** The tsconfig that compiles it. Relative to the configuration file. */
     tsconfig: string;
-    /** The export the page starts with, followed by what it refers to. */
-    root?: string;
 }
 
 export interface Config {
@@ -190,7 +188,7 @@ async function writeGeneratedPages(mapping: NoteMapping) {
         })),
         ...(mapping.typeDocPages ?? []).map((page) => ({
             noteId: page.noteId,
-            render: async () => typeDocToMarkdown(await runTypeDoc(page.entryPoint, page.tsconfig), page.root)
+            render: async () => typeDocToMarkdown(await runTypeDoc(page.entryPoint, page.tsconfig), page)
         }))
     ];
     if (!pages.length) {

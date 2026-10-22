@@ -69,7 +69,7 @@ export interface DemoWindowApi {
 
 /** The root of the API. */
 export interface DemoApi {
-    /** Window controls. */
+    /** Window controls, as \`DemoWindowApi\` lists them. */
     window: DemoWindowApi;
     /** The version, as in \`1.2.3\`. */
     readonly version: string;
@@ -83,6 +83,7 @@ export type Audience = "user" | "guest";
 
 describe("typeDocToMarkdown", () => {
     let dir: string;
+    let project: Awaited<ReturnType<typeof runTypeDoc>>;
     let markdown: string;
 
     beforeAll(async () => {
@@ -93,7 +94,8 @@ describe("typeDocToMarkdown", () => {
             compilerOptions: { strict: true, target: "ES2022", module: "ESNext", moduleResolution: "bundler" },
             files: [ "api.ts", "audience.ts" ]
         }));
-        markdown = typeDocToMarkdown(await runTypeDoc(join(dir, "api.ts"), join(dir, "tsconfig.json")), "DemoApi");
+        project = await runTypeDoc(join(dir, "api.ts"), join(dir, "tsconfig.json"));
+        markdown = typeDocToMarkdown(project, { root: "DemoApi" });
     }, 60_000);
 
     afterAll(async () => {
@@ -128,7 +130,7 @@ describe("typeDocToMarkdown", () => {
             "",
             "| Property | Description |",
             "| --- | --- |",
-            "| `window` | `DemoWindowApi`<br>Window controls. |",
+            "| `window` | `DemoWindowApi`<br>Window controls, as `DemoWindowApi` lists them. |",
             "| `version` | `string`<br>The version, as in `1.2.3`. |"
         ].join("\n"));
         // An optional property says so under its name; a union's pipe is escaped in its cell.
@@ -217,5 +219,21 @@ describe("typeDocToMarkdown", () => {
             "| `\"done\"` | It went through. |",
             "| `\"declined\"` | The user declined it. |"
         ].join("\n"));
+    });
+
+    it("strips the configured prefixes from the names of the declarations it shows", () => {
+        const stripped = typeDocToMarkdown(project, { root: "DemoApi", stripPrefixes: [ "Demo" ] });
+        const headings = [ ...stripped.matchAll(/^#+ `(\w+)`/gm) ].map(([ , name ]) => name);
+        expect(headings).toEqual([ "Api", "WindowApi", "Audience", "ResizeOptions", "Outcome", "Size" ]);
+        // References, signatures, links and code spans that name a declaration follow it.
+        expect(stripped).toContain("| `window` | `WindowApi`<br>Window controls, as `WindowApi` lists them. |");
+        expect(stripped).toContain("Options of `WindowApi.resize`.");
+        expect(stripped).toContain("requestClose(audience: Audience): Promise&lt;Outcome&gt;");
+        expect(stripped).not.toMatch(/Demo(Window)?Api/);
+    });
+
+    it("refuses prefixes that would give two declarations one name", () => {
+        expect(() => typeDocToMarkdown(project, { root: "DemoApi", stripPrefixes: [ "Demo", "DemoWindow" ] }))
+            .toThrow("DemoApi and DemoWindowApi would both be named Api");
     });
 });

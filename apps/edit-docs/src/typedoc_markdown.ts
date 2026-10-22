@@ -61,9 +61,10 @@ export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<
  * they use follow under "Types". A union of literals that one place uses is written out there
  * instead of getting an entry.
  */
-export function typeDocToMarkdown(project: Project, root?: string): string {
+export function typeDocToMarkdown(project: Project, { root, stripPrefixes = [] }: TypeDocMarkdownOptions = {}): string {
     const { declarations, inlined } = selectDeclarations(project, root);
     inlinedAliases = inlined;
+    displayNames = stripNames(declarations.map((declaration) => declaration.name), stripPrefixes);
     try {
         const blocks: string[] = [];
         if (project.comment) {
@@ -88,7 +89,18 @@ export function typeDocToMarkdown(project: Project, root?: string): string {
         return blocks.filter(Boolean).join("\n\n");
     } finally {
         inlinedAliases = new Map();
+        displayNames = new Map();
     }
+}
+
+export interface TypeDocMarkdownOptions {
+    /** The export the page starts with; the page then shows only what it reaches. */
+    root?: string;
+    /**
+     * Prefixes to leave out of the names of the declarations the page shows, such as `Script` to
+     * write `ScriptNote` as `Note`. A prefix counts only before an uppercase letter.
+     */
+    stripPrefixes?: string[];
 }
 
 /** The `ReflectionKind` values this module renders. */
@@ -102,6 +114,42 @@ const KIND = {
 
 /** The aliases `typeToString()` writes out in place of their name, while a page renders. */
 let inlinedAliases = new Map<string, Declaration>();
+
+/** The names the page writes for the declarations it shows, where they differ, while it renders. */
+let displayNames = new Map<string, string>();
+
+/**
+ * Maps each name that starts with one of `prefixes`, before an uppercase letter, to the name
+ * without it, trying the longest prefix first. Throws when two names would end up the same.
+ */
+function stripNames(names: string[], prefixes: string[]) {
+    const longestFirst = [ ...prefixes ].sort((a, b) => b.length - a.length);
+    const renamed = new Map<string, string>();
+    const owners = new Map<string, string>();
+    for (const name of names) {
+        const prefix = longestFirst.find((candidate) => name.startsWith(candidate) && /[A-Z]/.test(name.charAt(candidate.length)));
+        const display = prefix ? name.slice(prefix.length) : name;
+        const owner = owners.get(display);
+        if (owner !== undefined) {
+            throw new Error(`${owner} and ${name} would both be named ${display}.`);
+        }
+        owners.set(display, name);
+        if (display !== name) {
+            renamed.set(name, display);
+        }
+    }
+    return renamed;
+}
+
+function displayName(name: string) {
+    return displayNames.get(name) ?? name;
+}
+
+/** A dotted reference, such as `Api.member`, with its first part renamed. */
+function displayReference(reference: string) {
+    const [ first, ...rest ] = reference.split(".");
+    return [ displayName(first), ...rest ].join(".");
+}
 
 /**
  * What the page shows: `root` and what it reaches, or else the module's exports and the types they
@@ -195,7 +243,7 @@ function referencedNames(declaration: Declaration) {
 }
 
 function renderDeclaration(declaration: Declaration, heading: string) {
-    const blocks = [ `${heading} ${code(declaration.name)}` ];
+    const blocks = [ `${heading} ${code(displayName(declaration.name))}` ];
     if (declaration.comment) {
         blocks.push(renderComment(declaration.comment));
     }
@@ -207,7 +255,7 @@ function renderDeclaration(declaration: Declaration, heading: string) {
                 code(typeToString(value)),
                 oneLine(partsToMarkdown(type.elementSummaries?.[index] ?? []))
             ]))
-            : fence(`type ${declaration.name} = ${typeToString(type)}`));
+            : fence(`type ${displayName(declaration.name)} = ${typeToString(type)}`));
         return blocks;
     }
 
@@ -297,9 +345,19 @@ function blockTag(comment: Comment | undefined, tag: string) {
     return content ? partsToMarkdown(content) : "";
 }
 
-/** Comment text as Markdown; a `{@link}` becomes its target's name as code. */
+/**
+ * Comment text as Markdown; a `{@link}` becomes its target's name as code. A code span that names
+ * a declaration, such as `` `Api` `` or `` `Api.member` ``, follows its display name.
+ */
 function partsToMarkdown(parts: JSONOutput.CommentDisplayPart[]) {
-    return parts.map((part) => part.kind === "inline-tag" ? code(part.text) : part.text).join("")
+    const renderPart = (part: JSONOutput.CommentDisplayPart) => {
+        if (part.kind === "inline-tag") {
+            return code(displayReference(part.text));
+        }
+        const reference = part.kind === "code" ? /^`([\w$]+(?:\.[\w$]+)*)`$/.exec(part.text) : null;
+        return reference ? code(displayReference(reference[1])) : part.text;
+    };
+    return parts.map(renderPart).join("")
         .replaceAll("\r\n", "\n")
         .trim();
 }
@@ -342,7 +400,8 @@ function typeToString(type: SomeType | undefined): string {
                 return typeToString(alias.type);
             }
             const args = type.typeArguments?.map(typeToString).join(", ");
-            return args ? `${type.name}<${args}>` : type.name;
+            const name = displayName(type.name);
+            return args ? `${name}<${args}>` : name;
         }
         case "literal":
             return type.value === null ? "null"
