@@ -1,6 +1,6 @@
 # ETAPI (REST API)
 > [!TIP]
-> For a quick start, consult the <a class="reference-link" href="ETAPI%20(REST%20API)/API%20Reference.dat">API Reference</a>.
+> For a quick start, consult the <a class="reference-link" href="ETAPI%20(REST%20API)/API%20Reference.md">API Reference</a>.
 
 ETAPI is Trilium's public/external REST API. It is available since Trilium v0.50.
 

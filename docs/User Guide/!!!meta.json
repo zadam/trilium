@@ -9809,13 +9809,13 @@
                                     "notePosition": 10,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
                                         {
                                             "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/rest-api/etapi/",
+                                            "name": "iconClass",
+                                            "value": "bx bx-book-content",
                                             "isInheritable": false,
                                             "position": 10
                                         },
@@ -9827,7 +9827,8 @@
                                             "position": 20
                                         }
                                     ],
-                                    "dataFileName": "API Reference.dat",
+                                    "format": "markdown",
+                                    "dataFileName": "API Reference.md",
                                     "attachments": []
                                 }
                             ]
