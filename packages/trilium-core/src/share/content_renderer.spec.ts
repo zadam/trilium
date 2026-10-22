@@ -1366,10 +1366,16 @@ describe("content_renderer", () => {
             `);
 
             expect(headings).toStrictEqual([
-                { level: 1, text: "Intro", slug: "intro", href: "#intro" },
-                { level: 2, text: "Q&A now", slug: "q-amp-a-now", href: "#q-amp-a-now" },
-                { level: 3, text: "Spans two lines", slug: "spans-two-lines", href: "#spans-two-lines" },
-                { level: 2, text: "Intro", slug: "intro-1", href: "#intro-1" }
+                { level: 1, text: "Intro", html: "Intro", slug: "intro", href: "#intro" },
+                {
+                    level: 2, text: "Q&A now", html: "Q&amp;A <strong>now</strong>",
+                    slug: "q-amp-a-now", href: "#q-amp-a-now"
+                },
+                {
+                    level: 3, text: "Spans two lines", html: "Spans two lines",
+                    slug: "spans-two-lines", href: "#spans-two-lines"
+                },
+                { level: 2, text: "Intro", html: "Intro", slug: "intro-1", href: "#intro-1" }
             ]);
             expect(content).toContain(
                 `<h2 class="x" id="q-amp-a-now">Q&amp;A <strong>now</strong>`
@@ -1388,15 +1394,35 @@ describe("content_renderer", () => {
             `);
 
             expect(headings).toStrictEqual([
-                { level: 2, text: "Footnotes", slug: "footnote-label", href: "#footnote-label" },
-                { level: 2, text: "Footnotes", slug: "footnotes-1", href: "#footnotes-1" },
-                { level: 3, text: "Part one", slug: "part%20one", href: "#part%2520one" }
+                { level: 2, text: "Footnotes", html: "Footnotes", slug: "footnote-label", href: "#footnote-label" },
+                { level: 2, text: "Footnotes", html: "Footnotes", slug: "footnotes-1", href: "#footnotes-1" },
+                { level: 3, text: "Part one", html: "Part one", slug: "part%20one", href: "#part%2520one" }
             ]);
             expect(content).toContain(
                 `<h2 id="footnote-label" class="sr-only">Footnotes`
                 + `<a class="toc-anchor" href="#footnote-label"`);
             expect(content).toContain(`<h2 id="footnotes-1">Footnotes<a class="toc-anchor" href="#footnotes-1"`);
             expect(content).toContain(`<h3 id="part%20one">Part one<a class="toc-anchor" href="#part%2520one"`);
+        });
+
+        it("keeps the inline formatting of a heading for the table of contents, and nothing unsafe", () => {
+            const { headings } = prepare(trimIndentation`
+                <h2>Call <code class="x" style="color:red">fetchNote()</code> <em>first</em></h2>
+                <h2><a href="javascript:alert(1)">Link</a> <img src=x onerror="alert(1)"><span class="tn-icon bx bx-star"></span>x</h2>
+                <h2>Before<script>alert(1)</script><style>h2{}</style> <b onclick="alert(1)">after</b></h2>
+                <h2><iframe src="https://example.com"></iframe>&lt;script&gt; as text</h2>
+            `);
+
+            expect(headings.map(({ html }) => html)).toStrictEqual([
+                // An allowed tag loses its attributes.
+                "Call <code>fetchNote()</code> <em>first</em>",
+                // Any other element is unwrapped to its text, a link included: it would nest in the entry's.
+                "Link x",
+                // A script or a style goes with its content.
+                "Before <b>after</b>",
+                "&lt;script&gt; as text"
+            ]);
+            expect(headings[0].text).toBe("Call fetchNote() first");
         });
 
         it("gives an image without alt text the generic one and lazy loading, keeping its own", () => {

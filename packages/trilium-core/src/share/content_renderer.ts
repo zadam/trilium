@@ -410,8 +410,10 @@ export function preparePageContent(
     const headings = elements.map((element) => {
         const slug = element.id || slugs[slugIndex++];
         const text = element.text.replace(/\s+/g, " ").trim();
+        const html = sanitize.sanitizeHtmlCustom(element.innerHTML, HEADING_FORMATTING)
+            .replace(/\s+/g, " ").trim();
         const href = `#${encodeURIComponent(slug)}`;
-        const heading = { level: Number(element.tagName.slice(1)), text, slug, href };
+        const heading = { level: Number(element.tagName.slice(1)), text, html, slug, href };
         element.setAttribute("id", slug);
         element.insertAdjacentHTML("beforeend", `<a class="toc-anchor" href="${href}"`
             + ` aria-label="${escapeHtml(options.headingLinkLabel)}">`
@@ -420,6 +422,15 @@ export function preparePageContent(
     });
     return { content: document.toString(), headings };
 }
+
+/**
+ * The inline formatting a table of contents entry keeps, without attributes. Any other element
+ * gives up its tag but keeps its text, a link included, since the entry is a link itself.
+ */
+const HEADING_FORMATTING = {
+    allowedTags: [ "b", "code", "em", "i", "kbd", "mark", "s", "strong", "sub", "sup", "u" ],
+    allowedAttributes: {}
+};
 
 /**
  * Returns the share theme's EJS template of that name, such as `page` or `404`. The platform
