@@ -217,6 +217,10 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         for (const [ mime, media ] of Object.entries(content ?? {})) {
             panel.push(`*   ${mediaLine(mime, media)}`, ...renderBody(spec, mime, media, "response"));
         }
+        if (!panel.length) {
+            panel.push("No content.");
+        }
+
         // A tab's title is one line.
         const title = [ status, description?.replace(/\s+/g, " ").trim() ].filter(Boolean).join(": ");
         blocks.push(`=== "${title}"`, ...panel.map(indent));

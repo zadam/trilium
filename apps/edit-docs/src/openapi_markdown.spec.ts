@@ -117,7 +117,10 @@ describe("openApiToMarkdown", () => {
             "    }",
             "    ```",
             "",
-            "=== \"default: unexpected error\""
+            "=== \"default: unexpected error\"",
+            "",
+            // A response without a body still gets a panel, so the tab does not look unfinished.
+            "    No content."
         ].join("\n"));
     });
 
