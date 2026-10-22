@@ -333,7 +333,7 @@ Core note operations
 
 === "200: Note metadata"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -342,7 +342,7 @@ Core note operations
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -460,7 +460,7 @@ Core note operations
 | Property | Description |
 | --- | --- |
 | `content`  <br>_required_ | `string` |
-| `attachments` | `array of Attachment` |
+| `attachments` | array of [`Attachment`](#schema-Attachment) |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -512,7 +512,7 @@ Core note operations
 
 === "200: Note timestamps"
 
-    *   `application/json`: `Timestamps`
+    *   `application/json`: [`Timestamps`](#schema-Timestamps)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -609,7 +609,7 @@ Core note operations
 
 | Property | Description |
 | --- | --- |
-| `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+| `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
 | `mime`  <br>_required_ | `string` |
 
 </div>
@@ -707,7 +707,7 @@ Core note operations
 
 **Request body** (required)
 
-*   `application/json`: `CreateNoteRequest`
+*   `application/json`: [`CreateNoteRequest`](#schema-CreateNoteRequest)
 
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
@@ -716,7 +716,7 @@ Core note operations
 | --- | --- |
 | `title`  <br>_required_ | `string` |
 | `content` | `string` |
-| `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+| `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
 | `mime` | `string` |
 | `isProtected` | `boolean` |
 | `isExpanded` | `boolean` |
@@ -757,8 +757,8 @@ Core note operations
 
     | Property | Description |
     | --- | --- |
-    | `note` | `Note` |
-    | `branch` | `Branch` |
+    | `note` | [`Note`](#schema-Note) |
+    | `branch` | [`Branch`](#schema-Branch) |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -808,7 +808,7 @@ Core note operations
 
 === "201: Note duplicated"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -817,7 +817,7 @@ Core note operations
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -863,7 +863,7 @@ Core note operations
 
 === "201: Revision saved"
 
-    *   `application/json`: `Revision`
+    *   `application/json`: [`Revision`](#schema-Revision)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -873,7 +873,7 @@ Core note operations
     | `revisionId` | `string` |
     | `noteId` | `string` |
     | `title` | `string` |
-    | `type` | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type` | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime` | `string` |
     | `dateCreated` | `string (date-time)` |
     | `utcDateCreated` | `string (date-time)` |
@@ -961,7 +961,7 @@ Core note operations
 
 === "200: Note converted to attachment"
 
-    *   `application/json`: `Attachment`
+    *   `application/json`: [`Attachment`](#schema-Attachment)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -1395,9 +1395,9 @@ Note tree structure and branches
 
     | Property | Description |
     | --- | --- |
-    | `notes` | `array of Note` |
-    | `branches` | `array of Branch` |
-    | `attributes` | `array of Attribute` |
+    | `notes` | array of [`Note`](#schema-Note) |
+    | `branches` | array of [`Branch`](#schema-Branch) |
+    | `attributes` | array of [`Attribute`](#schema-Attribute) |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1487,9 +1487,9 @@ Note tree structure and branches
 
     | Property | Description |
     | --- | --- |
-    | `notes` | `array of Note` |
-    | `branches` | `array of Branch` |
-    | `attributes` | `array of Attribute` |
+    | `notes` | array of [`Note`](#schema-Note) |
+    | `branches` | array of [`Branch`](#schema-Branch) |
+    | `attributes` | array of [`Attribute`](#schema-Attribute) |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1735,7 +1735,7 @@ Note tree structure and branches
 
 === "200: Note cloned"
 
-    *   `application/json`: `Branch`
+    *   `application/json`: [`Branch`](#schema-Branch)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -1783,7 +1783,7 @@ Note tree structure and branches
 
 === "200: Note cloned"
 
-    *   `application/json`: `Branch`
+    *   `application/json`: [`Branch`](#schema-Branch)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -1831,7 +1831,7 @@ Note tree structure and branches
 
 === "200: Note cloned"
 
-    *   `application/json`: `Branch`
+    *   `application/json`: [`Branch`](#schema-Branch)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -1902,7 +1902,7 @@ Note attributes and metadata
 
 === "200: Note attributes"
 
-    *   `application/json`: `array of Attribute`
+    *   `application/json`: array of [`Attribute`](#schema-Attribute)
 
     ```json
     [
@@ -1932,7 +1932,7 @@ Note attributes and metadata
 
 **Request body** (required)
 
-*   `application/json`: `array of Attribute`
+*   `application/json`: array of [`Attribute`](#schema-Attribute)
 
 ```json
 [
@@ -1968,7 +1968,7 @@ Note attributes and metadata
 
 **Request body** (required)
 
-*   `application/json`: `Attribute`
+*   `application/json`: [`Attribute`](#schema-Attribute)
 
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
@@ -2005,7 +2005,7 @@ Note attributes and metadata
 
 === "201: Attribute added"
 
-    *   `application/json`: `Attribute`
+    *   `application/json`: [`Attribute`](#schema-Attribute)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -2071,7 +2071,7 @@ Note attributes and metadata
 
 **Request body** (required)
 
-*   `application/json`: `Attribute`
+*   `application/json`: [`Attribute`](#schema-Attribute)
 
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
@@ -2288,7 +2288,7 @@ File attachments
 
 === "200: Note attachments"
 
-    *   `application/json`: `array of Attachment`
+    *   `application/json`: array of [`Attachment`](#schema-Attachment)
 
     ```json
     [
@@ -2325,7 +2325,7 @@ File attachments
 
 **Request body** (required)
 
-*   `application/json`: `Attachment`
+*   `application/json`: [`Attachment`](#schema-Attachment)
 
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
@@ -2364,7 +2364,7 @@ File attachments
 
 === "201: Attachment saved"
 
-    *   `application/json`: `Attachment`
+    *   `application/json`: [`Attachment`](#schema-Attachment)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -2429,7 +2429,7 @@ File attachments
 
 === "201: Attachment uploaded"
 
-    *   `application/json`: `Attachment`
+    *   `application/json`: [`Attachment`](#schema-Attachment)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -2480,7 +2480,7 @@ File attachments
 
 === "200: Attachment metadata"
 
-    *   `application/json`: `Attachment`
+    *   `application/json`: [`Attachment`](#schema-Attachment)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -2614,7 +2614,7 @@ File attachments
 
 === "200: Attachment converted to note"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -2623,7 +2623,7 @@ File attachments
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -2921,7 +2921,7 @@ Note revision history
 
 === "200: Note revisions"
 
-    *   `application/json`: `array of Revision`
+    *   `application/json`: array of [`Revision`](#schema-Revision)
 
     ```json
     [
@@ -2971,7 +2971,7 @@ Note revision history
 
 === "200: Revision details"
 
-    *   `application/json`: `Revision`
+    *   `application/json`: [`Revision`](#schema-Revision)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -2981,7 +2981,7 @@ Note revision history
     | `revisionId` | `string` |
     | `noteId` | `string` |
     | `title` | `string` |
-    | `type` | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type` | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime` | `string` |
     | `dateCreated` | `string (date-time)` |
     | `utcDateCreated` | `string (date-time)` |
@@ -3064,7 +3064,7 @@ Note revision history
 
 === "200: Revision restored"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -3073,7 +3073,7 @@ Note revision history
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -3197,7 +3197,7 @@ Note revision history
 
 === "200: Edited notes"
 
-    *   `application/json`: `array of Note`
+    *   `application/json`: array of [`Note`](#schema-Note)
 
     ```json
     [
@@ -3255,7 +3255,7 @@ Search and discovery
 
 === "200: Search results"
 
-    *   `application/json`: `array of SearchResult`
+    *   `application/json`: array of [`SearchResult`](#schema-SearchResult)
 
     ```json
     [
@@ -3291,7 +3291,7 @@ Search and discovery
 
 === "200: Quick search results"
 
-    *   `application/json`: `array of SearchResult`
+    *   `application/json`: array of [`SearchResult`](#schema-SearchResult)
 
     ```json
     [
@@ -3327,7 +3327,7 @@ Search and discovery
 
 === "200: Search results"
 
-    *   `application/json`: `array of SearchResult`
+    *   `application/json`: array of [`SearchResult`](#schema-SearchResult)
 
     ```json
     [
@@ -3369,7 +3369,7 @@ Search and discovery
 
 **Request body** (required)
 
-*   `application/json`: `Attribute`
+*   `application/json`: [`Attribute`](#schema-Attribute)
 
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
@@ -3446,7 +3446,7 @@ Search and discovery
 
 === "200: Template notes"
 
-    *   `application/json`: `array of Note`
+    *   `application/json`: array of [`Note`](#schema-Note)
 
     ```json
     [
@@ -3586,7 +3586,7 @@ Import and export operations
     | Property | Description |
     | --- | --- |
     | `noteId` | `string` |
-    | `note` | `Note` |
+    | `note` | [`Note`](#schema-Note) |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3726,7 +3726,7 @@ Synchronization between instances
 
     | Property | Description |
     | --- | --- |
-    | `entityChanges` | `array of EntityChange` |
+    | `entityChanges` | array of [`EntityChange`](#schema-EntityChange) |
     | `lastEntityChangeId` | `integer` |
     | `outstandingPullCount` | `integer` |
 
@@ -3782,7 +3782,7 @@ Synchronization between instances
 | Property | Description |
 | --- | --- |
 | `instanceId` | `string` |
-| `entities` | `array of EntityChange` |
+| `entities` | array of [`EntityChange`](#schema-EntityChange) |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -4002,7 +4002,7 @@ Script execution and automation
 
 === "200: Startup scripts"
 
-    *   `application/json`: `array of ScriptBundle`
+    *   `application/json`: array of [`ScriptBundle`](#schema-ScriptBundle)
 
     ```json
     [
@@ -4025,7 +4025,7 @@ Script execution and automation
 
 === "200: Widget scripts"
 
-    *   `application/json`: `array of ScriptBundle`
+    *   `application/json`: array of [`ScriptBundle`](#schema-ScriptBundle)
 
     ```json
     [
@@ -4054,7 +4054,7 @@ Script execution and automation
 
 === "200: Script bundle"
 
-    *   `application/json`: `ScriptBundle`
+    *   `application/json`: [`ScriptBundle`](#schema-ScriptBundle)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -4098,7 +4098,7 @@ Script execution and automation
 
 === "200: Relation scripts"
 
-    *   `application/json`: `array of ScriptBundle`
+    *   `application/json`: array of [`ScriptBundle`](#schema-ScriptBundle)
 
     ```json
     [
@@ -4125,7 +4125,7 @@ System options and settings
 
 === "200: Application information"
 
-    *   `application/json`: `AppInfo`
+    *   `application/json`: [`AppInfo`](#schema-AppInfo)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -4658,7 +4658,7 @@ AI/LLM integration
 
 === "200: Chat sessions"
 
-    *   `application/json`: `array of ChatSession`
+    *   `application/json`: array of [`ChatSession`](#schema-ChatSession)
 
     ```json
     [
@@ -4724,7 +4724,7 @@ AI/LLM integration
 
 === "201: Chat session created"
 
-    *   `application/json`: `ChatSession`
+    *   `application/json`: [`ChatSession`](#schema-ChatSession)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -4777,7 +4777,7 @@ AI/LLM integration
 
 === "200: Chat session details"
 
-    *   `application/json`: `ChatSession`
+    *   `application/json`: [`ChatSession`](#schema-ChatSession)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -4865,7 +4865,7 @@ AI/LLM integration
 
 === "200: Session updated"
 
-    *   `application/json`: `ChatSession`
+    *   `application/json`: [`ChatSession`](#schema-ChatSession)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -5629,7 +5629,7 @@ Issues a fresh batch of recovery codes for the already-enrolled TOTP secret, rep
 
 === "200: ETAPI tokens"
 
-    *   `application/json`: `array of EtapiToken`
+    *   `application/json`: array of [`EtapiToken`](#schema-EtapiToken)
 
     ```json
     [
@@ -5676,7 +5676,7 @@ Issues a fresh batch of recovery codes for the already-enrolled TOTP secret, rep
 
 === "201: Token created"
 
-    *   `application/json`: `EtapiToken`
+    *   `application/json`: [`EtapiToken`](#schema-EtapiToken)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -5762,7 +5762,7 @@ Issues a fresh batch of recovery codes for the already-enrolled TOTP secret, rep
 
 === "200: Token updated"
 
-    *   `application/json`: `EtapiToken`
+    *   `application/json`: [`EtapiToken`](#schema-EtapiToken)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -5811,7 +5811,7 @@ Special note types (calendar, inbox)
 
 === "200: Inbox note"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -5820,7 +5820,7 @@ Special note types (calendar, inbox)
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -5903,7 +5903,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: Day note"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -5912,7 +5912,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -5958,7 +5958,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: Week note"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -5967,7 +5967,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6013,7 +6013,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: Month note"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6022,7 +6022,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6068,7 +6068,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: Year note"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6077,7 +6077,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6117,7 +6117,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "201: SQL console created"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6126,7 +6126,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6166,7 +6166,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "201: Search note created"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6175,7 +6175,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6222,7 +6222,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "201: Launcher created"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6231,7 +6231,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6277,7 +6277,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: Notes for the month"
 
-    *   `application/json`: `array of Note`
+    *   `application/json`: array of [`Note`](#schema-Note)
 
     ```json
     [
@@ -6312,7 +6312,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: Quarter note"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6321,7 +6321,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6404,7 +6404,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: Launcher reset"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6413,7 +6413,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6478,7 +6478,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "201: Search note saved"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6487,7 +6487,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6552,7 +6552,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "201: SQL console saved"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6561,7 +6561,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6624,7 +6624,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 === "200: API script launcher updated"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6633,7 +6633,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6890,7 +6890,7 @@ External integrations (clipper, sender)
 
 === "201: Clipping created"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6899,7 +6899,7 @@ External integrations (clipper, sender)
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -6966,7 +6966,7 @@ External integrations (clipper, sender)
 
 === "201: Note created"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -6975,7 +6975,7 @@ External integrations (clipper, sender)
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -7118,7 +7118,7 @@ External integrations (clipper, sender)
 
 === "201: Image uploaded"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -7127,7 +7127,7 @@ External integrations (clipper, sender)
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -7192,7 +7192,7 @@ External integrations (clipper, sender)
 
 === "201: Note saved"
 
-    *   `application/json`: `Note`
+    *   `application/json`: [`Note`](#schema-Note)
 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
@@ -7201,7 +7201,7 @@ External integrations (clipper, sender)
     | --- | --- |
     | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
     | `title`  <br>_required_ | `string`  <br>Note title |
-    | `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+    | `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
     | `mime`  <br>_required_ | `string`  <br>MIME type |
     | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
     | `blobId` | `string`  <br>ID of content blob |
@@ -7596,13 +7596,13 @@ Miscellaneous utilities
 
 ## Schemas
 
-### `Note`
+### <a id="schema-Note"></a>`Note`
 
 | Property | Description |
 | --- | --- |
 | `noteId`  <br>_required_ | `string`  <br>12-character note ID |
 | `title`  <br>_required_ | `string`  <br>Note title |
-| `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+| `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
 | `mime`  <br>_required_ | `string`  <br>MIME type |
 | `isProtected`  <br>_required_ | `boolean`  <br>Whether note is protected |
 | `blobId` | `string`  <br>ID of content blob |
@@ -7611,11 +7611,11 @@ Miscellaneous utilities
 | `utcDateCreated` | `string (date-time)` |
 | `utcDateModified` | `string (date-time)` |
 
-### `NoteType`
+### <a id="schema-NoteType"></a>`NoteType`
 
 Type: `string`
 
-### `Branch`
+### <a id="schema-Branch"></a>`Branch`
 
 | Property | Description |
 | --- | --- |
@@ -7626,7 +7626,7 @@ Type: `string`
 | `prefix` | `string \| null` |
 | `isExpanded` | `boolean` |
 
-### `Attribute`
+### <a id="schema-Attribute"></a>`Attribute`
 
 | Property | Description |
 | --- | --- |
@@ -7638,7 +7638,7 @@ Type: `string`
 | `position` | `integer` |
 | `isInheritable` | `boolean` |
 
-### `Attachment`
+### <a id="schema-Attachment"></a>`Attachment`
 
 | Property | Description |
 | --- | --- |
@@ -7651,19 +7651,19 @@ Type: `string`
 | `dateModified` | `string (date-time)` |
 | `utcDateModified` | `string (date-time)` |
 
-### `Revision`
+### <a id="schema-Revision"></a>`Revision`
 
 | Property | Description |
 | --- | --- |
 | `revisionId` | `string` |
 | `noteId` | `string` |
 | `title` | `string` |
-| `type` | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+| `type` | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
 | `mime` | `string` |
 | `dateCreated` | `string (date-time)` |
 | `utcDateCreated` | `string (date-time)` |
 
-### `SearchResult`
+### <a id="schema-SearchResult"></a>`SearchResult`
 
 | Property | Description |
 | --- | --- |
@@ -7673,14 +7673,14 @@ Type: `string`
 | `score` | `number` |
 | `highlights` | `array of string` |
 
-### `EntityChange`
+### <a id="schema-EntityChange"></a>`EntityChange`
 
 | Property | Description |
 | --- | --- |
 | `entityChange` | `object` |
 | `entity` | `object` |
 
-### `Timestamps`
+### <a id="schema-Timestamps"></a>`Timestamps`
 
 | Property | Description |
 | --- | --- |
@@ -7689,13 +7689,13 @@ Type: `string`
 | `utcDateCreated` | `string (date-time)` |
 | `utcDateModified` | `string (date-time)` |
 
-### `CreateNoteRequest`
+### <a id="schema-CreateNoteRequest"></a>`CreateNoteRequest`
 
 | Property | Description |
 | --- | --- |
 | `title`  <br>_required_ | `string` |
 | `content` | `string` |
-| `type`  <br>_required_ | `NoteType`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
+| `type`  <br>_required_ | [`NoteType`](#schema-NoteType)  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`. |
 | `mime` | `string` |
 | `isProtected` | `boolean` |
 | `isExpanded` | `boolean` |
@@ -7704,7 +7704,7 @@ Type: `string`
 | `parentNoteId` | `string` |
 | `templateNoteId` | `string` |
 
-### `ScriptBundle`
+### <a id="schema-ScriptBundle"></a>`ScriptBundle`
 
 | Property | Description |
 | --- | --- |
@@ -7713,7 +7713,7 @@ Type: `string`
 | `html` | `string` |
 | `css` | `string` |
 
-### `AppInfo`
+### <a id="schema-AppInfo"></a>`AppInfo`
 
 | Property | Description |
 | --- | --- |
@@ -7727,7 +7727,7 @@ Type: `string`
 | `clipperProtocolVersion` | `string` |
 | `utcDateTime` | `string (date-time)` |
 
-### `ChatSession`
+### <a id="schema-ChatSession"></a>`ChatSession`
 
 | Property | Description |
 | --- | --- |
@@ -7738,7 +7738,7 @@ Type: `string`
 | `lastActive` | `string (date-time)` |
 | `messageCount` | `integer` |
 
-### `EtapiToken`
+### <a id="schema-EtapiToken"></a>`EtapiToken`
 
 | Property | Description |
 | --- | --- |

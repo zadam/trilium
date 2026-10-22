@@ -201,7 +201,7 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         if (located.length) {
             blocks.push(`**${label}**`, table(
                 [ "Name", "Description" ],
-                located.map((p) => [ nameCell(p.name, p.required), detailsCell(typeOf(p.schema), describe(p)) ])
+                located.map((p) => [ nameCell(p.name, p.required), detailsCell(typeMarkdown(spec, p.schema), describe(p)) ])
             ));
         }
     }
@@ -241,10 +241,13 @@ function indent(block: string) {
     return block.split("\n").map((line) => line ? `    ${line}` : line).join("\n");
 }
 
-/** A body's content type, which is also its `Content-Type` header, and the type of its schema. */
-function mediaLine(mime: string, { schema }: MediaType) {
-    const type = typeOf(schema);
-    return type ? `${code(mime)}: ${code(type)}` : code(mime);
+/**
+ * A body's content type, which is also its `Content-Type` header, and the type of its schema,
+ * linked to its heading unless `spec` is left out, as for a tab title, which a click selects.
+ */
+function mediaLine(mime: string, { schema }: MediaType, spec?: OpenApiSpec) {
+    const type = spec ? typeMarkdown(spec, schema) : code(typeOf(schema));
+    return type ? `${code(mime)}: ${type}` : code(mime);
 }
 
 type Direction = "request" | "response";
@@ -254,11 +257,14 @@ type Direction = "request" | "response";
  * them has something to show, each content type becomes a tab; otherwise they stay a list.
  */
 function renderContent(spec: OpenApiSpec, content: Record<string, MediaType>, direction: Direction) {
-    const bodies = Object.entries(content)
-        .map(([ mime, media ]) => ({ line: mediaLine(mime, media), body: renderBody(spec, mime, media, direction) }));
+    const bodies = Object.entries(content).map(([ mime, media ]) => ({
+        title: mediaLine(mime, media),
+        line: mediaLine(mime, media, spec),
+        body: renderBody(spec, mime, media, direction)
+    }));
 
     if (bodies.length > 1 && bodies.some(({ body }) => body.length)) {
-        return bodies.flatMap(({ line, body }) => [ `=== "${line}"`, ...body.map(indent) ]);
+        return bodies.flatMap(({ title, body }) => [ `=== "${title}"`, ...body.map(indent) ]);
     }
     return bodies.flatMap(({ line, body }) => [ `*   ${line}`, ...body ]);
 }
@@ -356,12 +362,12 @@ const STRING_SAMPLES: Record<string, string> = {
 };
 
 function renderSchema(spec: OpenApiSpec, name: string, schema: Schema) {
-    const blocks = [ `### ${code(name)}` ];
+    const blocks = [ `### <a id="${schemaAnchor(name)}"></a>${code(name)}` ];
     if (schema.description) {
         blocks.push(schema.description.trim());
     }
 
-    blocks.push(schema.properties ? propertyTable(spec, schema) : `Type: ${code(typeOf(schema))}`);
+    blocks.push(schema.properties ? propertyTable(spec, schema) : `Type: ${typeMarkdown(spec, schema)}`);
     return blocks;
 }
 
@@ -372,7 +378,10 @@ function propertyTable(spec: OpenApiSpec, { properties, required }: Schema) {
         Object.entries(properties ?? {}).map(([ property, propertySchema ]) => {
             const resolved = resolve(spec, propertySchema);
             const description = describe({ description: propertySchema.description ?? resolved.description, schema: resolved });
-            return [ nameCell(property, requiredProperties.has(property)), detailsCell(typeOf(propertySchema), description) ];
+            return [
+                nameCell(property, requiredProperties.has(property)),
+                detailsCell(typeMarkdown(spec, propertySchema), description)
+            ];
         })
     );
 }
@@ -397,6 +406,51 @@ function describeSecurity(requirements: SecurityRequirement[]) {
     return requirements
         .map((requirement) => Object.keys(requirement).map(code).join(" and ") || "none")
         .join(" or ");
+}
+
+/**
+ * The type of a schema as Markdown: `typeOf()` as code, except that each schema the spec defines
+ * links to its heading, with the rest of the type as text around it.
+ */
+function typeMarkdown(spec: OpenApiSpec, schema: Schema | undefined): string {
+    if (!schema || !namesDefinedSchema(spec, schema)) {
+        return code(typeOf(schema));
+    }
+
+    let type: string;
+    if (schema.$ref) {
+        const name = refName(schema.$ref);
+        type = `[${code(name)}](#${schemaAnchor(name)})`;
+    } else if (schema.allOf) {
+        type = schema.allOf.map((part) => typeMarkdown(spec, part)).join(" & ");
+    } else if (schema.oneOf ?? schema.anyOf) {
+        type = (schema.oneOf ?? schema.anyOf ?? []).map((part) => typeMarkdown(spec, part)).join(" | ");
+    } else {
+        type = `array of ${typeMarkdown(spec, schema.items)}`;
+    }
+
+    return schema.nullable ? `${type} | ${code("null")}` : type;
+}
+
+/** Whether the type of `schema` names a schema of `components.schemas`, which has a heading. */
+function namesDefinedSchema(spec: OpenApiSpec, schema: Schema | undefined): boolean {
+    if (!schema) {
+        return false;
+    }
+    if (schema.$ref) {
+        return Object.hasOwn(spec.components?.schemas ?? {}, refName(schema.$ref));
+    }
+
+    const parts = [ ...schema.allOf ?? [], ...schema.oneOf ?? [], ...schema.anyOf ?? [] ];
+    if (schema.type === "array") {
+        parts.push(...schema.items ? [ schema.items ] : []);
+    }
+    return parts.some((part) => namesDefinedSchema(spec, part));
+}
+
+/** The id of the anchor in a schema's heading. */
+function schemaAnchor(name: string) {
+    return `schema-${name}`;
 }
 
 /** The type of a schema as one line, naming referenced schemas instead of expanding them. */
@@ -475,9 +529,9 @@ function nameCell(text: string, required?: boolean) {
     return required ? `${code(text)}<br>*required*` : code(text);
 }
 
-/** The description cell of a parameter or property, its type on the first line. */
+/** The description cell of a parameter or property, its type (Markdown) on the first line. */
 function detailsCell(type: string, description: string) {
-    return [ code(type), description ].filter(Boolean).join("<br>");
+    return [ type, description ].filter(Boolean).join("<br>");
 }
 
 function code(text: string) {

@@ -114,7 +114,7 @@ describe("openApiToMarkdown", () => {
         expect(markdown).toContain([
             "**Request body** (required)",
             "",
-            "*   `application/json`: `Note`",
+            "*   `application/json`: [`Note`](#schema-Note)",
             "",
             ...columns,
             "",
@@ -126,7 +126,7 @@ describe("openApiToMarkdown", () => {
             "",
             "=== \"200: note updated\"",
             "",
-            "    *   `application/json`: `Note`",
+            "    *   `application/json`: [`Note`](#schema-Note)",
             "",
             ...columns.map((line) => line && `    ${line}`),
             "",
@@ -196,22 +196,24 @@ describe("openApiToMarkdown", () => {
         const markdown = openApiToMarkdown(spec);
 
         expect(markdown).toContain("## Schemas");
-        expect(markdown).toContain("### `EntityId`\n\nUnique ID\n\nType: `string`");
+        // A schema heading carries an anchor, which every type naming the schema links to.
+        expect(markdown).toContain("### <a id=\"schema-EntityId\"></a>`EntityId`\n\nUnique ID\n\nType: `string`");
         expect(markdown).toContain([
-            "### `Note`",
+            "### <a id=\"schema-Note\"></a>`Note`",
             "",
             "A note",
             "",
             "| Property | Description |",
             "| --- | --- |",
-            "| `noteId`<br>*required* | `EntityId`<br>The note's ID |",
+            "| `noteId`<br>*required* | [`EntityId`](#schema-EntityId)<br>The note's ID |",
             // Without a description of its own, a property takes the one of the schema it references.
-            "| `parentNoteId` | `EntityId`<br>Unique ID |",
+            "| `parentNoteId` | [`EntityId`](#schema-EntityId)<br>Unique ID |",
             "| `type` | `string`<br>note type. One of `text`, `code`. |",
+            // A schema the spec does not define gets no link to a missing anchor.
             "| `attributes` | `array of Attribute` |",
             "| `dateCreated` | `string (date-time) \\| null` |",
-            "| `parent` | `EntityId \\| string \\| null` |",
-            "| `content` | `EntityId`<br>Line one line \\| two |"
+            "| `parent` | [`EntityId`](#schema-EntityId) \\| `string \\| null` |",
+            "| `content` | [`EntityId`](#schema-EntityId)<br>Line one line \\| two |"
         ].join("\n"));
     });
 
