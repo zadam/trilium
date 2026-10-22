@@ -26,6 +26,8 @@ export type Size = number | "auto";
 /** An export the root never reaches. */
 export interface Unreached {
     flag: boolean;
+    /** A use of \`Screen\` the page does not show, which leaves it used in one place. */
+    screen: Screen;
 }
 
 /** Which screen a window is on. */
@@ -109,12 +111,13 @@ describe("typeDocToMarkdown", () => {
         expect(markdown.startsWith("The demo API, exposed as `window.demoApi`.\n\n## `DemoApi`")).toBe(true);
 
         const headings = [ ...markdown.matchAll(/^(#+) `?(\w+)`?/gm) ].map(([ , level, name ]) => `${level} ${name}`);
-        // The root and the interfaces with methods come first; the types they use follow under
-        // "Types", then the exports the root never reaches, in source order.
+        // The root and the interfaces with methods come first, and the types they use follow under
+        // "Types". The exports the root never reaches belong to another page.
         expect(headings).toEqual([
             "## DemoApi", "## DemoWindowApi", "## Types",
-            "### Audience", "### ResizeOptions", "### Outcome", "### Size", "### Unreached"
+            "### Audience", "### ResizeOptions", "### Outcome", "### Size"
         ]);
+        expect(markdown).not.toContain("Unreached");
     });
 
     it("lists properties in a table, their type above their description", () => {

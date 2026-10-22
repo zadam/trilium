@@ -796,13 +796,3 @@ A single user-chosen file: a capability token (redeemed to import it) and its di
 | --- | --- |
 | `token` | `string`  <br>Single-use, short-lived grant for the chosen file. |
 | `fileName` | `string`  <br>Display name of the chosen file. |
-
-### `RendererStartupMetric`
-
-Startup milestones the renderer may report to the main process for startup timing instrumentation (see `apps/desktop/src/services/startup_metrics.ts`).
-
-*   `client-full-render` — the client finished its initial render: the layout widgets are attached to the DOM, the froca note cache is loaded, and a frame of the rendered layout has been painted.
-
-```typescript
-type RendererStartupMetric = "client-full-render"
-```

@@ -54,15 +54,15 @@ export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<
 }
 
 /**
- * Renders `root` first, then the declarations it reaches in order of first reference, then the
- * remaining exports in source order. Without `root`, the exports follow in source order.
+ * Renders `root` and the declarations it reaches, in order of first reference, so a module can
+ * hold several pages' APIs. Without `root`, the exports follow in source order.
  *
  * `root` and the interfaces with methods come first, each under a heading of its own; the types
  * they use follow under "Types". A union of literals that one place uses is written out there
  * instead of getting an entry.
  */
 export function typeDocToMarkdown(project: Project, root?: string): string {
-    const { declarations, inlined } = selectDeclarations(project);
+    const { declarations, inlined } = selectDeclarations(project, root);
     inlinedAliases = inlined;
     try {
         const blocks: string[] = [];
@@ -70,11 +70,10 @@ export function typeDocToMarkdown(project: Project, root?: string): string {
             blocks.push(renderComment(project.comment));
         }
 
-        const ordered = orderDeclarations(declarations, root);
         const isApi = (declaration: Declaration) => declaration.name === root
             || !!declaration.children?.some((member) => member.kind === KIND.method);
-        const apis = ordered.filter(isApi);
-        const types = ordered.filter((declaration) => !isApi(declaration));
+        const apis = declarations.filter(isApi);
+        const types = declarations.filter((declaration) => !isApi(declaration));
         for (const declaration of apis) {
             blocks.push(...renderDeclaration(declaration, "##"));
         }
@@ -105,27 +104,37 @@ const KIND = {
 let inlinedAliases = new Map<string, Declaration>();
 
 /**
- * The module's exports, and the types it imports from other modules that its exports use, except
- * the unions of literals used in one place, which are returned to be written out there.
+ * What the page shows: `root` and what it reaches, or else the module's exports and the types they
+ * import from other modules. The unions of literals that one of them uses are left out, and
+ * returned to be written out where they are used.
  */
-function selectDeclarations(project: Project) {
+function selectDeclarations(project: Project, root: string | undefined) {
     const own = (project.children ?? []).filter((declaration) => declaration.name !== "<internal>");
     const imported = (project.children ?? [])
         .filter((declaration) => declaration.name === "<internal>")
         .flatMap((internal) => internal.children ?? [])
         .filter((declaration) => !declaration.sources?.some((source) => source.fileName.includes("node_modules/")));
+    const byName = new Map([ ...own, ...imported ].map((declaration) => [ declaration.name, declaration ]));
+
+    let shown: Declaration[];
+    const rootDeclaration = root ? byName.get(root) : undefined;
+    if (rootDeclaration) {
+        shown = reach(rootDeclaration, byName);
+    } else {
+        const usedByOwn = new Set(own.flatMap(referencedNames));
+        shown = [ ...own, ...imported.filter((declaration) => usedByOwn.has(declaration.name)) ];
+    }
 
     const uses = new Map<string, number>();
-    for (const name of own.flatMap(referencedNames)) {
+    for (const name of shown.flatMap(referencedNames)) {
         uses.set(name, (uses.get(name) ?? 0) + 1);
     }
 
-    const inlined = new Map([ ...own, ...imported ]
+    const inlined = new Map(shown
         .filter((declaration) => isLiteralUnion(declaration) && uses.get(declaration.name) === 1)
         .map((declaration) => [ declaration.name, declaration ]));
     return {
-        declarations: [ ...own, ...imported.filter((declaration) => uses.has(declaration.name)) ]
-            .filter((declaration) => !inlined.has(declaration.name)),
+        declarations: shown.filter((declaration) => !inlined.has(declaration.name)),
         inlined
     };
 }
@@ -137,26 +146,25 @@ function isLiteralUnion(declaration: Declaration) {
         && type.types.every((member) => member.type === "literal");
 }
 
-function orderDeclarations(declarations: Declaration[], root: string | undefined) {
-    const byName = new Map(declarations.map((declaration) => [ declaration.name, declaration ]));
-    const ordered = new Set<Declaration>();
-    const queue = root && byName.has(root) ? [ root ] : [];
-
-    while (queue.length) {
-        const declaration = byName.get(queue.shift() ?? "");
-        if (!declaration || ordered.has(declaration)) {
+/** `root` and the declarations it reaches, breadth first, in order of first reference. */
+function reach(root: Declaration, byName: Map<string, Declaration>) {
+    const reached = new Set<Declaration>();
+    const queue = [ root ];
+    for (let declaration = queue.shift(); declaration; declaration = queue.shift()) {
+        if (reached.has(declaration)) {
             continue;
         }
 
-        ordered.add(declaration);
-        queue.push(...referencedNames(declaration).filter((name) => byName.has(name)));
+        reached.add(declaration);
+        for (const name of referencedNames(declaration)) {
+            const referenced = byName.get(name);
+            if (referenced) {
+                queue.push(referenced);
+            }
+        }
     }
 
-    for (const declaration of declarations) {
-        ordered.add(declaration);
-    }
-
-    return [ ...ordered ];
+    return [ ...reached ];
 }
 
 /** Keys whose references a page does not show: comments, and the links between related types. */
