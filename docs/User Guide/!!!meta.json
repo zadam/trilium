@@ -12039,6 +12039,13 @@
                                             "value": "bx bx-window-alt",
                                             "isInheritable": false,
                                             "position": 20
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "fullContentWidth",
+                                            "value": "",
+                                            "isInheritable": false,
+                                            "position": 30
                                         }
                                     ],
                                     "format": "markdown",
