@@ -3,9 +3,10 @@ import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Bootstrap's tooltip machinery is not what is under test here.
+const useStaticTooltipWithKeyboardShortcut = vi.hoisted(() => vi.fn());
 vi.mock("./hooks", async (importOriginal) => ({
     ...(await importOriginal<typeof import("./hooks")>()),
-    useStaticTooltip: vi.fn()
+    useStaticTooltipWithKeyboardShortcut
 }));
 
 import PeekPaneButton, { type PaneSide } from "./PeekPaneButton";
@@ -28,6 +29,9 @@ describe("PeekPaneButton", () => {
         const onToggle = vi.fn();
         const button = renderButton("start", false, onToggle);
         expect(button.getAttribute("aria-label")).toBe("Peek");
+        expect(useStaticTooltipWithKeyboardShortcut).toHaveBeenLastCalledWith(
+            expect.anything(), "Peek", "peekLeftPane", expect.anything()
+        );
         expect(button.classList.contains("my-peek-button")).toBe(true);
         expect(button.classList.contains("side-start")).toBe(true);
         expect(button.classList.contains("peek-pane-button-action-expand")).toBe(true);
@@ -56,6 +60,7 @@ describe("PeekPaneButton", () => {
                 className="my-peek-button"
                 hideText="Hide"
                 peekText="Peek"
+                keyboardAction="peekLeftPane"
             />,
             host
         ));

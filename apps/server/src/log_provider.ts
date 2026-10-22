@@ -1,4 +1,4 @@
-import { FileBasedLogService, type LogFileInfo } from "@triliumnext/core";
+import { FileBasedLogService, type LogFileInfo, type ResponseLocals } from "@triliumnext/core";
 import type { Request, Response } from "express";
 import fs from "fs";
 import { EOL } from "os";
@@ -153,6 +153,11 @@ export default class ServerLogService extends FileBasedLogService {
         }
 
         this.info(`${timeMs >= 10 ? "Slow " : ""}${res.statusCode} ${req.method} ${req.url} with ${responseLength} bytes took ${timeMs}ms`);
+
+        const { logSummary }: ResponseLocals = res.locals;
+        if (logSummary) {
+            this.info(logSummary);
+        }
     }
 }
 
@@ -166,6 +171,7 @@ const VERB_STYLE: Style = [ "bold", "blueBright" ];
 const URL_STYLE: Style = "cyan";
 const QUERY_VERB_STYLE: Style = [ "bold", "magenta" ];
 const SQL_STYLE: Style = "magentaBright";
+const SEARCH_STYLE: Style = [ "bold", "cyan" ];
 const ERROR_STYLE: Style = "red";
 const WARNING_STYLE: Style = "yellow";
 // The green of the leaves in `icon-color.svg`.
@@ -180,6 +186,7 @@ const STATUS_STYLES: Record<string, Style> = {
 
 const HTTP_REQUEST = /^(Slow )?(\d{3}) (GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS) (\S+)/;
 const SLOW_QUERY = /^(Slow (?:recursive )?query)( took \d+ms)(?:(: )(.+))?/;
+const SEARCH = /^(Search): .* {2}(\(returned \d+ items\))$/;
 const ERROR_ENTRY = /^(?:JS Error|ERROR):/;
 const WARNING_ENTRY = /^WARNING:/;
 // The `📦 Versions:    …` rows of the startup intro.
@@ -217,6 +224,14 @@ function colorizeMessage(message: string): string {
             sql ? paint(SQL_STYLE, sql) : "",
             message.slice(matched.length)
         ].join("");
+    }
+
+    const search = SEARCH.exec(message);
+    if (search) {
+        const [ , searchVerb, count ] = search;
+        return paint(SEARCH_STYLE, searchVerb)
+            + message.slice(searchVerb.length, -count.length)
+            + paint(MUTED_STYLE, count);
     }
 
     if (message.startsWith(LOGO_PREFIX)) {

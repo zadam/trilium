@@ -1,13 +1,10 @@
-import {
-    ensureSyntaxTree, type Language, LanguageSupport, StreamLanguage
-} from "@codemirror/language";
+import { ensureSyntaxTree, type Language } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { highlightCode, type Highlighter, tagHighlighter } from "@lezer/highlight";
-import type { SupportedMimeTypes } from "@triliumnext/commons";
 
 import { getThemeById } from "./color_themes.js";
 import { type PreviewTheme, type PreviewThemeSlot, readPreviewTheme } from "./preview_theme.js";
-import byMimeType, { MIME_ALIASES } from "./syntax_highlighting.js";
+import { loadLanguage } from "./syntax_highlighting.js";
 
 export {
     buildCodePreviewCss, type PreviewTheme, type PreviewThemeColors, type PreviewThemeSlot,
@@ -82,7 +79,7 @@ export function loadPreviewTheme(id: string) {
 export function loadPreviewLanguage(mime: string) {
     let language = languages.get(mime);
     if (!language) {
-        language = readLanguage(mime).then((result) => {
+        language = loadLanguage(mime).then((result) => {
             loadedLanguages.set(mime, result);
             return result;
         });
@@ -121,19 +118,6 @@ function getHighlighter({ theme, key }: PreviewThemeSlot): Highlighter {
         tag: style.tag,
         class: `${key}${index}`
     })));
-}
-
-async function readLanguage(mime: string): Promise<Language | null> {
-    const load = byMimeType[(MIME_ALIASES[mime] ?? mime) as SupportedMimeTypes];
-    if (!load) return null;
-
-    const syntax = await load();
-    if ("token" in syntax) return StreamLanguage.define(syntax);
-
-    const extensions = Array.isArray(syntax) ? syntax : [ syntax ];
-    return extensions
-        .find((extension): extension is LanguageSupport => extension instanceof LanguageSupport)
-        ?.language ?? null;
 }
 
 function escapeHtml(text: string) {

@@ -44,15 +44,15 @@ Click the tree icon in the tree toolbar to open the tree settings popup. Each op
 
 To hide or show the note tree, press the <span class="tn-icon bx bx-sidebar"></span> button to the left of the first tab in the horizontal layout, or the <span class="tn-icon bx bx-chevrons-left"></span> button at the bottom of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a> in the vertical layout. The _Toggle Left Pane_ [keyboard shortcut](../Keyboard%20Shortcuts.md), which is not assigned by default, does the same. See <a class="reference-link" href="Vertical%20and%20horizontal%20layout.md">Vertical and horizontal layout</a>.
 
-In the horizontal layout, there is also a small strip on the left edge of the app which shows an arrow icon:
+A small strip with an arrow icon runs along the left edge of the app in the horizontal layout. In the vertical layout, it runs along the right side of the <a class="reference-link" href="Launch%20Bar.md">Launch Bar</a>, and only shows while the tree is hidden.
 
-*   When the tree is hidden, pressing the edge will _peek_ the tree.
+*   When the tree is hidden, pressing the strip will _peek_ the tree.
     *   In this mode the tree is shown temporarily above the content, without shifting the content of your notes.
-    *   Clicking outside the tree, pressing <kbd>Esc</kbd> or pressing the edge again will hide the tree.
-    *   Pressing the <span class="tn-icon bx bx-sidebar"></span> button to the left of the first tab will dock the tree.
-*   When the tree is docked, pressing the edge will hide the tree.
+    *   Clicking outside the tree, pressing <kbd>Esc</kbd> or pressing the strip again will hide the tree.
+    *   Pressing the button that shows the tree will dock it.
+*   In the horizontal layout, pressing the strip while the tree is docked will hide it.
 
-The _Peek Tree Pane_ [keyboard shortcut](../Keyboard%20Shortcuts.md), <kbd>Alt</kbd>+<kbd>[</kbd> by default, does the same as pressing the edge. Only one panel is peeked at a time: peeking the tree hides a peeked <a class="reference-link" href="Right%20Sidebar.md">Right Sidebar</a>, and the other way around.
+The _Peek Tree Pane_ [keyboard shortcut](../Keyboard%20Shortcuts.md), <kbd>Alt</kbd>+<kbd>[</kbd> by default, does the same as pressing the strip. Only one panel is peeked at a time: peeking the tree hides a peeked <a class="reference-link" href="Right%20Sidebar.md">Right Sidebar</a>, and the other way around.
 
 ## Keyboard shortcuts
 

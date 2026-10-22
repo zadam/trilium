@@ -30,6 +30,10 @@ Since tabs are a commonly used feature, there are multiple keyboard shortcuts th
 *   <kbd>Ctrl</kbd>+<kbd>1</kbd>, <kbd>Ctrl</kbd>+<kbd>2</kbd>, up to <kbd>Ctrl</kbd>+<kbd>9</kbd> to activate the first, second and up to ninth tab.
 *   There is also a shortcut to go to the last tab, but it is not assigned a key by default.
 
+## Full screen
+
+To show Trilium in full screen, press <kbd>F11</kbd> or the <span class="tn-icon bx bx-expand-alt"></span> _Toggle fullscreen_ button in the <a class="reference-link" href="Global%20menu.md">Global menu</a>. While in full screen, the tab bar shows a <span class="tn-icon bx bx-exit-fullscreen"></span> _Leave full screen_ button before the <a class="reference-link" href="Right%20Sidebar.md">Right Sidebar</a> toggle; press it to return to the normal window.
+
 ## Background tabs
 
 When Trilium starts, it reopens the tabs from the previous session. Only the active tab loads its note right away; every other tab loads its note the first time you switch to it. This keeps startup fast when many tabs are open, especially tabs that show collections.

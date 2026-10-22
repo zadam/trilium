@@ -122,19 +122,16 @@ body.background-effects.theme-supports-background-effects #center-pane .note-spl
     --note-split-bottom-border-radius: var(--center-pane-border-radius);
 }
 
-/* Matches when the left pane is collapsed */
-#horizontal-main-container.left-pane-hidden {
-    --note-split-top-border-radius: 0;
-}
-
 /* Matches when a status bar panel is open */
 #horizontal-main-container:has(#rest-pane > .status-bar.status-bar-panel-open) {
     --note-split-bottom-border-radius: 0;
 }
 
-/* Add a border to the vertical launch bar if collapsed. */
-body.layout-vertical #horizontal-main-container.left-pane-hidden #launcher-pane.vertical {
-    border-inline-end: 2px solid var(--left-pane-collapsed-border-color);
+/* Draws the launch bar's border in the gap between the peek button and the peeked tree. The
+   offset is physical, since the button is mirrored in RTL. */
+body.layout-vertical #horizontal-main-container > .left-pane-peek-button.peek-pane-button-action-collapse {
+    box-shadow: 2px 0 var(--left-pane-collapsed-border-color),
+        2px 0 var(--launcher-pane-vert-background-color);
 }
 
 /*

@@ -1,4 +1,6 @@
-import { LanguageDescription, LanguageSupport, type StreamParser } from "@codemirror/language";
+import {
+    type Language, LanguageDescription, LanguageSupport, StreamLanguage, type StreamParser
+} from "@codemirror/language";
 import type { Extension } from "@codemirror/state";
 import { SupportedMimeTypes } from "@triliumnext/commons";
 
@@ -42,6 +44,15 @@ async function buildJson() {
     const { json, jsonParseLinter } = await import('@codemirror/lang-json');
     const { linter, lintGutter } = await import('@codemirror/lint');
     return [ json(), linter(jsonParseLinter()), lintGutter() ];
+}
+
+/** The backend log, with the statements of slow queries highlighted as SQLite (Trilium) notes. */
+async function buildTriliumLog() {
+    const [ { triliumLogHighlighter }, sqlLanguage ] = await Promise.all([
+        import("./extensions/trilium_log_highlighter.js"),
+        loadLanguage("text/x-sqlite;schema=trilium")
+    ]);
+    return [ triliumLogHighlighter(sqlLanguage) ];
 }
 
 const byMimeType: Record<SupportedMimeTypes, (() => Promise<StreamParser<unknown> | LanguageSupport | Extension[]>) | null> = {
@@ -201,7 +212,7 @@ const byMimeType: Record<SupportedMimeTypes, (() => Promise<StreamParser<unknown
     "text/x-tiddlywiki": async () => (await import('@codemirror/legacy-modes/mode/tiddlywiki')).tiddlyWiki,
     "text/x-toml": async () => (await import('@codemirror/legacy-modes/mode/toml')).toml,
     "text/x-tornado": null,
-    "text/x-trilium-log": async () => [ (await import('./extensions/trilium_log_highlighter.js')).triliumLogHighlighter ],
+    "text/x-trilium-log": buildTriliumLog,
     "text/x-trilium-search": async () => [ (await import('./extensions/trilium_search_highlighter.js')).triliumSearchHighlighter ],
     "text/x-ttcn-asn": async () => (await import('@codemirror/legacy-modes/mode/ttcn')).ttcn,
     "text/x-ttcn-cfg": async () => (await import('@codemirror/legacy-modes/mode/ttcn-cfg')).ttcnCfg,
@@ -227,5 +238,19 @@ const byMimeType: Record<SupportedMimeTypes, (() => Promise<StreamParser<unknown
 export const MIME_ALIASES: Record<string, SupportedMimeTypes> = {
     "image/svg+xml": "text/xml"
 };
+
+/** Loads the language that highlights `mime` in a code note, or `null` if it has none. */
+export async function loadLanguage(mime: string): Promise<Language | null> {
+    const load = byMimeType[(MIME_ALIASES[mime] ?? mime) as SupportedMimeTypes];
+    if (!load) return null;
+
+    const syntax = await load();
+    if ("token" in syntax) return StreamLanguage.define(syntax);
+
+    const extensions = Array.isArray(syntax) ? syntax : [ syntax ];
+    return extensions
+        .find((extension): extension is LanguageSupport => extension instanceof LanguageSupport)
+        ?.language ?? null;
+}
 
 export default byMimeType;

@@ -39,10 +39,6 @@
         transform: scaleX(-1);
     }
 
-    body.layout-vertical & {
-        border-bottom: 1px solid var(--status-bar-border-color);
-    }
-
     &.peek-pane-button-action-expand {
         background: var(--peek-button-expand-background-color);
 

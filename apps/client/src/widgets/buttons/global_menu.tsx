@@ -6,11 +6,17 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
 import Component from "../../components/component";
+import {
+    COLOR_SCHEME_CYCLE, COLOR_SCHEME_ICONS, ColorScheme, resolveColorScheme, THEME_FAMILY_SCHEMES
+} from "../../services/color_scheme";
 import { t } from "../../services/i18n";
 import utils, { isElectron, isMobile, isStandalone } from "../../services/utils";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "../react/FormList";
-import { useStaticTooltip, useStaticTooltipWithKeyboardShortcut, useTriliumOption, useTriliumOptionBool } from "../react/hooks";
+import {
+    useStaticTooltip, useStaticTooltipWithKeyboardShortcut, useTriliumOption, useTriliumOptionBool,
+    useUserThemes
+} from "../react/hooks";
 import { ParentComponent } from "../react/react_utils";
 
 interface MenuItemProps<T> {
@@ -60,6 +66,7 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
 
             {!isMobile() && <SwitchToOptions />}
             <MenuItem command="showLaunchBarSubtree" icon={`bx ${isMobile() ? "bx-mobile" : "bx-sidebar"}`} text={t("global_menu.configure_launchbar")} />
+            <ThemeMenu />
             <AdvancedMenu />
             <MenuItem command="showOptions" icon="bx bx-cog" text={t("global_menu.options")} />
             <FormDropdownDivider />
@@ -77,6 +84,60 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
 
             {!isElectron() && !isStandalone && <BrowserOnlyOptions />}
         </Dropdown>
+    );
+}
+
+/** Picks the color scheme and the theme. */
+function ThemeMenu() {
+    const [ theme, setTheme ] = useTriliumOption("theme");
+    const userThemes = useUserThemes();
+    const { family, scheme, isCustom } = resolveColorScheme(theme);
+    const schemeLabels: Record<ColorScheme, string> = {
+        system: t("theme.color_scheme_system"),
+        light: t("theme.color_scheme_light"),
+        dark: t("theme.color_scheme_dark")
+    };
+
+    return (
+        <FormDropdownSubmenu icon="bx bx-palette" title={t("global_menu.theme")}>
+            <FormListHeader text={t("theme.color_scheme")} />
+            {COLOR_SCHEME_CYCLE.map((value) => (
+                <FormListItem
+                    key={value}
+                    icon={COLOR_SCHEME_ICONS[value]}
+                    checkable
+                    checked={!isCustom && scheme === value}
+                    disabled={isCustom}
+                    disabledTooltip={t("theme.color_scheme_custom_disabled")}
+                    onClick={() => {
+                        if (family) void setTheme(THEME_FAMILY_SCHEMES[family][value]);
+                    }}
+                >
+                    {schemeLabels[value]}
+                </FormListItem>
+            ))}
+
+            <FormListHeader text={t("global_menu.theme")} />
+            <FormListItem
+                icon="bx bx-star"
+                checkable
+                checked={family === "modern"}
+                onClick={() => void setTheme(THEME_FAMILY_SCHEMES.modern[scheme])}
+            >
+                {t("theme.modern_themes")}
+            </FormListItem>
+            {userThemes.map((userTheme) => (
+                <FormListItem
+                    key={userTheme.val}
+                    icon={userTheme.icon}
+                    checkable
+                    checked={theme === userTheme.val}
+                    onClick={() => void setTheme(userTheme.val)}
+                >
+                    {userTheme.title}
+                </FormListItem>
+            ))}
+        </FormDropdownSubmenu>
     );
 }
 

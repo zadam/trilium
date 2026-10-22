@@ -1191,7 +1191,8 @@
     "toggle-zen-mode": "Zen mode",
     "new-version-available": "New update available",
     "download-update": "Get version {{latestVersion}}",
-    "search_notes": "Search notes"
+    "search_notes": "Search notes",
+    "theme": "Theme"
   },
   "zen_mode": {
     "button_exit": "Exit Zen Mode"
@@ -1205,9 +1206,9 @@
     "in_progress": "Sync with the server is in progress."
   },
   "left_pane_toggle": {
-    "show_panel": "Show panel",
+    "toggle": "Toggle tree pane",
     "hide_panel": "Hide panel",
-    "peek_panel": "Peek panel"
+    "peek_panel": "Peek tree panel"
   },
   "move_pane_button": {
     "move_left": "Move left",
@@ -2841,7 +2842,8 @@
     "subtree-hidden-tooltip_other": "{{count}} child notes that are hidden from the tree",
     "subtree-hidden-moved-title": "Added to {{title}}",
     "subtree-hidden-moved-description-collection": "This collection hides its child notes in the tree.",
-    "subtree-hidden-moved-description-other": "Child notes are hidden in the tree for this note."
+    "subtree-hidden-moved-description-other": "Child notes are hidden in the tree for this note.",
+    "show-all-notes": "Show all notes"
   },
   "mobile_note_navigator": {
     "back": "Go up one level",
@@ -2916,7 +2918,8 @@
     "reopen_last_tab": "Reopen last closed tab",
     "move_tab_to_new_window": "Move this tab to a new window",
     "copy_tab_to_new_window": "Copy this tab to a new window",
-    "new_tab": "New tab"
+    "new_tab": "New tab",
+    "leave_full_screen": "Leave full screen"
   },
   "toc": {
     "table_of_contents": "Table of Contents",

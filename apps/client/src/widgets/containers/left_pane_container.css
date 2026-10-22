@@ -4,6 +4,7 @@
     --left-pane-peek-border-radius: 8px;
 
     --left-pane-peek-button-collapse-background-color: var(--left-pane-background-color);
+    --left-pane-peek-button-vertical-background-color: transparent;
 }
 
 #left-pane {
@@ -25,8 +26,34 @@ body.layout-horizontal #horizontal-main-container {
     --peek-button-collapse-background-color: var(--left-pane-peek-button-collapse-background-color);
 }
 
-body.desktop.background-effects #horizontal-main-container:has(.note-split.visible.bgfx:not(.visible ~ .visible)) > .left-pane-peek-button {
+body.desktop.background-effects.layout-horizontal #horizontal-main-container:has(.note-split.visible.bgfx:not(.visible ~ .visible)) > .left-pane-peek-button {
     --peek-button-expand-background-color: var(--center-pane-background-color-bgfx, var(--main-background-color));
+}
+
+body.layout-vertical #horizontal-main-container {
+    --left-pane-peek-button-width: 12px;
+    --left-pane-peek-button-gutter: calc(var(--left-pane-peek-button-width) + 2px);
+
+    position: relative;
+
+    > .left-pane-peek-button {
+        --peek-button-expand-background-color: var(--left-pane-peek-button-vertical-background-color);
+
+        flex: none;
+        position: relative;
+    }
+
+    &:not(.left-pane-hidden) > .left-pane-peek-button {
+        display: none;
+    }
+
+    /* The Next theme sets the launcher's `--launcher-pane-size` from `--launcher-pane-vert-size`. */
+    > #left-pane-host.peek {
+        inset-inline-start: calc(
+            var(--launcher-pane-vert-size, var(--launcher-pane-size))
+            + var(--left-pane-peek-button-gutter)
+        );
+    }
 }
 
 #left-pane-host.peek {
