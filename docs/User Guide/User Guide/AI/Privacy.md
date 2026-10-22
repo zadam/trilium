@@ -55,6 +55,8 @@ The same applies to the <a class="reference-link" href="../Note%20Types/Text/In
 
 Add the `#excludeFromLlm` [label](../Advanced%20Usage/Attributes/Labels.md) to a note to hide it from the AI chat and the [MCP server](MCP.md). The label covers only that note: the notes below it stay visible unless you make the label [inheritable](../Advanced%20Usage/Attributes/Attribute%20Inheritance.md), and a child can opt back in with `#excludeFromLlm=false`.
 
+A note created from a template inherits all of the template's labels (see <a class="reference-link" href="../Advanced%20Usage/Templates.md">Templates</a>), so adding `#excludeFromLlm` to a template hides every note that uses it, not just the template.
+
 For an excluded note:
 
 *   The note tools report it as not found: it is left out of search results, child lists and subtrees, and relations that point to it are not shown.
@@ -67,6 +69,7 @@ Unlike a protected note, an excluded note stays hidden while your protected sess
 *   Files you attach to a message yourself.
 *   The <a class="reference-link" href="../Note%20Types/Text/In-editor%20AI%20assistant.md">In-editor AI assistant</a> when you run it inside the note.
 *   Text from the note that appears in other notes, such as a link with the note's title.
+*   What a search query can test. Search never returns an excluded note, but a query can still match a visible note through an excluded one: by its title in the note path, through a relation (`~link.title`), a parent or child (`note.parents.content`), or a label the visible note inherits from it. A model that guesses can learn whether an excluded note contains a given word.
 
 ## What you control
 
