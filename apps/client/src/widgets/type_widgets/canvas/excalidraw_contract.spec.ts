@@ -163,6 +163,27 @@ describe("Excalidraw contract of the canvas drawing", () => {
         expect(unpatched).toEqual([]);
     });
 
+    it("draws the scene and the new element in the layout effects of the Trilium patch", () => {
+        // What `StaticCanvas` and `NewElementCanvas` render right after the effect that draws them.
+        const markers = [
+            /classList\.add\("excalidraw__canvas", ?"static"\)/,
+            /className: ?"excalidraw__canvas",\s*style:/
+        ];
+        const unpatched = [ productionDir, developmentDir ].flatMap((dir) => {
+            const source = readBundle(dir, [ ".js" ]);
+            const layoutEffects = new Set([ ...source.matchAll(/useLayoutEffect as ([\w$]+)/g) ]
+                .map((match) => match[1]));
+            return markers.filter((marker) => {
+                const at = source.search(marker);
+                const start = Math.max(
+                    source.lastIndexOf("(()=>{", at), source.lastIndexOf("(() => {", at));
+                const hook = source.slice(Math.max(start - 64, 0), start).match(/[\w$]+$/)?.[0];
+                return at < 0 || !hook || !layoutEffects.has(hook);
+            }).map((marker) => `${dir}: ${marker.source}`);
+        });
+        expect(unpatched).toEqual([]);
+    });
+
     it("pans and zooms with the wheel through `translateCanvas()`, which the patch limits", () => {
         const source = readBundle(developmentDir, [ ".js" ]);
         const handleWheel = source.split("__publicField(this, \"handleWheel\"")[1]
