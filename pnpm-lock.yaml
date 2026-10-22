@@ -555,6 +555,9 @@ importers:
       electron:
         specifier: 44.9.0
         version: 44.9.0(supports-color@10.2.2)
+      typedoc:
+        specifier: 0.28.20
+        version: 0.28.20(typescript@6.0.3)
 
   apps/icon-pack-builder:
     dependencies:

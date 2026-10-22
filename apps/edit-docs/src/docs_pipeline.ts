@@ -19,6 +19,7 @@ import { deferred } from "../../../packages/commons/src/index.js";
 import { buildHelpBundle } from "./help_bundle_generator.js";
 import { buildHelpMeta, serializeHelpMeta, stripAppVersion } from "./help_meta_generator.js";
 import { openApiToMarkdown, type OpenApiSpec } from "./openapi_markdown.js";
+import { runTypeDoc, typeDocToMarkdown } from "./typedoc_markdown.js";
 
 export interface NoteMapping {
     rootNoteId: string;
@@ -35,6 +36,8 @@ export interface NoteMapping {
     helpContent?: string;
     /** Pages whose Markdown is generated from an OpenAPI document before every import. */
     openApiPages?: OpenApiPage[];
+    /** Pages whose Markdown is generated from TypeScript declarations before every import. */
+    typeDocPages?: TypeDocPage[];
 }
 
 export interface OpenApiPage {
@@ -42,6 +45,17 @@ export interface OpenApiPage {
     noteId: string;
     /** The OpenAPI document in YAML. Relative to the configuration file. */
     spec: string;
+}
+
+export interface TypeDocPage {
+    /** A text note of this mapping with a Markdown data file. */
+    noteId: string;
+    /** The module whose exports the page documents. Relative to the configuration file. */
+    entryPoint: string;
+    /** The tsconfig that compiles it. Relative to the configuration file. */
+    tsconfig: string;
+    /** The export the page starts with, followed by what it refers to. */
+    root?: string;
 }
 
 export interface Config {
@@ -72,7 +86,12 @@ export async function loadConfig(configPath?: string): Promise<Config> {
             path: path.resolve(configDir, mapping.path),
             helpMeta: mapping.helpMeta ? path.resolve(configDir, mapping.helpMeta) : undefined,
             helpContent: mapping.helpContent ? path.resolve(configDir, mapping.helpContent) : undefined,
-            openApiPages: mapping.openApiPages?.map((page) => ({ ...page, spec: path.resolve(configDir, page.spec) }))
+            openApiPages: mapping.openApiPages?.map((page) => ({ ...page, spec: path.resolve(configDir, page.spec) })),
+            typeDocPages: mapping.typeDocPages?.map((page) => ({
+                ...page,
+                entryPoint: path.resolve(configDir, page.entryPoint),
+                tsconfig: path.resolve(configDir, page.tsconfig)
+            }))
         }))
     };
 }
@@ -149,7 +168,7 @@ export async function importData(path: string) {
 export async function importMappings(mappings: NoteMapping[]) {
     for (const mapping of mappings) {
         if (!mapping.exportOnly) {
-            await writeOpenApiPages(mapping);
+            await writeGeneratedPages(mapping);
             await importData(mapping.path);
         }
     }
@@ -162,21 +181,30 @@ export async function exportMappings(mappings: NoteMapping[], baseUrl: string) {
     }
 }
 
-/** Regenerates the Markdown of the mapping's `openApiPages` from their OpenAPI documents. */
-async function writeOpenApiPages(mapping: NoteMapping) {
-    if (!mapping.openApiPages?.length) {
+/** Regenerates the Markdown of the mapping's `openApiPages` and `typeDocPages` from their sources. */
+async function writeGeneratedPages(mapping: NoteMapping) {
+    const pages = [
+        ...(mapping.openApiPages ?? []).map((page) => ({
+            noteId: page.noteId,
+            render: async () => openApiToMarkdown(load(await fs.readFile(page.spec, "utf-8")) as OpenApiSpec)
+        })),
+        ...(mapping.typeDocPages ?? []).map((page) => ({
+            noteId: page.noteId,
+            render: async () => typeDocToMarkdown(await runTypeDoc(page.entryPoint, page.tsconfig), page.root)
+        }))
+    ];
+    if (!pages.length) {
         return;
     }
 
     const meta = JSON.parse(await fs.readFile(path.join(mapping.path, "!!!meta.json"), "utf-8")) as NoteMetaFile;
-    for (const page of mapping.openApiPages) {
+    for (const page of pages) {
         const dataFile = findDataFile(meta.files, page.noteId);
         if (!dataFile?.endsWith(".md")) {
-            throw new Error(`OpenAPI page ${page.noteId} needs a Markdown data file in ${mapping.path}.`);
+            throw new Error(`Generated page ${page.noteId} needs a Markdown data file in ${mapping.path}.`);
         }
 
-        const spec = load(await fs.readFile(page.spec, "utf-8")) as OpenApiSpec;
-        await fs.writeFile(path.join(mapping.path, dataFile), openApiToMarkdown(spec));
+        await fs.writeFile(path.join(mapping.path, dataFile), await page.render());
     }
 }
 
