@@ -72,7 +72,7 @@
     "terra-draw-maplibre-gl-adapter": "1.5.0"
   },
   "devDependencies": {
-    "@ckeditor/ckeditor5-inspector": "5.0.3",
+    "@ckeditor/ckeditor5-inspector": "5.0.4",
     "@codecov/vite-plugin": "2.0.1",
     "@prefresh/vite": "4.0.1",
     "@types/bootstrap": "5.2.11",

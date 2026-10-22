@@ -366,8 +366,8 @@ importers:
         version: 1.5.0(maplibre-gl@6.14.0)(terra-draw@1.37.0)
     devDependencies:
       '@ckeditor/ckeditor5-inspector':
-        specifier: 5.0.3
-        version: 5.0.3
+        specifier: 5.0.4
+        version: 5.0.4
       '@codecov/vite-plugin':
         specifier: 2.0.1
         version: 2.0.1(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.2)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
@@ -986,8 +986,8 @@ importers:
         version: 1.0.6
     devDependencies:
       '@ckeditor/ckeditor5-inspector':
-        specifier: 5.0.3
-        version: 5.0.3
+        specifier: 5.0.4
+        version: 5.0.4
       '@codecov/vite-plugin':
         specifier: 2.0.1
         version: 2.0.1(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.105.2)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
@@ -2016,8 +2016,8 @@ packages:
   '@ckeditor/ckeditor5-indent@49.0.0':
     resolution: {integrity: sha512-epGhoMLdSLaOawAZ+xe/mdlGYaHjFR70pcG5EcbiawcfYIj3sJiNbaaCL3eL+WO0R/+FGJHNwcLWnoq2S90TaQ==}
 
-  '@ckeditor/ckeditor5-inspector@5.0.3':
-    resolution: {integrity: sha512-DEVKf/yE3udEwc/YK3hDBrfV05l5TcB8DEtwoCe1jrzO2mebZb0LnpIpHXGOJPUc+7tCB2dwhXaNA4/AZLT7Xw==}
+  '@ckeditor/ckeditor5-inspector@5.0.4':
+    resolution: {integrity: sha512-GVGXNQcA9ZJLC1Hv1p2ckHyGC7ttaFUF8k8SxCINhm1/4rlwDm7MDKaW7bFfRlNMhGsYcmtnmiB3LWJ7ryMF7g==}
     bundledDependencies:
       - copy-to-clipboard
       - es-toolkit
@@ -12654,7 +12654,7 @@ snapshots:
       '@ckeditor/ckeditor5-ui': 49.0.0
       '@ckeditor/ckeditor5-utils': 49.0.0
 
-  '@ckeditor/ckeditor5-inspector@5.0.3': {}
+  '@ckeditor/ckeditor5-inspector@5.0.4': {}
 
   '@ckeditor/ckeditor5-language@49.0.0':
     dependencies:
