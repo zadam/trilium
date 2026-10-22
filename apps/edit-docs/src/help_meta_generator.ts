@@ -133,6 +133,10 @@ function parseNoteMeta(
                 value: absolutiseUrl(attribute.value, baseUrl)
             });
         }
+
+        if (attribute.type === "label" && attribute.name === "fullContentWidth") {
+            attributes.push({ type: "label", name: "fullContentWidth", value: attribute.value });
+        }
     }
 
     if (shareAlias && currentUrl) {
