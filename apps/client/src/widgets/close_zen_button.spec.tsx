@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import Component from "../../components/component";
-import { renderInto } from "../../test/render";
-import { ParentComponent } from "../react/react_utils";
-import LeaveFullScreenButton from "./leave_full_screen_button";
+import Component from "../components/component";
+import { renderInto } from "../test/render";
+import { LeaveFullScreenButton } from "./close_zen_button";
+import { ParentComponent } from "./react/react_utils";
 
 describe("LeaveFullScreenButton", () => {
     it("renders a tab bar button that toggles full screen", () => {

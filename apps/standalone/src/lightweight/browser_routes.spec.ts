@@ -82,6 +82,13 @@ describe("registerRoutes (real wiring)", () => {
         expect(parseJson(res.body)).toBeTypeOf("object");
     });
 
+    // `search()` writes `res.locals` for the server's request log, as any handler can on Express.
+    it("passes a response to an apiRoute handler", async () => {
+        const res = await router.dispatch("GET", "http://localhost/api/search?searchString=root");
+        expect(res.status).toBe(200);
+        expect(parseJson(res.body)).toBeInstanceOf(Array);
+    });
+
     it("returns the full bootstrap payload when the database is initialized", async () => {
         const data = parseJson((await router.dispatch("GET", "http://localhost/bootstrap")).body) as Record<string, unknown>;
         expect(data.isStandalone).toBe(true);
