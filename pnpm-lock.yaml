@@ -757,8 +757,8 @@ importers:
         specifier: 4.0.3
         version: 4.0.3
       ejs:
-        specifier: 7.0.1
-        version: 7.0.1
+        specifier: 7.0.2
+        version: 7.0.2
       express:
         specifier: 5.3.0
         version: 5.3.0(supports-color@10.2.2)
@@ -1407,8 +1407,8 @@ importers:
         specifier: 3.1.5
         version: 3.1.5
       ejs:
-        specifier: 7.0.1
-        version: 7.0.1
+        specifier: 7.0.2
+        version: 7.0.2
       happy-dom:
         specifier: 21.0.3
         version: 21.0.3
@@ -1485,8 +1485,8 @@ importers:
         specifier: 5.0.3
         version: 5.0.3
       ejs:
-        specifier: 7.0.1
-        version: 7.0.1
+        specifier: 7.0.2
+        version: 7.0.2
       escape-html:
         specifier: 1.0.3
         version: 1.0.3
@@ -7014,8 +7014,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  ejs@7.0.1:
-    resolution: {integrity: sha512-TrAb1fY4jNY6aQrNjMJsoWQxGUK47A38JxuUvnt75vDcAA9Ln7ur6FHo+irVa5Bwd3w9rdUT3xLSl5MRgHIugg==}
+  ejs@7.0.2:
+    resolution: {integrity: sha512-LcDSEP6Oclb9sTiSyG0MpG0RuKvLDRxCOOt+2sIk+kdk1rMkFU8SRnT0qaNt5zvU0LOV1YXXOvIoZL/sKwabvw==}
     engines: {node: '>=0.12.18'}
     hasBin: true
 
@@ -18895,7 +18895,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  ejs@7.0.1: {}
+  ejs@7.0.2: {}
 
   electron-debug@5.0.0:
     dependencies:
