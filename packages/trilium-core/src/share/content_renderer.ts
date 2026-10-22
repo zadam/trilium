@@ -372,9 +372,7 @@ function renderNoteContentInternal(note: SNote | BNote, renderArgs: RenderArgs) 
         toc: getTableOfContents(headings),
         isPageInNavigation: hasActiveItem(navigation)
     };
-    return ejs.render(readShareTemplate("page"), pageOpts, {
-        includer: (path) => ({ template: readShareTemplate(path) })
-    });
+    return renderShareTemplate("page", pageOpts);
 }
 
 /**
@@ -439,6 +437,30 @@ const HEADING_FORMATTING = {
 export function readShareTemplate(name: string) {
     return getShareProvider().readTemplate(name);
 }
+
+/**
+ * Renders the share theme's EJS template of that name with `data`. Each template text compiles
+ * once, so a template edited in development compiles again. The templates' `include()` resolves
+ * to the `include` passed in `data`, which the template's `with (locals)` block finds before EJS's
+ * own: EJS compiles an included template again on every call, and its `filename` cache needs
+ * `fs.existsSync`, which the browser build of EJS lacks.
+ */
+export function renderShareTemplate(name: string, data: ejs.Data): string {
+    const template = readShareTemplate(name);
+    let render = compiledShareTemplates.get(template);
+    if (!render) {
+        render = ejs.compile(template);
+        compiledShareTemplates.set(template, render);
+    }
+
+    return render({
+        ...data,
+        include: (path: string, includeData?: ejs.Data) =>
+            renderShareTemplate(path, { ...data, ...includeData })
+    });
+}
+
+const compiledShareTemplates = new Map<string, ejs.TemplateFunction>();
 
 /**
  * Returns the prefix the share theme resolves built-in assets against. The share pages live one

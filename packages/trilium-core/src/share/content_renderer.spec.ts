@@ -16,8 +16,8 @@ import * as utils from "../services/utils/index.js";
 import { buildNote } from "../test/becca_easy_mocking.js";
 import { buildShareNote, buildShareNotes } from "../test/shaca_mocking.js";
 import {
-    assetUrlFragment, ensureShareHighlighting, getContent, preparePageContent, readShareTemplate,
-    renderCode, renderNoteContent, renderNoteForExport, type Result
+    assetUrlFragment, ensureShareHighlighting, getContent, preparePageContent, renderCode,
+    renderNoteContent, renderNoteForExport, renderShareTemplate, type Result
 } from "./content_renderer.js";
 import type SNote from "./shaca/entities/snote.js";
 import shaca from "./shaca/shaca.js";
@@ -1622,7 +1622,7 @@ describe("content_renderer", () => {
             const note = shaca.getNote(noteId);
             const { header, content, isEmpty } = getContent(note);
 
-            const html = ejs.render(readShareTemplate("page"), {
+            const html = renderShareTemplate("page", {
                 note,
                 header,
                 content,
@@ -1660,14 +1660,33 @@ describe("content_renderer", () => {
                 headings: [],
                 toc: [],
                 isPageInNavigation: false
-            }, {
-                includer: (path: string) => ({
-                    template: readShareTemplate(path)
-                })
             });
 
             return parse(html).querySelectorAll("#childLinks a");
         }
+    });
+
+    describe("renderShareTemplate", () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it("compiles a template once per text, passing include data down nested includes", () => {
+            const templates: Record<string, string> = {
+                outer: `<%= title %>:<%- include("item", { depth: 1 }) %>`,
+                item: `[<%= depth %><% if (depth < 3) { %><%- include("item", { depth: depth + 1 }) %><% } %>]`
+            };
+            vi.spyOn(getShareProvider(), "readTemplate").mockImplementation((name) => templates[name]);
+            const compile = vi.spyOn(ejs, "compile");
+
+            expect(renderShareTemplate("outer", { title: "T" })).toBe("T:[1[2[3]]]");
+            expect(renderShareTemplate("outer", { title: "U" })).toBe("U:[1[2[3]]]");
+            expect(compile).toHaveBeenCalledTimes(2);
+
+            templates.item = `(<%= title %>)`;
+            expect(renderShareTemplate("outer", { title: "V" })).toBe("V:(V)");
+            expect(compile).toHaveBeenCalledTimes(3);
+        });
     });
 });
 
