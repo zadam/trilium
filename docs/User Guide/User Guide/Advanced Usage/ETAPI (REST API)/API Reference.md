@@ -13,7 +13,9 @@ HTTP `basic` authentication.
 
 Basic Auth where username is arbitrary string (e.g. "trilium", not checked), username is the ETAPI token. To emphasize, do not use Trilium password here (won't work), only the generated ETAPI token (from Options -> ETAPI)
 
-## Endpoints
+## Notes
+
+Notes and their content, and the import and export of whole subtrees.
 
 ### `createNote`
 
@@ -670,156 +672,6 @@ Imports ZIP file into a given note.
 }
 ```
 
-### `createRevision`
-
-`POST /notes/{noteId}/revision`
-
-Create a note revision for the given note
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
-| `format` | query | `any` | One of `html`, `markdown`. |
-
-**Responses**
-
-*   `204`: revision has been created
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
-
-### `getNoteRevisions`
-
-`GET /notes/{noteId}/revisions`
-
-Returns the revisions of a note identified by its ID. Protected revisions are omitted, since they cannot be read through ETAPI individually either.
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
-
-**Responses**
-
-*   `200`: list of revisions
-    
-    *   `application/json; charset=utf-8`: `array of Revision`
-
-```json
-[
-    {
-        "revisionId": "evnnmvHTCgIn",
-        "noteId": "evnnmvHTCgIn",
-        "type": "text",
-        "mime": "string",
-        "isProtected": true,
-        "title": "string",
-        "blobId": "string",
-        "dateLastEdited": "2021-12-31 20:18:11.930+0100",
-        "dateCreated": "2021-12-31 20:18:11.930+0100",
-        "utcDateLastEdited": "2021-12-31 19:18:11.930Z",
-        "utcDateCreated": "2021-12-31 19:18:11.930Z",
-        "utcDateModified": "2021-12-31 19:18:11.930Z",
-        "contentLength": 0
-    }
-]
-```
-
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
-
-### `getNoteAttachments`
-
-`GET /notes/{noteId}/attachments`
-
-Returns all attachments for a note identified by its ID
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
-
-**Responses**
-
-*   `200`: list of attachments
-    
-    *   `application/json; charset=utf-8`: `array of Attachment`
-
-```json
-[
-    {
-        "attachmentId": "evnnmvHTCgIn",
-        "ownerId": "evnnmvHTCgIn",
-        "role": "string",
-        "mime": "string",
-        "title": "string",
-        "position": 0,
-        "blobId": "string",
-        "dateModified": "2021-12-31 20:18:11.930+0100",
-        "utcDateModified": "2021-12-31 19:18:11.930Z",
-        "utcDateScheduledForErasureSince": "2021-12-31 19:18:11.930Z",
-        "contentLength": 0
-    }
-]
-```
-
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
-
 ### `undeleteNote`
 
 `POST /notes/{noteId}/undelete`
@@ -922,114 +774,9 @@ Returns recent changes including note creations, modifications, and deletions
 }
 ```
 
-### `getRevisionById`
+## Branches
 
-`GET /revisions/{revisionId}`
-
-Returns a revision identified by its ID
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `revisionId`  <br>_required_ | path | `EntityId` |  |
-
-**Responses**
-
-*   `200`: revision response
-    
-    *   `application/json; charset=utf-8`: `Revision`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `revisionId` | `EntityId` |  |
-| `noteId` | `EntityId` |  |
-| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` |  |
-| `isProtected` | `boolean` |  |
-| `title` | `string` |  |
-| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-| `dateLastEdited` | `LocalDateTime` |  |
-| `dateCreated` | `LocalDateTime` |  |
-| `utcDateLastEdited` | `UtcDateTime` |  |
-| `utcDateCreated` | `UtcDateTime` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-| `contentLength` | `integer (int32)` |  |
-
-```json
-{
-    "revisionId": "evnnmvHTCgIn",
-    "noteId": "evnnmvHTCgIn",
-    "type": "text",
-    "mime": "string",
-    "isProtected": true,
-    "title": "string",
-    "blobId": "string",
-    "dateLastEdited": "2021-12-31 20:18:11.930+0100",
-    "dateCreated": "2021-12-31 20:18:11.930+0100",
-    "utcDateLastEdited": "2021-12-31 19:18:11.930Z",
-    "utcDateCreated": "2021-12-31 19:18:11.930Z",
-    "utcDateModified": "2021-12-31 19:18:11.930Z",
-    "contentLength": 0
-}
-```
-
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
-
-### `getRevisionContent`
-
-`GET /revisions/{revisionId}/content`
-
-Returns revision content identified by its ID
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `revisionId`  <br>_required_ | path | `EntityId` |  |
-
-**Responses**
-
-*   `200`: revision content response
-    
-    *   `text/html`: `string`
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
+Branches place a note in the tree, under a parent note.
 
 ### `postBranch`
 
@@ -1292,6 +1039,372 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
     "isExpanded": true,
     "utcDateModified": "2021-12-31 19:18:11.930Z"
 }
+```
+
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+### `postRefreshNoteOrdering`
+
+`POST /refresh-note-ordering/{parentNoteId}`
+
+notePositions in branches are not automatically pushed to connected clients and need a specific instruction. If you want your changes to be in effect immediately, call this service after setting branches' notePosition. Note that you need to supply "parentNoteId" of branch(es) with changed positions.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Parameters**
+
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `parentNoteId`  <br>_required_ | path | `EntityId` |  |
+
+**Responses**
+
+*   `204`: note ordering will be asynchronously updated in all connected clients
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+## Attributes
+
+Labels and relations of a note.
+
+### `postAttribute`
+
+`POST /attributes`
+
+create an attribute for a given note
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Request body** (required)
+
+*   `application/json`: `Attribute`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true
+}
+```
+
+**Responses**
+
+*   `201`: attribute created
+    
+    *   `application/json; charset=utf-8`: `Attribute`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+### `getAttributeById`
+
+`GET /attributes/{attributeId}`
+
+Returns an attribute identified by its ID
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Parameters**
+
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attributeId`  <br>_required_ | path | `EntityId` |  |
+
+**Responses**
+
+*   `200`: attribute response
+    
+    *   `application/json; charset=utf-8`: `Attribute`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+### `deleteAttributeById`
+
+`DELETE /attributes/{attributeId}`
+
+deletes an attribute based on the attributeId supplied.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Parameters**
+
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attributeId`  <br>_required_ | path | `EntityId` |  |
+
+**Responses**
+
+*   `204`: attribute deleted
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+### `patchAttributeById`
+
+`PATCH /attributes/{attributeId}`
+
+patch an attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Parameters**
+
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attributeId`  <br>_required_ | path | `EntityId` |  |
+
+**Request body** (required)
+
+*   `application/json`: `Attribute`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true
+}
+```
+
+**Responses**
+
+*   `200`: attribute updated
+    
+    *   `application/json; charset=utf-8`: `Attribute`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+## Attachments
+
+Files attached to a note.
+
+### `getNoteAttachments`
+
+`GET /notes/{noteId}/attachments`
+
+Returns all attachments for a note identified by its ID
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Parameters**
+
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
+
+**Responses**
+
+*   `200`: list of attachments
+    
+    *   `application/json; charset=utf-8`: `array of Attachment`
+
+```json
+[
+    {
+        "attachmentId": "evnnmvHTCgIn",
+        "ownerId": "evnnmvHTCgIn",
+        "role": "string",
+        "mime": "string",
+        "title": "string",
+        "position": 0,
+        "blobId": "string",
+        "dateModified": "2021-12-31 20:18:11.930+0100",
+        "utcDateModified": "2021-12-31 19:18:11.930Z",
+        "utcDateScheduledForErasureSince": "2021-12-31 19:18:11.930Z",
+        "contentLength": 0
+    }
+]
 ```
 
 *   `default`: unexpected error
@@ -1644,67 +1757,155 @@ New content of the attachment. Send text as `text/plain` and binary data (such a
 
 *   `204`: attachment content updated
 
-### `postAttribute`
+## Revisions
 
-`POST /attributes`
+Snapshots of a note's content.
 
-create an attribute for a given note
+### `createRevision`
+
+`POST /notes/{noteId}/revision`
+
+Create a note revision for the given note
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Request body** (required)
+**Parameters**
 
-*   `application/json`: `Attribute`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-
-```json
-{
-    "attributeId": "evnnmvHTCgIn",
-    "type": "label",
-    "name": "shareCss",
-    "value": "string",
-    "position": 0,
-    "isInheritable": true
-}
-```
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
+| `format` | query | `any` | One of `html`, `markdown`. |
 
 **Responses**
 
-*   `201`: attribute created
+*   `204`: revision has been created
+*   `default`: unexpected error
     
-    *   `application/json; charset=utf-8`: `Attribute`
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ```json
 {
-    "attributeId": "evnnmvHTCgIn",
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+### `getNoteRevisions`
+
+`GET /notes/{noteId}/revisions`
+
+Returns the revisions of a note identified by its ID. Protected revisions are omitted, since they cannot be read through ETAPI individually either.
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Parameters**
+
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
+
+**Responses**
+
+*   `200`: list of revisions
+    
+    *   `application/json; charset=utf-8`: `array of Revision`
+
+```json
+[
+    {
+        "revisionId": "evnnmvHTCgIn",
+        "noteId": "evnnmvHTCgIn",
+        "type": "text",
+        "mime": "string",
+        "isProtected": true,
+        "title": "string",
+        "blobId": "string",
+        "dateLastEdited": "2021-12-31 20:18:11.930+0100",
+        "dateCreated": "2021-12-31 20:18:11.930+0100",
+        "utcDateLastEdited": "2021-12-31 19:18:11.930Z",
+        "utcDateCreated": "2021-12-31 19:18:11.930Z",
+        "utcDateModified": "2021-12-31 19:18:11.930Z",
+        "contentLength": 0
+    }
+]
+```
+
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
+### `getRevisionById`
+
+`GET /revisions/{revisionId}`
+
+Returns a revision identified by its ID
+
+**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
+
+**Parameters**
+
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `revisionId`  <br>_required_ | path | `EntityId` |  |
+
+**Responses**
+
+*   `200`: revision response
+    
+    *   `application/json; charset=utf-8`: `Revision`
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `revisionId` | `EntityId` |  |
+| `noteId` | `EntityId` |  |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `title` | `string` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateLastEdited` | `LocalDateTime` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `utcDateLastEdited` | `UtcDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
+
+```json
+{
+    "revisionId": "evnnmvHTCgIn",
     "noteId": "evnnmvHTCgIn",
-    "type": "label",
-    "name": "shareCss",
-    "value": "string",
-    "position": 0,
-    "isInheritable": true,
-    "utcDateModified": "2021-12-31 19:18:11.930Z"
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "title": "string",
+    "blobId": "string",
+    "dateLastEdited": "2021-12-31 20:18:11.930+0100",
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "utcDateLastEdited": "2021-12-31 19:18:11.930Z",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z",
+    "contentLength": 0
 }
 ```
 
@@ -1726,11 +1927,11 @@ create an attribute for a given note
 }
 ```
 
-### `getAttributeById`
+### `getRevisionContent`
 
-`GET /attributes/{attributeId}`
+`GET /revisions/{revisionId}/content`
 
-Returns an attribute identified by its ID
+Returns revision content identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
@@ -1738,38 +1939,13 @@ Returns an attribute identified by its ID
 
 | Name | In | Type | Description |
 | --- | --- | --- | --- |
-| `attributeId`  <br>_required_ | path | `EntityId` |  |
+| `revisionId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
-*   `200`: attribute response
+*   `200`: revision content response
     
-    *   `application/json; charset=utf-8`: `Attribute`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-
-```json
-{
-    "attributeId": "evnnmvHTCgIn",
-    "noteId": "evnnmvHTCgIn",
-    "type": "label",
-    "name": "shareCss",
-    "value": "string",
-    "position": 0,
-    "isInheritable": true,
-    "utcDateModified": "2021-12-31 19:18:11.930Z"
-}
-```
-
+    *   `text/html`: `string`
 *   `default`: unexpected error
     
     *   `application/json; charset=utf-8`: `Error`
@@ -1788,163 +1964,9 @@ Returns an attribute identified by its ID
 }
 ```
 
-### `deleteAttributeById`
+## Calendar
 
-`DELETE /attributes/{attributeId}`
-
-deletes an attribute based on the attributeId supplied.
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attributeId`  <br>_required_ | path | `EntityId` |  |
-
-**Responses**
-
-*   `204`: attribute deleted
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
-
-### `patchAttributeById`
-
-`PATCH /attributes/{attributeId}`
-
-patch an attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attributeId`  <br>_required_ | path | `EntityId` |  |
-
-**Request body** (required)
-
-*   `application/json`: `Attribute`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-
-```json
-{
-    "attributeId": "evnnmvHTCgIn",
-    "type": "label",
-    "name": "shareCss",
-    "value": "string",
-    "position": 0,
-    "isInheritable": true
-}
-```
-
-**Responses**
-
-*   `200`: attribute updated
-    
-    *   `application/json; charset=utf-8`: `Attribute`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-
-```json
-{
-    "attributeId": "evnnmvHTCgIn",
-    "noteId": "evnnmvHTCgIn",
-    "type": "label",
-    "name": "shareCss",
-    "value": "string",
-    "position": 0,
-    "isInheritable": true,
-    "utcDateModified": "2021-12-31 19:18:11.930Z"
-}
-```
-
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
-
-### `postRefreshNoteOrdering`
-
-`POST /refresh-note-ordering/{parentNoteId}`
-
-notePositions in branches are not automatically pushed to connected clients and need a specific instruction. If you want your changes to be in effect immediately, call this service after setting branches' notePosition. Note that you need to supply "parentNoteId" of branch(es) with changed positions.
-
-**Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
-
-**Parameters**
-
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `parentNoteId`  <br>_required_ | path | `EntityId` |  |
-
-**Responses**
-
-*   `204`: note ordering will be asynchronously updated in all connected clients
-*   `default`: unexpected error
-    
-    *   `application/json; charset=utf-8`: `Error`
-
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
-
-```json
-{
-    "status": 400,
-    "code": "NOTE_IS_PROTECTED",
-    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
-}
-```
+Day, week, month and year notes of the journal, and the inbox note.
 
 ### `getInboxNote`
 
@@ -2516,6 +2538,10 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 }
 ```
 
+## Tokens
+
+Obtaining and revoking ETAPI tokens with the password.
+
 ### `login`
 
 `POST /auth/login`
@@ -2601,6 +2627,10 @@ logout (delete/deactivate) an ETAPI token
     "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
 }
 ```
+
+## Application
+
+Information about the instance, backups and metrics.
 
 ### `getAppInfo`
 

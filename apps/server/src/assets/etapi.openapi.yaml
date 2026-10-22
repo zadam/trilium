@@ -16,10 +16,28 @@ servers:
 security:
     - EtapiTokenAuth: []
     - EtapiBasicAuth: []
+tags:
+    - name: Notes
+      description: Notes and their content, and the import and export of whole subtrees.
+    - name: Branches
+      description: Branches place a note in the tree, under a parent note.
+    - name: Attributes
+      description: Labels and relations of a note.
+    - name: Attachments
+      description: Files attached to a note.
+    - name: Revisions
+      description: Snapshots of a note's content.
+    - name: Calendar
+      description: Day, week, month and year notes of the journal, and the inbox note.
+    - name: Tokens
+      description: Obtaining and revoking ETAPI tokens with the password.
+    - name: Application
+      description: Information about the instance, backups and metrics.
 paths:
     /create-note:
         post:
             description: Create a note and place it into the note tree
+            tags: [Notes]
             operationId: createNote
             requestBody:
                 required: true
@@ -43,6 +61,7 @@ paths:
     /notes:
         get:
             description: Search notes
+            tags: [Notes]
             operationId: searchNotes
             parameters:
                 - name: search
@@ -176,6 +195,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns a note identified by its ID
+            tags: [Notes]
             operationId: getNoteById
             responses:
                 "200":
@@ -192,6 +212,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
         patch:
             description: patch a note identified by the noteId with changes in the body
+            tags: [Notes]
             operationId: patchNoteById
             requestBody:
                 required: true
@@ -214,6 +235,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
         delete:
             description: deletes a single note based on the noteId supplied
+            tags: [Notes]
             operationId: deleteNoteById
             responses:
                 "204":
@@ -233,6 +255,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns note content identified by its ID
+            tags: [Notes]
             operationId: getNoteContent
             responses:
                 "200":
@@ -244,6 +267,7 @@ paths:
                                 format: binary
         put:
             description: Updates note content identified by its ID
+            tags: [Notes]
             operationId: putNoteContentById
             requestBody:
                 description: >
@@ -280,6 +304,7 @@ paths:
                   default: html
         get:
             description: Exports ZIP file export of a given note subtree. To export whole document, use "root" for noteId
+            tags: [Notes]
             operationId: exportNoteSubtree
             responses:
                 "200":
@@ -304,6 +329,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         post:
             description: Imports ZIP file into a given note.
+            tags: [Notes]
             operationId: importZip
             responses:
                 "201":
@@ -335,6 +361,7 @@ paths:
                   default: html
         post:
             description: Create a note revision for the given note
+            tags: [Revisions]
             operationId: createRevision
             responses:
                 "204":
@@ -356,6 +383,7 @@ paths:
             description: |
                 Returns the revisions of a note identified by its ID. Protected revisions are
                 omitted, since they cannot be read through ETAPI individually either.
+            tags: [Revisions]
             operationId: getNoteRevisions
             responses:
                 "200":
@@ -381,6 +409,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns all attachments for a note identified by its ID
+            tags: [Attachments]
             operationId: getNoteAttachments
             responses:
                 "200":
@@ -406,6 +435,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         post:
             description: Restore a deleted note. The note must be deleted and must have at least one undeleted parent.
+            tags: [Notes]
             operationId: undeleteNote
             responses:
                 "200":
@@ -427,6 +457,7 @@ paths:
     /notes/history:
         get:
             description: Returns recent changes including note creations, modifications, and deletions
+            tags: [Notes]
             operationId: getNoteHistory
             parameters:
                 - name: ancestorNoteId
@@ -459,6 +490,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns a revision identified by its ID
+            tags: [Revisions]
             operationId: getRevisionById
             responses:
                 "200":
@@ -482,6 +514,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns revision content identified by its ID
+            tags: [Revisions]
             operationId: getRevisionContent
             responses:
                 "200":
@@ -502,6 +535,7 @@ paths:
                 Create a branch (clone a note to a different location in the tree).
                 In case there is a branch between parent note and child note already,
                 then this will update the existing branch with prefix, notePosition and isExpanded.
+            tags: [Branches]
             operationId: postBranch
             requestBody:
                 required: true
@@ -537,6 +571,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns a branch identified by its ID
+            tags: [Branches]
             operationId: getBranchById
             responses:
                 "200":
@@ -553,6 +588,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
         patch:
             description: patch a branch identified by the branchId with changes in the body. Only prefix and notePosition can be updated. If you want to update other properties, you need to delete the old branch and create a new one.
+            tags: [Branches]
             operationId: patchBranchById
             requestBody:
                 required: true
@@ -577,6 +613,7 @@ paths:
             description: >
                 deletes a branch based on the branchId supplied. If this is the last branch of the (child) note,
                 then the note is deleted as well.
+            tags: [Branches]
             operationId: deleteBranchById
             responses:
                 "204":
@@ -590,6 +627,7 @@ paths:
     /attachments:
         post:
             description: create an attachment
+            tags: [Attachments]
             operationId: postAttachment
             requestBody:
                 required: true
@@ -619,6 +657,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns an attachment identified by its ID
+            tags: [Attachments]
             operationId: getAttachmentById
             responses:
                 "200":
@@ -635,6 +674,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
         patch:
             description: patch an attachment identified by the attachmentId with changes in the body. Only role, mime, title, and position are patchable.
+            tags: [Attachments]
             operationId: patchAttachmentById
             requestBody:
                 required: true
@@ -657,6 +697,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
         delete:
             description: deletes an attachment based on the attachmentId supplied.
+            tags: [Attachments]
             operationId: deleteAttachmentById
             responses:
                 "204":
@@ -676,6 +717,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns attachment content identified by its ID
+            tags: [Attachments]
             operationId: getAttachmentContent
             responses:
                 "200":
@@ -687,6 +729,7 @@ paths:
                                 format: binary
         put:
             description: Updates attachment content identified by its ID
+            tags: [Attachments]
             operationId: putAttachmentContentById
             requestBody:
                 description: >
@@ -708,6 +751,7 @@ paths:
     /attributes:
         post:
             description: create an attribute for a given note
+            tags: [Attributes]
             operationId: postAttribute
             requestBody:
                 required: true
@@ -737,6 +781,7 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             description: Returns an attribute identified by its ID
+            tags: [Attributes]
             operationId: getAttributeById
             responses:
                 "200":
@@ -753,6 +798,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
         patch:
             description: patch an attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
+            tags: [Attributes]
             operationId: patchAttributeById
             requestBody:
                 required: true
@@ -775,6 +821,7 @@ paths:
                                 $ref: "#/components/schemas/Error"
         delete:
             description: deletes an attribute based on the attributeId supplied.
+            tags: [Attributes]
             operationId: deleteAttributeById
             responses:
                 "204":
@@ -797,6 +844,7 @@ paths:
                 notePositions in branches are not automatically pushed to connected clients and need a specific instruction.
                 If you want your changes to be in effect immediately, call this service after setting branches' notePosition.
                 Note that you need to supply "parentNoteId" of branch(es) with changed positions.
+            tags: [Branches]
             operationId: postRefreshNoteOrdering
             responses:
                 "204":
@@ -813,6 +861,7 @@ paths:
                 returns an "inbox" note, into which note can be created. Date will be used depending on whether the inbox
                 is a fixed note (identified with #inbox label) or a day note in a journal. A database with neither
                 returns the root note, and ignores the date, rather than creating a journal to hold a day note.
+            tags: [Calendar]
             operationId: getInboxNote
             parameters:
                 - name: date
@@ -838,6 +887,7 @@ paths:
     /calendar/days/{date}:
         get:
             description: returns a day note for a given date. Gets created if doesn't exist.
+            tags: [Calendar]
             operationId: getDayNote
             parameters:
                 - name: date
@@ -868,6 +918,7 @@ paths:
                 the configured first day of week. The note is created if it doesn't exist. This returns a
                 day note, not a week note, so unlike /calendar/weeks/{week} it does not require the
                 enableWeekNote label on the calendar root.
+            tags: [Calendar]
             operationId: getWeekFirstDayNote
             parameters:
                 - name: date
@@ -895,6 +946,7 @@ paths:
         get:
             summary: Get a week note
             description: Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The note is created if it doesn't exist.
+            tags: [Calendar]
             operationId: getWeekNote
             parameters:
                 - name: week
@@ -922,6 +974,7 @@ paths:
         get:
             summary: Get a month note
             description: Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note is created if it doesn't exist.
+            tags: [Calendar]
             operationId: getMonthNote
             parameters:
                 - name: month
@@ -948,6 +1001,7 @@ paths:
         get:
             summary: Get a year note
             description: Returns a year note for a given year (format YYYY, e.g., 2022). The note is created if it doesn't exist.
+            tags: [Calendar]
             operationId: getYearNote
             parameters:
                 - name: year
@@ -973,6 +1027,7 @@ paths:
     /auth/login:
         post:
             description: get an ETAPI token based on password for further use with ETAPI
+            tags: [Tokens]
             operationId: login
             security: [] # no token based auth for login endpoint
             requestBody:
@@ -1005,6 +1060,7 @@ paths:
     /auth/logout:
         post:
             description: logout (delete/deactivate) an ETAPI token
+            tags: [Tokens]
             operationId: logout
             responses:
                 "204":
@@ -1018,6 +1074,7 @@ paths:
     /app-info:
         get:
             description: returns information about the running Trilium instance
+            tags: [Application]
             operationId: getAppInfo
             responses:
                 "200":
@@ -1042,6 +1099,7 @@ paths:
                   $ref: "#/components/schemas/StringId"
         put:
             description: Create a database backup under a given name
+            tags: [Application]
             operationId: createBackup
             responses:
                 "204":
@@ -1061,6 +1119,7 @@ paths:
                 information and database size. Counts only — no note titles, content or attributes.
 
                 The same data is served by GET /api/metrics to the web session.
+            tags: [Application]
             operationId: getMetrics
             parameters:
                 - name: format
