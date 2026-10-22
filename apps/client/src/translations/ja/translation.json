@@ -1708,7 +1708,6 @@
     "hide-archived-notes": "アーカイブノートを非表示",
     "automatically-collapse-notes": "ノートを自動的に折りたたむ",
     "automatically-collapse-notes-title": "一定期間使用されないと、ツリーを整理するためにノートは折りたたまれます。",
-    "save-changes": "変更を保存して適用",
     "auto-collapsing-notes-after-inactivity": "非アクティブ状態が続いたためノートが自動で折りたたまれます...",
     "create-child-note": "子ノートを作成",
     "hoist-this-note-workspace": "このノートをホイストする（ワークスペース）",

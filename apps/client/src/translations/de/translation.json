@@ -1725,7 +1725,6 @@
     "hide-archived-notes": "Archivierte Notizen ausblenden",
     "automatically-collapse-notes": "Notizen automatisch zusammenklappen",
     "automatically-collapse-notes-title": "Notizen werden nach einer Inaktivitätsperiode automatisch zusammengeklappt, um den Baum zu entlasten.",
-    "save-changes": "Änderungen speichern und anwenden",
     "auto-collapsing-notes-after-inactivity": "Automatisches Zusammenklappen von Notizen nach Inaktivität...",
     "saved-search-note-refreshed": "Gespeicherte Such-Notiz wurde aktualisiert.",
     "hoist-this-note-workspace": "Diese Notiz fokussieren (Arbeitsbereich)",

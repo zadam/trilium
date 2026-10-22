@@ -1510,7 +1510,6 @@
     "hide-archived-notes": "Masquer les notes archivées",
     "automatically-collapse-notes": "Réduire automatiquement les notes",
     "automatically-collapse-notes-title": "Les notes seront réduites après une période d'inactivité pour désencombrer l'arborescence.",
-    "save-changes": "Enregistrer et appliquer les modifications",
     "auto-collapsing-notes-after-inactivity": "Réduction automatique des notes après inactivité...",
     "saved-search-note-refreshed": "Note de recherche enregistrée actualisée.",
     "hoist-this-note-workspace": "Focus cette note (espace de travail)",

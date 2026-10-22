@@ -353,7 +353,6 @@
     "automatically-collapse-notes-title": "Ağacı düzenli tutmak için notlar bir hareketsizlik süresinden sonra daraltılacaktır.",
     "follow-active-note": "Etkin notu izle",
     "follow-active-note-title": "Etkin notu göstermek için ağacı kaydırır ve üst düğümleri genişletir. Devre dışı bırakıldığında, ağaç yerinde kalır ve yalnızca arka plan vurgusu güncellenir.",
-    "save-changes": "Değişiklikleri kaydet ve uygula",
     "auto-collapsing-notes-after-inactivity": "Hareketsizlikten sonra notlar otomatik daraltılıyor...",
     "saved-search-note-refreshed": "Kaydedilmiş arama notu yenilendi.",
     "hoist-this-note-workspace": "Bu notu yükselt (çalışma alanı)",

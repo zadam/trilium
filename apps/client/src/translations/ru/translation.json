@@ -1313,7 +1313,6 @@
     "hoist-this-note-workspace": "Фокус на заметке (рабочее пространство)",
     "auto-collapsing-notes-after-inactivity": "Автоматическое сворачивание заметок после бездействия...",
     "create-child-note": "Создать дочернюю заметку",
-    "save-changes": "Сохранить и применить изменения",
     "saved-search-note-refreshed": "Сохраненная поисковая заметка обновлена.",
     "refresh-saved-search-results": "Обновить сохраненные результаты поиска",
     "automatically-collapse-notes-title": "Заметки будут свернуты после определенного периода бездействия, чтобы навести порядок в дереве.",

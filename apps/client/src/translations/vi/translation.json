@@ -2682,7 +2682,6 @@
     "automatically-collapse-notes-title": "Các ghi chú sẽ được thu gọn sau một khoảng thời gian không hoạt động để giảm sự lộn xộn của cây.",
     "follow-active-note": "Theo dõi ghi chú đang hoạt động",
     "follow-active-note-title": "Cuộn cây và mở rộng các nút cha để hiển thị ghi chú đang hoạt động. Khi tắt, cây sẽ giữ nguyên vị trí và chỉ cập nhật vùng nổi bật nền.",
-    "save-changes": "Lưu & áp dụng thay đổi",
     "auto-collapsing-notes-after-inactivity": "Đang tự động thu gọn ghi chú sau khi không hoạt động...",
     "saved-search-note-refreshed": "Đã làm mới ghi chú tìm kiếm đã lưu.",
     "hoist-this-note-workspace": "Đặt ghi chú này làm gốc (không gian làm việc)",

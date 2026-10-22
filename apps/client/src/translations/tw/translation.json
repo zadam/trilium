@@ -1518,7 +1518,6 @@
     "hide-archived-notes": "隱藏已封存筆記",
     "automatically-collapse-notes": "自動收摺筆記",
     "automatically-collapse-notes-title": "筆記在一段時間內未使用將被收摺，以減少樹狀結構的雜亂。",
-    "save-changes": "儲存並套用更改",
     "auto-collapsing-notes-after-inactivity": "自動收摺非使用中筆記…",
     "saved-search-note-refreshed": "已儲存的搜尋筆記已重新整理。",
     "hoist-this-note-workspace": "聚焦此筆記（工作區）",

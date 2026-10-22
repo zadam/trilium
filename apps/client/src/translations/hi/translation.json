@@ -1593,7 +1593,6 @@
     "hide-archived-notes": "आर्काइव किए गए नोट्स छुपाएं",
     "automatically-collapse-notes": "नोट्स अपने-आप समेटें",
     "automatically-collapse-notes-title": "सक्रिय न होने पर ट्री को साफ़ रखने के लिए नोट्स अपने-आप समेट (collapse) दिए जाएंगे।",
-    "save-changes": "सेव करें और लागू करें",
     "auto-collapsing-notes-after-inactivity": "सक्रिय न होने पर नोट्स अपने-आप समेटे जा रहे हैं..।",
     "saved-search-note-refreshed": "सेव की गई खोज रीफ़्रेश हो गई।",
     "hoist-this-note-workspace": "इस नोट को मुख्य बनाएं (Hoist)",

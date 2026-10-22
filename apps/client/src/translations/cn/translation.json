@@ -2001,7 +2001,6 @@
     "hide-archived-notes": "隐藏已归档笔记",
     "automatically-collapse-notes": "自动折叠笔记",
     "automatically-collapse-notes-title": "笔记将在一定时间无活动后自动折叠，以保持树状结构整洁。",
-    "save-changes": "保存并应用更改",
     "auto-collapsing-notes-after-inactivity": "在不活跃后自动折叠笔记...",
     "saved-search-note-refreshed": "已保存的搜索笔记已刷新。",
     "hoist-this-note-workspace": "聚焦此笔记（工作区）",

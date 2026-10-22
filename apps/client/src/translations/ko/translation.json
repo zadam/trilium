@@ -2627,7 +2627,6 @@
     "automatically-collapse-notes-title": "노트는 일정 기간 비활성 후 정리하기 위해 접어둡니다.",
     "follow-active-note": "활성 노트 따라가기",
     "follow-active-note-title": "트리를 스크롤하고 상위 노트를 펼쳐 활성 노트를 표시합니다. 비활성화하면 트리는 그대로 유지되고 배경 강조 표시만 업데이트됩니다.",
-    "save-changes": "변경 사항 저장 및 적용",
     "auto-collapsing-notes-after-inactivity": "일정 시간 활동이 없어 노트를 자동으로 접는 중...",
     "saved-search-note-refreshed": "저장된 검색 노트가 새로고침되었습니다.",
     "hoist-this-note-workspace": "이 노트를 루트로 보기 (작업 공간)",

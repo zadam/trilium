@@ -2026,7 +2026,6 @@
     "hide-archived-notes": "Ocultar notas archivadas",
     "automatically-collapse-notes": "Colapsar notas automaticamente",
     "automatically-collapse-notes-title": "Las notas serán colapsadas después de un periodo de inactividad para despejar el árbol.",
-    "save-changes": "Guardar y aplicar cambios",
     "auto-collapsing-notes-after-inactivity": "Colapsando notas automáticamente después de inactividad...",
     "saved-search-note-refreshed": "La nota de búsqueda guardada fue recargada.",
     "hoist-this-note-workspace": "Anclar esta nota (espacio de trabajo)",

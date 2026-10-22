@@ -1334,7 +1334,6 @@
     "hide-archived-notes": "Ocultar notas arquivadas",
     "automatically-collapse-notes": "Recolher notas automaticamente",
     "automatically-collapse-notes-title": "As notas serão recolhidas após um tempo de inatividade para simplificar a árvore.",
-    "save-changes": "Gravar e aplicar alterações",
     "auto-collapsing-notes-after-inactivity": "A recolher notas automaticamente após inatividade...",
     "saved-search-note-refreshed": "A nota de pesquisa gravada foi atualizada.",
     "hoist-this-note-workspace": "Fixar esta nota (workspace)",
