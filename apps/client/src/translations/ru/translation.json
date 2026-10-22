@@ -4941,6 +4941,7 @@
     "trim_both": "Убрать с обоих",
     "remove_blank_lines": "Удалить пустые строки",
     "to_uppercase": "В верхний регистр",
-    "to_lowercase": "В нижний регистр"
+    "to_lowercase": "В нижний регистр",
+    "remove_diacritics": "Удалить диакритические знаки"
   }
 }
