@@ -117,7 +117,7 @@ jobs:
         run: pkill -f trilium || true
 
   e2e-pdfjs-viewer:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
     name: PDF viewer E2E tests
     steps:
       - uses: actions/checkout@v7
