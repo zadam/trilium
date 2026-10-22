@@ -454,6 +454,7 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     setScrollButtonVisibility(show: boolean = true) {
+        this.$widget.toggleClass("tab-row-widget-is-scrollable", show);
         if (show) {
             this.$scrollButtonLeft.css("display", "flex");
             this.$scrollButtonRight.css("display", "flex");

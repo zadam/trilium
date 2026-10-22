@@ -1175,6 +1175,89 @@ body.layout-vertical .tab-row-widget-is-sorting .note-tab.note-tab-is-dragging .
     top: 0;
 }
 
+/* Vertical layout: tab shape with flared bottom corners */
+body.layout-vertical #rest-pane .tab-row-widget {
+    --tab-shape-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='34'\
+        height='36'%3E%3Cpath d='M0.844 36A16 16 0 0 0 16.813 20.998L17.363 12.189A13 13 0 0 1\
+        30.338 0H35V36Z'/%3E%3C/svg%3E");
+    --tab-shape-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'\
+        width='34' height='36'%3E%3Cpath d='M33.156 36A16 16 0 0 1 17.187 20.998L16.637 12.189A13\
+        13 0 0 0 3.662 0H-1V36Z'/%3E%3C/svg%3E");
+    --tab-shadow-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'\
+        width='34' height='36'%3E%3Cfilter id='b' filterUnits='userSpaceOnUse' x='-40' y='-40'\
+        width='114' height='116'%3E%3CfeOffset dy='2'/%3E%3CfeGaussianBlur\
+        stdDeviation='3.5'/%3E%3C/filter%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='0' y='0'\
+        width='34' height='36'%3E%3Crect width='34' height='36' fill='white'/%3E%3Cpath d='M0.844\
+        36A16 16 0 0 0 16.813 20.998L17.363 12.189A13 13 0 0 1 30.338\
+        0H35V36Z'/%3E%3C/mask%3E%3Cpath d='M14.625 56L17.363 12.189A13 13 0 0 1 30.338 0H74V56Z'\
+        filter='url(%23b)' mask='url(%23m)'/%3E%3C/svg%3E");
+    --tab-shadow-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'\
+        width='34' height='36'%3E%3Cfilter id='b' filterUnits='userSpaceOnUse' x='-40' y='-40'\
+        width='114' height='116'%3E%3CfeOffset dy='2'/%3E%3CfeGaussianBlur\
+        stdDeviation='3.5'/%3E%3C/filter%3E%3Cmask id='m' maskUnits='userSpaceOnUse' x='0' y='0'\
+        width='34' height='36'%3E%3Crect width='34' height='36' fill='white'/%3E%3Cpath d='M33.156\
+        36A16 16 0 0 1 17.187 20.998L16.637 12.189A13 13 0 0 0 3.662\
+        0H-1V36Z'/%3E%3C/mask%3E%3Cpath d='M19.375 56L16.637 12.189A13 13 0 0 0 3.662 0H-40V56Z'\
+        filter='url(%23b)' mask='url(%23m)'/%3E%3C/svg%3E");
+
+    > * {
+        margin-top: calc(var(--tab-bar-height) - var(--tab-height));
+    }
+
+    &:not(.tab-row-widget-is-scrollable) .tab-row-widget-scrolling-container {
+        overflow-x: visible;
+        overflow-y: clip;
+    }
+
+    .note-tab {
+        &::before,
+        &::after {
+            position: absolute;
+            inset: 0 -17px auto;
+            height: var(--tab-height);
+            content: "";
+            pointer-events: none;
+        }
+
+        &::before {
+            mask:
+                var(--tab-shape-left) left top / 34px 100% no-repeat,
+                var(--tab-shape-right) right top / 34px 100% no-repeat,
+                linear-gradient(#000 0 0) 31px 0 / calc(100% - 62px) 100% no-repeat;
+            transition: background-color 75ms ease-in;
+        }
+
+        &:hover::before {
+            background-color: var(--inactive-tab-hover-background-color);
+            transition: none;
+        }
+
+        &[active]::before {
+            background-color: var(--active-tab-vert-layout-background-color);
+            transition: background-color 150ms ease-out;
+        }
+
+        &[active]::after {
+            z-index: -1;
+            background-color: var(--active-tab-vert-layout-shadow-color);
+            mask:
+                var(--tab-shadow-left) left top / 34px 100% no-repeat,
+                var(--tab-shadow-right) right top / 34px 100% no-repeat;
+        }
+
+        .note-tab-wrapper {
+            box-shadow: none;
+            border-radius: 13px 13px 0 0;
+            background-color: transparent;
+        }
+    }
+
+    &.tab-row-widget-is-sorting .note-tab.note-tab-is-dragging .note-tab-wrapper {
+        transform: none;
+        box-shadow: none !important;
+    }
+}
+
 /*
  * CLASSIC FORMATTING TOOLBAR
  */

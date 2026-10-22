@@ -212,6 +212,8 @@
     --active-tab-text-color: #ffffffcd;
     --active-tab-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2), -1px -1px 3px rgba(0, 0, 0, 0.4);
     --active-tab-dragging-shadow: var(--active-tab-shadow), 0 0 20px rgba(0, 0, 0, 0.4);
+    --active-tab-vert-layout-background-color: var(--main-background-color);
+    --active-tab-vert-layout-shadow-color: #00000059;
 
     --inactive-tab-background-color: transparent;
     --inactive-tab-hover-background-color: #ffffff0f;
