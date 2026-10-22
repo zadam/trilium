@@ -168,10 +168,14 @@ function groupOperations(spec: OpenApiSpec) {
 }
 
 function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation }: OperationEntry) {
-    // Named like Redocly does: by summary, else by operation ID, else by the route.
+    // Named like Redocly does: by summary, else by operation ID, else by the route. The route line
+    // keeps the operation ID in sight when the summary takes the heading.
     const route = code(`${method.toUpperCase()} ${path}`);
-    const title = operation.summary?.trim() || code(operation.operationId ?? "");
-    const blocks = title ? [ `### ${title}`, route ] : [ `### ${route}` ];
+    const id = code(operation.operationId ?? "");
+    const summary = operation.summary?.trim();
+    const blocks = summary
+        ? [ `### ${summary}`, id ? `${route} · ${id}` : route ]
+        : id ? [ `### ${id}`, route ] : [ `### ${route}` ];
     if (operation.description) {
         blocks.push(operation.description.trim());
     }

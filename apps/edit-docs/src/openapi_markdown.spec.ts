@@ -143,8 +143,9 @@ describe("openApiToMarkdown", () => {
         expect(markdown.indexOf("### `POST /api/login`")).toBeLessThan(markdown.indexOf("## Notes"));
         expect(markdown.indexOf("### `GET /api/tree`")).toBeLessThan(markdown.indexOf("## Misc"));
         expect(markdown.indexOf("## Misc")).toBeLessThan(markdown.indexOf("### `GET /api/misc`"));
-        // A summary wins over the operation ID; an operation with neither is named by its route.
-        expect(markdown).toContain("### List notes\n\n`GET /api/notes`\n\n### `GET /api/tree`");
+        // A summary wins over the operation ID, which then follows the route; an operation with
+        // neither is named by its route.
+        expect(markdown).toContain("### List notes\n\n`GET /api/notes` · `getNotes`\n\n### `GET /api/tree`");
 
         // Schemes of one requirement are all needed; an empty requirement makes them optional.
         expect(markdown).toContain("**Authorization**: `A` and `B` or none");
