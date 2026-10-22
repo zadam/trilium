@@ -226,11 +226,6 @@
   "include_note": {
     "dialog_title": "Zahrnout poznámku",
     "label_note": "Poznámka",
-    "placeholder_search": "Hledat poznámku podle jejího názvu",
-    "box_size_prompt": "Velikost pole zahrnuté poznámky:",
-    "box_size_small": "Malý (~ 10 řádků)",
-    "box_size_medium": "Střední (~ 30 řádků)",
-    "box_size_full": "Úplný (pole zobrazuje kompletní text)",
     "button_include": "Zahrnout poznámku"
   },
   "info": {
@@ -258,10 +253,7 @@
     "move_success_message": "Vybrané poznámky byly přesunuty do "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Změnit, kam se má nová poznámka vytvořit:",
-    "search_placeholder": "Hledat cestu podle názvu (výchozí, pokud je prázdná)",
     "modal_title": "Vybrat typ poznámky",
-    "modal_body": "Vybrat typ poznámky / šablonu nové poznámky:",
     "templates": "Šablony"
   },
   "password_not_set": {
@@ -610,7 +602,6 @@
     "in_progress": "Probíhá synchronizace se serverem."
   },
   "left_pane_toggle": {
-    "show_panel": "Zobrazit panel",
     "hide_panel": "Skrýt panel"
   },
   "move_pane_button": {
@@ -1481,7 +1472,6 @@
     "hide-archived-notes": "Skrýt archivované poznámky",
     "automatically-collapse-notes": "Automaticky sbalovat poznámky",
     "automatically-collapse-notes-title": "Poznámky budou po období nečinnosti sbaleny, aby se strom nepřehltil.",
-    "save-changes": "Uložit a použít změny",
     "auto-collapsing-notes-after-inactivity": "Automatické sbalování poznámek po nečinnosti...",
     "saved-search-note-refreshed": "Uložené vyhledávání poznámky bylo obnoveno.",
     "hoist-this-note-workspace": "Vyvýšit tuto poznámku (pracovní plocha)",

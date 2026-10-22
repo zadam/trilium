@@ -166,11 +166,6 @@
   "include_note": {
     "dialog_title": "Uključi belešku",
     "label_note": "Beleška",
-    "placeholder_search": "pretraži belešku po njenom imenu",
-    "box_size_prompt": "Veličina kutije priložene beleške:",
-    "box_size_small": "mala (~ 10 redova)",
-    "box_size_medium": "srednja (~ 30 redova)",
-    "box_size_full": "puna (kutija prikazuje ceo tekst)",
     "button_include": "Uključi belešku"
   },
   "info": {
@@ -197,10 +192,7 @@
     "move_success_message": "Izabrane beleške su premeštene u "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Promenite gde će se napraviti nova beleška:",
-    "search_placeholder": "pretraži putanju po njenom imenu (podrazumevano ako je prazno)",
     "modal_title": "Izaberite tip beleške",
-    "modal_body": "Izaberite tip beleške / šablon za novu belešku:",
     "templates": "Šabloni"
   },
   "password_not_set": {

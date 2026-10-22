@@ -77,7 +77,8 @@
     "note-panels": "笔记面板",
     "show-note-map": "在右侧边栏中显示笔记图谱",
     "focus-collection-properties": "将焦点移到集合的视图类型选择器",
-    "focus-formatting-toolbar": "在固定格式工具栏与编辑器之间移动焦点"
+    "focus-formatting-toolbar": "在固定格式工具栏与编辑器之间移动焦点",
+    "peek-left-pane": "在水平布局中，以浮在内容上方的临时面板速览笔记树"
   },
   "login": {
     "title": "登录",
@@ -374,7 +375,8 @@
     "show-note-map": "显示笔记图谱",
     "show-note-info": "显示笔记信息",
     "show-note-paths": "显示笔记路径",
-    "toggle-similar-notes": "切换相似笔记"
+    "toggle-similar-notes": "切换相似笔记",
+    "peek-left-pane": "速览笔记树面板"
   },
   "share_theme": {
     "site-theme": "网站主题",

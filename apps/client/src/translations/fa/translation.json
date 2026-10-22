@@ -360,14 +360,7 @@
   "include_note": {
     "dialog_title": "گنجاندن یادداشت",
     "label_note": "یادداشت",
-    "placeholder_search": "جست‌وجوی یادداشت با نام آن",
-    "box_size_prompt": "اندازهٔ جعبهٔ یادداشت گنجانده‌شده:",
-    "box_size_small": "کوچک (~ 10 خط)",
-    "box_size_medium": "متوسط (~ 30 خط)",
-    "box_size_full": "کامل (جعبه متن کامل را نشان می‌دهد)",
-    "box_size_expandable": "بازشونده (به‌طور پیش‌فرض جمع‌شده)",
-    "button_include": "گنجاندن یادداشت",
-    "box_size_tiny": "خیلی کوچک (یک ردیف با عنوان و اقدام‌ها)"
+    "button_include": "گنجاندن یادداشت"
   },
   "info": {
     "modalTitle": "پیام اطلاعاتی",
@@ -442,10 +435,7 @@
     "move_success_message": "یادداشت‌های انتخاب‌شده به این مکان جابه‌جا شدند: "
   },
   "note_type_chooser": {
-    "change_path_prompt": "محل ایجاد یادداشت جدید را تغییر دهید:",
-    "search_placeholder": "جست‌وجوی مسیر با نام (در صورت خالی بودن، پیش‌فرض)",
     "modal_title": "انتخاب نوع یادداشت",
-    "modal_body": "نوع یادداشت / قالب یادداشت جدید را انتخاب کنید:",
     "templates": "قالب‌ها"
   },
   "password_not_set": {
@@ -1195,7 +1185,6 @@
     "in_progress": "همگام‌سازی با سرور در حال انجام است."
   },
   "left_pane_toggle": {
-    "show_panel": "نمایش بخش",
     "hide_panel": "مخفی کردن بخش"
   },
   "move_pane_button": {
@@ -2800,7 +2789,6 @@
     "automatically-collapse-notes-title": "یادداشت‌ها پس از مدتی عدم فعالیت برای رفع شلوغی درخت بسته خواهند شد.",
     "follow-active-note": "پیگیری یادداشت فعال",
     "follow-active-note-title": "درخت را پیمایش کرده و گره‌های والد را برای نمایش یادداشت فعال گسترش می‌دهد. هنگام غیرفعال بودن، درخت در جای خود باقی می‌ماند و فقط پس‌زمینه به‌روز می‌شود.",
-    "save-changes": "ذخیره و اعمال تغییرات",
     "auto-collapsing-notes-after-inactivity": "بستن خودکار یادداشت‌ها پس از عدم فعالیت...",
     "saved-search-note-refreshed": "یادداشت جستجوی ذخیره‌شده به‌روز شد.",
     "hoist-this-note-workspace": "بالا بردن این یادداشت (فضای کاری)",

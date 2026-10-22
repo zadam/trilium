@@ -1049,15 +1049,9 @@
     "include_archived_notes": "Include notițele arhivate"
   },
   "include_note": {
-    "box_size_full": "completă (căsuța va afișa întregul text)",
-    "box_size_medium": "medie (~ 30 de rânduri)",
-    "box_size_prompt": "Dimensiunea căsuței notiței incluse:",
-    "box_size_small": "mică (~ 10 rânduri)",
     "button_include": "Include notița",
     "dialog_title": "Includere notiță",
-    "label_note": "Notiță",
-    "placeholder_search": "căutați o notiță după denumirea ei",
-    "box_size_expandable": "extensibilă (restrânsă implicit)"
+    "label_note": "Notiță"
   },
   "info": {
     "closeButton": "Închide",
@@ -1073,8 +1067,7 @@
     "search_placeholder": "Căutați notițe după nume sau tastați > pentru comenzi..."
   },
   "left_pane_toggle": {
-    "hide_panel": "Ascunde panoul",
-    "show_panel": "Afișează panoul"
+    "hide_panel": "Ascunde panoul"
   },
   "limit": {
     "limit": "Limită"
@@ -1214,11 +1207,8 @@
     "title": "Căile notiței"
   },
   "note_type_chooser": {
-    "modal_body": "Selectați tipul notiței/șablonul pentru noua notiță:",
     "modal_title": "Selectați tipul notiței",
-    "templates": "Șabloane",
-    "change_path_prompt": "Selectați locul unde să se creeze noua notiță:",
-    "search_placeholder": "căutare cale notiță după nume (cea implicită dacă este necompletat)"
+    "templates": "Șabloane"
   },
   "onclick_button": {
     "no_click_handler": "Butonul „{{componentId}}” nu are nicio acțiune la clic definită"
@@ -1783,7 +1773,6 @@
     "automatically-collapse-notes-title": "Notițele vor fi minimizate automat după o perioadă de inactivitate pentru a simplifica ierarhia notițelor.",
     "collapse-title": "Minimizează ierarhia de notițe",
     "hide-archived-notes": "Ascunde notițele arhivate",
-    "save-changes": "Salvează și aplică modificările",
     "scroll-active-title": "Mergi la notița activă",
     "tree-settings-title": "Setări ale ierarhiei notițelor",
     "auto-collapsing-notes-after-inactivity": "Se minimizează notițele după inactivitate...",

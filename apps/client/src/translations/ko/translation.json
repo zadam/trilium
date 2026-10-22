@@ -65,7 +65,11 @@
     "edit_link": "링크 편집",
     "button_edit_link": "링크 저장",
     "fix_link": "링크 수정",
-    "button_fix_link": "링크 수정"
+    "button_fix_link": "링크 수정",
+    "web_link": "웹 링크",
+    "url": "URL",
+    "mirror_title": "노트 제목과 동기화",
+    "mirror_title_description": "링크에 노트의 현재 제목이 표시되며, 노트 이름을 변경하면 링크의 제목도 변경됩니다."
   },
   "branch_prefix": {
     "save": "저장",
@@ -360,14 +364,21 @@
   "include_note": {
     "dialog_title": "노트 포함",
     "label_note": "노트",
-    "placeholder_search": "이름으로 노트 검색하기",
-    "box_size_prompt": "포함된 노트의 상자 크기:",
-    "box_size_small": "소형(~10줄)",
-    "box_size_medium": "중형(~30줄)",
-    "box_size_full": "전체(상자에 전체 텍스트가 표시됨)",
-    "box_size_expandable": "확장 가능(기본적으로 축소됨)",
     "button_include": "노트 포함",
-    "box_size_tiny": "작게 (제목과 작업만 한 줄로 표시)"
+    "box_size": "상자 크기",
+    "size_tiny": "아주 작게",
+    "size_tiny_description": "제목과 작업 버튼을 한 줄로 표시합니다.",
+    "size_small": "작게",
+    "size_small_description": "약 10줄 높이의 상자입니다.",
+    "size_medium": "중간",
+    "size_medium_description": "약 30줄 높이의 상자입니다.",
+    "size_full": "전체",
+    "size_full_description": "전체 내용을 표시합니다.",
+    "size_expandable": "확장 가능",
+    "size_expandable_description": "펼치기 전에는 제목만 표시합니다.",
+    "inserted_as_image": "이 노트는 이미지로 삽입되었습니다.",
+    "size_hint": "크기는 나중에 변경할 수 있습니다.",
+    "image_size_hint": "이미지 크기는 나중에 조절할 수 있습니다."
   },
   "info": {
     "modalTitle": "정보 메시지",
@@ -442,11 +453,10 @@
     "move_success_message": "선택한 노트의 이동 위치: "
   },
   "note_type_chooser": {
-    "change_path_prompt": "새 노트를 생성할 위치 변경:",
-    "search_placeholder": "이름으로 경로 검색(비워 두면 기본 경로)",
     "modal_title": "노트 유형 선택",
-    "modal_body": "새 노트의 노트 유형/템플릿 선택:",
-    "templates": "템플릿"
+    "templates": "템플릿",
+    "location": "위치",
+    "location_placeholder": "비워 두면 기본 위치를 사용합니다"
   },
   "password_not_set": {
     "title": "비밀번호가 설정되지 않았습니다",
@@ -1163,8 +1173,8 @@
     "in_progress": "서버와의 동기화가 진행 중입니다."
   },
   "left_pane_toggle": {
-    "show_panel": "패널 표시",
-    "hide_panel": "패널 숨기기"
+    "hide_panel": "패널 숨기기",
+    "peek_panel": "패널 미리 보기"
   },
   "move_pane_button": {
     "move_left": "왼쪽으로 이동",
@@ -1865,14 +1875,25 @@
   "code-editor-options": {
     "title": "편집기",
     "tab_width": "탭 폭",
-    "tab_width_unit": "칸"
+    "tab_width_unit": "칸",
+    "line_numbers": "줄 번호"
   },
   "code_mime_types": {
     "title": "드롭다운에서 사용 가능한 MIME 유형",
     "tooltip_syntax_highlighting": "구문 강조",
     "tooltip_code_block_syntax": "텍스트 노트 내 코드 블록",
     "tooltip_code_note_syntax": "코드 노트",
-    "trilium_log": "Trilium 로그"
+    "trilium_log": "Trilium 로그",
+    "description": "코드 노트 또는 코드 블록의 언어를 선택할 때 표시되는 언어 목록입니다.",
+    "sort_alphabetically": "가나다순 정렬",
+    "badge_code_blocks": "코드 블록",
+    "badge_code_notes": "코드 노트",
+    "remove": "목록에서 제거",
+    "badge_code_blocks_tooltip": "텍스트 노트의 코드 블록에 구문 강조 표시 사용 가능",
+    "badge_code_notes_tooltip": "코드 노트에서 구문 강조 표시 사용 가능",
+    "add_title": "언어 추가",
+    "trilium_search_query": "Trilium 검색 쿼리",
+    "add_another_other": "다른 언어 추가(사용 가능한 언어 {{count}}개)"
   },
   "vim_key_bindings": {
     "use_vim_keybindings_in_code_notes": "Vim 키 바인딩",
@@ -2616,7 +2637,6 @@
     "automatically-collapse-notes-title": "노트는 일정 기간 비활성 후 정리하기 위해 접어둡니다.",
     "follow-active-note": "활성 노트 따라가기",
     "follow-active-note-title": "트리를 스크롤하고 상위 노트를 펼쳐 활성 노트를 표시합니다. 비활성화하면 트리는 그대로 유지되고 배경 강조 표시만 업데이트됩니다.",
-    "save-changes": "변경 사항 저장 및 적용",
     "auto-collapsing-notes-after-inactivity": "일정 시간 활동이 없어 노트를 자동으로 접는 중...",
     "saved-search-note-refreshed": "저장된 검색 노트가 새로고침되었습니다.",
     "hoist-this-note-workspace": "이 노트를 루트로 보기 (작업 공간)",
@@ -2861,7 +2881,8 @@
     "line_numbers": "줄 번호",
     "line_numbers_auto": "자동",
     "line_numbers_on": "켜기",
-    "line_numbers_off": "끄기"
+    "line_numbers_off": "끄기",
+    "line_numbers_auto_description": "전역 설정 따르기"
   },
   "electron_integration": {
     "desktop-application": "데스크톱 애플리케이션",
@@ -3218,7 +3239,11 @@
   },
   "content_language": {
     "title": "콘텐츠 언어",
-    "description": "읽기 전용 또는 편집 가능한 텍스트 노트의 기본 속성에 있는 언어 선택 목록에 표시할 언어를 하나 이상 선택합니다. 이를 통해 맞춤법 검사, 오른쪽에서 왼쪽으로 쓰는 언어 지원, 따옴표 적용 및 텍스트 추출(OCR) 같은 기능을 사용할 수 있습니다."
+    "description": "텍스트 노트의 언어를 선택할 때 표시되는 언어 목록입니다. 선택한 언어에 따라 맞춤법 검사, 오른쪽에서 왼쪽으로 쓰기 지원, 따옴표 및 텍스트 추출(OCR) 등의 기능을 사용할 수 있습니다.",
+    "add_title": "언어 추가",
+    "remove": "목록에서 제거",
+    "add_first_other": "언어 추가(사용 가능한 언어 {{count}}개)",
+    "add_another_other": "다른 언어 추가(사용 가능한 언어 {{count}}개)"
   },
   "switch_layout_button": {
     "title_vertical": "편집 창을 맨 아래로 이동",
@@ -3702,7 +3727,13 @@
     "tab_width_reindent_header": "콘텐츠 재들여쓰기",
     "tab_width_style_header": "들여쓰기 사용",
     "tab_width_style_spaces": "공백",
-    "tab_width_style_tabs": "탭"
+    "tab_width_style_tabs": "탭",
+    "cursor_line_title": "현재 줄",
+    "cursor_column_title": "현재 열",
+    "cursor_selection_title": "선택한 문자 수",
+    "cursor_line": "줄: <Value />",
+    "cursor_column": "열: <Value />",
+    "cursor_selection": "선택됨: <Value />"
   },
   "attributes_panel": {
     "title": "노트 속성",
@@ -4036,7 +4067,8 @@
     "exit_fullscreen": "전체 화면 종료",
     "open_in_new_tab": "새 탭에서 열기",
     "more_actions": "추가 작업",
-    "beta": "베타"
+    "beta": "베타",
+    "close": "닫기"
   },
   "spreadsheet": {
     "read-only": "이 노트는 읽기 전용입니다.",
@@ -4294,7 +4326,14 @@
       "scroll-to-the-next-tabs": "다음 탭으로 스크롤",
       "box-size-0": "상자 크기: %0",
       "text-formatting": "텍스트 서식",
-      "block-type": "블록 유형"
+      "block-type": "블록 유형",
+      "apply-formatting": "서식 적용",
+      "camera": "카메라",
+      "move-up": "위로 이동",
+      "move-down": "아래로 이동",
+      "image-position": "이미지 위치",
+      "list": "목록",
+      "list-type": "목록 유형"
     },
     "toolbar-groups": {
       "text-formatting": "텍스트 서식",
@@ -4739,11 +4778,11 @@
     "hidden": "<p>숨겨진 노트 트리는 사용자에게 대부분 표시할 필요가 없는 애플리케이션 수준의 다양한 데이터를 저장하는 데 사용됩니다.</p><p>작업 내용을 충분히 이해한 경우에만 수정하세요. 이 하위 트리를 잘못 변경하면 애플리케이션이 비정상 종료될 수 있습니다.</p>",
     "launchbar_command_launcher": "<p>이 실행 표시줄 작업의 키보드 단축키는 옵션 -&gt; 단축키에서 설정할 수 있습니다.</p>",
     "launchbar_history_navigation": "<p>뒤로 및 앞으로 버튼을 사용하여 탐색 기록에서 이전 페이지와 다음 페이지로 이동할 수 있습니다.</p><p>이 실행 표시줄 버튼은 데스크톱 버전에서만 작동합니다. 서버 버전에서는 브라우저 자체의 뒤로 및 앞으로 버튼을 사용할 수 있으므로 이 기능은 무시됩니다.</p>",
-    "launchbar_intro": "<p>런치바 설정에 오신 것을 환영합니다.</p><p>여기에서 다음 작업을 수행할 수 있습니다.</p><ul><li>사용 가능한 실행 항목을 드래그하여 표시 목록으로 이동하면 런치바에 추가됩니다.</li><li>표시된 실행 항목을 드래그하여 사용 가능한 목록으로 이동하면 런치바에서 숨겨집니다.</li><li>목록의 항목을 드래그하여 순서를 변경할 수 있습니다.</li><li>\"표시된 실행 항목\" 폴더를 마우스 오른쪽 버튼으로 클릭하여 새 실행 항목을 만들 수 있습니다.</li><li>기본 설정으로 되돌리려면 컨텍스트 메뉴에서 \"초기화\"를 선택하세요.</li></ul>",
-    "launchbar_note_launcher": "<p>다음 속성을 설정할 수 있습니다.</p><ol><li><code>target</code> - 실행 항목을 활성화할 때 열리는 노트를 지정합니다.</li><li><code>hoistedNote</code> - 선택 사항으로, 대상 노트를 열기 전에 최상위 노트를 변경합니다.</li><li><code>keyboardShortcut</code> - 선택 사항으로, 지정된 키보드 단축키를 누르면 노트가 열립니다.</li></ol><p>런치바에는 실행 항목의 제목과 아이콘이 표시되며, 대상 노트의 제목 및 아이콘과 반드시 일치하지는 않습니다.</p>",
+    "launchbar_intro": "<p>런치바 설정에 오신 것을 환영합니다.</p><p>여기에서 다음 작업을 수행할 수 있습니다.</p><ul><li>사용 가능한 실행 항목을 드래그하여 표시 목록으로 이동하면 런치바에 추가됩니다</li><li>표시된 실행 항목을 드래그하여 사용 가능한 목록으로 이동하면 런치바에서 숨겨집니다</li><li>목록의 항목을 드래그하여 순서를 변경할 수 있습니다</li><li>\"표시된 실행 항목\" 폴더를 마우스 오른쪽 버튼으로 클릭하여 새 실행 항목을 만들 수 있습니다</li><li>기본 설정으로 되돌리려면 컨텍스트 메뉴에서 \"초기화\"를 선택하세요.</li></ul>",
+    "launchbar_note_launcher": "<p>다음 속성을 설정할 수 있습니다.</p><ol><li><code>target</code> - 실행 항목을 활성화할 때 열리는 노트를 지정합니다</li><li><code>hoistedNote</code> - 선택 사항으로, 대상 노트를 열기 전에 최상위 노트를 변경합니다</li><li><code>keyboardShortcut</code> - 선택 사항으로, 지정된 키보드 단축키를 누르면 노트가 열립니다</li></ol><p>런치바에는 실행 항목의 제목과 아이콘이 표시되며, 대상 노트의 제목 및 아이콘과 반드시 일치하지는 않습니다.</p>",
     "launchbar_quick_search": "<p>세로 레이아웃에서는 기본적으로 빠른 검색창이 표시되므로, <a href=\"#root/_help_Ms1nauBra7gq\" target=\"_blank\">빠른 검색창</a> 기능은 가로 레이아웃에서만 별도로 표시됩니다.</p><p>자세한 내용은 다음 문서를 참조하세요: <a href=\"#root/_help_x0JgW8UqGXvq\" target=\"_blank\">세로 및 가로 레이아웃</a>.</p>",
     "launchbar_script_launcher": "<p>스크립트 실행 항목은 <code>~script</code> 관계로 연결된 스크립트(코드 노트)를 실행할 수 있습니다.</p><ol><li><code>script</code> - 실행 항목이 활성화될 때 실행할 스크립트 노트와의 관계</li><li><code>keyboardShortcut</code> - 선택 사항이며, 키보드 단축키를 누르면 실행 항목이 활성화됨</li></ol><h4>스크립트 예제</h4><pre>{{sample}}</pre>",
-    "launchbar_spacer": "<p>공백 항목을 사용하면 런치바의 실행 항목을 시각적으로 그룹화할 수 있습니다. 주요 속성에서 다음 항목을 설정할 수 있습니다.</p><ul><li><code>baseSize</code> - 공간이 충분한 경우 공백의 크기를 픽셀 단위로 지정합니다.</li><li><code>growthFactor</code> - 0으로 설정하면 공백이 <code>baseSize</code>로 지정한 크기로 고정되며, 양수로 설정하면 공백이 늘어납니다.</li></ul>",
+    "launchbar_spacer": "<p>공백 항목을 사용하면 런치바의 실행 항목을 시각적으로 그룹화할 수 있습니다. 주요 속성에서 다음 항목을 설정할 수 있습니다.</p><ul><li><code>baseSize</code> - 공간이 충분한 경우 공백의 크기를 픽셀 단위로 지정합니다</li><li><code>growthFactor</code> - 0으로 설정하면 공백이 <code>baseSize</code>로 지정한 크기로 고정되며, 양수로 설정하면 공백이 늘어납니다.</li></ul>",
     "launchbar_widget_launcher": "<p>주요 속성에서 대상 위젯 노트를 지정하세요. 지정한 위젯은 실행 표시줄 아이콘을 표시하는 데 사용됩니다.</p><h4>실행 표시줄 위젯 예제</h4><pre>{{sample}}</pre>",
     "share": "<p>여기에서 공유된 모든 노트를 확인할 수 있습니다.</p>",
     "system_state": "<p>이 작업 상태는 기본 제공 항목이므로 편집하거나 삭제할 수 없습니다.</p><p>위치만 변경할 수 있으며, 이 위치에 따라 체크박스 도구 모음과 키보드 순환 선택에서의 순서가 결정됩니다.</p>",
@@ -4754,5 +4793,31 @@
   "hide_keyboard_button": {
     "title": "키보드 숨기기",
     "close_menu": "메뉴 닫기"
+  },
+  "code_editor_context_menu": {
+    "transform": "변환",
+    "sort_ascending": "오름차순 정렬",
+    "sort_descending": "내림차순 정렬",
+    "shuffle_lines": "줄 순서 무작위 섞기",
+    "reverse_lines": "줄 순서 뒤집기",
+    "deduplicate_lines": "중복 줄 제거",
+    "trim_leading": "앞쪽 공백 제거",
+    "trim_leading_tooltip": "각 줄의 시작 부분에 있는 공백 문자를 제거합니다",
+    "trim_trailing": "뒤쪽 공백 제거",
+    "trim_trailing_tooltip": "각 줄의 끝 부분에 있는 공백 문자를 제거합니다",
+    "trim_both": "양쪽 공백 제거",
+    "trim_both_tooltip": "각 줄의 시작과 끝에 있는 공백 문자를 제거합니다",
+    "remove_blank_lines": "빈 줄 제거",
+    "to_uppercase": "대문자로 변환",
+    "to_lowercase": "소문자로 변환",
+    "to_sentence_case": "문장형 대소문자로 변환",
+    "to_title_case": "제목형 대소문자로 변환",
+    "remove_diacritics": "발음 구별 기호 제거"
+  },
+  "date_picker": {
+    "today": "오늘",
+    "tomorrow": "내일",
+    "next-week": "다음 주",
+    "clear": "지우기"
   }
 }

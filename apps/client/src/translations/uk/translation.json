@@ -304,11 +304,6 @@
   "include_note": {
     "dialog_title": "Включити нотатку",
     "label_note": "Нотатка",
-    "placeholder_search": "пошук нотатки за назвою",
-    "box_size_prompt": "Розмір вмісту з вкладеною нотаткою:",
-    "box_size_small": "маленький (~ 10 рядків)",
-    "box_size_medium": "середній (~ 30 рядків)",
-    "box_size_full": "повний (вміст показує повний текст)",
     "button_include": "Включити нотатку"
   },
   "info": {
@@ -336,10 +331,7 @@
     "target_parent_note": "Цільова батьківська нотатка"
   },
   "note_type_chooser": {
-    "change_path_prompt": "Змінити місце створення нової нотатки:",
-    "search_placeholder": "пошук шляху за назвою (за замовчуванням, якщо порожня)",
     "modal_title": "Вибрати тип нотатки",
-    "modal_body": "Вибрати тип/шаблон нової нотатки:",
     "templates": "Шаблони"
   },
   "password_not_set": {
@@ -657,7 +649,6 @@
     "in_progress": "Триває синхронізація із сервером."
   },
   "left_pane_toggle": {
-    "show_panel": "Показати панель",
     "hide_panel": "Приховати панель"
   },
   "move_pane_button": {
@@ -1264,7 +1255,6 @@
     "hide-archived-notes": "Приховати архівовані нотатки",
     "automatically-collapse-notes": "Автоматично згортати нотатки",
     "automatically-collapse-notes-title": "Нотатки будуть згорнуті після певного періоду бездіяльності, щоб розвантажити дерево.",
-    "save-changes": "Зберегти & застосувати зміни",
     "auto-collapsing-notes-after-inactivity": "Автоматичне згортання нотаток після бездіяльності...",
     "saved-search-note-refreshed": "Збережену нотатку пошуку оновлено.",
     "hoist-this-note-workspace": "Закріпити цю нотатку (робочий простір)",

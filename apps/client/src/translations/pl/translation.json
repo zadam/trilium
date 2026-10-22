@@ -530,13 +530,8 @@
   },
   "include_note": {
     "label_note": "Notatka",
-    "placeholder_search": "wyszukaj notatkę po nazwie",
     "dialog_title": "Dołącz notatkę",
-    "button_include": "Dołącz notatkę",
-    "box_size_prompt": "Rozmiar pola dołączonej notatki:",
-    "box_size_small": "mały (~ 10 linii)",
-    "box_size_medium": "średni (~ 30 linii)",
-    "box_size_full": "pełny (pole pokazuje cały tekst)"
+    "button_include": "Dołącz notatkę"
   },
   "info": {
     "closeButton": "Zamknij",
@@ -708,10 +703,7 @@
   },
   "note_type_chooser": {
     "modal_title": "Wybierz typ notatki",
-    "modal_body": "Wybierz typ notatki / szablon nowej notatki:",
-    "templates": "Szablony",
-    "change_path_prompt": "Zmień miejsce utworzenia nowej notatki:",
-    "search_placeholder": "szukaj ścieżki po nazwie (domyślna, jeśli puste)"
+    "templates": "Szablony"
   },
   "password_not_set": {
     "title": "Hasło nie jest ustawione",
@@ -938,7 +930,6 @@
     "in_progress": "Trwa synchronizacja z serwerem."
   },
   "left_pane_toggle": {
-    "show_panel": "Pokaż panel",
     "hide_panel": "Ukryj panel"
   },
   "move_pane_button": {
@@ -1589,7 +1580,6 @@
     "hide-archived-notes": "Ukryj zarchiwizowane notatki",
     "automatically-collapse-notes": "Automatycznie zwijaj notatki",
     "automatically-collapse-notes-title": "Notatki zostaną zwinięte po okresie bezczynności, aby uporządkować drzewo.",
-    "save-changes": "Zapisz i zastosuj zmiany",
     "auto-collapsing-notes-after-inactivity": "Automatyczne zwijanie notatek po bezczynności...",
     "saved-search-note-refreshed": "Notatka zapisanego wyszukiwania odświeżona.",
     "hoist-this-note-workspace": "Zawęź widok do tej notatki (obszar roboczy)",

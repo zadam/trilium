@@ -214,12 +214,6 @@
   "include_note": {
     "dialog_title": "خاتىرىنى ئۆز ئىچىگە ئېلىش",
     "label_note": "خاتىرە",
-    "placeholder_search": "خاتىرىنى نامى بويىچە ئىزدەش",
-    "box_size_prompt": "ئۆز ئىچىگە ئالغان خاتىرىنىڭ رامكا چوڭلۇقى:",
-    "box_size_small": "كىچىك (10 قۇر ئەتراپىدا)",
-    "box_size_medium": "ئوتتۇراھال (30 قۇر ئەتراپىدا)",
-    "box_size_full": "تولۇق (رامكىدا پۈتۈن تېكىست كۆرسىتىلىدۇ)",
-    "box_size_expandable": "يېيىلىدىغان (ئەسلىدىكى ھالەتتە يىغىلغان)",
     "button_include": "خاتىرىنى ئۆز ئىچىگە ئېلىش"
   },
   "info": {
@@ -246,10 +240,7 @@
     "move_success_message": "تاللانغان خاتىرە مۇشۇ يەرگە يۆتكەلدى "
   },
   "note_type_chooser": {
-    "change_path_prompt": "يېڭى خاتىرە قۇرۇش ئورنىنى ئۆزگەرتىش：",
-    "search_placeholder": "يولنى نامى بويىچە ئىزدەش (ئەسلى ھالىتى بېكىتىلمىگەن)",
-    "modal_title": "خاتىرە تۈرىنى تاللاش",
-    "modal_body": "يېڭى خاتىرە تۈرى ياكى template تاللاش："
+    "modal_title": "خاتىرە تۈرىنى تاللاش"
   },
   "password_not_set": {
     "title": "مەخپىي نومۇر بېكىتىلمىگەن",
@@ -632,7 +623,6 @@
     "search_notes": "خاتىرىلەرنى ئىزدەش"
   },
   "left_pane_toggle": {
-    "show_panel": "تاختىنى كۆرسىتىش",
     "hide_panel": "تاختىنى يوشۇرۇش"
   },
   "move_pane_button": {

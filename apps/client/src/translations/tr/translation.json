@@ -353,7 +353,6 @@
     "automatically-collapse-notes-title": "Ağacı düzenli tutmak için notlar bir hareketsizlik süresinden sonra daraltılacaktır.",
     "follow-active-note": "Etkin notu izle",
     "follow-active-note-title": "Etkin notu göstermek için ağacı kaydırır ve üst düğümleri genişletir. Devre dışı bırakıldığında, ağaç yerinde kalır ve yalnızca arka plan vurgusu güncellenir.",
-    "save-changes": "Değişiklikleri kaydet ve uygula",
     "auto-collapsing-notes-after-inactivity": "Hareketsizlikten sonra notlar otomatik daraltılıyor...",
     "saved-search-note-refreshed": "Kaydedilmiş arama notu yenilendi.",
     "hoist-this-note-workspace": "Bu notu yükselt (çalışma alanı)",
@@ -596,12 +595,6 @@
   "include_note": {
     "dialog_title": "Not ekle",
     "label_note": "Not",
-    "placeholder_search": "Notu adına göre ara",
-    "box_size_prompt": "Eklenen notun kutu boyutu:",
-    "box_size_small": "kısa (~ 10 satır)",
-    "box_size_medium": "orta (~ 30 satır)",
-    "box_size_full": "tam (kutuda metnin tamamı gösterilir)",
-    "box_size_expandable": "genişletilebilir (varsayılan olarak daraltılmış)",
     "button_include": "Not ekle"
   },
   "jump_to_note": {
@@ -662,10 +655,7 @@
     "move_success_message": "Seçilen notlar şuraya taşındı:"
   },
   "note_type_chooser": {
-    "change_path_prompt": "Yeni notun oluşturulacağı yeri değiştirin:",
-    "search_placeholder": "İsimle arama yolu (boşsa varsayılan değer)",
     "modal_title": "Not türünü seçin",
-    "modal_body": "Yeni notun not türünü / şablonunu seçin:",
     "templates": "Şablonlar"
   },
   "password_not_set": {
@@ -1371,7 +1361,6 @@
     "in_progress": "Sunucuyla senkronizasyon devam ediyor."
   },
   "left_pane_toggle": {
-    "show_panel": "Paneli göster",
     "hide_panel": "Paneli gizle"
   },
   "move_pane_button": {

@@ -269,14 +269,7 @@
   "include_note": {
     "dialog_title": "內嵌筆記",
     "label_note": "筆記",
-    "placeholder_search": "依名稱搜尋筆記",
-    "box_size_prompt": "內嵌筆記的框大小：",
-    "box_size_small": "小型（顯示大約 10 行）",
-    "box_size_medium": "中型 (顯示大約30行)",
-    "box_size_full": "完整顯示（完整文字框）",
-    "button_include": "內嵌筆記",
-    "box_size_expandable": "可展開（預設為摺疊狀態）",
-    "box_size_tiny": "緊湊（僅有一行，包含標題和操作選項）"
+    "button_include": "內嵌筆記"
   },
   "info": {
     "modalTitle": "資訊消息",
@@ -304,10 +297,7 @@
   },
   "note_type_chooser": {
     "modal_title": "選擇筆記類型",
-    "modal_body": "選擇新筆記的類型或模板：",
-    "templates": "模板",
-    "change_path_prompt": "變更建立新筆記的位置：",
-    "search_placeholder": "依名稱搜尋路徑（若為空則預設）"
+    "templates": "模板"
   },
   "password_not_set": {
     "title": "密碼未設定",
@@ -695,7 +685,6 @@
     "in_progress": "正在與伺服器進行同步。"
   },
   "left_pane_toggle": {
-    "show_panel": "顯示面板",
     "hide_panel": "隱藏面板"
   },
   "move_pane_button": {
@@ -1528,7 +1517,6 @@
     "hide-archived-notes": "隱藏已封存筆記",
     "automatically-collapse-notes": "自動收摺筆記",
     "automatically-collapse-notes-title": "筆記在一段時間內未使用將被收摺，以減少樹狀結構的雜亂。",
-    "save-changes": "儲存並套用更改",
     "auto-collapsing-notes-after-inactivity": "自動收摺非使用中筆記…",
     "saved-search-note-refreshed": "已儲存的搜尋筆記已重新整理。",
     "hoist-this-note-workspace": "聚焦此筆記（工作區）",

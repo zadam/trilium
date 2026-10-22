@@ -273,13 +273,7 @@
   "include_note": {
     "dialog_title": "Incluir nota",
     "label_note": "Nota",
-    "placeholder_search": "pesquisar nota pelo nome",
-    "box_size_prompt": "Dimensão da caixa da nota incluída:",
-    "box_size_small": "pequeno (~ 10 linhas)",
-    "box_size_medium": "médio (~ 30 linhas)",
-    "box_size_full": "completo (a caixa exibe o texto completo)",
-    "button_include": "Incluir nota",
-    "box_size_expandable": "expansível (recolhido por padrão)"
+    "button_include": "Incluir nota"
   },
   "info": {
     "modalTitle": "Mensagem informativa",
@@ -306,10 +300,7 @@
     "move_success_message": "As notas selecionadas foram movidas para "
   },
   "note_type_chooser": {
-    "change_path_prompt": "Alterar onde criar a nova nota:",
-    "search_placeholder": "buscar caminho pelo nome (valor padrão se não for preenchido)",
     "modal_title": "Escolher tipo de nota",
-    "modal_body": "Escolha o tipo/modelo da nova nota:",
     "templates": "Modelos"
   },
   "password_not_set": {
@@ -979,7 +970,6 @@
     "disconnected_no_changes": "<p>A conexão ao servidor de sincronização falhou.<br>Todas as alterações já foram sincronizadas.</p><p>Clique para sincronizar.</p>"
   },
   "left_pane_toggle": {
-    "show_panel": "Exibir painel",
     "hide_panel": "Esconder painel"
   },
   "move_pane_button": {
@@ -1752,7 +1742,6 @@
     "hide-archived-notes": "Ocultar notas arquivadas",
     "automatically-collapse-notes": "Recolher notas automaticamente",
     "automatically-collapse-notes-title": "As notas serão recolhidas após um tempo de inatividade para simplificar a árvore.",
-    "save-changes": "Salvar e aplicar alterações",
     "auto-collapsing-notes-after-inactivity": "Recolhendo notas automaticamente após inatividade...",
     "saved-search-note-refreshed": "A nota de pesquisa salva foi atualizada.",
     "hoist-this-note-workspace": "Fixar esta nota (workspace)",
