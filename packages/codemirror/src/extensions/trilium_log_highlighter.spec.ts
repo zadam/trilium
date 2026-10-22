@@ -107,6 +107,50 @@ describe("triliumLogHighlighter", () => {
         expect(classesOf(doc)).not.toContain("cm-log-sql");
     });
 
+    it("highlights a search: the `Search` verb, the query as search syntax and the count", () => {
+        // The quote is never closed, so the string must stop at the end of the query.
+        const doc = "17:02:11.408 Search: #!archived and note.title *= 'tower  (returned 12 items)";
+        const spans = decorationsOf(state(doc));
+
+        expect(sliceOf(doc, spans, "cm-log-search-verb")).toBe("Search");
+        expect(slicesOf(doc, spans, "cm-search-label")).toEqual([ "#", "archived" ]);
+        expect(sliceOf(doc, spans, "cm-search-negation")).toBe("!");
+        expect(sliceOf(doc, spans, "cm-search-keyword")).toBe("and");
+        expect(slicesOf(doc, spans, "cm-search-property")).toEqual([ "note", ".title" ]);
+        expect(sliceOf(doc, spans, "cm-search-operator")).toBe("*=");
+        expect(sliceOf(doc, spans, "cm-search-string")).toBe("'tower");
+        expect(sliceOf(doc, spans, "cm-log-search-count")).toBe("(returned 12 items)");
+        expect(lineClassesAt(state(doc), 1)).toEqual([]);
+    });
+
+    it("frames the whole query of a search in one box around its tokens", () => {
+        const doc = "17:02:11.408 Search: #book and towers  (returned 3 items)";
+        expect(sliceOf(doc, decorationsOf(state(doc)), "cm-log-search-query")).toBe("#book and towers");
+
+        // The border must wrap the token spans, not be cut into a box per token.
+        const view = new EditorView({ state: state(doc), parent: document.body });
+        try {
+            const frames = view.contentDOM.querySelectorAll(".cm-log-search-query");
+            expect(frames).toHaveLength(1);
+            expect(frames[0].textContent).toBe("#book and towers");
+            expect(frames[0].querySelector(".cm-search-label")?.textContent).toBe("#book");
+        } finally {
+            view.destroy();
+        }
+
+        expect(classesOf("17:02:11.408 Search:   (returned 0 items)"))
+            .not.toContain("cm-log-search-query");
+    });
+
+    it("does not mistake other entries that start with `Search` for searches", () => {
+        for (const doc of [
+            "18:00:00.000 Search note's relation author has not been found.",
+            "18:00:00.000 Search: #book"
+        ]) {
+            expect(classesOf(doc)).toEqual([ "cm-log-timestamp" ]);
+        }
+    });
+
     it("does not mistake sibling timing lines for queries", () => {
         // Same `Slow … took <n>ms` shape, but not a query — must stay a plain entry.
         for (const doc of [

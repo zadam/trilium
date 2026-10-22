@@ -3,6 +3,8 @@ import { type EditorState, type Extension, RangeSetBuilder, StateField } from "@
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
 import { type Highlighter, highlightTree } from "@lezer/highlight";
 
+import { decorateSearchQuery, searchHighlightTheme } from "./trilium_search_highlighter.js";
+
 /**
  * Lightweight regex highlighter for the Trilium backend log. Each log entry is a single line
  * beginning with a `HH:MM:SS.mmm` timestamp. The decorations live in a {@link StateField} (rather
@@ -25,6 +27,8 @@ import { type Highlighter, highlightTree } from "@lezer/highlight";
  *    not the HTTP method's), and the statement (absent for recursive queries) highlighted with the
  *    SQL language in the active code theme, or in one colour without a language. Unlike HTTP,
  *    `Slow` is not flagged as a warning here: queries are only logged when slow, so it is uninformative.
+ *  - search lines `<ts> Search: <query>  (returned <n> items)`, which follow a `GET /api/search`
+ *    request: the verb bolded, the query highlighted as search syntax and the count muted
  *  - `<ts> JS Error: …` and `<ts> ERROR: …` lines — coloured red, together with their following
  *    continuation lines (e.g. wrapped stack traces), which carry no timestamp of their own
  *  - `<ts> JS Info: …` lines (and their continuation lines) — placeholder class, no colour yet
@@ -51,6 +55,8 @@ const INFO_LINE = /^\d{2}:\d{2}:\d{2}\.\d{3} JS Info:/;
 // the parts that follow. Anchored on `query` so sibling timings — `Slow autocomplete took …ms`,
 // `Becca (note cache) load took …ms`, `Content hash computation took …ms` — are not caught.
 const SLOW_QUERY = /^\d{2}:\d{2}:\d{2}\.\d{3} (Slow (?:recursive )?query)( took )(\d+ms)(?:: (.+))?/;
+// The query of a `GET /api/search` request, decoded, and the number of notes it found.
+const SEARCH = /^\d{2}:\d{2}:\d{2}\.\d{3} (Search): (.*) {2}(\(returned \d+ items\))$/;
 
 /**
  * Upper bound on how many (trailing) lines are highlighted, to cap the per-rebuild work. Sized well
@@ -65,6 +71,9 @@ const verbMark = Decoration.mark({ class: "cm-log-verb" });
 const urlMark = Decoration.mark({ class: "cm-log-url" });
 const queryVerbMark = Decoration.mark({ class: "cm-log-query-verb" });
 const sqlMark = Decoration.mark({ class: "cm-log-sql" });
+const searchVerbMark = Decoration.mark({ class: "cm-log-search-verb" });
+const searchQueryMark = Decoration.mark({ class: "cm-log-search-query" });
+const searchCountMark = Decoration.mark({ class: "cm-log-search-count" });
 const httpLine = Decoration.line({ class: "cm-log-http" });
 const queryLine = Decoration.line({ class: "cm-log-query" });
 const errorLine = Decoration.line({ class: "cm-log-error" });
@@ -91,6 +100,13 @@ const logHighlightTheme = EditorView.baseTheme({
     ".cm-log-query": { backgroundColor: "var(--log-query-line-background-color, color-mix(in srgb, var(--main-text-color) 3%, transparent))" },
     ".cm-log-query-verb": { fontWeight: "bold", color: "var(--log-query-verb-color, #bf3989)" },
     ".cm-log-sql": { color: "var(--log-sql-color, #8957e5)" },
+    ".cm-log-search-verb": { fontWeight: "bold", color: "var(--log-search-verb-color, #3f9189)" },
+    ".cm-log-search-query": {
+        border: "1px solid var(--log-search-query-border-color, var(--main-border-color))",
+        borderRadius: "3px",
+        padding: "0 2px"
+    },
+    ".cm-log-search-count": { color: "var(--log-search-count-color, var(--muted-text-color))" },
     ".cm-log-status": { fontWeight: "bold" },
     ".cm-log-status-2xx": { color: "var(--log-status-success-color, #2ea043)" },
     ".cm-log-status-3xx": { color: "var(--log-status-redirect-color, var(--muted-text-color))" },
@@ -142,7 +158,7 @@ export function triliumLogHighlighter(sqlLanguage: Language | null = null): Exte
             EditorView.decorations.from(f, (highlights) => highlights.sql)
         ]
     });
-    return [ field, logHighlightTheme ];
+    return [ field, logHighlightTheme, searchHighlightTheme ];
 }
 
 function buildHighlights(state: EditorState, sqlLanguage: Language | null): LogHighlights {
@@ -226,6 +242,7 @@ function decorateLine(
 
     const httpMatch = HTTP_REQUEST.exec(text);
     const queryMatch = httpMatch ? null : SLOW_QUERY.exec(text);
+    const searchMatch = httpMatch || queryMatch ? null : SEARCH.exec(text);
     const newBlockLine = httpMatch ? null : blockLineFor(text);
     // Line decorations must be added at the line start before any mark that begins there.
     if (httpMatch) {
@@ -274,6 +291,21 @@ function decorateLine(
                 builder.add(sqlStart, sqlStart + sql.length, sqlMark);
             }
         }
+    } else if (searchMatch) {
+        // Layout: `<12-char ts><space>Search: <query>  (returned <n> items)`.
+        const [ , searchVerb, query, count ] = searchMatch;
+        const verbStart = lineStart + TIMESTAMP_LENGTH + 1;
+        const lineEnd = lineStart + text.length;
+
+        const queryStart = verbStart + searchVerb.length + 2; // ": "
+
+        builder.add(verbStart, verbStart + searchVerb.length, searchVerbMark);
+        // Added before the token marks that start at the same position, so it wraps them.
+        if (query) {
+            builder.add(queryStart, queryStart + query.length, searchQueryMark);
+        }
+        decorateSearchQuery(builder, query, queryStart);
+        builder.add(lineEnd - count.length, lineEnd, searchCountMark);
     }
 
     return newBlockLine;
