@@ -77,7 +77,8 @@
     "note-panels": "노트 패널",
     "show-note-map": "오른쪽 창에 노트 맵을 표시합니다",
     "focus-collection-properties": "컬렉션의 보기 유형 선택기로 포커스를 이동합니다",
-    "focus-formatting-toolbar": "고정 서식 도구 모음과 편집기 사이에서 포커스를 이동합니다"
+    "focus-formatting-toolbar": "고정 서식 도구 모음과 편집기 사이에서 포커스를 이동합니다",
+    "peek-left-pane": "가로 레이아웃에서 노트 트리를 콘텐츠 위에 떠 있는 임시 패널로 미리 표시합니다"
   },
   "hidden-subtree": {
     "zen-mode": "젠 모드",
@@ -266,7 +267,8 @@
     "show-note-map": "노트 맵 표시",
     "show-note-info": "노트 정보 표시",
     "show-note-paths": "노트 경로 표시",
-    "toggle-similar-notes": "유사한 노트 표시 전환"
+    "toggle-similar-notes": "유사한 노트 표시 전환",
+    "peek-left-pane": "노트 트리 창 미리보기"
   },
   "login": {
     "title": "로그인",
