@@ -181,7 +181,7 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>transactional</code></td>
-            <td><pre><code class="language-application-typescript">transactional(func: () =&gt; T): T</code></pre><p>This functions wraps code which is supposed to be running in transaction. If transaction already exists, then we'll use that transaction.</p><p><strong>Returns</strong> <code>T</code>: result of func callback</p></td>
+            <td><pre><code class="language-application-typescript">transactional&lt;T&gt;(func: () =&gt; T): T</code></pre><p>This functions wraps code which is supposed to be running in transaction. If transaction already exists, then we'll use that transaction.</p><p><strong>Returns</strong> <code>T</code>: result of func callback</p></td>
         </tr>
         <tr>
             <td><code>randomString</code></td>
@@ -312,7 +312,7 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>getJsonContent</code></td>
-            <td><pre><code class="language-application-typescript">getJsonContent(): T | null</code></pre><p>Returns the note's content parsed as JSON. Returns <code>null</code> when the content is empty, blank or binary, and throws an error when it is not valid JSON.</p></td>
+            <td><pre><code class="language-application-typescript">getJsonContent&lt;T = unknown&gt;(): T | null</code></pre><p>Returns the note's content parsed as JSON. Returns <code>null</code> when the content is empty, blank or binary, and throws an error when it is not valid JSON.</p></td>
         </tr>
         <tr>
             <td><code>getJsonContentSafely</code></td>
@@ -1154,31 +1154,31 @@ Direct access to Trilium's SQLite database (subset of trilium-core's `SqlService
     <tbody>
         <tr>
             <td><code>getRow</code></td>
-            <td><pre><code class="language-application-typescript">getRow(query: string, params?: unknown[]): T</code></pre><p>Returns the first row of the result, as an object of column names to values, or <code>undefined</code> when the query returns no rows.</p></td>
+            <td><pre><code class="language-application-typescript">getRow&lt;T&gt;(query: string, params?: unknown[]): T</code></pre><p>Returns the first row of the result, as an object of column names to values, or <code>undefined</code> when the query returns no rows.</p></td>
         </tr>
         <tr>
             <td><code>getRowOrNull</code></td>
-            <td><pre><code class="language-application-typescript">getRowOrNull(query: string, params?: unknown[]): T | null</code></pre><p>Returns the first row of the result, or <code>null</code> when the query returns no rows.</p></td>
+            <td><pre><code class="language-application-typescript">getRowOrNull&lt;T&gt;(query: string, params?: unknown[]): T | null</code></pre><p>Returns the first row of the result, or <code>null</code> when the query returns no rows.</p></td>
         </tr>
         <tr>
             <td><code>getValue</code></td>
-            <td><pre><code class="language-application-typescript">getValue(query: string, params?: unknown[]): T</code></pre><p>Returns the first column of the first row, such as the count of <code>SELECT COUNT(*) FROM notes</code>, or <code>undefined</code> when the query returns no rows.</p></td>
+            <td><pre><code class="language-application-typescript">getValue&lt;T&gt;(query: string, params?: unknown[]): T</code></pre><p>Returns the first column of the first row, such as the count of <code>SELECT COUNT(*) FROM notes</code>, or <code>undefined</code> when the query returns no rows.</p></td>
         </tr>
         <tr>
             <td><code>getRows</code></td>
-            <td><pre><code class="language-application-typescript">getRows(query: string, params?: unknown[]): T[]</code></pre><p>Returns every row of the result, each as an object of column names to values.</p></td>
+            <td><pre><code class="language-application-typescript">getRows&lt;T&gt;(query: string, params?: unknown[]): T[]</code></pre><p>Returns every row of the result, each as an object of column names to values.</p></td>
         </tr>
         <tr>
             <td><code>getColumn</code></td>
-            <td><pre><code class="language-application-typescript">getColumn(query: string, params?: unknown[]): T[]</code></pre><p>Returns the first column of every row of the result.</p></td>
+            <td><pre><code class="language-application-typescript">getColumn&lt;T&gt;(query: string, params?: unknown[]): T[]</code></pre><p>Returns the first column of every row of the result.</p></td>
         </tr>
         <tr>
             <td><code>getMap</code></td>
-            <td><pre><code class="language-application-typescript">getMap(query: string, params?: unknown[]): Record&lt;K, V&gt;</code></pre><p>Returns an object that maps the first column of each row to its second column.</p></td>
+            <td><pre><code class="language-application-typescript">getMap&lt;K extends string | number | symbol, V&gt;(query: string, params?: unknown[]): Record&lt;K, V&gt;</code></pre><p>Returns an object that maps the first column of each row to its second column.</p></td>
         </tr>
         <tr>
             <td><code>iterateRows</code></td>
-            <td><pre><code class="language-application-typescript">iterateRows(query: string, params?: unknown[]): IterableIterator&lt;T&gt;</code></pre><p>Returns the rows of the result one at a time, which keeps a large result out of memory.</p></td>
+            <td><pre><code class="language-application-typescript">iterateRows&lt;T&gt;(query: string, params?: unknown[]): IterableIterator&lt;T&gt;</code></pre><p>Returns the rows of the result one at a time, which keeps a large result out of memory.</p></td>
         </tr>
         <tr>
             <td><code>execute</code></td>
@@ -1190,7 +1190,7 @@ Direct access to Trilium's SQLite database (subset of trilium-core's `SqlService
         </tr>
         <tr>
             <td><code>transactional</code></td>
-            <td><pre><code class="language-application-typescript">transactional(func: () =&gt; T): T</code></pre><p>Calls <code>func</code> in a transaction: when it throws, every change it made is undone. Inside a transaction already running, it runs as a nested savepoint.</p><p><strong>Returns</strong> <code>T</code>: What <code>func</code> returns.</p></td>
+            <td><pre><code class="language-application-typescript">transactional&lt;T&gt;(func: () =&gt; T): T</code></pre><p>Calls <code>func</code> in a transaction: when it throws, every change it made is undone. Inside a transaction already running, it runs as a nested savepoint.</p><p><strong>Returns</strong> <code>T</code>: What <code>func</code> returns.</p></td>
         </tr>
     </tbody>
 </table>

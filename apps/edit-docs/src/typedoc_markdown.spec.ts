@@ -65,6 +65,9 @@ export interface DemoWindowApi {
     /** @deprecated Use {@link resize}. */
     maximize(): void;
 
+    /** Reads a stored value. */
+    read<T extends string | number = string, K = string>(key: K): T | null;
+
     /**
      * Asks to close the window.
      *
@@ -179,6 +182,9 @@ describe("typeDocToMarkdown", () => {
         expect(onClose).toContain("onClose(callback: (reason: string) =&gt; void): () =&gt; void");
         expect(onClose).not.toContain("<table>");
         expect(onClose).not.toContain("Returns");
+
+        // A generic method declares its type parameters, with their constraints and defaults.
+        expect(row("read")).toContain("read&lt;T extends string | number = string, K = string&gt;(key: K): T | null</code></pre>");
     });
 
     it("warns about a deprecated member and writes links as code", () => {

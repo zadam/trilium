@@ -404,7 +404,13 @@ function parametersToString(signature: Signature) {
         const optional = parameter.flags.isOptional ? "?" : "";
         return `${rest}${parameter.name}${optional}: ${typeToString(parameter.type)}`;
     });
-    return `(${parameters.join(", ")})`;
+    const typeParameters = (signature.typeParameters ?? []).map((parameter) => {
+        const constraint = parameter.type ? ` extends ${typeToString(parameter.type)}` : "";
+        const fallback = parameter.default ? ` = ${typeToString(parameter.default)}` : "";
+        return `${parameter.name}${constraint}${fallback}`;
+    });
+    const generics = typeParameters.length ? `<${typeParameters.join(", ")}>` : "";
+    return `${generics}(${parameters.join(", ")})`;
 }
 
 /**
