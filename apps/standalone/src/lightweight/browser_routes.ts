@@ -35,12 +35,14 @@ type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 function toCoreRequest(req: BrowserRequest): Request {
     /* v8 ignore next -- @preserve: BrowserRouter.dispatch always sets req.headers, so the ?? fallback is unreachable. */
     const headers = req.headers ?? {};
+    const { pathname, search } = new URL(req.url);
     return {
         params: req.params,
         query: req.query,
         body: req.body,
         headers,
         method: req.method,
+        url: pathname + search,
         // A file posted for an import route has no `buffer` until an importer that needs one calls
         // `loadUploadedBytes()`, as on the server when multer leaves a zip on disk.
         file: req.file as Request["file"],
