@@ -685,7 +685,6 @@
     "in_progress": "正在與伺服器進行同步。"
   },
   "left_pane_toggle": {
-    "show_panel": "顯示面板",
     "hide_panel": "隱藏面板"
   },
   "move_pane_button": {

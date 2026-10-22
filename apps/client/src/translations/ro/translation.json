@@ -1067,8 +1067,7 @@
     "search_placeholder": "Căutați notițe după nume sau tastați > pentru comenzi..."
   },
   "left_pane_toggle": {
-    "hide_panel": "Ascunde panoul",
-    "show_panel": "Afișează panoul"
+    "hide_panel": "Ascunde panoul"
   },
   "limit": {
     "limit": "Limită"

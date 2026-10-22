@@ -640,7 +640,6 @@
     "in_progress": "La synchronisation avec le serveur est en cours."
   },
   "left_pane_toggle": {
-    "show_panel": "Afficher le panneau",
     "hide_panel": "Masquer le panneau"
   },
   "move_pane_button": {

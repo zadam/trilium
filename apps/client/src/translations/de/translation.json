@@ -836,7 +836,6 @@
     "in_progress": "Der Synchronisierungsvorgang mit dem Server ist im Gange."
   },
   "left_pane_toggle": {
-    "show_panel": "Panel anzeigen",
     "hide_panel": "Panel ausblenden"
   },
   "move_pane_button": {

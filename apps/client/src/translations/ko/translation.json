@@ -1173,7 +1173,6 @@
     "in_progress": "서버와의 동기화가 진행 중입니다."
   },
   "left_pane_toggle": {
-    "show_panel": "패널 표시",
     "hide_panel": "패널 숨기기",
     "peek_panel": "패널 미리 보기"
   },

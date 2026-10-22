@@ -970,7 +970,6 @@
     "disconnected_no_changes": "<p>A conexão ao servidor de sincronização falhou.<br>Todas as alterações já foram sincronizadas.</p><p>Clique para sincronizar.</p>"
   },
   "left_pane_toggle": {
-    "show_panel": "Exibir painel",
     "hide_panel": "Esconder painel"
   },
   "move_pane_button": {

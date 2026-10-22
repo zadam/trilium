@@ -926,7 +926,6 @@
     "in_progress": "正在与服务器进行同步。"
   },
   "left_pane_toggle": {
-    "show_panel": "显示面板",
     "hide_panel": "隐藏面板",
     "peek_panel": "速览面板"
   },

@@ -118,7 +118,6 @@
     "show_space_usage": "スペース使用状況を表示"
   },
   "left_pane_toggle": {
-    "show_panel": "パネルを表示",
     "hide_panel": "パネルを非表示",
     "peek_panel": "ピークパネル"
   },
