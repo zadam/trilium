@@ -26,3 +26,5 @@ There is a small strip near the right edge of the app which shows an arrow icon.
     *   Clicking outside the sidebar while in peek mode will simply hide the sidebar. Same goes for the X button and clicking on the right edge.
     *   Pressing the pin icon will dock the sidebar.
 *   When the sidebar is docked, pressing the edge will hide the sidebar (similar to the toggle icon at the top).
+
+The _Peek Right Pane_ [keyboard shortcut](../Keyboard%20Shortcuts.md), <kbd>Alt</kbd>+<kbd>]</kbd> by default, does the same as pressing the strip.
