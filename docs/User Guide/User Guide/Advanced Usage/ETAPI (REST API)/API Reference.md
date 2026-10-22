@@ -61,7 +61,9 @@ Create a note and place it into the note tree
 
 **Responses**
 
-*   `201`: note created (`NoteWithBranch`)
+*   `201`: note created
+    
+    *   `application/json; charset=utf-8`: `NoteWithBranch`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -118,7 +120,9 @@ Create a note and place it into the note tree
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -156,7 +160,9 @@ Search notes
 
 **Responses**
 
-*   `200`: search response (`SearchResponse`)
+*   `200`: search response
+    
+    *   `application/json; charset=utf-8`: `SearchResponse`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -207,7 +213,9 @@ Search notes
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -237,7 +245,9 @@ Returns a note identified by its ID
 
 **Responses**
 
-*   `200`: note response (`Note`)
+*   `200`: note response
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -296,7 +306,9 @@ Returns a note identified by its ID
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -327,7 +339,9 @@ deletes a single note based on the noteId supplied
 **Responses**
 
 *   `204`: note deleted
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -391,7 +405,9 @@ patch a note identified by the noteId with changes in the body
 
 **Responses**
 
-*   `200`: note updated (`Note`)
+*   `200`: note updated
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -450,7 +466,9 @@ patch a note identified by the noteId with changes in the body
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -480,7 +498,9 @@ Returns note content identified by its ID
 
 **Responses**
 
-*   `200`: note content, served with the note's MIME type as `Content-Type` (`string (binary)`)
+*   `200`: note content, served with the note's MIME type as `Content-Type`
+    
+    *   `*/*`: `string (binary)`
 
 ### `PUT /notes/{noteId}/content`
 
@@ -520,8 +540,12 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 
 **Responses**
 
-*   `200`: export ZIP file (`string (binary)`)
-*   `default`: unexpected error (`Error`)
+*   `200`: export ZIP file
+    
+    *   `application/zip`: `string (binary)`
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -551,7 +575,9 @@ Imports ZIP file into a given note.
 
 **Responses**
 
-*   `201`: note created (`NoteWithBranch`)
+*   `201`: note created
+    
+    *   `application/json; charset=utf-8`: `NoteWithBranch`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -608,7 +634,9 @@ Imports ZIP file into a given note.
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -640,7 +668,9 @@ Create a note revision for the given note
 **Responses**
 
 *   `204`: revision has been created
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -670,7 +700,9 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 
 **Responses**
 
-*   `200`: list of revisions (`array of Revision`)
+*   `200`: list of revisions
+    
+    *   `application/json; charset=utf-8`: `array of Revision`
 
 ```json
 [
@@ -692,7 +724,9 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 ]
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -722,7 +756,9 @@ Returns all attachments for a note identified by its ID
 
 **Responses**
 
-*   `200`: list of attachments (`array of Attachment`)
+*   `200`: list of attachments
+    
+    *   `application/json; charset=utf-8`: `array of Attachment`
 
 ```json
 [
@@ -742,7 +778,9 @@ Returns all attachments for a note identified by its ID
 ]
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -772,7 +810,9 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 
 **Responses**
 
-*   `200`: note restored successfully (`object`)
+*   `200`: note restored successfully
+    
+    *   `application/json; charset=utf-8`: `object`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -784,7 +824,9 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -814,7 +856,9 @@ Returns recent changes including note creations, modifications, and deletions
 
 **Responses**
 
-*   `200`: list of recent changes (`array of RecentChange`)
+*   `200`: list of recent changes
+    
+    *   `application/json; charset=utf-8`: `array of RecentChange`
 
 ```json
 [
@@ -832,7 +876,9 @@ Returns recent changes including note creations, modifications, and deletions
 ]
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -862,7 +908,9 @@ Returns a revision identified by its ID
 
 **Responses**
 
-*   `200`: revision response (`Revision`)
+*   `200`: revision response
+    
+    *   `application/json; charset=utf-8`: `Revision`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -898,7 +946,9 @@ Returns a revision identified by its ID
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -928,8 +978,12 @@ Returns revision content identified by its ID
 
 **Responses**
 
-*   `200`: revision content response (`string`)
-*   `default`: unexpected error (`Error`)
+*   `200`: revision content response
+    
+    *   `text/html`: `string`
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -976,7 +1030,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
 
 **Responses**
 
-*   `200`: branch updated (branch between parent note and child note already existed) (`Branch`)
+*   `200`: branch updated (branch between parent note and child note already existed)
+    
+    *   `application/json; charset=utf-8`: `Branch`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1000,7 +1056,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
 }
 ```
 
-*   `201`: branch created (`Branch`)
+*   `201`: branch created
+    
+    *   `application/json; charset=utf-8`: `Branch`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1024,7 +1082,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1054,7 +1114,9 @@ Returns a branch identified by its ID
 
 **Responses**
 
-*   `200`: branch response (`Branch`)
+*   `200`: branch response
+    
+    *   `application/json; charset=utf-8`: `Branch`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1078,7 +1140,9 @@ Returns a branch identified by its ID
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1109,7 +1173,9 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 **Responses**
 
 *   `204`: branch deleted
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1162,7 +1228,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 
 **Responses**
 
-*   `200`: branch updated (`Branch`)
+*   `200`: branch updated
+    
+    *   `application/json; charset=utf-8`: `Branch`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1186,7 +1254,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1234,7 +1304,9 @@ create an attachment
 
 **Responses**
 
-*   `201`: attachment created (`Attachment`)
+*   `201`: attachment created
+    
+    *   `application/json; charset=utf-8`: `Attachment`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1266,7 +1338,9 @@ create an attachment
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1296,7 +1370,9 @@ Returns an attachment identified by its ID
 
 **Responses**
 
-*   `200`: attachment response (`Attachment`)
+*   `200`: attachment response
+    
+    *   `application/json; charset=utf-8`: `Attachment`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1328,7 +1404,9 @@ Returns an attachment identified by its ID
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1359,7 +1437,9 @@ deletes an attachment based on the attachmentId supplied.
 **Responses**
 
 *   `204`: attachment deleted
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1419,7 +1499,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 **Responses**
 
-*   `200`: attribute updated (`Attachment`)
+*   `200`: attribute updated
+    
+    *   `application/json; charset=utf-8`: `Attachment`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1451,7 +1533,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1481,7 +1565,9 @@ Returns attachment content identified by its ID
 
 **Responses**
 
-*   `200`: attachment content, served with the attachment's MIME type as `Content-Type` (`string (binary)`)
+*   `200`: attachment content, served with the attachment's MIME type as `Content-Type`
+    
+    *   `*/*`: `string (binary)`
 
 ### `PUT /attachments/{attachmentId}/content`
 
@@ -1540,7 +1626,9 @@ create an attribute for a given note
 
 **Responses**
 
-*   `201`: attribute created (`Attribute`)
+*   `201`: attribute created
+    
+    *   `application/json; charset=utf-8`: `Attribute`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1566,7 +1654,9 @@ create an attribute for a given note
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1596,7 +1686,9 @@ Returns an attribute identified by its ID
 
 **Responses**
 
-*   `200`: attribute response (`Attribute`)
+*   `200`: attribute response
+    
+    *   `application/json; charset=utf-8`: `Attribute`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1622,7 +1714,9 @@ Returns an attribute identified by its ID
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1653,7 +1747,9 @@ deletes an attribute based on the attributeId supplied.
 **Responses**
 
 *   `204`: attribute deleted
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1709,7 +1805,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
 
 **Responses**
 
-*   `200`: attribute updated (`Attribute`)
+*   `200`: attribute updated
+    
+    *   `application/json; charset=utf-8`: `Attribute`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1735,7 +1833,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1766,7 +1866,9 @@ notePositions in branches are not automatically pushed to connected clients and 
 **Responses**
 
 *   `204`: note ordering will be asynchronously updated in all connected clients
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1796,7 +1898,9 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 
 **Responses**
 
-*   `200`: inbox note (`Note`)
+*   `200`: inbox note
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1855,7 +1959,9 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1885,7 +1991,9 @@ returns a day note for a given date. Gets created if doesn't exist.
 
 **Responses**
 
-*   `200`: day note (`Note`)
+*   `200`: day note
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1944,7 +2052,9 @@ returns a day note for a given date. Gets created if doesn't exist.
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1976,7 +2086,9 @@ Returns the day note for the first day of the week containing the given date, ho
 
 **Responses**
 
-*   `200`: day note starting the week (`Note`)
+*   `200`: day note starting the week
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2035,7 +2147,9 @@ Returns the day note for the first day of the week containing the given date, ho
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2067,7 +2181,9 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 
 **Responses**
 
-*   `200`: week note (`Note`)
+*   `200`: week note
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2126,7 +2242,9 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2158,7 +2276,9 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 
 **Responses**
 
-*   `200`: month note (`Note`)
+*   `200`: month note
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2217,7 +2337,9 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2249,7 +2371,9 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 
 **Responses**
 
-*   `200`: year note (`Note`)
+*   `200`: year note
+    
+    *   `application/json; charset=utf-8`: `Note`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2308,7 +2432,9 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2346,7 +2472,9 @@ get an ETAPI token based on password for further use with ETAPI
 
 **Responses**
 
-*   `201`: auth token (`object`)
+*   `201`: auth token
+    
+    *   `application/json; charset=utf-8`: `object`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2359,7 +2487,9 @@ get an ETAPI token based on password for further use with ETAPI
 ```
 
 *   `429`: Client IP has been blacklisted because too many requests (possibly failed authentications) were made within a short time frame, try again later
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2384,7 +2514,9 @@ logout (delete/deactivate) an ETAPI token
 **Responses**
 
 *   `204`: logout successful
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2408,7 +2540,9 @@ returns information about the running Trilium instance
 
 **Responses**
 
-*   `200`: app info (`AppInfo`)
+*   `200`: app info
+    
+    *   `application/json; charset=utf-8`: `AppInfo`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2434,7 +2568,9 @@ returns information about the running Trilium instance
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2465,7 +2601,9 @@ Create a database backup under a given name
 **Responses**
 
 *   `204`: backup has been created
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2499,7 +2637,10 @@ The same data is served by GET /api/metrics to the web session.
 
 **Responses**
 
-*   `200`: instance metrics (`string`, `Metrics`)
+*   `200`: instance metrics
+    
+    *   `text/plain`: `string`
+    *   `application/json`: `Metrics`
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -2553,7 +2694,9 @@ The same data is served by GET /api/metrics to the web session.
 }
 ```
 
-*   `default`: unexpected error (`Error`)
+*   `default`: unexpected error
+    
+    *   `application/json; charset=utf-8`: `Error`
 
 | Property | Type | Description |
 | --- | --- | --- |

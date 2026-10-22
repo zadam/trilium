@@ -186,7 +186,7 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
             blocks.push(body.description.trim());
         }
         for (const [ mime, media ] of Object.entries(body.content ?? {})) {
-            blocks.push(`*   ${code(mime)}: ${code(typeOf(media.schema))}`, ...renderBody(spec, mime, media, "request"));
+            blocks.push(`*   ${mediaLine(mime, media)}`, ...renderBody(spec, mime, media, "request"));
         }
     }
 
@@ -197,24 +197,19 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
     for (const [ status, response ] of responses) {
         const { description, content } = resolve<Response>(spec, response);
 
-        // Content types of one response usually share a schema, which is then listed once.
-        const bodies = new Map<string, [ string, MediaType ]>();
+        blocks.push(`*   ${[ code(status), description?.trim() ].filter(Boolean).join(": ")}`);
         for (const [ mime, media ] of Object.entries(content ?? {})) {
-            const type = typeOf(media.schema);
-            if (type && !bodies.has(type)) {
-                bodies.set(type, [ mime, media ]);
-            }
-        }
-
-        const types = [ ...bodies.keys() ].map(code).join(", ");
-        const summary = [ code(status), description?.trim() ].filter(Boolean).join(": ");
-        blocks.push(`*   ${summary}${types ? ` (${types})` : ""}`);
-        for (const [ mime, media ] of bodies.values()) {
-            blocks.push(...renderBody(spec, mime, media, "response"));
+            blocks.push(`    *   ${mediaLine(mime, media)}`, ...renderBody(spec, mime, media, "response"));
         }
     }
 
     return blocks;
+}
+
+/** A body's content type, which is also its `Content-Type` header, and the type of its schema. */
+function mediaLine(mime: string, { schema }: MediaType) {
+    const type = typeOf(schema);
+    return type ? `${code(mime)}: ${code(type)}` : code(mime);
 }
 
 type Direction = "request" | "response";

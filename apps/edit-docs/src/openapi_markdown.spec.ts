@@ -99,7 +99,9 @@ describe("openApiToMarkdown", () => {
         expect(markdown).toContain([
             "**Responses**",
             "",
-            "*   `200`: note updated (`Note`)",
+            "*   `200`: note updated",
+            "",
+            "    *   `application/json`: `Note`",
             "",
             "| Property | Type | Description |",
             "| --- | --- | --- |",
