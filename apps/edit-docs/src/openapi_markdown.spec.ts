@@ -74,12 +74,20 @@ describe("openApiToMarkdown", () => {
             "",
             "**Authorization**: `TokenAuth` or `BasicAuth`"
         ].join("\n"));
-        // Path-level parameters come first, then the operation's own, resolved through `$ref`.
+        // Parameters, the path's and the operation's own resolved through `$ref`, are grouped by
+        // where they go.
         expect(markdown).toContain([
-            "| Name | In | Type | Description |",
-            "| --- | --- | --- | --- |",
-            "| `noteId`<br>*required* | path | `EntityId` |  |",
-            "| `force` | query | `boolean` | skip checks |"
+            "**Path parameters**",
+            "",
+            "| Name | Type | Description |",
+            "| --- | --- | --- |",
+            "| `noteId`<br>*required* | `EntityId` |  |",
+            "",
+            "**Query parameters**",
+            "",
+            "| Name | Type | Description |",
+            "| --- | --- | --- |",
+            "| `force` | `boolean` | skip checks |"
         ].join("\n"));
         // The body's properties are listed in place, even when its schema is a reference, in a
         // column beside its sample, written as the Markdown export writes a multicolumn layout.

@@ -177,19 +177,19 @@ Search notes
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Query parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `search`  <br>_required_ | query | `string` | search query string as described in [https://triliumnext.github.io/Docs/Wiki/search.html](https://triliumnext.github.io/Docs/Wiki/search.html) |
-| `fastSearch` | query | `boolean` | enable fast search (fulltext doesn't look into content) |
-| `includeArchivedNotes` | query | `boolean` | search by default ignores archived notes. Set to 'true' to includes archived notes into search results. |
-| `ancestorNoteId` | query | `EntityId` | search only in a subtree identified by the subtree noteId. By default whole tree is searched. |
-| `ancestorDepth` | query | `string` | define how deep in the tree should the notes be searched |
-| `orderBy` | query | `string` | name of the property/label to order search results by |
-| `orderDirection` | query | `string` | order direction, ascending or descending. One of `asc`, `desc`. |
-| `limit` | query | `integer` | limit the number of results you want to receive |
-| `debug` | query | `boolean` | set to true to get debug information in the response (search query parsing) |
+| Name | Type | Description |
+| --- | --- | --- |
+| `search`  <br>_required_ | `string` | search query string as described in [https://triliumnext.github.io/Docs/Wiki/search.html](https://triliumnext.github.io/Docs/Wiki/search.html) |
+| `fastSearch` | `boolean` | enable fast search (fulltext doesn't look into content) |
+| `includeArchivedNotes` | `boolean` | search by default ignores archived notes. Set to 'true' to includes archived notes into search results. |
+| `ancestorNoteId` | `EntityId` | search only in a subtree identified by the subtree noteId. By default whole tree is searched. |
+| `ancestorDepth` | `string` | define how deep in the tree should the notes be searched |
+| `orderBy` | `string` | name of the property/label to order search results by |
+| `orderDirection` | `string` | order direction, ascending or descending. One of `asc`, `desc`. |
+| `limit` | `integer` | limit the number of results you want to receive |
+| `debug` | `boolean` | set to true to get debug information in the response (search query parsing) |
 
 **Responses**
 
@@ -290,11 +290,11 @@ Returns a note identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -403,11 +403,11 @@ deletes a single note based on the noteId supplied
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -450,11 +450,11 @@ patch a note identified by the noteId with changes in the body
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Request body** (required)
 
@@ -606,11 +606,11 @@ Returns note content identified by its ID. The response carries the note's MIME 
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -626,11 +626,11 @@ Updates note content identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Request body** (required)
 
@@ -653,12 +653,17 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
-| `format` | query | `any` | One of `html`, `markdown`, `share`. |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
+
+**Query parameters**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `format` | `any` | One of `html`, `markdown`, `share`. |
 
 **Responses**
 
@@ -701,11 +706,11 @@ Imports ZIP file into a given note.
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -812,11 +817,11 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -878,11 +883,11 @@ Returns recent changes including note creations, modifications, and deletions
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Query parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `ancestorNoteId` | query | `EntityId` | Limit changes to a subtree identified by this note ID. Defaults to "root" (all notes). |
+| Name | Type | Description |
+| --- | --- | --- |
+| `ancestorNoteId` | `EntityId` | Limit changes to a subtree identified by this note ID. Defaults to "root" (all notes). |
 
 **Responses**
 
@@ -1084,11 +1089,11 @@ Returns a branch identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `branchId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `branchId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -1162,11 +1167,11 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `branchId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `branchId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -1209,11 +1214,11 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `branchId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `branchId`  <br>_required_ | `EntityId` |  |
 
 **Request body** (required)
 
@@ -1319,11 +1324,11 @@ notePositions in branches are not automatically pushed to connected clients and 
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `parentNoteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `parentNoteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -1479,11 +1484,11 @@ Returns an attribute identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attributeId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attributeId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -1559,11 +1564,11 @@ deletes an attribute based on the attributeId supplied.
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attributeId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attributeId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -1606,11 +1611,11 @@ patch an attribute identified by the attributeId with changes in the body. For l
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attributeId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attributeId`  <br>_required_ | `EntityId` |  |
 
 **Request body** (required)
 
@@ -1725,11 +1730,11 @@ Returns all attachments for a note identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -1903,11 +1908,11 @@ Returns an attachment identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attachmentId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -1989,11 +1994,11 @@ deletes an attachment based on the attachmentId supplied.
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attachmentId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -2036,11 +2041,11 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attachmentId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |  |
 
 **Request body** (required)
 
@@ -2161,11 +2166,11 @@ Returns attachment content identified by its ID. The response carries the attach
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attachmentId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -2181,11 +2186,11 @@ Updates attachment content identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `attachmentId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |  |
 
 **Request body** (required)
 
@@ -2212,12 +2217,17 @@ Create a note revision for the given note
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
-| `format` | query | `any` | One of `html`, `markdown`. |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
+
+**Query parameters**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `format` | `any` | One of `html`, `markdown`. |
 
 **Responses**
 
@@ -2260,11 +2270,11 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `noteId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -2327,11 +2337,11 @@ Returns a revision identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `revisionId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `revisionId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -2417,11 +2427,11 @@ Returns revision content identified by its ID
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `revisionId`  <br>_required_ | path | `EntityId` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `revisionId`  <br>_required_ | `EntityId` |  |
 
 **Responses**
 
@@ -2468,11 +2478,11 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `date`  <br>_required_ | path | `string (date)` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `date`  <br>_required_ | `string (date)` |  |
 
 **Responses**
 
@@ -2581,11 +2591,11 @@ returns a day note for a given date. Gets created if doesn't exist.
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `date`  <br>_required_ | path | `string (date)` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `date`  <br>_required_ | `string (date)` |  |
 
 **Responses**
 
@@ -2694,11 +2704,11 @@ Returns the day note for the first day of the week containing the given date, ho
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `date`  <br>_required_ | path | `string (date)` | Any date within the week, in the format YYYY-MM-DD. |
+| Name | Type | Description |
+| --- | --- | --- |
+| `date`  <br>_required_ | `string (date)` | Any date within the week, in the format YYYY-MM-DD. |
 
 **Responses**
 
@@ -2807,11 +2817,11 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `week`  <br>_required_ | path | `string` | The ISO 8601 week identifier (YYYY-Www). |
+| Name | Type | Description |
+| --- | --- | --- |
+| `week`  <br>_required_ | `string` | The ISO 8601 week identifier (YYYY-Www). |
 
 **Responses**
 
@@ -2920,11 +2930,11 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `month`  <br>_required_ | path | `string` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `month`  <br>_required_ | `string` |  |
 
 **Responses**
 
@@ -3033,11 +3043,11 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `year`  <br>_required_ | path | `string` |  |
+| Name | Type | Description |
+| --- | --- | --- |
+| `year`  <br>_required_ | `string` |  |
 
 **Responses**
 
@@ -3356,11 +3366,11 @@ Create a database backup under a given name
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Path parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `backupName`  <br>_required_ | path | `StringId` | If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file |
+| Name | Type | Description |
+| --- | --- | --- |
+| `backupName`  <br>_required_ | `StringId` | If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file |
 
 **Responses**
 
@@ -3405,11 +3415,11 @@ The same data is served by GET /api/metrics to the web session.
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
-**Parameters**
+**Query parameters**
 
-| Name | In | Type | Description |
-| --- | --- | --- | --- |
-| `format` | query | `string` | Response format. Defaults to Prometheus text. One of `prometheus`, `json`. |
+| Name | Type | Description |
+| --- | --- | --- |
+| `format` | `string` | Response format. Defaults to Prometheus text. One of `prometheus`, `json`. |
 
 **Responses**
 

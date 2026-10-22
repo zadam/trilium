@@ -99,6 +99,14 @@ type HttpMethod = typeof HTTP_METHODS[number];
 
 const HTTP_METHODS = [ "get", "put", "post", "delete", "options", "head", "patch", "trace" ] as const;
 
+/** The places a parameter can go, in the order their tables appear. */
+const PARAMETER_LOCATIONS = [
+    [ "path", "Path parameters" ],
+    [ "query", "Query parameters" ],
+    [ "header", "Header parameters" ],
+    [ "cookie", "Cookie parameters" ]
+] as const;
+
 export function openApiToMarkdown(spec: OpenApiSpec): string {
     const blocks: string[] = [];
     if (spec.info.description) {
@@ -188,11 +196,14 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
 
     const parameters = [ ...pathItem.parameters ?? [], ...operation.parameters ?? [] ]
         .map((parameter) => resolve<Parameter>(spec, parameter));
-    if (parameters.length) {
-        blocks.push("**Parameters**", table(
-            [ "Name", "In", "Type", "Description" ],
-            parameters.map((p) => [ nameCell(p.name, p.required), p.in, code(typeOf(p.schema)), describe(p) ])
-        ));
+    for (const [ location, label ] of PARAMETER_LOCATIONS) {
+        const located = parameters.filter((p) => p.in === location);
+        if (located.length) {
+            blocks.push(`**${label}**`, table(
+                [ "Name", "Type", "Description" ],
+                located.map((p) => [ nameCell(p.name, p.required), code(typeOf(p.schema)), describe(p) ])
+            ));
+        }
     }
 
     if (operation.requestBody) {
