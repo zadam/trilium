@@ -193,12 +193,6 @@ importers:
       js-yaml:
         specifier: 5.5.0
         version: 5.5.0
-      typedoc:
-        specifier: 0.28.20
-        version: 0.28.20(typescript@6.0.3)
-      typedoc-plugin-missing-exports:
-        specifier: 4.1.4
-        version: 4.1.4(typedoc@0.28.20(typescript@6.0.3))
 
   apps/client:
     dependencies:

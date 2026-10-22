@@ -8,7 +8,6 @@ async function main() {
         "src/cli.ts",
         "src/main.ts",
         "src/build-docs.ts",
-        "src/script-api.ts",
         "src/context.ts"
     ]);
 

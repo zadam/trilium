@@ -11918,63 +11918,34 @@
                                     "notePosition": 10,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
-                                        {
-                                            "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/script-api/frontend",
-                                            "isInheritable": false,
-                                            "position": 10
-                                        },
                                         {
                                             "type": "label",
                                             "name": "shareAlias",
                                             "value": "frontend-api",
                                             "isInheritable": false,
+                                            "position": 10
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "iconClass",
+                                            "value": "bx bx-window",
+                                            "isInheritable": false,
                                             "position": 20
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "fullContentWidth",
+                                            "value": "",
+                                            "isInheritable": false,
+                                            "position": 30
                                         }
                                     ],
-                                    "attachments": [],
-                                    "dirFileName": "Frontend API",
-                                    "children": [
-                                        {
-                                            "isClone": false,
-                                            "noteId": "habiZ3HU8Kw8",
-                                            "notePath": [
-                                                "pOsGYCXsbNQG",
-                                                "CdNpE2pqjmI6",
-                                                "GLks18SNjxmC",
-                                                "Q2z6av6JZVWm",
-                                                "habiZ3HU8Kw8"
-                                            ],
-                                            "title": "FNote",
-                                            "notePosition": 10,
-                                            "prefix": null,
-                                            "isExpanded": false,
-                                            "type": "webView",
-                                            "mime": "",
-                                            "attributes": [
-                                                {
-                                                    "type": "label",
-                                                    "name": "webViewSrc",
-                                                    "value": "/script-api/frontend/interfaces/FNote.html",
-                                                    "isInheritable": false,
-                                                    "position": 10
-                                                },
-                                                {
-                                                    "type": "label",
-                                                    "name": "shareAlias",
-                                                    "value": "fnote",
-                                                    "isInheritable": false,
-                                                    "position": 20
-                                                }
-                                            ],
-                                            "dataFileName": "FNote.dat",
-                                            "attachments": []
-                                        }
-                                    ]
+                                    "format": "markdown",
+                                    "dataFileName": "Frontend API.md",
+                                    "attachments": []
                                 },
                                 {
                                     "isClone": false,
