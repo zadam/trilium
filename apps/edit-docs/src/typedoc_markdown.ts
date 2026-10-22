@@ -22,10 +22,12 @@ type Comment = JSONOutput.Comment;
  * Runs TypeDoc on one entry point and returns its model, as `typedoc --json` writes it.
  *
  * TypeDoc runs in a process of its own because typedoc-plugin-missing-exports patches TypeDoc
- * and refuses to load a second time in one process.
+ * and refuses to load a second time in one process. It is resolved from the working directory, the
+ * documentation checkout, since the packaged editor ships without it.
  */
 export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<Project> {
-    const typeDoc = join(dirname(createRequire(import.meta.url).resolve("typedoc/package.json")), "bin", "typedoc");
+    const typeDocPackage = createRequire(join(process.cwd(), "package.json")).resolve("typedoc/package.json");
+    const typeDoc = join(dirname(typeDocPackage), "bin", "typedoc");
     const dir = await mkdtemp(join(tmpdir(), "typedoc-"));
     const output = join(dir, "project.json");
     try {
