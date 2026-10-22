@@ -38,7 +38,7 @@ function createCopyButton(code: HTMLElement, label: string) {
     };
 
     button.addEventListener("click", () => {
-        navigator.clipboard.writeText(code.textContent ?? "").then(() => {
+        navigator.clipboard.writeText(code.textContent).then(() => {
             setCopied(true);
             clearTimeout(resetTimer);
             resetTimer = setTimeout(() => setCopied(false), COPIED_DURATION);

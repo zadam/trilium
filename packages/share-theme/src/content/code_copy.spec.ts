@@ -39,6 +39,22 @@ describe("setupCodeCopy", () => {
         expect(button.querySelector(".tn-icon")?.classList).toContain("bx-copy");
     });
 
+    it("shows no check mark when the browser refuses the copy", async () => {
+        const writeText = stubClipboard();
+        writeText.mockRejectedValueOnce(new Error("Write permission denied."));
+        document.body.innerHTML = `<div id="content"><pre><code>x</code></pre></div>`;
+
+        setupCodeCopy();
+        const button = document.querySelector<HTMLButtonElement>("button.copy-button");
+        expect(button).not.toBeNull();
+        button?.click();
+
+        await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("x"));
+        await Promise.resolve();
+        expect(button?.classList).not.toContain("copied");
+        expect(button?.querySelector(".tn-icon")?.classList).toContain("bx-copy");
+    });
+
     it("adds no button where the page cannot write to the clipboard, such as over plain HTTP", () => {
         vi.stubGlobal("navigator", { ...navigator, clipboard: undefined });
         document.body.innerHTML = `<div id="content" data-copy-code-label="Copy code"><pre><code>x</code></pre></div>`;
