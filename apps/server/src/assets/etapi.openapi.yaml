@@ -260,12 +260,12 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             summary: Get the content of a note
-            description: Returns note content identified by its ID
+            description: Returns note content identified by its ID. The response carries the note's MIME type as its `Content-Type`.
             tags: [Notes]
             operationId: getNoteContent
             responses:
                 "200":
-                    description: note content, served with the note's MIME type as `Content-Type`
+                    description: note content
                     content:
                         "*/*":
                             schema:
@@ -562,7 +562,7 @@ paths:
                             $ref: "#/components/schemas/Branch"
             responses:
                 "200":
-                    description: branch updated (branch between parent note and child note already existed)
+                    description: existing branch updated
                     content:
                         application/json; charset=utf-8:
                             schema:
@@ -741,12 +741,12 @@ paths:
                   $ref: "#/components/schemas/EntityId"
         get:
             summary: Get the content of an attachment
-            description: Returns attachment content identified by its ID
+            description: Returns attachment content identified by its ID. The response carries the attachment's MIME type as its `Content-Type`.
             tags: [Attachments]
             operationId: getAttachmentContent
             responses:
                 "200":
-                    description: attachment content, served with the attachment's MIME type as `Content-Type`
+                    description: attachment content
                     content:
                         "*/*":
                             schema:
@@ -879,7 +879,7 @@ paths:
             operationId: postRefreshNoteOrdering
             responses:
                 "204":
-                    description: note ordering will be asynchronously updated in all connected clients
+                    description: note ordering refreshed
                 default:
                     description: unexpected error
                     content:
@@ -1060,7 +1060,7 @@ paths:
     /auth/login:
         post:
             summary: Log in
-            description: get an ETAPI token based on password for further use with ETAPI
+            description: get an ETAPI token based on password for further use with ETAPI. Too many requests from one IP address within a short time, such as failed logins, block that address for a while.
             tags: [Tokens]
             operationId: login
             security: [] # no token based auth for login endpoint
@@ -1084,7 +1084,7 @@ paths:
                                         type: string
                                         example: Bc4bFn0Ffiok_4NpbVCDnFz7B2WU+pdhW8B5Ne3DiR5wXrEyqdjgRIsk=
                 "429":
-                    description: Client IP has been blacklisted because too many requests (possibly failed authentications) were made within a short time frame, try again later
+                    description: too many requests
                 default:
                     description: unexpected error
                     content:

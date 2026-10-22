@@ -350,6 +350,8 @@ deletes a single note based on the noteId supplied
 
 === "204: note deleted"
 
+    No content.
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
@@ -501,7 +503,7 @@ patch a note identified by the noteId with changes in the body
 
 `GET /notes/{noteId}/content` · `getNoteContent`
 
-Returns note content identified by its ID
+Returns note content identified by its ID. The response carries the note's MIME type as its `Content-Type`.
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
@@ -513,7 +515,7 @@ Returns note content identified by its ID
 
 **Responses**
 
-=== "200: note content, served with the note's MIME type as `Content-Type`"
+=== "200: note content"
 
     *   `*/*`: `string (binary)`
 
@@ -541,6 +543,8 @@ New content of the note. Send text (such as the HTML of a text note) as `text/pl
 **Responses**
 
 === "204: note content updated"
+
+    No content.
 
 ### Export a subtree
 
@@ -813,7 +817,7 @@ Create a branch (clone a note to a different location in the tree). In case ther
 
 **Responses**
 
-=== "200: branch updated (branch between parent note and child note already existed)"
+=== "200: existing branch updated"
 
     *   `application/json; charset=utf-8`: `Branch`
 
@@ -961,6 +965,8 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 
 === "204: branch deleted"
 
+    No content.
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
@@ -1078,7 +1084,9 @@ notePositions in branches are not automatically pushed to connected clients and 
 
 **Responses**
 
-=== "204: note ordering will be asynchronously updated in all connected clients"
+=== "204: note ordering refreshed"
+
+    No content.
 
 === "default: unexpected error"
 
@@ -1263,6 +1271,8 @@ deletes an attribute based on the attributeId supplied.
 **Responses**
 
 === "204: attribute deleted"
+
+    No content.
 
 === "default: unexpected error"
 
@@ -1602,6 +1612,8 @@ deletes an attachment based on the attachmentId supplied.
 
 === "204: attachment deleted"
 
+    No content.
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
@@ -1722,7 +1734,7 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 `GET /attachments/{attachmentId}/content` · `getAttachmentContent`
 
-Returns attachment content identified by its ID
+Returns attachment content identified by its ID. The response carries the attachment's MIME type as its `Content-Type`.
 
 **Authorization**: `EtapiTokenAuth` or `EtapiBasicAuth`
 
@@ -1734,7 +1746,7 @@ Returns attachment content identified by its ID
 
 **Responses**
 
-=== "200: attachment content, served with the attachment's MIME type as `Content-Type`"
+=== "200: attachment content"
 
     *   `*/*`: `string (binary)`
 
@@ -1763,6 +1775,8 @@ New content of the attachment. Send text as `text/plain` and binary data (such a
 
 === "204: attachment content updated"
 
+    No content.
+
 ## Revisions
 
 Snapshots of a note's content.
@@ -1785,6 +1799,8 @@ Create a note revision for the given note
 **Responses**
 
 === "204: revision has been created"
+
+    No content.
 
 === "default: unexpected error"
 
@@ -2554,7 +2570,7 @@ Obtaining and revoking ETAPI tokens with the password.
 
 `POST /auth/login` · `login`
 
-get an ETAPI token based on password for further use with ETAPI
+get an ETAPI token based on password for further use with ETAPI. Too many requests from one IP address within a short time, such as failed logins, block that address for a while.
 
 **Authorization**: none
 
@@ -2588,7 +2604,9 @@ get an ETAPI token based on password for further use with ETAPI
     }
     ```
 
-=== "429: Client IP has been blacklisted because too many requests (possibly failed authentications) were made within a short time frame, try again later"
+=== "429: too many requests"
+
+    No content.
 
 === "default: unexpected error"
 
@@ -2619,6 +2637,8 @@ logout (delete/deactivate) an ETAPI token
 **Responses**
 
 === "204: logout successful"
+
+    No content.
 
 === "default: unexpected error"
 
@@ -2715,6 +2735,8 @@ Create a database backup under a given name
 **Responses**
 
 === "204: backup has been created"
+
+    No content.
 
 === "default: unexpected error"
 
