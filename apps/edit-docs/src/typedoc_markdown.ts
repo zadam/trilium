@@ -23,7 +23,8 @@ type Comment = JSONOutput.Comment;
  *
  * TypeDoc runs in a process of its own because typedoc-plugin-missing-exports patches TypeDoc
  * and refuses to load a second time in one process. It is resolved from the working directory, the
- * documentation checkout, since the packaged editor ships without it.
+ * documentation checkout, since the packaged editor ships without it. `process.execPath` is Electron
+ * in the editor, so `ELECTRON_RUN_AS_NODE` makes it run TypeDoc as Node would.
  */
 export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<Project> {
     const typeDocPackage = createRequire(join(process.cwd(), "package.json")).resolve("typedoc/package.json");
@@ -43,7 +44,7 @@ export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<
             "--logLevel", "Error",
             // Declares the types the entry point imports from other modules in an `<internal>` module.
             "--plugin", "typedoc-plugin-missing-exports"
-        ]);
+        ], { env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" } });
         return JSON.parse(await readFile(output, "utf8"));
     } catch (error) {
         // TypeDoc logs its errors to stdout.
