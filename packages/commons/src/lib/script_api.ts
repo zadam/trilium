@@ -780,13 +780,62 @@ export interface ScriptNoteContext {
      * Returns the CodeMirror editor of the code note this context shows. Resolves to `null` if the
      * context shows no code editor within 200 ms.
      */
-    getCodeEditor(): Promise<unknown>;
+    getCodeEditor(): Promise<ScriptCodeEditor | null>;
     /**
      * Returns the CKEditor instance of the editable text note this context shows. Resolves to
      * `null` if the context shows no editable text note within 200 ms.
      */
-    getTextEditor(): Promise<unknown>;
+    getTextEditor(): Promise<ScriptTextEditor | null>;
 }
+
+/**
+ * A jQuery object: one or more page elements with jQuery's methods, as `$(…)` returns. The
+ * [jQuery API documentation](https://api.jquery.com/) describes them, and the script editor
+ * offers them as completions.
+ */
+// The script editor's frontend environment extends this interface with jQuery's own `JQuery`.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ScriptJQuery {}
+
+/**
+ * The editor of a text note, a CKEditor 5 editor. The
+ * [CKEditor 5 API documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html)
+ * describes it; `editor.model` and `editor.getData()` are the usual starting points.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ScriptTextEditor {}
+
+/**
+ * The editor of a code note, a CodeMirror 6 `EditorView`. The
+ * [CodeMirror reference](https://codemirror.net/docs/ref/#view.EditorView) describes it;
+ * `editor.state.doc.toString()` reads the code.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ScriptCodeEditor {}
+
+/**
+ * The Preact API that render notes import from `trilium:preact`: Preact's own functions and hooks,
+ * and Trilium's components and `defineWidget()`. In a JSX note, the script editor offers its full
+ * type.
+ */
+// The script editor's JSX environment extends this interface with the `trilium:preact` module.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ScriptPreact {}
+
+/**
+ * The [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) library, version 0.6, which
+ * converts between XML and JavaScript objects, such as with `xml2js.parseStringPromise(xml)`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ScriptXml2js {}
+
+/**
+ * The [node-html-parser](https://github.com/taoqf/node-html-parser) library, version 9, which
+ * parses HTML into elements that can be queried, such as with
+ * `htmlParser.parse(html).querySelectorAll("a")`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ScriptHtmlParser {}
 
 /** Minimal day.js surface (the real API exposes the full day.js factory). */
 export type ScriptDayjs = (date?: string | number | Date) => ScriptDayjsInstance;
@@ -818,13 +867,8 @@ type Func = ((...args: unknown[]) => unknown) | string;
 
 /** Instance shape of `BasicWidget` (subset) — the base for custom frontend widgets. */
 interface BasicWidget {
-    /**
-     * The widget's root jQuery element (assign in `doRender`, e.g. `this.$widget = $(TPL)`).
-     * Typed loosely because jQuery types can't be imported into this self-contained module;
-     * inside the editor it is a real `JQuery<HTMLElement>` so all jQuery methods work.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    $widget: any;
+    /** The widget's root element, which `doRender()` assigns, such as `this.$widget = $(TPL)`. */
+    $widget: ScriptJQuery;
     /**
      * Returns whether the widget is shown: always for a `BasicWidget`, and only while a note is
      * active for a `NoteContextAwareWidget`. A disabled widget stays in the DOM, hidden, and a
@@ -837,7 +881,7 @@ interface BasicWidget {
      */
     doRender(): void;
     /** Renders the widget and returns its root element. */
-    render(): unknown;
+    render(): ScriptJQuery;
     /** Tears down the widget; override to release resources. */
     cleanup(): void;
     /** Fluent builder: set the element id. Chainable. */
@@ -963,9 +1007,10 @@ export interface ScriptLinkOptions {
  */
 export interface FrontendApi {
     /**
-     * Container of all the rendered script content
-     * */
-    $container: unknown;
+     * The element a render note's script renders into: the script of a note that a `~renderNote`
+     * relation points to. It is `null` for scripts that run any other way.
+     */
+    $container: ScriptJQuery | null;
     /**
      * Note where the script execution started — the entry point of the current script bundle
      * (in C terms, the file containing `main()`). When a script is spread across multiple code
@@ -1153,18 +1198,15 @@ export interface FrontendApi {
      */
     getMainNoteContexts(): ScriptNoteContext[];
     /**
-     * See https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html for documentation on the returned instance.
-     *
-     * @returns {Promise<BalloonEditor>} instance of CKEditor
+     * Returns the editor of the text note in the active tab or split. Resolves to `null` if it
+     * shows no editable text note within 200 ms, and throws an error when no tab is active.
      */
-    getActiveContextTextEditor(): Promise<unknown>;
+    getActiveContextTextEditor(): Promise<ScriptTextEditor | null>;
     /**
-     * See https://codemirror.net/doc/manual.html#api
-     *
-     * @method
-     * @returns instance of CodeMirror
+     * Returns the editor of the code note in the active tab or split. Resolves to `null` if it
+     * shows no code editor within 200 ms, and throws an error when no tab is active.
      */
-    getActiveContextCodeEditor(): Promise<unknown>;
+    getActiveContextCodeEditor(): Promise<ScriptCodeEditor | null>;
     /**
      * Get access to the widget handling note detail. Methods like `getWidgetType()` and `getTypeWidget()` to get to the
      * implementation of actual widget type.
@@ -1232,9 +1274,9 @@ export interface FrontendApi {
      * @param {string} [params.title=] - custom link tile with note's title as default
      * @returns {jQuery} - jQuery element with the link (wrapped in <span>)
      */
-    createLink(notePath: string, params?: ScriptLinkOptions): Promise<unknown>;
+    createLink(notePath: string, params?: ScriptLinkOptions): Promise<ScriptJQuery>;
     /** @deprecated - use api.createLink() instead */
-    createNoteLink(notePath: string, params?: ScriptLinkOptions): Promise<unknown>;
+    createNoteLink(notePath: string, params?: ScriptLinkOptions): Promise<ScriptJQuery>;
 
     /**
      * Trigger command. This is a very low-level API which should be avoided if possible.
@@ -1251,7 +1293,7 @@ export interface FrontendApi {
      *
      * @param el The link, as a jQuery object.
      */
-    setupElementTooltip(el: unknown): void;
+    setupElementTooltip(el: ScriptJQuery): void;
     /**
      * @param {boolean} protect - true to protect note, false to unprotect
      */
@@ -1391,7 +1433,7 @@ export interface FrontendApi {
     log(...args: unknown[]): void;
 
     /** The Preact API surface (components, hooks) for render scripts. */
-    preact: unknown;
+    preact: ScriptPreact;
 }
 
 /** A branch (note→parent placement) as seen by backend scripts (subset of `BBranch`). */
@@ -1643,6 +1685,51 @@ export interface ScriptAppInfo {
     clipperProtocolVersion: string;
     /** The date and time, in UTC, that Trilium started, in ISO 8601 form. */
     utcDateTime: string;
+}
+
+/**
+ * Direct access to Trilium's SQLite database (subset of trilium-core's `SqlService`). Queries mark
+ * parameters with `?` and take their values in an array, in order. Changes made here bypass
+ * Trilium's own bookkeeping: they do not sync, and Trilium's in-memory copy of the notes does not
+ * see them until the next restart. Change notes through the note methods instead.
+ */
+export interface ScriptSql {
+    /**
+     * Returns the first row of the result, as an object of column names to values, or `undefined`
+     * when the query returns no rows.
+     */
+    getRow<T>(query: string, params?: unknown[]): T;
+    /** Returns the first row of the result, or `null` when the query returns no rows. */
+    getRowOrNull<T>(query: string, params?: unknown[]): T | null;
+    /**
+     * Returns the first column of the first row, such as the count of `SELECT COUNT(*) FROM notes`,
+     * or `undefined` when the query returns no rows.
+     */
+    getValue<T>(query: string, params?: unknown[]): T;
+    /** Returns every row of the result, each as an object of column names to values. */
+    getRows<T>(query: string, params?: unknown[]): T[];
+    /** Returns the first column of every row of the result. */
+    getColumn<T>(query: string, params?: unknown[]): T[];
+    /** Returns an object that maps the first column of each row to its second column. */
+    getMap<K extends string | number | symbol, V>(query: string, params?: unknown[]): Record<K, V>;
+    /** Returns the rows of the result one at a time, which keeps a large result out of memory. */
+    iterateRows<T>(query: string, params?: unknown[]): IterableIterator<T>;
+    /**
+     * Runs a statement that changes data, such as `UPDATE` or `INSERT`.
+     *
+     * @returns `changes`, the number of rows changed, and `lastInsertRowid`, the ID of the row an
+     * `INSERT` added.
+     */
+    execute(query: string, params?: unknown[]): { changes: number; lastInsertRowid: number };
+    /** Runs several statements separated by semicolons, without parameters. */
+    executeScript(query: string): void;
+    /**
+     * Calls `func` in a transaction: when it throws, every change it made is undone. Inside a
+     * transaction already running, it runs as a nested savepoint.
+     *
+     * @returns What `func` returns.
+     */
+    transactional<T>(func: () => T): T;
 }
 
 /** Result of a clone operation ({@link ScriptBNote.cloneTo}); mirrors `CloneResponse`. */
@@ -2740,14 +2827,10 @@ export interface BackendApi {
      * day.js library for date manipulation. See {@link https://day.js.org} for documentation
      */
     dayjs: ScriptDayjs;
-    /**
-     * xml2js library for XML parsing. See {@link https://github.com/Leonidas-from-XIV/node-xml2js} for documentation
-     */
-    xml2js: unknown;
-    /**
-     * node-html-parser library for HTML parsing. See {@link https://github.com/taoqf/node-fast-html-parser} for documentation.
-     */
-    htmlParser: unknown;
+    /** The xml2js library, which converts between XML and JavaScript objects. */
+    xml2js: ScriptXml2js;
+    /** The node-html-parser library, which parses HTML into elements that can be queried. */
+    htmlParser: ScriptHtmlParser;
 
     /**
      * Instance name identifies particular Trilium instance. It can be useful for scripts
@@ -2962,11 +3045,8 @@ export interface BackendApi {
      * @returns HTML representation of the input Markdown
      */
     markdownToHtml(markdown: string): string;
-    /**
-     * sql
-     * @type {module:sql}
-     */
-    sql: unknown;
+    /** Direct access to Trilium's SQLite database. */
+    sql: ScriptSql;
     /** Application info (version, build date, etc.). */
     getAppInfo(): ScriptAppInfo;
 

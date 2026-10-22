@@ -41,11 +41,11 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>xml2js</code></td>
-            <td><p><code>unknown</code><br>xml2js library for XML parsing. See <code>https://github.com/Leonidas-from-XIV/node-xml2js</code> for documentation</p></td>
+            <td><p><code>Xml2js</code><br>The xml2js library, which converts between XML and JavaScript objects.</p></td>
         </tr>
         <tr>
             <td><code>htmlParser</code></td>
-            <td><p><code>unknown</code><br>node-html-parser library for HTML parsing. See <code>https://github.com/taoqf/node-fast-html-parser</code> for documentation.</p></td>
+            <td><p><code>HtmlParser</code><br>The node-html-parser library, which parses HTML into elements that can be queried.</p></td>
         </tr>
         <tr>
             <td><code>getInstanceName</code></td>
@@ -205,7 +205,7 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>sql</code></td>
-            <td><p><code>unknown</code><br>sql</p></td>
+            <td><p><code>Sql</code><br>Direct access to Trilium's SQLite database.</p></td>
         </tr>
         <tr>
             <td><code>getAppInfo</code></td>
@@ -1140,6 +1140,61 @@ A note revision as seen by backend scripts (subset of trilium-core's `BRevision`
     </tbody>
 </table>
 
+## `Sql`
+
+Direct access to Trilium's SQLite database (subset of trilium-core's `SqlService`). Queries mark parameters with `?` and take their values in an array, in order. Changes made here bypass Trilium's own bookkeeping: they do not sync, and Trilium's in-memory copy of the notes does not see them until the next restart. Change notes through the note methods instead.
+
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>getRow</code></td>
+            <td><pre><code class="language-application-typescript">getRow(query: string, params?: unknown[]): T</code></pre><p>Returns the first row of the result, as an object of column names to values, or <code>undefined</code> when the query returns no rows.</p></td>
+        </tr>
+        <tr>
+            <td><code>getRowOrNull</code></td>
+            <td><pre><code class="language-application-typescript">getRowOrNull(query: string, params?: unknown[]): T | null</code></pre><p>Returns the first row of the result, or <code>null</code> when the query returns no rows.</p></td>
+        </tr>
+        <tr>
+            <td><code>getValue</code></td>
+            <td><pre><code class="language-application-typescript">getValue(query: string, params?: unknown[]): T</code></pre><p>Returns the first column of the first row, such as the count of <code>SELECT COUNT(*) FROM notes</code>, or <code>undefined</code> when the query returns no rows.</p></td>
+        </tr>
+        <tr>
+            <td><code>getRows</code></td>
+            <td><pre><code class="language-application-typescript">getRows(query: string, params?: unknown[]): T[]</code></pre><p>Returns every row of the result, each as an object of column names to values.</p></td>
+        </tr>
+        <tr>
+            <td><code>getColumn</code></td>
+            <td><pre><code class="language-application-typescript">getColumn(query: string, params?: unknown[]): T[]</code></pre><p>Returns the first column of every row of the result.</p></td>
+        </tr>
+        <tr>
+            <td><code>getMap</code></td>
+            <td><pre><code class="language-application-typescript">getMap(query: string, params?: unknown[]): Record&lt;K, V&gt;</code></pre><p>Returns an object that maps the first column of each row to its second column.</p></td>
+        </tr>
+        <tr>
+            <td><code>iterateRows</code></td>
+            <td><pre><code class="language-application-typescript">iterateRows(query: string, params?: unknown[]): IterableIterator&lt;T&gt;</code></pre><p>Returns the rows of the result one at a time, which keeps a large result out of memory.</p></td>
+        </tr>
+        <tr>
+            <td><code>execute</code></td>
+            <td><pre><code class="language-application-typescript">execute(query: string, params?: unknown[]): { changes: number; lastInsertRowid: number }</code></pre><p>Runs a statement that changes data, such as <code>UPDATE</code> or <code>INSERT</code>.</p><p><strong>Returns</strong> <code>{ changes: number; lastInsertRowid: number }</code>: <code>changes</code>, the number of rows changed, and <code>lastInsertRowid</code>, the ID of the row an <code>INSERT</code> added.</p></td>
+        </tr>
+        <tr>
+            <td><code>executeScript</code></td>
+            <td><pre><code class="language-application-typescript">executeScript(query: string): void</code></pre><p>Runs several statements separated by semicolons, without parameters.</p></td>
+        </tr>
+        <tr>
+            <td><code>transactional</code></td>
+            <td><pre><code class="language-application-typescript">transactional(func: () =&gt; T): T</code></pre><p>Calls <code>func</code> in a transaction: when it throws, every change it made is undone. Inside a transaction already running, it runs as a nested savepoint.</p><p><strong>Returns</strong> <code>T</code>: What <code>func</code> returns.</p></td>
+        </tr>
+    </tbody>
+</table>
+
 ## `DayjsInstance`
 
 A date as day.js wraps it (subset).
@@ -1193,6 +1248,14 @@ Minimal day.js surface (the real API exposes the full day.js factory).
 ```typescript
 type Dayjs = (date?: string | number | Date) => DayjsInstance
 ```
+
+### `Xml2js`
+
+The [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) library, version 0.6, which converts between XML and JavaScript objects, such as with `xml2js.parseStringPromise(xml)`.
+
+### `HtmlParser`
+
+The [node-html-parser](https://github.com/taoqf/node-html-parser) library, version 9, which parses HTML into elements that can be queried, such as with `htmlParser.parse(html).querySelectorAll("a")`.
 
 ### `BEtapiToken`
 

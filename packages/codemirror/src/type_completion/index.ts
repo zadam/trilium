@@ -137,7 +137,13 @@ export async function createEnv(mime: string, context: ScriptApiContext = {}) {
         // in the lazy chunk and isn't gated by package `exports`.
         const apiTypes = (await import("../../../commons/src/lib/script_api.ts?raw")).default;
         fsMap.set(API_TYPES_PATH, apiTypes);
-        fsMap.set(API_GLOBALS_PATH, `import type { FrontendApi } from "./trilium-script-api";\ndeclare global {\n    // eslint-disable-next-line no-var\n    var api: FrontendApi;\n}\n`);
+        // The api's library types are empty interfaces in commons, which has no jQuery or Preact
+        // types; here, where those load, they extend the real ones.
+        const preactAugmentation = mime === SCRIPT_MIME_JSX
+            ? `    type TriliumPreact = typeof import("trilium:preact");\n    interface ScriptPreact extends TriliumPreact {}\n`
+            : "";
+        fsMap.set(API_GLOBALS_PATH, `import type { FrontendApi } from "./trilium-script-api";\ndeclare global {\n    // eslint-disable-next-line no-var\n    var api: FrontendApi;\n}\n`
+            + `declare module "./trilium-script-api" {\n    interface ScriptJQuery extends JQuery<HTMLElement> {}\n${preactAugmentation}}\n`);
         rootFiles.push(API_TYPES_PATH);
 
         // Frontend scripts run in the browser with jQuery available as `$` / `jQuery`;

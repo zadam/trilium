@@ -13,7 +13,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
     <tbody>
         <tr>
             <td><code>$container</code></td>
-            <td><p><code>unknown</code><br>Container of all the rendered script content</p></td>
+            <td><p><code>JQuery | null</code><br>The element a render note's script renders into: the script of a note that a <code>~renderNote</code> relation points to. It is <code>null</code> for scripts that run any other way.</p></td>
         </tr>
         <tr>
             <td><code>startNote</code></td>
@@ -129,11 +129,11 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>getActiveContextTextEditor</code></td>
-            <td><pre><code class="language-application-typescript">getActiveContextTextEditor(): Promise&lt;unknown&gt;</code></pre><p>See <a href="https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html">https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html</a> for documentation on the returned instance.</p><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: instance of CKEditor</p></td>
+            <td><pre><code class="language-application-typescript">getActiveContextTextEditor(): Promise&lt;TextEditor | null&gt;</code></pre><p>Returns the editor of the text note in the active tab or split. Resolves to <code>null</code> if it shows no editable text note within 200 ms, and throws an error when no tab is active.</p></td>
         </tr>
         <tr>
             <td><code>getActiveContextCodeEditor</code></td>
-            <td><pre><code class="language-application-typescript">getActiveContextCodeEditor(): Promise&lt;unknown&gt;</code></pre><p>See <a href="https://codemirror.net/doc/manual.html#api">https://codemirror.net/doc/manual.html#api</a></p><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: instance of CodeMirror</p></td>
+            <td><pre><code class="language-application-typescript">getActiveContextCodeEditor(): Promise&lt;CodeEditor | null&gt;</code></pre><p>Returns the editor of the code note in the active tab or split. Resolves to <code>null</code> if it shows no code editor within 200 ms, and throws an error when no tab is active.</p></td>
         </tr>
         <tr>
             <td><code>getActiveNoteDetailWidget</code></td>
@@ -173,11 +173,11 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>createLink</code></td>
-            <td><pre><code class="language-application-typescript">createLink(notePath: string, params?: LinkOptions): Promise&lt;unknown&gt;</code></pre><p>Create a note link (jQuery object) for given note.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>notePath</code></td><td><code>string</code><br>(or noteId)</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>LinkOptions</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: - jQuery element with the link (wrapped in <span>)</span></p></td>
+            <td><pre><code class="language-application-typescript">createLink(notePath: string, params?: LinkOptions): Promise&lt;JQuery&gt;</code></pre><p>Create a note link (jQuery object) for given note.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>notePath</code></td><td><code>string</code><br>(or noteId)</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>LinkOptions</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;JQuery&gt;</code>: - jQuery element with the link (wrapped in <span>)</span></p></td>
         </tr>
         <tr>
             <td><code>createNoteLink</code></td>
-            <td><pre><code class="language-application-typescript">createNoteLink(notePath: string, params?: LinkOptions): Promise&lt;unknown&gt;</code></pre><aside class="admonition warning"><p>Deprecated. - use api.createLink() instead</p></aside></td>
+            <td><pre><code class="language-application-typescript">createNoteLink(notePath: string, params?: LinkOptions): Promise&lt;JQuery&gt;</code></pre><aside class="admonition warning"><p>Deprecated. - use api.createLink() instead</p></aside></td>
         </tr>
         <tr>
             <td><code>triggerCommand</code></td>
@@ -189,7 +189,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>setupElementTooltip</code></td>
-            <td><pre><code class="language-application-typescript">setupElementTooltip(el: unknown): void</code></pre><p>Shows a preview of the linked note while the mouse pointer rests on the element, as Trilium does for links in note content. The element must be a link whose <code>href</code> or <code>data-href</code> points to a note, such as <code>#root/abc123</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>el</code></td><td><code>unknown</code><br>The link, as a jQuery object.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">setupElementTooltip(el: JQuery): void</code></pre><p>Shows a preview of the linked note while the mouse pointer rests on the element, as Trilium does for links in note content. The element must be a link whose <code>href</code> or <code>data-href</code> points to a note, such as <code>#root/abc123</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>el</code></td><td><code>JQuery</code><br>The link, as a jQuery object.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>protectNote</code></td>
@@ -285,7 +285,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>preact</code></td>
-            <td><p><code>unknown</code><br>The Preact API surface (components, hooks) for render scripts.</p></td>
+            <td><p><code>Preact</code><br>The Preact API surface (components, hooks) for render scripts.</p></td>
         </tr>
     </tbody>
 </table>
@@ -755,7 +755,7 @@ Instance shape of `RightPanelWidget` (subset) — a widget shown in the right si
     <tbody>
         <tr>
             <td><code>$widget</code></td>
-            <td><p><code>any</code><br>The widget's root jQuery element (assign in <code>doRender</code>, e.g. <code>this.$widget = $(TPL)</code>). Typed loosely because jQuery types can't be imported into this self-contained module; inside the editor it is a real <code>JQuery&lt;HTMLElement&gt;</code> so all jQuery methods work.</p></td>
+            <td><p><code>JQuery</code><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
         </tr>
         <tr>
             <td><code>isEnabled</code></td>
@@ -767,7 +767,7 @@ Instance shape of `RightPanelWidget` (subset) — a widget shown in the right si
         </tr>
         <tr>
             <td><code>render</code></td>
-            <td><pre><code class="language-application-typescript">render(): unknown</code></pre><p>Renders the widget and returns its root element.</p></td>
+            <td><pre><code class="language-application-typescript">render(): JQuery</code></pre><p>Renders the widget and returns its root element.</p></td>
         </tr>
         <tr>
             <td><code>cleanup</code></td>
@@ -830,7 +830,7 @@ Instance shape of `NoteContextAwareWidget` (subset) — reacts to the active not
     <tbody>
         <tr>
             <td><code>$widget</code></td>
-            <td><p><code>any</code><br>The widget's root jQuery element (assign in <code>doRender</code>, e.g. <code>this.$widget = $(TPL)</code>). Typed loosely because jQuery types can't be imported into this self-contained module; inside the editor it is a real <code>JQuery&lt;HTMLElement&gt;</code> so all jQuery methods work.</p></td>
+            <td><p><code>JQuery</code><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
         </tr>
         <tr>
             <td><code>isEnabled</code></td>
@@ -842,7 +842,7 @@ Instance shape of `NoteContextAwareWidget` (subset) — reacts to the active not
         </tr>
         <tr>
             <td><code>render</code></td>
-            <td><pre><code class="language-application-typescript">render(): unknown</code></pre><p>Renders the widget and returns its root element.</p></td>
+            <td><pre><code class="language-application-typescript">render(): JQuery</code></pre><p>Renders the widget and returns its root element.</p></td>
         </tr>
         <tr>
             <td><code>cleanup</code></td>
@@ -897,7 +897,7 @@ Instance shape of `BasicWidget` (subset) — the base for custom frontend widget
     <tbody>
         <tr>
             <td><code>$widget</code></td>
-            <td><p><code>any</code><br>The widget's root jQuery element (assign in <code>doRender</code>, e.g. <code>this.$widget = $(TPL)</code>). Typed loosely because jQuery types can't be imported into this self-contained module; inside the editor it is a real <code>JQuery&lt;HTMLElement&gt;</code> so all jQuery methods work.</p></td>
+            <td><p><code>JQuery</code><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
         </tr>
         <tr>
             <td><code>isEnabled</code></td>
@@ -909,7 +909,7 @@ Instance shape of `BasicWidget` (subset) — the base for custom frontend widget
         </tr>
         <tr>
             <td><code>render</code></td>
-            <td><pre><code class="language-application-typescript">render(): unknown</code></pre><p>Renders the widget and returns its root element.</p></td>
+            <td><pre><code class="language-application-typescript">render(): JQuery</code></pre><p>Renders the widget and returns its root element.</p></td>
         </tr>
         <tr>
             <td><code>cleanup</code></td>
@@ -1015,11 +1015,11 @@ A split/tab context as seen by frontend scripts (subset of `NoteContext`).
         </tr>
         <tr>
             <td><code>getCodeEditor</code></td>
-            <td><pre><code class="language-application-typescript">getCodeEditor(): Promise&lt;unknown&gt;</code></pre><p>Returns the CodeMirror editor of the code note this context shows. Resolves to <code>null</code> if the context shows no code editor within 200 ms.</p></td>
+            <td><pre><code class="language-application-typescript">getCodeEditor(): Promise&lt;CodeEditor | null&gt;</code></pre><p>Returns the CodeMirror editor of the code note this context shows. Resolves to <code>null</code> if the context shows no code editor within 200 ms.</p></td>
         </tr>
         <tr>
             <td><code>getTextEditor</code></td>
-            <td><pre><code class="language-application-typescript">getTextEditor(): Promise&lt;unknown&gt;</code></pre><p>Returns the CKEditor instance of the editable text note this context shows. Resolves to <code>null</code> if the context shows no editable text note within 200 ms.</p></td>
+            <td><pre><code class="language-application-typescript">getTextEditor(): Promise&lt;TextEditor | null&gt;</code></pre><p>Returns the CKEditor instance of the editable text note this context shows. Resolves to <code>null</code> if the context shows no editable text note within 200 ms.</p></td>
         </tr>
     </tbody>
 </table>
@@ -1056,6 +1056,10 @@ A date as day.js wraps it (subset).
 </table>
 
 ## Types
+
+### `JQuery`
+
+A jQuery object: one or more page elements with jQuery's methods, as `$(…)` returns. The [jQuery API documentation](https://api.jquery.com/) describes them, and the script editor offers them as completions.
 
 ### `Dayjs`
 
@@ -1097,6 +1101,14 @@ Options accepted by `FrontendApi.createNote`.
 | `targetBranchId`  <br>_optional_ | `string`  <br>Branch ID used together with `target: "after"`. |
 | `attributes`  <br>_optional_ | `CreateAttribute[]`  <br>Attributes to set atomically on creation. |
 
+### `TextEditor`
+
+The editor of a text note, a CKEditor 5 editor. The [CKEditor 5 API documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html) describes it; `editor.model` and `editor.getData()` are the usual starting points.
+
+### `CodeEditor`
+
+The editor of a code note, a CodeMirror 6 `EditorView`. The [CodeMirror reference](https://codemirror.net/docs/ref/#view.EditorView) describes it; `editor.state.doc.toString()` reads the code.
+
 ### `PickerItem`
 
 One thing a picker offers, as `pickSingleItem` takes and answers with.
@@ -1131,6 +1143,10 @@ Options of `api.createLink()`.
 | `referenceLink`  <br>_optional_ | `boolean`  <br>Whether the link is styled as a reference link, as in text notes. Defaults to `false`. |
 | `autoConvertToImage`  <br>_optional_ | `boolean`  <br>Whether an image, canvas or Mermaid note shows as its picture instead of a link. Defaults to `false`. |
 | `titleSuffix`  <br>_optional_ | `string`  <br>Text shown right after the link's title. |
+
+### `Preact`
+
+The Preact API that render notes import from `trilium:preact`: Preact's own functions and hooks, and Trilium's components and `defineWidget()`. In a JSX note, the script editor offers its full type.
 
 ### `NotePathRecord`
 

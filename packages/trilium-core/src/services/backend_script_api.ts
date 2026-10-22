@@ -1,5 +1,5 @@
 import { type AttributeRow, dayjs, formatLogMessage } from "@triliumnext/commons";
-import type { BackendApi as PublicBackendApi, ScriptAppInfo, ScriptBAttachment, ScriptBEtapiToken, ScriptBNote as PublicScriptBNote, ScriptBOption, ScriptRequest, ScriptResponse, ScriptSearchParams } from "@triliumnext/commons/src/lib/script_api.js";
+import type { BackendApi as PublicBackendApi, ScriptAppInfo, ScriptBAttachment, ScriptBEtapiToken, ScriptBNote as PublicScriptBNote, ScriptBOption, ScriptRequest, ScriptResponse, ScriptSearchParams, ScriptSql } from "@triliumnext/commons/src/lib/script_api.js";
 import AbstractBeccaEntity from "../becca/entities/abstract_becca_entity";
 import Becca from "../becca/becca-interface";
 import * as htmlParser from "node-html-parser";
@@ -568,6 +568,7 @@ type _MissingBOptionMembers = Exclude<keyof ScriptBOption, keyof BOption>;
 type _MissingBEtapiTokenMembers = Exclude<keyof ScriptBEtapiToken, keyof BEtapiToken>;
 type _MissingSearchParams = Exclude<keyof ScriptSearchParams, keyof CoreSearchParams>;
 type _MissingAppInfoMembers = Exclude<keyof ScriptAppInfo, keyof typeof appInfo>;
+type _MissingSqlMembers = Exclude<keyof ScriptSql, keyof ReturnType<typeof getSql>>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _backendApiDriftGuard: [_MissingBackendApiMembers] extends [never] ? true : _MissingBackendApiMembers = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -582,3 +583,5 @@ const _betapiTokenDriftGuard: [_MissingBEtapiTokenMembers] extends [never] ? tru
 const _searchParamsDriftGuard: [_MissingSearchParams] extends [never] ? true : _MissingSearchParams = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _appInfoDriftGuard: [_MissingAppInfoMembers] extends [never] ? true : _MissingAppInfoMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _sqlDriftGuard: [_MissingSqlMembers] extends [never] ? true : _MissingSqlMembers = true;

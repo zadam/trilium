@@ -125,6 +125,24 @@ describe("script note diagnostics", () => {
         expect(codes).toEqual([]);
     }, TIMEOUT);
 
+    it("types the api's jQuery objects as jQuery in frontend scripts", async () => {
+        const codes = await getScriptDiagnosticCodes(
+            SCRIPT_MIME_FRONTEND,
+            "api.$container?.addClass('active');\n"
+            + "const $link = await api.createLink('root'); $link.addClass('active');"
+        );
+        expect(codes).toEqual([]);
+    }, TIMEOUT);
+
+    it("types api.sql in backend scripts", async () => {
+        const codes = await getScriptDiagnosticCodes(
+            SCRIPT_MIME_BACKEND,
+            "const ids = api.sql.getColumn('SELECT noteId FROM notes');\n"
+            + "api.sql.execute('UPDATE notes SET title = ? WHERE noteId = ?', [ 'x', ids[0] ]).changes.toFixed();"
+        );
+        expect(codes).toEqual([]);
+    }, TIMEOUT);
+
     it("does not provide jQuery to backend scripts ($ is unavailable server-side)", async () => {
         const codes = await getScriptDiagnosticCodes(
             SCRIPT_MIME_BACKEND,
