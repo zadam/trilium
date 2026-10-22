@@ -120,16 +120,8 @@ export const hierarchyTools = defineTools({
                 return { error: "Cannot move note to a protected parent" };
             }
 
-            const branches = note.getParentBranches();
-            /* v8 ignore next 3 -- rare edge case, not worth simulating in a unit test:
-               an orphaned note (its last parent branch removed but the note itself not
-               yet deleted from Becca, e.g. during a sync race) can momentarily have zero
-               parent branches. The guard returns a clean error instead of crashing on branches[0]. */
-            if (branches.length === 0) {
-                return { error: "Note has no parent branches" };
-            }
-            // Move the first branch whose parent the LLM can see, so an excluded parent is neither changed nor revealed.
-            const branch = branches.find((b) => b.parentNote && !isExcludedFromLlm(b.parentNote));
+            // Moving only a branch under a visible parent keeps an excluded parent unchanged and unnamed.
+            const branch = note.getParentBranches().find((b) => b.parentNote && !isExcludedFromLlm(b.parentNote));
             if (!branch) {
                 return { error: "Note has no parent it can be moved from" };
             }

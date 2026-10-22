@@ -32,7 +32,7 @@ const SVG_SOURCE_RE = /^\s*(?:<\?xml[\s\S]*?\?>\s*)?(?:(?:<!--(?:(?!-->)[\s\S])*
 /** Note IDs that must not be deleted, moved, or cloned by the LLM. */
 export const PROTECTED_SYSTEM_NOTES = new Set(["root", "_hidden", "_share", "_lbRoot", "_globalNoteMap"]);
 
-/** Label that keeps a note out of reach of the LLM tools; made inheritable, it covers the subtree too. */
+/** Label that hides a note from the LLM tools, and its subtree too when the label is inheritable. */
 export const EXCLUDE_FROM_LLM_LABEL = "excludeFromLlm";
 
 /** Whether the LLM must not see a note: it owns or inherits a truthy {@link EXCLUDE_FROM_LLM_LABEL}. */
@@ -40,23 +40,23 @@ export function isExcludedFromLlm(note: BNote) {
     return note.isLabelTruthy(EXCLUDE_FROM_LLM_LABEL);
 }
 
-/** Look a note up for the LLM; an excluded note is reported as missing so its existence does not leak. */
+/** Returns the note, or `null` when it is missing or excluded, so the LLM cannot tell the two apart. */
 export function getLlmNote(noteId: string): BNote | null {
     const note = becca.getNote(noteId);
     return note && !isExcludedFromLlm(note) ? note : null;
 }
 
-/** The note's children the LLM may see. */
+/** Returns the note's children that the LLM can see. */
 export function getLlmChildNotes(note: BNote) {
     return note.getChildNotes().filter((child) => !isExcludedFromLlm(child));
 }
 
-/** The note's parents the LLM may see. */
+/** Returns the note's parents that the LLM can see. */
 export function getLlmParentNotes(note: BNote) {
     return note.getParentNotes().filter((parent) => !isExcludedFromLlm(parent));
 }
 
-/** Whether an attribute may be shown to the LLM: neither its owner nor, for a relation, its target is excluded. */
+/** Whether the LLM can see an attribute: its owner and, for a relation, its target are not excluded. */
 export function isAttributeVisibleToLlm(attribute: BAttribute) {
     const owner = becca.getNote(attribute.noteId);
     if (!owner || isExcludedFromLlm(owner)) {
@@ -66,7 +66,7 @@ export function isAttributeVisibleToLlm(attribute: BAttribute) {
     return !target || !isExcludedFromLlm(target);
 }
 
-/** Look an attachment up for the LLM; one whose owning note (directly or through a revision) is excluded is reported as missing. */
+/** Returns the attachment, or `null` when it is missing or its owning note (or the revision's note) is excluded. */
 export function getLlmAttachment(attachmentId: string): BAttachment | null {
     const attachment = becca.getAttachment(attachmentId);
     if (!attachment) {

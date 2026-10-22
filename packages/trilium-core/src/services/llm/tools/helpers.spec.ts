@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const getBlobMock = vi.hoisted(() => vi.fn());
 const getNoteMock = vi.hoisted(() => vi.fn());
 
-// getContentPreview / getNoteContentForLlm consult becca.getBlob (SQL-backed);
-// partial-mock core so it returns deterministic blobs while markdown
+// getContentPreview / getNoteContentForLlm consult becca.getBlob (SQL-backed) and getNoteMeta checks owners through becca.getNote;
+// partial-mock core so both return deterministic stubs while markdown
 // import/export services keep their real implementations.
 vi.mock("../../../becca/becca.js", async (importOriginal) => {
     const actual = await importOriginal<typeof import("../../../becca/becca.js")>();
