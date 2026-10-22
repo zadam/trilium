@@ -143,9 +143,13 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         if (body.description) {
             blocks.push(body.description.trim());
         }
-        blocks.push(Object.entries(body.content ?? {})
-            .map(([ mime, { schema } ]) => `*   ${code(mime)}: ${code(typeOf(schema))}`)
-            .join("\n"));
+        for (const [ mime, { schema } ] of Object.entries(body.content ?? {})) {
+            blocks.push(`*   ${code(mime)}: ${code(typeOf(schema))}`);
+            const resolved = schema && resolve(spec, schema);
+            if (resolved?.properties) {
+                blocks.push(propertyTable(resolved));
+            }
+        }
     }
 
     const responses = Object.entries(operation.responses ?? {});
@@ -169,22 +173,21 @@ function renderSchema(name: string, schema: Schema) {
         blocks.push(schema.description.trim());
     }
 
-    if (!schema.properties) {
-        blocks.push(`Type: ${code(typeOf(schema))}`);
-        return blocks;
-    }
+    blocks.push(schema.properties ? propertyTable(schema) : `Type: ${code(typeOf(schema))}`);
+    return blocks;
+}
 
-    const required = new Set(schema.required);
-    blocks.push(table(
+function propertyTable({ properties, required }: Schema) {
+    const requiredProperties = new Set(required);
+    return table(
         [ "Property", "Type", "Required", "Description" ],
-        Object.entries(schema.properties).map(([ property, propertySchema ]) => [
+        Object.entries(properties ?? {}).map(([ property, propertySchema ]) => [
             code(property),
             code(typeOf(propertySchema)),
-            required.has(property) ? "Yes" : "No",
+            requiredProperties.has(property) ? "Yes" : "No",
             describe({ description: propertySchema.description, schema: propertySchema })
         ])
-    ));
-    return blocks;
+    );
 }
 
 /** The type of a schema as one line, naming referenced schemas instead of expanding them. */

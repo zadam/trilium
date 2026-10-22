@@ -11,6 +11,22 @@ Create a note and place it into the note tree
 
 *   `application/json`: `CreateNoteDef`
 
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `parentNoteId` | `EntityId` | Yes | Note ID of the parent note in the tree |
+| `title` | `string` | Yes |  |
+| `type` | `string` | Yes | One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
+| `mime` | `string` | No | this needs to be specified only for note types 'code', 'file', 'image'. |
+| `content` | `string` | Yes |  |
+| `notePosition` | `integer` | No | Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
+| `prefix` | `string` | No | Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
+| `isExpanded` | `boolean` | No | true if this note (as a folder) should appear expanded |
+| `noteId` | `EntityId` | No | DON'T specify unless you want to force a specific noteId |
+| `branchId` | `EntityId` | No | DON'T specify unless you want to force a specific branchId |
+| `dateCreated` | `LocalDateTime` | No | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
+| `utcDateCreated` | `UtcDateTime` | No | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
+| `utcDateModified` | `UtcDateTime` | No | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
+
 **Responses**
 
 | Status | Description | Type |
@@ -90,6 +106,24 @@ patch a note identified by the noteId with changes in the body
 **Request body** (required)
 
 *   `application/json`: `Note`
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `noteId` | `EntityId` | No |  |
+| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` | No |  |
+| `isProtected` | `boolean` | No |  |
+| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` | No |  |
+| `parentNoteIds` | `EntityIdList` | No |  |
+| `childNoteIds` | `EntityIdList` | No |  |
+| `parentBranchIds` | `EntityIdList` | No |  |
+| `childBranchIds` | `EntityIdList` | No |  |
+| `dateCreated` | `LocalDateTime` | No |  |
+| `dateModified` | `LocalDateTime` | No |  |
+| `utcDateCreated` | `UtcDateTime` | No |  |
+| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 **Responses**
 
@@ -300,6 +334,16 @@ Create a branch (clone a note to a different location in the tree). In case ther
 
 *   `application/json`: `Branch`
 
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `branchId` | `EntityId` | No |  |
+| `noteId` | `EntityId` | No | identifies the child note |
+| `parentNoteId` | `EntityId` | No | identifies the parent note |
+| `prefix` | `string` | No |  |
+| `notePosition` | `integer (int32)` | No |  |
+| `isExpanded` | `boolean` | No |  |
+| `utcDateModified` | `UtcDateTime` | No |  |
+
 **Responses**
 
 | Status | Description | Type |
@@ -356,6 +400,16 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 
 *   `application/json`: `Branch`
 
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `branchId` | `EntityId` | No |  |
+| `noteId` | `EntityId` | No | identifies the child note |
+| `parentNoteId` | `EntityId` | No | identifies the parent note |
+| `prefix` | `string` | No |  |
+| `notePosition` | `integer (int32)` | No |  |
+| `isExpanded` | `boolean` | No |  |
+| `utcDateModified` | `UtcDateTime` | No |  |
+
 **Responses**
 
 | Status | Description | Type |
@@ -370,6 +424,15 @@ create an attachment
 **Request body** (required)
 
 *   `application/json`: `CreateAttachment`
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` | No |  |
+| `mime` | `string` | No |  |
+| `title` | `string` | No |  |
+| `content` | `string` | No | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
+| `position` | `integer (int32)` | No |  |
 
 **Responses**
 
@@ -426,6 +489,20 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 *   `application/json`: `Attachment`
 
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `attachmentId` | `EntityId` | No |  |
+| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` | No |  |
+| `mime` | `string` | No |  |
+| `title` | `string` | No | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` | No |  |
+| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` | No |  |
+| `utcDateModified` | `UtcDateTime` | No |  |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` | No |  |
+| `contentLength` | `integer (int32)` | No |  |
+
 **Responses**
 
 | Status | Description | Type |
@@ -479,6 +556,17 @@ create an attribute for a given note
 **Request body** (required)
 
 *   `application/json`: `Attribute`
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `attributeId` | `EntityId` | No |  |
+| `noteId` | `EntityId` | No | identifies the child note |
+| `type` | `string` | No | One of `label`, `relation`. |
+| `name` | `string` | No |  |
+| `value` | `string` | No |  |
+| `position` | `integer (int32)` | No |  |
+| `isInheritable` | `boolean` | No |  |
+| `utcDateModified` | `UtcDateTime` | No |  |
 
 **Responses**
 
@@ -534,6 +622,17 @@ patch an attribute identified by the attributeId with changes in the body. For l
 **Request body** (required)
 
 *   `application/json`: `Attribute`
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `attributeId` | `EntityId` | No |  |
+| `noteId` | `EntityId` | No | identifies the child note |
+| `type` | `string` | No | One of `label`, `relation`. |
+| `name` | `string` | No |  |
+| `value` | `string` | No |  |
+| `position` | `integer (int32)` | No |  |
+| `isInheritable` | `boolean` | No |  |
+| `utcDateModified` | `UtcDateTime` | No |  |
 
 **Responses**
 
@@ -676,6 +775,10 @@ get an ETAPI token based on password for further use with ETAPI
 **Request body** (required)
 
 *   `application/json`: `object`
+
+| Property | Type | Required | Description |
+| --- | --- | --- | --- |
+| `password` | `string` | No | user's password used to e.g. login to Trilium server and/or protect notes |
 
 **Responses**
 

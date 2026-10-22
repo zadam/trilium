@@ -31,6 +31,9 @@ describe("openApiToMarkdown", () => {
             components: {
                 parameters: {
                     Force: { name: "force", in: "query", schema: { type: "boolean" }, description: "skip checks" }
+                },
+                schemas: {
+                    Note: { type: "object", required: [ "title" ], properties: { title: { type: "string" } } }
                 }
             }
         };
@@ -47,7 +50,18 @@ describe("openApiToMarkdown", () => {
             "| `noteId` | path | `EntityId` | Yes |  |",
             "| `force` | query | `boolean` | No | skip checks |"
         ].join("\n"));
-        expect(markdown).toContain("**Request body** (required)\n\n*   `application/json`: `Note`");
+        // The body's properties are listed in place, even when its schema is a reference.
+        expect(markdown).toContain([
+            "**Request body** (required)",
+            "",
+            "*   `application/json`: `Note`",
+            "",
+            "| Property | Type | Required | Description |",
+            "| --- | --- | --- | --- |",
+            "| `title` | `string` | Yes |  |",
+            "",
+            "**Responses**"
+        ].join("\n"));
         expect(markdown).toContain([
             "| Status | Description | Type |",
             "| --- | --- | --- |",
