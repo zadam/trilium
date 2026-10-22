@@ -11,6 +11,7 @@ const FIXTURE = `
  *
  * @packageDocumentation
  */
+import type { Audience } from "./audience";
 
 /** Options of {@link DemoWindowApi.resize}. */
 export interface ResizeOptions {
@@ -27,10 +28,24 @@ export interface Unreached {
     flag: boolean;
 }
 
+/** Which screen a window is on. */
+export type Screen = "primary" | "secondary";
+/** What became of a request. */
+export type Outcome =
+    /** It went through. */
+    | "done"
+    /** The user declined it. */
+    | "declined";
+
 /** Window controls. */
 export interface DemoWindowApi {
     /** Whether the window has the focus. */
     readonly focused: boolean;
+
+    /** Where the window is. */
+    screen: Screen;
+    /** Who the window serves. */
+    audience: Audience;
 
     /**
      * Resizes the window.
@@ -45,6 +60,9 @@ export interface DemoWindowApi {
 
     /** @deprecated Use {@link resize}. */
     maximize(): void;
+
+    /** Asks to close the window. */
+    requestClose(audience: Audience): Promise<Outcome>;
 }
 
 /** The root of the API. */
@@ -56,6 +74,11 @@ export interface DemoApi {
 }
 `;
 
+const IMPORTED = `
+/** Who a window serves. */
+export type Audience = "user" | "guest";
+`;
+
 describe("typeDocToMarkdown", () => {
     let dir: string;
     let markdown: string;
@@ -63,9 +86,10 @@ describe("typeDocToMarkdown", () => {
     beforeAll(async () => {
         dir = await mkdtemp(join(tmpdir(), "typedoc-markdown-"));
         await writeFile(join(dir, "api.ts"), FIXTURE);
+        await writeFile(join(dir, "audience.ts"), IMPORTED);
         await writeFile(join(dir, "tsconfig.json"), JSON.stringify({
             compilerOptions: { strict: true, target: "ES2022", module: "ESNext", moduleResolution: "bundler" },
-            files: [ "api.ts" ]
+            files: [ "api.ts", "audience.ts" ]
         }));
         markdown = typeDocToMarkdown(await runTypeDoc(join(dir, "api.ts"), join(dir, "tsconfig.json")), "DemoApi");
     }, 60_000);
@@ -84,9 +108,13 @@ describe("typeDocToMarkdown", () => {
     it("opens with the package comment, then the root and what it reaches, in order of reference", () => {
         expect(markdown.startsWith("The demo API, exposed as `window.demoApi`.\n\n## `DemoApi`")).toBe(true);
 
-        const order = [ ...markdown.matchAll(/^## `(\w+)`/gm) ].map(([ , name ]) => name);
-        // Exports the root never reaches follow, in source order.
-        expect(order).toEqual([ "DemoApi", "DemoWindowApi", "ResizeOptions", "Size", "Unreached" ]);
+        const headings = [ ...markdown.matchAll(/^(#+) `?(\w+)`?/gm) ].map(([ , level, name ]) => `${level} ${name}`);
+        // The root and the interfaces with methods come first; the types they use follow under
+        // "Types", then the exports the root never reaches, in source order.
+        expect(headings).toEqual([
+            "## DemoApi", "## DemoWindowApi", "## Types",
+            "### Audience", "### ResizeOptions", "### Outcome", "### Size", "### Unreached"
+        ]);
     });
 
     it("lists properties in a table, their type above their description", () => {
@@ -146,13 +174,45 @@ describe("typeDocToMarkdown", () => {
 
     it("writes a type alias as its declaration", () => {
         expect(markdown).toContain([
-            "## `Size`",
+            "### `Size`",
             "",
             "A size in pixels.",
             "",
             "```ts",
             "type Size = number | \"auto\"",
             "```"
+        ].join("\n"));
+    });
+
+    it("inlines a union of literals that one member uses, with its description", () => {
+        expect(markdown).not.toContain("Screen");
+        expect(row("screen")).toContain(
+            "<code>\"primary\" | \"secondary\"</code><br>Where the window is.<br>Which screen a window is on.");    });
+
+    it("keeps an entry for a union used more than once, even one another module declares", () => {
+        expect(row("audience")).toContain("<code>Audience</code>");
+        expect(row("requestClose")).toContain("requestClose(audience: Audience): Promise&lt;Outcome&gt;");
+        expect(markdown).toContain([
+            "### `Audience`",
+            "",
+            "Who a window serves.",
+            "",
+            "```ts",
+            "type Audience = \"user\" | \"guest\"",
+            "```"
+        ].join("\n"));
+    });
+
+    it("lists the values of a union whose values are documented", () => {
+        expect(markdown).toContain([
+            "### `Outcome`",
+            "",
+            "What became of a request.",
+            "",
+            "| Value | Description |",
+            "| --- | --- |",
+            "| `\"done\"` | It went through. |",
+            "| `\"declined\"` | The user declined it. |"
         ].join("\n"));
     });
 });

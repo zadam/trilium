@@ -4,7 +4,13 @@
  * `@packageDocumentation` comment rather than an H1.
  */
 import { renderToHtml } from "@triliumnext/commons/src/lib/markdown_renderer.js";
+import { execFile } from "child_process";
+import { mkdtemp, readFile, rm } from "fs/promises";
+import { createRequire } from "module";
+import { tmpdir } from "os";
+import { dirname, join } from "path";
 import type { JSONOutput } from "typedoc";
+import { promisify } from "util";
 
 type Project = JSONOutput.ProjectReflection;
 type Declaration = JSONOutput.DeclarationReflection;
@@ -12,41 +18,78 @@ type Signature = JSONOutput.SignatureReflection;
 type SomeType = JSONOutput.SomeType;
 type Comment = JSONOutput.Comment;
 
-/** Runs TypeDoc on one entry point and returns its model, as `typedoc --json` writes it. */
+/**
+ * Runs TypeDoc on one entry point and returns its model, as `typedoc --json` writes it.
+ *
+ * TypeDoc runs in a process of its own because typedoc-plugin-missing-exports patches TypeDoc
+ * and refuses to load a second time in one process.
+ */
 export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<Project> {
-    const { Application, normalizePath } = await import("typedoc");
-    const app = await Application.bootstrap({
-        // Entry points are globs, which take `/` as the only separator.
-        entryPoints: [ entryPoint.replaceAll("\\", "/") ],
-        tsconfig,
-        skipErrorChecking: true,
-        sort: [ "source-order" ],
-        excludePrivate: true,
-        logLevel: "Error"
-    });
-    const project = await app.convert();
-    if (!project || app.logger.hasErrors()) {
-        throw new Error(`TypeDoc could not convert ${entryPoint}.`);
+    const typeDoc = join(dirname(createRequire(import.meta.url).resolve("typedoc/package.json")), "bin", "typedoc");
+    const dir = await mkdtemp(join(tmpdir(), "typedoc-"));
+    const output = join(dir, "project.json");
+    try {
+        await promisify(execFile)(process.execPath, [
+            typeDoc,
+            // Entry points are globs, which take `/` as the only separator.
+            "--entryPoints", entryPoint.replaceAll("\\", "/"),
+            "--tsconfig", tsconfig,
+            "--json", output,
+            "--skipErrorChecking",
+            "--sort", "source-order",
+            "--excludePrivate",
+            "--logLevel", "Error",
+            // Declares the types the entry point imports from other modules in an `<internal>` module.
+            "--plugin", "typedoc-plugin-missing-exports"
+        ]);
+        return JSON.parse(await readFile(output, "utf8"));
+    } catch (error) {
+        // TypeDoc logs its errors to stdout.
+        const { stdout, stderr, message } = error as { stdout?: string; stderr?: string; message: string };
+        const log = [ stdout, stderr ].map((text) => text?.trim()).filter(Boolean).join("\n") || message;
+        throw new Error(`TypeDoc could not convert ${entryPoint}.\n${log}`);
+    } finally {
+        await rm(dir, { recursive: true, force: true });
     }
-
-    return app.serializer.projectToObject(project, normalizePath(process.cwd()));
 }
 
 /**
  * Renders `root` first, then the declarations it reaches in order of first reference, then the
  * remaining exports in source order. Without `root`, the exports follow in source order.
+ *
+ * `root` and the interfaces with methods come first, each under a heading of its own; the types
+ * they use follow under "Types". A union of literals that one place uses is written out there
+ * instead of getting an entry.
  */
 export function typeDocToMarkdown(project: Project, root?: string): string {
-    const blocks: string[] = [];
-    if (project.comment) {
-        blocks.push(renderComment(project.comment));
-    }
+    const { declarations, inlined } = selectDeclarations(project);
+    inlinedAliases = inlined;
+    try {
+        const blocks: string[] = [];
+        if (project.comment) {
+            blocks.push(renderComment(project.comment));
+        }
 
-    for (const declaration of orderDeclarations(project.children ?? [], root)) {
-        blocks.push(...renderDeclaration(declaration));
-    }
+        const ordered = orderDeclarations(declarations, root);
+        const isApi = (declaration: Declaration) => declaration.name === root
+            || !!declaration.children?.some((member) => member.kind === KIND.method);
+        const apis = ordered.filter(isApi);
+        const types = ordered.filter((declaration) => !isApi(declaration));
+        for (const declaration of apis) {
+            blocks.push(...renderDeclaration(declaration, "##"));
+        }
 
-    return blocks.filter(Boolean).join("\n\n");
+        if (apis.length && types.length) {
+            blocks.push("## Types");
+        }
+        for (const declaration of types) {
+            blocks.push(...renderDeclaration(declaration, apis.length ? "###" : "##"));
+        }
+
+        return blocks.filter(Boolean).join("\n\n");
+    } finally {
+        inlinedAliases = new Map();
+    }
 }
 
 /** The `ReflectionKind` values this module renders. */
@@ -57,6 +100,42 @@ const KIND = {
     method: 2048,
     accessor: 262144
 };
+
+/** The aliases `typeToString()` writes out in place of their name, while a page renders. */
+let inlinedAliases = new Map<string, Declaration>();
+
+/**
+ * The module's exports, and the types it imports from other modules that its exports use, except
+ * the unions of literals used in one place, which are returned to be written out there.
+ */
+function selectDeclarations(project: Project) {
+    const own = (project.children ?? []).filter((declaration) => declaration.name !== "<internal>");
+    const imported = (project.children ?? [])
+        .filter((declaration) => declaration.name === "<internal>")
+        .flatMap((internal) => internal.children ?? [])
+        .filter((declaration) => !declaration.sources?.some((source) => source.fileName.includes("node_modules/")));
+
+    const uses = new Map<string, number>();
+    for (const name of own.flatMap(referencedNames)) {
+        uses.set(name, (uses.get(name) ?? 0) + 1);
+    }
+
+    const inlined = new Map([ ...own, ...imported ]
+        .filter((declaration) => isLiteralUnion(declaration) && uses.get(declaration.name) === 1)
+        .map((declaration) => [ declaration.name, declaration ]));
+    return {
+        declarations: [ ...own, ...imported.filter((declaration) => uses.has(declaration.name)) ]
+            .filter((declaration) => !inlined.has(declaration.name)),
+        inlined
+    };
+}
+
+/** Whether a declaration is a type alias for a union of literals whose values have no comments. */
+function isLiteralUnion(declaration: Declaration) {
+    const type = declaration.type;
+    return declaration.kind === KIND.typeAlias && type?.type === "union" && !type.elementSummaries
+        && type.types.every((member) => member.type === "literal");
+}
 
 function orderDeclarations(declarations: Declaration[], root: string | undefined) {
     const byName = new Map(declarations.map((declaration) => [ declaration.name, declaration ]));
@@ -80,6 +159,9 @@ function orderDeclarations(declarations: Declaration[], root: string | undefined
     return [ ...ordered ];
 }
 
+/** Keys whose references a page does not show: comments, and the links between related types. */
+const UNSHOWN_KEYS = new Set([ "comment", "extendedTypes", "extendedBy", "implementedTypes", "implementedBy", "inheritedFrom" ]);
+
 /** The names of the types a declaration refers to, in the order they appear in it. */
 function referencedNames(declaration: Declaration) {
     const names: string[] = [];
@@ -94,7 +176,7 @@ function referencedNames(declaration: Declaration) {
                 names.push(node.name);
             }
             for (const [ key, child ] of Object.entries(node)) {
-                if (key !== "comment") {
+                if (!UNSHOWN_KEYS.has(key)) {
                     visit(child);
                 }
             }
@@ -104,14 +186,20 @@ function referencedNames(declaration: Declaration) {
     return names;
 }
 
-function renderDeclaration(declaration: Declaration) {
-    const blocks = [ `## ${code(declaration.name)}` ];
+function renderDeclaration(declaration: Declaration, heading: string) {
+    const blocks = [ `${heading} ${code(declaration.name)}` ];
     if (declaration.comment) {
         blocks.push(renderComment(declaration.comment));
     }
 
     if (declaration.kind === KIND.typeAlias) {
-        blocks.push(fence(`type ${declaration.name} = ${typeToString(declaration.type)}`));
+        const type = declaration.type;
+        blocks.push(type?.type === "union" && type.elementSummaries
+            ? table([ "Value", "Description" ], type.types.map((value, index) => [
+                code(typeToString(value)),
+                oneLine(partsToMarkdown(type.elementSummaries?.[index] ?? []))
+            ]))
+            : fence(`type ${declaration.name} = ${typeToString(type)}`));
         return blocks;
     }
 
@@ -138,7 +226,15 @@ function renderDeclaration(declaration: Declaration) {
 }
 
 function propertyDetails(property: Declaration) {
-    return details(typeToString(property.type ?? property.getSignature?.type), property.comment);
+    const type = typeToString(property.type ?? property.getSignature?.type);
+    return details(type, [ property.comment, ...inlinedComments(property) ]);
+}
+
+/** The comments of the aliases a member's types write out, which their names no longer point to. */
+function inlinedComments(member: Declaration) {
+    return [ ...new Set(referencedNames(member)) ]
+        .map((name) => inlinedAliases.get(name)?.comment)
+        .filter((comment) => !!comment);
 }
 
 /**
@@ -158,12 +254,13 @@ function methodDetails(method: Declaration) {
     if (signature.comment) {
         blocks.push(renderComment(signature.comment));
     }
+    blocks.push(...inlinedComments(method).map(renderComment));
 
     const parameters = signature.parameters ?? [];
     if (parameters.some((parameter) => parameter.comment)) {
         blocks.push(table([ "Parameter", "Description" ], parameters.map((parameter) => [
             parameter.flags.isOptional ? `${code(parameter.name)}<br>*optional*` : code(parameter.name),
-            details(typeToString(parameter.type), parameter.comment)
+            details(typeToString(parameter.type), [ parameter.comment ])
         ])));
     }
 
@@ -194,13 +291,19 @@ function blockTag(comment: Comment | undefined, tag: string) {
 
 /** Comment text as Markdown; a `{@link}` becomes its target's name as code. */
 function partsToMarkdown(parts: JSONOutput.CommentDisplayPart[]) {
-    return parts.map((part) => part.kind === "inline-tag" ? code(part.text) : part.text).join("").trim();
+    return parts.map((part) => part.kind === "inline-tag" ? code(part.text) : part.text).join("")
+        .replaceAll("\r\n", "\n")
+        .trim();
 }
 
-/** A table cell holding a type, with the description on the line below. */
-function details(type: string, comment: Comment | undefined) {
-    const description = comment ? partsToMarkdown(comment.summary).replace(/\s*\n\s*/g, " ") : "";
-    return [ code(type), description ].filter(Boolean).join("<br>");
+/** A table cell holding a type, with each description on a line below. */
+function details(type: string, comments: (Comment | undefined)[]) {
+    const descriptions = comments.map((comment) => comment ? oneLine(partsToMarkdown(comment.summary)) : "");
+    return [ code(type), ...descriptions ].filter(Boolean).join("<br>");
+}
+
+function oneLine(text: string) {
+    return text.replace(/\s*\n\s*/g, " ");
 }
 
 function signatureToString(signature: Signature) {
@@ -226,6 +329,10 @@ function typeToString(type: SomeType | undefined): string {
         case "intrinsic":
             return type.name;
         case "reference": {
+            const alias = !type.typeArguments && inlinedAliases.get(type.name);
+            if (alias) {
+                return typeToString(alias.type);
+            }
             const args = type.typeArguments?.map(typeToString).join(", ");
             return args ? `${type.name}<${args}>` : type.name;
         }
@@ -288,6 +395,9 @@ function reflectionToString(declaration: Declaration) {
 /** A type as an operand of `[]`, `&` or a type operator, in parentheses when it needs them. */
 function wrap(type: SomeType | undefined) {
     const text = typeToString(type);
+    if (type?.type === "reference" && !type.typeArguments && inlinedAliases.has(type.name)) {
+        type = inlinedAliases.get(type.name)?.type;
+    }
     const needsParentheses = type?.type === "union" || type?.type === "intersection"
         || (type?.type === "reflection" && !!type.declaration.signatures?.length);
     return needsParentheses ? `(${text})` : text;

@@ -558,6 +558,9 @@ importers:
       typedoc:
         specifier: 0.28.20
         version: 0.28.20(typescript@6.0.3)
+      typedoc-plugin-missing-exports:
+        specifier: 4.1.4
+        version: 4.1.4(typedoc@0.28.20(typescript@6.0.3))
 
   apps/icon-pack-builder:
     dependencies:

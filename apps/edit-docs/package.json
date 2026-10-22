@@ -13,7 +13,8 @@
     "@triliumnext/commons": "workspace:*",
     "@triliumnext/desktop": "workspace:*",
     "electron": "44.9.0",
-    "typedoc": "0.28.20"
+    "typedoc": "0.28.20",
+    "typedoc-plugin-missing-exports": "4.1.4"
   },
   "scripts": {
     "build": "tsx scripts/build.ts",
