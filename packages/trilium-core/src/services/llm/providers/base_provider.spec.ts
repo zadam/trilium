@@ -14,7 +14,7 @@ const { streamTextMock, generateTextMock, noteMetaMock, errorLogMock, beccaStub 
     // becca is accessed directly during message-part resolution and note-hint
     // building. Stub just these while keeping the rest of core intact.
     beccaStub: {
-        getNote: vi.fn((noteId: string) => ({ noteId }) as any),
+        getNote: vi.fn((noteId: string) => ({ noteId, isLabelTruthy: () => false }) as any),
         getAttachment: vi.fn() as any
     }
 }));
@@ -492,7 +492,7 @@ describe("BaseProvider applyNoteHint", () => {
     const provider = new TestProvider();
 
     beforeEach(() => {
-        beccaStub.getNote.mockReset().mockImplementation((noteId: string) => ({ noteId }) as any);
+        beccaStub.getNote.mockReset().mockImplementation((noteId: string) => ({ noteId, isLabelTruthy: () => false }) as any);
         noteMetaMock.mockReset().mockReturnValue({ noteId: "ctx", contentPreview: "PREVIEW" });
     });
 
@@ -554,7 +554,7 @@ describe("BaseProvider chat / pricing / models / title", () => {
     beforeEach(() => {
         streamTextMock.mockClear();
         generateTextMock.mockClear();
-        beccaStub.getNote.mockReset().mockImplementation((noteId: string) => ({ noteId }) as any);
+        beccaStub.getNote.mockReset().mockImplementation((noteId: string) => ({ noteId, isLabelTruthy: () => false }) as any);
     });
 
     it("omits tool options when no tools are enabled", () => {
