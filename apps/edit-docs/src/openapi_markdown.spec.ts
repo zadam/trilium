@@ -81,21 +81,34 @@ describe("openApiToMarkdown", () => {
             "| `noteId`<br>*required* | path | `EntityId` |  |",
             "| `force` | query | `boolean` | skip checks |"
         ].join("\n"));
-        // The body's properties are listed in place, even when its schema is a reference.
-        expect(markdown).toContain([
-            "**Request body** (required)",
-            "",
-            "*   `application/json`: `Note`",
+        // The body's properties are listed in place, even when its schema is a reference, in a
+        // column beside its sample, written as the Markdown export writes a multicolumn layout.
+        const columns = [
+            "<div class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-1\">",
+            "<div class=\"trilium-multicolumn-column\">",
             "",
             "| Property | Type | Description |",
             "| --- | --- | --- |",
             "| `title`<br>*required* | `string` |  |",
+            "",
+            "</div>",
+            "<div class=\"trilium-multicolumn-column\">",
             "",
             "```json",
             "{",
             "    \"title\": \"string\"",
             "}",
             "```",
+            "",
+            "</div>",
+            "</div>"
+        ];
+        expect(markdown).toContain([
+            "**Request body** (required)",
+            "",
+            "*   `application/json`: `Note`",
+            "",
+            ...columns,
             "",
             "**Responses**"
         ].join("\n"));
@@ -107,15 +120,7 @@ describe("openApiToMarkdown", () => {
             "",
             "    *   `application/json`: `Note`",
             "",
-            "    | Property | Type | Description |",
-            "    | --- | --- | --- |",
-            "    | `title`<br>*required* | `string` |  |",
-            "",
-            "    ```json",
-            "    {",
-            "        \"title\": \"string\"",
-            "    }",
-            "    ```",
+            ...columns.map((line) => line && `    ${line}`),
             "",
             "=== \"default: unexpected error\"",
             "",

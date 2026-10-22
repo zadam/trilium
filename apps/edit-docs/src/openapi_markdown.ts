@@ -2,6 +2,7 @@
  * Renders an OpenAPI 3.x document as the Markdown body of a User Guide page. The page's title
  * comes from its note, so the output starts with the API's description rather than an H1.
  */
+import { MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS } from "../../../packages/commons/src/index.js";
 
 export interface OpenApiSpec {
     info: { title: string; description?: string };
@@ -242,7 +243,7 @@ function mediaLine(mime: string, { schema }: MediaType) {
 
 type Direction = "request" | "response";
 
-/** The property table of a body's schema, then a JSON sample of the body. */
+/** The property table of a body's schema and a JSON sample of the body, side by side when both exist. */
 function renderBody(spec: OpenApiSpec, mime: string, { schema, example, examples }: MediaType, direction: Direction) {
     const blocks: string[] = [];
     const resolved = schema && resolve(spec, schema);
@@ -257,7 +258,14 @@ function renderBody(spec: OpenApiSpec, mime: string, { schema, example, examples
         }
     }
 
-    return blocks;
+    return blocks.length > 1 ? [ columns(blocks) ] : blocks;
+}
+
+/** A multicolumn layout of equal columns, in the shape the Markdown export writes it. */
+function columns(blocks: string[]) {
+    const layout = `<div class="${MULTICOLUMN_LAYOUT_CLASS}" data-trilium-column-ratios="${blocks.map(() => 1).join("-")}">`;
+    const content = blocks.map((block) => `<div class="${MULTICOLUMN_COLUMN_CLASS}">\n\n${block}\n\n</div>`);
+    return [ layout, ...content, "</div>" ].join("\n");
 }
 
 /**

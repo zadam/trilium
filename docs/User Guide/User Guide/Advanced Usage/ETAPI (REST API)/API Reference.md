@@ -29,6 +29,9 @@ Create a note and place it into the note tree
 
 *   `application/json`: `CreateNoteDef`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `parentNoteId`  <br>_required_ | `EntityId` | Note ID of the parent note in the tree |
@@ -44,6 +47,9 @@ Create a note and place it into the note tree
 | `dateCreated` | `LocalDateTime` | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
 | `utcDateCreated` | `UtcDateTime` | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
 | `utcDateModified` | `UtcDateTime` | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
+
+</div>
+<div class="trilium-multicolumn-column">
 
 ```json
 {
@@ -63,16 +69,25 @@ Create a note and place it into the note tree
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "201: note created"
 
     *   `application/json; charset=utf-8`: `NoteWithBranch`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `note` | `Note` |  |
     | `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -124,15 +139,24 @@ Create a note and place it into the note tree
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -141,6 +165,9 @@ Create a note and place it into the note tree
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Search notes
 
@@ -170,10 +197,16 @@ Search notes
 
     *   `application/json; charset=utf-8`: `SearchResponse`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `results`  <br>_required_ | `array of Note` |  |
     | `debugInfo` | `object` | debugging info on parsing the search query enabled with &debug=true parameter |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -219,15 +252,24 @@ Search notes
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -236,6 +278,9 @@ Search notes
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get a note
 
@@ -257,6 +302,9 @@ Returns a note identified by its ID
 
     *   `application/json; charset=utf-8`: `Note`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `noteId` | `EntityId` |  |
@@ -274,6 +322,9 @@ Returns a note identified by its ID
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -314,15 +365,24 @@ Returns a note identified by its ID
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -331,6 +391,9 @@ Returns a note identified by its ID
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Delete a note
 
@@ -356,11 +419,17 @@ deletes a single note based on the noteId supplied
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -369,6 +438,9 @@ deletes a single note based on the noteId supplied
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Update a note
 
@@ -388,6 +460,9 @@ patch a note identified by the noteId with changes in the body
 
 *   `application/json`: `Note`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `noteId` | `EntityId` |  |
@@ -406,6 +481,9 @@ patch a note identified by the noteId with changes in the body
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+</div>
+<div class="trilium-multicolumn-column">
+
 ```json
 {
     "title": "string",
@@ -418,11 +496,17 @@ patch a note identified by the noteId with changes in the body
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "200: note updated"
 
     *   `application/json; charset=utf-8`: `Note`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
@@ -441,6 +525,9 @@ patch a note identified by the noteId with changes in the body
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -481,15 +568,24 @@ patch a note identified by the noteId with changes in the body
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -498,6 +594,9 @@ patch a note identified by the noteId with changes in the body
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get the content of a note
 
@@ -571,11 +670,17 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -584,6 +689,9 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Import a ZIP archive
 
@@ -605,10 +713,16 @@ Imports ZIP file into a given note.
 
     *   `application/json; charset=utf-8`: `NoteWithBranch`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `note` | `Note` |  |
     | `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -660,15 +774,24 @@ Imports ZIP file into a given note.
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -677,6 +800,9 @@ Imports ZIP file into a given note.
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Restore a deleted note
 
@@ -698,9 +824,15 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 
     *   `application/json; charset=utf-8`: `object`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `success` | `boolean` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -708,15 +840,24 @@ Restore a deleted note. The note must be deleted and must have at least one unde
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -725,6 +866,9 @@ Restore a deleted note. The note must be deleted and must have at least one unde
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### List recent changes
 
@@ -766,11 +910,17 @@ Returns recent changes including note creations, modifications, and deletions
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -779,6 +929,9 @@ Returns recent changes including note creations, modifications, and deletions
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ## Branches
 
@@ -796,6 +949,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
 
 *   `application/json`: `Branch`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `branchId` | `EntityId` |  |
@@ -806,6 +962,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+</div>
+<div class="trilium-multicolumn-column">
+
 ```json
 {
     "branchId": "evnnmvHTCgIn",
@@ -815,12 +974,18 @@ Create a branch (clone a note to a different location in the tree). In case ther
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "200: existing branch updated"
 
     *   `application/json; charset=utf-8`: `Branch`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `branchId` | `EntityId` |  |
@@ -830,6 +995,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
     | `notePosition` | `integer (int32)` |  |
     | `isExpanded` | `boolean` |  |
     | `utcDateModified` | `UtcDateTime` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -842,11 +1010,17 @@ Create a branch (clone a note to a different location in the tree). In case ther
         "utcDateModified": "2021-12-31 19:18:11.930Z"
     }
     ```
+
+    </div>
+    </div>
 
 === "201: branch created"
 
     *   `application/json; charset=utf-8`: `Branch`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `branchId` | `EntityId` |  |
@@ -856,6 +1030,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
     | `notePosition` | `integer (int32)` |  |
     | `isExpanded` | `boolean` |  |
     | `utcDateModified` | `UtcDateTime` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -869,15 +1046,24 @@ Create a branch (clone a note to a different location in the tree). In case ther
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -886,6 +1072,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get a branch
 
@@ -907,6 +1096,9 @@ Returns a branch identified by its ID
 
     *   `application/json; charset=utf-8`: `Branch`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `branchId` | `EntityId` |  |
@@ -916,6 +1108,9 @@ Returns a branch identified by its ID
     | `notePosition` | `integer (int32)` |  |
     | `isExpanded` | `boolean` |  |
     | `utcDateModified` | `UtcDateTime` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -929,15 +1124,24 @@ Returns a branch identified by its ID
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -946,6 +1150,9 @@ Returns a branch identified by its ID
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Delete a branch
 
@@ -971,11 +1178,17 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -984,6 +1197,9 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Update a branch
 
@@ -1003,6 +1219,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 
 *   `application/json`: `Branch`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `branchId` | `EntityId` |  |
@@ -1013,6 +1232,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+</div>
+<div class="trilium-multicolumn-column">
+
 ```json
 {
     "branchId": "evnnmvHTCgIn",
@@ -1022,11 +1244,17 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "200: branch updated"
 
     *   `application/json; charset=utf-8`: `Branch`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
@@ -1037,6 +1265,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
     | `notePosition` | `integer (int32)` |  |
     | `isExpanded` | `boolean` |  |
     | `utcDateModified` | `UtcDateTime` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1050,15 +1281,24 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1067,6 +1307,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Refresh the order of child notes
 
@@ -1092,11 +1335,17 @@ notePositions in branches are not automatically pushed to connected clients and 
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1105,6 +1354,9 @@ notePositions in branches are not automatically pushed to connected clients and 
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ## Attributes
 
@@ -1122,6 +1374,9 @@ create an attribute for a given note
 
 *   `application/json`: `Attribute`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `attributeId` | `EntityId` |  |
@@ -1132,6 +1387,9 @@ create an attribute for a given note
 | `position` | `integer (int32)` |  |
 | `isInheritable` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
+
+</div>
+<div class="trilium-multicolumn-column">
 
 ```json
 {
@@ -1144,11 +1402,17 @@ create an attribute for a given note
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "201: attribute created"
 
     *   `application/json; charset=utf-8`: `Attribute`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
@@ -1160,6 +1424,9 @@ create an attribute for a given note
     | `position` | `integer (int32)` |  |
     | `isInheritable` | `boolean` |  |
     | `utcDateModified` | `UtcDateTime` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1174,15 +1441,24 @@ create an attribute for a given note
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1191,6 +1467,9 @@ create an attribute for a given note
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get an attribute
 
@@ -1212,6 +1491,9 @@ Returns an attribute identified by its ID
 
     *   `application/json; charset=utf-8`: `Attribute`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `attributeId` | `EntityId` |  |
@@ -1222,6 +1504,9 @@ Returns an attribute identified by its ID
     | `position` | `integer (int32)` |  |
     | `isInheritable` | `boolean` |  |
     | `utcDateModified` | `UtcDateTime` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1236,15 +1521,24 @@ Returns an attribute identified by its ID
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1253,6 +1547,9 @@ Returns an attribute identified by its ID
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Delete an attribute
 
@@ -1278,11 +1575,17 @@ deletes an attribute based on the attributeId supplied.
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1291,6 +1594,9 @@ deletes an attribute based on the attributeId supplied.
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Update an attribute
 
@@ -1310,6 +1616,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
 
 *   `application/json`: `Attribute`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `attributeId` | `EntityId` |  |
@@ -1320,6 +1629,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
 | `position` | `integer (int32)` |  |
 | `isInheritable` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
+
+</div>
+<div class="trilium-multicolumn-column">
 
 ```json
 {
@@ -1332,11 +1644,17 @@ patch an attribute identified by the attributeId with changes in the body. For l
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "200: attribute updated"
 
     *   `application/json; charset=utf-8`: `Attribute`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
@@ -1348,6 +1666,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
     | `position` | `integer (int32)` |  |
     | `isInheritable` | `boolean` |  |
     | `utcDateModified` | `UtcDateTime` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1362,15 +1683,24 @@ patch an attribute identified by the attributeId with changes in the body. For l
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1379,6 +1709,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ## Attachments
 
@@ -1426,11 +1759,17 @@ Returns all attachments for a note identified by its ID
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1439,6 +1778,9 @@ Returns all attachments for a note identified by its ID
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Create an attachment
 
@@ -1452,6 +1794,9 @@ create an attachment
 
 *   `application/json`: `CreateAttachment`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
@@ -1460,6 +1805,9 @@ create an attachment
 | `title` | `string` |  |
 | `content` | `string` | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
 | `position` | `integer (int32)` |  |
+
+</div>
+<div class="trilium-multicolumn-column">
 
 ```json
 {
@@ -1472,11 +1820,17 @@ create an attachment
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "201: attachment created"
 
     *   `application/json; charset=utf-8`: `Attachment`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
@@ -1491,6 +1845,9 @@ create an attachment
     | `utcDateModified` | `UtcDateTime` |  |
     | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
     | `contentLength` | `integer (int32)` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1508,15 +1865,24 @@ create an attachment
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1525,6 +1891,9 @@ create an attachment
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get an attachment
 
@@ -1546,6 +1915,9 @@ Returns an attachment identified by its ID
 
     *   `application/json; charset=utf-8`: `Attachment`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `attachmentId` | `EntityId` |  |
@@ -1559,6 +1931,9 @@ Returns an attachment identified by its ID
     | `utcDateModified` | `UtcDateTime` |  |
     | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
     | `contentLength` | `integer (int32)` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1576,15 +1951,24 @@ Returns an attachment identified by its ID
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1593,6 +1977,9 @@ Returns an attachment identified by its ID
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Delete an attachment
 
@@ -1618,11 +2005,17 @@ deletes an attachment based on the attachmentId supplied.
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1631,6 +2024,9 @@ deletes an attachment based on the attachmentId supplied.
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Update an attachment
 
@@ -1650,6 +2046,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 *   `application/json`: `Attachment`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `attachmentId` | `EntityId` |  |
@@ -1664,6 +2063,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
 | `contentLength` | `integer (int32)` |  |
 
+</div>
+<div class="trilium-multicolumn-column">
+
 ```json
 {
     "ownerId": "evnnmvHTCgIn",
@@ -1676,11 +2078,17 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "200: attribute updated"
 
     *   `application/json; charset=utf-8`: `Attachment`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
@@ -1695,6 +2103,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
     | `utcDateModified` | `UtcDateTime` |  |
     | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
     | `contentLength` | `integer (int32)` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1712,15 +2123,24 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1729,6 +2149,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get the content of an attachment
 
@@ -1806,11 +2229,17 @@ Create a note revision for the given note
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1819,6 +2248,9 @@ Create a note revision for the given note
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### List the revisions of a note
 
@@ -1864,11 +2296,17 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1877,6 +2315,9 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get a revision
 
@@ -1898,6 +2339,9 @@ Returns a revision identified by its ID
 
     *   `application/json; charset=utf-8`: `Revision`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `revisionId` | `EntityId` |  |
@@ -1913,6 +2357,9 @@ Returns a revision identified by its ID
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` |  |
     | `contentLength` | `integer (int32)` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1932,15 +2379,24 @@ Returns a revision identified by its ID
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1949,6 +2405,9 @@ Returns a revision identified by its ID
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get the content of a revision
 
@@ -1974,11 +2433,17 @@ Returns revision content identified by its ID
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -1987,6 +2452,9 @@ Returns revision content identified by its ID
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ## Calendar
 
@@ -2012,6 +2480,9 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 
     *   `application/json; charset=utf-8`: `Note`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `noteId` | `EntityId` |  |
@@ -2029,6 +2500,9 @@ returns an "inbox" note, into which note can be created. Date will be used depen
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2069,15 +2543,24 @@ returns an "inbox" note, into which note can be created. Date will be used depen
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2086,6 +2569,9 @@ returns an "inbox" note, into which note can be created. Date will be used depen
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get a day note
 
@@ -2107,6 +2593,9 @@ returns a day note for a given date. Gets created if doesn't exist.
 
     *   `application/json; charset=utf-8`: `Note`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `noteId` | `EntityId` |  |
@@ -2124,6 +2613,9 @@ returns a day note for a given date. Gets created if doesn't exist.
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2164,15 +2656,24 @@ returns a day note for a given date. Gets created if doesn't exist.
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2181,6 +2682,9 @@ returns a day note for a given date. Gets created if doesn't exist.
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get the day note starting the week
 
@@ -2202,6 +2706,9 @@ Returns the day note for the first day of the week containing the given date, ho
 
     *   `application/json; charset=utf-8`: `Note`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `noteId` | `EntityId` |  |
@@ -2219,6 +2726,9 @@ Returns the day note for the first day of the week containing the given date, ho
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2259,15 +2769,24 @@ Returns the day note for the first day of the week containing the given date, ho
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2276,6 +2795,9 @@ Returns the day note for the first day of the week containing the given date, ho
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get a week note
 
@@ -2297,6 +2819,9 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 
     *   `application/json; charset=utf-8`: `Note`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `noteId` | `EntityId` |  |
@@ -2314,6 +2839,9 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2354,15 +2882,24 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2371,6 +2908,9 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get a month note
 
@@ -2392,6 +2932,9 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 
     *   `application/json; charset=utf-8`: `Note`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `noteId` | `EntityId` |  |
@@ -2409,6 +2952,9 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2449,15 +2995,24 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2466,6 +3021,9 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get a year note
 
@@ -2487,6 +3045,9 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 
     *   `application/json; charset=utf-8`: `Note`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `noteId` | `EntityId` |  |
@@ -2504,6 +3065,9 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
     | `dateModified` | `LocalDateTime` |  |
     | `utcDateCreated` | `UtcDateTime` |  |
     | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2544,15 +3108,24 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2561,6 +3134,9 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ## Tokens
 
@@ -2578,9 +3154,15 @@ get an ETAPI token based on password for further use with ETAPI. Too many reques
 
 *   `application/json`: `object`
 
+<div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+<div class="trilium-multicolumn-column">
+
 | Property | Type | Description |
 | --- | --- | --- |
 | `password` | `string` | user's password used to e.g. login to Trilium server and/or protect notes |
+
+</div>
+<div class="trilium-multicolumn-column">
 
 ```json
 {
@@ -2588,21 +3170,33 @@ get an ETAPI token based on password for further use with ETAPI. Too many reques
 }
 ```
 
+</div>
+</div>
+
 **Responses**
 
 === "201: auth token"
 
     *   `application/json; charset=utf-8`: `object`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `authToken` | `string` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
         "authToken": "Bc4bFn0Ffiok_4NpbVCDnFz7B2WU+pdhW8B5Ne3DiR5wXrEyqdjgRIsk="
     }
     ```
+
+    </div>
+    </div>
 
 === "429: too many requests"
 
@@ -2612,11 +3206,17 @@ get an ETAPI token based on password for further use with ETAPI. Too many reques
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2625,6 +3225,9 @@ get an ETAPI token based on password for further use with ETAPI. Too many reques
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Log out
 
@@ -2644,11 +3247,17 @@ logout (delete/deactivate) an ETAPI token
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2657,6 +3266,9 @@ logout (delete/deactivate) an ETAPI token
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ## Application
 
@@ -2676,6 +3288,9 @@ returns information about the running Trilium instance
 
     *   `application/json; charset=utf-8`: `AppInfo`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `appVersion` | `string` | Trilium version |
@@ -2686,6 +3301,9 @@ returns information about the running Trilium instance
     | `dataDirectory` | `string` | data directory where Trilium stores files |
     | `clipperProtocolVersion` | `string` | version of the supported Trilium Web Clipper protocol |
     | `utcDateTime` | `string` | current UTC date time |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2700,15 +3318,24 @@ returns information about the running Trilium instance
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2717,6 +3344,9 @@ returns information about the running Trilium instance
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Create a backup
 
@@ -2742,11 +3372,17 @@ Create a database backup under a given name
 
     *   `application/json; charset=utf-8`: `Error`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2755,6 +3391,9 @@ Create a database backup under a given name
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ### Get instance metrics
 
@@ -2779,6 +3418,9 @@ The same data is served by GET /api/metrics to the web session.
     *   `text/plain`: `string`
     *   `application/json`: `Metrics`
 
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
     | Property | Type | Description |
     | --- | --- | --- |
     | `version` | `object` |  |
@@ -2787,6 +3429,9 @@ The same data is served by GET /api/metrics to the web session.
     | `attachmentTypes` | `object` | Number of active attachments per MIME type |
     | `statistics` | `object` |  |
     | `timestamp` | `string` |  |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2831,15 +3476,24 @@ The same data is served by GET /api/metrics to the web session.
     }
     ```
 
+    </div>
+    </div>
+
 === "default: unexpected error"
 
     *   `application/json; charset=utf-8`: `Error`
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
 
     | Property | Type | Description |
     | --- | --- | --- |
     | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
     | `code`  <br>_required_ | `string` | stable string constant |
     | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+    </div>
+    <div class="trilium-multicolumn-column">
 
     ```json
     {
@@ -2848,6 +3502,9 @@ The same data is served by GET /api/metrics to the web session.
         "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
     }
     ```
+
+    </div>
+    </div>
 
 ## Schemas
 
