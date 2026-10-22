@@ -284,6 +284,39 @@ describe("openApiToMarkdown", () => {
         ].join("\n"));
     });
 
+    it("gives the values a schema allows, keeping a referenced schema's pattern under its heading", () => {
+        const markdown = openApiToMarkdown({
+            info: { title: "ETAPI" },
+            paths: {},
+            components: {
+                schemas: {
+                    LocalDateTime: { type: "string", pattern: "[0-9]{4}-[0-9]{2}", example: "2021-12-31 20:18:11.930+0100" },
+                    Attribute: {
+                        type: "object",
+                        properties: {
+                            name: { type: "string", pattern: "^[^\\s]+", description: "The name" },
+                            dateCreated: { $ref: "#/components/schemas/LocalDateTime" }
+                        }
+                    }
+                }
+            }
+        });
+
+        expect(markdown).toContain([
+            "### <a id=\"schema-LocalDateTime\"></a>`LocalDateTime`",
+            "",
+            "Type: `string`",
+            "",
+            "Matches `[0-9]{4}-[0-9]{2}`.",
+            "",
+            "Example: `2021-12-31 20:18:11.930+0100`"
+        ].join("\n"));
+        expect(markdown).toContain([
+            "| `name` | `string`<br>The name. Matches `^[^\\s]+`. |",
+            "| `dateCreated` | [`LocalDateTime`](#schema-LocalDateTime) |"
+        ].join("\n"));
+    });
+
     it("lists the properties of inline objects and array items below their parent", () => {
         const markdown = openApiToMarkdown({
             info: { title: "Internal API" },

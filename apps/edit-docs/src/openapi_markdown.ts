@@ -44,6 +44,7 @@ interface Schema {
     $ref?: string;
     type?: string | string[];
     format?: string;
+    pattern?: string;
     description?: string;
     enum?: unknown[];
     nullable?: boolean;
@@ -391,8 +392,16 @@ function renderSchema(spec: OpenApiSpec, name: string, schema: Schema) {
         blocks.push(schema.description.trim());
     }
 
-    blocks.push(schema.properties ? propertyTable(spec, schema) : `Type: ${typeMarkdown(spec, schema)}`);
-    return blocks;
+    if (schema.properties) {
+        blocks.push(propertyTable(spec, schema));
+        return blocks;
+    }
+
+    blocks.push(`Type: ${typeMarkdown(spec, schema)}`, describe({ schema }));
+    if (schema.example !== undefined) {
+        blocks.push(`Example: ${code(String(schema.example))}`);
+    }
+    return blocks.filter(Boolean);
 }
 
 function propertyTable(spec: OpenApiSpec, schema: Schema) {
@@ -402,13 +411,16 @@ function propertyTable(spec: OpenApiSpec, schema: Schema) {
 /**
  * A row per property, each followed by the rows of the inline object it holds, directly or as its
  * array's items, named by their path (`results[].score`). A referenced schema has a heading of its
- * own, so its properties stay there.
+ * own, so its properties and its pattern stay there.
  */
 function propertyRows(spec: OpenApiSpec, { properties, required }: Schema, prefix: string): string[][] {
     const requiredProperties = new Set(required);
     return Object.entries(properties ?? {}).flatMap(([ property, propertySchema ]) => {
         const resolved = resolve(spec, propertySchema);
-        const description = describe({ description: propertySchema.description ?? resolved.description, schema: resolved });
+        const description = describe({
+            description: propertySchema.description ?? resolved.description,
+            schema: { enum: resolved.enum, pattern: propertySchema.pattern }
+        });
         const row = [
             nameCell(`${prefix}${property}`, requiredProperties.has(property)),
             detailsCell(typeMarkdown(spec, propertySchema), description)
@@ -517,12 +529,15 @@ function typeOf(schema: Schema | undefined): string {
     return schema.nullable ? `${type} | null` : type;
 }
 
+/** A description followed by the values the schema allows: its enum, else the pattern it matches. */
 function describe({ description, schema }: { description?: string; schema?: Schema }) {
-    if (!schema?.enum) {
+    const values = schema?.enum ? `One of ${schema.enum.map((value) => code(String(value))).join(", ")}.`
+        : schema?.pattern ? `Matches ${code(schema.pattern)}.`
+            : "";
+    if (!values) {
         return description ?? "";
     }
 
-    const values = `One of ${schema.enum.map((value) => code(String(value))).join(", ")}.`;
     return description ? `${description.trim().replace(/(?<![.!?])$/, ".")} ${values}` : values;
 }
 

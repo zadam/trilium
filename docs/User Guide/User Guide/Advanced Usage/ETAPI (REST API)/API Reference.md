@@ -1387,7 +1387,7 @@ create an attribute for a given note
 | `attributeId` | [`EntityId`](#schema-EntityId) |
 | `noteId` | [`EntityId`](#schema-EntityId)  <br>identifies the child note |
 | `type` | `string`  <br>One of `label`, `relation`. |
-| `name` | `string` |
+| `name` | `string`  <br>Matches `^[^\s]+`. |
 | `value` | `string` |
 | `position` | `integer (int32)` |
 | `isInheritable` | `boolean` |
@@ -1424,7 +1424,7 @@ create an attribute for a given note
     | `attributeId` | [`EntityId`](#schema-EntityId) |
     | `noteId` | [`EntityId`](#schema-EntityId)  <br>identifies the child note |
     | `type` | `string`  <br>One of `label`, `relation`. |
-    | `name` | `string` |
+    | `name` | `string`  <br>Matches `^[^\s]+`. |
     | `value` | `string` |
     | `position` | `integer (int32)` |
     | `isInheritable` | `boolean` |
@@ -1504,7 +1504,7 @@ Returns an attribute identified by its ID
     | `attributeId` | [`EntityId`](#schema-EntityId) |
     | `noteId` | [`EntityId`](#schema-EntityId)  <br>identifies the child note |
     | `type` | `string`  <br>One of `label`, `relation`. |
-    | `name` | `string` |
+    | `name` | `string`  <br>Matches `^[^\s]+`. |
     | `value` | `string` |
     | `position` | `integer (int32)` |
     | `isInheritable` | `boolean` |
@@ -1629,7 +1629,7 @@ patch an attribute identified by the attributeId with changes in the body. For l
 | `attributeId` | [`EntityId`](#schema-EntityId) |
 | `noteId` | [`EntityId`](#schema-EntityId)  <br>identifies the child note |
 | `type` | `string`  <br>One of `label`, `relation`. |
-| `name` | `string` |
+| `name` | `string`  <br>Matches `^[^\s]+`. |
 | `value` | `string` |
 | `position` | `integer (int32)` |
 | `isInheritable` | `boolean` |
@@ -1666,7 +1666,7 @@ patch an attribute identified by the attributeId with changes in the body. For l
     | `attributeId` | [`EntityId`](#schema-EntityId) |
     | `noteId` | [`EntityId`](#schema-EntityId)  <br>identifies the child note |
     | `type` | `string`  <br>One of `label`, `relation`. |
-    | `name` | `string` |
+    | `name` | `string`  <br>Matches `^[^\s]+`. |
     | `value` | `string` |
     | `position` | `integer (int32)` |
     | `isInheritable` | `boolean` |
@@ -2821,7 +2821,7 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 
 | Name | Description |
 | --- | --- |
-| `week`  <br>_required_ | `string`  <br>The ISO 8601 week identifier (YYYY-Www). |
+| `week`  <br>_required_ | `string`  <br>The ISO 8601 week identifier (YYYY-Www). Matches `[0-9]{4}-W[0-9]{2}`. |
 
 **Responses**
 
@@ -2934,7 +2934,7 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 
 | Name | Description |
 | --- | --- |
-| `month`  <br>_required_ | `string` |
+| `month`  <br>_required_ | `string`  <br>Matches `[0-9]{4}-[0-9]{2}`. |
 
 **Responses**
 
@@ -3047,7 +3047,7 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 
 | Name | Description |
 | --- | --- |
-| `year`  <br>_required_ | `string` |
+| `year`  <br>_required_ | `string`  <br>Matches `^[0-9]{4}$`. |
 
 **Responses**
 
@@ -3649,7 +3649,7 @@ Attribute (Label, Relation) is a key-value record attached to a note.
 | `attributeId` | [`EntityId`](#schema-EntityId) |
 | `noteId` | [`EntityId`](#schema-EntityId)  <br>identifies the child note |
 | `type` | `string`  <br>One of `label`, `relation`. |
-| `name` | `string` |
+| `name` | `string`  <br>Matches `^[^\s]+`. |
 | `value` | `string` |
 | `position` | `integer (int32)` |
 | `isInheritable` | `boolean` |
@@ -3670,9 +3670,17 @@ Type: array of [`Attribute`](#schema-Attribute)
 
 Type: `string`
 
+Matches `[a-zA-Z0-9_]{4,32}`.
+
+Example: `evnnmvHTCgIn`
+
 ### <a id="schema-StringId"></a>`StringId`
 
 Type: `string`
+
+Matches `[a-zA-Z0-9_]{1,32}`.
+
+Example: `my_ID`
 
 ### <a id="schema-EntityIdList"></a>`EntityIdList`
 
@@ -3682,9 +3690,17 @@ Type: array of [`EntityId`](#schema-EntityId)
 
 Type: `string`
 
+Matches `[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}[\+\-][0-9]{4}`.
+
+Example: `2021-12-31 20:18:11.930+0100`
+
 ### <a id="schema-UtcDateTime"></a>`UtcDateTime`
 
 Type: `string`
+
+Matches `[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z`.
+
+Example: `2021-12-31 19:18:11.930Z`
 
 ### <a id="schema-AppInfo"></a>`AppInfo`
 

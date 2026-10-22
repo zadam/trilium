@@ -6037,7 +6037,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 | Name | Description |
 | --- | --- |
-| `week`  <br>_required_ | `string` |
+| `week`  <br>_required_ | `string`  <br>Matches `^\d{4}-\d{2}$`. |
 
 **Responses**
 
@@ -6092,7 +6092,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 | Name | Description |
 | --- | --- |
-| `month`  <br>_required_ | `string` |
+| `month`  <br>_required_ | `string`  <br>Matches `^\d{4}-\d{2}$`. |
 
 **Responses**
 
@@ -6147,7 +6147,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
 
 | Name | Description |
 | --- | --- |
-| `year`  <br>_required_ | `string` |
+| `year`  <br>_required_ | `string`  <br>Matches `^\d{4}$`. |
 
 **Responses**
 
@@ -7699,6 +7699,8 @@ Miscellaneous utilities
 ### <a id="schema-NoteType"></a>`NoteType`
 
 Type: `string`
+
+One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `canvas`, `webView`, `launcher`, `doc`, `contentWidget`, `mindMap`, `geoMap`.
 
 ### <a id="schema-Branch"></a>`Branch`
 
