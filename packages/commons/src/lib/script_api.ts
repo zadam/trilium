@@ -250,12 +250,15 @@ export interface ScriptNoteContext {
 }
 
 /** Minimal day.js surface (the real API exposes the full day.js factory). */
-export type ScriptDayjs = (date?: string | number | Date) => {
+export type ScriptDayjs = (date?: string | number | Date) => ScriptDayjsInstance;
+
+/** A date as day.js wraps it (subset). */
+export interface ScriptDayjsInstance {
     format(template?: string): string;
-    add(value: number, unit: string): ReturnType<ScriptDayjs>;
-    subtract(value: number, unit: string): ReturnType<ScriptDayjs>;
+    add(value: number, unit: string): ScriptDayjsInstance;
+    subtract(value: number, unit: string): ScriptDayjsInstance;
     toDate(): Date;
-};
+}
 
 type Func = ((...args: unknown[]) => unknown) | string;
 

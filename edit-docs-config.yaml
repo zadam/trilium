@@ -19,6 +19,10 @@ noteMappings:
         entryPoint: "packages/commons/src/lib/electron_api_interface.ts"
         tsconfig: "packages/commons/tsconfig.lib.json"
         root: "ElectronApi"
+      - noteId: "MEtfsqa5VwNi" # Scripting › Script API › Backend API
+        entryPoint: "packages/commons/src/lib/script_api.ts"
+        tsconfig: "packages/commons/tsconfig.lib.json"
+        root: "BackendApi"
 
   - rootNoteId: "jdjRLhLV3TtI"
     path: "docs/Developer Guide"

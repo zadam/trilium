@@ -11989,25 +11989,33 @@
                                     "notePosition": 20,
                                     "prefix": null,
                                     "isExpanded": false,
-                                    "type": "webView",
-                                    "mime": "",
+                                    "type": "text",
+                                    "mime": "text/html",
                                     "attributes": [
-                                        {
-                                            "type": "label",
-                                            "name": "webViewSrc",
-                                            "value": "/script-api/backend",
-                                            "isInheritable": false,
-                                            "position": 10
-                                        },
                                         {
                                             "type": "label",
                                             "name": "shareAlias",
                                             "value": "backend-api",
                                             "isInheritable": false,
+                                            "position": 10
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "iconClass",
+                                            "value": "bx bx-server",
+                                            "isInheritable": false,
                                             "position": 20
+                                        },
+                                        {
+                                            "type": "label",
+                                            "name": "fullContentWidth",
+                                            "value": "",
+                                            "isInheritable": false,
+                                            "position": 30
                                         }
                                     ],
-                                    "dataFileName": "Backend API.dat",
+                                    "format": "markdown",
+                                    "dataFileName": "Backend API.md",
                                     "attachments": []
                                 },
                                 {
