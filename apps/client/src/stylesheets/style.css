@@ -588,9 +588,9 @@ button.btn-sm {
 }
 
 .ck.ck-button.ck-block-toolbar-button {
-    transform: translateX(7px);
+    transform: translateX(10px);
+    --ck-color-button-default-background: transparent;
     color: var(--muted-text-color);
-    background-color: var(--main-background-color);
     /* Making this narrower because https://github.com/zadam/trilium/issues/502 (problem only in smaller font sizes) */
     min-width: 0;
     padding: 0;
@@ -600,7 +600,7 @@ button.btn-sm {
 }
 
 body[dir=rtl] .ck.ck-block-toolbar-button {
-    transform: translateX(-7px);
+    transform: translateX(-10px);
 }
 
 pre:not(.hljs) {

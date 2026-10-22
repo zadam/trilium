@@ -753,7 +753,7 @@ function getDefaultKeyboardActions() {
             actionName: "peekRightPane",
             friendlyName: t("keyboard_action_names.peek-right-pane"),
             iconClass: "bx bx-sidebar bx-flip-horizontal",
-            defaultShortcuts: [],
+            defaultShortcuts: ["Alt+]"],
             description: t("keyboard_actions.peek-right-pane"),
             scope: "window"
         },

@@ -135,6 +135,7 @@ export default function RightPanelContainer({ widgetsByParent }: { widgetsByPare
                 onToggle={togglePeek}
                 hideText={t("right_pane.hide")}
                 peekText={t("right_pane.peek")}
+                keyboardAction="peekRightPane"
             />
             {/* Persistent host so #right-pane never reparents between modes (which would remount the
                 right pane widgets). Docked: an in-flow flex child Split resizes against #center-pane.

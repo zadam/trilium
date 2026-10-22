@@ -52,14 +52,14 @@
 }
 
 /* The toolbar show / hide button for the current text block. Unlike the buttons above it, this one
-   floats free and needs a surface of its own; the hover tint is flattened onto it. */
+   floats free, so its hover and on states need a surface of their own; the hover tint is flattened
+   onto it. */
 :root .ck.ck-block-toolbar-button {
     --block-toolbar-button-hover-surface:
         linear-gradient(var(--hover-item-background-color), var(--hover-item-background-color)),
         var(--main-background-color);
 
     --ck-color-block-toolbar-button: var(--muted-text-color);
-    --ck-color-button-default-background: var(--main-background-color);
     --ck-color-button-on-background: var(--main-background-color);
     --ck-color-button-default-hover-background: var(--block-toolbar-button-hover-surface);
     --ck-color-button-on-hover-background: var(--block-toolbar-button-hover-surface);

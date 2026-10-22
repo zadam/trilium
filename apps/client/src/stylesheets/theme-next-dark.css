@@ -280,6 +280,8 @@
     --log-query-verb-color: #fa74bb;
     --log-query-line-background-color: #edbe670f;
     --log-sql-color: #f4c8ae;
+    --log-search-verb-color: #3f9189;
+    --log-search-count-color: #818181;
     --log-error-color: #FF867F;
     --log-error-line-background-color: #d44b4b1f;
     --log-info-color: inherit; /* Placeholder: give it a colour to make info lines stand out. */

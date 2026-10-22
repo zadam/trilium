@@ -31,6 +31,13 @@ describe("colorizeLogEntry", () => {
         );
     });
 
+    it("colours searches, leaving the query in the default colour", () => {
+        expect(colorizeLogEntry("Search: #book  (returned 3 items)", "12:34:56.789")).toBe(
+            `${ts} ${paint([ "bold", "cyan" ], "Search")}: #book  `
+            + paint("gray", "(returned 3 items)")
+        );
+    });
+
     it("colours a whole error entry red, stack trace included", () => {
         for (const message of [ "ERROR: boom\n    at foo (bar.js:1:1)", "JS Error: boom\r\nStack: at x" ]) {
             expect(colorizeLogEntry(message, "12:34:56.789")).toBe(`${ts} ${paint("red", message)}`);
@@ -143,11 +150,30 @@ describe("ServerLogService request logging", () => {
             writeEntry.mockRestore();
         }
     });
+
+    it("writes the summary a route leaves in res.locals after the request's own line", () => {
+        const log = new ServerLogService();
+        const writes: string[] = [];
+        const writeEntry = vi
+            .spyOn(log as unknown as { writeEntry(entry: string): void }, "writeEntry")
+            .mockImplementation((entry: string) => void writes.push(entry));
+
+        try {
+            const summary = "Search: #book  (returned 3 items)";
+            logRequest(log, "/api/search?searchString=%23book", summary);
+
+            expect(writes).toHaveLength(2);
+            expect(writes[0]).toContain("200 GET /api/search?searchString=%23book with 15 bytes");
+            expect(writes[1]).toContain(" Search: #book  (returned 3 items)");
+        } finally {
+            writeEntry.mockRestore();
+        }
+    });
 });
 
-function logRequest(log: ServerLogService, url: string) {
+function logRequest(log: ServerLogService, url: string, logSummary?: string) {
     const req = { url, method: "GET" } as unknown as Request;
-    const res = { statusCode: 200 } as unknown as Response;
+    const res = { statusCode: 200, locals: { logSummary } } as unknown as Response;
 
     log.request(req, res, 1, 15);
 }

@@ -1,7 +1,7 @@
 # Themes
 ## Default Themes
 
-Trilium comes with a couple pre-installed color themes, with the default being a light theme. To switch to a dark theme or any other available theme, navigate to the <span class="tn-icon bx bx-cog"></span> Options menu (accessible via the app icon in the top-left corner), select the Appearance tab, and choose your preferred theme.
+Trilium comes with a couple pre-installed color themes, with the default being a light theme. To switch to a dark theme or any other available theme, navigate to the <span class="tn-icon bx bx-cog"></span> Options menu (accessible via the app icon in the top-left corner), select the Appearance tab, and choose your preferred theme. The _Theme_ submenu of the <a class="reference-link" href="UI%20Elements/Global%20menu.md">Global menu</a> switches the theme and the color scheme as well.
 
 ![Dark Theme](Themes_dark-theme.png)
 
@@ -78,6 +78,8 @@ Once you've created your custom theme:
 1.  Go to "Menu" -> "Options" (<span class="tn-icon bx bx-cog"></span>) -> "Appearance."
 2.  In the theme selection dropdown, you should see your custom theme listed under the name you provided with the `#appTheme` [label](../Advanced%20Usage/Attributes.md).
 3.  Select your custom theme to activate it.
+
+Your custom theme is also listed under <a class="reference-link" href="UI%20Elements/Global%20menu.md">Global menu</a> → _Theme_, with the icon of its note.
 
 If you make changes to your theme, press Ctrl + R to reload the frontend and apply your updates.
 

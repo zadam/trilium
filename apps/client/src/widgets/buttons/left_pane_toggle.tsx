@@ -22,7 +22,8 @@ export default function LeftPaneToggle({ isHorizontalLayout }: { isHorizontalLay
                 "left-pane-toggle-button",
                 isDocked ? "action-collapse" : "action-expand"
             )}
-            text={isDocked ? t("left_pane_toggle.hide_panel") : t("left_pane_toggle.show_panel")}
+            text={t("left_pane_toggle.toggle")}
+            titlePosition={isHorizontalLayout ? "bottom" : "right"}
             triggerCommand={isDocked ? "hideLeftPane" : "showLeftPane"}
             icon={isHorizontalLayout ? "bx bx-sidebar" : "bx bx-chevrons-left"}
             onContextMenu={showLaunchBarManagementContextMenu}
@@ -30,7 +31,10 @@ export default function LeftPaneToggle({ isHorizontalLayout }: { isHorizontalLay
     );
 }
 
-/** The edge button that peeks the note tree over the content, in the horizontal layout. */
+/**
+ * The edge button that peeks the note tree over the content. It runs along the window's start edge
+ * in the horizontal layout, and beside `#launcher-pane` in the vertical one.
+ */
 export function LeftPanePeekButton() {
     const mode = useLeftPaneMode();
     const parentComponent = useContext(ParentComponent);
@@ -44,6 +48,7 @@ export function LeftPanePeekButton() {
             onToggle={peek}
             hideText={t("left_pane_toggle.hide_panel")}
             peekText={t("left_pane_toggle.peek_panel")}
+            keyboardAction="peekLeftPane"
         />
     );
 }

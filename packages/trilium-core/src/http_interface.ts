@@ -59,4 +59,12 @@ export interface Response {
      */
     write(chunk: string): boolean;
     end(): unknown;
+    /** Express's `res.locals`. Standalone logs no requests, so its responses have none. */
+    locals?: ResponseLocals;
+}
+
+/** The values a shared route handler leaves in {@link Response.locals}. */
+export interface ResponseLocals {
+    /** A line that the server's request log writes after the request's own line. */
+    logSummary?: string;
 }

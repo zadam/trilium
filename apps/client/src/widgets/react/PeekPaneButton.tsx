@@ -1,10 +1,11 @@
 import "./PeekPaneButton.css";
 
+import type { KeyboardActionNames } from "@triliumnext/commons";
 import { Tooltip } from "bootstrap";
 import clsx from "clsx";
 import { useCallback, useMemo, useRef } from "preact/hooks";
 
-import { useStaticTooltip } from "./hooks";
+import { useStaticTooltipWithKeyboardShortcut } from "./hooks";
 
 // Gap (px) between the peek button and its tooltip, so the tooltip can't overlap the button.
 const TOOLTIP_MARGIN_PX = 8;
@@ -24,6 +25,8 @@ interface PeekPaneButtonProps {
     hideText: string;
     /** The label while the pane is closed (a click peeks it). */
     peekText: string;
+    /** The keyboard action that does what a click does, whose shortcut the tooltip shows. */
+    keyboardAction?: KeyboardActionNames;
 }
 
 /**
@@ -31,7 +34,7 @@ interface PeekPaneButtonProps {
  * the pane's container reserves (see `PeekPaneButton.css`).
  */
 export default function PeekPaneButton(props: PeekPaneButtonProps) {
-    const { side, isOpen, onToggle, className, hideText, peekText } = props;
+    const { side, isOpen, onToggle, className, hideText, peekText, keyboardAction } = props;
     const buttonRef = useRef<HTMLButtonElement>(null);
     // Pointer's vertical position captured once on hover; null until the mouse enters
     // (e.g. on keyboard focus) so the tooltip falls back to the button's centre.
@@ -55,16 +58,15 @@ export default function PeekPaneButton(props: PeekPaneButtonProps) {
     // is only updated on mouse enter, and the offset is recomputed from it on show.
     // The `distance` (second value) keeps the tooltip clear of the button so it can't
     // overlap it and cause hover flicker.
-    const tooltipConfig = useMemo(() => ({
-        title: label,
+    const tooltipOptions = useMemo(() => ({
         placement: side === "end" ? "left" as const : "right" as const,
         offset: (): [number, number] => {
             const rect = buttonRef.current?.getBoundingClientRect();
             if (!rect || pointerY.current === null) return [ 0, TOOLTIP_MARGIN_PX ];
             return [ pointerY.current - (rect.top + rect.height / 2), TOOLTIP_MARGIN_PX ];
         }
-    }), [ label, side ]);
-    useStaticTooltip(buttonRef, tooltipConfig);
+    }), [ side ]);
+    useStaticTooltipWithKeyboardShortcut(buttonRef, label, keyboardAction, tooltipOptions);
 
     // The arrow points the way the pane moves: inward to peek it, outward to hide it.
     const pointsRight = (side === "start") !== isOpen;

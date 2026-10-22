@@ -69,19 +69,21 @@ function setContextFromHeaders(req: BrowserRequest) {
 
 /**
  * Wraps a core route handler to work with the BrowserRouter.
- * Core handlers expect an Express-like request object with params, query, and body.
+ * Core handlers expect an Express-like request object with params, query, and body, and a
+ * response, as on the server.
  * Each request is wrapped in an execution context (like cls.init() on the server)
  * to ensure entity change tracking works correctly.
  */
-function wrapHandler(handler: (req: Request) => unknown, transactional: boolean) {
+function wrapHandler(handler: (req: Request, res: Response) => unknown, transactional: boolean) {
     return (req: BrowserRequest) => {
         return dbLock.runShared(() => getContext().init(() => {
             setContextFromHeaders(req);
             const coreReq = toCoreRequest(req);
+            const mockRes = createMockResponse();
             if (transactional) {
-                return getSql().transactional(() => handler(coreReq));
+                return getSql().transactional(() => handler(coreReq, mockRes));
             }
-            return handler(coreReq);
+            return handler(coreReq, mockRes);
         }));
     };
 }
@@ -91,7 +93,7 @@ function wrapHandler(handler: (req: Request) => unknown, transactional: boolean)
  * This bridges the core's route registration to the BrowserRouter.
  */
 function createApiRoute(router: BrowserRouter, transactional: boolean) {
-    return (method: HttpMethod, path: string, handler: (req: Request) => unknown) => {
+    return (method: HttpMethod, path: string, handler: (req: Request, res: Response) => unknown) => {
         router.register(method, path, wrapHandler(handler, transactional));
     };
 }
