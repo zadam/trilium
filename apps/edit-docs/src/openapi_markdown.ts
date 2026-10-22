@@ -164,8 +164,8 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         .map((parameter) => resolve<Parameter>(spec, parameter));
     if (parameters.length) {
         blocks.push("**Parameters**", table(
-            [ "Name", "In", "Type", "Required", "Description" ],
-            parameters.map((p) => [ code(p.name), p.in, code(typeOf(p.schema)), p.required ? "Yes" : "No", describe(p) ])
+            [ "Name", "In", "Type", "Description" ],
+            parameters.map((p) => [ nameCell(p.name, p.required), p.in, code(typeOf(p.schema)), describe(p) ])
         ));
     }
 
@@ -226,13 +226,12 @@ function renderSchema(spec: OpenApiSpec, name: string, schema: Schema) {
 function propertyTable(spec: OpenApiSpec, { properties, required }: Schema) {
     const requiredProperties = new Set(required);
     return table(
-        [ "Property", "Type", "Required", "Description" ],
+        [ "Property", "Type", "Description" ],
         Object.entries(properties ?? {}).map(([ property, propertySchema ]) => {
             const resolved = resolve(spec, propertySchema);
             return [
-                code(property),
+                nameCell(property, requiredProperties.has(property)),
                 code(typeOf(propertySchema)),
-                requiredProperties.has(property) ? "Yes" : "No",
                 describe({ description: propertySchema.description ?? resolved.description, schema: resolved })
             ];
         })
@@ -330,6 +329,11 @@ function table(headers: string[], rows: string[][]) {
 /** A table cell holds one line, and a pipe would end it early, even inside a code span. */
 function cell(text: string) {
     return text.replace(/\s*\n\s*/g, " ").replaceAll("|", "\\|").trim();
+}
+
+/** The name cell of a parameter or property, marking it below the name when it is required. */
+function nameCell(text: string, required?: boolean) {
+    return required ? `${code(text)}<br>*required*` : code(text);
 }
 
 function code(text: string) {

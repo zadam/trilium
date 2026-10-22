@@ -72,10 +72,10 @@ describe("openApiToMarkdown", () => {
         ].join("\n"));
         // Path-level parameters come first, then the operation's own, resolved through `$ref`.
         expect(markdown).toContain([
-            "| Name | In | Type | Required | Description |",
-            "| --- | --- | --- | --- | --- |",
-            "| `noteId` | path | `EntityId` | Yes |  |",
-            "| `force` | query | `boolean` | No | skip checks |"
+            "| Name | In | Type | Description |",
+            "| --- | --- | --- | --- |",
+            "| `noteId`<br>*required* | path | `EntityId` |  |",
+            "| `force` | query | `boolean` | skip checks |"
         ].join("\n"));
         // The body's properties are listed in place, even when its schema is a reference.
         expect(markdown).toContain([
@@ -83,9 +83,9 @@ describe("openApiToMarkdown", () => {
             "",
             "*   `application/json`: `Note`",
             "",
-            "| Property | Type | Required | Description |",
-            "| --- | --- | --- | --- |",
-            "| `title` | `string` | Yes |  |",
+            "| Property | Type | Description |",
+            "| --- | --- | --- |",
+            "| `title`<br>*required* | `string` |  |",
             "",
             "**Responses**"
         ].join("\n"));
@@ -95,9 +95,9 @@ describe("openApiToMarkdown", () => {
             "",
             "*   `200`: note updated (`Note`)",
             "",
-            "| Property | Type | Required | Description |",
-            "| --- | --- | --- | --- |",
-            "| `title` | `string` | Yes |  |",
+            "| Property | Type | Description |",
+            "| --- | --- | --- |",
+            "| `title`<br>*required* | `string` |  |",
             "",
             "*   `default`: unexpected error"
         ].join("\n"));
@@ -160,16 +160,16 @@ describe("openApiToMarkdown", () => {
             "",
             "A note",
             "",
-            "| Property | Type | Required | Description |",
-            "| --- | --- | --- | --- |",
-            "| `noteId` | `EntityId` | Yes | The note's ID |",
+            "| Property | Type | Description |",
+            "| --- | --- | --- |",
+            "| `noteId`<br>*required* | `EntityId` | The note's ID |",
             // Without a description of its own, a property takes the one of the schema it references.
-            "| `parentNoteId` | `EntityId` | No | Unique ID |",
-            "| `type` | `string` | No | note type. One of `text`, `code`. |",
-            "| `attributes` | `array of Attribute` | No |  |",
-            "| `dateCreated` | `string (date-time) \\| null` | No |  |",
-            "| `parent` | `EntityId \\| string \\| null` | No |  |",
-            "| `content` | `EntityId` | No | Line one line \\| two |"
+            "| `parentNoteId` | `EntityId` | Unique ID |",
+            "| `type` | `string` | note type. One of `text`, `code`. |",
+            "| `attributes` | `array of Attribute` |  |",
+            "| `dateCreated` | `string (date-time) \\| null` |  |",
+            "| `parent` | `EntityId \\| string \\| null` |  |",
+            "| `content` | `EntityId` | Line one line \\| two |"
         ].join("\n"));
     });
 });

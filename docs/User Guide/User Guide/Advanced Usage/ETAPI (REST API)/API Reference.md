@@ -25,38 +25,38 @@ Create a note and place it into the note tree
 
 *   `application/json`: `CreateNoteDef`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `parentNoteId` | `EntityId` | Yes | Note ID of the parent note in the tree |
-| `title` | `string` | Yes |  |
-| `type` | `string` | Yes | One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
-| `mime` | `string` | No | this needs to be specified only for note types 'code', 'file', 'image'. |
-| `content` | `string` | Yes |  |
-| `notePosition` | `integer` | No | Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
-| `prefix` | `string` | No | Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
-| `isExpanded` | `boolean` | No | true if this note (as a folder) should appear expanded |
-| `noteId` | `EntityId` | No | DON'T specify unless you want to force a specific noteId |
-| `branchId` | `EntityId` | No | DON'T specify unless you want to force a specific branchId |
-| `dateCreated` | `LocalDateTime` | No | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
-| `utcDateCreated` | `UtcDateTime` | No | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
-| `utcDateModified` | `UtcDateTime` | No | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
+| Property | Type | Description |
+| --- | --- | --- |
+| `parentNoteId`  <br>_required_ | `EntityId` | Note ID of the parent note in the tree |
+| `title`  <br>_required_ | `string` |  |
+| `type`  <br>_required_ | `string` | One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
+| `mime` | `string` | this needs to be specified only for note types 'code', 'file', 'image'. |
+| `content`  <br>_required_ | `string` |  |
+| `notePosition` | `integer` | Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
+| `prefix` | `string` | Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
+| `isExpanded` | `boolean` | true if this note (as a folder) should appear expanded |
+| `noteId` | `EntityId` | DON'T specify unless you want to force a specific noteId |
+| `branchId` | `EntityId` | DON'T specify unless you want to force a specific branchId |
+| `dateCreated` | `LocalDateTime` | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
+| `utcDateCreated` | `UtcDateTime` | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
+| `utcDateModified` | `UtcDateTime` | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
 
 **Responses**
 
 *   `201`: note created (`NoteWithBranch`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `note` | `Note` | No |  |
-| `branch` | `Branch` | No | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+| Property | Type | Description |
+| --- | --- | --- |
+| `note` | `Note` |  |
+| `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /notes`
 
@@ -66,34 +66,34 @@ Search notes
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `search` | query | `string` | Yes | search query string as described in [https://triliumnext.github.io/Docs/Wiki/search.html](https://triliumnext.github.io/Docs/Wiki/search.html) |
-| `fastSearch` | query | `boolean` | No | enable fast search (fulltext doesn't look into content) |
-| `includeArchivedNotes` | query | `boolean` | No | search by default ignores archived notes. Set to 'true' to includes archived notes into search results. |
-| `ancestorNoteId` | query | `EntityId` | No | search only in a subtree identified by the subtree noteId. By default whole tree is searched. |
-| `ancestorDepth` | query | `string` | No | define how deep in the tree should the notes be searched |
-| `orderBy` | query | `string` | No | name of the property/label to order search results by |
-| `orderDirection` | query | `string` | No | order direction, ascending or descending. One of `asc`, `desc`. |
-| `limit` | query | `integer` | No | limit the number of results you want to receive |
-| `debug` | query | `boolean` | No | set to true to get debug information in the response (search query parsing) |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `search`  <br>_required_ | query | `string` | search query string as described in [https://triliumnext.github.io/Docs/Wiki/search.html](https://triliumnext.github.io/Docs/Wiki/search.html) |
+| `fastSearch` | query | `boolean` | enable fast search (fulltext doesn't look into content) |
+| `includeArchivedNotes` | query | `boolean` | search by default ignores archived notes. Set to 'true' to includes archived notes into search results. |
+| `ancestorNoteId` | query | `EntityId` | search only in a subtree identified by the subtree noteId. By default whole tree is searched. |
+| `ancestorDepth` | query | `string` | define how deep in the tree should the notes be searched |
+| `orderBy` | query | `string` | name of the property/label to order search results by |
+| `orderDirection` | query | `string` | order direction, ascending or descending. One of `asc`, `desc`. |
+| `limit` | query | `integer` | limit the number of results you want to receive |
+| `debug` | query | `boolean` | set to true to get debug information in the response (search query parsing) |
 
 **Responses**
 
 *   `200`: search response (`SearchResponse`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `results` | `array of Note` | Yes |  |
-| `debugInfo` | `object` | No | debugging info on parsing the search query enabled with &debug=true parameter |
+| Property | Type | Description |
+| --- | --- | --- |
+| `results`  <br>_required_ | `array of Note` |  |
+| `debugInfo` | `object` | debugging info on parsing the search query enabled with &debug=true parameter |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /notes/{noteId}`
 
@@ -103,39 +103,39 @@ Returns a note identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: note response (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `DELETE /notes/{noteId}`
 
@@ -145,20 +145,20 @@ deletes a single note based on the noteId supplied
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `204`: note deleted
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `PATCH /notes/{noteId}`
 
@@ -168,61 +168,61 @@ patch a note identified by the noteId with changes in the body
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Request body** (required)
 
 *   `application/json`: `Note`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 **Responses**
 
 *   `200`: note updated (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /notes/{noteId}/content`
 
@@ -232,9 +232,9 @@ Returns note content identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
@@ -248,9 +248,9 @@ Updates note content identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Request body** (required)
 
@@ -271,21 +271,21 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
-| `format` | query | `any` | No | One of `html`, `markdown`, `share`. |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
+| `format` | query | `any` | One of `html`, `markdown`, `share`. |
 
 **Responses**
 
 *   `200`: export ZIP file (`string (binary)`)
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /notes/{noteId}/import`
 
@@ -295,26 +295,26 @@ Imports ZIP file into a given note.
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `201`: note created (`NoteWithBranch`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `note` | `Note` | No |  |
-| `branch` | `Branch` | No | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+| Property | Type | Description |
+| --- | --- | --- |
+| `note` | `Note` |  |
+| `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /notes/{noteId}/revision`
 
@@ -324,21 +324,21 @@ Create a note revision for the given note
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
-| `format` | query | `any` | No | One of `html`, `markdown`. |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
+| `format` | query | `any` | One of `html`, `markdown`. |
 
 **Responses**
 
 *   `204`: revision has been created
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /notes/{noteId}/revisions`
 
@@ -348,20 +348,20 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: list of revisions (`array of Revision`)
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /notes/{noteId}/attachments`
 
@@ -371,20 +371,20 @@ Returns all attachments for a note identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: list of attachments (`array of Attachment`)
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /notes/{noteId}/undelete`
 
@@ -394,25 +394,25 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `noteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `noteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: note restored successfully (`object`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `success` | `boolean` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `success` | `boolean` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /notes/history`
 
@@ -422,20 +422,20 @@ Returns recent changes including note creations, modifications, and deletions
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `ancestorNoteId` | query | `EntityId` | No | Limit changes to a subtree identified by this note ID. Defaults to "root" (all notes). |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `ancestorNoteId` | query | `EntityId` | Limit changes to a subtree identified by this note ID. Defaults to "root" (all notes). |
 
 **Responses**
 
 *   `200`: list of recent changes (`array of RecentChange`)
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /revisions/{revisionId}`
 
@@ -445,37 +445,37 @@ Returns a revision identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `revisionId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `revisionId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: revision response (`Revision`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `revisionId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No |  |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `title` | `string` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `dateLastEdited` | `LocalDateTime` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `utcDateLastEdited` | `UtcDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
-| `contentLength` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `revisionId` | `EntityId` |  |
+| `noteId` | `EntityId` |  |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `title` | `string` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateLastEdited` | `LocalDateTime` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `utcDateLastEdited` | `UtcDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /revisions/{revisionId}/content`
 
@@ -485,20 +485,20 @@ Returns revision content identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `revisionId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `revisionId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: revision content response (`string`)
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /branches`
 
@@ -510,49 +510,49 @@ Create a branch (clone a note to a different location in the tree). In case ther
 
 *   `application/json`: `Branch`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `branchId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `parentNoteId` | `EntityId` | No | identifies the parent note |
-| `prefix` | `string` | No |  |
-| `notePosition` | `integer (int32)` | No |  |
-| `isExpanded` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `branchId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `parentNoteId` | `EntityId` | identifies the parent note |
+| `prefix` | `string` |  |
+| `notePosition` | `integer (int32)` |  |
+| `isExpanded` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 **Responses**
 
 *   `200`: branch updated (branch between parent note and child note already existed) (`Branch`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `branchId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `parentNoteId` | `EntityId` | No | identifies the parent note |
-| `prefix` | `string` | No |  |
-| `notePosition` | `integer (int32)` | No |  |
-| `isExpanded` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `branchId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `parentNoteId` | `EntityId` | identifies the parent note |
+| `prefix` | `string` |  |
+| `notePosition` | `integer (int32)` |  |
+| `isExpanded` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 *   `201`: branch created (`Branch`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `branchId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `parentNoteId` | `EntityId` | No | identifies the parent note |
-| `prefix` | `string` | No |  |
-| `notePosition` | `integer (int32)` | No |  |
-| `isExpanded` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `branchId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `parentNoteId` | `EntityId` | identifies the parent note |
+| `prefix` | `string` |  |
+| `notePosition` | `integer (int32)` |  |
+| `isExpanded` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /branches/{branchId}`
 
@@ -562,31 +562,31 @@ Returns a branch identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `branchId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `branchId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: branch response (`Branch`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `branchId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `parentNoteId` | `EntityId` | No | identifies the parent note |
-| `prefix` | `string` | No |  |
-| `notePosition` | `integer (int32)` | No |  |
-| `isExpanded` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `branchId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `parentNoteId` | `EntityId` | identifies the parent note |
+| `prefix` | `string` |  |
+| `notePosition` | `integer (int32)` |  |
+| `isExpanded` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `DELETE /branches/{branchId}`
 
@@ -596,20 +596,20 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `branchId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `branchId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `204`: branch deleted
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `PATCH /branches/{branchId}`
 
@@ -619,45 +619,45 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `branchId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `branchId`  <br>_required_ | path | `EntityId` |  |
 
 **Request body** (required)
 
 *   `application/json`: `Branch`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `branchId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `parentNoteId` | `EntityId` | No | identifies the parent note |
-| `prefix` | `string` | No |  |
-| `notePosition` | `integer (int32)` | No |  |
-| `isExpanded` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `branchId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `parentNoteId` | `EntityId` | identifies the parent note |
+| `prefix` | `string` |  |
+| `notePosition` | `integer (int32)` |  |
+| `isExpanded` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 **Responses**
 
 *   `200`: branch updated (`Branch`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `branchId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `parentNoteId` | `EntityId` | No | identifies the parent note |
-| `prefix` | `string` | No |  |
-| `notePosition` | `integer (int32)` | No |  |
-| `isExpanded` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `branchId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `parentNoteId` | `EntityId` | identifies the parent note |
+| `prefix` | `string` |  |
+| `notePosition` | `integer (int32)` |  |
+| `isExpanded` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /attachments`
 
@@ -669,40 +669,40 @@ create an attachment
 
 *   `application/json`: `CreateAttachment`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` | No |  |
-| `mime` | `string` | No |  |
-| `title` | `string` | No |  |
-| `content` | `string` | No | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
-| `position` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |  |
+| `mime` | `string` |  |
+| `title` | `string` |  |
+| `content` | `string` | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
+| `position` | `integer (int32)` |  |
 
 **Responses**
 
 *   `201`: attachment created (`Attachment`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attachmentId` | `EntityId` | No |  |
-| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` | No |  |
-| `mime` | `string` | No |  |
-| `title` | `string` | No | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-| `position` | `integer (int32)` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
-| `utcDateScheduledForErasureSince` | `UtcDateTime` | No |  |
-| `contentLength` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attachmentId` | `EntityId` |  |
+| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |  |
+| `mime` | `string` |  |
+| `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /attachments/{attachmentId}`
 
@@ -712,35 +712,35 @@ Returns an attachment identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attachmentId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attachmentId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: attachment response (`Attachment`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attachmentId` | `EntityId` | No |  |
-| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` | No |  |
-| `mime` | `string` | No |  |
-| `title` | `string` | No | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-| `position` | `integer (int32)` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
-| `utcDateScheduledForErasureSince` | `UtcDateTime` | No |  |
-| `contentLength` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attachmentId` | `EntityId` |  |
+| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |  |
+| `mime` | `string` |  |
+| `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `DELETE /attachments/{attachmentId}`
 
@@ -750,20 +750,20 @@ deletes an attachment based on the attachmentId supplied.
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attachmentId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attachmentId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `204`: attachment deleted
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `PATCH /attachments/{attachmentId}`
 
@@ -773,53 +773,53 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attachmentId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attachmentId`  <br>_required_ | path | `EntityId` |  |
 
 **Request body** (required)
 
 *   `application/json`: `Attachment`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attachmentId` | `EntityId` | No |  |
-| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` | No |  |
-| `mime` | `string` | No |  |
-| `title` | `string` | No | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-| `position` | `integer (int32)` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
-| `utcDateScheduledForErasureSince` | `UtcDateTime` | No |  |
-| `contentLength` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attachmentId` | `EntityId` |  |
+| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |  |
+| `mime` | `string` |  |
+| `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
 
 **Responses**
 
 *   `200`: attribute updated (`Attachment`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attachmentId` | `EntityId` | No |  |
-| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` | No |  |
-| `mime` | `string` | No |  |
-| `title` | `string` | No | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-| `position` | `integer (int32)` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
-| `utcDateScheduledForErasureSince` | `UtcDateTime` | No |  |
-| `contentLength` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attachmentId` | `EntityId` |  |
+| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |  |
+| `mime` | `string` |  |
+| `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /attachments/{attachmentId}/content`
 
@@ -829,9 +829,9 @@ Returns attachment content identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attachmentId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attachmentId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
@@ -845,9 +845,9 @@ Updates attachment content identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attachmentId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attachmentId`  <br>_required_ | path | `EntityId` |  |
 
 **Request body** (required)
 
@@ -870,39 +870,39 @@ create an attribute for a given note
 
 *   `application/json`: `Attribute`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attributeId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `type` | `string` | No | One of `label`, `relation`. |
-| `name` | `string` | No |  |
-| `value` | `string` | No |  |
-| `position` | `integer (int32)` | No |  |
-| `isInheritable` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 **Responses**
 
 *   `201`: attribute created (`Attribute`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attributeId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `type` | `string` | No | One of `label`, `relation`. |
-| `name` | `string` | No |  |
-| `value` | `string` | No |  |
-| `position` | `integer (int32)` | No |  |
-| `isInheritable` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /attributes/{attributeId}`
 
@@ -912,32 +912,32 @@ Returns an attribute identified by its ID
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attributeId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attributeId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `200`: attribute response (`Attribute`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attributeId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `type` | `string` | No | One of `label`, `relation`. |
-| `name` | `string` | No |  |
-| `value` | `string` | No |  |
-| `position` | `integer (int32)` | No |  |
-| `isInheritable` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `DELETE /attributes/{attributeId}`
 
@@ -947,20 +947,20 @@ deletes an attribute based on the attributeId supplied.
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attributeId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attributeId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `204`: attribute deleted
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `PATCH /attributes/{attributeId}`
 
@@ -970,47 +970,47 @@ patch an attribute identified by the attributeId with changes in the body. For l
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `attributeId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `attributeId`  <br>_required_ | path | `EntityId` |  |
 
 **Request body** (required)
 
 *   `application/json`: `Attribute`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attributeId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `type` | `string` | No | One of `label`, `relation`. |
-| `name` | `string` | No |  |
-| `value` | `string` | No |  |
-| `position` | `integer (int32)` | No |  |
-| `isInheritable` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 **Responses**
 
 *   `200`: attribute updated (`Attribute`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attributeId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `type` | `string` | No | One of `label`, `relation`. |
-| `name` | `string` | No |  |
-| `value` | `string` | No |  |
-| `position` | `integer (int32)` | No |  |
-| `isInheritable` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /refresh-note-ordering/{parentNoteId}`
 
@@ -1020,20 +1020,20 @@ notePositions in branches are not automatically pushed to connected clients and 
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `parentNoteId` | path | `EntityId` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `parentNoteId`  <br>_required_ | path | `EntityId` |  |
 
 **Responses**
 
 *   `204`: note ordering will be asynchronously updated in all connected clients
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /inbox/{date}`
 
@@ -1043,39 +1043,39 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `date` | path | `string (date)` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `date`  <br>_required_ | path | `string (date)` |  |
 
 **Responses**
 
 *   `200`: inbox note (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /calendar/days/{date}`
 
@@ -1085,39 +1085,39 @@ returns a day note for a given date. Gets created if doesn't exist.
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `date` | path | `string (date)` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `date`  <br>_required_ | path | `string (date)` |  |
 
 **Responses**
 
 *   `200`: day note (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /calendar/week-first-day/{date}`
 
@@ -1129,39 +1129,39 @@ Returns the day note for the first day of the week containing the given date, ho
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `date` | path | `string (date)` | Yes | Any date within the week, in the format YYYY-MM-DD. |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `date`  <br>_required_ | path | `string (date)` | Any date within the week, in the format YYYY-MM-DD. |
 
 **Responses**
 
 *   `200`: day note starting the week (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /calendar/weeks/{week}`
 
@@ -1173,39 +1173,39 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `week` | path | `string` | Yes | The ISO 8601 week identifier (YYYY-Www). |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `week`  <br>_required_ | path | `string` | The ISO 8601 week identifier (YYYY-Www). |
 
 **Responses**
 
 *   `200`: week note (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /calendar/months/{month}`
 
@@ -1217,39 +1217,39 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `month` | path | `string` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `month`  <br>_required_ | path | `string` |  |
 
 **Responses**
 
 *   `200`: month note (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /calendar/years/{year}`
 
@@ -1261,39 +1261,39 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `year` | path | `string` | Yes |  |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `year`  <br>_required_ | path | `string` |  |
 
 **Responses**
 
 *   `200`: year note (`Note`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /auth/login`
 
@@ -1305,26 +1305,26 @@ get an ETAPI token based on password for further use with ETAPI
 
 *   `application/json`: `object`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `password` | `string` | No | user's password used to e.g. login to Trilium server and/or protect notes |
+| Property | Type | Description |
+| --- | --- | --- |
+| `password` | `string` | user's password used to e.g. login to Trilium server and/or protect notes |
 
 **Responses**
 
 *   `201`: auth token (`object`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `authToken` | `string` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `authToken` | `string` |  |
 
 *   `429`: Client IP has been blacklisted because too many requests (possibly failed authentications) were made within a short time frame, try again later
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `POST /auth/logout`
 
@@ -1337,11 +1337,11 @@ logout (delete/deactivate) an ETAPI token
 *   `204`: logout successful
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /app-info`
 
@@ -1353,24 +1353,24 @@ returns information about the running Trilium instance
 
 *   `200`: app info (`AppInfo`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `appVersion` | `string` | No | Trilium version |
-| `dbVersion` | `integer (int32)` | No | DB version |
-| `syncVersion` | `integer (int32)` | No | Sync protocol version |
-| `buildDate` | `string (date-time)` | No | build date |
-| `buildRevision` | `string` | No | git build revision |
-| `dataDirectory` | `string` | No | data directory where Trilium stores files |
-| `clipperProtocolVersion` | `string` | No | version of the supported Trilium Web Clipper protocol |
-| `utcDateTime` | `string` | No | current UTC date time |
+| Property | Type | Description |
+| --- | --- | --- |
+| `appVersion` | `string` | Trilium version |
+| `dbVersion` | `integer (int32)` | DB version |
+| `syncVersion` | `integer (int32)` | Sync protocol version |
+| `buildDate` | `string (date-time)` | build date |
+| `buildRevision` | `string` | git build revision |
+| `dataDirectory` | `string` | data directory where Trilium stores files |
+| `clipperProtocolVersion` | `string` | version of the supported Trilium Web Clipper protocol |
+| `utcDateTime` | `string` | current UTC date time |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `PUT /backup/{backupName}`
 
@@ -1380,20 +1380,20 @@ Create a database backup under a given name
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `backupName` | path | `StringId` | Yes | If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `backupName`  <br>_required_ | path | `StringId` | If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file |
 
 **Responses**
 
 *   `204`: backup has been created
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `GET /metrics`
 
@@ -1407,135 +1407,135 @@ The same data is served by GET /api/metrics to the web session.
 
 **Parameters**
 
-| Name | In | Type | Required | Description |
-| --- | --- | --- | --- | --- |
-| `format` | query | `string` | No | Response format. Defaults to Prometheus text. One of `prometheus`, `json`. |
+| Name | In | Type | Description |
+| --- | --- | --- | --- |
+| `format` | query | `string` | Response format. Defaults to Prometheus text. One of `prometheus`, `json`. |
 
 **Responses**
 
 *   `200`: instance metrics (`string`, `Metrics`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `version` | `object` | No |  |
-| `database` | `object` | No |  |
-| `noteTypes` | `object` | No | Number of active notes per note type |
-| `attachmentTypes` | `object` | No | Number of active attachments per MIME type |
-| `statistics` | `object` | No |  |
-| `timestamp` | `string` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `version` | `object` |  |
+| `database` | `object` |  |
+| `noteTypes` | `object` | Number of active notes per note type |
+| `attachmentTypes` | `object` | Number of active attachments per MIME type |
+| `statistics` | `object` |  |
+| `timestamp` | `string` |  |
 
 *   `default`: unexpected error (`Error`)
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ## Schemas
 
 ### `CreateNoteDef`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `parentNoteId` | `EntityId` | Yes | Note ID of the parent note in the tree |
-| `title` | `string` | Yes |  |
-| `type` | `string` | Yes | One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
-| `mime` | `string` | No | this needs to be specified only for note types 'code', 'file', 'image'. |
-| `content` | `string` | Yes |  |
-| `notePosition` | `integer` | No | Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
-| `prefix` | `string` | No | Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
-| `isExpanded` | `boolean` | No | true if this note (as a folder) should appear expanded |
-| `noteId` | `EntityId` | No | DON'T specify unless you want to force a specific noteId |
-| `branchId` | `EntityId` | No | DON'T specify unless you want to force a specific branchId |
-| `dateCreated` | `LocalDateTime` | No | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
-| `utcDateCreated` | `UtcDateTime` | No | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
-| `utcDateModified` | `UtcDateTime` | No | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
+| Property | Type | Description |
+| --- | --- | --- |
+| `parentNoteId`  <br>_required_ | `EntityId` | Note ID of the parent note in the tree |
+| `title`  <br>_required_ | `string` |  |
+| `type`  <br>_required_ | `string` | One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
+| `mime` | `string` | this needs to be specified only for note types 'code', 'file', 'image'. |
+| `content`  <br>_required_ | `string` |  |
+| `notePosition` | `integer` | Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
+| `prefix` | `string` | Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
+| `isExpanded` | `boolean` | true if this note (as a folder) should appear expanded |
+| `noteId` | `EntityId` | DON'T specify unless you want to force a specific noteId |
+| `branchId` | `EntityId` | DON'T specify unless you want to force a specific branchId |
+| `dateCreated` | `LocalDateTime` | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
+| `utcDateCreated` | `UtcDateTime` | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
+| `utcDateModified` | `UtcDateTime` | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
 
 ### `Note`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` | No |  |
-| `parentNoteIds` | `EntityIdList` | No |  |
-| `childNoteIds` | `EntityIdList` | No |  |
-| `parentBranchIds` | `EntityIdList` | No |  |
-| `childBranchIds` | `EntityIdList` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |  |
+| `parentNoteIds` | `EntityIdList` |  |
+| `childNoteIds` | `EntityIdList` |  |
+| `parentBranchIds` | `EntityIdList` |  |
+| `childBranchIds` | `EntityIdList` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 ### `Branch`
 
 Branch places the note into the tree, it represents the relationship between a parent note and child note
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `branchId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `parentNoteId` | `EntityId` | No | identifies the parent note |
-| `prefix` | `string` | No |  |
-| `notePosition` | `integer (int32)` | No |  |
-| `isExpanded` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `branchId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `parentNoteId` | `EntityId` | identifies the parent note |
+| `prefix` | `string` |  |
+| `notePosition` | `integer (int32)` |  |
+| `isExpanded` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 ### `NoteWithBranch`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `note` | `Note` | No |  |
-| `branch` | `Branch` | No | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+| Property | Type | Description |
+| --- | --- | --- |
+| `note` | `Note` |  |
+| `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
 ### `Attachment`
 
 Attachment is owned by a note, has title and content
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attachmentId` | `EntityId` | No |  |
-| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` | No |  |
-| `mime` | `string` | No |  |
-| `title` | `string` | No | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-| `position` | `integer (int32)` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `dateModified` | `LocalDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
-| `utcDateScheduledForErasureSince` | `UtcDateTime` | No |  |
-| `contentLength` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attachmentId` | `EntityId` |  |
+| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |  |
+| `mime` | `string` |  |
+| `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
 
 ### `CreateAttachment`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `ownerId` | `EntityId` | No | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` | No |  |
-| `mime` | `string` | No |  |
-| `title` | `string` | No |  |
-| `content` | `string` | No | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
-| `position` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |  |
+| `mime` | `string` |  |
+| `title` | `string` |  |
+| `content` | `string` | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
+| `position` | `integer (int32)` |  |
 
 ### `Attribute`
 
 Attribute (Label, Relation) is a key-value record attached to a note.
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `attributeId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No | identifies the child note |
-| `type` | `string` | No | One of `label`, `relation`. |
-| `name` | `string` | No |  |
-| `value` | `string` | No |  |
-| `position` | `integer (int32)` | No |  |
-| `isInheritable` | `boolean` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `attributeId` | `EntityId` |  |
+| `noteId` | `EntityId` | identifies the child note |
+| `type` | `string` | One of `label`, `relation`. |
+| `name` | `string` |  |
+| `value` | `string` |  |
+| `position` | `integer (int32)` |  |
+| `isInheritable` | `boolean` |  |
+| `utcDateModified` | `UtcDateTime` |  |
 
 ### `AttributeList`
 
@@ -1543,10 +1543,10 @@ Type: `array of Attribute`
 
 ### `SearchResponse`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `results` | `array of Note` | Yes |  |
-| `debugInfo` | `object` | No | debugging info on parsing the search query enabled with &debug=true parameter |
+| Property | Type | Description |
+| --- | --- | --- |
+| `results`  <br>_required_ | `array of Note` |  |
+| `debugInfo` | `object` | debugging info on parsing the search query enabled with &debug=true parameter |
 
 ### `EntityId`
 
@@ -1570,70 +1570,70 @@ Type: `string`
 
 ### `AppInfo`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `appVersion` | `string` | No | Trilium version |
-| `dbVersion` | `integer (int32)` | No | DB version |
-| `syncVersion` | `integer (int32)` | No | Sync protocol version |
-| `buildDate` | `string (date-time)` | No | build date |
-| `buildRevision` | `string` | No | git build revision |
-| `dataDirectory` | `string` | No | data directory where Trilium stores files |
-| `clipperProtocolVersion` | `string` | No | version of the supported Trilium Web Clipper protocol |
-| `utcDateTime` | `string` | No | current UTC date time |
+| Property | Type | Description |
+| --- | --- | --- |
+| `appVersion` | `string` | Trilium version |
+| `dbVersion` | `integer (int32)` | DB version |
+| `syncVersion` | `integer (int32)` | Sync protocol version |
+| `buildDate` | `string (date-time)` | build date |
+| `buildRevision` | `string` | git build revision |
+| `dataDirectory` | `string` | data directory where Trilium stores files |
+| `clipperProtocolVersion` | `string` | version of the supported Trilium Web Clipper protocol |
+| `utcDateTime` | `string` | current UTC date time |
 
 ### `Error`
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `status` | `integer (int32)` | Yes | HTTP status, identical to the one given in HTTP response |
-| `code` | `string` | Yes | stable string constant |
-| `message` | `string` | Yes | Human readable error, potentially with more details, |
+| Property | Type | Description |
+| --- | --- | --- |
+| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string` | stable string constant |
+| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
 ### `Revision`
 
 Revision represents a snapshot of note's title and content at some point in the past.
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `revisionId` | `EntityId` | No |  |
-| `noteId` | `EntityId` | No |  |
-| `type` | `string` | No | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` | No |  |
-| `isProtected` | `boolean` | No |  |
-| `title` | `string` | No |  |
-| `blobId` | `string` | No | ID of the blob object which effectively serves as a content hash |
-| `dateLastEdited` | `LocalDateTime` | No |  |
-| `dateCreated` | `LocalDateTime` | No |  |
-| `utcDateLastEdited` | `UtcDateTime` | No |  |
-| `utcDateCreated` | `UtcDateTime` | No |  |
-| `utcDateModified` | `UtcDateTime` | No |  |
-| `contentLength` | `integer (int32)` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `revisionId` | `EntityId` |  |
+| `noteId` | `EntityId` |  |
+| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |  |
+| `isProtected` | `boolean` |  |
+| `title` | `string` |  |
+| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
+| `dateLastEdited` | `LocalDateTime` |  |
+| `dateCreated` | `LocalDateTime` |  |
+| `utcDateLastEdited` | `UtcDateTime` |  |
+| `utcDateCreated` | `UtcDateTime` |  |
+| `utcDateModified` | `UtcDateTime` |  |
+| `contentLength` | `integer (int32)` |  |
 
 ### `RecentChange`
 
 Represents a recent change event (creation, modification, or deletion).
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `noteId` | `EntityId` | No |  |
-| `title` | `string` | No | Title at the time of the change (may be "\[protected\]" for protected notes) |
-| `current_title` | `string` | No | Current title of the note (may be "\[protected\]" for protected notes) |
-| `current_isDeleted` | `boolean` | No | Whether the note is currently deleted |
-| `current_deleteId` | `string` | No | Delete ID if the note is deleted |
-| `current_isProtected` | `boolean` | No | Whether the note is protected |
-| `utcDate` | `UtcDateTime` | No | UTC timestamp of the change |
-| `date` | `LocalDateTime` | No | Local timestamp of the change |
-| `canBeUndeleted` | `boolean` | No | Whether the note can be undeleted (only present for deleted notes) |
+| Property | Type | Description |
+| --- | --- | --- |
+| `noteId` | `EntityId` |  |
+| `title` | `string` | Title at the time of the change (may be "\[protected\]" for protected notes) |
+| `current_title` | `string` | Current title of the note (may be "\[protected\]" for protected notes) |
+| `current_isDeleted` | `boolean` | Whether the note is currently deleted |
+| `current_deleteId` | `string` | Delete ID if the note is deleted |
+| `current_isProtected` | `boolean` | Whether the note is protected |
+| `utcDate` | `UtcDateTime` | UTC timestamp of the change |
+| `date` | `LocalDateTime` | Local timestamp of the change |
+| `canBeUndeleted` | `boolean` | Whether the note can be undeleted (only present for deleted notes) |
 
 ### `Metrics`
 
 Instance and database metrics, as served by GET /etapi/metrics?format=json
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `version` | `object` | No |  |
-| `database` | `object` | No |  |
-| `noteTypes` | `object` | No | Number of active notes per note type |
-| `attachmentTypes` | `object` | No | Number of active attachments per MIME type |
-| `statistics` | `object` | No |  |
-| `timestamp` | `string` | No |  |
+| Property | Type | Description |
+| --- | --- | --- |
+| `version` | `object` |  |
+| `database` | `object` |  |
+| `noteTypes` | `object` | Number of active notes per note type |
+| `attachmentTypes` | `object` | Number of active attachments per MIME type |
+| `statistics` | `object` |  |
+| `timestamp` | `string` |  |
