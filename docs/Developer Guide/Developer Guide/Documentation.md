@@ -12,7 +12,8 @@ All documentation is stored in the [Trilium](https://github.com/TriliumNext/Tril
 
 *   `docs/Developer Guide` contains Markdown documentation that can be modified either externally (using a Markdown editor, or internally using Trilium).
 *   `docs/Release Notes` is also stored in Markdown format and can be freely edited.
-*   The _Script API_ is auto-generated and is **not** committed to the repository. It is built into the gitignored `site/` directory and published to [docs.triliumnotes.org](https://docs.triliumnotes.org/); see [Updating the Script API](#updating-the-script-api) below.
+*   The frontend and backend _Script API_ references are auto-generated and are **not** committed to the repository. They are built into the gitignored `site/` directory and published to [docs.triliumnotes.org](https://docs.triliumnotes.org/); see [Updating the Script API](#updating-the-script-api) below.
+*   Some User Guide pages are generated from source files instead of being written by hand; see [Generated pages](#generated-pages) below.
 *   `docs/User Guide` contains Markdown documentation as well, together with a `!!!meta.json` file that describes the note tree (note IDs, share aliases, icons, attachments).
     *   From it, `apps/server/src/assets/help/help_meta.json` (the note tree of the in-app help) and `apps/server/src/assets/help/help_content.json` (the HTML of each page) are generated. These generated files must never be edited by hand.
     *   The in-app help is not stored in the database: at startup, Trilium builds the `_help` subtree from these two files as read-only virtual notes, which are never persisted or synchronized.
@@ -65,16 +66,24 @@ The documentation is built via `apps/build-docs`:
 2.  The User Guide and the Developer Guide are built.
     1.  The documentation from the repo is archived and imported into an in-memory instance.
     2.  The documentation is exported using the shared theme.
-3.  The API docs (internal and ETAPI) are statically rendered via Redocly.
-4.  The script API is generated via `typedoc`
+3.  The frontend and backend script APIs are generated via `typedoc`.
 
 The `deploy-docs` workflow triggers the documentation build and uploads it to CloudFlare Pages.
+
+## Generated pages
+
+The REST API references (ETAPI and the internal API) and the Electron API reference are User Guide pages whose Markdown is generated from their sources, so they appear both in the in-app help and on the website. `edit-docs-config.yaml` lists them for each documentation tree:
+
+*   `openApiPages` renders an OpenAPI document (`apps/server/src/assets/etapi.openapi.yaml`, `apps/server/internal.openapi.yaml`), through `apps/edit-docs/src/openapi_markdown.ts`.
+*   `typeDocPages` renders the exports of a TypeScript module, as TypeDoc reads them, through `apps/edit-docs/src/typedoc_markdown.ts`. The Electron API page documents `packages/commons/src/lib/electron_api_interface.ts`, starting from `ElectronApi`; its introduction is the module's `@packageDocumentation` comment.
+
+Both `pnpm edit-docs:sync-docs` and `pnpm edit-docs:edit-docs` regenerate these pages before importing the documentation, so any edit made to them directly is overwritten. To change one, edit its source (the OpenAPI document, or the comments of the TypeScript module), then run `pnpm edit-docs:sync-docs` and commit the regenerated page along with the help files.
 
 ## Updating the Script API
 
 As mentioned previously, the Script API is not manually editable since it is auto-generated using TypeDoc.
 
-The Script API is regenerated automatically as part of `pnpm docs:build` — its output goes into the gitignored `site/script-api/{backend,frontend,electron}` directory and is published by the `deploy-docs` workflow, so there is nothing to commit. To preview changes locally, run `pnpm docs:build` and inspect the output under `site/`.
+The frontend and backend Script API references are regenerated automatically as part of `pnpm docs:build` — their output goes into the gitignored `site/script-api/{backend,frontend}` directory and is published by the `deploy-docs` workflow, so there is nothing to commit. To preview changes locally, run `pnpm docs:build` and inspect the output under `site/`.
 
 Note that in order to simulate the environment a script would have, some fake source files (in the sense that they are only used for documentation) are being used as entrypoints for the documentation. Look for `backend_script_entrypoint` and `frontend_script_entrypoint` in `apps/build-docs/src`.
 

@@ -1,3 +1,13 @@
+/**
+ * The Electron API is the bridge between Trilium's interface and Electron's main process, exposed
+ * as the global `window.electronApi` in the desktop application.
+ *
+ * It is not part of the `api` global of script notes, but frontend scripts running in the desktop
+ * application can call it directly. It is `undefined` in the browser and in the standalone build,
+ * so guard calls with `if (window.electronApi)`.
+ *
+ * @packageDocumentation
+ */
 import type { SecurityToggleApi } from "./security_settings.js";
 import type { TranscriptSource } from "./transcript.js";
 
@@ -81,7 +91,7 @@ export interface ElectronWindowApi {
     /**
      * Customizes the Windows and Linux native title bar overlay (the area containing the
      * minimize / maximize / close buttons). `height` also controls their vertical placement,
-     * since the buttons are centred within the overlay. It is given in device-independent
+     * since the buttons are centered within the overlay. It is given in device-independent
      * pixels, which the page zoom does not scale — see {@link setWindowButtonPosition}.
      */
     setTitleBarOverlay(options: { color: string; symbolColor: string; height?: number }): void;

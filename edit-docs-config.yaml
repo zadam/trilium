@@ -14,6 +14,11 @@ noteMappings:
         spec: "apps/server/src/assets/etapi.openapi.yaml"
       - noteId: "z8O2VG4ZZJD7" # Internal API › API Reference
         spec: "apps/server/internal.openapi.yaml"
+    typeDocPages:
+      - noteId: "GFXVHyblVN3d" # Scripting › Script API › Electron API
+        entryPoint: "packages/commons/src/lib/electron_api_interface.ts"
+        tsconfig: "packages/commons/tsconfig.lib.json"
+        root: "ElectronApi"
 
   - rootNoteId: "jdjRLhLV3TtI"
     path: "docs/Developer Guide"
