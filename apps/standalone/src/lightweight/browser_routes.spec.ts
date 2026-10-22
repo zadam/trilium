@@ -209,8 +209,8 @@ describe("route wrapper branches (via controlled handlers)", () => {
 
     it("runs transactional and non-transactional api routes (and reads originalUrl)", async () => {
         const router = buildRouter();
-        const apiRes = await router.dispatch("GET", "http://localhost/t/api");
-        expect((parseJson(apiRes.body) as { url: string }).url).toBe("http://localhost/t/api");
+        const apiRes = await router.dispatch("GET", "http://localhost/t/api?x=1");
+        expect((parseJson(apiRes.body) as { url: string }).url).toBe("/t/api?x=1");
         expect(parseJson((await router.dispatch("GET", "http://localhost/t/asyncapi")).body)).toEqual({ ok: true });
     });
 

@@ -35,18 +35,20 @@ type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 function toCoreRequest(req: BrowserRequest): Request {
     /* v8 ignore next -- @preserve: BrowserRouter.dispatch always sets req.headers, so the ?? fallback is unreachable. */
     const headers = req.headers ?? {};
+    // Express gives both URLs relative to the host, path and query string only.
     const { pathname, search } = new URL(req.url);
+    const url = pathname + search;
     return {
         params: req.params,
         query: req.query,
         body: req.body,
         headers,
         method: req.method,
-        url: pathname + search,
+        url,
+        originalUrl: url,
         // A file posted for an import route has no `buffer` until an importer that needs one calls
         // `loadUploadedBytes()`, as on the server when multer leaves a zip on disk.
         file: req.file as Request["file"],
-        get originalUrl() { return req.url; },
         // `fetch` lower-cases the header names it sends, which is the form BrowserRouter stores them in.
         get: (name: string) => headers[name.toLowerCase()]
     };
