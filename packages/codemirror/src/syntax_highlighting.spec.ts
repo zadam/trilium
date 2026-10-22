@@ -1,7 +1,9 @@
 import {
-    ensureSyntaxTree, LanguageSupport, StreamLanguage, type StreamParser
+    ensureSyntaxTree, LanguageSupport, StreamLanguage, type StreamParser, syntaxHighlighting
 } from "@codemirror/language";
 import { EditorState, type Extension } from "@codemirror/state";
+import { EditorView } from "@codemirror/view";
+import { classHighlighter } from "@lezer/highlight";
 import { SupportedMimeTypes } from "@triliumnext/commons";
 import { describe, expect, it, vi } from "vitest";
 
@@ -49,6 +51,25 @@ describe("byMimeType", () => {
         // instead of falling into the "unknown MIME" path.
         expect(byMimeType["text/plain"]).toBeNull();
         expect(byMimeType["application/x-ejs"]).toBeNull();
+    });
+
+    it("highlights the statements of slow queries in the Trilium log as SQLite", async () => {
+        const syntax = await byMimeType["text/x-trilium-log"]?.();
+        expect(Array.isArray(syntax)).toBe(true);
+        if (!Array.isArray(syntax)) return;
+
+        const doc = "00:10:01.540 Slow query took 78ms: SELECT 1";
+        const state = EditorState.create({
+            doc, extensions: [ syntax, syntaxHighlighting(classHighlighter) ]
+        });
+        const keywords: string[] = [];
+        for (const set of state.facet(EditorView.decorations)) {
+            if (typeof set === "function") continue;
+            set.between(0, doc.length, (from, to, decoration) => {
+                if (decoration.spec.class === "tok-keyword") keywords.push(doc.slice(from, to));
+            });
+        }
+        expect(keywords).toEqual([ "SELECT" ]);
     });
 
     it.each(MARKDOWN_MIMES)("highlights mermaid code blocks in %s", async (mime) => {

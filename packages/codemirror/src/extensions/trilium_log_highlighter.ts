@@ -1,5 +1,7 @@
+import { highlightingFor, type Language } from "@codemirror/language";
 import { type EditorState, type Extension, RangeSetBuilder, StateField } from "@codemirror/state";
 import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
+import { type Highlighter, highlightTree } from "@lezer/highlight";
 
 /**
  * Lightweight regex highlighter for the Trilium backend log. Each log entry is a single line
@@ -20,7 +22,8 @@ import { Decoration, type DecorationSet, EditorView } from "@codemirror/view";
  *    `Slow` marker (prepended by the server for requests taking >= 10ms) is flagged as a warning.
  *  - slow SQL query lines `<ts> Slow [recursive ]query took <n>ms[: <sql>]` — the whole line is
  *    tinted, the entire `Slow [recursive ]query` phrase bolded as the entry's verb (its own colour,
- *    not the HTTP method's), and the statement (absent for recursive queries) coloured. Unlike HTTP,
+ *    not the HTTP method's), and the statement (absent for recursive queries) highlighted with the
+ *    SQL language in the active code theme, or in one colour without a language. Unlike HTTP,
  *    `Slow` is not flagged as a warning here: queries are only logged when slow, so it is uninformative.
  *  - `<ts> JS Error: …` and `<ts> ERROR: …` lines — coloured red, together with their following
  *    continuation lines (e.g. wrapped stack traces), which carry no timestamp of their own
@@ -72,6 +75,8 @@ const statusMarks: Record<string, Decoration> = {
     "4": Decoration.mark({ class: "cm-log-status cm-log-status-4xx" }),
     "5": Decoration.mark({ class: "cm-log-status cm-log-status-5xx" })
 };
+/** Marks of the SQL tokens, one per class string of the code theme. */
+const sqlTokenMarks = new Map<string, Decoration>();
 
 /**
  * The Next themes own the palette (`--log-*` in theme-next-light.css / theme-next-dark.css). The
@@ -101,21 +106,49 @@ const logHighlightTheme = EditorView.baseTheme({
     ".cm-log-info": { color: "var(--log-info-color, inherit)" }
 });
 
-const logHighlightField = StateField.define<DecorationSet>({
-    create(state) {
-        return buildLogDecorations(state);
-    },
-    update(decorations, tr) {
-        return tr.docChanged ? buildLogDecorations(tr.state) : decorations;
-    },
-    provide: (field) => EditorView.decorations.from(field)
-});
+/** The statement of a slow query and its start offset in the document. */
+interface SqlStatement {
+    from: number;
+    text: string;
+}
 
-/** The extension to register on the backend-log editor (e.g. via a `text/x-trilium-log` MIME type). */
-export const triliumLogHighlighter: Extension = [ logHighlightField, logHighlightTheme ];
+interface LogHighlights {
+    log: DecorationSet;
+    /** The statements in the highlighted lines; empty without a SQL language. */
+    statements: SqlStatement[];
+    /** The tokens of `statements`, with the classes of the active code theme. */
+    sql: DecorationSet;
+}
 
-function buildLogDecorations(state: EditorState): DecorationSet {
+/**
+ * The extension to register on the backend-log editor (e.g. via a `text/x-trilium-log` MIME type).
+ * `sqlLanguage` highlights the statements of slow queries; without it, a statement gets one color.
+ */
+export function triliumLogHighlighter(sqlLanguage: Language | null = null): Extension {
+    const field = StateField.define<LogHighlights>({
+        create: (state) => buildHighlights(state, sqlLanguage),
+        update(highlights, tr) {
+            if (tr.docChanged) return buildHighlights(tr.state, sqlLanguage);
+            // A new code theme changes the token classes. `performFind()` also reconfigures, on
+            // every search, so a reconfigure rebuilds only the SQL marks.
+            if (tr.reconfigured && sqlLanguage) {
+                const sql = buildSqlDecorations(tr.state, highlights.statements, sqlLanguage);
+                return { ...highlights, sql };
+            }
+            return highlights;
+        },
+        provide: (f) => [
+            EditorView.decorations.from(f, (highlights) => highlights.log),
+            EditorView.decorations.from(f, (highlights) => highlights.sql)
+        ]
+    });
+    return [ field, logHighlightTheme ];
+}
+
+function buildHighlights(state: EditorState, sqlLanguage: Language | null): LogHighlights {
     const builder = new RangeSetBuilder<Decoration>();
+    const statements: SqlStatement[] = [];
+    const collectedStatements = sqlLanguage ? statements : null;
     const doc = state.doc;
 
     // Scan at most the last MAX_HIGHLIGHTED_LINES lines. A single top-to-bottom pass over that window
@@ -125,10 +158,37 @@ function buildLogDecorations(state: EditorState): DecorationSet {
     const firstLine = Math.max(1, doc.lines - MAX_HIGHLIGHTED_LINES + 1);
     let blockLine: Decoration | null = null;
     for (let n = firstLine; n <= doc.lines; n++) {
-        blockLine = decorateLine(builder, doc.line(n), blockLine);
+        blockLine = decorateLine(builder, doc.line(n), blockLine, collectedStatements);
     }
 
+    return {
+        log: builder.finish(),
+        statements,
+        sql: sqlLanguage ? buildSqlDecorations(state, statements, sqlLanguage) : Decoration.none
+    };
+}
+
+/** Marks the tokens of each statement with the classes that the active code theme gives them. */
+function buildSqlDecorations(
+    state: EditorState, statements: SqlStatement[], language: Language
+): DecorationSet {
+    const builder = new RangeSetBuilder<Decoration>();
+    const highlighter: Highlighter = { style: (tags) => highlightingFor(state, tags) };
+    for (const { from, text } of statements) {
+        highlightTree(language.parser.parse(text), highlighter, (start, end, classes) => {
+            builder.add(from + start, from + end, sqlTokenMark(classes));
+        });
+    }
     return builder.finish();
+}
+
+function sqlTokenMark(classes: string) {
+    let mark = sqlTokenMarks.get(classes);
+    if (!mark) {
+        mark = Decoration.mark({ class: classes });
+        sqlTokenMarks.set(classes, mark);
+    }
+    return mark;
 }
 
 /**
@@ -145,9 +205,15 @@ function blockLineFor(text: string): Decoration | null {
 /**
  * Decorates a single line and returns the block decoration in effect for the following
  * (continuation) lines. A timestamped line opens a block (or closes any open one); a line without a
- * timestamp inherits the incoming `blockLine`.
+ * timestamp inherits the incoming `blockLine`. The statement of a slow query goes into `statements`
+ * for SQL highlighting, or gets `sqlMark` if `statements` is null.
  */
-function decorateLine(builder: RangeSetBuilder<Decoration>, line: { from: number; text: string }, blockLine: Decoration | null): Decoration | null {
+function decorateLine(
+    builder: RangeSetBuilder<Decoration>,
+    line: { from: number; text: string },
+    blockLine: Decoration | null,
+    statements: SqlStatement[] | null
+): Decoration | null {
     const { from: lineStart, text } = line;
 
     if (!TIMESTAMP.test(text)) {
@@ -202,7 +268,11 @@ function decorateLine(builder: RangeSetBuilder<Decoration>, line: { from: number
         builder.add(verbStart, verbEnd, queryVerbMark);
         if (sql) {
             const sqlStart = verbEnd + tookWord.length + duration.length + 2; // ": "
-            builder.add(sqlStart, sqlStart + sql.length, sqlMark);
+            if (statements) {
+                statements.push({ from: sqlStart, text: sql });
+            } else {
+                builder.add(sqlStart, sqlStart + sql.length, sqlMark);
+            }
         }
     }
 

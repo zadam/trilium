@@ -1,8 +1,13 @@
-import { Compartment, EditorState } from "@codemirror/state";
+import { HighlightStyle, StreamLanguage, syntaxHighlighting } from "@codemirror/language";
+import { sqlite } from "@codemirror/legacy-modes/mode/sql";
+import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
+import { classHighlighter, tags } from "@lezer/highlight";
 import { describe, expect, it } from "vitest";
 
 import { MAX_HIGHLIGHTED_LINES, triliumLogHighlighter } from "./trilium_log_highlighter.js";
+
+const sqlLanguage = StreamLanguage.define(sqlite);
 
 interface DecorationSpan {
     from: number;
@@ -21,7 +26,8 @@ describe("triliumLogHighlighter", () => {
         const before = EditorState.create({ doc, extensions: [ compartment.of([]) ] });
         expect(decorationsOf(before)).toHaveLength(0);
 
-        const after = before.update({ effects: compartment.reconfigure(triliumLogHighlighter) }).state;
+        const effects = compartment.reconfigure(triliumLogHighlighter());
+        const after = before.update({ effects }).state;
         expect(decorationsOf(after).length).toBeGreaterThan(0);
     });
 
@@ -188,10 +194,102 @@ describe("triliumLogHighlighter", () => {
         expect(timestamps.length).toBeGreaterThan(0);
         expect(timestamps.length).toBeLessThanOrEqual(MAX_HIGHLIGHTED_LINES);
     });
+
+    describe("with a SQL language", () => {
+        it("highlights the tokens of a slow query's statement", () => {
+            const doc = "00:10:01.540 Slow query took 78ms: SELECT noteId FROM notes"
+                + " WHERE title LIKE '%a%' AND isDeleted = 0 AND parentNoteId = ?";
+            const spans = decorationsOf(sqlState(doc));
+
+            expect(slicesOf(doc, spans, "tok-keyword"))
+                .toEqual([ "SELECT", "FROM", "WHERE", "LIKE", "AND", "AND" ]);
+            expect(slicesOf(doc, spans, "tok-string")).toEqual([ "'%a%'" ]);
+            // The `78` of `took 78ms` is outside the statement.
+            expect(slicesOf(doc, spans, "tok-number")).toEqual([ "0" ]);
+            expect(sliceOf(doc, spans, "cm-log-query-verb")).toBe("Slow query");
+
+            // Identifiers and placeholders keep the main text color.
+            expect(classesOfState(sqlState(doc))).toContain("cm-log-query");
+            expect(classesOfState(sqlState(doc))).not.toContain("cm-log-sql");
+            const placeholder = doc.indexOf("?");
+            expect(spans.filter((d) => d.from <= placeholder && d.to > placeholder)).toEqual([]);
+        });
+
+        it("tokenizes nothing on recursive queries, which have no statement", () => {
+            const doc = [
+                "00:10:01.540 Slow query took 30ms: SELECT 1",
+                "00:10:02.113 Slow recursive query took 45ms."
+            ].join("\n");
+            const tokens = decorationsOf(sqlState(doc)).filter((d) => d.class.startsWith("tok-"));
+
+            expect(tokens.map((d) => doc.slice(d.from, d.to))).toEqual([ "SELECT", "1" ]);
+        });
+
+        it("reclassifies the tokens when the theme changes, without rescanning the log", () => {
+            const doc = "00:10:01.540 Slow query took 78ms: SELECT 1";
+            const theme = new Compartment();
+            let s = sqlState(doc, theme.of(syntaxHighlighting(classHighlighter)));
+            const logDecorations = logDecorationsOf(s);
+            expect(sliceOf(doc, decorationsOf(s), "tok-keyword")).toBe("SELECT");
+
+            const style = HighlightStyle.define([ { tag: tags.keyword, class: "keyword" } ]);
+            s = s.update({ effects: theme.reconfigure(syntaxHighlighting(style)) }).state;
+
+            expect(sliceOf(doc, decorationsOf(s), "keyword")).toBe("SELECT");
+            expect(classesOfState(s)).not.toContain("tok-keyword");
+            expect(logDecorationsOf(s)).toBe(logDecorations);
+        });
+
+        it("keeps every decoration set unless the document or the configuration changes", () => {
+            const doc = "00:10:01.540 Slow query took 78ms: SELECT 1";
+            for (const s of [ state(doc), sqlState(doc) ]) {
+                const sets = s.facet(EditorView.decorations);
+                const next = s.update({ selection: { anchor: 1 } }).state
+                    .facet(EditorView.decorations);
+                expect(next).toHaveLength(sets.length);
+                expect(next.every((set, index) => set === sets[index])).toBe(true);
+            }
+
+            // Without a language there are no SQL marks to reclassify.
+            const compartment = new Compartment();
+            const plain = EditorState.create({
+                doc, extensions: [ triliumLogHighlighter(), compartment.of([]) ]
+            });
+            const reconfigured = plain.update({
+                effects: compartment.reconfigure(syntaxHighlighting(classHighlighter))
+            }).state;
+            expect(logDecorationsOf(reconfigured)).toBe(logDecorationsOf(plain));
+            expect(classesOfState(reconfigured)).toContain("cm-log-sql");
+        });
+
+        it("only tokenizes statements within the last MAX_HIGHLIGHTED_LINES lines", () => {
+            const lines = [ "17:00:00.000 Slow query took 30ms: SELECT 1" ];
+            for (let i = 0; i < MAX_HIGHLIGHTED_LINES; i++) {
+                lines.push("18:00:00.000 Backend script execution is DISABLED.");
+            }
+            lines.push("19:00:00.000 Slow query took 30ms: SELECT 2");
+            const doc = lines.join("\n");
+            const spans = decorationsOf(sqlState(doc));
+
+            expect(slicesOf(doc, spans, "tok-keyword")).toEqual([ "SELECT" ]);
+            expect(slicesOf(doc, spans, "tok-number")).toEqual([ "2" ]);
+        });
+    });
 });
 
 function state(doc: string): EditorState {
-    return EditorState.create({ doc, extensions: [ triliumLogHighlighter ] });
+    return EditorState.create({ doc, extensions: [ triliumLogHighlighter() ] });
+}
+
+function sqlState(doc: string, highlighting: Extension = syntaxHighlighting(classHighlighter)) {
+    return EditorState.create({
+        doc, extensions: [ triliumLogHighlighter(sqlLanguage), highlighting ]
+    });
+}
+
+/** The first decoration set, which holds the log's own decorations. */
+function logDecorationsOf(editorState: EditorState) {
+    return editorState.facet(EditorView.decorations).find((set) => typeof set !== "function");
 }
 
 /** All decoration ranges contributed to the view's decoration facet, in document order. */
@@ -220,6 +318,11 @@ function classesOfState(editorState: EditorState): string[] {
 function sliceOf(doc: string, spans: DecorationSpan[], cls: string): string | undefined {
     const span = spans.find((d) => d.class === cls);
     return span && doc.slice(span.from, span.to);
+}
+
+/** The document text covered by each span carrying `cls`, in document order. */
+function slicesOf(doc: string, spans: DecorationSpan[], cls: string): string[] {
+    return spans.filter((d) => d.class === cls).map((d) => doc.slice(d.from, d.to));
 }
 
 /** Classes of the line decorations (zero-length, at the line start) on line `lineNo` (1-based). */
