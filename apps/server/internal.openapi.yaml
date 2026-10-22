@@ -40,40 +40,58 @@ servers:
 tags:
   - name: Sessions
     description: Login, logout, and session management
+    x-icon: bx bx-log-in
   - name: Notes
     description: Core note operations
+    x-icon: bx bx-note
   - name: Tree
     description: Note tree structure and branches
+    x-icon: bx bx-sitemap
   - name: Attributes
     description: Note attributes and metadata
+    x-icon: bx bx-purchase-tag
   - name: Attachments
     description: File attachments
+    x-icon: bx bx-paperclip
   - name: Revisions
     description: Note revision history
+    x-icon: bx bx-history
   - name: Search
     description: Search and discovery
+    x-icon: bx bx-search
   - name: Import/Export
     description: Import and export operations
+    x-icon: bx bx-transfer
   - name: Sync
     description: Synchronization between instances
+    x-icon: bx bx-sync
   - name: Scripting
     description: Script execution and automation
+    x-icon: bx bx-code-alt
   - name: Configuration
     description: System options and settings
+    x-icon: bx bx-cog
   - name: Database
     description: Database operations
+    x-icon: bx bx-data
   - name: LLM
     description: AI/LLM integration
+    x-icon: bx bx-bot
   - name: Security
     description: Security features (2FA, tokens)
+    x-icon: bx bx-shield-quarter
   - name: Special Notes
     description: Special note types (calendar, inbox)
+    x-icon: bx bx-star
   - name: Visualization
     description: Maps and visualizations
+    x-icon: bx bx-map-alt
   - name: External
     description: External integrations (clipper, sender)
+    x-icon: bx bx-globe
   - name: Utilities
     description: Miscellaneous utilities
+    x-icon: bx bx-wrench
 
 security:
   - sessionAuth: []

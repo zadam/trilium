@@ -49,7 +49,7 @@ describe("openApiToMarkdown", () => {
         expect(markdown).toContain([
             "External Trilium API",
             "",
-            "## Authentication",
+            "## <span class=\"tn-icon bx bx-lock-alt\"></span> Authentication",
             "",
             "### `TokenAuth`",
             "",
@@ -140,7 +140,10 @@ describe("openApiToMarkdown", () => {
     it("groups operations by their first tag when the spec has tags", () => {
         const spec: OpenApiSpec = {
             info: { title: "Internal" },
-            tags: [ { name: "Sync", description: "Synchronization between instances." }, { name: "Notes" } ],
+            tags: [
+                { name: "Sync", description: "Synchronization between instances.", "x-icon": "bx bx-sync" },
+                { name: "Notes" }
+            ],
             paths: {
                 "/api/misc": { get: { tags: [ "Misc" ], responses: {} } },
                 "/api/notes": { get: { tags: [ "Notes" ], summary: "List notes", operationId: "getNotes", responses: {} } },
@@ -152,10 +155,10 @@ describe("openApiToMarkdown", () => {
 
         const markdown = openApiToMarkdown(spec);
 
-        // Declared tags come first, in their declared order and with their description; the
-        // others follow in order of appearance.
+        // Declared tags come first, in their declared order and with their description and icon;
+        // the others follow in order of appearance.
         expect(markdown).not.toContain("## Endpoints");
-        expect(markdown).toContain("## Sync\n\nSynchronization between instances.\n\n### `POST /api/sync`");
+        expect(markdown).toContain("## <span class=\"tn-icon bx bx-sync\"></span> Sync\n\nSynchronization between instances.\n\n### `POST /api/sync`");
         expect(markdown.indexOf("### `POST /api/login`")).toBeLessThan(markdown.indexOf("## Notes"));
         expect(markdown.indexOf("### `GET /api/tree`")).toBeLessThan(markdown.indexOf("## Misc"));
         expect(markdown.indexOf("## Misc")).toBeLessThan(markdown.indexOf("### `GET /api/misc`"));
@@ -195,7 +198,7 @@ describe("openApiToMarkdown", () => {
 
         const markdown = openApiToMarkdown(spec);
 
-        expect(markdown).toContain("## Schemas");
+        expect(markdown).toContain("## <span class=\"tn-icon bx bx-cube\"></span> Schemas");
         // A schema heading carries an anchor, which every type naming the schema links to.
         expect(markdown).toContain("### <a id=\"schema-EntityId\"></a>`EntityId`\n\nUnique ID\n\nType: `string`");
         expect(markdown).toContain([

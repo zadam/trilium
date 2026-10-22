@@ -19,20 +19,28 @@ security:
 tags:
     - name: Notes
       description: Notes and their content, and the import and export of whole subtrees.
+      x-icon: bx bx-note
     - name: Branches
       description: Branches place a note in the tree, under a parent note.
+      x-icon: bx bx-git-branch
     - name: Attributes
       description: Labels and relations of a note.
+      x-icon: bx bx-purchase-tag
     - name: Attachments
       description: Files attached to a note.
+      x-icon: bx bx-paperclip
     - name: Revisions
       description: Snapshots of a note's content.
+      x-icon: bx bx-history
     - name: Calendar
       description: Day, week, month and year notes of the journal, and the inbox note.
+      x-icon: bx bx-calendar
     - name: Tokens
       description: Obtaining and revoking ETAPI tokens with the password.
+      x-icon: bx bx-key
     - name: Application
       description: Information about the instance, backups and metrics.
+      x-icon: bx bx-server
 paths:
     /create-note:
         post:

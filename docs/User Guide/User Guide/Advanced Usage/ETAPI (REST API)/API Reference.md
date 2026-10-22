@@ -1,7 +1,7 @@
 # API Reference
 External Trilium API
 
-## Authentication
+## <span class="tn-icon bx bx-lock-alt"></span> Authentication
 
 ### `EtapiTokenAuth`
 
@@ -13,7 +13,7 @@ HTTP `basic` authentication.
 
 Basic Auth where username is arbitrary string (e.g. "trilium", not checked), username is the ETAPI token. To emphasize, do not use Trilium password here (won't work), only the generated ETAPI token (from Options -> ETAPI)
 
-## Notes
+## <span class="tn-icon bx bx-note"></span> Notes
 
 Notes and their content, and the import and export of whole subtrees.
 
@@ -938,7 +938,7 @@ Returns recent changes including note creations, modifications, and deletions
     </div>
     </div>
 
-## Branches
+## <span class="tn-icon bx bx-git-branch"></span> Branches
 
 Branches place a note in the tree, under a parent note.
 
@@ -1363,7 +1363,7 @@ notePositions in branches are not automatically pushed to connected clients and 
     </div>
     </div>
 
-## Attributes
+## <span class="tn-icon bx bx-purchase-tag"></span> Attributes
 
 Labels and relations of a note.
 
@@ -1718,7 +1718,7 @@ patch an attribute identified by the attributeId with changes in the body. For l
     </div>
     </div>
 
-## Attachments
+## <span class="tn-icon bx bx-paperclip"></span> Attachments
 
 Files attached to a note.
 
@@ -2205,7 +2205,7 @@ New content of the attachment. Send text as `text/plain` and binary data (such a
 
     No content.
 
-## Revisions
+## <span class="tn-icon bx bx-history"></span> Revisions
 
 Snapshots of a note's content.
 
@@ -2466,7 +2466,7 @@ Returns revision content identified by its ID
     </div>
     </div>
 
-## Calendar
+## <span class="tn-icon bx bx-calendar"></span> Calendar
 
 Day, week, month and year notes of the journal, and the inbox note.
 
@@ -3148,7 +3148,7 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
     </div>
     </div>
 
-## Tokens
+## <span class="tn-icon bx bx-key"></span> Tokens
 
 Obtaining and revoking ETAPI tokens with the password.
 
@@ -3280,7 +3280,7 @@ logout (delete/deactivate) an ETAPI token
     </div>
     </div>
 
-## Application
+## <span class="tn-icon bx bx-server"></span> Application
 
 Information about the instance, backups and metrics.
 
@@ -3527,7 +3527,7 @@ The same data is served by GET /api/metrics to the web session.
     </div>
     </div>
 
-## Schemas
+## <span class="tn-icon bx bx-cube"></span> Schemas
 
 ### <a id="schema-CreateNoteDef"></a>`CreateNoteDef`
 

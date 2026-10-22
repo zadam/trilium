@@ -7,8 +7,11 @@ import { MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS } from "../../../pac
 export interface OpenApiSpec {
     info: { title: string; description?: string };
     paths: Record<string, PathItem>;
-    /** Declares the order of the operation groups and describes them. */
-    tags?: { name: string; description?: string }[];
+    /**
+     * Declares the order of the operation groups and describes them. `x-icon` is the icon class
+     * of a group's heading, as an `#iconClass` label takes it (`bx bx-note`).
+     */
+    tags?: { name: string; description?: string; "x-icon"?: string }[];
     security?: SecurityRequirement[];
     components?: {
         schemas?: Record<string, Schema>;
@@ -115,7 +118,7 @@ export function openApiToMarkdown(spec: OpenApiSpec): string {
 
     const securitySchemes = Object.entries(spec.components?.securitySchemes ?? {});
     if (securitySchemes.length) {
-        blocks.push("## Authentication");
+        blocks.push(`## ${icon("bx bx-lock-alt")}Authentication`);
         for (const [ name, scheme ] of securitySchemes) {
             blocks.push(`### ${code(name)}`, describeSecurityScheme(scheme));
             if (scheme.description) {
@@ -125,10 +128,10 @@ export function openApiToMarkdown(spec: OpenApiSpec): string {
     }
 
     for (const [ group, operations ] of groupOperations(spec)) {
-        blocks.push(`## ${group}`);
-        const description = spec.tags?.find((tag) => tag.name === group)?.description;
-        if (description) {
-            blocks.push(description.trim());
+        const tag = spec.tags?.find(({ name }) => name === group);
+        blocks.push(`## ${icon(tag?.["x-icon"])}${group}`);
+        if (tag?.description) {
+            blocks.push(tag.description.trim());
         }
         for (const operation of operations) {
             blocks.push(...renderOperation(spec, operation));
@@ -137,7 +140,7 @@ export function openApiToMarkdown(spec: OpenApiSpec): string {
 
     const schemas = Object.entries(spec.components?.schemas ?? {});
     if (schemas.length) {
-        blocks.push("## Schemas");
+        blocks.push(`## ${icon("bx bx-cube")}Schemas`);
         for (const [ name, schema ] of schemas) {
             blocks.push(...renderSchema(spec, name, schema));
         }
@@ -532,6 +535,11 @@ function nameCell(text: string, required?: boolean) {
 /** The description cell of a parameter or property, its type (Markdown) on the first line. */
 function detailsCell(type: string, description: string) {
     return [ type, description ].filter(Boolean).join("<br>");
+}
+
+/** An inline icon followed by a space, to put before a heading's text. */
+function icon(iconClass: string | undefined) {
+    return iconClass ? `<span class="tn-icon ${iconClass}"></span> ` : "";
 }
 
 function code(text: string) {

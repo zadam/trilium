@@ -19,7 +19,7 @@ Authentication endpoints are rate-limited to prevent brute force attacks.
 
 State-changing operations require CSRF tokens when using session authentication.
 
-## Authentication
+## <span class="tn-icon bx bx-lock-alt"></span> Authentication
 
 ### `sessionAuth`
 
@@ -33,7 +33,7 @@ API key in the `Authorization` header.
 
 API token in format "Bearer {token}"
 
-## Sessions
+## <span class="tn-icon bx bx-log-in"></span> Sessions
 
 Login, logout, and session management
 
@@ -313,7 +313,7 @@ Login, logout, and session management
     </div>
     </div>
 
-## Notes
+## <span class="tn-icon bx bx-note"></span> Notes
 
 Core note operations
 
@@ -1368,7 +1368,7 @@ Core note operations
 
     No content.
 
-## Tree
+## <span class="tn-icon bx bx-sitemap"></span> Tree
 
 Note tree structure and branches
 
@@ -1882,7 +1882,7 @@ Note tree structure and branches
 
     No content.
 
-## Attributes
+## <span class="tn-icon bx bx-purchase-tag"></span> Attributes
 
 Note attributes and metadata
 
@@ -2244,7 +2244,7 @@ Note attributes and metadata
     ]
     ```
 
-## Attachments
+## <span class="tn-icon bx bx-paperclip"></span> Attachments
 
 File attachments
 
@@ -2901,7 +2901,7 @@ File attachments
 
     No content.
 
-## Revisions
+## <span class="tn-icon bx bx-history"></span> Revisions
 
 Note revision history
 
@@ -3235,7 +3235,7 @@ Note revision history
 
     *   `image/*`: `string (binary)`
 
-## Search
+## <span class="tn-icon bx bx-search"></span> Search
 
 Search and discovery
 
@@ -3523,7 +3523,7 @@ Search and discovery
     ]
     ```
 
-## Import/Export
+## <span class="tn-icon bx bx-transfer"></span> Import/Export
 
 Import and export operations
 
@@ -3638,7 +3638,7 @@ Import and export operations
 
     No content.
 
-## Sync
+## <span class="tn-icon bx bx-sync"></span> Sync
 
 Synchronization between instances
 
@@ -3911,7 +3911,7 @@ Synchronization between instances
 
     No content.
 
-## Scripting
+## <span class="tn-icon bx bx-code-alt"></span> Scripting
 
 Script execution and automation
 
@@ -4111,7 +4111,7 @@ Script execution and automation
     ]
     ```
 
-## Configuration
+## <span class="tn-icon bx bx-cog"></span> Configuration
 
 System options and settings
 
@@ -4407,7 +4407,7 @@ System options and settings
     ]
     ```
 
-## Database
+## <span class="tn-icon bx bx-data"></span> Database
 
 Database operations
 
@@ -4644,7 +4644,7 @@ Database operations
     </div>
     </div>
 
-## LLM
+## <span class="tn-icon bx bx-bot"></span> LLM
 
 AI/LLM integration
 
@@ -5175,7 +5175,7 @@ AI/LLM integration
     </div>
     </div>
 
-## Security
+## <span class="tn-icon bx bx-shield-quarter"></span> Security
 
 Security features (2FA, tokens)
 
@@ -5791,7 +5791,7 @@ Issues a fresh batch of recovery codes for the already-enrolled TOTP secret, rep
     </div>
     </div>
 
-## Special Notes
+## <span class="tn-icon bx bx-star"></span> Special Notes
 
 Special note types (calendar, inbox)
 
@@ -6663,7 +6663,7 @@ Reports the destination `/api/special-notes/inbox/{date}` would use, without cre
     </div>
     </div>
 
-## Visualization
+## <span class="tn-icon bx bx-map-alt"></span> Visualization
 
 Maps and visualizations
 
@@ -6818,7 +6818,7 @@ Maps and visualizations
     {}
     ```
 
-## External
+## <span class="tn-icon bx bx-globe"></span> External
 
 External integrations (clipper, sender)
 
@@ -7231,7 +7231,7 @@ External integrations (clipper, sender)
     </div>
     </div>
 
-## Utilities
+## <span class="tn-icon bx bx-wrench"></span> Utilities
 
 Miscellaneous utilities
 
@@ -7594,7 +7594,7 @@ Miscellaneous utilities
 
     *   `text/plain`: `string`
 
-## Schemas
+## <span class="tn-icon bx bx-cube"></span> Schemas
 
 ### <a id="schema-Note"></a>`Note`
 
