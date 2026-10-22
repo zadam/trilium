@@ -33,341 +33,159 @@ The runtime value lives in `apps/desktop/src/preload.ts`; this interface is the 
 
 Window-level controls: zoom, theme, title bar, full screen, lifecycle, and a handful of main → renderer event subscriptions.
 
-### `setZoomFactor`
-
-```typescript
-setZoomFactor(factor: number): void
-```
-
-Sets the page zoom factor for the current window.
-
-| Parameter | Description |
-| --- | --- |
-| `factor` | `number`  <br>`1.0` is 100%; e.g. `1.2` zooms to 120%. |
-
-### `getZoomFactor`
-
-```typescript
-getZoomFactor(): number
-```
-
-Returns the current page zoom factor (`1.0` = 100%).
-
-**Returns** `number`
-
-### `setNativeThemeSource`
-
-```typescript
-setNativeThemeSource(source: "system" | "light" | "dark"): void
-```
-
-Overrides the operating system's reported color scheme for this app. Use `"system"` to follow the OS setting.
-
-| Parameter | Description |
-| --- | --- |
-| `source` | `"system" \| "light" \| "dark"` |
-
-### `setTitleBarOverlay`
-
-```typescript
-setTitleBarOverlay(options: { color: string; symbolColor: string; height?: number }): void
-```
-
-Customizes the Windows and Linux native title bar overlay (the area containing the minimize / maximize / close buttons). `height` also controls their vertical placement, since the buttons are centered within the overlay. It is given in device-independent pixels, which the page zoom does not scale — see `setWindowButtonPosition`.
-
-| Parameter | Description |
-| --- | --- |
-| `options` | `{ color: string; symbolColor: string; height?: number }` |
-
-### `setWindowButtonPosition`
-
-```typescript
-setWindowButtonPosition(position: { x: number; y: number }): void
-```
-
-Repositions the macOS traffic-light window buttons. Coordinates are relative to the window's top-left corner and given in device-independent pixels: the buttons are drawn by the system rather than by the page, so unlike the surrounding chrome they are unaffected by the page zoom factor and callers have to scale the offsets themselves.
-
-| Parameter | Description |
-| --- | --- |
-| `position` | `{ x: number; y: number }` |
-
-### `onEnterFullScreen`
-
-```typescript
-onEnterFullScreen(callback: () => void): void
-```
-
-Registers a callback fired whenever the window enters full-screen mode.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `() => void` |
-
-### `onLeaveFullScreen`
-
-```typescript
-onLeaveFullScreen(callback: () => void): void
-```
-
-Registers a callback fired whenever the window leaves full-screen mode.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `() => void` |
-
-### `isFullScreen`
-
-```typescript
-isFullScreen(): boolean
-```
-
-Synchronously returns whether the window is currently in full-screen mode.
-
-**Returns** `boolean`
-
-### `setFullScreen`
-
-```typescript
-setFullScreen(enabled: boolean): void
-```
-
-Enters or leaves full-screen mode.
-
-| Parameter | Description |
-| --- | --- |
-| `enabled` | `boolean` |
-
-### `minimizeWindow`
-
-```typescript
-minimizeWindow(): void
-```
-
-Minimizes the current window to the taskbar / dock.
-
-### `maximizeWindow`
-
-```typescript
-maximizeWindow(): void
-```
-
-Maximizes the current window to fill the available screen area.
-
-### `unmaximizeWindow`
-
-```typescript
-unmaximizeWindow(): void
-```
-
-Restores the window from a maximized state to its previous size.
-
-### `isMaximized`
-
-```typescript
-isMaximized(): boolean
-```
-
-Synchronously returns whether the window is currently maximized.
-
-**Returns** `boolean`
-
-### `closeWindow`
-
-```typescript
-closeWindow(): void
-```
-
-Closes the current window.
-
-### `isAlwaysOnTop`
-
-```typescript
-isAlwaysOnTop(): boolean
-```
-
-Synchronously returns whether the window is pinned above all others.
-
-**Returns** `boolean`
-
-### `setAlwaysOnTop`
-
-```typescript
-setAlwaysOnTop(enabled: boolean): void
-```
-
-Toggles the always-on-top (pinned) state of the window.
-
-| Parameter | Description |
-| --- | --- |
-| `enabled` | `boolean` |
-
-### `toggleDevTools`
-
-```typescript
-toggleDevTools(): void
-```
-
-Opens or closes Chromium DevTools for the current window.
-
-### `isDevToolsDocked`
-
-```typescript
-isDevToolsDocked(): boolean
-```
-
-Synchronously returns whether DevTools is currently open and docked into this window (as opposed to detached into a separate window).
-
-**Returns** `boolean`
-
-### `setBackgroundMaterial`
-
-```typescript
-setBackgroundMaterial(material: string): void
-```
-
-Sets the Windows 11 backdrop material (e.g. `"mica"`, `"acrylic"`, `"tabbed"`, `"none"`) applied behind the window contents. No-op on other platforms.
-
-| Parameter | Description |
-| --- | --- |
-| `material` | `string` |
-
-### `setVibrancy`
-
-```typescript
-setVibrancy(vibrancy: string): void
-```
-
-Sets the macOS vibrancy effect (e.g. `"sidebar"`, `"under-window"`, `"fullscreen-ui"`) applied behind the window contents. No-op on other platforms.
-
-| Parameter | Description |
-| --- | --- |
-| `vibrancy` | `string` |
-
-### `reloadAllWindows`
-
-```typescript
-reloadAllWindows(): void
-```
-
-Triggers a hard reload of every open Trilium window.
-
-### `restartApp`
-
-```typescript
-restartApp(): void
-```
-
-Quits the app and immediately relaunches it.
-
-### `toggleAllWindows`
-
-```typescript
-toggleAllWindows(): void
-```
-
-Shows all hidden windows or hides all visible ones — used by the "show/hide app" global shortcut and tray menu entry.
-
-### `clearCache`
-
-```typescript
-clearCache(): Promise<void>
-```
-
-Clears the underlying Chromium HTTP cache. Resolves once the cache is empty.
-
-**Returns** `Promise<void>`
-
-### `showWindow`
-
-```typescript
-showWindow(): void
-```
-
-Brings the main window to the foreground, restoring it if minimized.
-
-### `reportStartupMetric`
-
-```typescript
-reportStartupMetric(metric: "client-full-render"): void
-```
-
-Reports a renderer startup milestone to the main process, which records it relative to OS process creation alongside the main-process startup metrics. Only the first report of each metric is recorded; later reports (e.g. after a window reload or from extra windows) are ignored.
-
-| Parameter | Description |
-| --- | --- |
-| `metric` | `"client-full-render"` |
-
-### `onGlobalShortcut`
-
-```typescript
-onGlobalShortcut(callback: (actionName: string) => void): void
-```
-
-Subscribes to globally registered keyboard shortcuts. The callback receives the logical action name (not the keystroke).
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(actionName: string) => void` |
-
-### `onOpenInSameTab`
-
-```typescript
-onOpenInSameTab(callback: (noteId: string) => void): void
-```
-
-Subscribes to "open note in active tab" requests originating from outside the renderer (e.g. tray menu, deep links).
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(noteId: string) => void` |
-
-### `onDevToolsDockChanged`
-
-```typescript
-onDevToolsDockChanged(callback: (docked: boolean) => void): void
-```
-
-Subscribes to changes of the DevTools docking state. `docked` is `true` only while DevTools is attached to this window — where Chromium disables the native window material (Mica / vibrancy) — and `false` when it is closed or in a separate window.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(docked: boolean) => void` |
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>setZoomFactor</code></td>
+            <td><pre><code class="language-application-typescript">setZoomFactor(factor: number): void</code></pre><p>Sets the page zoom factor for the current window.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>factor</code></td><td><code>number</code><br><code>1.0</code> is 100%; e.g. <code>1.2</code> zooms to 120%.</td></tr></tbody></table></figure></td>
+        </tr>
+        <tr>
+            <td><code>getZoomFactor</code></td>
+            <td><pre><code class="language-application-typescript">getZoomFactor(): number</code></pre><p>Returns the current page zoom factor (<code>1.0</code> = 100%).</p></td>
+        </tr>
+        <tr>
+            <td><code>setNativeThemeSource</code></td>
+            <td><pre><code class="language-application-typescript">setNativeThemeSource(source: "system" | "light" | "dark"): void</code></pre><p>Overrides the operating system's reported color scheme for this app. Use <code>"system"</code> to follow the OS setting.</p></td>
+        </tr>
+        <tr>
+            <td><code>setTitleBarOverlay</code></td>
+            <td><pre><code class="language-application-typescript">setTitleBarOverlay(options: { color: string; symbolColor: string; height?: number }): void</code></pre><p>Customizes the Windows and Linux native title bar overlay (the area containing the minimize / maximize / close buttons). <code>height</code> also controls their vertical placement, since the buttons are centered within the overlay. It is given in device-independent pixels, which the page zoom does not scale — see <code>setWindowButtonPosition</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>setWindowButtonPosition</code></td>
+            <td><pre><code class="language-application-typescript">setWindowButtonPosition(position: { x: number; y: number }): void</code></pre><p>Repositions the macOS traffic-light window buttons. Coordinates are relative to the window's top-left corner and given in device-independent pixels: the buttons are drawn by the system rather than by the page, so unlike the surrounding chrome they are unaffected by the page zoom factor and callers have to scale the offsets themselves.</p></td>
+        </tr>
+        <tr>
+            <td><code>onEnterFullScreen</code></td>
+            <td><pre><code class="language-application-typescript">onEnterFullScreen(callback: () =&gt; void): void</code></pre><p>Registers a callback fired whenever the window enters full-screen mode.</p></td>
+        </tr>
+        <tr>
+            <td><code>onLeaveFullScreen</code></td>
+            <td><pre><code class="language-application-typescript">onLeaveFullScreen(callback: () =&gt; void): void</code></pre><p>Registers a callback fired whenever the window leaves full-screen mode.</p></td>
+        </tr>
+        <tr>
+            <td><code>isFullScreen</code></td>
+            <td><pre><code class="language-application-typescript">isFullScreen(): boolean</code></pre><p>Synchronously returns whether the window is currently in full-screen mode.</p></td>
+        </tr>
+        <tr>
+            <td><code>setFullScreen</code></td>
+            <td><pre><code class="language-application-typescript">setFullScreen(enabled: boolean): void</code></pre><p>Enters or leaves full-screen mode.</p></td>
+        </tr>
+        <tr>
+            <td><code>minimizeWindow</code></td>
+            <td><pre><code class="language-application-typescript">minimizeWindow(): void</code></pre><p>Minimizes the current window to the taskbar / dock.</p></td>
+        </tr>
+        <tr>
+            <td><code>maximizeWindow</code></td>
+            <td><pre><code class="language-application-typescript">maximizeWindow(): void</code></pre><p>Maximizes the current window to fill the available screen area.</p></td>
+        </tr>
+        <tr>
+            <td><code>unmaximizeWindow</code></td>
+            <td><pre><code class="language-application-typescript">unmaximizeWindow(): void</code></pre><p>Restores the window from a maximized state to its previous size.</p></td>
+        </tr>
+        <tr>
+            <td><code>isMaximized</code></td>
+            <td><pre><code class="language-application-typescript">isMaximized(): boolean</code></pre><p>Synchronously returns whether the window is currently maximized.</p></td>
+        </tr>
+        <tr>
+            <td><code>closeWindow</code></td>
+            <td><pre><code class="language-application-typescript">closeWindow(): void</code></pre><p>Closes the current window.</p></td>
+        </tr>
+        <tr>
+            <td><code>isAlwaysOnTop</code></td>
+            <td><pre><code class="language-application-typescript">isAlwaysOnTop(): boolean</code></pre><p>Synchronously returns whether the window is pinned above all others.</p></td>
+        </tr>
+        <tr>
+            <td><code>setAlwaysOnTop</code></td>
+            <td><pre><code class="language-application-typescript">setAlwaysOnTop(enabled: boolean): void</code></pre><p>Toggles the always-on-top (pinned) state of the window.</p></td>
+        </tr>
+        <tr>
+            <td><code>toggleDevTools</code></td>
+            <td><pre><code class="language-application-typescript">toggleDevTools(): void</code></pre><p>Opens or closes Chromium DevTools for the current window.</p></td>
+        </tr>
+        <tr>
+            <td><code>isDevToolsDocked</code></td>
+            <td><pre><code class="language-application-typescript">isDevToolsDocked(): boolean</code></pre><p>Synchronously returns whether DevTools is currently open and docked into this window (as opposed to detached into a separate window).</p></td>
+        </tr>
+        <tr>
+            <td><code>setBackgroundMaterial</code></td>
+            <td><pre><code class="language-application-typescript">setBackgroundMaterial(material: string): void</code></pre><p>Sets the Windows 11 backdrop material (e.g. <code>"mica"</code>, <code>"acrylic"</code>, <code>"tabbed"</code>, <code>"none"</code>) applied behind the window contents. No-op on other platforms.</p></td>
+        </tr>
+        <tr>
+            <td><code>setVibrancy</code></td>
+            <td><pre><code class="language-application-typescript">setVibrancy(vibrancy: string): void</code></pre><p>Sets the macOS vibrancy effect (e.g. <code>"sidebar"</code>, <code>"under-window"</code>, <code>"fullscreen-ui"</code>) applied behind the window contents. No-op on other platforms.</p></td>
+        </tr>
+        <tr>
+            <td><code>reloadAllWindows</code></td>
+            <td><pre><code class="language-application-typescript">reloadAllWindows(): void</code></pre><p>Triggers a hard reload of every open Trilium window.</p></td>
+        </tr>
+        <tr>
+            <td><code>restartApp</code></td>
+            <td><pre><code class="language-application-typescript">restartApp(): void</code></pre><p>Quits the app and immediately relaunches it.</p></td>
+        </tr>
+        <tr>
+            <td><code>toggleAllWindows</code></td>
+            <td><pre><code class="language-application-typescript">toggleAllWindows(): void</code></pre><p>Shows all hidden windows or hides all visible ones — used by the "show/hide app" global shortcut and tray menu entry.</p></td>
+        </tr>
+        <tr>
+            <td><code>clearCache</code></td>
+            <td><pre><code class="language-application-typescript">clearCache(): Promise&lt;void&gt;</code></pre><p>Clears the underlying Chromium HTTP cache. Resolves once the cache is empty.</p></td>
+        </tr>
+        <tr>
+            <td><code>showWindow</code></td>
+            <td><pre><code class="language-application-typescript">showWindow(): void</code></pre><p>Brings the main window to the foreground, restoring it if minimized.</p></td>
+        </tr>
+        <tr>
+            <td><code>reportStartupMetric</code></td>
+            <td><pre><code class="language-application-typescript">reportStartupMetric(metric: "client-full-render"): void</code></pre><p>Reports a renderer startup milestone to the main process, which records it relative to OS process creation alongside the main-process startup metrics. Only the first report of each metric is recorded; later reports (e.g. after a window reload or from extra windows) are ignored.</p></td>
+        </tr>
+        <tr>
+            <td><code>onGlobalShortcut</code></td>
+            <td><pre><code class="language-application-typescript">onGlobalShortcut(callback: (actionName: string) =&gt; void): void</code></pre><p>Subscribes to globally registered keyboard shortcuts. The callback receives the logical action name (not the keystroke).</p></td>
+        </tr>
+        <tr>
+            <td><code>onOpenInSameTab</code></td>
+            <td><pre><code class="language-application-typescript">onOpenInSameTab(callback: (noteId: string) =&gt; void): void</code></pre><p>Subscribes to "open note in active tab" requests originating from outside the renderer (e.g. tray menu, deep links).</p></td>
+        </tr>
+        <tr>
+            <td><code>onDevToolsDockChanged</code></td>
+            <td><pre><code class="language-application-typescript">onDevToolsDockChanged(callback: (docked: boolean) =&gt; void): void</code></pre><p>Subscribes to changes of the DevTools docking state. <code>docked</code> is <code>true</code> only while DevTools is attached to this window — where Chromium disables the native window material (Mica / vibrancy) — and <code>false</code> when it is closed or in a separate window.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronClipboardApi`
 
 Renderer access to the system clipboard for cases the standard Web API can't cover.
 
-### `copyImageToClipboard`
-
-```typescript
-copyImageToClipboard(buffer: Uint8Array): void
-```
-
-Writes a raw image (PNG-encoded bytes) to the system clipboard so it can be pasted into other applications as an image rather than as a file.
-
-| Parameter | Description |
-| --- | --- |
-| `buffer` | `Uint8Array` |
-
-### `readText`
-
-```typescript
-readText(): Promise<string>
-```
-
-Reads plain text from the system clipboard via the main-process `electron.clipboard`. Used instead of `navigator.clipboard.readText()` so the renderer's deny-by-default permission policy does not have to grant the sensitive `clipboard-read` permission to the whole session.
-
-**Returns** `Promise<string>`
-
-### `readHTML`
-
-```typescript
-readHTML(): Promise<string>
-```
-
-Reads the HTML flavor of the system clipboard, the same way as `readText`. Empty when the clipboard has no HTML.
-
-**Returns** `Promise<string>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>copyImageToClipboard</code></td>
+            <td><pre><code class="language-application-typescript">copyImageToClipboard(buffer: Uint8Array): void</code></pre><p>Writes a raw image (PNG-encoded bytes) to the system clipboard so it can be pasted into other applications as an image rather than as a file.</p></td>
+        </tr>
+        <tr>
+            <td><code>readText</code></td>
+            <td><pre><code class="language-application-typescript">readText(): Promise&lt;string&gt;</code></pre><p>Reads plain text from the system clipboard via the main-process <code>electron.clipboard</code>. Used instead of <code>navigator.clipboard.readText()</code> so the renderer's deny-by-default permission policy does not have to grant the sensitive <code>clipboard-read</code> permission to the whole session.</p></td>
+        </tr>
+        <tr>
+            <td><code>readHTML</code></td>
+            <td><pre><code class="language-application-typescript">readHTML(): Promise&lt;string&gt;</code></pre><p>Reads the HTML flavor of the system clipboard, the same way as <code>readText</code>. Empty when the clipboard has no HTML.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronShellApi`
 
@@ -375,492 +193,277 @@ Wrappers around Electron's `shell` module for interacting with the OS (default b
 
 Every method here is validated in the main process before dispatch — see `apps/server/src/services/shell_validators.ts`. The renderer is treated as untrusted: invalid input throws on the main side rather than being silently passed through to `electron.shell` / `WebContents`.
 
-### `openExternal`
-
-```typescript
-openExternal(url: string): void
-```
-
-Opens a URL in the user's default external browser via `electron.shell.openExternal`.
-
-**Security:** the scheme is matched against the allowlist in `SHELL_OPEN_EXTERNAL_PROTOCOLS` (commons). Blocked schemes include `file:`, `data:`, `smb:`, `ldap:`, `ldaps:`, `jar:`, and `view-source:` — they cover Follina-class RCE primitives (`ms-msdt:`, `search-ms:`), NTLM credential theft, and Java loader vectors. URLs that fail to parse are rejected outright.
-
-| Parameter | Description |
-| --- | --- |
-| `url` | `string` |
-
-### `openPath`
-
-```typescript
-openPath(path: string): Promise<string>
-```
-
-Opens a local path with its default OS handler.
-
-**Security:** the path is canonicalized and must resolve to either the Trilium data directory (or a descendant) or the Trilium tmp directory (or a descendant). Anything else — absolute paths elsewhere on disk, traversal attempts, UNC paths that don't normalize under those roots — is rejected. Null bytes, empty strings, and non-existent files are also rejected.
-
-| Parameter | Description |
-| --- | --- |
-| `path` | `string` |
-
-**Returns** `Promise<string>`: An empty string on success, or an error message on failure.
-
-### `showItemInFolder`
-
-```typescript
-showItemInFolder(path: string): void
-```
-
-Shows a local file in the OS file manager, with the file itself selected, via `electron.shell.showItemInFolder`. For pointing at a file the user is not meant to open — the database, whose reader is Trilium itself.
-
-**Security:** the same sandbox as `openPath`, with the database file added as a root of its own, since `TRILIUM_DOCUMENT_PATH` may put it outside the data directory. Revealing is the milder act of the two, the file being selected rather than launched, but a path the renderer names is still a path the renderer must not be free to choose.
-
-Nothing is reported back: the OS is asked to bring a window forward, and whether it did is not something Electron answers.
-
-| Parameter | Description |
-| --- | --- |
-| `path` | `string` |
-
-### `openFileUrl`
-
-```typescript
-openFileUrl(fileUrl: string): Promise<string>
-```
-
-Opens a `file://` URL with its default OS handler. Exists as a separate channel from `openExternal` because neither Electron API opens every target correctly on Windows: `shell.openExternal` mishandles Unicode characters in `file:` URLs, while `shell.openPath` opens a directory with the Explorer-specific `explore` verb, bypassing the user's file manager. The main process picks between them per target.
-
-**Security:** the URL must use the `file:` scheme and must have an empty hostname. UNC paths (`file://attacker.example/share/x`) are explicitly blocked because Windows would otherwise resolve them to `\\attacker.example\share\x` and leak the user's NTLM hash via SMB authentication. Drive-letter-as-host malformations like `file://C:/path` are normalized to `file:///C:/path` before parsing.
-
-Note: unlike `openPath`, the resolved path is NOT confined to the Trilium data / tmp directories — this channel handles user-clicked `file://` links inside note content, which routinely reference arbitrary locations on disk (`file:///C:/Users/me/Documents/contract.pdf` and similar). Equivalent to a browser following a `file:` link the user clicked. Treat clicks on attacker-influenced note content accordingly.
-
-| Parameter | Description |
-| --- | --- |
-| `fileUrl` | `string` |
-
-**Returns** `Promise<string>`: An empty string on success, or an error message on failure.
-
-### `downloadURL`
-
-```typescript
-downloadURL(url: string): void
-```
-
-Triggers a Chromium download for the given URL — the file is saved through the normal "Save As" flow instead of being opened in the renderer.
-
-**Security:** locked to the renderer's own origin. The scheme, hostname, and port must all match the running app's origin (`http://localhost:PORT` for the dev server, or the custom `trilium-app://app/` protocol for packaged Electron). Cross-origin downloads, hostless URLs (`data:`, `blob:`, `about:`, plain `file:///`), and unparseable URLs are rejected. This stops a compromised renderer from pre-positioning a remote payload in the user's Downloads folder under a familiar name.
-
-| Parameter | Description |
-| --- | --- |
-| `url` | `string` |
-
-### `openCustom`
-
-```typescript
-openCustom(filePath: string): void
-```
-
-Opens a file with a Trilium-specific custom handler (configured via the "Open With" option), falling back to the OS default if none is set.
-
-**Security:** the path must resolve to a strict descendant of Trilium's tmp directory and the file must exist on disk. The legitimate caller always passes a path that was just written by `saveToTmpDir`; anything else (the data dir itself, paths elsewhere on disk, null bytes, empty strings) is rejected.
-
-| Parameter | Description |
-| --- | --- |
-| `filePath` | `string` |
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>openExternal</code></td>
+            <td><pre><code class="language-application-typescript">openExternal(url: string): void</code></pre><p>Opens a URL in the user's default external browser via <code>electron.shell.openExternal</code>.</p><p><strong>Security:</strong> the scheme is matched against the allowlist in <code>SHELL_OPEN_EXTERNAL_PROTOCOLS</code> (commons). Blocked schemes include <code>file:</code>, <code>data:</code>, <code>smb:</code>, <code>ldap:</code>, <code>ldaps:</code>, <code>jar:</code>, and <code>view-source:</code> — they cover Follina-class RCE primitives (<code>ms-msdt:</code>, <code>search-ms:</code>), NTLM credential theft, and Java loader vectors. URLs that fail to parse are rejected outright.</p></td>
+        </tr>
+        <tr>
+            <td><code>openPath</code></td>
+            <td><pre><code class="language-application-typescript">openPath(path: string): Promise&lt;string&gt;</code></pre><p>Opens a local path with its default OS handler.</p><p><strong>Security:</strong> the path is canonicalized and must resolve to either the Trilium data directory (or a descendant) or the Trilium tmp directory (or a descendant). Anything else — absolute paths elsewhere on disk, traversal attempts, UNC paths that don't normalize under those roots — is rejected. Null bytes, empty strings, and non-existent files are also rejected.</p><p><strong>Returns</strong> <code>Promise&lt;string&gt;</code>: An empty string on success, or an error message on failure.</p></td>
+        </tr>
+        <tr>
+            <td><code>showItemInFolder</code></td>
+            <td><pre><code class="language-application-typescript">showItemInFolder(path: string): void</code></pre><p>Shows a local file in the OS file manager, with the file itself selected, via <code>electron.shell.showItemInFolder</code>. For pointing at a file the user is not meant to open — the database, whose reader is Trilium itself.</p><p><strong>Security:</strong> the same sandbox as <code>openPath</code>, with the database file added as a root of its own, since <code>TRILIUM_DOCUMENT_PATH</code> may put it outside the data directory. Revealing is the milder act of the two, the file being selected rather than launched, but a path the renderer names is still a path the renderer must not be free to choose.</p><p>Nothing is reported back: the OS is asked to bring a window forward, and whether it did is not something Electron answers.</p></td>
+        </tr>
+        <tr>
+            <td><code>openFileUrl</code></td>
+            <td><pre><code class="language-application-typescript">openFileUrl(fileUrl: string): Promise&lt;string&gt;</code></pre><p>Opens a <code>file://</code> URL with its default OS handler. Exists as a separate channel from <code>openExternal</code> because neither Electron API opens every target correctly on Windows: <code>shell.openExternal</code> mishandles Unicode characters in <code>file:</code> URLs, while <code>shell.openPath</code> opens a directory with the Explorer-specific <code>explore</code> verb, bypassing the user's file manager. The main process picks between them per target.</p><p><strong>Security:</strong> the URL must use the <code>file:</code> scheme and must have an empty hostname. UNC paths (<code>file://attacker.example/share/x</code>) are explicitly blocked because Windows would otherwise resolve them to <code>\\attacker.example\share\x</code> and leak the user's NTLM hash via SMB authentication. Drive-letter-as-host malformations like <code>file://C:/path</code> are normalized to <code>file:///C:/path</code> before parsing.</p><p>Note: unlike <code>openPath</code>, the resolved path is NOT confined to the Trilium data / tmp directories — this channel handles user-clicked <code>file://</code> links inside note content, which routinely reference arbitrary locations on disk (<code>file:///C:/Users/me/Documents/contract.pdf</code> and similar). Equivalent to a browser following a <code>file:</code> link the user clicked. Treat clicks on attacker-influenced note content accordingly.</p><p><strong>Returns</strong> <code>Promise&lt;string&gt;</code>: An empty string on success, or an error message on failure.</p></td>
+        </tr>
+        <tr>
+            <td><code>downloadURL</code></td>
+            <td><pre><code class="language-application-typescript">downloadURL(url: string): void</code></pre><p>Triggers a Chromium download for the given URL — the file is saved through the normal "Save As" flow instead of being opened in the renderer.</p><p><strong>Security:</strong> locked to the renderer's own origin. The scheme, hostname, and port must all match the running app's origin (<code>http://localhost:PORT</code> for the dev server, or the custom <code>trilium-app://app/</code> protocol for packaged Electron). Cross-origin downloads, hostless URLs (<code>data:</code>, <code>blob:</code>, <code>about:</code>, plain <code>file:///</code>), and unparseable URLs are rejected. This stops a compromised renderer from pre-positioning a remote payload in the user's Downloads folder under a familiar name.</p></td>
+        </tr>
+        <tr>
+            <td><code>openCustom</code></td>
+            <td><pre><code class="language-application-typescript">openCustom(filePath: string): void</code></pre><p>Opens a file with a Trilium-specific custom handler (configured via the "Open With" option), falling back to the OS default if none is set.</p><p><strong>Security:</strong> the path must resolve to a strict descendant of Trilium's tmp directory and the file must exist on disk. The legitimate caller always passes a path that was just written by <code>saveToTmpDir</code>; anything else (the data dir itself, paths elsewhere on disk, null bytes, empty strings) is rejected.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronContextMenuApi`
 
 Bridge for the native context menu shown over web contents.
 
-### `onContextMenu`
-
-```typescript
-onContextMenu(callback: (params: ElectronContextMenuParams) => void): void
-```
-
-Subscribes to right-click events forwarded from the main process.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(params: ElectronContextMenuParams) => void` |
-
-### `webContentsAction`
-
-```typescript
-webContentsAction(action: "cut" | "copy" | "paste" | "pasteAndMatchStyle" | "insertText", text?: string): void
-```
-
-Executes a clipboard / text-input action on the focused web contents. `"insertText"` requires the `text` argument; the other actions ignore it.
-
-| Parameter | Description |
-| --- | --- |
-| `action` | `"cut" \| "copy" \| "paste" \| "pasteAndMatchStyle" \| "insertText"` |
-| `text`  <br>_optional_ | `string` |
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>onContextMenu</code></td>
+            <td><pre><code class="language-application-typescript">onContextMenu(callback: (params: ElectronContextMenuParams) =&gt; void): void</code></pre><p>Subscribes to right-click events forwarded from the main process.</p></td>
+        </tr>
+        <tr>
+            <td><code>webContentsAction</code></td>
+            <td><pre><code class="language-application-typescript">webContentsAction(action: "cut" | "copy" | "paste" | "pasteAndMatchStyle" | "insertText", text?: string): void</code></pre><p>Executes a clipboard / text-input action on the focused web contents. <code>"insertText"</code> requires the <code>text</code> argument; the other actions ignore it.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronSpellcheckApi`
 
 Renderer-side access to Chromium's built-in spell checker.
 
-### `addWordToDictionary`
-
-```typescript
-addWordToDictionary(word: string): void
-```
-
-Adds a word to the user's personal dictionary so it is no longer flagged.
-
-| Parameter | Description |
-| --- | --- |
-| `word` | `string` |
-
-### `getAvailableSpellCheckerLanguages`
-
-```typescript
-getAvailableSpellCheckerLanguages(): string[]
-```
-
-Returns the BCP-47 language tags Chromium can spell-check on this platform.
-
-**Returns** `string[]`
-
-### `setSpellCheckerLanguages`
-
-```typescript
-setSpellCheckerLanguages(languageCodes: string[]): void
-```
-
-Applies the spell-check language list to every open window's session immediately, without an application restart. No-op on macOS, where the OS spell checker auto-detects the language.
-
-| Parameter | Description |
-| --- | --- |
-| `languageCodes` | `string[]` |
-
-### `setSpellCheckerEnabled`
-
-```typescript
-setSpellCheckerEnabled(enabled: boolean): void
-```
-
-Enables or disables the built-in spell checker on every open window's session immediately, without an application restart.
-
-| Parameter | Description |
-| --- | --- |
-| `enabled` | `boolean` |
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>addWordToDictionary</code></td>
+            <td><pre><code class="language-application-typescript">addWordToDictionary(word: string): void</code></pre><p>Adds a word to the user's personal dictionary so it is no longer flagged.</p></td>
+        </tr>
+        <tr>
+            <td><code>getAvailableSpellCheckerLanguages</code></td>
+            <td><pre><code class="language-application-typescript">getAvailableSpellCheckerLanguages(): string[]</code></pre><p>Returns the BCP-47 language tags Chromium can spell-check on this platform.</p></td>
+        </tr>
+        <tr>
+            <td><code>setSpellCheckerLanguages</code></td>
+            <td><pre><code class="language-application-typescript">setSpellCheckerLanguages(languageCodes: string[]): void</code></pre><p>Applies the spell-check language list to every open window's session immediately, without an application restart. No-op on macOS, where the OS spell checker auto-detects the language.</p></td>
+        </tr>
+        <tr>
+            <td><code>setSpellCheckerEnabled</code></td>
+            <td><pre><code class="language-application-typescript">setSpellCheckerEnabled(enabled: boolean): void</code></pre><p>Enables or disables the built-in spell checker on every open window's session immediately, without an application restart.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronSystemIntegrationApi`
 
 OS integration controls — system tray and autostart / launch-on-login.
 
-### `reloadTray`
-
-```typescript
-reloadTray(): void
-```
-
-Rebuilds the tray icon and menu — call after changing tray-related settings.
-
-### `reapplyLaunchOnStartup`
-
-```typescript
-reapplyLaunchOnStartup(): void
-```
-
-Re-applies the OS autostart entry after the `launchOnStartup` / `hideOnAutoStart` options change.
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>reloadTray</code></td>
+            <td><pre><code class="language-application-typescript">reloadTray(): void</code></pre><p>Rebuilds the tray icon and menu — call after changing tray-related settings.</p></td>
+        </tr>
+        <tr>
+            <td><code>reapplyLaunchOnStartup</code></td>
+            <td><pre><code class="language-application-typescript">reapplyLaunchOnStartup(): void</code></pre><p>Re-applies the OS autostart entry after the <code>launchOnStartup</code> / <code>hideOnAutoStart</code> options change.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronPrintingApi`
 
 Printing and PDF export flow. Trilium drives Electron's printing pipeline through a small state machine that the main process owns, with progress and results pushed back to the renderer via IPC events.
 
-### `sendPrintProgress`
-
-```typescript
-sendPrintProgress(progress: number): void
-```
-
-Reports rendering progress (`0..100`) from the renderer to the main process.
-
-| Parameter | Description |
-| --- | --- |
-| `progress` | `number` |
-
-### `onPrintProgress`
-
-```typescript
-onPrintProgress(callback: (data: { progress: number; action: string }) => void): void
-```
-
-Subscribes to progress updates emitted by the main process during a print or PDF export run. `action` describes the current stage (e.g. `"rendering"`).
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(data: { progress: number; action: string }) => void` |
-
-### `onPrintDone`
-
-```typescript
-onPrintDone(callback: (printReport: unknown, liveJobId?: number) => void): void
-```
-
-Subscribes to the "print finished" event, fired once the OS print job is dispatched. `liveJobId` names the live print the job ended, for a job that printed the app window itself.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(printReport: unknown, liveJobId?: number) => void` |
-
-### `removePrintListeners`
-
-```typescript
-removePrintListeners(): void
-```
-
-Removes all listeners registered via `onPrintProgress` and `onPrintDone`.
-
-### `getPrinters`
-
-```typescript
-getPrinters(): Promise<unknown[]>
-```
-
-Returns the list of printers known to the OS.
-
-**Returns** `Promise<unknown[]>`
-
-### `exportAsPdfPreview`
-
-```typescript
-exportAsPdfPreview(opts: Record<string, unknown>): void
-```
-
-Asks the main process to render the current note as a PDF and return the resulting bytes for the in-app preview. Result is delivered via `onExportAsPdfPreviewResult`.
-
-| Parameter | Description |
-| --- | --- |
-| `opts` | `Record<string, unknown>` |
-
-### `onExportAsPdfPreviewResult`
-
-```typescript
-onExportAsPdfPreviewResult(callback: (result: { buffer?: Uint8Array<ArrayBufferLike>; error?: string; requestId?: number }) => void): void
-```
-
-Subscribes to the result of an `exportAsPdfPreview` call.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(result: { buffer?: Uint8Array<ArrayBufferLike>; error?: string; requestId?: number }) => void` |
-
-### `removeExportAsPdfPreviewResultListener`
-
-```typescript
-removeExportAsPdfPreviewResultListener(): void
-```
-
-Removes the listener registered via `onExportAsPdfPreviewResult`.
-
-### `savePdf`
-
-```typescript
-savePdf(data: { title: string; buffer: Uint8Array }): void
-```
-
-Persists a previously generated PDF buffer to disk via the native save dialog. `title` is used as the suggested filename.
-
-| Parameter | Description |
-| --- | --- |
-| `data` | `{ title: string; buffer: Uint8Array }` |
-
-### `printFromPreview`
-
-```typescript
-printFromPreview(opts: Record<string, unknown>): void
-```
-
-Sends the previewed PDF to the OS print dialog with the given options.
-
-| Parameter | Description |
-| --- | --- |
-| `opts` | `Record<string, unknown>` |
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>sendPrintProgress</code></td>
+            <td><pre><code class="language-application-typescript">sendPrintProgress(progress: number): void</code></pre><p>Reports rendering progress (<code>0..100</code>) from the renderer to the main process.</p></td>
+        </tr>
+        <tr>
+            <td><code>onPrintProgress</code></td>
+            <td><pre><code class="language-application-typescript">onPrintProgress(callback: (data: { progress: number; action: string }) =&gt; void): void</code></pre><p>Subscribes to progress updates emitted by the main process during a print or PDF export run. <code>action</code> describes the current stage (e.g. <code>"rendering"</code>).</p></td>
+        </tr>
+        <tr>
+            <td><code>onPrintDone</code></td>
+            <td><pre><code class="language-application-typescript">onPrintDone(callback: (printReport: unknown, liveJobId?: number) =&gt; void): void</code></pre><p>Subscribes to the "print finished" event, fired once the OS print job is dispatched. <code>liveJobId</code> names the live print the job ended, for a job that printed the app window itself.</p></td>
+        </tr>
+        <tr>
+            <td><code>removePrintListeners</code></td>
+            <td><pre><code class="language-application-typescript">removePrintListeners(): void</code></pre><p>Removes all listeners registered via <code>onPrintProgress</code> and <code>onPrintDone</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>getPrinters</code></td>
+            <td><pre><code class="language-application-typescript">getPrinters(): Promise&lt;unknown[]&gt;</code></pre><p>Returns the list of printers known to the OS.</p></td>
+        </tr>
+        <tr>
+            <td><code>exportAsPdfPreview</code></td>
+            <td><pre><code class="language-application-typescript">exportAsPdfPreview(opts: Record&lt;string, unknown&gt;): void</code></pre><p>Asks the main process to render the current note as a PDF and return the resulting bytes for the in-app preview. Result is delivered via <code>onExportAsPdfPreviewResult</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>onExportAsPdfPreviewResult</code></td>
+            <td><pre><code class="language-application-typescript">onExportAsPdfPreviewResult(callback: (result: { buffer?: Uint8Array&lt;ArrayBufferLike&gt;; error?: string; requestId?: number }) =&gt; void): void</code></pre><p>Subscribes to the result of an <code>exportAsPdfPreview</code> call.</p></td>
+        </tr>
+        <tr>
+            <td><code>removeExportAsPdfPreviewResultListener</code></td>
+            <td><pre><code class="language-application-typescript">removeExportAsPdfPreviewResultListener(): void</code></pre><p>Removes the listener registered via <code>onExportAsPdfPreviewResult</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>savePdf</code></td>
+            <td><pre><code class="language-application-typescript">savePdf(data: { title: string; buffer: Uint8Array }): void</code></pre><p>Persists a previously generated PDF buffer to disk via the native save dialog. <code>title</code> is used as the suggested filename.</p></td>
+        </tr>
+        <tr>
+            <td><code>printFromPreview</code></td>
+            <td><pre><code class="language-application-typescript">printFromPreview(opts: Record&lt;string, unknown&gt;): void</code></pre><p>Sends the previewed PDF to the OS print dialog with the given options.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronNavigationApi`
 
 Accessors for the underlying Chromium navigation history of the current web contents (back/forward stack), exposed so the renderer can mirror it in custom UI such as the breadcrumb / tab back button.
 
-### `clearNavigationHistory`
-
-```typescript
-clearNavigationHistory(): void
-```
-
-Clears the entire back/forward navigation history.
-
-### `navigationCanGoBack`
-
-```typescript
-navigationCanGoBack(): boolean
-```
-
-Synchronously returns whether a back navigation is possible.
-
-**Returns** `boolean`
-
-### `navigationCanGoForward`
-
-```typescript
-navigationCanGoForward(): boolean
-```
-
-Synchronously returns whether a forward navigation is possible.
-
-**Returns** `boolean`
-
-### `navigationGetAllEntries`
-
-```typescript
-navigationGetAllEntries(): { url: string; title: string }[]
-```
-
-Returns every entry in the navigation history, oldest first.
-
-**Returns** `{ url: string; title: string }[]`
-
-### `navigationGetActiveIndex`
-
-```typescript
-navigationGetActiveIndex(): number
-```
-
-Returns the index of the currently active entry inside `navigationGetAllEntries`.
-
-**Returns** `number`
-
-### `navigationLength`
-
-```typescript
-navigationLength(): number
-```
-
-Returns the total number of entries in the navigation history.
-
-**Returns** `number`
-
-### `navigationGoToIndex`
-
-```typescript
-navigationGoToIndex(index: number): void
-```
-
-Navigates to the entry at the given index in the history stack.
-
-| Parameter | Description |
-| --- | --- |
-| `index` | `number` |
-
-### `onDidNavigate`
-
-```typescript
-onDidNavigate(callback: () => void): void
-```
-
-Subscribes to top-level navigation events (URL changes that load a new document).
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `() => void` |
-
-### `onDidNavigateInPage`
-
-```typescript
-onDidNavigateInPage(callback: () => void): void
-```
-
-Subscribes to in-page navigation events (hash changes, `history.pushState`).
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `() => void` |
-
-### `removeDidNavigateListeners`
-
-```typescript
-removeDidNavigateListeners(): void
-```
-
-Removes all listeners registered via `onDidNavigate` and `onDidNavigateInPage`.
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>clearNavigationHistory</code></td>
+            <td><pre><code class="language-application-typescript">clearNavigationHistory(): void</code></pre><p>Clears the entire back/forward navigation history.</p></td>
+        </tr>
+        <tr>
+            <td><code>navigationCanGoBack</code></td>
+            <td><pre><code class="language-application-typescript">navigationCanGoBack(): boolean</code></pre><p>Synchronously returns whether a back navigation is possible.</p></td>
+        </tr>
+        <tr>
+            <td><code>navigationCanGoForward</code></td>
+            <td><pre><code class="language-application-typescript">navigationCanGoForward(): boolean</code></pre><p>Synchronously returns whether a forward navigation is possible.</p></td>
+        </tr>
+        <tr>
+            <td><code>navigationGetAllEntries</code></td>
+            <td><pre><code class="language-application-typescript">navigationGetAllEntries(): { url: string; title: string }[]</code></pre><p>Returns every entry in the navigation history, oldest first.</p></td>
+        </tr>
+        <tr>
+            <td><code>navigationGetActiveIndex</code></td>
+            <td><pre><code class="language-application-typescript">navigationGetActiveIndex(): number</code></pre><p>Returns the index of the currently active entry inside <code>navigationGetAllEntries</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>navigationLength</code></td>
+            <td><pre><code class="language-application-typescript">navigationLength(): number</code></pre><p>Returns the total number of entries in the navigation history.</p></td>
+        </tr>
+        <tr>
+            <td><code>navigationGoToIndex</code></td>
+            <td><pre><code class="language-application-typescript">navigationGoToIndex(index: number): void</code></pre><p>Navigates to the entry at the given index in the history stack.</p></td>
+        </tr>
+        <tr>
+            <td><code>onDidNavigate</code></td>
+            <td><pre><code class="language-application-typescript">onDidNavigate(callback: () =&gt; void): void</code></pre><p>Subscribes to top-level navigation events (URL changes that load a new document).</p></td>
+        </tr>
+        <tr>
+            <td><code>onDidNavigateInPage</code></td>
+            <td><pre><code class="language-application-typescript">onDidNavigateInPage(callback: () =&gt; void): void</code></pre><p>Subscribes to in-page navigation events (hash changes, <code>history.pushState</code>).</p></td>
+        </tr>
+        <tr>
+            <td><code>removeDidNavigateListeners</code></td>
+            <td><pre><code class="language-application-typescript">removeDidNavigateListeners(): void</code></pre><p>Removes all listeners registered via <code>onDidNavigate</code> and <code>onDidNavigateInPage</code>.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronWsApi`
 
 In-process replacement for the renderer↔server WebSocket. Backed by Chromium IPC instead of a TCP socket — no port is bound and no auth check is needed because the channel is only reachable from the renderer the BrowserWindow owns. Wire format is whatever the server's `MessagingProvider` accepts (currently `WebSocketMessage` / log-error / log-info / ping).
 
-### `send`
-
-```typescript
-send(message: unknown): void
-```
-
-Sends a message from the renderer to the main-process messaging hub.
-
-| Parameter | Description |
-| --- | --- |
-| `message` | `unknown` |
-
-### `onMessage`
-
-```typescript
-onMessage(callback: (message: unknown) => void): () => void
-```
-
-Subscribes to messages pushed from the main process. Returns an unsubscribe function — call it when the listener is no longer needed (e.g. when a BrowserWindow is unloaded) to avoid leaking handlers.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(message: unknown) => void` |
-
-**Returns** `() => void`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>send</code></td>
+            <td><pre><code class="language-application-typescript">send(message: unknown): void</code></pre><p>Sends a message from the renderer to the main-process messaging hub.</p></td>
+        </tr>
+        <tr>
+            <td><code>onMessage</code></td>
+            <td><pre><code class="language-application-typescript">onMessage(callback: (message: unknown) =&gt; void): () =&gt; void</code></pre><p>Subscribes to messages pushed from the main process. Returns an unsubscribe function — call it when the listener is no longer needed (e.g. when a BrowserWindow is unloaded) to avoid leaking handlers.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronSecurityApi`
 
 Security settings that live outside the database (in `data_dir/security.json`) to prevent malicious scripts from modifying them. Changes require a native OS confirmation dialog and an app restart to take effect.
 
-### `setLanAccessEnabled`
-
-```typescript
-setLanAccessEnabled(enabled: boolean): Promise<boolean>
-```
-
-Requests enabling/disabling LAN access. When enabled, the desktop binds its TCP listener to all interfaces (instead of loopback) so other devices can reach it — e.g. to sync from another device. Same confirmation + restart flow as above.
-
-| Parameter | Description |
-| --- | --- |
-| `enabled` | `boolean` |
-
-**Returns** `Promise<boolean>`
-
-### `setBackendScriptingEnabled`
-
-```typescript
-setBackendScriptingEnabled(enabled: boolean): Promise<boolean>
-```
-
-Requests backend script execution be turned on or off.
-
-| Parameter | Description |
-| --- | --- |
-| `enabled` | `boolean` |
-
-**Returns** `Promise<boolean>`
-
-### `setSqlConsoleEnabled`
-
-```typescript
-setSqlConsoleEnabled(enabled: boolean): Promise<boolean>
-```
-
-Requests the SQL console be turned on or off.
-
-| Parameter | Description |
-| --- | --- |
-| `enabled` | `boolean` |
-
-**Returns** `Promise<boolean>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>setLanAccessEnabled</code></td>
+            <td><pre><code class="language-application-typescript">setLanAccessEnabled(enabled: boolean): Promise&lt;boolean&gt;</code></pre><p>Requests enabling/disabling LAN access. When enabled, the desktop binds its TCP listener to all interfaces (instead of loopback) so other devices can reach it — e.g. to sync from another device. Same confirmation + restart flow as above.</p></td>
+        </tr>
+        <tr>
+            <td><code>setBackendScriptingEnabled</code></td>
+            <td><pre><code class="language-application-typescript">setBackendScriptingEnabled(enabled: boolean): Promise&lt;boolean&gt;</code></pre><p>Requests backend script execution be turned on or off.</p></td>
+        </tr>
+        <tr>
+            <td><code>setSqlConsoleEnabled</code></td>
+            <td><pre><code class="language-application-typescript">setSqlConsoleEnabled(enabled: boolean): Promise&lt;boolean&gt;</code></pre><p>Requests the SQL console be turned on or off.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronBackupPassphraseApi`
 
@@ -870,143 +473,116 @@ Deliberately write-only: there is no way to read the passphrase back, so a front
 
 Both changes are also gated on a native OS confirmation, which a script can request but cannot answer. Without that, a script could quietly swap in a passphrase of its own and every later backup would be encrypted to it.
 
-### `getStatus`
-
-```typescript
-getStatus(): Promise<BackupPassphraseStatus>
-```
-
-Whether a passphrase can be stored on this system, and whether one already is.
-
-**Returns** `Promise<BackupPassphraseStatus>`
-
-### `set`
-
-```typescript
-set(passphrase: string): Promise<BackupPassphraseChange>
-```
-
-Stores a passphrase, replacing any existing one, once the user has confirmed it.
-
-| Parameter | Description |
-| --- | --- |
-| `passphrase` | `string` |
-
-**Returns** `Promise<BackupPassphraseChange>`
-
-### `clear`
-
-```typescript
-clear(): Promise<BackupPassphraseChange>
-```
-
-Forgets the stored passphrase. Existing backups keep the passphrase they were written with.
-
-**Returns** `Promise<BackupPassphraseChange>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>getStatus</code></td>
+            <td><pre><code class="language-application-typescript">getStatus(): Promise&lt;BackupPassphraseStatus&gt;</code></pre><p>Whether a passphrase can be stored on this system, and whether one already is.</p></td>
+        </tr>
+        <tr>
+            <td><code>set</code></td>
+            <td><pre><code class="language-application-typescript">set(passphrase: string): Promise&lt;BackupPassphraseChange&gt;</code></pre><p>Stores a passphrase, replacing any existing one, once the user has confirmed it.</p></td>
+        </tr>
+        <tr>
+            <td><code>clear</code></td>
+            <td><pre><code class="language-application-typescript">clear(): Promise&lt;BackupPassphraseChange&gt;</code></pre><p>Forgets the stored passphrase. Existing backups keep the passphrase they were written with.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronOneNoteApi`
 
 Desktop-only OneNote importer sign-in, driven from the main process via a loopback OAuth redirect.
 
-### `login`
-
-```typescript
-login(): Promise<OneNoteLoginResult>
-```
-
-Runs the Microsoft delegated-Graph OAuth flow: opens the system browser, captures the redirect on a throwaway loopback server, exchanges the code, and stores the token process-side. Resolves once the desktop session is connected (or with `connected: false` on failure/timeout).
-
-**Returns** `Promise<OneNoteLoginResult>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>login</code></td>
+            <td><pre><code class="language-application-typescript">login(): Promise&lt;OneNoteLoginResult&gt;</code></pre><p>Runs the Microsoft delegated-Graph OAuth flow: opens the system browser, captures the redirect on a throwaway loopback server, exchanges the code, and stores the token process-side. Resolves once the desktop session is connected (or with <code>connected: false</code> on failure/timeout).</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronNativeExportApi`
 
 Desktop-native subtree export that streams a `.zip` straight to a file.
 
-### `exportSubtreeToFile`
-
-```typescript
-exportSubtreeToFile(opts: { branchId: string; format: string; title: string; taskId: string }): Promise<NativeExportResult>
-```
-
-Prompts a native "save as" dialog, then streams a subtree (branch) export to the chosen path on disk. This bypasses the in-memory download path, so memory stays bounded regardless of archive size. Progress/success/error are reported over the WebSocket via `taskId`. Resolves once the dialog is dismissed (`cancelled`) or the export finishes (`saved` / `error`).
-
-| Parameter | Description |
-| --- | --- |
-| `opts` | `{ branchId: string; format: string; title: string; taskId: string }` |
-
-**Returns** `Promise<NativeExportResult>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>exportSubtreeToFile</code></td>
+            <td><pre><code class="language-application-typescript">exportSubtreeToFile(opts: { branchId: string; format: string; title: string; taskId: string }): Promise&lt;NativeExportResult&gt;</code></pre><p>Prompts a native "save as" dialog, then streams a subtree (branch) export to the chosen path on disk. This bypasses the in-memory download path, so memory stays bounded regardless of archive size. Progress/success/error are reported over the WebSocket via <code>taskId</code>. Resolves once the dialog is dismissed (<code>cancelled</code>) or the export finishes (<code>saved</code> / <code>error</code>).</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronNativeImportApi`
 
 Desktop-native import that reads the user's file **in place** (bounded memory, no temp copy) — the whole point being multi-GB `.zip` archives, though any importable file is accepted. The renderer never handles a filesystem path: `pickFiles` runs the OS dialog in the main process and returns opaque capability tokens, which `importFromToken` redeems. A script can't forge a token or pass a path, so it can never read an arbitrary file.
 
-### `pickFiles`
-
-```typescript
-pickFiles(): Promise<NativeImportPickResult>
-```
-
-Prompts a native "open file" dialog (multi-select, any type) and returns single-use tokens for the chosen files.
-
-**Returns** `Promise<NativeImportPickResult>`
-
-### `grantDroppedFiles`
-
-```typescript
-grantDroppedFiles(files: File[]): Promise<NativeImportPickResult>
-```
-
-Resolves files the user dropped onto a drop zone to capability tokens, so a drag-and-drop import takes the same in-place (streamed) path as the dialog. The `File` is the unforgeable capability: the path is obtained via `webUtils.getPathForFile`, which yields a real path only for a genuinely user-supplied file and an empty string for anything a script constructed — so a script can't smuggle in an arbitrary path. Returns `cancelled` when no dropped file resolved (e.g. dragged from a browser, not the OS), so the caller falls back to the normal upload route.
-
-| Parameter | Description |
-| --- | --- |
-| `files` | `File[]` |
-
-**Returns** `Promise<NativeImportPickResult>`
-
-### `importFromToken`
-
-```typescript
-importFromToken(opts: { token: string; parentNoteId: string; taskId: string; options: NativeImportOptions; last: boolean; format?: string }): Promise<NativeImportResult>
-```
-
-Imports the file behind `token` into `parentNoteId`. Progress/success/error are reported over the WebSocket via `taskId`, matching the HTTP import path. When importing several files in one batch, set `last` only on the final call so the success toast fires once, after everything is in. `format` routes the file to a specific importer (e.g. "obsidian"), mirroring the HTTP route's format tag.
-
-| Parameter | Description |
-| --- | --- |
-| `opts` | `{ token: string; parentNoteId: string; taskId: string; options: NativeImportOptions; last: boolean; format?: string }` |
-
-**Returns** `Promise<NativeImportResult>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>pickFiles</code></td>
+            <td><pre><code class="language-application-typescript">pickFiles(): Promise&lt;NativeImportPickResult&gt;</code></pre><p>Prompts a native "open file" dialog (multi-select, any type) and returns single-use tokens for the chosen files.</p></td>
+        </tr>
+        <tr>
+            <td><code>grantDroppedFiles</code></td>
+            <td><pre><code class="language-application-typescript">grantDroppedFiles(files: File[]): Promise&lt;NativeImportPickResult&gt;</code></pre><p>Resolves files the user dropped onto a drop zone to capability tokens, so a drag-and-drop import takes the same in-place (streamed) path as the dialog. The <code>File</code> is the unforgeable capability: the path is obtained via <code>webUtils.getPathForFile</code>, which yields a real path only for a genuinely user-supplied file and an empty string for anything a script constructed — so a script can't smuggle in an arbitrary path. Returns <code>cancelled</code> when no dropped file resolved (e.g. dragged from a browser, not the OS), so the caller falls back to the normal upload route.</p></td>
+        </tr>
+        <tr>
+            <td><code>importFromToken</code></td>
+            <td><pre><code class="language-application-typescript">importFromToken(opts: { token: string; parentNoteId: string; taskId: string; options: NativeImportOptions; last: boolean; format?: string }): Promise&lt;NativeImportResult&gt;</code></pre><p>Imports the file behind <code>token</code> into <code>parentNoteId</code>. Progress/success/error are reported over the WebSocket via <code>taskId</code>, matching the HTTP import path. When importing several files in one batch, set <code>last</code> only on the final call so the success toast fires once, after everything is in. <code>format</code> routes the file to a specific importer (e.g. "obsidian"), mirroring the HTTP route's format tag.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronDialogApi`
 
 Native OS pickers that hand the renderer a location the user chose themselves.
 
-### `pickDirectory`
-
-```typescript
-pickDirectory(opts?: { defaultPath?: string }): Promise<NativeDirectoryPickResult>
-```
-
-Prompts a native "select folder" dialog, starting at `defaultPath` when it is given. The renderer cannot supply the answer: a script can at most pop the dialog, which the user still has to accept before any path comes back.
-
-| Parameter | Description |
-| --- | --- |
-| `opts`  <br>_optional_ | `{ defaultPath?: string }` |
-
-**Returns** `Promise<NativeDirectoryPickResult>`
-
-### `confirmStartOver`
-
-```typescript
-confirmStartOver(): Promise<boolean>
-```
-
-Prompts a native message box before the application restarts into the setup screen, where the user may replace or erase their knowledge base.
-
-An OS dialog rather than one of the application's own, for the reason the security toggles use one: a note script can reach every dialog the app draws for itself, and this one guards the path to losing everything. It is never suppressible, so there is no "don't ask again" here.
-
-**Returns** `Promise<boolean>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>pickDirectory</code></td>
+            <td><pre><code class="language-application-typescript">pickDirectory(opts?: { defaultPath?: string }): Promise&lt;NativeDirectoryPickResult&gt;</code></pre><p>Prompts a native "select folder" dialog, starting at <code>defaultPath</code> when it is given. The renderer cannot supply the answer: a script can at most pop the dialog, which the user still has to accept before any path comes back.</p></td>
+        </tr>
+        <tr>
+            <td><code>confirmStartOver</code></td>
+            <td><pre><code class="language-application-typescript">confirmStartOver(): Promise&lt;boolean&gt;</code></pre><p>Prompts a native message box before the application restarts into the setup screen, where the user may replace or erase their knowledge base.</p><p>An OS dialog rather than one of the application's own, for the reason the security toggles use one: a note script can reach every dialog the app draws for itself, and this one guards the path to losing everything. It is never suppressible, so there is no "don't ask again" here.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronRestoreApi`
 
@@ -1014,115 +590,67 @@ Choosing a backup to restore from the desktop, where the file is already on the 
 
 Only usable during setup: what it puts forward is restored by the ordinary `POST /api/setup/restore/start`, which refuses once the application is initialized.
 
-### `pickBackup`
-
-```typescript
-pickBackup(): Promise<NativeBackupPickResult>
-```
-
-Prompts a native "open file" dialog for a `.db` or `.tnbackup` backup and, if one is chosen, makes it the backup waiting to be restored.
-
-**Returns** `Promise<NativeBackupPickResult>`
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>pickBackup</code></td>
+            <td><pre><code class="language-application-typescript">pickBackup(): Promise&lt;NativeBackupPickResult&gt;</code></pre><p>Prompts a native "open file" dialog for a <code>.db</code> or <code>.tnbackup</code> backup and, if one is chosen, makes it the backup waiting to be restored.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronTranscriptionApi`
 
 Meeting transcription, recorded and transcribed on this computer by the main process. The renderer only starts and stops it; the audio never passes through the renderer.
 
-### `isSupported`
-
-```typescript
-isSupported(): Promise<boolean>
-```
-
-Whether this build can transcribe on this computer: `false` when it carries no speech recognition engine for the platform and processor it runs on.
-
-**Returns** `Promise<boolean>`
-
-### `start`
-
-```typescript
-start(noteId: string): Promise<string>
-```
-
-Starts recording the microphone and the system audio for the meeting note `noteId`.
-
-| Parameter | Description |
-| --- | --- |
-| `noteId` | `string` |
-
-**Returns** `Promise<string>`: An empty string once recording runs, or an error message when it cannot start.
-
-### `stop`
-
-```typescript
-stop(): Promise<void>
-```
-
-Stops the recording, once the speech already captured has been transcribed.
-
-**Returns** `Promise<void>`
-
-### `getState`
-
-```typescript
-getState(): Promise<TranscriptionState>
-```
-
-**Returns** `Promise<TranscriptionState>`
-
-### `renameSpeaker`
-
-```typescript
-renameSpeaker(attachmentId: string, key: string, name: string): Promise<boolean>
-```
-
-Names a speaker of the transcript attachment `attachmentId`, or restores the default name when `name` is blank, if a running recording writes that transcript. The recording applies it, so no utterance it writes meanwhile is lost.
-
-| Parameter | Description |
-| --- | --- |
-| `attachmentId` | `string` |
-| `key` | `string` |
-| `name` | `string` |
-
-**Returns** `Promise<boolean>`: `false` when no recording writes `attachmentId`; it can then be saved whole.
-
-### `getRecordingsDirectory`
-
-```typescript
-getRecordingsDirectory(): Promise<string>
-```
-
-Returns the directory that keeps the audio and the transcript as produced of each recording while `transcriptionKeepRecordings` is on, creating it if needed.
-
-**Returns** `Promise<string>`
-
-### `onStateChanged`
-
-```typescript
-onStateChanged(callback: (state: TranscriptionState) => void): () => void
-```
-
-Calls `callback` every time the state changes, in any window.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(state: TranscriptionState) => void` |
-
-**Returns** `() => void`: A function that removes the listener.
-
-### `onLevel`
-
-```typescript
-onLevel(callback: (source: TranscriptSource, level: number) => void): () => void
-```
-
-Calls `callback` with the RMS, from 0 to 1, of every chunk a source of the running recording delivers, about four times a second per source.
-
-| Parameter | Description |
-| --- | --- |
-| `callback` | `(source: TranscriptSource, level: number) => void` |
-
-**Returns** `() => void`: A function that stops the calls.
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>isSupported</code></td>
+            <td><pre><code class="language-application-typescript">isSupported(): Promise&lt;boolean&gt;</code></pre><p>Whether this build can transcribe on this computer: <code>false</code> when it carries no speech recognition engine for the platform and processor it runs on.</p></td>
+        </tr>
+        <tr>
+            <td><code>start</code></td>
+            <td><pre><code class="language-application-typescript">start(noteId: string): Promise&lt;string&gt;</code></pre><p>Starts recording the microphone and the system audio for the meeting note <code>noteId</code>.</p><p><strong>Returns</strong> <code>Promise&lt;string&gt;</code>: An empty string once recording runs, or an error message when it cannot start.</p></td>
+        </tr>
+        <tr>
+            <td><code>stop</code></td>
+            <td><pre><code class="language-application-typescript">stop(): Promise&lt;void&gt;</code></pre><p>Stops the recording, once the speech already captured has been transcribed.</p></td>
+        </tr>
+        <tr>
+            <td><code>getState</code></td>
+            <td><pre><code class="language-application-typescript">getState(): Promise&lt;TranscriptionState&gt;</code></pre></td>
+        </tr>
+        <tr>
+            <td><code>renameSpeaker</code></td>
+            <td><pre><code class="language-application-typescript">renameSpeaker(attachmentId: string, key: string, name: string): Promise&lt;boolean&gt;</code></pre><p>Names a speaker of the transcript attachment <code>attachmentId</code>, or restores the default name when <code>name</code> is blank, if a running recording writes that transcript. The recording applies it, so no utterance it writes meanwhile is lost.</p><p><strong>Returns</strong> <code>Promise&lt;boolean&gt;</code>: <code>false</code> when no recording writes <code>attachmentId</code>; it can then be saved whole.</p></td>
+        </tr>
+        <tr>
+            <td><code>getRecordingsDirectory</code></td>
+            <td><pre><code class="language-application-typescript">getRecordingsDirectory(): Promise&lt;string&gt;</code></pre><p>Returns the directory that keeps the audio and the transcript as produced of each recording while <code>transcriptionKeepRecordings</code> is on, creating it if needed.</p></td>
+        </tr>
+        <tr>
+            <td><code>onStateChanged</code></td>
+            <td><pre><code class="language-application-typescript">onStateChanged(callback: (state: TranscriptionState) =&gt; void): () =&gt; void</code></pre><p>Calls <code>callback</code> every time the state changes, in any window.</p><p><strong>Returns</strong> <code>() =&gt; void</code>: A function that removes the listener.</p></td>
+        </tr>
+        <tr>
+            <td><code>onLevel</code></td>
+            <td><pre><code class="language-application-typescript">onLevel(callback: (source: TranscriptSource, level: number) =&gt; void): () =&gt; void</code></pre><p>Calls <code>callback</code> with the RMS, from 0 to 1, of every chunk a source of the running recording delivers, about four times a second per source.</p><p><strong>Returns</strong> <code>() =&gt; void</code>: A function that stops the calls.</p></td>
+        </tr>
+    </tbody>
+</table>
 
 ## `ElectronContextMenuParams`
 
