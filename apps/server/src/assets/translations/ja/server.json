@@ -77,7 +77,8 @@
     "note-panels": "ノートパネル",
     "show-note-map": "右ペインにノートマップを表示",
     "focus-collection-properties": "コレクションの表示タイプセレクターにフォーカスを移動",
-    "focus-formatting-toolbar": "固定の書式設定ツールバーとエディター間でフォーカスを移動"
+    "focus-formatting-toolbar": "固定の書式設定ツールバーとエディター間でフォーカスを移動",
+    "peek-left-pane": "水平レイアウトにおいて、コンテンツの上に浮かぶ一時的なパネルとしてノートツリーをピーク表示する"
   },
   "keyboard_action_names": {
     "back-in-note-history": "ノートの履歴を戻る",
@@ -187,7 +188,8 @@
     "show-note-map": "ノートマップを表示",
     "show-note-info": "ノート情報を表示",
     "show-note-paths": "ノートパスを表示",
-    "toggle-similar-notes": "類似ノートの表示を切り替え"
+    "toggle-similar-notes": "類似ノートの表示を切り替え",
+    "peek-left-pane": "ツリーペインをピーク表示"
   },
   "login": {
     "title": "ログイン",
