@@ -87,7 +87,7 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
     );
 }
 
-/** Picks the color scheme and the theme. The legacy theme is left out. */
+/** Picks the color scheme and the theme. */
 function ThemeMenu() {
     const [ theme, setTheme ] = useTriliumOption("theme");
     const userThemes = useUserThemes();
