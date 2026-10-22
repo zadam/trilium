@@ -8,7 +8,7 @@ info:
     **Important:** This API is primarily intended for internal use by the Trilium client.
     For external integrations, please use the [ETAPI (External Trilium API)](https://github.com/TriliumNext/Trilium/blob/main/docs/User%20Guide/User%20Guide/Advanced%20Usage/ETAPI%20(REST%20API).md#etapi-rest-api) instead.
     
-    ## Authentication
+    ## Signing in
     
     Most endpoints require session-based authentication. You can authenticate using:
     - **Password login**: POST to `/api/login` with password
@@ -38,7 +38,7 @@ servers:
     description: Your Trilium server
 
 tags:
-  - name: Authentication
+  - name: Sessions
     description: Login, logout, and session management
   - name: Notes
     description: Core note operations
@@ -80,10 +80,10 @@ security:
   - tokenAuth: []
 
 paths:
-  # Authentication endpoints
+  # Session endpoints
   /api/login:
     post:
-      tags: [Authentication]
+      tags: [Sessions]
       summary: Login with password
       operationId: login
       security: []
@@ -114,7 +114,7 @@ paths:
           
   /api/login/token:
     post:
-      tags: [Authentication]
+      tags: [Sessions]
       summary: Generate API token
       operationId: generateToken
       security: []
@@ -146,7 +146,7 @@ paths:
                     
   /api/login/sync:
     post:
-      tags: [Authentication, Sync]
+      tags: [Sessions, Sync]
       summary: Sync login using document secret
       operationId: loginSync
       security: []
@@ -181,7 +181,7 @@ paths:
                     
   /api/login/protected:
     post:
-      tags: [Authentication, Security]
+      tags: [Sessions, Security]
       summary: Enter protected session
       operationId: enterProtectedSession
       requestBody:
@@ -203,7 +203,7 @@ paths:
           
   /api/logout/protected:
     post:
-      tags: [Authentication, Security]
+      tags: [Sessions, Security]
       summary: Exit protected session
       operationId: exitProtectedSession
       responses:
@@ -212,7 +212,7 @@ paths:
           
   /api/login/protected/touch:
     post:
-      tags: [Authentication, Security]
+      tags: [Sessions, Security]
       summary: Keep protected session alive
       operationId: touchProtectedSession
       responses:
@@ -222,7 +222,7 @@ paths:
   # OAuth endpoints
   /api/oauth/status:
     get:
-      tags: [Authentication]
+      tags: [Sessions]
       summary: Get OAuth status
       operationId: getOAuthStatus
       responses:
@@ -244,7 +244,7 @@ paths:
                       
   /api/oauth/validate:
     get:
-      tags: [Authentication]
+      tags: [Sessions]
       summary: Validate OAuth configuration
       operationId: validateOAuth
       responses:

@@ -290,7 +290,7 @@
         ]},
         {"id":"_help_m1lbrzyKDaRB","title":"Note ID","type":"text","attributes":[{"type":"label","name":"docUrl","value":"https://docs.triliumnotes.org/user-guide/advanced-usage/note-id"},{"type":"label","name":"iconClass","value":"bx bx-fingerprint"}]},
         {"id":"_help_0vTSyvhPTAOz","title":"Internal API","type":"book","attributes":[{"type":"label","name":"docUrl","value":"https://docs.triliumnotes.org/user-guide/advanced-usage/internal-api"},{"type":"label","name":"iconClass","value":"bx bxs-component"}],"children":[
-            {"id":"_help_z8O2VG4ZZJD7","title":"API Reference","type":"webView","attributes":[{"type":"label","name":"webViewSrc","value":"https://docs.triliumnotes.org/rest-api/internal/"},{"type":"label","name":"docUrl","value":"https://docs.triliumnotes.org/user-guide/advanced-usage/internal-api/api-reference"},{"type":"label","name":"iconClass","value":"bx bx-file"}]}
+            {"id":"_help_z8O2VG4ZZJD7","title":"API Reference","type":"text","attributes":[{"type":"label","name":"docUrl","value":"https://docs.triliumnotes.org/user-guide/advanced-usage/internal-api/api-reference"},{"type":"label","name":"iconClass","value":"bx bx-book-content"}]}
         ]},
         {"id":"_help_2mUhVmZK8RF3","title":"Hidden Notes","type":"text","attributes":[{"type":"label","name":"docUrl","value":"https://docs.triliumnotes.org/user-guide/advanced-usage/hidden-notes"},{"type":"label","name":"iconClass","value":"bx bx-hide"}]},
         {"id":"_help_uYF7pmepw27K","title":"Metrics","type":"text","attributes":[{"type":"label","name":"docUrl","value":"https://docs.triliumnotes.org/user-guide/advanced-usage/metrics"},{"type":"label","name":"iconClass","value":"bx bxs-data"}],"children":[

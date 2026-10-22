@@ -12,6 +12,8 @@ noteMappings:
     openApiPages:
       - noteId: "9qPsTWBorUhQ" # ETAPI (REST API) › API Reference
         spec: "apps/server/src/assets/etapi.openapi.yaml"
+      - noteId: "z8O2VG4ZZJD7" # Internal API › API Reference
+        spec: "apps/server/internal.openapi.yaml"
 
   - rootNoteId: "jdjRLhLV3TtI"
     path: "docs/Developer Guide"
