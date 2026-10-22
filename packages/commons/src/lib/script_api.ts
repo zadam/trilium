@@ -16,10 +16,14 @@
  * typed as `unknown` rather than pulling in their real types.
  */
 
-/** A label or relation attached to a note. */
 /** One thing a picker offers, as `pickSingleItem` takes and answers with. */
 export interface PickerItem {
+    /**
+     * The ID of the item. It must be unique within its group, and tells the script which item the
+     * user picked.
+     */
     key: string;
+    /** The text shown for the item. The search field filters items by it. */
     caption: string;
     /** An icon class, `bx` prefix included. */
     icon?: string;
@@ -29,67 +33,168 @@ export interface PickerItem {
 
 /** A run of picker items under a heading of their own. */
 export interface PickerItemGroup {
+    /** The ID of the group. It must be unique among the groups. */
     key: string;
+    /**
+     * The heading shown above the group's items. An empty string shows the items without a heading.
+     */
     groupHeader: string;
+    /** The items in the group, in the order the picker shows them. */
     items: PickerItem[];
 }
 
+/** A label or relation attached to a note. */
 export interface ScriptAttribute {
+    /** The ID of the attribute. */
     attributeId: string;
+    /** The type of the attribute: `label` or `relation`. */
     type: "label" | "relation";
+    /** The name of the attribute, without the `#` or `~` prefix. */
     name: string;
+    /**
+     * The value of the attribute. For a relation, it is the ID of the target note. For a label
+     * without a value, it is an empty string.
+     */
     value: string;
+    /** Whether the note's descendants inherit the attribute. */
     isInheritable: boolean;
+    /**
+     * Not set by Trilium: neither frontend nor backend attributes carry this property, so it reads
+     * `undefined`.
+     */
     isOwned: boolean;
 }
 
 /** An attachment as seen by frontend scripts (subset of the client's `FAttachment`). */
 export interface ScriptAttachment {
+    /** The ID of the attachment. */
     attachmentId: string;
+    /**
+     * The ID of the note the attachment belongs to. For an attachment of a revision, it is the ID
+     * of the revision.
+     */
     ownerId: string;
+    /**
+     * The purpose of the attachment, such as `image` for an image shown in a text note or `file`
+     * for an attached file. Trilium also uses roles of its own, such as `viewConfig` for a
+     * collection's view settings.
+     */
     role: string;
+    /** The MIME type of the attachment's content, such as `image/png`. */
     mime: string;
+    /** The title of the attachment, usually its file name. */
     title: string;
+    /**
+     * The date and time, in UTC, that the attachment was last saved, such as `2026-10-22
+     * 12:03:05.123Z`. Replacing the content counts as saving.
+     */
     utcDateModified: string;
+    /**
+     * The length of the attachment's content. Only some ways of loading an attachment fill it in,
+     * such as `getAttachments()`; on the backend, `getAttachmentsByRole()` leaves it `undefined`.
+     */
     contentLength: number;
 }
 
 /** Creation/modification timestamps returned by {@link ScriptFNote.getMetadata}. */
 export interface ScriptNoteMetadata {
+    /**
+     * The local date and time the note was created, with the UTC offset, such as `2026-10-22
+     * 14:03:05.123+0200`.
+     */
     dateCreated: string;
+    /** The date and time, in UTC, that the note was created, such as `2026-10-22 12:03:05.123Z`. */
     utcDateCreated: string;
+    /**
+     * The local date and time the note was last modified, with the UTC offset, such as `2026-10-22
+     * 14:03:05.123+0200`. A change to the note's content counts as a modification.
+     */
     dateModified: string;
+    /**
+     * The date and time, in UTC, that the note was last modified, such as `2026-10-22
+     * 12:03:05.123Z`. A change to the note's content counts as a modification.
+     */
     utcDateModified: string;
 }
 
 /** A note's binary/text content blob (subset of the client's `FBlob`). */
 export interface ScriptBlob {
+    /**
+     * The ID of the blob, derived from its content. Notes, attachments and revisions with identical
+     * content share one blob.
+     */
     blobId: string;
+    /**
+     * The content as text. It is `null` when the content is binary, as in images and files.
+     */
     content: string;
+    /**
+     * The length of the content as stored: characters for text, bytes for binary content. For a
+     * protected note, it measures the encrypted content.
+     */
     contentLength: number;
+    /**
+     * The local date and time this content was first stored, with the UTC offset, such as
+     * `2026-10-22 14:03:05.123+0200`. A blob never changes, so new content gets a new blob.
+     */
     dateModified: string;
+    /**
+     * The date and time, in UTC, that this content was first stored, such as `2026-10-22
+     * 12:03:05.123Z`.
+     */
     utcDateModified: string;
 }
 
 /** One resolved tree path to a note (subset of the client's `NotePathRecord`). */
 export interface ScriptNotePathRecord {
+    /**
+     * Whether a note on the path, the note itself included, is archived, which means it has the
+     * `#archived` label, owned or inherited.
+     */
     isArchived: boolean;
+    /**
+     * Whether the path passes through the hoisted note passed to `getSortedNotePathRecords()`. It
+     * is always `true` when the hoisted note is `root`.
+     */
     isInHoistedSubTree: boolean;
+    /**
+     * Whether the note itself is a search note. Only frontend scripts get this property; backend
+     * records leave it out.
+     */
     isSearch?: boolean;
+    /** The note IDs along the path, from `root` to the note itself. */
     notePath: string[];
+    /**
+     * Whether the path passes through the hidden subtree, `_hidden`, which holds Trilium's system
+     * notes.
+     */
     isHidden: boolean;
 }
 
 /** A note as seen by frontend scripts (subset of the client's `FNote`). */
 export interface ScriptFNote {
+    /** The ID of the note. */
     noteId: string;
+    /**
+     * The title of the note. For a protected note, it is `[protected]` until a protected session is
+     * started.
+     */
     title: string;
+    /**
+     * The note type, such as `text`, `code`, `file`, `image`, `search`, `book`, `render` or
+     * `launcher`.
+     */
     type: string;
+    /** The MIME type of the note's content, such as `application/json`. */
     mime: string;
+    /** Whether the note is protected (encrypted). */
     isProtected: boolean;
     /** Whether the note is archived (has the `archived` label). */
     isArchived: boolean;
-    /** Whether the note's metadata (title, attributes) is read-only. */
+    /**
+     * Whether the note's title and icon cannot be edited, which is the case for the system notes
+     * behind the options, the in-app help and the launch bar configuration.
+     */
     isMetadataReadOnly: boolean;
     /** IDs of this note's owned attributes. */
     attributes: string[];
@@ -101,107 +206,455 @@ export interface ScriptFNote {
     children: string[];
 
     // --- Hierarchy ---------------------------------------------------------
+    /**
+     * Returns the parent notes that the client has already loaded. A parent that is not loaded is
+     * skipped, and a search note that shows this note in its results counts as a parent.
+     */
     getParentNotes(): ScriptFNote[];
+    /**
+     * Loads any missing child notes from the server, then returns all child notes in tree order.
+     * Archived children are included.
+     */
     getChildNotes(): Promise<ScriptFNote[]>;
+    /**
+     * Returns the IDs of the parent notes. The returned array is the note's own list, so do not
+     * change it.
+     */
     getParentNoteIds(): string[];
+    /**
+     * Returns the IDs of the child notes in tree order, archived ones included. The returned array
+     * is the note's own list, so do not change it.
+     */
     getChildNoteIds(): string[];
+    /**
+     * Returns the IDs of the child notes in tree order, leaving out archived notes unless
+     * `includeArchived` is `true`. Leaving out archived notes takes a search on the server; for a
+     * search note or a note in the hidden subtree, all children are returned.
+     *
+     * @param includeArchived whether to keep archived children. Defaults to `false`.
+     */
     getChildNoteIdsWithArchiveFiltering(includeArchived?: boolean): Promise<string[]>;
+    /**
+     * Returns all descendants of the note, loading missing ones from the server one level at a
+     * time. An archived note and everything below it are left out, and the note itself is not
+     * included.
+     */
     getSubtreeNotes(): Promise<ScriptFNote[]>;
+    /**
+     * Returns the IDs of all the note's descendants, depth-first, without the note itself. Archived
+     * notes and the notes below them are left out unless `includeArchived` is `true`.
+     */
     getSubtreeNoteIds(includeArchived?: boolean): Promise<string[]>;
+    /**
+     * Returns `true` if the note has at least one child, archived ones included. For a search note,
+     * the results count as children only once they are loaded.
+     */
     hasChildren(): boolean;
+    /**
+     * Returns `true` if the note with the given ID is this note or one of its ancestors. It walks
+     * only parents the client has already loaded.
+     *
+     * @param followTemplates whether to also walk up from the notes this note takes attributes from
+     * through `~template` and `~inherit` relations. Defaults to `false`.
+     */
     hasAncestor(ancestorNoteId: string, followTemplates?: boolean): boolean;
+    /** Returns `true` if this is the root note of the tree. */
     isRoot(): boolean;
+    /** Returns the IDs of the branches that place this note under each of its parents. */
     getParentBranchIds(): string[];
+    /**
+     * Returns the IDs of the branches that place the note under its parents.
+     *
+     * @deprecated Use `getParentBranchIds()` instead.
+     */
     getBranchIds(): string[];
+    /**
+     * Returns the branches that place this note under each of its parents. A branch the client has
+     * not loaded is skipped.
+     */
     getParentBranches(): ScriptFBranch[];
+    /**
+     * Returns the branches to this note's children, in tree order. A branch the client has not
+     * loaded is skipped.
+     */
     getChildBranches(): ScriptFBranch[];
+    /**
+     * Returns the branches that place the note under its parents.
+     *
+     * @deprecated Use `getParentBranches()` instead.
+     */
     getBranches(): ScriptFBranch[];
+    /**
+     * Returns the same branches as `getChildBranches()`. Despite the name, archived children are
+     * not filtered out.
+     */
     getFilteredChildBranches(): ScriptFBranch[];
+    /**
+     * Returns every path from the root to the note, each as a list of note IDs that starts with
+     * `root`. Paths that pass through a search note are left out.
+     */
     getAllNotePaths(): string[][];
+    /**
+     * Returns the note's best path as a list of note IDs that starts with `root`. Paths inside the
+     * hoisted note's subtree come first, then paths without archived or hidden notes; among equal
+     * paths, the one sharing the longest start with `activeNotePath` wins, then the shortest.
+     *
+     * @param hoistedNoteId The hoisted note, `root` by default.
+     * @param activeNotePath The path of the active note, as note IDs joined by `/`.
+     */
     getBestNotePath(hoistedNoteId?: string, activeNotePath?: string | null): string[];
+    /**
+     * Returns the note's best path, as `getBestNotePath()` chooses it, as note IDs joined by `/`,
+     * such as `root/a1h315/js725h`.
+     *
+     * @param hoistedNoteId The hoisted note, `root` by default.
+     */
     getBestNotePathString(hoistedNoteId?: string): string;
+    /**
+     * Returns every path from the root to this note, best first. Paths inside the hoisted note come
+     * first, then paths that do not pass through an archived note or the hidden subtree, then paths
+     * that share the most with `activeNotePath`, then shorter paths. Paths through search notes are
+     * left out, and only parents the client has loaded are followed.
+     *
+     * @param hoistedNoteId the ID of the hoisted note. Defaults to `root`.
+     * @param activeNotePath a note path such as `root/abc123/def456`, used to prefer paths close to
+     * it.
+     */
     getSortedNotePathRecords(
         hoistedNoteId?: string,
         activeNotePath?: string | null
     ): ScriptNotePathRecord[];
 
     // --- Attributes (inherited + own) --------------------------------------
+    /**
+     * Returns the note's attributes, including inherited ones, optionally only those of the given
+     * type and name. The note's own attributes come first, then the ones inherited from its
+     * parents, then the ones from its templates.
+     *
+     * @param type `label` or `relation`; any other value throws an error.
+     * @param name The attribute name, without the `#` or `~` prefix.
+     */
     getAttributes(type?: string, name?: string): ScriptAttribute[];
+    /**
+     * Returns the note's own attributes, without inherited ones, optionally only those of the given
+     * type and name.
+     *
+     * @param type `label` or `relation`; any other value throws an error.
+     * @param name The attribute name, without the `#` or `~` prefix.
+     */
     getOwnedAttributes(type?: string, name?: string): ScriptAttribute[];
+    /**
+     * Returns the first attribute of the given type and name, including inherited ones, or
+     * `undefined` if the note has none.
+     *
+     * @param type `label` or `relation`.
+     */
     getAttribute(type: string, name: string): ScriptAttribute | null;
+    /**
+     * Returns the first of the note's own attributes with the given type and name, or `undefined`
+     * if the note has none.
+     *
+     * @param type `label` or `relation`.
+     */
     getOwnedAttribute(type: string, name: string): ScriptAttribute | null;
+    /**
+     * Returns the value of the first attribute of the given type and name, including inherited
+     * ones, or `null` if the note has none.
+     *
+     * @param type `label` or `relation`.
+     */
     getAttributeValue(type: string, name: string): string | null;
+    /**
+     * Returns the value of the first of the note's own attributes with the given type and name, or
+     * `null` if the note has none.
+     *
+     * @param type `label` or `relation`.
+     */
     getOwnedAttributeValue(type: string, name: string): string | null;
+    /**
+     * Returns whether the note has an attribute of the given type and name, including inherited
+     * ones.
+     *
+     * @param type `label` or `relation`.
+     */
     hasAttribute(type: string, name: string): boolean;
+    /**
+     * Returns whether the note itself has an attribute of the given type and name, without
+     * inherited ones.
+     *
+     * @param type `label` or `relation`.
+     */
     hasOwnedAttribute(type: string, name: string): boolean;
+    /**
+     * Returns the attribute definitions that apply to the note, at most one per defined name.
+     * When the note gets a definition from several places, such as its own, an ancestor's and a
+     * template's, the nearest one wins, in the order `getAttributes()` lists them.
+     */
     getAttributeDefinitions(): ScriptAttribute[];
+    /**
+     * Returns the attribute definitions that are marked as promoted, at most one per name, grouped
+     * by the note that owns them and ordered by position. Returns an empty array if the note has a
+     * truthy `hidePromotedAttributes` label.
+     */
     getPromotedDefinitionAttributes(): ScriptAttribute[];
 
     // --- Labels ------------------------------------------------------------
+    /** Returns the note's labels, including inherited ones, optionally only those with `name`. */
     getLabels(name?: string): ScriptAttribute[];
+    /** Returns the note's own labels, without inherited ones, optionally only those with `name`. */
     getOwnedLabels(name?: string): ScriptAttribute[];
+    /**
+     * Returns the first label with the given name, including inherited ones, or `undefined` if the
+     * note has none.
+     */
     getLabel(name: string): ScriptAttribute | null;
+    /**
+     * Returns the first of the note's own labels with the given name, or `undefined` if the note
+     * has none.
+     */
     getOwnedLabel(name: string): ScriptAttribute | null;
+    /**
+     * Returns the value of the first label with the given name, including inherited ones, or
+     * `null` if the note has none.
+     */
     getLabelValue(name: string): string | null;
+    /**
+     * Returns the value of the first of the note's own labels with the given name, or `null` if the
+     * note has none.
+     */
     getOwnedLabelValue(name: string): string | null;
+    /** Returns whether the note has a label with the given name, including inherited ones. */
     hasLabel(name: string): boolean;
+    /** Returns whether the note itself has a label with the given name, without inherited ones. */
     hasOwnedLabel(name: string): boolean;
+    /**
+     * Returns whether the note has a label with the given name, including inherited ones, or the
+     * same label with the `disabled:` prefix, which a safe import gives it.
+     */
     hasLabelOrDisabled(name: string): boolean;
+    /**
+     * Returns whether the note has a label with the given name, including inherited ones, whose
+     * value is anything but `false`. A label without a value counts as true.
+     */
     isLabelTruthy(name: string): boolean;
 
     // --- Relations ---------------------------------------------------------
+    /**
+     * Returns the note's relations, including inherited ones, optionally only those with `name`.
+     */
     getRelations(name?: string): ScriptAttribute[];
+    /**
+     * Returns the note's own relations, without inherited ones, optionally only those with `name`.
+     */
     getOwnedRelations(name: string): ScriptAttribute[];
+    /**
+     * Returns the first relation with the given name, including inherited ones, or `undefined` if
+     * the note has none.
+     */
     getRelation(name: string): ScriptAttribute | null;
+    /**
+     * Returns the first of the note's own relations with the given name, or `undefined` if the note
+     * has none.
+     */
     getOwnedRelation(name: string): ScriptAttribute | null;
+    /**
+     * Returns the target note ID of the first relation with the given name, including inherited
+     * ones, or `null` if the note has none.
+     */
     getRelationValue(name: string): string | null;
+    /**
+     * Returns the target note ID of the first of the note's own relations with the given name, or
+     * `null` if the note has none.
+     */
     getOwnedRelationValue(name: string): string | null;
+    /** Returns whether the note has a relation with the given name, including inherited ones. */
     hasRelation(name: string): boolean;
+    /**
+     * Returns whether the note itself has a relation with the given name, without inherited ones.
+     */
     hasOwnedRelation(name: string): boolean;
+    /**
+     * Returns the value of a label or relation, inherited ones included, or `null` if the note has
+     * none. A relation's value is the ID of its target note.
+     *
+     * @param nameWithPrefix the attribute name prefixed with `#` for a label or `~` for a relation.
+     * A name without a prefix is looked up as a label.
+     */
     getLabelOrRelation(nameWithPrefix: string): string | null;
+    /**
+     * Returns the target note of the first relation with the given name, including inherited ones.
+     * Returns `null` if the note has no such relation, the relation has no target, or the target
+     * note does not exist.
+     */
     getRelationTarget(name: string): Promise<ScriptFNote | null>;
+    /**
+     * Returns the target notes of the note's relations with the given name, including inherited
+     * ones, in the order of the relations. A relation whose target is missing gives `null`.
+     */
     getRelationTargets(name: string): Promise<(ScriptFNote | null)[]>;
+    /** Returns the relations, owned by any note, that point at this note. */
     getTargetRelations(): ScriptAttribute[];
+    /** Returns the notes that own a relation pointing at this note. */
     getTargetRelationSourceNotes(): Promise<ScriptFNote[]>;
 
     // --- Content & attachments ---------------------------------------------
+    /**
+     * Fetches the note's content from the server. Resolves to a string for text-based notes; for a
+     * binary note such as an image or file, the content is not sent, and for a protected note
+     * without a protected session, it is an empty string.
+     */
     getContent(): Promise<string | Uint8Array>;
+    /**
+     * Fetches the note's content and parses it as JSON. Resolves to `null` if the content is empty,
+     * is not a string, or is not valid JSON.
+     */
     getJsonContent(): Promise<unknown>;
+    /**
+     * Fetches the note's content together with its blob ID, length and modification date. Resolves
+     * to `null` if the request fails.
+     */
     getBlob(): Promise<ScriptBlob | null>;
+    /**
+     * Returns the blob that holds the note's content.
+     *
+     * @deprecated Use `getBlob()` instead.
+     */
     getNoteComplement(): Promise<ScriptBlob | null>;
+    /** Returns the note's creation and modification dates, which it requests from the server. */
     getMetadata(): Promise<ScriptNoteMetadata>;
+    /**
+     * The note's attachments, or `null` until `getAttachments()` loads them. Use `getAttachments()`
+     * instead of reading this property.
+     */
     attachments: ScriptAttachment[] | null;
+    /**
+     * Returns the note's attachments. The first call loads them from the server, and later calls
+     * reuse that list.
+     */
     getAttachments(): Promise<ScriptAttachment[]>;
+    /** Returns the note's attachments with the given role, such as `image` or `file`. */
     getAttachmentsByRole(role: string): Promise<ScriptAttachment[]>;
+    /**
+     * Returns the note's attachment with the given ID, or `undefined` if this note has no such
+     * attachment.
+     */
     getAttachmentById(attachmentId: string): Promise<ScriptAttachment | undefined>;
+    /**
+     * Returns the target notes of this note's `~template` and `~inherit` relations, inherited
+     * relations included. A target note that the client has not loaded appears as `undefined`.
+     */
     getNotesToInheritAttributesFrom(): ScriptFNote[];
 
     // --- Type & state predicates -------------------------------------------
+    /**
+     * Returns the CSS classes of the note's icon, such as `tn-icon bx bx-note`. The icon comes from
+     * the `iconClass` label, then the `workspaceIconClass` label, then a default for the note type.
+     */
     getIcon(): string;
+    /**
+     * Returns `true` if the note shows as a folder in the tree: a search note, or a note with
+     * children (archived ones included). Always `false` when the note has a truthy `subtreeHidden`
+     * label.
+     */
     isFolder(): boolean;
+    /**
+     * Returns `true` if the note is placed, directly or through ancestors the client has loaded,
+     * under the shared notes root (`_share`).
+     */
     isShared(): boolean;
+    /**
+     * Returns `true` if the note's content can be read: the note is not protected, or a protected
+     * session is active.
+     */
     isContentAvailable(): boolean;
+    /** Returns `true` if the note's MIME type is `application/json`. */
     isJson(): boolean;
+    /**
+     * Returns whether the note is a code, file or launcher note with a JavaScript MIME type.
+     */
     isJavaScript(): boolean;
+    /** Returns `true` if the note is a code note with the MIME type `text/jsx`. */
     isJsx(): boolean;
+    /** Returns whether the note is a code, file or render note with the `text/html` MIME type. */
     isHtml(): boolean;
+    /**
+     * Returns `true` if the note is a code note with a Markdown MIME type (`text/markdown`,
+     * `text/x-markdown` or `text/x-gfm`).
+     */
     isMarkdown(): boolean;
+    /** Returns `true` if the note is one of Trilium's settings pages. */
     isOptions(): boolean;
+    /**
+     * Returns `true` if the note's MIME type starts with `application/javascript`, which covers
+     * both frontend and backend scripts. The note type is not checked.
+     */
     isTriliumScript(): boolean;
+    /**
+     * Returns `true` if the note is a SQL console note, which has the MIME type
+     * `text/x-sqlite;schema=trilium`.
+     */
     isTriliumSqlite(): boolean;
+    /**
+     * Returns `true` if the note is a launcher or one of the notes that hold the launch bar's
+     * launchers.
+     */
     isLaunchBarConfig(): boolean;
+    /**
+     * Returns whether every path to the note runs through the hidden subtree, so that no clone of
+     * it appears in the visible tree. Paths through search notes are not counted.
+     */
     isHiddenCompletely(): boolean;
+    /**
+     * Returns `true` if the note is the hidden subtree's root (`_hidden`) or has it as an ancestor
+     * through any of its loaded parents, even when the note is also cloned into the visible tree.
+     */
     isInHiddenSubtree(): boolean;
+    /**
+     * Returns `true` if the image note can be converted into an attachment of its parent: it is an
+     * image note without children, it has exactly one parent, that parent is a text note, the
+     * content of both is available, and no note other than the parent links to the image.
+     */
     isEligibleForConversionToAttachment(): boolean;
 
     // --- Presentation ------------------------------------------------------
+    /**
+     * Returns the CSS class that applies the note's `color` label, such as `color-ff0000`, or an
+     * empty string if the label is missing or not a valid color. The first call for a color adds
+     * the class's style rule to the page.
+     */
     getColorClass(): string;
+    /**
+     * Returns the values of all the note's `cssClass` labels, inherited ones included, separated by
+     * spaces.
+     */
     getCssClass(): string;
+    /**
+     * Returns the value of the note's `workspaceIconClass` label, or an empty string if it has
+     * none.
+     */
     getWorkspaceIconClass(): string;
+    /**
+     * Returns the value of the note's `workspaceTabBackgroundColor` label, or an empty string if it
+     * has none.
+     */
     getWorkspaceTabBackgroundColor(): string;
 
     // --- Scripting runtime -------------------------------------------------
+    /**
+     * Returns where the note runs as a script: `frontend` for HTML, JSX, render notes and
+     * JavaScript with `env=frontend` in its MIME type, `backend` for JavaScript with `env=backend`,
+     * and `null` for any other note.
+     */
     getScriptEnv(): "frontend" | "backend" | null;
+    /**
+     * Runs the note as a frontend or backend script, depending on `getScriptEnv()`. For a frontend
+     * script, the promise resolves to the value the script returns; for a backend script, it
+     * resolves to `undefined` once the script has run. A frontend script that fails shows its error
+     * and resolves to `undefined`.
+     *
+     * @throws Error if the note is neither JavaScript nor JSX, or its MIME type names no
+     *     environment.
+     */
     executeScript(): Promise<unknown>;
 
     // --- Low-level / Froca-managed -----------------------------------------
@@ -213,39 +666,125 @@ export interface ScriptFNote {
     parentToBranch: Record<string, string>;
     /** Map of child note ID → branch ID. */
     childToBranch: Record<string, string>;
+    /**
+     * For a search note, `true` once its results have been loaded as its children; otherwise not
+     * set.
+     */
     searchResultsLoaded?: boolean;
+    /**
+     * For a search note whose results are loaded, the search words to highlight in those results;
+     * otherwise not set.
+     */
     highlightedTokens?: string[];
     /** Plain data representation of the note (the live object minus its cache handle). */
     dto: Record<string, unknown>;
+    /**
+     * Adds a parent to this note in the client's cache only. Trilium calls it when it loads
+     * branches; scripts do not normally call it, and the change is not saved. To place a note under
+     * another, use `api.runOnBackend()` with the backend API.
+     *
+     * @param branchId the ID of the branch that links the two notes.
+     * @param sort whether to reorder the parents afterwards. Defaults to `true`.
+     */
     addParent(parentNoteId: string, branchId: string, sort?: boolean): void;
+    /**
+     * Adds a child to this note in the client's cache only. Trilium calls it when it loads
+     * branches; scripts do not normally call it, and the change is not saved.
+     *
+     * @param branchId the ID of the branch that links the two notes.
+     * @param sort whether to reorder the children by their position afterwards. Defaults to `true`.
+     */
     addChild(childNoteId: string, branchId: string, sort?: boolean): void;
+    /**
+     * Reorders the parent list in the client's cache so that ordinary parents come before search
+     * notes, archived notes and notes outside the visible tree. Trilium calls it itself; scripts do
+     * not normally call it.
+     */
     sortParents(): void;
+    /**
+     * Reorders the child list in the client's cache by each branch's position. Trilium calls it
+     * itself; scripts do not normally call it, and it does not change the order saved in the
+     * database.
+     */
     sortChildren(): void;
+    /**
+     * Overwrites the note's ID, title, type, MIME type, protection flag and blob ID in the client's
+     * cache with the values in `row`. Trilium calls it when changes arrive from the server; scripts
+     * do not normally call it, and the change is not saved.
+     */
     update(row: Record<string, unknown>): void;
+    /**
+     * Does nothing; the note's attributes stay up to date without it.
+     *
+     * @deprecated Remove the call.
+     */
     invalidateAttributeCache(): void;
+    /**
+     * Returns a short description of the note for logging, such as `Note(noteId=abc123, title=My
+     * note)`.
+     */
     toString(): string;
 }
 
 /** A branch (parent↔child link) as seen by frontend scripts (subset of `FBranch`). */
 export interface ScriptFBranch {
+    /** The unique ID of the branch. */
     branchId: string;
+    /** The ID of the child note that this branch places in the tree. */
     noteId: string;
+    /** The ID of the parent note. */
     parentNoteId: string;
+    /**
+     * The place of the note among its siblings; the note tree lists siblings by ascending
+     * `notePosition`. Trilium spaces positions 10 apart.
+     */
     notePosition: number;
+    /**
+     * The prefix shown before the note's title in the note tree, for this placement of the note
+     * only. It is empty or missing when the branch has none.
+     */
     prefix?: string;
+    /** Whether the note tree shows this branch expanded, with the note's children visible. */
     isExpanded?: boolean;
+    /**
+     * Returns the child note, loading it from the server if the frontend cache does not hold it
+     * yet. Resolves to `null` if the note does not exist.
+     */
     getNote(): Promise<ScriptFNote | null>;
+    /**
+     * Returns the child note from the frontend cache, without contacting the server. Returns
+     * `undefined` if the note is not loaded yet.
+     */
     getNoteFromCache(): ScriptFNote | undefined;
+    /**
+     * Returns the parent note, loading it from the server if the frontend cache does not hold it
+     * yet. Resolves to `null` if the note does not exist.
+     */
     getParentNote(): Promise<ScriptFNote | null>;
+    /** Returns whether the branch places its note directly under the root note. */
     isTopLevel(): boolean;
 }
 
 /** A split/tab context as seen by frontend scripts (subset of `NoteContext`). */
 export interface ScriptNoteContext {
+    /** The ID of the note context, which identifies one tab or split. */
     ntxId: string | null;
+    /** The note this context shows, or `null` if the context is empty. */
     note: ScriptFNote | null;
+    /**
+     * The path of the note this context shows, as note IDs from `root` joined by `/`, such as
+     * `root/abc123/def456`. It is `null` when the context is empty.
+     */
     notePath: string | null;
+    /**
+     * Returns the CodeMirror editor of the code note this context shows. Resolves to `null` if the
+     * context shows no code editor within 200 ms.
+     */
     getCodeEditor(): Promise<unknown>;
+    /**
+     * Returns the CKEditor instance of the editable text note this context shows. Resolves to
+     * `null` if the context shows no editable text note within 200 ms.
+     */
     getTextEditor(): Promise<unknown>;
 }
 
@@ -286,9 +825,16 @@ interface BasicWidget {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     $widget: any;
-    /** Whether the widget should be shown for the current context. */
+    /**
+     * Returns whether the widget is shown: always for a `BasicWidget`, and only while a note is
+     * active for a `NoteContextAwareWidget`. A disabled widget stays in the DOM, hidden, and a
+     * `NoteContextAwareWidget` does not call `refreshWithNote()` while it is disabled.
+     */
     isEnabled(): boolean | null | undefined;
-    /** Builds `this.$widget`. Override to render the widget's DOM. */
+    /**
+     * Builds the widget's DOM. Override it to create the root element and assign it to
+     * `this.$widget` as a jQuery object.
+     */
     doRender(): void;
     /** Renders the widget and returns its root element. */
     render(): unknown;
@@ -298,7 +844,11 @@ interface BasicWidget {
     id(id: string): this;
     /** Fluent builder: add a CSS class. Chainable. */
     class(className: string): this;
-    /** Fluent builder: set an inline CSS property. Chainable. */
+    /**
+     * Sets an inline CSS property on the widget's root element, such as
+     * `css("padding-inline-start", "12px")`, and returns the widget for chaining. It takes effect
+     * when the widget renders.
+     */
     css(name: string, value: string): this;
     /** Fluent builder: append child components. Chainable. */
     child(...components: unknown[]): this;
@@ -310,7 +860,10 @@ interface NoteContextAwareWidget extends BasicWidget {
     note: ScriptFNote | null;
     /** The note context (split) this widget is attached to. */
     noteContext?: ScriptNoteContext;
-    /** Called when the active note changes. Override to update the widget. */
+    /**
+     * Updates the widget for the note in its context. Override it to refresh the widget's content;
+     * it runs when that note changes and on `refresh()`, as long as `isEnabled()` returns `true`.
+     */
     refreshWithNote(note: ScriptFNote | null | undefined): void | Promise<void>;
     /** Forces a refresh against the current note. */
     refresh(): void | Promise<void>;
@@ -318,9 +871,16 @@ interface NoteContextAwareWidget extends BasicWidget {
 
 /** Instance shape of `RightPanelWidget` (subset) — a widget shown in the right sidebar. */
 interface RightPanelWidget extends NoteContextAwareWidget {
-    /** Title shown in the right-panel header. */
+    /**
+     * The title shown in the panel's header, `Untitled widget` unless overridden. The panel reads
+     * it once, when it renders.
+     */
     readonly widgetTitle: string;
-    /** Builds the panel body. Override to render the right-panel content. */
+    /**
+     * Builds the panel's body. Override it to fill `this.$body`, the jQuery element the panel
+     * creates for the content, instead of `doRender()`. It can return a promise when the body
+     * needs asynchronous work; an error that promise rejects with is logged.
+     */
     doRenderBody(): void | Promise<void>;
 }
 
@@ -329,10 +889,21 @@ type WidgetClass<T> = new (...args: unknown[]) => T;
 
 /** An attribute to create together with a note (see {@link ScriptCreateNoteOpts.attributes}). */
 export interface ScriptCreateAttribute {
+    /** The type of the attribute: `label` or `relation`. */
     type: "label" | "relation";
+    /** The name of the attribute, without the `#` or `~` prefix. */
     name: string;
+    /**
+     * The value of the attribute. For a relation, it is the ID of the target note. Defaults to an
+     * empty string.
+     */
     value?: string;
+    /** Whether the note's descendants inherit the attribute. Defaults to `false`. */
     isInheritable?: boolean;
+    /**
+     * The place of the attribute among the note's attributes, which are listed by ascending
+     * `position`. Defaults to 10 more than the highest position among the note's attributes.
+     */
     position?: number;
 }
 
@@ -650,7 +1221,11 @@ export interface FrontendApi {
      */
     triggerEvent(name: string, data?: Record<string, unknown>): Promise<unknown>;
     /**
-     * @param {object} $el - jquery object on which to set up the tooltip
+     * Shows a preview of the linked note while the mouse pointer rests on the element, as Trilium
+     * does for links in note content. The element must be a link whose `href` or `data-href`
+     * points to a note, such as `#root/abc123`.
+     *
+     * @param el The link, as a jQuery object.
      */
     setupElementTooltip(el: unknown): void;
     /**
@@ -870,32 +1445,86 @@ export interface ScriptBRevision {
 
 /** Result of a clone operation ({@link ScriptBNote.cloneTo}); mirrors `CloneResponse`. */
 export interface ScriptCloneResponse {
+    /** Whether the note was cloned. */
     success: boolean;
+    /**
+     * Why the clone failed, such as the note already being in that parent. Present only when
+     * `success` is `false`.
+     */
     message?: string;
+    /**
+     * The ID of the new branch that places the note under the new parent. Present only when
+     * `success` is `true`.
+     */
     branchId?: string;
+    /**
+     * The path of the clone, as note IDs from `root` joined by `/`, ending in the note's ID.
+     * Present only when `success` is `true`.
+     */
     notePath?: string;
 }
 
 /** A single parent→child link in a subtree ({@link ScriptBNote.getSubtree}). */
 export interface ScriptSubtreeRelationship {
+    /**
+     * The ID of the parent note. With `resolveSearch`, it can be a search note and the child one of
+     * its results.
+     */
     parentNoteId: string;
+    /**
+     * The ID of the child note. With `includeArchived: false`, it can name an archived note that
+     * the list of notes leaves out.
+     */
     childNoteId: string;
 }
 
 /** Options accepted by the subtree traversal helpers on {@link ScriptBNote}. */
 export interface ScriptSubtreeOpts {
+    /** Whether to include archived notes and their descendants. Defaults to `true`. */
     includeArchived?: boolean;
+    /**
+     * Whether to descend into the hidden subtree, `_hidden`, which holds Trilium's system notes.
+     * Defaults to `false`.
+     */
     includeHidden?: boolean;
+    /**
+     * Whether to run each search note and include its results as its children. Defaults to `false`,
+     * which includes the search note but none of its results.
+     */
     resolveSearch?: boolean;
 }
 
 /** Input accepted by {@link ScriptBNote.saveAttachment}. */
 export interface ScriptSaveAttachmentInput {
+    /**
+     * The ID of the attachment to update. Omit it to create a new attachment, which gets an ID of
+     * its own.
+     */
     attachmentId?: string;
+    /**
+     * The purpose of the attachment, such as `image` or `file`. Used only when a new attachment is
+     * created.
+     */
     role: string;
+    /**
+     * The MIME type of the content, such as `image/png`. Used only when a new attachment is
+     * created.
+     */
     mime: string;
+    /**
+     * The title of the attachment, usually its file name. Used when a new attachment is created,
+     * and to find the attachment to update when `matchBy` is `"title"`.
+     */
     title: string;
+    /**
+     * The content of the attachment: a string, or bytes for binary content. Defaults to an empty
+     * string.
+     */
     content?: string | Uint8Array;
+    /**
+     * The place of the attachment among the note's attachments, which `getAttachments()` lists by
+     * ascending `position`. Used only when a new attachment is created.
+     */
     position?: number;
 }
 
@@ -1797,7 +2426,9 @@ export interface ScriptBNote {
 
 /** Result of the backend note-creation helpers. */
 export interface ScriptNoteAndBranch {
+    /** The new note. For `duplicateSubtree()`, it is the copy of the original note. */
     note: ScriptBNote;
+    /** The branch that places the new note under its parent. */
     branch: ScriptBBranch;
 }
 

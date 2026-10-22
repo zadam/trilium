@@ -1088,14 +1088,16 @@ type ScriptDayjs = (date?: string | number | Date) => ScriptDayjsInstance
 
 ### `ScriptAttribute`
 
+A label or relation attached to a note.
+
 | Property | Description |
 | --- | --- |
-| `attributeId` | `string` |
-| `type` | `"label" \| "relation"` |
-| `name` | `string` |
-| `value` | `string` |
-| `isInheritable` | `boolean` |
-| `isOwned` | `boolean` |
+| `attributeId` | `string`  <br>The ID of the attribute. |
+| `type` | `"label" \| "relation"`  <br>The type of the attribute: `label` or `relation`. |
+| `name` | `string`  <br>The name of the attribute, without the `#` or `~` prefix. |
+| `value` | `string`  <br>The value of the attribute. For a relation, it is the ID of the target note. For a label without a value, it is an empty string. |
+| `isInheritable` | `boolean`  <br>Whether the note's descendants inherit the attribute. |
+| `isOwned` | `boolean`  <br>Not set by Trilium: neither frontend nor backend attributes carry this property, so it reads `undefined`. |
 
 ### `ScriptNoteAndBranch`
 
@@ -1103,8 +1105,8 @@ Result of the backend note-creation helpers.
 
 | Property | Description |
 | --- | --- |
-| `note` | `ScriptBNote` |
-| `branch` | `ScriptBBranch` |
+| `note` | `ScriptBNote`  <br>The new note. For `duplicateSubtree()`, it is the copy of the original note. |
+| `branch` | `ScriptBBranch`  <br>The branch that places the new note under its parent. |
 
 ### `ScriptSubtreeOpts`
 
@@ -1112,9 +1114,9 @@ Options accepted by the subtree traversal helpers on `ScriptBNote`.
 
 | Property | Description |
 | --- | --- |
-| `includeArchived`  <br>_optional_ | `boolean` |
-| `includeHidden`  <br>_optional_ | `boolean` |
-| `resolveSearch`  <br>_optional_ | `boolean` |
+| `includeArchived`  <br>_optional_ | `boolean`  <br>Whether to include archived notes and their descendants. Defaults to `true`. |
+| `includeHidden`  <br>_optional_ | `boolean`  <br>Whether to descend into the hidden subtree, `_hidden`, which holds Trilium's system notes. Defaults to `false`. |
+| `resolveSearch`  <br>_optional_ | `boolean`  <br>Whether to run each search note and include its results as its children. Defaults to `false`, which includes the search note but none of its results. |
 
 ### `ScriptSubtreeRelationship`
 
@@ -1122,8 +1124,8 @@ A single parent→child link in a subtree (`ScriptBNote.getSubtree`).
 
 | Property | Description |
 | --- | --- |
-| `parentNoteId` | `string` |
-| `childNoteId` | `string` |
+| `parentNoteId` | `string`  <br>The ID of the parent note. With `resolveSearch`, it can be a search note and the child one of its results. |
+| `childNoteId` | `string`  <br>The ID of the child note. With `includeArchived: false`, it can name an archived note that the list of notes leaves out. |
 
 ### `ScriptNotePathRecord`
 
@@ -1131,11 +1133,11 @@ One resolved tree path to a note (subset of the client's `NotePathRecord`).
 
 | Property | Description |
 | --- | --- |
-| `isArchived` | `boolean` |
-| `isInHoistedSubTree` | `boolean` |
-| `isSearch`  <br>_optional_ | `boolean` |
-| `notePath` | `string[]` |
-| `isHidden` | `boolean` |
+| `isArchived` | `boolean`  <br>Whether a note on the path, the note itself included, is archived, which means it has the `#archived` label, owned or inherited. |
+| `isInHoistedSubTree` | `boolean`  <br>Whether the path passes through the hoisted note passed to `getSortedNotePathRecords()`. It is always `true` when the hoisted note is `root`. |
+| `isSearch`  <br>_optional_ | `boolean`  <br>Whether the note itself is a search note. Only frontend scripts get this property; backend records leave it out. |
+| `notePath` | `string[]`  <br>The note IDs along the path, from `root` to the note itself. |
+| `isHidden` | `boolean`  <br>Whether the path passes through the hidden subtree, `_hidden`, which holds Trilium's system notes. |
 
 ### `ScriptAttachment`
 
@@ -1143,13 +1145,13 @@ An attachment as seen by frontend scripts (subset of the client's `FAttachment`)
 
 | Property | Description |
 | --- | --- |
-| `attachmentId` | `string` |
-| `ownerId` | `string` |
-| `role` | `string` |
-| `mime` | `string` |
-| `title` | `string` |
-| `utcDateModified` | `string` |
-| `contentLength` | `number` |
+| `attachmentId` | `string`  <br>The ID of the attachment. |
+| `ownerId` | `string`  <br>The ID of the note the attachment belongs to. For an attachment of a revision, it is the ID of the revision. |
+| `role` | `string`  <br>The purpose of the attachment, such as `image` for an image shown in a text note or `file` for an attached file. Trilium also uses roles of its own, such as `viewConfig` for a collection's view settings. |
+| `mime` | `string`  <br>The MIME type of the attachment's content, such as `image/png`. |
+| `title` | `string`  <br>The title of the attachment, usually its file name. |
+| `utcDateModified` | `string`  <br>The date and time, in UTC, that the attachment was last saved, such as `2026-10-22 12:03:05.123Z`. Replacing the content counts as saving. |
+| `contentLength` | `number`  <br>The length of the attachment's content. Only some ways of loading an attachment fill it in, such as `getAttachments()`; on the backend, `getAttachmentsByRole()` leaves it `undefined`. |
 
 ### `ScriptSaveAttachmentInput`
 
@@ -1157,12 +1159,12 @@ Input accepted by `ScriptBNote.saveAttachment`.
 
 | Property | Description |
 | --- | --- |
-| `attachmentId`  <br>_optional_ | `string` |
-| `role` | `string` |
-| `mime` | `string` |
-| `title` | `string` |
-| `content`  <br>_optional_ | `string \| Uint8Array<ArrayBufferLike>` |
-| `position`  <br>_optional_ | `number` |
+| `attachmentId`  <br>_optional_ | `string`  <br>The ID of the attachment to update. Omit it to create a new attachment, which gets an ID of its own. |
+| `role` | `string`  <br>The purpose of the attachment, such as `image` or `file`. Used only when a new attachment is created. |
+| `mime` | `string`  <br>The MIME type of the content, such as `image/png`. Used only when a new attachment is created. |
+| `title` | `string`  <br>The title of the attachment, usually its file name. Used when a new attachment is created, and to find the attachment to update when `matchBy` is `"title"`. |
+| `content`  <br>_optional_ | `string \| Uint8Array<ArrayBufferLike>`  <br>The content of the attachment: a string, or bytes for binary content. Defaults to an empty string. |
+| `position`  <br>_optional_ | `number`  <br>The place of the attachment among the note's attachments, which `getAttachments()` lists by ascending `position`. Used only when a new attachment is created. |
 
 ### `ScriptCloneResponse`
 
@@ -1170,7 +1172,7 @@ Result of a clone operation (`ScriptBNote.cloneTo`); mirrors `CloneResponse`.
 
 | Property | Description |
 | --- | --- |
-| `success` | `boolean` |
-| `message`  <br>_optional_ | `string` |
-| `branchId`  <br>_optional_ | `string` |
-| `notePath`  <br>_optional_ | `string` |
+| `success` | `boolean`  <br>Whether the note was cloned. |
+| `message`  <br>_optional_ | `string`  <br>Why the clone failed, such as the note already being in that parent. Present only when `success` is `false`. |
+| `branchId`  <br>_optional_ | `string`  <br>The ID of the new branch that places the note under the new parent. Present only when `success` is `true`. |
+| `notePath`  <br>_optional_ | `string`  <br>The path of the clone, as note IDs from `root` joined by `/`, ending in the note's ID. Present only when `success` is `true`. |
