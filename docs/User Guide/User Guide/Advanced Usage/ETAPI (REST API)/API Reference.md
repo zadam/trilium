@@ -32,21 +32,21 @@ Create a note and place it into the note tree
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `parentNoteId`  <br>_required_ | `EntityId` | Note ID of the parent note in the tree |
-| `title`  <br>_required_ | `string` |  |
-| `type`  <br>_required_ | `string` | One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
-| `mime` | `string` | this needs to be specified only for note types 'code', 'file', 'image'. |
-| `content`  <br>_required_ | `string` |  |
-| `notePosition` | `integer` | Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
-| `prefix` | `string` | Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
-| `isExpanded` | `boolean` | true if this note (as a folder) should appear expanded |
-| `noteId` | `EntityId` | DON'T specify unless you want to force a specific noteId |
-| `branchId` | `EntityId` | DON'T specify unless you want to force a specific branchId |
-| `dateCreated` | `LocalDateTime` | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
-| `utcDateCreated` | `UtcDateTime` | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
-| `utcDateModified` | `UtcDateTime` | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
+| Property | Description |
+| --- | --- |
+| `parentNoteId`  <br>_required_ | `EntityId`  <br>Note ID of the parent note in the tree |
+| `title`  <br>_required_ | `string` |
+| `type`  <br>_required_ | `string`  <br>One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
+| `mime` | `string`  <br>this needs to be specified only for note types 'code', 'file', 'image'. |
+| `content`  <br>_required_ | `string` |
+| `notePosition` | `integer`  <br>Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
+| `prefix` | `string`  <br>Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
+| `isExpanded` | `boolean`  <br>true if this note (as a folder) should appear expanded |
+| `noteId` | `EntityId`  <br>DON'T specify unless you want to force a specific noteId |
+| `branchId` | `EntityId`  <br>DON'T specify unless you want to force a specific branchId |
+| `dateCreated` | `LocalDateTime`  <br>Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
+| `utcDateCreated` | `UtcDateTime`  <br>UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
+| `utcDateModified` | `UtcDateTime`  <br>UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -81,10 +81,10 @@ Create a note and place it into the note tree
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `note` | `Note` |  |
-    | `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+    | Property | Description |
+    | --- | --- |
+    | `note` | `Note` |
+    | `branch` | `Branch`  <br>Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -149,11 +149,11 @@ Create a note and place it into the note tree
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -179,17 +179,17 @@ Search notes
 
 **Query parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `search`  <br>_required_ | `string` | search query string as described in [https://triliumnext.github.io/Docs/Wiki/search.html](https://triliumnext.github.io/Docs/Wiki/search.html) |
-| `fastSearch` | `boolean` | enable fast search (fulltext doesn't look into content) |
-| `includeArchivedNotes` | `boolean` | search by default ignores archived notes. Set to 'true' to includes archived notes into search results. |
-| `ancestorNoteId` | `EntityId` | search only in a subtree identified by the subtree noteId. By default whole tree is searched. |
-| `ancestorDepth` | `string` | define how deep in the tree should the notes be searched |
-| `orderBy` | `string` | name of the property/label to order search results by |
-| `orderDirection` | `string` | order direction, ascending or descending. One of `asc`, `desc`. |
-| `limit` | `integer` | limit the number of results you want to receive |
-| `debug` | `boolean` | set to true to get debug information in the response (search query parsing) |
+| Name | Description |
+| --- | --- |
+| `search`  <br>_required_ | `string`  <br>search query string as described in [https://triliumnext.github.io/Docs/Wiki/search.html](https://triliumnext.github.io/Docs/Wiki/search.html) |
+| `fastSearch` | `boolean`  <br>enable fast search (fulltext doesn't look into content) |
+| `includeArchivedNotes` | `boolean`  <br>search by default ignores archived notes. Set to 'true' to includes archived notes into search results. |
+| `ancestorNoteId` | `EntityId`  <br>search only in a subtree identified by the subtree noteId. By default whole tree is searched. |
+| `ancestorDepth` | `string`  <br>define how deep in the tree should the notes be searched |
+| `orderBy` | `string`  <br>name of the property/label to order search results by |
+| `orderDirection` | `string`  <br>order direction, ascending or descending. One of `asc`, `desc`. |
+| `limit` | `integer`  <br>limit the number of results you want to receive |
+| `debug` | `boolean`  <br>set to true to get debug information in the response (search query parsing) |
 
 **Responses**
 
@@ -200,10 +200,10 @@ Search notes
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `results`  <br>_required_ | `array of Note` |  |
-    | `debugInfo` | `object` | debugging info on parsing the search query enabled with &debug=true parameter |
+    | Property | Description |
+    | --- | --- |
+    | `results`  <br>_required_ | `array of Note` |
+    | `debugInfo` | `object`  <br>debugging info on parsing the search query enabled with &debug=true parameter |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -262,11 +262,11 @@ Search notes
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -292,9 +292,9 @@ Returns a note identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -305,23 +305,23 @@ Returns a note identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -375,11 +375,11 @@ Returns a note identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -405,9 +405,9 @@ deletes a single note based on the noteId supplied
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -422,11 +422,11 @@ deletes a single note based on the noteId supplied
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -452,9 +452,9 @@ patch a note identified by the noteId with changes in the body
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Request body** (required)
 
@@ -463,23 +463,23 @@ patch a note identified by the noteId with changes in the body
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `noteId` | `EntityId` |  |
-| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` |  |
-| `isProtected` | `boolean` |  |
-| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` |  |
-| `parentNoteIds` | `EntityIdList` |  |
-| `childNoteIds` | `EntityIdList` |  |
-| `parentBranchIds` | `EntityIdList` |  |
-| `childBranchIds` | `EntityIdList` |  |
-| `dateCreated` | `LocalDateTime` |  |
-| `dateModified` | `LocalDateTime` |  |
-| `utcDateCreated` | `UtcDateTime` |  |
-| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Description |
+| --- | --- |
+| `noteId` | `EntityId` |
+| `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |
+| `isProtected` | `boolean` |
+| `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |
+| `parentNoteIds` | `EntityIdList` |
+| `childNoteIds` | `EntityIdList` |
+| `parentBranchIds` | `EntityIdList` |
+| `childBranchIds` | `EntityIdList` |
+| `dateCreated` | `LocalDateTime` |
+| `dateModified` | `LocalDateTime` |
+| `utcDateCreated` | `UtcDateTime` |
+| `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -508,23 +508,23 @@ patch a note identified by the noteId with changes in the body
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -578,11 +578,11 @@ patch a note identified by the noteId with changes in the body
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -608,9 +608,9 @@ Returns note content identified by its ID. The response carries the note's MIME 
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -628,9 +628,9 @@ Updates note content identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Request body** (required)
 
@@ -655,15 +655,15 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Query parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `format` | `any` | One of `html`, `markdown`, `share`. |
+| Name | Description |
+| --- | --- |
+| `format` | `any`  <br>One of `html`, `markdown`, `share`. |
 
 **Responses**
 
@@ -678,11 +678,11 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -708,9 +708,9 @@ Imports ZIP file into a given note.
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -721,10 +721,10 @@ Imports ZIP file into a given note.
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `note` | `Note` |  |
-    | `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+    | Property | Description |
+    | --- | --- |
+    | `note` | `Note` |
+    | `branch` | `Branch`  <br>Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -789,11 +789,11 @@ Imports ZIP file into a given note.
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -819,9 +819,9 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -832,9 +832,9 @@ Restore a deleted note. The note must be deleted and must have at least one unde
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `success` | `boolean` |  |
+    | Property | Description |
+    | --- | --- |
+    | `success` | `boolean` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -855,11 +855,11 @@ Restore a deleted note. The note must be deleted and must have at least one unde
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -885,9 +885,9 @@ Returns recent changes including note creations, modifications, and deletions
 
 **Query parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `ancestorNoteId` | `EntityId` | Limit changes to a subtree identified by this note ID. Defaults to "root" (all notes). |
+| Name | Description |
+| --- | --- |
+| `ancestorNoteId` | `EntityId`  <br>Limit changes to a subtree identified by this note ID. Defaults to "root" (all notes). |
 
 **Responses**
 
@@ -918,11 +918,11 @@ Returns recent changes including note creations, modifications, and deletions
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -957,15 +957,15 @@ Create a branch (clone a note to a different location in the tree). In case ther
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `branchId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `parentNoteId` | `EntityId` | identifies the parent note |
-| `prefix` | `string` |  |
-| `notePosition` | `integer (int32)` |  |
-| `isExpanded` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
+| Property | Description |
+| --- | --- |
+| `branchId` | `EntityId` |
+| `noteId` | `EntityId`  <br>identifies the child note |
+| `parentNoteId` | `EntityId`  <br>identifies the parent note |
+| `prefix` | `string` |
+| `notePosition` | `integer (int32)` |
+| `isExpanded` | `boolean` |
+| `utcDateModified` | `UtcDateTime` |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -991,15 +991,15 @@ Create a branch (clone a note to a different location in the tree). In case ther
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `branchId` | `EntityId` |  |
-    | `noteId` | `EntityId` | identifies the child note |
-    | `parentNoteId` | `EntityId` | identifies the parent note |
-    | `prefix` | `string` |  |
-    | `notePosition` | `integer (int32)` |  |
-    | `isExpanded` | `boolean` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
+    | Property | Description |
+    | --- | --- |
+    | `branchId` | `EntityId` |
+    | `noteId` | `EntityId`  <br>identifies the child note |
+    | `parentNoteId` | `EntityId`  <br>identifies the parent note |
+    | `prefix` | `string` |
+    | `notePosition` | `integer (int32)` |
+    | `isExpanded` | `boolean` |
+    | `utcDateModified` | `UtcDateTime` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1026,15 +1026,15 @@ Create a branch (clone a note to a different location in the tree). In case ther
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `branchId` | `EntityId` |  |
-    | `noteId` | `EntityId` | identifies the child note |
-    | `parentNoteId` | `EntityId` | identifies the parent note |
-    | `prefix` | `string` |  |
-    | `notePosition` | `integer (int32)` |  |
-    | `isExpanded` | `boolean` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
+    | Property | Description |
+    | --- | --- |
+    | `branchId` | `EntityId` |
+    | `noteId` | `EntityId`  <br>identifies the child note |
+    | `parentNoteId` | `EntityId`  <br>identifies the parent note |
+    | `prefix` | `string` |
+    | `notePosition` | `integer (int32)` |
+    | `isExpanded` | `boolean` |
+    | `utcDateModified` | `UtcDateTime` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1061,11 +1061,11 @@ Create a branch (clone a note to a different location in the tree). In case ther
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1091,9 +1091,9 @@ Returns a branch identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `branchId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `branchId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -1104,15 +1104,15 @@ Returns a branch identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `branchId` | `EntityId` |  |
-    | `noteId` | `EntityId` | identifies the child note |
-    | `parentNoteId` | `EntityId` | identifies the parent note |
-    | `prefix` | `string` |  |
-    | `notePosition` | `integer (int32)` |  |
-    | `isExpanded` | `boolean` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
+    | Property | Description |
+    | --- | --- |
+    | `branchId` | `EntityId` |
+    | `noteId` | `EntityId`  <br>identifies the child note |
+    | `parentNoteId` | `EntityId`  <br>identifies the parent note |
+    | `prefix` | `string` |
+    | `notePosition` | `integer (int32)` |
+    | `isExpanded` | `boolean` |
+    | `utcDateModified` | `UtcDateTime` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1139,11 +1139,11 @@ Returns a branch identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1169,9 +1169,9 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `branchId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `branchId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -1186,11 +1186,11 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1216,9 +1216,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `branchId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `branchId`  <br>_required_ | `EntityId` |
 
 **Request body** (required)
 
@@ -1227,15 +1227,15 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `branchId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `parentNoteId` | `EntityId` | identifies the parent note |
-| `prefix` | `string` |  |
-| `notePosition` | `integer (int32)` |  |
-| `isExpanded` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
+| Property | Description |
+| --- | --- |
+| `branchId` | `EntityId` |
+| `noteId` | `EntityId`  <br>identifies the child note |
+| `parentNoteId` | `EntityId`  <br>identifies the parent note |
+| `prefix` | `string` |
+| `notePosition` | `integer (int32)` |
+| `isExpanded` | `boolean` |
+| `utcDateModified` | `UtcDateTime` |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -1261,15 +1261,15 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `branchId` | `EntityId` |  |
-    | `noteId` | `EntityId` | identifies the child note |
-    | `parentNoteId` | `EntityId` | identifies the parent note |
-    | `prefix` | `string` |  |
-    | `notePosition` | `integer (int32)` |  |
-    | `isExpanded` | `boolean` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
+    | Property | Description |
+    | --- | --- |
+    | `branchId` | `EntityId` |
+    | `noteId` | `EntityId`  <br>identifies the child note |
+    | `parentNoteId` | `EntityId`  <br>identifies the parent note |
+    | `prefix` | `string` |
+    | `notePosition` | `integer (int32)` |
+    | `isExpanded` | `boolean` |
+    | `utcDateModified` | `UtcDateTime` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1296,11 +1296,11 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1326,9 +1326,9 @@ notePositions in branches are not automatically pushed to connected clients and 
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `parentNoteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `parentNoteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -1343,11 +1343,11 @@ notePositions in branches are not automatically pushed to connected clients and 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1382,16 +1382,16 @@ create an attribute for a given note
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
+| Property | Description |
+| --- | --- |
+| `attributeId` | `EntityId` |
+| `noteId` | `EntityId`  <br>identifies the child note |
+| `type` | `string`  <br>One of `label`, `relation`. |
+| `name` | `string` |
+| `value` | `string` |
+| `position` | `integer (int32)` |
+| `isInheritable` | `boolean` |
+| `utcDateModified` | `UtcDateTime` |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -1419,16 +1419,16 @@ create an attribute for a given note
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `attributeId` | `EntityId` |  |
-    | `noteId` | `EntityId` | identifies the child note |
-    | `type` | `string` | One of `label`, `relation`. |
-    | `name` | `string` |  |
-    | `value` | `string` |  |
-    | `position` | `integer (int32)` |  |
-    | `isInheritable` | `boolean` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
+    | Property | Description |
+    | --- | --- |
+    | `attributeId` | `EntityId` |
+    | `noteId` | `EntityId`  <br>identifies the child note |
+    | `type` | `string`  <br>One of `label`, `relation`. |
+    | `name` | `string` |
+    | `value` | `string` |
+    | `position` | `integer (int32)` |
+    | `isInheritable` | `boolean` |
+    | `utcDateModified` | `UtcDateTime` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1456,11 +1456,11 @@ create an attribute for a given note
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1486,9 +1486,9 @@ Returns an attribute identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attributeId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attributeId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -1499,16 +1499,16 @@ Returns an attribute identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `attributeId` | `EntityId` |  |
-    | `noteId` | `EntityId` | identifies the child note |
-    | `type` | `string` | One of `label`, `relation`. |
-    | `name` | `string` |  |
-    | `value` | `string` |  |
-    | `position` | `integer (int32)` |  |
-    | `isInheritable` | `boolean` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
+    | Property | Description |
+    | --- | --- |
+    | `attributeId` | `EntityId` |
+    | `noteId` | `EntityId`  <br>identifies the child note |
+    | `type` | `string`  <br>One of `label`, `relation`. |
+    | `name` | `string` |
+    | `value` | `string` |
+    | `position` | `integer (int32)` |
+    | `isInheritable` | `boolean` |
+    | `utcDateModified` | `UtcDateTime` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1536,11 +1536,11 @@ Returns an attribute identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1566,9 +1566,9 @@ deletes an attribute based on the attributeId supplied.
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attributeId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attributeId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -1583,11 +1583,11 @@ deletes an attribute based on the attributeId supplied.
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1613,9 +1613,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attributeId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attributeId`  <br>_required_ | `EntityId` |
 
 **Request body** (required)
 
@@ -1624,16 +1624,16 @@ patch an attribute identified by the attributeId with changes in the body. For l
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
+| Property | Description |
+| --- | --- |
+| `attributeId` | `EntityId` |
+| `noteId` | `EntityId`  <br>identifies the child note |
+| `type` | `string`  <br>One of `label`, `relation`. |
+| `name` | `string` |
+| `value` | `string` |
+| `position` | `integer (int32)` |
+| `isInheritable` | `boolean` |
+| `utcDateModified` | `UtcDateTime` |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -1661,16 +1661,16 @@ patch an attribute identified by the attributeId with changes in the body. For l
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `attributeId` | `EntityId` |  |
-    | `noteId` | `EntityId` | identifies the child note |
-    | `type` | `string` | One of `label`, `relation`. |
-    | `name` | `string` |  |
-    | `value` | `string` |  |
-    | `position` | `integer (int32)` |  |
-    | `isInheritable` | `boolean` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
+    | Property | Description |
+    | --- | --- |
+    | `attributeId` | `EntityId` |
+    | `noteId` | `EntityId`  <br>identifies the child note |
+    | `type` | `string`  <br>One of `label`, `relation`. |
+    | `name` | `string` |
+    | `value` | `string` |
+    | `position` | `integer (int32)` |
+    | `isInheritable` | `boolean` |
+    | `utcDateModified` | `UtcDateTime` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1698,11 +1698,11 @@ patch an attribute identified by the attributeId with changes in the body. For l
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1732,9 +1732,9 @@ Returns all attachments for a note identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -1767,11 +1767,11 @@ Returns all attachments for a note identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1802,14 +1802,14 @@ create an attachment
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` |  |
-| `mime` | `string` |  |
-| `title` | `string` |  |
-| `content` | `string` | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
-| `position` | `integer (int32)` |  |
+| Property | Description |
+| --- | --- |
+| `ownerId` | `EntityId`  <br>identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |
+| `mime` | `string` |
+| `title` | `string` |
+| `content` | `string`  <br>Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
+| `position` | `integer (int32)` |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -1837,19 +1837,19 @@ create an attachment
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `attachmentId` | `EntityId` |  |
-    | `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
-    | `role` | `string` |  |
-    | `mime` | `string` |  |
-    | `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-    | `position` | `integer (int32)` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
-    | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
-    | `contentLength` | `integer (int32)` |  |
+    | Property | Description |
+    | --- | --- |
+    | `attachmentId` | `EntityId` |
+    | `ownerId` | `EntityId`  <br>identifies the owner of the attachment, is either noteId or revisionId |
+    | `role` | `string` |
+    | `mime` | `string` |
+    | `title` | `string`  <br>Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+    | `position` | `integer (int32)` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateModified` | `UtcDateTime` |
+    | `utcDateScheduledForErasureSince` | `UtcDateTime` |
+    | `contentLength` | `integer (int32)` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1880,11 +1880,11 @@ create an attachment
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1910,9 +1910,9 @@ Returns an attachment identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attachmentId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -1923,19 +1923,19 @@ Returns an attachment identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `attachmentId` | `EntityId` |  |
-    | `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
-    | `role` | `string` |  |
-    | `mime` | `string` |  |
-    | `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-    | `position` | `integer (int32)` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
-    | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
-    | `contentLength` | `integer (int32)` |  |
+    | Property | Description |
+    | --- | --- |
+    | `attachmentId` | `EntityId` |
+    | `ownerId` | `EntityId`  <br>identifies the owner of the attachment, is either noteId or revisionId |
+    | `role` | `string` |
+    | `mime` | `string` |
+    | `title` | `string`  <br>Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+    | `position` | `integer (int32)` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateModified` | `UtcDateTime` |
+    | `utcDateScheduledForErasureSince` | `UtcDateTime` |
+    | `contentLength` | `integer (int32)` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1966,11 +1966,11 @@ Returns an attachment identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -1996,9 +1996,9 @@ deletes an attachment based on the attachmentId supplied.
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attachmentId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -2013,11 +2013,11 @@ deletes an attachment based on the attachmentId supplied.
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2043,9 +2043,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attachmentId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |
 
 **Request body** (required)
 
@@ -2054,19 +2054,19 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `attachmentId` | `EntityId` |  |
-| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` |  |
-| `mime` | `string` |  |
-| `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-| `position` | `integer (int32)` |  |
-| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-| `dateModified` | `LocalDateTime` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-| `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
-| `contentLength` | `integer (int32)` |  |
+| Property | Description |
+| --- | --- |
+| `attachmentId` | `EntityId` |
+| `ownerId` | `EntityId`  <br>identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |
+| `mime` | `string` |
+| `title` | `string`  <br>Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` |
+| `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` |
+| `utcDateModified` | `UtcDateTime` |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` |
+| `contentLength` | `integer (int32)` |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -2095,19 +2095,19 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `attachmentId` | `EntityId` |  |
-    | `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
-    | `role` | `string` |  |
-    | `mime` | `string` |  |
-    | `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-    | `position` | `integer (int32)` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
-    | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
-    | `contentLength` | `integer (int32)` |  |
+    | Property | Description |
+    | --- | --- |
+    | `attachmentId` | `EntityId` |
+    | `ownerId` | `EntityId`  <br>identifies the owner of the attachment, is either noteId or revisionId |
+    | `role` | `string` |
+    | `mime` | `string` |
+    | `title` | `string`  <br>Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+    | `position` | `integer (int32)` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateModified` | `UtcDateTime` |
+    | `utcDateScheduledForErasureSince` | `UtcDateTime` |
+    | `contentLength` | `integer (int32)` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2138,11 +2138,11 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2168,9 +2168,9 @@ Returns attachment content identified by its ID. The response carries the attach
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attachmentId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -2188,9 +2188,9 @@ Updates attachment content identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `attachmentId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `attachmentId`  <br>_required_ | `EntityId` |
 
 **Request body** (required)
 
@@ -2219,15 +2219,15 @@ Create a note revision for the given note
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Query parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `format` | `any` | One of `html`, `markdown`. |
+| Name | Description |
+| --- | --- |
+| `format` | `any`  <br>One of `html`, `markdown`. |
 
 **Responses**
 
@@ -2242,11 +2242,11 @@ Create a note revision for the given note
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2272,9 +2272,9 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `noteId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -2309,11 +2309,11 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2339,9 +2339,9 @@ Returns a revision identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `revisionId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `revisionId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -2352,21 +2352,21 @@ Returns a revision identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `revisionId` | `EntityId` |  |
-    | `noteId` | `EntityId` |  |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `title` | `string` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `dateLastEdited` | `LocalDateTime` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `utcDateLastEdited` | `UtcDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` |  |
-    | `contentLength` | `integer (int32)` |  |
+    | Property | Description |
+    | --- | --- |
+    | `revisionId` | `EntityId` |
+    | `noteId` | `EntityId` |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `title` | `string` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `dateLastEdited` | `LocalDateTime` |
+    | `dateCreated` | `LocalDateTime` |
+    | `utcDateLastEdited` | `UtcDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime` |
+    | `contentLength` | `integer (int32)` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2399,11 +2399,11 @@ Returns a revision identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2429,9 +2429,9 @@ Returns revision content identified by its ID
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `revisionId`  <br>_required_ | `EntityId` |  |
+| Name | Description |
+| --- | --- |
+| `revisionId`  <br>_required_ | `EntityId` |
 
 **Responses**
 
@@ -2446,11 +2446,11 @@ Returns revision content identified by its ID
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2480,9 +2480,9 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `date`  <br>_required_ | `string (date)` |  |
+| Name | Description |
+| --- | --- |
+| `date`  <br>_required_ | `string (date)` |
 
 **Responses**
 
@@ -2493,23 +2493,23 @@ returns an "inbox" note, into which note can be created. Date will be used depen
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2563,11 +2563,11 @@ returns an "inbox" note, into which note can be created. Date will be used depen
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2593,9 +2593,9 @@ returns a day note for a given date. Gets created if doesn't exist.
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `date`  <br>_required_ | `string (date)` |  |
+| Name | Description |
+| --- | --- |
+| `date`  <br>_required_ | `string (date)` |
 
 **Responses**
 
@@ -2606,23 +2606,23 @@ returns a day note for a given date. Gets created if doesn't exist.
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2676,11 +2676,11 @@ returns a day note for a given date. Gets created if doesn't exist.
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2706,9 +2706,9 @@ Returns the day note for the first day of the week containing the given date, ho
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `date`  <br>_required_ | `string (date)` | Any date within the week, in the format YYYY-MM-DD. |
+| Name | Description |
+| --- | --- |
+| `date`  <br>_required_ | `string (date)`  <br>Any date within the week, in the format YYYY-MM-DD. |
 
 **Responses**
 
@@ -2719,23 +2719,23 @@ Returns the day note for the first day of the week containing the given date, ho
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2789,11 +2789,11 @@ Returns the day note for the first day of the week containing the given date, ho
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2819,9 +2819,9 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `week`  <br>_required_ | `string` | The ISO 8601 week identifier (YYYY-Www). |
+| Name | Description |
+| --- | --- |
+| `week`  <br>_required_ | `string`  <br>The ISO 8601 week identifier (YYYY-Www). |
 
 **Responses**
 
@@ -2832,23 +2832,23 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2902,11 +2902,11 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -2932,9 +2932,9 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `month`  <br>_required_ | `string` |  |
+| Name | Description |
+| --- | --- |
+| `month`  <br>_required_ | `string` |
 
 **Responses**
 
@@ -2945,23 +2945,23 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3015,11 +3015,11 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3045,9 +3045,9 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `year`  <br>_required_ | `string` |  |
+| Name | Description |
+| --- | --- |
+| `year`  <br>_required_ | `string` |
 
 **Responses**
 
@@ -3058,23 +3058,23 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `noteId` | `EntityId` |  |
-    | `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-    | `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-    | `mime` | `string` |  |
-    | `isProtected` | `boolean` |  |
-    | `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-    | `attributes` | `AttributeList` |  |
-    | `parentNoteIds` | `EntityIdList` |  |
-    | `childNoteIds` | `EntityIdList` |  |
-    | `parentBranchIds` | `EntityIdList` |  |
-    | `childBranchIds` | `EntityIdList` |  |
-    | `dateCreated` | `LocalDateTime` |  |
-    | `dateModified` | `LocalDateTime` |  |
-    | `utcDateCreated` | `UtcDateTime` |  |
-    | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+    | Property | Description |
+    | --- | --- |
+    | `noteId` | `EntityId` |
+    | `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+    | `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+    | `mime` | `string` |
+    | `isProtected` | `boolean` |
+    | `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+    | `attributes` | `AttributeList` |
+    | `parentNoteIds` | `EntityIdList` |
+    | `childNoteIds` | `EntityIdList` |
+    | `parentBranchIds` | `EntityIdList` |
+    | `childBranchIds` | `EntityIdList` |
+    | `dateCreated` | `LocalDateTime` |
+    | `dateModified` | `LocalDateTime` |
+    | `utcDateCreated` | `UtcDateTime` |
+    | `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3128,11 +3128,11 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3167,9 +3167,9 @@ get an ETAPI token based on password for further use with ETAPI. Too many reques
 <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
 <div class="trilium-multicolumn-column">
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `password` | `string` | user's password used to e.g. login to Trilium server and/or protect notes |
+| Property | Description |
+| --- | --- |
+| `password` | `string`  <br>user's password used to e.g. login to Trilium server and/or protect notes |
 
 </div>
 <div class="trilium-multicolumn-column">
@@ -3192,9 +3192,9 @@ get an ETAPI token based on password for further use with ETAPI. Too many reques
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `authToken` | `string` |  |
+    | Property | Description |
+    | --- | --- |
+    | `authToken` | `string` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3219,11 +3219,11 @@ get an ETAPI token based on password for further use with ETAPI. Too many reques
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3260,11 +3260,11 @@ logout (delete/deactivate) an ETAPI token
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3301,16 +3301,16 @@ returns information about the running Trilium instance
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `appVersion` | `string` | Trilium version |
-    | `dbVersion` | `integer (int32)` | DB version |
-    | `syncVersion` | `integer (int32)` | Sync protocol version |
-    | `buildDate` | `string (date-time)` | build date |
-    | `buildRevision` | `string` | git build revision |
-    | `dataDirectory` | `string` | data directory where Trilium stores files |
-    | `clipperProtocolVersion` | `string` | version of the supported Trilium Web Clipper protocol |
-    | `utcDateTime` | `string` | current UTC date time |
+    | Property | Description |
+    | --- | --- |
+    | `appVersion` | `string`  <br>Trilium version |
+    | `dbVersion` | `integer (int32)`  <br>DB version |
+    | `syncVersion` | `integer (int32)`  <br>Sync protocol version |
+    | `buildDate` | `string (date-time)`  <br>build date |
+    | `buildRevision` | `string`  <br>git build revision |
+    | `dataDirectory` | `string`  <br>data directory where Trilium stores files |
+    | `clipperProtocolVersion` | `string`  <br>version of the supported Trilium Web Clipper protocol |
+    | `utcDateTime` | `string`  <br>current UTC date time |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3338,11 +3338,11 @@ returns information about the running Trilium instance
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3368,9 +3368,9 @@ Create a database backup under a given name
 
 **Path parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `backupName`  <br>_required_ | `StringId` | If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file |
+| Name | Description |
+| --- | --- |
+| `backupName`  <br>_required_ | `StringId`  <br>If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file |
 
 **Responses**
 
@@ -3385,11 +3385,11 @@ Create a database backup under a given name
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3417,9 +3417,9 @@ The same data is served by GET /api/metrics to the web session.
 
 **Query parameters**
 
-| Name | Type | Description |
-| --- | --- | --- |
-| `format` | `string` | Response format. Defaults to Prometheus text. One of `prometheus`, `json`. |
+| Name | Description |
+| --- | --- |
+| `format` | `string`  <br>Response format. Defaults to Prometheus text. One of `prometheus`, `json`. |
 
 **Responses**
 
@@ -3442,14 +3442,14 @@ The same data is served by GET /api/metrics to the web session.
         <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
         <div class="trilium-multicolumn-column">
 
-        | Property | Type | Description |
-        | --- | --- | --- |
-        | `version` | `object` |  |
-        | `database` | `object` |  |
-        | `noteTypes` | `object` | Number of active notes per note type |
-        | `attachmentTypes` | `object` | Number of active attachments per MIME type |
-        | `statistics` | `object` |  |
-        | `timestamp` | `string` |  |
+        | Property | Description |
+        | --- | --- |
+        | `version` | `object` |
+        | `database` | `object` |
+        | `noteTypes` | `object`  <br>Number of active notes per note type |
+        | `attachmentTypes` | `object`  <br>Number of active attachments per MIME type |
+        | `statistics` | `object` |
+        | `timestamp` | `string` |
 
         </div>
         <div class="trilium-multicolumn-column">
@@ -3507,11 +3507,11 @@ The same data is served by GET /api/metrics to the web session.
     <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
     <div class="trilium-multicolumn-column">
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-    | `code`  <br>_required_ | `string` | stable string constant |
-    | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+    | Property | Description |
+    | --- | --- |
+    | `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+    | `code`  <br>_required_ | `string`  <br>stable string constant |
+    | `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -3531,106 +3531,106 @@ The same data is served by GET /api/metrics to the web session.
 
 ### `CreateNoteDef`
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `parentNoteId`  <br>_required_ | `EntityId` | Note ID of the parent note in the tree |
-| `title`  <br>_required_ | `string` |  |
-| `type`  <br>_required_ | `string` | One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
-| `mime` | `string` | this needs to be specified only for note types 'code', 'file', 'image'. |
-| `content`  <br>_required_ | `string` |  |
-| `notePosition` | `integer` | Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
-| `prefix` | `string` | Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
-| `isExpanded` | `boolean` | true if this note (as a folder) should appear expanded |
-| `noteId` | `EntityId` | DON'T specify unless you want to force a specific noteId |
-| `branchId` | `EntityId` | DON'T specify unless you want to force a specific branchId |
-| `dateCreated` | `LocalDateTime` | Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
-| `utcDateCreated` | `UtcDateTime` | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
-| `utcDateModified` | `UtcDateTime` | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
+| Property | Description |
+| --- | --- |
+| `parentNoteId`  <br>_required_ | `EntityId`  <br>Note ID of the parent note in the tree |
+| `title`  <br>_required_ | `string` |
+| `type`  <br>_required_ | `string`  <br>One of `text`, `code`, `file`, `image`, `search`, `book`, `relationMap`, `render`. |
+| `mime` | `string`  <br>this needs to be specified only for note types 'code', 'file', 'image'. |
+| `content`  <br>_required_ | `string` |
+| `notePosition` | `integer`  <br>Position of the note in the parent. Normal ordering is 10, 20, 30 ... So if you want to create a note on the first position, use e.g. 5, for second position 15, for last e.g. 1000000 |
+| `prefix` | `string`  <br>Prefix is branch (placement) specific title prefix for the note. Let's say you have your note placed into two different places in the tree, but you want to change the title a bit in one of the placements. For this you can use prefix. |
+| `isExpanded` | `boolean`  <br>true if this note (as a folder) should appear expanded |
+| `noteId` | `EntityId`  <br>DON'T specify unless you want to force a specific noteId |
+| `branchId` | `EntityId`  <br>DON'T specify unless you want to force a specific branchId |
+| `dateCreated` | `LocalDateTime`  <br>Local timestap of the note creation. Specify only if you want to override the default (current datetime in the current timezone/offset). |
+| `utcDateCreated` | `UtcDateTime`  <br>UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
+| `utcDateModified` | `UtcDateTime`  <br>UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
 
 ### `Note`
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `noteId` | `EntityId` |  |
-| `title` | `string` | Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
-| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` |  |
-| `isProtected` | `boolean` |  |
-| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-| `attributes` | `AttributeList` |  |
-| `parentNoteIds` | `EntityIdList` |  |
-| `childNoteIds` | `EntityIdList` |  |
-| `parentBranchIds` | `EntityIdList` |  |
-| `childBranchIds` | `EntityIdList` |  |
-| `dateCreated` | `LocalDateTime` |  |
-| `dateModified` | `LocalDateTime` |  |
-| `utcDateCreated` | `UtcDateTime` |  |
-| `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
+| Property | Description |
+| --- | --- |
+| `noteId` | `EntityId` |
+| `title` | `string`  <br>Title of the note. Returned as "\[protected\]" for protected notes, since ETAPI cannot open a protected session. |
+| `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |
+| `isProtected` | `boolean` |
+| `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+| `attributes` | `AttributeList` |
+| `parentNoteIds` | `EntityIdList` |
+| `childNoteIds` | `EntityIdList` |
+| `parentBranchIds` | `EntityIdList` |
+| `childBranchIds` | `EntityIdList` |
+| `dateCreated` | `LocalDateTime` |
+| `dateModified` | `LocalDateTime` |
+| `utcDateCreated` | `UtcDateTime` |
+| `utcDateModified` | `UtcDateTime`  <br>Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
 ### `Branch`
 
 Branch places the note into the tree, it represents the relationship between a parent note and child note
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `branchId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `parentNoteId` | `EntityId` | identifies the parent note |
-| `prefix` | `string` |  |
-| `notePosition` | `integer (int32)` |  |
-| `isExpanded` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
+| Property | Description |
+| --- | --- |
+| `branchId` | `EntityId` |
+| `noteId` | `EntityId`  <br>identifies the child note |
+| `parentNoteId` | `EntityId`  <br>identifies the parent note |
+| `prefix` | `string` |
+| `notePosition` | `integer (int32)` |
+| `isExpanded` | `boolean` |
+| `utcDateModified` | `UtcDateTime` |
 
 ### `NoteWithBranch`
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `note` | `Note` |  |
-| `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
+| Property | Description |
+| --- | --- |
+| `note` | `Note` |
+| `branch` | `Branch`  <br>Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
 ### `Attachment`
 
 Attachment is owned by a note, has title and content
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `attachmentId` | `EntityId` |  |
-| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` |  |
-| `mime` | `string` |  |
-| `title` | `string` | Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
-| `position` | `integer (int32)` |  |
-| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-| `dateModified` | `LocalDateTime` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-| `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
-| `contentLength` | `integer (int32)` |  |
+| Property | Description |
+| --- | --- |
+| `attachmentId` | `EntityId` |
+| `ownerId` | `EntityId`  <br>identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |
+| `mime` | `string` |
+| `title` | `string`  <br>Title of the attachment. Returned as "\[protected\]" for protected attachments, since ETAPI cannot open a protected session. |
+| `position` | `integer (int32)` |
+| `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+| `dateModified` | `LocalDateTime` |
+| `utcDateModified` | `UtcDateTime` |
+| `utcDateScheduledForErasureSince` | `UtcDateTime` |
+| `contentLength` | `integer (int32)` |
 
 ### `CreateAttachment`
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `ownerId` | `EntityId` | identifies the owner of the attachment, is either noteId or revisionId |
-| `role` | `string` |  |
-| `mime` | `string` |  |
-| `title` | `string` |  |
-| `content` | `string` | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
-| `position` | `integer (int32)` |  |
+| Property | Description |
+| --- | --- |
+| `ownerId` | `EntityId`  <br>identifies the owner of the attachment, is either noteId or revisionId |
+| `role` | `string` |
+| `mime` | `string` |
+| `title` | `string` |
+| `content` | `string`  <br>Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
+| `position` | `integer (int32)` |
 
 ### `Attribute`
 
 Attribute (Label, Relation) is a key-value record attached to a note.
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `attributeId` | `EntityId` |  |
-| `noteId` | `EntityId` | identifies the child note |
-| `type` | `string` | One of `label`, `relation`. |
-| `name` | `string` |  |
-| `value` | `string` |  |
-| `position` | `integer (int32)` |  |
-| `isInheritable` | `boolean` |  |
-| `utcDateModified` | `UtcDateTime` |  |
+| Property | Description |
+| --- | --- |
+| `attributeId` | `EntityId` |
+| `noteId` | `EntityId`  <br>identifies the child note |
+| `type` | `string`  <br>One of `label`, `relation`. |
+| `name` | `string` |
+| `value` | `string` |
+| `position` | `integer (int32)` |
+| `isInheritable` | `boolean` |
+| `utcDateModified` | `UtcDateTime` |
 
 ### `AttributeList`
 
@@ -3638,10 +3638,10 @@ Type: `array of Attribute`
 
 ### `SearchResponse`
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `results`  <br>_required_ | `array of Note` |  |
-| `debugInfo` | `object` | debugging info on parsing the search query enabled with &debug=true parameter |
+| Property | Description |
+| --- | --- |
+| `results`  <br>_required_ | `array of Note` |
+| `debugInfo` | `object`  <br>debugging info on parsing the search query enabled with &debug=true parameter |
 
 ### `EntityId`
 
@@ -3665,70 +3665,70 @@ Type: `string`
 
 ### `AppInfo`
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `appVersion` | `string` | Trilium version |
-| `dbVersion` | `integer (int32)` | DB version |
-| `syncVersion` | `integer (int32)` | Sync protocol version |
-| `buildDate` | `string (date-time)` | build date |
-| `buildRevision` | `string` | git build revision |
-| `dataDirectory` | `string` | data directory where Trilium stores files |
-| `clipperProtocolVersion` | `string` | version of the supported Trilium Web Clipper protocol |
-| `utcDateTime` | `string` | current UTC date time |
+| Property | Description |
+| --- | --- |
+| `appVersion` | `string`  <br>Trilium version |
+| `dbVersion` | `integer (int32)`  <br>DB version |
+| `syncVersion` | `integer (int32)`  <br>Sync protocol version |
+| `buildDate` | `string (date-time)`  <br>build date |
+| `buildRevision` | `string`  <br>git build revision |
+| `dataDirectory` | `string`  <br>data directory where Trilium stores files |
+| `clipperProtocolVersion` | `string`  <br>version of the supported Trilium Web Clipper protocol |
+| `utcDateTime` | `string`  <br>current UTC date time |
 
 ### `Error`
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
-| `code`  <br>_required_ | `string` | stable string constant |
-| `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+| Property | Description |
+| --- | --- |
+| `status`  <br>_required_ | `integer (int32)`  <br>HTTP status, identical to the one given in HTTP response |
+| `code`  <br>_required_ | `string`  <br>stable string constant |
+| `message`  <br>_required_ | `string`  <br>Human readable error, potentially with more details, |
 
 ### `Revision`
 
 Revision represents a snapshot of note's title and content at some point in the past.
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `revisionId` | `EntityId` |  |
-| `noteId` | `EntityId` |  |
-| `type` | `string` | One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
-| `mime` | `string` |  |
-| `isProtected` | `boolean` |  |
-| `title` | `string` |  |
-| `blobId` | `string` | ID of the blob object which effectively serves as a content hash |
-| `dateLastEdited` | `LocalDateTime` |  |
-| `dateCreated` | `LocalDateTime` |  |
-| `utcDateLastEdited` | `UtcDateTime` |  |
-| `utcDateCreated` | `UtcDateTime` |  |
-| `utcDateModified` | `UtcDateTime` |  |
-| `contentLength` | `integer (int32)` |  |
+| Property | Description |
+| --- | --- |
+| `revisionId` | `EntityId` |
+| `noteId` | `EntityId` |
+| `type` | `string`  <br>One of `text`, `code`, `render`, `file`, `image`, `search`, `relationMap`, `book`, `noteMap`, `mermaid`, `webView`, `shortcut`, `doc`, `contentWidget`, `launcher`. |
+| `mime` | `string` |
+| `isProtected` | `boolean` |
+| `title` | `string` |
+| `blobId` | `string`  <br>ID of the blob object which effectively serves as a content hash |
+| `dateLastEdited` | `LocalDateTime` |
+| `dateCreated` | `LocalDateTime` |
+| `utcDateLastEdited` | `UtcDateTime` |
+| `utcDateCreated` | `UtcDateTime` |
+| `utcDateModified` | `UtcDateTime` |
+| `contentLength` | `integer (int32)` |
 
 ### `RecentChange`
 
 Represents a recent change event (creation, modification, or deletion).
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `noteId` | `EntityId` |  |
-| `title` | `string` | Title at the time of the change (may be "\[protected\]" for protected notes) |
-| `current_title` | `string` | Current title of the note (may be "\[protected\]" for protected notes) |
-| `current_isDeleted` | `boolean` | Whether the note is currently deleted |
-| `current_deleteId` | `string` | Delete ID if the note is deleted |
-| `current_isProtected` | `boolean` | Whether the note is protected |
-| `utcDate` | `UtcDateTime` | UTC timestamp of the change |
-| `date` | `LocalDateTime` | Local timestamp of the change |
-| `canBeUndeleted` | `boolean` | Whether the note can be undeleted (only present for deleted notes) |
+| Property | Description |
+| --- | --- |
+| `noteId` | `EntityId` |
+| `title` | `string`  <br>Title at the time of the change (may be "\[protected\]" for protected notes) |
+| `current_title` | `string`  <br>Current title of the note (may be "\[protected\]" for protected notes) |
+| `current_isDeleted` | `boolean`  <br>Whether the note is currently deleted |
+| `current_deleteId` | `string`  <br>Delete ID if the note is deleted |
+| `current_isProtected` | `boolean`  <br>Whether the note is protected |
+| `utcDate` | `UtcDateTime`  <br>UTC timestamp of the change |
+| `date` | `LocalDateTime`  <br>Local timestamp of the change |
+| `canBeUndeleted` | `boolean`  <br>Whether the note can be undeleted (only present for deleted notes) |
 
 ### `Metrics`
 
 Instance and database metrics, as served by GET /etapi/metrics?format=json
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `version` | `object` |  |
-| `database` | `object` |  |
-| `noteTypes` | `object` | Number of active notes per note type |
-| `attachmentTypes` | `object` | Number of active attachments per MIME type |
-| `statistics` | `object` |  |
-| `timestamp` | `string` |  |
+| Property | Description |
+| --- | --- |
+| `version` | `object` |
+| `database` | `object` |
+| `noteTypes` | `object`  <br>Number of active notes per note type |
+| `attachmentTypes` | `object`  <br>Number of active attachments per MIME type |
+| `statistics` | `object` |
+| `timestamp` | `string` |

@@ -79,15 +79,15 @@ describe("openApiToMarkdown", () => {
         expect(markdown).toContain([
             "**Path parameters**",
             "",
-            "| Name | Type | Description |",
-            "| --- | --- | --- |",
-            "| `noteId`<br>*required* | `EntityId` |  |",
+            "| Name | Description |",
+            "| --- | --- |",
+            "| `noteId`<br>*required* | `EntityId` |",
             "",
             "**Query parameters**",
             "",
-            "| Name | Type | Description |",
-            "| --- | --- | --- |",
-            "| `force` | `boolean` | skip checks |"
+            "| Name | Description |",
+            "| --- | --- |",
+            "| `force` | `boolean`<br>skip checks |"
         ].join("\n"));
         // The body's properties are listed in place, even when its schema is a reference, in a
         // column beside its sample, written as the Markdown export writes a multicolumn layout.
@@ -95,9 +95,9 @@ describe("openApiToMarkdown", () => {
             "<div class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-1\">",
             "<div class=\"trilium-multicolumn-column\">",
             "",
-            "| Property | Type | Description |",
-            "| --- | --- | --- |",
-            "| `title`<br>*required* | `string` |  |",
+            "| Property | Description |",
+            "| --- | --- |",
+            "| `title`<br>*required* | `string` |",
             "",
             "</div>",
             "<div class=\"trilium-multicolumn-column\">",
@@ -202,16 +202,16 @@ describe("openApiToMarkdown", () => {
             "",
             "A note",
             "",
-            "| Property | Type | Description |",
-            "| --- | --- | --- |",
-            "| `noteId`<br>*required* | `EntityId` | The note's ID |",
+            "| Property | Description |",
+            "| --- | --- |",
+            "| `noteId`<br>*required* | `EntityId`<br>The note's ID |",
             // Without a description of its own, a property takes the one of the schema it references.
-            "| `parentNoteId` | `EntityId` | Unique ID |",
-            "| `type` | `string` | note type. One of `text`, `code`. |",
-            "| `attributes` | `array of Attribute` |  |",
-            "| `dateCreated` | `string (date-time) \\| null` |  |",
-            "| `parent` | `EntityId \\| string \\| null` |  |",
-            "| `content` | `EntityId` | Line one line \\| two |"
+            "| `parentNoteId` | `EntityId`<br>Unique ID |",
+            "| `type` | `string`<br>note type. One of `text`, `code`. |",
+            "| `attributes` | `array of Attribute` |",
+            "| `dateCreated` | `string (date-time) \\| null` |",
+            "| `parent` | `EntityId \\| string \\| null` |",
+            "| `content` | `EntityId`<br>Line one line \\| two |"
         ].join("\n"));
     });
 

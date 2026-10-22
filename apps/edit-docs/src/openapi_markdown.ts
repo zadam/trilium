@@ -200,8 +200,8 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         const located = parameters.filter((p) => p.in === location);
         if (located.length) {
             blocks.push(`**${label}**`, table(
-                [ "Name", "Type", "Description" ],
-                located.map((p) => [ nameCell(p.name, p.required), code(typeOf(p.schema)), describe(p) ])
+                [ "Name", "Description" ],
+                located.map((p) => [ nameCell(p.name, p.required), detailsCell(typeOf(p.schema), describe(p)) ])
             ));
         }
     }
@@ -368,14 +368,11 @@ function renderSchema(spec: OpenApiSpec, name: string, schema: Schema) {
 function propertyTable(spec: OpenApiSpec, { properties, required }: Schema) {
     const requiredProperties = new Set(required);
     return table(
-        [ "Property", "Type", "Description" ],
+        [ "Property", "Description" ],
         Object.entries(properties ?? {}).map(([ property, propertySchema ]) => {
             const resolved = resolve(spec, propertySchema);
-            return [
-                nameCell(property, requiredProperties.has(property)),
-                code(typeOf(propertySchema)),
-                describe({ description: propertySchema.description ?? resolved.description, schema: resolved })
-            ];
+            const description = describe({ description: propertySchema.description ?? resolved.description, schema: resolved });
+            return [ nameCell(property, requiredProperties.has(property)), detailsCell(typeOf(propertySchema), description) ];
         })
     );
 }
@@ -476,6 +473,11 @@ function cell(text: string) {
 /** The name cell of a parameter or property, marking it below the name when it is required. */
 function nameCell(text: string, required?: boolean) {
     return required ? `${code(text)}<br>*required*` : code(text);
+}
+
+/** The description cell of a parameter or property, its type on the first line. */
+function detailsCell(type: string, description: string) {
+    return [ code(type), description ].filter(Boolean).join("<br>");
 }
 
 function code(text: string) {
