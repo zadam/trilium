@@ -3,6 +3,7 @@ import type { WidgetsByParent } from "../services/bundle.js";
 import options from "../services/options.js";
 import utils from "../services/utils.js";
 import GlobalMenu from "../widgets/buttons/global_menu.jsx";
+import LeaveFullScreenButton from "../widgets/buttons/leave_full_screen_button.jsx";
 import LeftPaneToggle, { LeftPanePeekButton } from "../widgets/buttons/left_pane_toggle.js";
 import RightPaneToggle from "../widgets/buttons/right_pane_toggle.jsx";
 import ShowAllNotesButton from "../widgets/buttons/show_all_notes_button.jsx";
@@ -73,6 +74,7 @@ export default class DesktopLayout {
                     .optChild(launcherPaneIsHorizontal, <LeftPaneToggle isHorizontalLayout={true} />)
                     .child(<TabHistoryNavigationButtons />)
                     .child(new TabRowWidget().class("full-width"))
+                    .child(<LeaveFullScreenButton />)
                     .child(<RightPaneToggle />)
                     .css("height", "40px")
                     .css("background-color", "var(--launcher-pane-background-color)")
@@ -101,6 +103,7 @@ export default class DesktopLayout {
                                     .class("tab-row-container")
                                     .child(<TabHistoryNavigationButtons />)
                                     .child(new TabRowWidget())
+                                    .child(<LeaveFullScreenButton />)
                                     .child(<RightPaneToggle />)
                                     .css("height", "40px")
                                     .css("align-items", "center")

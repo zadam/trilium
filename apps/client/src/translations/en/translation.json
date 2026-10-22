@@ -2917,7 +2917,8 @@
     "reopen_last_tab": "Reopen last closed tab",
     "move_tab_to_new_window": "Move this tab to a new window",
     "copy_tab_to_new_window": "Copy this tab to a new window",
-    "new_tab": "New tab"
+    "new_tab": "New tab",
+    "leave_full_screen": "Leave full screen"
   },
   "toc": {
     "table_of_contents": "Table of Contents",

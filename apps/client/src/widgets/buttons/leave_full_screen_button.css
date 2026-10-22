@@ -1,0 +1,3 @@
+body:not(.full-screen) .leave-full-screen-button {
+    display: none;
+}
