@@ -284,6 +284,50 @@ describe("openApiToMarkdown", () => {
         ].join("\n"));
     });
 
+    it("lists the properties of inline objects and array items below their parent", () => {
+        const markdown = openApiToMarkdown({
+            info: { title: "Internal API" },
+            paths: {},
+            components: {
+                schemas: {
+                    Related: {
+                        type: "object",
+                        properties: {
+                            results: {
+                                type: "array",
+                                description: "Matches, best first.",
+                                items: {
+                                    type: "object",
+                                    required: [ "notePathArray" ],
+                                    properties: {
+                                        notePathArray: { type: "array", items: { type: "string" }, description: "Path to the note." },
+                                        score: { type: "number" }
+                                    }
+                                }
+                            },
+                            paging: {
+                                type: "object",
+                                properties: { total: { type: "integer", description: "All matches." } }
+                            },
+                            note: { $ref: "#/components/schemas/Related" }
+                        }
+                    }
+                }
+            }
+        });
+
+        // A schema with a heading of its own is linked, not expanded.
+        expect(markdown).toContain([
+            "| Property | Description |",
+            "| --- | --- |",
+            "| `results` | `array of object`<br>Matches, best first. |",
+            "| `results[].notePathArray`<br>*required* | `array of string`<br>Path to the note. |",
+            "| `results[].score` | `number` |",
+            "| `paging` | `object` |",
+            "| `paging.total` | `integer`<br>All matches. |",
+            "| `note` | [`Related`](#schema-Related) |"
+        ].join("\n"));
+    });
 
     it("renders JSON samples of request and response bodies", () => {
         const note = { $ref: "#/components/schemas/Note" };

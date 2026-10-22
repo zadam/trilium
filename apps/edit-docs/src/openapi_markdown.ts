@@ -395,19 +395,32 @@ function renderSchema(spec: OpenApiSpec, name: string, schema: Schema) {
     return blocks;
 }
 
-function propertyTable(spec: OpenApiSpec, { properties, required }: Schema) {
+function propertyTable(spec: OpenApiSpec, schema: Schema) {
+    return table([ "Property", "Description" ], propertyRows(spec, schema, ""));
+}
+
+/**
+ * A row per property, each followed by the rows of the inline object it holds, directly or as its
+ * array's items, named by their path (`results[].score`). A referenced schema has a heading of its
+ * own, so its properties stay there.
+ */
+function propertyRows(spec: OpenApiSpec, { properties, required }: Schema, prefix: string): string[][] {
     const requiredProperties = new Set(required);
-    return table(
-        [ "Property", "Description" ],
-        Object.entries(properties ?? {}).map(([ property, propertySchema ]) => {
-            const resolved = resolve(spec, propertySchema);
-            const description = describe({ description: propertySchema.description ?? resolved.description, schema: resolved });
-            return [
-                nameCell(property, requiredProperties.has(property)),
-                detailsCell(typeMarkdown(spec, propertySchema), description)
-            ];
-        })
-    );
+    return Object.entries(properties ?? {}).flatMap(([ property, propertySchema ]) => {
+        const resolved = resolve(spec, propertySchema);
+        const description = describe({ description: propertySchema.description ?? resolved.description, schema: resolved });
+        const row = [
+            nameCell(`${prefix}${property}`, requiredProperties.has(property)),
+            detailsCell(typeMarkdown(spec, propertySchema), description)
+        ];
+
+        const isArray = propertySchema.type === "array";
+        const inline = isArray ? propertySchema.items : propertySchema;
+        if (!inline?.properties || inline.$ref) {
+            return [ row ];
+        }
+        return [ row, ...propertyRows(spec, inline, `${prefix}${property}${isArray ? "[]" : ""}.`) ];
+    });
 }
 
 function describeSecurityScheme({ type, in: location, name, scheme }: SecurityScheme) {

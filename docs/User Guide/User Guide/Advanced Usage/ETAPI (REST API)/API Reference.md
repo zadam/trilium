@@ -3445,10 +3445,33 @@ The same data is served by GET /api/metrics to the web session.
         | Property | Description |
         | --- | --- |
         | `version` | `object` |
+        | `version.app` | `string` |
+        | `version.db` | `integer` |
+        | `version.node` | `string` |
+        | `version.sync` | `integer` |
+        | `version.buildDate` | `string` |
+        | `version.buildRevision` | `string` |
         | `database` | `object` |
+        | `database.totalNotes` | `integer` |
+        | `database.deletedNotes` | `integer` |
+        | `database.activeNotes` | `integer` |
+        | `database.protectedNotes` | `integer` |
+        | `database.totalAttachments` | `integer` |
+        | `database.deletedAttachments` | `integer` |
+        | `database.activeAttachments` | `integer` |
+        | `database.totalRevisions` | `integer` |
+        | `database.totalBranches` | `integer` |
+        | `database.totalAttributes` | `integer` |
+        | `database.totalBlobs` | `integer` |
+        | `database.totalEtapiTokens` | `integer` |
+        | `database.totalRecentNotes` | `integer` |
         | `noteTypes` | `object`  <br>Number of active notes per note type |
         | `attachmentTypes` | `object`  <br>Number of active attachments per MIME type |
         | `statistics` | `object` |
+        | `statistics.oldestNote` | `string \| null` |
+        | `statistics.newestNote` | `string \| null` |
+        | `statistics.lastModified` | `string \| null` |
+        | `statistics.databaseSizeBytes` | `integer \| null` |
         | `timestamp` | `string` |
 
         </div>
@@ -3727,8 +3750,31 @@ Instance and database metrics, as served by GET /etapi/metrics?format=json
 | Property | Description |
 | --- | --- |
 | `version` | `object` |
+| `version.app` | `string` |
+| `version.db` | `integer` |
+| `version.node` | `string` |
+| `version.sync` | `integer` |
+| `version.buildDate` | `string` |
+| `version.buildRevision` | `string` |
 | `database` | `object` |
+| `database.totalNotes` | `integer` |
+| `database.deletedNotes` | `integer` |
+| `database.activeNotes` | `integer` |
+| `database.protectedNotes` | `integer` |
+| `database.totalAttachments` | `integer` |
+| `database.deletedAttachments` | `integer` |
+| `database.activeAttachments` | `integer` |
+| `database.totalRevisions` | `integer` |
+| `database.totalBranches` | `integer` |
+| `database.totalAttributes` | `integer` |
+| `database.totalBlobs` | `integer` |
+| `database.totalEtapiTokens` | `integer` |
+| `database.totalRecentNotes` | `integer` |
 | `noteTypes` | `object`  <br>Number of active notes per note type |
 | `attachmentTypes` | `object`  <br>Number of active attachments per MIME type |
 | `statistics` | `object` |
+| `statistics.oldestNote` | `string \| null` |
+| `statistics.newestNote` | `string \| null` |
+| `statistics.lastModified` | `string \| null` |
+| `statistics.databaseSizeBytes` | `integer \| null` |
 | `timestamp` | `string` |

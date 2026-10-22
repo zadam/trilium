@@ -3459,6 +3459,8 @@ Search and discovery
     | --- | --- |
     | `count`  <br>_required_ | `integer`  <br>Distinct notes matching, counted before the twenty-result cap. |
     | `results`  <br>_required_ | `array of object`  <br>At most twenty, name-and-value matches ahead of name-only ones. |
+    | `results[].notePathArray`  <br>_required_ | `array of string`  <br>Note IDs from the root down to the matched note. |
+    | `results[].score`  <br>_required_ | `number`  <br>Search relevance, higher is better. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -4522,6 +4524,10 @@ Database operations
     | --- | --- |
     | `backupFolderPath` | `string \| null`  <br>Directory where the backups are stored, or null if there is no user-accessible location. |
     | `backups` | `array of object` |
+    | `backups[].fileName` | `string` |
+    | `backups[].filePath` | `string` |
+    | `backups[].mtime` | `string (date-time)` |
+    | `backups[].fileSize` | `integer`  <br>Size of the backup file, in bytes. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -4592,6 +4598,10 @@ Database operations
     | --- | --- |
     | `anonymizedFolderPath` | `string`  <br>Directory where the anonymized databases are stored. |
     | `databases` | `array of object` |
+    | `databases[].fileName` | `string` |
+    | `databases[].filePath` | `string` |
+    | `databases[].mtime` | `string (date-time)` |
+    | `databases[].fileSize` | `integer`  <br>Size of the anonymized database file, in bytes. |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -4780,6 +4790,9 @@ AI/LLM integration
     | `sessionId` | `string` |
     | `title` | `string` |
     | `messages` | `array of object` |
+    | `messages[].role` | `string`  <br>One of `user`, `assistant`, `system`. |
+    | `messages[].content` | `string` |
+    | `messages[].timestamp` | `string (date-time)` |
     | `createdAt` | `string (date-time)` |
     | `lastActive` | `string (date-time)` |
     | `messageCount` | `integer` |
@@ -4833,6 +4846,9 @@ AI/LLM integration
     | `sessionId` | `string` |
     | `title` | `string` |
     | `messages` | `array of object` |
+    | `messages[].role` | `string`  <br>One of `user`, `assistant`, `system`. |
+    | `messages[].content` | `string` |
+    | `messages[].timestamp` | `string (date-time)` |
     | `createdAt` | `string (date-time)` |
     | `lastActive` | `string (date-time)` |
     | `messageCount` | `integer` |
@@ -4921,6 +4937,9 @@ AI/LLM integration
     | `sessionId` | `string` |
     | `title` | `string` |
     | `messages` | `array of object` |
+    | `messages[].role` | `string`  <br>One of `user`, `assistant`, `system`. |
+    | `messages[].content` | `string` |
+    | `messages[].timestamp` | `string (date-time)` |
     | `createdAt` | `string (date-time)` |
     | `lastActive` | `string (date-time)` |
     | `messageCount` | `integer` |
@@ -4989,6 +5008,10 @@ AI/LLM integration
 | --- | --- |
 | `message`  <br>_required_ | `string` |
 | `options` | `object` |
+| `options.temperature` | `number` |
+| `options.maxTokens` | `integer` |
+| `options.model` | `string` |
+| `options.provider` | `string` |
 | `includeContext` | `boolean` |
 | `useNoteContext` | `boolean` |
 
@@ -5025,6 +5048,9 @@ AI/LLM integration
     | --- | --- |
     | `response` | `string` |
     | `sources` | `array of object` |
+    | `sources[].noteId` | `string` |
+    | `sources[].title` | `string` |
+    | `sources[].similarity` | `number` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -5154,7 +5180,13 @@ AI/LLM integration
     | --- | --- |
     | `success` | `boolean` |
     | `chatModels` | `array of object` |
+    | `chatModels[].id` | `string` |
+    | `chatModels[].name` | `string` |
+    | `chatModels[].type` | `string` |
     | `embeddingModels` | `array of object` |
+    | `embeddingModels[].id` | `string` |
+    | `embeddingModels[].name` | `string` |
+    | `embeddingModels[].type` | `string` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -5201,6 +5233,9 @@ AI/LLM integration
     | --- | --- |
     | `success` | `boolean` |
     | `chatModels` | `array of object` |
+    | `chatModels[].id` | `string` |
+    | `chatModels[].name` | `string` |
+    | `chatModels[].type` | `string` |
 
     </div>
     <div class="trilium-multicolumn-column">
@@ -7728,6 +7763,8 @@ Type: `string`
 | Property | Description |
 | --- | --- |
 | `entityChange` | `object` |
+| `entityChange.entityName` | `string` |
+| `entityChange.changeId` | `string` |
 | `entity` | `object` |
 
 ### <a id="schema-Timestamps"></a>`Timestamps`
@@ -7784,6 +7821,9 @@ Type: `string`
 | `sessionId` | `string` |
 | `title` | `string` |
 | `messages` | `array of object` |
+| `messages[].role` | `string`  <br>One of `user`, `assistant`, `system`. |
+| `messages[].content` | `string` |
+| `messages[].timestamp` | `string (date-time)` |
 | `createdAt` | `string (date-time)` |
 | `lastActive` | `string (date-time)` |
 | `messageCount` | `integer` |
