@@ -209,16 +209,25 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
     if (responses.length) {
         blocks.push("**Responses**");
     }
+    // One tab per status; consecutive tabs form a single tab block.
     for (const [ status, response ] of responses) {
         const { description, content } = resolve<Response>(spec, response);
 
-        blocks.push(`*   ${[ code(status), description?.trim() ].filter(Boolean).join(": ")}`);
+        const panel: string[] = [];
         for (const [ mime, media ] of Object.entries(content ?? {})) {
-            blocks.push(`    *   ${mediaLine(mime, media)}`, ...renderBody(spec, mime, media, "response"));
+            panel.push(`*   ${mediaLine(mime, media)}`, ...renderBody(spec, mime, media, "response"));
         }
+        // A tab's title is one line.
+        const title = [ status, description?.replace(/\s+/g, " ").trim() ].filter(Boolean).join(": ");
+        blocks.push(`=== "${title}"`, ...panel.map(indent));
     }
 
     return blocks;
+}
+
+/** Indents a block into the panel of a tab, which holds the lines indented by four spaces. */
+function indent(block: string) {
+    return block.split("\n").map((line) => line ? `    ${line}` : line).join("\n");
 }
 
 /** A body's content type, which is also its `Content-Type` header, and the type of its schema. */

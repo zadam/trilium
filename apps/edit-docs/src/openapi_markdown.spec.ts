@@ -103,21 +103,21 @@ describe("openApiToMarkdown", () => {
         expect(markdown).toContain([
             "**Responses**",
             "",
-            "*   `200`: note updated",
+            "=== \"200: note updated\"",
             "",
             "    *   `application/json`: `Note`",
             "",
-            "| Property | Type | Description |",
-            "| --- | --- | --- |",
-            "| `title`<br>*required* | `string` |  |",
+            "    | Property | Type | Description |",
+            "    | --- | --- | --- |",
+            "    | `title`<br>*required* | `string` |  |",
             "",
-            "```json",
-            "{",
-            "    \"title\": \"string\"",
-            "}",
-            "```",
+            "    ```json",
+            "    {",
+            "        \"title\": \"string\"",
+            "    }",
+            "    ```",
             "",
-            "*   `default`: unexpected error"
+            "=== \"default: unexpected error\""
         ].join("\n"));
     });
 
@@ -246,7 +246,9 @@ describe("openApiToMarkdown", () => {
         };
 
         const markdown = openApiToMarkdown(spec);
-        const sample = (value: unknown) => `\`\`\`json\n${JSON.stringify(value, null, 4)}\n\`\`\``;
+        // Response samples sit in the panel of their status's tab, indented by four spaces.
+        const sample = (value: unknown, indent = "") => `\`\`\`json\n${JSON.stringify(value, null, 4)}\n\`\`\``
+            .split("\n").map((line) => indent + line).join("\n");
 
         // A request leaves out read-only properties, a response write-only ones; a schema that
         // contains itself stops at an empty object.
@@ -257,9 +259,9 @@ describe("openApiToMarkdown", () => {
         expect(markdown).toContain(sample({
             noteId: "abc123", title: "string", type: "text", isExpanded: false, dateCreated: "2019-08-24T14:15:22Z",
             isProtected: true, childNoteIds: [ "abc123" ], position: 0, parent: {}
-        }));
+        }, "    "));
         // The example of a media type replaces the generated sample.
-        expect(markdown).toContain(sample({ message: "bad" }));
+        expect(markdown).toContain(sample({ message: "bad" }, "    "));
         // Only JSON bodies get a sample.
         expect(markdown.match(/```json/g)).toHaveLength(3);
     });
