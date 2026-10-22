@@ -3,6 +3,7 @@
  * a User Guide page. The page's title comes from its note, so the output starts with the module's
  * `@packageDocumentation` comment rather than an H1.
  */
+import { renderToHtml } from "@triliumnext/commons/src/lib/markdown_renderer.js";
 import type { JSONOutput } from "typedoc";
 
 type Project = JSONOutput.ProjectReflection;
@@ -114,32 +115,44 @@ function renderDeclaration(declaration: Declaration) {
         return blocks;
     }
 
-    const members = declaration.children ?? [];
-    const properties = members.filter((member) => member.kind === KIND.property || member.kind === KIND.accessor);
-    const methods = members.filter((member) => member.kind === KIND.method);
+    const members = (declaration.children ?? []).filter((member) =>
+        member.kind === KIND.property || member.kind === KIND.accessor || member.kind === KIND.method);
+    if (!members.length) {
+        return blocks;
+    }
 
-    if (properties.length) {
-        blocks.push(table([ "Property", "Description" ], properties.map((property) => [
+    // Properties alone fit a Markdown table; a method's cell holds blocks, which only HTML can.
+    if (!members.some((member) => member.kind === KIND.method)) {
+        blocks.push(table([ "Property", "Description" ], members.map((property) => [
             property.flags.isOptional ? `${code(property.name)}<br>*optional*` : code(property.name),
-            details(typeToString(property.type ?? property.getSignature?.type), property.comment)
+            propertyDetails(property)
         ])));
+        return blocks;
     }
 
-    for (const method of methods) {
-        blocks.push(...renderMethod(method));
-    }
-
+    blocks.push(htmlTable([ "Member", "Description" ], members.map((member) => [
+        `<code>${escapeHtml(member.name)}</code>${member.flags.isOptional ? "<br><em>optional</em>" : ""}`,
+        markdownToHtml(member.kind === KIND.method ? methodDetails(member) : propertyDetails(member))
+    ])));
     return blocks;
 }
 
-function renderMethod(method: Declaration) {
+function propertyDetails(property: Declaration) {
+    return details(typeToString(property.type ?? property.getSignature?.type), property.comment);
+}
+
+/**
+ * A method's signature and description, then its parameters and its return value when a comment
+ * describes them; otherwise the signature already says all they would.
+ */
+function methodDetails(method: Declaration) {
     const signatures = method.signatures ?? [];
-    const blocks = [ `### ${code(method.name)}`, fence(signatures.map(signatureToString).join("\n")) ];
+    const blocks = [ fence(signatures.map(signatureToString).join("\n")) ];
 
     // Overloads share one entry, described by the first signature that has a comment.
     const signature = signatures.find((candidate) => candidate.comment) ?? signatures[0];
     if (!signature) {
-        return blocks;
+        return blocks.join("\n\n");
     }
 
     if (signature.comment) {
@@ -147,20 +160,19 @@ function renderMethod(method: Declaration) {
     }
 
     const parameters = signature.parameters ?? [];
-    if (parameters.length) {
+    if (parameters.some((parameter) => parameter.comment)) {
         blocks.push(table([ "Parameter", "Description" ], parameters.map((parameter) => [
             parameter.flags.isOptional ? `${code(parameter.name)}<br>*optional*` : code(parameter.name),
             details(typeToString(parameter.type), parameter.comment)
         ])));
     }
 
-    const returnType = typeToString(signature.type);
-    if (returnType !== "void") {
-        const description = blockTag(signature.comment, "@returns");
-        blocks.push(`**Returns** ${code(returnType)}${description ? `: ${description}` : ""}`);
+    const returns = blockTag(signature.comment, "@returns");
+    if (returns) {
+        blocks.push(`**Returns** ${code(typeToString(signature.type))}: ${returns}`);
     }
 
-    return blocks;
+    return blocks.filter(Boolean).join("\n\n");
 }
 
 /** A comment's summary, followed by a warning when it carries `@deprecated`. */
@@ -288,6 +300,50 @@ function fence(text: string) {
 function table(headers: string[], rows: string[][]) {
     const line = (cells: string[]) => `| ${cells.map((cell) => cell.replace(/\|/g, "\\|")).join(" | ")} |`;
     return [ line(headers), `| ${headers.map(() => "---").join(" | ")} |`, ...rows.map(line) ].join("\n");
+}
+
+/**
+ * A table as the Markdown export writes one it keeps as HTML: a structural tag per line and
+ * each cell's content on one line, so the page comes back from an import and export unchanged.
+ */
+function htmlTable(headers: string[], rows: string[][]) {
+    const tableRow = (tag: string, cells: string[]) => [
+        "        <tr>",
+        ...cells.map((cell) => `            <${tag}>${cell}</${tag}>`),
+        "        </tr>"
+    ];
+    return [
+        "<table>",
+        "    <thead>",
+        ...tableRow("th", headers),
+        "    </thead>",
+        "    <tbody>",
+        ...rows.flatMap((cells) => tableRow("td", cells)),
+        "    </tbody>",
+        "</table>"
+    ].join("\n");
+}
+
+/**
+ * Markdown rendered as a table cell takes it, in the form the export writes the cell: the import's
+ * renderer, on one line outside `<pre>`, with quotes in text unescaped. A blank line in a `<pre>`
+ * becomes `&#10;`, since a blank line would end the HTML block.
+ */
+function markdownToHtml(markdown: string) {
+    const html = renderToHtml(markdown, "", { sanitize: (dirtyHtml) => dirtyHtml, demoteH1: false })
+        .trim()
+        .replace(/>\n+</g, "><")
+        .replace(/>([^<]*)</g, (_, text: string) => `>${text.replaceAll("&#39;", "'").replaceAll("&quot;", "\"")}<`);
+
+    return html.split(/(<pre[\s\S]*?<\/pre>)/)
+        .map((part) => part.startsWith("<pre")
+            ? part.replace(/\n(?=[ \t]*(?:\n|$))/g, "&#10;")
+            : part.replace(/\s*\n\s*/g, " "))
+        .join("");
+}
+
+function escapeHtml(text: string) {
+    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
 function code(text: string) {

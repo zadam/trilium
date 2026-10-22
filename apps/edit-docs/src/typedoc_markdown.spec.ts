@@ -29,6 +29,9 @@ export interface Unreached {
 
 /** Window controls. */
 export interface DemoWindowApi {
+    /** Whether the window has the focus. */
+    readonly focused: boolean;
+
     /**
      * Resizes the window.
      *
@@ -71,6 +74,13 @@ describe("typeDocToMarkdown", () => {
         await rm(dir, { recursive: true, force: true });
     });
 
+    /** The row of the members table that documents `name`, which nested tables are part of. */
+    const row = (name: string) => {
+        const start = markdown.indexOf(`<td><code>${name}</code>`);
+        expect(start).toBeGreaterThan(-1);
+        return markdown.slice(start, markdown.indexOf("\n        </tr>", start));
+    };
+
     it("opens with the package comment, then the root and what it reaches, in order of reference", () => {
         expect(markdown.startsWith("The demo API, exposed as `window.demoApi`.\n\n## `DemoApi`")).toBe(true);
 
@@ -95,40 +105,42 @@ describe("typeDocToMarkdown", () => {
         expect(markdown).toContain("| `animate`<br>*optional* | `boolean` |");
     });
 
-    it("gives each method its signature, parameters and return value", () => {
-        expect(markdown).toContain([
-            "### `resize`",
-            "",
-            "```ts",
-            "resize(options: ResizeOptions): Promise<boolean>",
-            "```",
-            "",
-            "Resizes the window.",
-            "",
-            "| Parameter | Description |",
-            "| --- | --- |",
-            "| `options` | `ResizeOptions`<br>How to resize. |",
-            "",
-            "**Returns** `Promise<boolean>`: Whether it resized."
+    it("lists the members of an interface with methods in one HTML table, in the export's layout", () => {
+        const section = markdown.slice(markdown.indexOf("## `DemoWindowApi`"), markdown.indexOf("## `ResizeOptions`"));
+        expect(section).toContain([
+            "<table>",
+            "    <thead>",
+            "        <tr>",
+            "            <th>Member</th>",
+            "            <th>Description</th>",
+            "        </tr>",
+            "    </thead>",
+            "    <tbody>",
+            "        <tr>",
+            "            <td><code>focused</code></td>"
         ].join("\n"));
-        // A function type is written out; a method without a documented return still names its type.
-        expect(markdown).toContain("onClose(callback: (reason: string) => void): () => void");
-        expect(markdown).toContain("| `callback` | `(reason: string) => void` |");
-        expect(markdown).toContain("**Returns** `() => void`");
+        // A blank line would end the HTML block when the page is imported.
+        const table = section.slice(section.indexOf("<table>"), section.indexOf("</table>\n") + 8);
+        expect(table).not.toMatch(/\n[ \t]*\n/);
+        expect(row("focused")).toContain("<code>boolean</code><br>Whether the window has the focus.");
+    });
+
+    it("gives a method its signature and description, and parameters and return only when documented", () => {
+        const resize = row("resize");
+        expect(resize).toMatch(/<pre><code class="language-[^"]+">resize\(options: ResizeOptions\): Promise&lt;boolean&gt;<\/code><\/pre>/);
+        expect(resize).toContain("<p>Resizes the window.</p>");
+        expect(resize).toMatch(/<th>Parameter<\/th>.*<td><code>options<\/code><\/td><td><code>ResizeOptions<\/code><br>How to resize.<\/td>/);
+        expect(resize).toContain("<strong>Returns</strong> <code>Promise&lt;boolean&gt;</code>: Whether it resized.");
+
+        // Without descriptions, the signature already says everything a table or a Returns line would.
+        const onClose = row("onClose");
+        expect(onClose).toContain("onClose(callback: (reason: string) =&gt; void): () =&gt; void");
+        expect(onClose).not.toContain("<table>");
+        expect(onClose).not.toContain("Returns");
     });
 
     it("warns about a deprecated member and writes links as code", () => {
-        expect(markdown).toContain([
-            "### `maximize`",
-            "",
-            "```ts",
-            "maximize(): void",
-            "```",
-            "",
-            "> [!WARNING]",
-            "> Deprecated. Use `resize`."
-        ].join("\n"));
-        expect(markdown).not.toContain("**Returns** `void`");
+        expect(row("maximize")).toMatch(/<aside class="admonition warning">.*Deprecated. Use <code>resize<\/code>./);
         expect(markdown).toContain("Options of `DemoWindowApi.resize`.");
     });
 
