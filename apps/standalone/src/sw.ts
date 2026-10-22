@@ -432,6 +432,13 @@ self.addEventListener("fetch", (event) => {
         return;
     }
 
+    // With caching off, the browser's own loader serves the app's files: passing them through
+    // `respondWith(fetch())` adds a hop through this worker to each of the ~250 a start loads.
+    if (isDev) {
+        return;
+    }
+
+    /* v8 ignore start -- @preserve: isDev is hardcoded true, so the caching strategies below never run. */
     // HTML files: network-first to ensure updates are reflected immediately
     if (event.request.mode === "navigate" || url.pathname.endsWith(".html")) {
         event.respondWith(networkFirst(event.request));
@@ -446,4 +453,5 @@ self.addEventListener("fetch", (event) => {
 
     // Default
     event.respondWith(fetch(event.request));
+    /* v8 ignore stop */
 });

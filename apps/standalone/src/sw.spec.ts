@@ -152,12 +152,10 @@ describe("fetch routing", () => {
             expect(event._response, path).toBeDefined();
         }
 
-        // The theme's own files ship with the build, so they take the ordinary static path.
-        vi.mocked(fetch).mockClear();
+        // The theme's own files ship with the build, so the browser loads them like any other.
         const asset = fetchEvent(`${origin}/share/assets/styles.css`);
         handlers.fetch(asset);
-        await awaitResponse(asset);
-        expect(fetch).toHaveBeenCalled();
+        expect(asset._response).toBeUndefined();
     });
 
     it("explains that Trilium must be open when a share page finds no app window", async () => {
@@ -177,31 +175,18 @@ describe("fetch routing", () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
-    it("serves navigations and .html network-first (which bypasses cache in dev)", async () => {
+    it("leaves the app's own files and navigations to the browser", async () => {
         const handlers = await loadSw();
-        const navEvent = fetchEvent(`${origin}/index.html`, { mode: "navigate" });
-        handlers.fetch(navEvent);
-        await navEvent._response;
-        const htmlEvent = fetchEvent(`${origin}/page.html`);
-        handlers.fetch(htmlEvent);
-        await htmlEvent._response;
-        expect(fetch).toHaveBeenCalled();
-    });
-
-    it("serves other GETs cache-first (which bypasses cache in dev)", async () => {
-        const handlers = await loadSw();
-        const event = fetchEvent(`${origin}/app.js`);
-        handlers.fetch(event);
-        const res = await awaitResponse(event);
-        expect(res).toBeInstanceOf(Response);
-    });
-
-    it("passes non-GET, non-local requests straight to the network", async () => {
-        const handlers = await loadSw();
-        const event = fetchEvent(`${origin}/app.js`, { method: "POST" });
-        handlers.fetch(event);
-        await event._response;
-        expect(fetch).toHaveBeenCalled();
+        for (const event of [
+            fetchEvent(`${origin}/index.html`, { mode: "navigate" }),
+            fetchEvent(`${origin}/page.html`),
+            fetchEvent(`${origin}/app.js`),
+            fetchEvent(`${origin}/app.js`, { method: "POST" })
+        ]) {
+            handlers.fetch(event);
+            expect(event._response).toBeUndefined();
+        }
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     it("bypasses SW routing on the capacitor:// scheme (assets load via the WebView)", async () => {
