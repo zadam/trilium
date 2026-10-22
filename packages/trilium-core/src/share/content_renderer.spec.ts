@@ -1969,6 +1969,16 @@ describe("content_renderer pages", () => {
         expect(document.querySelector("code")?.classList.contains("hljs")).toBe(false);
     });
 
+    it("keeps links to a bookmark of the note itself", () => {
+        const result = getContent(buildShareNote({
+            content: `<h3><a id="schema-note"></a>Note</h3><p>See <a href="#schema-note">Note</a>.</p>`
+        }));
+
+        const document = parse(String(result.content));
+        expect(document.querySelector("#schema-note")?.tagName).toBe("A");
+        expect(document.querySelector("p a")?.getAttribute("href")).toBe("#schema-note");
+    });
+
     it("detects the language of a code block naming none, unless it is too long", async () => {
         await ensureShareHighlighting();
         const long = Array.from({ length: 600 }, (_, index) => `x = ${index}`).join("\n");

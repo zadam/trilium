@@ -675,8 +675,8 @@ function renderText(result: Result, note: SNote | BNote, options: ShareRenderOpt
         for (const linkEl of document.querySelectorAll("a")) {
             const href = linkEl.getAttribute("href");
 
-            // Preserve footnotes.
-            if (href?.startsWith("#fn")) {
+            // Preserve in-page anchors (footnotes, bookmarks): a link to a note starts with `#root`.
+            if (href?.startsWith("#") && !href.startsWith("#root")) {
                 continue;
             }
 
