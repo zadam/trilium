@@ -13,6 +13,7 @@ describe("openApiToMarkdown", () => {
                 "/notes/{noteId}": {
                     parameters: [{ name: "noteId", in: "path", required: true, schema: ENTITY_ID }],
                     patch: {
+                        operationId: "patchNote",
                         description: "Patch a note",
                         parameters: [{ $ref: "#/components/parameters/Force" }],
                         requestBody: {
@@ -62,9 +63,12 @@ describe("openApiToMarkdown", () => {
             "",
             "## Endpoints"
         ].join("\n"));
-        // Operations without a `security` of their own inherit the spec's.
+        // Without a summary, the operation is named by its ID, with the route below. Operations
+        // without a `security` of their own inherit the spec's.
         expect(markdown).toContain([
-            "### `PATCH /notes/{noteId}`",
+            "### `patchNote`",
+            "",
+            "`PATCH /notes/{noteId}`",
             "",
             "Patch a note",
             "",
@@ -121,7 +125,7 @@ describe("openApiToMarkdown", () => {
         const spec: OpenApiSpec = {
             info: { title: "Internal" },
             paths: {
-                "/api/notes": { get: { tags: [ "Notes" ], summary: "List notes", responses: {} } },
+                "/api/notes": { get: { tags: [ "Notes" ], summary: "List notes", operationId: "getNotes", responses: {} } },
                 "/api/sync": { post: { tags: [ "Sync" ], security: [ { A: [], B: [] }, {} ], responses: {} } },
                 "/api/login": { post: { tags: [ "Sync" ], security: [], responses: {} } },
                 "/api/tree": { get: { tags: [ "Notes" ], responses: {} } }
@@ -133,7 +137,8 @@ describe("openApiToMarkdown", () => {
         expect(markdown).not.toContain("## Endpoints");
         expect(markdown.indexOf("## Notes")).toBeLessThan(markdown.indexOf("### `GET /api/tree`"));
         expect(markdown.indexOf("### `GET /api/tree`")).toBeLessThan(markdown.indexOf("## Sync"));
-        expect(markdown).toContain("### `GET /api/notes`\n\nList notes\n\n### `GET /api/tree`");
+        // A summary wins over the operation ID; an operation with neither is named by its route.
+        expect(markdown).toContain("### List notes\n\n`GET /api/notes`\n\n### `GET /api/tree`");
 
         // Schemes of one requirement are all needed; an empty requirement makes them optional.
         expect(markdown).toContain("**Authorization**: `A` and `B` or none");

@@ -15,7 +15,9 @@ Basic Auth where username is arbitrary string (e.g. "trilium", not checked), use
 
 ## Endpoints
 
-### `POST /create-note`
+### `createNote`
+
+`POST /create-note`
 
 Create a note and place it into the note tree
 
@@ -138,7 +140,9 @@ Create a note and place it into the note tree
 }
 ```
 
-### `GET /notes`
+### `searchNotes`
+
+`GET /notes`
 
 Search notes
 
@@ -231,7 +235,9 @@ Search notes
 }
 ```
 
-### `GET /notes/{noteId}`
+### `getNoteById`
+
+`GET /notes/{noteId}`
 
 Returns a note identified by its ID
 
@@ -324,7 +330,9 @@ Returns a note identified by its ID
 }
 ```
 
-### `DELETE /notes/{noteId}`
+### `deleteNoteById`
+
+`DELETE /notes/{noteId}`
 
 deletes a single note based on the noteId supplied
 
@@ -357,7 +365,9 @@ deletes a single note based on the noteId supplied
 }
 ```
 
-### `PATCH /notes/{noteId}`
+### `patchNoteById`
+
+`PATCH /notes/{noteId}`
 
 patch a note identified by the noteId with changes in the body
 
@@ -484,7 +494,9 @@ patch a note identified by the noteId with changes in the body
 }
 ```
 
-### `GET /notes/{noteId}/content`
+### `getNoteContent`
+
+`GET /notes/{noteId}/content`
 
 Returns note content identified by its ID
 
@@ -502,7 +514,9 @@ Returns note content identified by its ID
     
     *   `*/*`: `string (binary)`
 
-### `PUT /notes/{noteId}/content`
+### `putNoteContentById`
+
+`PUT /notes/{noteId}/content`
 
 Updates note content identified by its ID
 
@@ -525,7 +539,9 @@ New content of the note. Send text (such as the HTML of a text note) as `text/pl
 
 *   `204`: note content updated
 
-### `GET /notes/{noteId}/export`
+### `exportNoteSubtree`
+
+`GET /notes/{noteId}/export`
 
 Exports ZIP file export of a given note subtree. To export whole document, use "root" for noteId
 
@@ -561,7 +577,9 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 }
 ```
 
-### `POST /notes/{noteId}/import`
+### `importZip`
+
+`POST /notes/{noteId}/import`
 
 Imports ZIP file into a given note.
 
@@ -652,7 +670,9 @@ Imports ZIP file into a given note.
 }
 ```
 
-### `POST /notes/{noteId}/revision`
+### `createRevision`
+
+`POST /notes/{noteId}/revision`
 
 Create a note revision for the given note
 
@@ -686,7 +706,9 @@ Create a note revision for the given note
 }
 ```
 
-### `GET /notes/{noteId}/revisions`
+### `getNoteRevisions`
+
+`GET /notes/{noteId}/revisions`
 
 Returns the revisions of a note identified by its ID. Protected revisions are omitted, since they cannot be read through ETAPI individually either.
 
@@ -742,7 +764,9 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 }
 ```
 
-### `GET /notes/{noteId}/attachments`
+### `getNoteAttachments`
+
+`GET /notes/{noteId}/attachments`
 
 Returns all attachments for a note identified by its ID
 
@@ -796,7 +820,9 @@ Returns all attachments for a note identified by its ID
 }
 ```
 
-### `POST /notes/{noteId}/undelete`
+### `undeleteNote`
+
+`POST /notes/{noteId}/undelete`
 
 Restore a deleted note. The note must be deleted and must have at least one undeleted parent.
 
@@ -842,7 +868,9 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 }
 ```
 
-### `GET /notes/history`
+### `getNoteHistory`
+
+`GET /notes/history`
 
 Returns recent changes including note creations, modifications, and deletions
 
@@ -894,7 +922,9 @@ Returns recent changes including note creations, modifications, and deletions
 }
 ```
 
-### `GET /revisions/{revisionId}`
+### `getRevisionById`
+
+`GET /revisions/{revisionId}`
 
 Returns a revision identified by its ID
 
@@ -964,7 +994,9 @@ Returns a revision identified by its ID
 }
 ```
 
-### `GET /revisions/{revisionId}/content`
+### `getRevisionContent`
+
+`GET /revisions/{revisionId}/content`
 
 Returns revision content identified by its ID
 
@@ -999,7 +1031,9 @@ Returns revision content identified by its ID
 }
 ```
 
-### `POST /branches`
+### `postBranch`
+
+`POST /branches`
 
 Create a branch (clone a note to a different location in the tree). In case there is a branch between parent note and child note already, then this will update the existing branch with prefix, notePosition and isExpanded.
 
@@ -1100,7 +1134,9 @@ Create a branch (clone a note to a different location in the tree). In case ther
 }
 ```
 
-### `GET /branches/{branchId}`
+### `getBranchById`
+
+`GET /branches/{branchId}`
 
 Returns a branch identified by its ID
 
@@ -1158,7 +1194,9 @@ Returns a branch identified by its ID
 }
 ```
 
-### `DELETE /branches/{branchId}`
+### `deleteBranchById`
+
+`DELETE /branches/{branchId}`
 
 deletes a branch based on the branchId supplied. If this is the last branch of the (child) note, then the note is deleted as well.
 
@@ -1191,7 +1229,9 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 }
 ```
 
-### `PATCH /branches/{branchId}`
+### `patchBranchById`
+
+`PATCH /branches/{branchId}`
 
 patch a branch identified by the branchId with changes in the body. Only prefix and notePosition can be updated. If you want to update other properties, you need to delete the old branch and create a new one.
 
@@ -1272,7 +1312,9 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 }
 ```
 
-### `POST /attachments`
+### `postAttachment`
+
+`POST /attachments`
 
 create an attachment
 
@@ -1356,7 +1398,9 @@ create an attachment
 }
 ```
 
-### `GET /attachments/{attachmentId}`
+### `getAttachmentById`
+
+`GET /attachments/{attachmentId}`
 
 Returns an attachment identified by its ID
 
@@ -1422,7 +1466,9 @@ Returns an attachment identified by its ID
 }
 ```
 
-### `DELETE /attachments/{attachmentId}`
+### `deleteAttachmentById`
+
+`DELETE /attachments/{attachmentId}`
 
 deletes an attachment based on the attachmentId supplied.
 
@@ -1455,7 +1501,9 @@ deletes an attachment based on the attachmentId supplied.
 }
 ```
 
-### `PATCH /attachments/{attachmentId}`
+### `patchAttachmentById`
+
+`PATCH /attachments/{attachmentId}`
 
 patch an attachment identified by the attachmentId with changes in the body. Only role, mime, title, and position are patchable.
 
@@ -1551,7 +1599,9 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 }
 ```
 
-### `GET /attachments/{attachmentId}/content`
+### `getAttachmentContent`
+
+`GET /attachments/{attachmentId}/content`
 
 Returns attachment content identified by its ID
 
@@ -1569,7 +1619,9 @@ Returns attachment content identified by its ID
     
     *   `*/*`: `string (binary)`
 
-### `PUT /attachments/{attachmentId}/content`
+### `putAttachmentContentById`
+
+`PUT /attachments/{attachmentId}/content`
 
 Updates attachment content identified by its ID
 
@@ -1592,7 +1644,9 @@ New content of the attachment. Send text as `text/plain` and binary data (such a
 
 *   `204`: attachment content updated
 
-### `POST /attributes`
+### `postAttribute`
+
+`POST /attributes`
 
 create an attribute for a given note
 
@@ -1672,7 +1726,9 @@ create an attribute for a given note
 }
 ```
 
-### `GET /attributes/{attributeId}`
+### `getAttributeById`
+
+`GET /attributes/{attributeId}`
 
 Returns an attribute identified by its ID
 
@@ -1732,7 +1788,9 @@ Returns an attribute identified by its ID
 }
 ```
 
-### `DELETE /attributes/{attributeId}`
+### `deleteAttributeById`
+
+`DELETE /attributes/{attributeId}`
 
 deletes an attribute based on the attributeId supplied.
 
@@ -1765,7 +1823,9 @@ deletes an attribute based on the attributeId supplied.
 }
 ```
 
-### `PATCH /attributes/{attributeId}`
+### `patchAttributeById`
+
+`PATCH /attributes/{attributeId}`
 
 patch an attribute identified by the attributeId with changes in the body. For labels, only value and position can be updated. For relations, only position can be updated. If you want to modify other properties, you need to delete the old attribute and create a new one.
 
@@ -1851,7 +1911,9 @@ patch an attribute identified by the attributeId with changes in the body. For l
 }
 ```
 
-### `POST /refresh-note-ordering/{parentNoteId}`
+### `postRefreshNoteOrdering`
+
+`POST /refresh-note-ordering/{parentNoteId}`
 
 notePositions in branches are not automatically pushed to connected clients and need a specific instruction. If you want your changes to be in effect immediately, call this service after setting branches' notePosition. Note that you need to supply "parentNoteId" of branch(es) with changed positions.
 
@@ -1884,7 +1946,9 @@ notePositions in branches are not automatically pushed to connected clients and 
 }
 ```
 
-### `GET /inbox/{date}`
+### `getInboxNote`
+
+`GET /inbox/{date}`
 
 returns an "inbox" note, into which note can be created. Date will be used depending on whether the inbox is a fixed note (identified with #inbox label) or a day note in a journal. A database with neither returns the root note, and ignores the date, rather than creating a journal to hold a day note.
 
@@ -1977,7 +2041,9 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 }
 ```
 
-### `GET /calendar/days/{date}`
+### `getDayNote`
+
+`GET /calendar/days/{date}`
 
 returns a day note for a given date. Gets created if doesn't exist.
 
@@ -2070,9 +2136,9 @@ returns a day note for a given date. Gets created if doesn't exist.
 }
 ```
 
-### `GET /calendar/week-first-day/{date}`
+### Get the day note starting the week
 
-Get the day note starting the week
+`GET /calendar/week-first-day/{date}`
 
 Returns the day note for the first day of the week containing the given date, honouring the configured first day of week. The note is created if it doesn't exist. This returns a day note, not a week note, so unlike /calendar/weeks/{week} it does not require the enableWeekNote label on the calendar root.
 
@@ -2165,9 +2231,9 @@ Returns the day note for the first day of the week containing the given date, ho
 }
 ```
 
-### `GET /calendar/weeks/{week}`
+### Get a week note
 
-Get a week note
+`GET /calendar/weeks/{week}`
 
 Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The note is created if it doesn't exist.
 
@@ -2260,9 +2326,9 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 }
 ```
 
-### `GET /calendar/months/{month}`
+### Get a month note
 
-Get a month note
+`GET /calendar/months/{month}`
 
 Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note is created if it doesn't exist.
 
@@ -2355,9 +2421,9 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 }
 ```
 
-### `GET /calendar/years/{year}`
+### Get a year note
 
-Get a year note
+`GET /calendar/years/{year}`
 
 Returns a year note for a given year (format YYYY, e.g., 2022). The note is created if it doesn't exist.
 
@@ -2450,7 +2516,9 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 }
 ```
 
-### `POST /auth/login`
+### `login`
+
+`POST /auth/login`
 
 get an ETAPI token based on password for further use with ETAPI
 
@@ -2505,7 +2573,9 @@ get an ETAPI token based on password for further use with ETAPI
 }
 ```
 
-### `POST /auth/logout`
+### `logout`
+
+`POST /auth/logout`
 
 logout (delete/deactivate) an ETAPI token
 
@@ -2532,7 +2602,9 @@ logout (delete/deactivate) an ETAPI token
 }
 ```
 
-### `GET /app-info`
+### `getAppInfo`
+
+`GET /app-info`
 
 returns information about the running Trilium instance
 
@@ -2586,7 +2658,9 @@ returns information about the running Trilium instance
 }
 ```
 
-### `PUT /backup/{backupName}`
+### `createBackup`
+
+`PUT /backup/{backupName}`
 
 Create a database backup under a given name
 
@@ -2619,9 +2693,9 @@ Create a database backup under a given name
 }
 ```
 
-### `GET /metrics`
+### Get instance metrics
 
-Get instance metrics
+`GET /metrics`
 
 Returns instance and database metrics for monitoring: note, attachment, revision, branch, attribute and blob counts, note and attachment type breakdowns, version information and database size. Counts only — no note titles, content or attributes.
 

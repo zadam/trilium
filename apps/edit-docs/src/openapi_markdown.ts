@@ -80,6 +80,7 @@ interface Response extends MediaTypes {
 }
 
 interface Operation {
+    operationId?: string;
     tags?: string[];
     summary?: string;
     description?: string;
@@ -158,11 +159,12 @@ function groupOperations(spec: OpenApiSpec) {
 }
 
 function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation }: OperationEntry) {
-    const blocks = [ `### \`${method.toUpperCase()} ${path}\`` ];
-    for (const text of [ operation.summary, operation.description ]) {
-        if (text) {
-            blocks.push(text.trim());
-        }
+    // Named like Redocly does: by summary, else by operation ID, else by the route.
+    const route = code(`${method.toUpperCase()} ${path}`);
+    const title = operation.summary?.trim() || code(operation.operationId ?? "");
+    const blocks = title ? [ `### ${title}`, route ] : [ `### ${route}` ];
+    if (operation.description) {
+        blocks.push(operation.description.trim());
     }
 
     const security = operation.security ?? spec.security;
