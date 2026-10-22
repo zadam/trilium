@@ -1074,13 +1074,13 @@ type Dayjs = (date?: string | number | Date) => DayjsInstance
 Constructor type allowing `class X extends api.Widget { … }`.
 
 ```typescript
-type WidgetClass = (...args: unknown[]) => T
+type WidgetClass<T> = new (...args: unknown[]) => T
 ```
 
 ### <a id="type-Func"></a>`Func`
 
 ```typescript
-type Func = (...args: unknown[]) => unknown | string
+type Func = ((...args: unknown[]) => unknown) | string
 ```
 
 ### <a id="type-CreateNoteOpts"></a>`CreateNoteOpts`

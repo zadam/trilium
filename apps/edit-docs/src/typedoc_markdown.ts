@@ -114,7 +114,8 @@ const KIND = {
     typeAlias: 2097152,
     property: 1024,
     method: 2048,
-    accessor: 262144
+    accessor: 262144,
+    constructorSignature: 16384
 };
 
 /** The aliases `typeToString()` writes out in place of their name, while a page renders. */
@@ -277,7 +278,7 @@ function renderDeclaration(declaration: Declaration, heading: string) {
                 typeMarkdown(value),
                 oneLine(partsToMarkdown(type.elementSummaries?.[index] ?? []))
             ]))
-            : fence(`type ${displayName(declaration.name)} = ${typeToString(type)}`));
+            : fence(`type ${displayName(declaration.name)}${typeParametersToString(declaration.typeParameters)} = ${typeToString(type)}`));
         return blocks;
     }
 
@@ -405,13 +406,17 @@ function parametersToString(signature: Signature) {
         const optional = parameter.flags.isOptional ? "?" : "";
         return `${rest}${parameter.name}${optional}: ${typeToString(parameter.type)}`;
     });
-    const typeParameters = (signature.typeParameters ?? []).map((parameter) => {
+    return `${typeParametersToString(signature.typeParameters)}(${parameters.join(", ")})`;
+}
+
+/** The type parameters of a signature or a type alias, as in `<T extends string = string>`. */
+function typeParametersToString(typeParameters: JSONOutput.TypeParameterReflection[] | undefined) {
+    const parameters = (typeParameters ?? []).map((parameter) => {
         const constraint = parameter.type ? ` extends ${typeToString(parameter.type)}` : "";
         const fallback = parameter.default ? ` = ${typeToString(parameter.default)}` : "";
         return `${parameter.name}${constraint}${fallback}`;
     });
-    const generics = typeParameters.length ? `<${typeParameters.join(", ")}>` : "";
-    return `${generics}(${parameters.join(", ")})`;
+    return parameters.length ? `<${parameters.join(", ")}>` : "";
 }
 
 /**
@@ -464,7 +469,9 @@ function typeToString(type: SomeType | undefined): string {
         case "array":
             return `${wrap(type.elementType)}[]`;
         case "union":
-            return type.types.map(typeToString).join(" | ");
+            return type.types
+                .map((member) => isFunctionType(member) ? `(${typeToString(member)})` : typeToString(member))
+                .join(" | ");
         case "intersection":
             return type.types.map(wrap).join(" & ");
         case "tuple":
@@ -490,11 +497,12 @@ function typeToString(type: SomeType | undefined): string {
     }
 }
 
-/** An inline type: a function type, or an object type literal. */
+/** An inline type: a function or constructor type, or an object type literal. */
 function reflectionToString(declaration: Declaration) {
     const signature = declaration.signatures?.[0];
     if (signature) {
-        return `${parametersToString(signature)} => ${typeToString(signature.type)}`;
+        const keyword = signature.kind === KIND.constructorSignature ? "new " : "";
+        return `${keyword}${parametersToString(signature)} => ${typeToString(signature.type)}`;
     }
 
     const members = (declaration.children ?? []).map((member) => {
@@ -519,9 +527,13 @@ function wrap(type: SomeType | undefined) {
     if (type?.type === "reference" && !type.typeArguments && inlinedAliases.has(type.name)) {
         type = inlinedAliases.get(type.name)?.type;
     }
-    const needsParentheses = type?.type === "union" || type?.type === "intersection"
-        || (type?.type === "reflection" && !!type.declaration.signatures?.length);
+    const needsParentheses = type?.type === "union" || type?.type === "intersection" || isFunctionType(type);
     return needsParentheses ? `(${text})` : text;
+}
+
+/** Whether `typeToString()` writes a type as a function or constructor type, `(…) => …`. */
+function isFunctionType(type: SomeType | undefined) {
+    return type?.type === "reflection" && !!type.declaration.signatures?.length;
 }
 
 function fence(text: string) {

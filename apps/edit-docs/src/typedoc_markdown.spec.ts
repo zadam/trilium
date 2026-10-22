@@ -30,6 +30,12 @@ export interface Unreached {
     screen: Screen;
 }
 
+/** A widget's constructor. */
+export type WidgetClass<T> = new (...args: unknown[]) => T;
+
+/** A function, or its source. */
+export type Func = ((...args: unknown[]) => unknown) | string;
+
 /** Which screen a window is on. */
 export type Screen = "primary" | "secondary";
 /** What became of a request. */
@@ -259,6 +265,12 @@ describe("typeDocToMarkdown", () => {
         expect(stripped).toContain("Options of [`WindowApi.resize`](#type-WindowApi).");
         expect(stripped).toContain("requestClose(audience: Audience): Promise&lt;Outcome&gt;");
         expect(stripped).not.toMatch(/Demo(Window)?Api/);
+    });
+
+    it("writes constructor types, the type parameters of an alias and function types in a union", () => {
+        const exports = typeDocToMarkdown(project);
+        expect(exports).toContain("type WidgetClass<T> = new (...args: unknown[]) => T");
+        expect(exports).toContain("type Func = ((...args: unknown[]) => unknown) | string");
     });
 
     it("refuses prefixes that would give two declarations one name", () => {
