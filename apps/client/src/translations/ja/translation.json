@@ -119,7 +119,8 @@
   },
   "left_pane_toggle": {
     "show_panel": "パネルを表示",
-    "hide_panel": "パネルを非表示"
+    "hide_panel": "パネルを非表示",
+    "peek_panel": "ピークパネル"
   },
   "move_pane_button": {
     "move_left": "左に移動",
@@ -1022,7 +1023,21 @@
   "include_note": {
     "dialog_title": "埋め込みノート",
     "button_include": "埋め込みノート",
-    "label_note": "ノート"
+    "label_note": "ノート",
+    "box_size": "ボックスサイズ",
+    "size_tiny": "極小",
+    "size_tiny_description": "タイトルとアクションのみの 1 行表示。",
+    "size_small": "小",
+    "size_small_description": "約 10 行分のボックス。",
+    "size_medium": "中",
+    "size_medium_description": "約 30 行分のボックス。",
+    "size_full": "全体",
+    "size_full_description": "コンテンツ全体を表示。",
+    "size_expandable": "折りたたみ",
+    "size_expandable_description": "展開されるまではタイトルのみを表示。",
+    "inserted_as_image": "このノートは画像として挿入されます。",
+    "size_hint": "サイズは後から変更可能です。",
+    "image_size_hint": "画像のサイズは後から変更可能です。"
   },
   "ancestor": {
     "placeholder": "ノート名で検索",
@@ -1665,7 +1680,8 @@
     "line_numbers": "行番号",
     "line_numbers_auto": "自動",
     "line_numbers_on": "オン",
-    "line_numbers_off": "オフ"
+    "line_numbers_off": "オフ",
+    "line_numbers_auto_description": "グローバル設定に従う"
   },
   "note_tooltip": {
     "quick-edit": "クイック編集",
@@ -1875,7 +1891,11 @@
   },
   "content_language": {
     "title": "コンテンツの言語",
-    "description": "読み取り専用または編集可能なテキストノートの基本プロパティセクションの言語選択に表示する言語を 1 つ以上選択してください。これにより、スペルチェック、右から左へのサポート、引用符、テキスト抽出（OCR）などの機能が利用できるようになります。"
+    "description": "テキストノートの言語を選択する際に指定できる言語。これを選択することで、スペルチェック、右から左へ記述する言語への対応、引用符の扱い、テキスト抽出（OCR）といった機能が利用可能になります。",
+    "add_title": "言語を追加",
+    "add_first_other": "言語を追加（{{count}} 件利用可能）",
+    "add_another_other": "別の言語を追加（{{count}} 件利用可能）",
+    "remove": "リストから削除"
   },
   "svg": {
     "export_to_png": "図をPNG形式でエクスポートできませんでした。",
@@ -2131,7 +2151,8 @@
   "code-editor-options": {
     "title": "エディター",
     "tab_width": "タブ幅",
-    "tab_width_unit": "スペース"
+    "tab_width_unit": "スペース",
+    "line_numbers": "行番号"
   },
   "search_string": {
     "title_column": "文字列検索",
@@ -2188,7 +2209,9 @@
   },
   "note_type_chooser": {
     "modal_title": "ノートタイプを選択",
-    "templates": "テンプレート"
+    "templates": "テンプレート",
+    "location": "位置",
+    "location_placeholder": "空欄の場合はデフォルトの位置を使用"
   },
   "prompt": {
     "title": "プロンプト",
@@ -2294,7 +2317,17 @@
     "tooltip_syntax_highlighting": "構文ハイライト表示",
     "tooltip_code_block_syntax": "テキストノート内のコードブロック",
     "tooltip_code_note_syntax": "コードノート",
-    "trilium_log": "Trilium ログ"
+    "trilium_log": "Trilium ログ",
+    "description": "コードノートまたはコードブロックの言語を選択する際に表示される言語。",
+    "sort_alphabetically": "アルファベット順に並べ替え",
+    "badge_code_blocks": "コードブロック",
+    "badge_code_notes": "コードノート",
+    "remove": "リストから削除",
+    "badge_code_blocks_tooltip": "テキストノート内のコードブロックで構文ハイライトが利用可能",
+    "badge_code_notes_tooltip": "コードノートで構文ハイライトが利用可能",
+    "add_title": "言語を追加",
+    "add_another_other": "別の言語を追加（{{count}} 件利用可能）",
+    "trilium_search_query": "Trilium 検索クエリ"
   },
   "attachment_erasure_timeout": {
     "attachment_erasure_timeout": "未使用の添付ファイル",
@@ -2871,7 +2904,13 @@
     "tab_width_reindent_header": "コンテンツのインデントを再設定",
     "tab_width_style_header": "インデントを使用",
     "tab_width_style_spaces": "スペース",
-    "tab_width_style_tabs": "タブ"
+    "tab_width_style_tabs": "タブ",
+    "cursor_line": "行: <Value />",
+    "cursor_column": "列: <Value />",
+    "cursor_selection": "選択範囲: <Value />",
+    "cursor_line_title": "現在の行",
+    "cursor_column_title": "現在の列",
+    "cursor_selection_title": "選択範囲の文字数"
   },
   "breadcrumb": {
     "hoisted_badge": "ホイスト",
@@ -3548,7 +3587,8 @@
     "exit_fullscreen": "全画面表示を終了",
     "open_in_new_tab": "新しいタブで開く",
     "more_actions": "その他のアクション",
-    "beta": "Beta"
+    "beta": "Beta",
+    "close": "閉じる"
   },
   "spreadsheet": {
     "read-only": "このノートは読み取り専用です。",
@@ -4754,5 +4794,31 @@
   "hide_keyboard_button": {
     "title": "キーボードを隠す",
     "close_menu": "メニューを閉じる"
+  },
+  "code_editor_context_menu": {
+    "transform": "変換",
+    "sort_ascending": "昇順で並べ替え",
+    "sort_descending": "降順で並べ替え",
+    "shuffle_lines": "行をシャッフル",
+    "reverse_lines": "行の順序を反転",
+    "deduplicate_lines": "重複行を削除",
+    "trim_leading": "行頭の空白を削除",
+    "trim_leading_tooltip": "各行の行頭の空白を削除",
+    "trim_trailing": "行末の空白を削除",
+    "trim_trailing_tooltip": "各行の行末の空白を削除",
+    "trim_both": "行頭と行末の空白を削除",
+    "trim_both_tooltip": "各行の行頭と行末の空白を削除",
+    "remove_blank_lines": "空行を削除",
+    "to_uppercase": "大文字に変換",
+    "to_lowercase": "小文字に変換",
+    "to_sentence_case": "文頭のみ大文字に変換",
+    "to_title_case": "単語の先頭を大文字に変換",
+    "remove_diacritics": "アクセント記号を削除"
+  },
+  "date_picker": {
+    "today": "今日",
+    "tomorrow": "明日",
+    "next-week": "来週",
+    "clear": "クリア"
   }
 }
