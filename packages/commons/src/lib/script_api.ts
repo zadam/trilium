@@ -91,7 +91,7 @@ export interface ScriptAttachment {
     utcDateModified: string;
     /**
      * The length of the attachment's content. Only some ways of loading an attachment fill it in,
-     * such as `getAttachments()`; on the backend, `getAttachmentsByRole()` leaves it `undefined`.
+     * such as `getAttachments()`.
      */
     contentLength: number;
 }
@@ -933,6 +933,30 @@ export interface ScriptCreateNoteOpts {
     attributes?: ScriptCreateAttribute[];
 }
 
+/** Options of `api.createLink()`. */
+export interface ScriptLinkOptions {
+    /** The text of the link. Defaults to the note's title. */
+    title?: string;
+    /**
+     * Whether a preview of the note shows while the mouse pointer rests on the link. Defaults to
+     * `true`.
+     */
+    showTooltip?: boolean;
+    /** Whether the path of the note's parents shows below the link. Defaults to `false`. */
+    showNotePath?: boolean;
+    /** Whether the note's icon shows before the link. Defaults to `false`. */
+    showNoteIcon?: boolean;
+    /** Whether the link is styled as a reference link, as in text notes. Defaults to `false`. */
+    referenceLink?: boolean;
+    /**
+     * Whether an image, canvas or Mermaid note shows as its picture instead of a link. Defaults to
+     * `false`.
+     */
+    autoConvertToImage?: boolean;
+    /** Text shown right after the link's title. */
+    titleSuffix?: string;
+}
+
 /**
  * The `api` global available inside **frontend** script notes
  * (`application/javascript;env=frontend`).
@@ -967,7 +991,7 @@ export interface FrontendApi {
      * - a backend script calls `api.runOnFrontend()` — then it's the backend execution's
      *   `originEntity`, provided that entity was a note.
      */
-    originEntity: unknown | null;
+    originEntity: ScriptFNote | null;
     /**
      * day.js library for date manipulation.
      * See {@link https://day.js.org} for documentation
@@ -1208,9 +1232,9 @@ export interface FrontendApi {
      * @param {string} [params.title=] - custom link tile with note's title as default
      * @returns {jQuery} - jQuery element with the link (wrapped in <span>)
      */
-    createLink(notePath: string, params?: Record<string, unknown>): unknown;
+    createLink(notePath: string, params?: ScriptLinkOptions): Promise<unknown>;
     /** @deprecated - use api.createLink() instead */
-    createNoteLink(notePath: string, params?: Record<string, unknown>): unknown;
+    createNoteLink(notePath: string, params?: ScriptLinkOptions): Promise<unknown>;
 
     /**
      * Trigger command. This is a very low-level API which should be avoided if possible.
@@ -1441,6 +1465,184 @@ export interface ScriptBRevision {
      * blank or binary, and throws an error when it is not valid JSON.
      */
     getJsonContent(): unknown;
+}
+
+/** An attachment as seen by backend scripts (subset of trilium-core's `BAttachment`). */
+export interface ScriptBAttachment {
+    /** The ID of the attachment. It is `undefined` until a new attachment is first saved. */
+    attachmentId?: string;
+    /**
+     * The ID of the note the attachment belongs to. For an attachment of a revision, it is the ID
+     * of the revision.
+     */
+    ownerId: string;
+    /**
+     * The purpose of the attachment: `image` for an image shown in a text note, `file` for an
+     * attached file. Trilium also uses roles of its own, such as `viewConfig` for a collection's
+     * view settings.
+     */
+    role: string;
+    /** The MIME type of the attachment's content, such as `image/png`. */
+    mime: string;
+    /**
+     * The title of the attachment, usually its file name. For a protected attachment outside a
+     * protected session, it holds the encrypted title; use `getTitleOrProtected()` to show it.
+     */
+    title: string;
+    /** The place of the attachment among its owner's attachments, listed by ascending position. */
+    position?: number;
+    /** Whether the attachment is protected (encrypted). */
+    isProtected?: boolean;
+    /** The ID of the blob that stores the content. It changes whenever the content changes. */
+    blobId?: string;
+    /** The date and time, in UTC, that the attachment was last saved. */
+    utcDateModified?: string;
+    /**
+     * The length of the attachment's content, when it was loaded together with the attachment.
+     * Attachments returned by `note.getAttachmentsByRole()` leave it `undefined`.
+     */
+    contentLength?: number;
+    /** Returns the note the attachment belongs to, or `undefined` for a revision's attachment. */
+    getNote(): ScriptBNote | undefined;
+    /**
+     * Returns the content: a string for text-based content, a `Uint8Array` for binary content
+     * such as images. For a protected attachment outside a protected session, it returns an empty
+     * string.
+     */
+    getContent(): string | Uint8Array;
+    /**
+     * Replaces the content and saves it immediately. Throws an error for a protected attachment
+     * outside a protected session.
+     */
+    setContent(
+        content: string | Uint8Array,
+        opts?: { forceSave?: boolean; forceFrontendReload?: boolean }
+    ): void;
+    /** Returns whether the content is text rather than binary, judged by the MIME type. */
+    hasStringContent(): boolean;
+    /**
+     * Returns whether the title and content can be read: the attachment is not protected, or a
+     * protected session is active.
+     */
+    isContentAvailable(): boolean;
+    /** Returns the title, or `[protected]` when the title cannot be read. */
+    getTitleOrProtected(): string;
+    /** Returns the file name the attachment downloads under: its title with a fitting extension. */
+    getFileName(): string;
+    /**
+     * Turns the attachment into a child note of its owner and deletes the attachment. In a text
+     * note, images and links that point to the attachment are rewritten to point to the new note.
+     * Throws an error for a revision's attachment, and for a protected one outside a protected
+     * session.
+     */
+    convertToNote(): ScriptNoteAndBranch;
+    /** Saves changes made to the attachment's properties, such as `title`. */
+    save(): this;
+    /**
+     * Deletes the attachment. Deleted attachments stay recoverable until they are erased.
+     *
+     * @param deleteId An ID that groups items deleted together, so that they can be restored
+     * together.
+     */
+    markAsDeleted(deleteId?: string | null): void;
+}
+
+/** An option, one of Trilium's settings (subset of trilium-core's `BOption`). */
+export interface ScriptBOption {
+    /** The name of the option, such as `theme` or `locale`. */
+    name: string;
+    /** The value of the option. Every value is a string, numbers and booleans included. */
+    value: string;
+    /** Whether the option syncs to other devices; device-specific options do not. */
+    isSynced?: boolean;
+    /** The date and time, in UTC, that the option last changed. */
+    utcDateModified?: string;
+}
+
+/**
+ * An ETAPI token, which grants an external program access to the ETAPI (subset of trilium-core's
+ * `BEtapiToken`). The token itself is not available, only its hash, which this type leaves out.
+ */
+export interface ScriptBEtapiToken {
+    /** The ID of the token. */
+    etapiTokenId?: string;
+    /** The name given to the token when it was created. */
+    name: string;
+    /** The date and time, in UTC, that the token was created. */
+    utcDateCreated: string;
+    /** The date and time, in UTC, that the token was last changed, such as renamed. */
+    utcDateModified?: string;
+    /** Whether the token has been deleted, which revokes it. */
+    isDeleted: boolean;
+}
+
+/** Options of `api.searchForNotes()` and `api.searchForNote()`. */
+export interface ScriptSearchParams {
+    /**
+     * Whether to search only titles and attributes, leaving out note content, which is faster.
+     * Defaults to `false`.
+     */
+    fastSearch?: boolean;
+    /** Whether to include archived notes. Defaults to `true`. */
+    includeArchivedNotes?: boolean;
+    /**
+     * Whether to include the hidden subtree's notes, such as settings and launchers. Defaults to
+     * `false`.
+     */
+    includeHiddenNotes?: boolean;
+    /**
+     * Whether to search the whole tree even while a note is hoisted. Defaults to `true`; with
+     * `false` and no `ancestorNoteId`, only the hoisted note's subtree is searched.
+     */
+    ignoreHoistedNote?: boolean;
+    /** The ID of a note to search under: only its descendants are found. */
+    ancestorNoteId?: string;
+    /**
+     * How deep under `ancestorNoteId` the found notes can lie: `eq`, `gt` or `lt` followed by a
+     * depth, such as `eq1` for its children only or `lt4` for less than four levels down.
+     */
+    ancestorDepth?: string;
+    /**
+     * What to order the results by: a note property such as `title`, `dateCreated` or
+     * `dateModified`, or `relevancy`, the default.
+     */
+    orderBy?: string;
+    /** `asc` or `desc`; the direction of `orderBy`. */
+    orderDirection?: string;
+    /** The largest number of results to return. */
+    limit?: number | null;
+    /** Whether to write how the query was parsed to the backend log. */
+    debug?: boolean;
+    /**
+     * Whether attribute conditions match loosely: `#status=done` also matches values that contain
+     * `done`, and `#stat` matches attributes whose name starts with `stat`. Defaults to `false`.
+     */
+    fuzzyAttributeSearch?: boolean;
+}
+
+/** Information about the running Trilium, as `api.getAppInfo()` returns it. */
+export interface ScriptAppInfo {
+    /** The version of Trilium, such as `0.106.0`. */
+    appVersion: string;
+    /** The version of the database schema. */
+    dbVersion: number;
+    /** The version of Node.js; absent in the standalone and mobile apps, which have no Node.js. */
+    nodeVersion?: string;
+    /** The version of the sync protocol, which both sides of a sync must share. */
+    syncVersion: number;
+    /** When this build of Trilium was made. */
+    buildDate: string;
+    /** The Git commit this build of Trilium was made from. */
+    buildRevision: string;
+    /**
+     * The directory that holds the database and the other data; absent in the standalone and
+     * mobile apps.
+     */
+    dataDirectory?: string;
+    /** The version of the protocol the web clipper speaks with Trilium. */
+    clipperProtocolVersion: string;
+    /** The date and time, in UTC, that Trilium started, in ISO 8601 form. */
+    utcDateTime: string;
 }
 
 /** Result of a clone operation ({@link ScriptBNote.cloneTo}); mirrors `CloneResponse`. */
@@ -2240,22 +2442,22 @@ export interface ScriptBNote {
     /**
      * Returns the attachments of this note, ordered by position. Deleted attachments are excluded.
      */
-    getAttachments(): ScriptAttachment[];
+    getAttachments(): ScriptBAttachment[];
     /**
      * Returns the attachment of this note with the given ID. Returns `undefined` if this note has
      * no such attachment, although the type does not say so.
      */
-    getAttachmentById(attachmentId: string): ScriptAttachment;
+    getAttachmentById(attachmentId: string): ScriptBAttachment;
     /**
      * Returns the first attachment of this note whose title matches exactly, or `undefined` if none
      * does.
      */
-    getAttachmentByTitle(title: string): ScriptAttachment | undefined;
+    getAttachmentByTitle(title: string): ScriptBAttachment | undefined;
     /**
      * Returns the attachments of this note with the given role, such as `"image"` or `"file"`,
      * ordered by position.
      */
-    getAttachmentsByRole(role: string): ScriptAttachment[];
+    getAttachmentsByRole(role: string): ScriptBAttachment[];
     /**
      * Saves an attachment of this note and returns it. If an existing attachment matches, only its
      * content is replaced; otherwise a new attachment is created from `attachment`, protected if
@@ -2268,7 +2470,7 @@ export interface ScriptBNote {
     saveAttachment(
         attachment: ScriptSaveAttachmentInput,
         matchBy?: "attachmentId" | "title"
-    ): ScriptAttachment;
+    ): ScriptBAttachment;
     /**
      * Converts this image note into an image attachment of its parent text note, points the
      * parent's content at the attachment, deletes this note and returns the attachment. Returns
@@ -2276,7 +2478,7 @@ export interface ScriptBNote {
      *
      * @param opts Pass `{ autoConversion: true }` to also require that the parent links the image.
      */
-    convertToParentAttachment(opts?: Record<string, unknown>): ScriptAttachment | null;
+    convertToParentAttachment(opts?: { autoConversion?: boolean }): ScriptBAttachment | null;
     /**
      * Returns `true` if this note can be converted into an attachment of its parent: it is an image
      * note with no children and a single parent, the parent is a text note, both are readable in
@@ -2285,7 +2487,7 @@ export interface ScriptBNote {
      *
      * @param opts Pass `{ autoConversion: true }` to also require that the parent links the image.
      */
-    isEligibleForConversionToAttachment(opts?: Record<string, unknown>): boolean;
+    isEligibleForConversionToAttachment(opts?: { autoConversion?: boolean }): boolean;
 
     // --- Sizes -------------------------------------------------------------
     /**
@@ -2514,7 +2716,7 @@ export interface BackendApi {
      *   script note itself;
      * - search scripts (`~searchScript`) — the search note.
      */
-    originEntity?: unknown | null;
+    originEntity?: ScriptBNote | ScriptBBranch | ScriptAttribute | null;
 
     /**
      * The HTTP request, present only when the script runs as a custom request handler: a note
@@ -2560,28 +2762,28 @@ export interface BackendApi {
     /** Returns an attribute by its ID, or null. */
     getAttribute(attributeId: string): ScriptAttribute | null;
     /** Returns an attachment by its ID, or null. */
-    getAttachment(attachmentId: string): unknown | null;
+    getAttachment(attachmentId: string): ScriptBAttachment | null;
     /** Returns a revision by its ID, or null. */
-    getRevision(revisionId: string): unknown | null;
+    getRevision(revisionId: string): ScriptBRevision | null;
     /** Returns an ETAPI token by its ID, or null. */
-    getEtapiToken(etapiTokenId: string): unknown | null;
+    getEtapiToken(etapiTokenId: string): ScriptBEtapiToken | null;
     /** Returns all ETAPI tokens. */
-    getEtapiTokens(): unknown[];
+    getEtapiTokens(): ScriptBEtapiToken[];
     /** Returns an option by name, or null. */
-    getOption(optionName: string): unknown | null;
+    getOption(optionName: string): ScriptBOption | null;
     /** Returns all options. */
-    getOptions(): unknown[];
+    getOptions(): ScriptBOption[];
 
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
      * "#dateModified =* MONTH AND #log". See {@link https://triliumnext.github.io/Docs/Wiki/search.html} for full documentation for all options
      */
-    searchForNotes(query: string, searchParams?: Record<string, unknown>): ScriptBNote[];
+    searchForNotes(query: string, searchParams?: ScriptSearchParams): ScriptBNote[];
     /**
      * This is a powerful search method - you can search by attributes and their values, e.g.:
      * "#dateModified =* MONTH AND #log". See {@link https://triliumnext.github.io/Docs/Wiki/search.html} for full documentation for all options
      */
-    searchForNote(query: string, searchParams?: Record<string, unknown>): ScriptBNote | null;
+    searchForNote(query: string, searchParams?: ScriptSearchParams): ScriptBNote | null;
     /**
      * Retrieves notes with given label name & value
      *
@@ -2766,7 +2968,7 @@ export interface BackendApi {
      */
     sql: unknown;
     /** Application info (version, build date, etc.). */
-    getAppInfo(): unknown;
+    getAppInfo(): ScriptAppInfo;
 
     /**
      * Creates a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.

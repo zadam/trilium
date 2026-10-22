@@ -21,7 +21,7 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>originEntity</code><br><em>optional</em></td>
-            <td><p><code>unknown</code><br>Entity whose event triggered this execution; <code>undefined</code> when the run was not event-driven (e.g. started manually via "Execute script" or <code>note.executeScript()</code>). What it holds depends on the trigger: - <code>~runOnNoteCreation</code>, <code>~runOnNoteChange</code>, <code>~runOnNoteTitleChange</code>, <code>~runOnNoteContentChange</code> — the affected note; - <code>~runOnChildNoteCreation</code> — the newly created child note; - <code>~runOnAttributeCreation</code>, <code>~runOnAttributeChange</code> — the attribute; - <code>~runOnBranchCreation</code>, <code>~runOnBranchChange</code>, <code>~runOnBranchDeletion</code> — the branch; - scheduled scripts (<code>#run=backendStartup</code> / <code>#run=hourly</code> / <code>#run=daily</code>) — the script note itself; - search scripts (<code>~searchScript</code>) — the search note.</p></td>
+            <td><p><code>Attribute | BBranch | BNote | null</code><br>Entity whose event triggered this execution; <code>undefined</code> when the run was not event-driven (e.g. started manually via "Execute script" or <code>note.executeScript()</code>). What it holds depends on the trigger: - <code>~runOnNoteCreation</code>, <code>~runOnNoteChange</code>, <code>~runOnNoteTitleChange</code>, <code>~runOnNoteContentChange</code> — the affected note; - <code>~runOnChildNoteCreation</code> — the newly created child note; - <code>~runOnAttributeCreation</code>, <code>~runOnAttributeChange</code> — the attribute; - <code>~runOnBranchCreation</code>, <code>~runOnBranchChange</code>, <code>~runOnBranchDeletion</code> — the branch; - scheduled scripts (<code>#run=backendStartup</code> / <code>#run=hourly</code> / <code>#run=daily</code>) — the script note itself; - search scripts (<code>~searchScript</code>) — the search note.</p></td>
         </tr>
         <tr>
             <td><code>req</code></td>
@@ -65,35 +65,35 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>getAttachment</code></td>
-            <td><pre><code class="language-application-typescript">getAttachment(attachmentId: string): unknown</code></pre><p>Returns an attachment by its ID, or null.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachment(attachmentId: string): BAttachment | null</code></pre><p>Returns an attachment by its ID, or null.</p></td>
         </tr>
         <tr>
             <td><code>getRevision</code></td>
-            <td><pre><code class="language-application-typescript">getRevision(revisionId: string): unknown</code></pre><p>Returns a revision by its ID, or null.</p></td>
+            <td><pre><code class="language-application-typescript">getRevision(revisionId: string): BRevision | null</code></pre><p>Returns a revision by its ID, or null.</p></td>
         </tr>
         <tr>
             <td><code>getEtapiToken</code></td>
-            <td><pre><code class="language-application-typescript">getEtapiToken(etapiTokenId: string): unknown</code></pre><p>Returns an ETAPI token by its ID, or null.</p></td>
+            <td><pre><code class="language-application-typescript">getEtapiToken(etapiTokenId: string): BEtapiToken | null</code></pre><p>Returns an ETAPI token by its ID, or null.</p></td>
         </tr>
         <tr>
             <td><code>getEtapiTokens</code></td>
-            <td><pre><code class="language-application-typescript">getEtapiTokens(): unknown[]</code></pre><p>Returns all ETAPI tokens.</p></td>
+            <td><pre><code class="language-application-typescript">getEtapiTokens(): BEtapiToken[]</code></pre><p>Returns all ETAPI tokens.</p></td>
         </tr>
         <tr>
             <td><code>getOption</code></td>
-            <td><pre><code class="language-application-typescript">getOption(optionName: string): unknown</code></pre><p>Returns an option by name, or null.</p></td>
+            <td><pre><code class="language-application-typescript">getOption(optionName: string): BOption | null</code></pre><p>Returns an option by name, or null.</p></td>
         </tr>
         <tr>
             <td><code>getOptions</code></td>
-            <td><pre><code class="language-application-typescript">getOptions(): unknown[]</code></pre><p>Returns all options.</p></td>
+            <td><pre><code class="language-application-typescript">getOptions(): BOption[]</code></pre><p>Returns all options.</p></td>
         </tr>
         <tr>
             <td><code>searchForNotes</code></td>
-            <td><pre><code class="language-application-typescript">searchForNotes(query: string, searchParams?: Record&lt;string, unknown&gt;): BNote[]</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See <code>https://triliumnext.github.io/Docs/Wiki/search.html</code> for full documentation for all options</p></td>
+            <td><pre><code class="language-application-typescript">searchForNotes(query: string, searchParams?: SearchParams): BNote[]</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See <code>https://triliumnext.github.io/Docs/Wiki/search.html</code> for full documentation for all options</p></td>
         </tr>
         <tr>
             <td><code>searchForNote</code></td>
-            <td><pre><code class="language-application-typescript">searchForNote(query: string, searchParams?: Record&lt;string, unknown&gt;): BNote | null</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See <code>https://triliumnext.github.io/Docs/Wiki/search.html</code> for full documentation for all options</p></td>
+            <td><pre><code class="language-application-typescript">searchForNote(query: string, searchParams?: SearchParams): BNote | null</code></pre><p>This is a powerful search method - you can search by attributes and their values, e.g.: "#dateModified =* MONTH AND #log". See <code>https://triliumnext.github.io/Docs/Wiki/search.html</code> for full documentation for all options</p></td>
         </tr>
         <tr>
             <td><code>getNotesWithLabel</code></td>
@@ -209,7 +209,7 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>getAppInfo</code></td>
-            <td><pre><code class="language-application-typescript">getAppInfo(): unknown</code></pre><p>Application info (version, build date, etc.).</p></td>
+            <td><pre><code class="language-application-typescript">getAppInfo(): AppInfo</code></pre><p>Application info (version, build date, etc.).</p></td>
         </tr>
         <tr>
             <td><code>createOrUpdateLauncher</code></td>
@@ -728,31 +728,31 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>getAttachments</code></td>
-            <td><pre><code class="language-application-typescript">getAttachments(): Attachment[]</code></pre><p>Returns the attachments of this note, ordered by position. Deleted attachments are excluded.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachments(): BAttachment[]</code></pre><p>Returns the attachments of this note, ordered by position. Deleted attachments are excluded.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentById</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentById(attachmentId: string): Attachment</code></pre><p>Returns the attachment of this note with the given ID. Returns <code>undefined</code> if this note has no such attachment, although the type does not say so.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachmentById(attachmentId: string): BAttachment</code></pre><p>Returns the attachment of this note with the given ID. Returns <code>undefined</code> if this note has no such attachment, although the type does not say so.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentByTitle</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentByTitle(title: string): Attachment | undefined</code></pre><p>Returns the first attachment of this note whose title matches exactly, or <code>undefined</code> if none does.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachmentByTitle(title: string): BAttachment | undefined</code></pre><p>Returns the first attachment of this note whose title matches exactly, or <code>undefined</code> if none does.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentsByRole</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentsByRole(role: string): Attachment[]</code></pre><p>Returns the attachments of this note with the given role, such as <code>"image"</code> or <code>"file"</code>, ordered by position.</p></td>
+            <td><pre><code class="language-application-typescript">getAttachmentsByRole(role: string): BAttachment[]</code></pre><p>Returns the attachments of this note with the given role, such as <code>"image"</code> or <code>"file"</code>, ordered by position.</p></td>
         </tr>
         <tr>
             <td><code>saveAttachment</code></td>
-            <td><pre><code class="language-application-typescript">saveAttachment(attachment: SaveAttachmentInput, matchBy?: "title" | "attachmentId"): Attachment</code></pre><p>Saves an attachment of this note and returns it. If an existing attachment matches, only its content is replaced; otherwise a new attachment is created from <code>attachment</code>, protected if the note is. Missing content is saved as an empty string.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>attachment</code></td><td><code>SaveAttachmentInput</code></td></tr><tr><td><code>matchBy</code><br><em>optional</em></td><td><code>"title" | "attachmentId"</code><br>How to find an existing attachment to update: <code>"attachmentId"</code> (the default) by <code>attachment.attachmentId</code>, which throws an error if no attachment has that ID, or <code>"title"</code> by <code>attachment.title</code> among this note's attachments.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">saveAttachment(attachment: SaveAttachmentInput, matchBy?: "title" | "attachmentId"): BAttachment</code></pre><p>Saves an attachment of this note and returns it. If an existing attachment matches, only its content is replaced; otherwise a new attachment is created from <code>attachment</code>, protected if the note is. Missing content is saved as an empty string.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>attachment</code></td><td><code>SaveAttachmentInput</code></td></tr><tr><td><code>matchBy</code><br><em>optional</em></td><td><code>"title" | "attachmentId"</code><br>How to find an existing attachment to update: <code>"attachmentId"</code> (the default) by <code>attachment.attachmentId</code>, which throws an error if no attachment has that ID, or <code>"title"</code> by <code>attachment.title</code> among this note's attachments.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>convertToParentAttachment</code></td>
-            <td><pre><code class="language-application-typescript">convertToParentAttachment(opts?: Record&lt;string, unknown&gt;): Attachment | null</code></pre><p>Converts this image note into an image attachment of its parent text note, points the parent's content at the attachment, deletes this note and returns the attachment. Returns <code>null</code> and changes nothing when <code>isEligibleForConversionToAttachment()</code> returns <code>false</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code><br><em>optional</em></td><td><code>Record&lt;string, unknown&gt;</code><br>Pass <code>{ autoConversion: true }</code> to also require that the parent links the image.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">convertToParentAttachment(opts?: { autoConversion?: boolean }): BAttachment | null</code></pre><p>Converts this image note into an image attachment of its parent text note, points the parent's content at the attachment, deletes this note and returns the attachment. Returns <code>null</code> and changes nothing when <code>isEligibleForConversionToAttachment()</code> returns <code>false</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code><br><em>optional</em></td><td><code>{ autoConversion?: boolean }</code><br>Pass <code>{ autoConversion: true }</code> to also require that the parent links the image.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>isEligibleForConversionToAttachment</code></td>
-            <td><pre><code class="language-application-typescript">isEligibleForConversionToAttachment(opts?: Record&lt;string, unknown&gt;): boolean</code></pre><p>Returns <code>true</code> if this note can be converted into an attachment of its parent: it is an image note with no children and a single parent, the parent is a text note, both are readable in the current session, and at most one <code>~imageLink</code> relation points to the image, from the parent.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code><br><em>optional</em></td><td><code>Record&lt;string, unknown&gt;</code><br>Pass <code>{ autoConversion: true }</code> to also require that the parent links the image.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">isEligibleForConversionToAttachment(opts?: { autoConversion?: boolean }): boolean</code></pre><p>Returns <code>true</code> if this note can be converted into an attachment of its parent: it is an image note with no children and a single parent, the parent is a text note, both are readable in the current session, and at most one <code>~imageLink</code> relation points to the image, from the parent.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code><br><em>optional</em></td><td><code>{ autoConversion?: boolean }</code><br>Pass <code>{ autoConversion: true }</code> to also require that the parent links the image.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>contentSize</code></td>
@@ -857,6 +857,53 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
     </tbody>
 </table>
 
+## `BBranch`
+
+A branch (note→parent placement) as seen by backend scripts (subset of `BBranch`).
+
+<table>
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>branchId</code></td>
+            <td><p><code>string</code><br>The ID of the branch. Moving a note to another parent replaces its branch with a new one, so store the note ID rather than the branch ID when you need a stable reference.</p></td>
+        </tr>
+        <tr>
+            <td><code>noteId</code></td>
+            <td><p><code>string</code><br>The ID of the child note this branch places in the tree.</p></td>
+        </tr>
+        <tr>
+            <td><code>parentNoteId</code></td>
+            <td><p><code>string</code><br>The ID of the parent note. For the root note's branch, it is <code>"none"</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>prefix</code></td>
+            <td><p><code>string | null</code><br>The text shown before the note's title in the note tree for this placement only, or <code>null</code> if there is none.</p></td>
+        </tr>
+        <tr>
+            <td><code>notePosition</code></td>
+            <td><p><code>number</code><br>The position of the note among its siblings under this parent; notes with lower values come first.</p></td>
+        </tr>
+        <tr>
+            <td><code>isExpanded</code></td>
+            <td><p><code>boolean</code><br>Whether the note is expanded in the note tree at this placement, showing its children.</p></td>
+        </tr>
+        <tr>
+            <td><code>getNote</code></td>
+            <td><pre><code class="language-application-typescript">getNote(): BNote</code></pre><p>Returns the child note this branch places in the tree.</p></td>
+        </tr>
+        <tr>
+            <td><code>getParentNote</code></td>
+            <td><pre><code class="language-application-typescript">getParentNote(): BNote | null</code></pre><p>Returns the parent note. The root note's branch has no parent note.</p></td>
+        </tr>
+    </tbody>
+</table>
+
 ## `Request`
 
 Minimal Express `Request` surface available to **custom request handlers** (a subset of Express's `Request` — re-declared here to keep this module self-contained). Only the commonly used members are typed; the real object is a full Express request.
@@ -943,9 +990,9 @@ Minimal Express `Response` surface available to **custom request handlers** (a s
     </tbody>
 </table>
 
-## `BBranch`
+## `BAttachment`
 
-A branch (note→parent placement) as seen by backend scripts (subset of `BBranch`).
+An attachment as seen by backend scripts (subset of trilium-core's `BAttachment`).
 
 <table>
     <thead>
@@ -956,36 +1003,84 @@ A branch (note→parent placement) as seen by backend scripts (subset of `BBranc
     </thead>
     <tbody>
         <tr>
-            <td><code>branchId</code></td>
-            <td><p><code>string</code><br>The ID of the branch. Moving a note to another parent replaces its branch with a new one, so store the note ID rather than the branch ID when you need a stable reference.</p></td>
+            <td><code>attachmentId</code><br><em>optional</em></td>
+            <td><p><code>string</code><br>The ID of the attachment. It is <code>undefined</code> until a new attachment is first saved.</p></td>
         </tr>
         <tr>
-            <td><code>noteId</code></td>
-            <td><p><code>string</code><br>The ID of the child note this branch places in the tree.</p></td>
+            <td><code>ownerId</code></td>
+            <td><p><code>string</code><br>The ID of the note the attachment belongs to. For an attachment of a revision, it is the ID of the revision.</p></td>
         </tr>
         <tr>
-            <td><code>parentNoteId</code></td>
-            <td><p><code>string</code><br>The ID of the parent note. For the root note's branch, it is <code>"none"</code>.</p></td>
+            <td><code>role</code></td>
+            <td><p><code>string</code><br>The purpose of the attachment: <code>image</code> for an image shown in a text note, <code>file</code> for an attached file. Trilium also uses roles of its own, such as <code>viewConfig</code> for a collection's view settings.</p></td>
         </tr>
         <tr>
-            <td><code>prefix</code></td>
-            <td><p><code>string | null</code><br>The text shown before the note's title in the note tree for this placement only, or <code>null</code> if there is none.</p></td>
+            <td><code>mime</code></td>
+            <td><p><code>string</code><br>The MIME type of the attachment's content, such as <code>image/png</code>.</p></td>
         </tr>
         <tr>
-            <td><code>notePosition</code></td>
-            <td><p><code>number</code><br>The position of the note among its siblings under this parent; notes with lower values come first.</p></td>
+            <td><code>title</code></td>
+            <td><p><code>string</code><br>The title of the attachment, usually its file name. For a protected attachment outside a protected session, it holds the encrypted title; use <code>getTitleOrProtected()</code> to show it.</p></td>
         </tr>
         <tr>
-            <td><code>isExpanded</code></td>
-            <td><p><code>boolean</code><br>Whether the note is expanded in the note tree at this placement, showing its children.</p></td>
+            <td><code>position</code><br><em>optional</em></td>
+            <td><p><code>number</code><br>The place of the attachment among its owner's attachments, listed by ascending position.</p></td>
+        </tr>
+        <tr>
+            <td><code>isProtected</code><br><em>optional</em></td>
+            <td><p><code>boolean</code><br>Whether the attachment is protected (encrypted).</p></td>
+        </tr>
+        <tr>
+            <td><code>blobId</code><br><em>optional</em></td>
+            <td><p><code>string</code><br>The ID of the blob that stores the content. It changes whenever the content changes.</p></td>
+        </tr>
+        <tr>
+            <td><code>utcDateModified</code><br><em>optional</em></td>
+            <td><p><code>string</code><br>The date and time, in UTC, that the attachment was last saved.</p></td>
+        </tr>
+        <tr>
+            <td><code>contentLength</code><br><em>optional</em></td>
+            <td><p><code>number</code><br>The length of the attachment's content, when it was loaded together with the attachment. Attachments returned by <code>note.getAttachmentsByRole()</code> leave it <code>undefined</code>.</p></td>
         </tr>
         <tr>
             <td><code>getNote</code></td>
-            <td><pre><code class="language-application-typescript">getNote(): BNote</code></pre><p>Returns the child note this branch places in the tree.</p></td>
+            <td><pre><code class="language-application-typescript">getNote(): BNote | undefined</code></pre><p>Returns the note the attachment belongs to, or <code>undefined</code> for a revision's attachment.</p></td>
         </tr>
         <tr>
-            <td><code>getParentNote</code></td>
-            <td><pre><code class="language-application-typescript">getParentNote(): BNote | null</code></pre><p>Returns the parent note. The root note's branch has no parent note.</p></td>
+            <td><code>getContent</code></td>
+            <td><pre><code class="language-application-typescript">getContent(): string | Uint8Array&lt;ArrayBufferLike&gt;</code></pre><p>Returns the content: a string for text-based content, a <code>Uint8Array</code> for binary content such as images. For a protected attachment outside a protected session, it returns an empty string.</p></td>
+        </tr>
+        <tr>
+            <td><code>setContent</code></td>
+            <td><pre><code class="language-application-typescript">setContent(content: string | Uint8Array&lt;ArrayBufferLike&gt;, opts?: { forceSave?: boolean; forceFrontendReload?: boolean }): void</code></pre><p>Replaces the content and saves it immediately. Throws an error for a protected attachment outside a protected session.</p></td>
+        </tr>
+        <tr>
+            <td><code>hasStringContent</code></td>
+            <td><pre><code class="language-application-typescript">hasStringContent(): boolean</code></pre><p>Returns whether the content is text rather than binary, judged by the MIME type.</p></td>
+        </tr>
+        <tr>
+            <td><code>isContentAvailable</code></td>
+            <td><pre><code class="language-application-typescript">isContentAvailable(): boolean</code></pre><p>Returns whether the title and content can be read: the attachment is not protected, or a protected session is active.</p></td>
+        </tr>
+        <tr>
+            <td><code>getTitleOrProtected</code></td>
+            <td><pre><code class="language-application-typescript">getTitleOrProtected(): string</code></pre><p>Returns the title, or <code>[protected]</code> when the title cannot be read.</p></td>
+        </tr>
+        <tr>
+            <td><code>getFileName</code></td>
+            <td><pre><code class="language-application-typescript">getFileName(): string</code></pre><p>Returns the file name the attachment downloads under: its title with a fitting extension.</p></td>
+        </tr>
+        <tr>
+            <td><code>convertToNote</code></td>
+            <td><pre><code class="language-application-typescript">convertToNote(): NoteAndBranch</code></pre><p>Turns the attachment into a child note of its owner and deletes the attachment. In a text note, images and links that point to the attachment are rewritten to point to the new note. Throws an error for a revision's attachment, and for a protected one outside a protected session.</p></td>
+        </tr>
+        <tr>
+            <td><code>save</code></td>
+            <td><pre><code class="language-application-typescript">save(): this</code></pre><p>Saves changes made to the attachment's properties, such as <code>title</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>markAsDeleted</code></td>
+            <td><pre><code class="language-application-typescript">markAsDeleted(deleteId?: string | null): void</code></pre><p>Deletes the attachment. Deleted attachments stay recoverable until they are erased.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>deleteId</code><br><em>optional</em></td><td><code>string | null</code><br>An ID that groups items deleted together, so that they can be restored together.</td></tr></tbody></table></figure></td>
         </tr>
     </tbody>
 </table>
@@ -1078,14 +1173,6 @@ A date as day.js wraps it (subset).
 
 ## Types
 
-### `Dayjs`
-
-Minimal day.js surface (the real API exposes the full day.js factory).
-
-```typescript
-type Dayjs = (date?: string | number | Date) => DayjsInstance
-```
-
 ### `Attribute`
 
 A label or relation attached to a note.
@@ -1099,6 +1186,55 @@ A label or relation attached to a note.
 | `isInheritable` | `boolean`  <br>Whether the note's descendants inherit the attribute. |
 | `isOwned` | `boolean`  <br>Not set by Trilium: neither frontend nor backend attributes carry this property, so it reads `undefined`. |
 
+### `Dayjs`
+
+Minimal day.js surface (the real API exposes the full day.js factory).
+
+```typescript
+type Dayjs = (date?: string | number | Date) => DayjsInstance
+```
+
+### `BEtapiToken`
+
+An ETAPI token, which grants an external program access to the ETAPI (subset of trilium-core's `BEtapiToken`). The token itself is not available, only its hash, which this type leaves out.
+
+| Property | Description |
+| --- | --- |
+| `etapiTokenId`  <br>_optional_ | `string`  <br>The ID of the token. |
+| `name` | `string`  <br>The name given to the token when it was created. |
+| `utcDateCreated` | `string`  <br>The date and time, in UTC, that the token was created. |
+| `utcDateModified`  <br>_optional_ | `string`  <br>The date and time, in UTC, that the token was last changed, such as renamed. |
+| `isDeleted` | `boolean`  <br>Whether the token has been deleted, which revokes it. |
+
+### `BOption`
+
+An option, one of Trilium's settings (subset of trilium-core's `BOption`).
+
+| Property | Description |
+| --- | --- |
+| `name` | `string`  <br>The name of the option, such as `theme` or `locale`. |
+| `value` | `string`  <br>The value of the option. Every value is a string, numbers and booleans included. |
+| `isSynced`  <br>_optional_ | `boolean`  <br>Whether the option syncs to other devices; device-specific options do not. |
+| `utcDateModified`  <br>_optional_ | `string`  <br>The date and time, in UTC, that the option last changed. |
+
+### `SearchParams`
+
+Options of `api.searchForNotes()` and `api.searchForNote()`.
+
+| Property | Description |
+| --- | --- |
+| `fastSearch`  <br>_optional_ | `boolean`  <br>Whether to search only titles and attributes, leaving out note content, which is faster. Defaults to `false`. |
+| `includeArchivedNotes`  <br>_optional_ | `boolean`  <br>Whether to include archived notes. Defaults to `true`. |
+| `includeHiddenNotes`  <br>_optional_ | `boolean`  <br>Whether to include the hidden subtree's notes, such as settings and launchers. Defaults to `false`. |
+| `ignoreHoistedNote`  <br>_optional_ | `boolean`  <br>Whether to search the whole tree even while a note is hoisted. Defaults to `true`; with `false` and no `ancestorNoteId`, only the hoisted note's subtree is searched. |
+| `ancestorNoteId`  <br>_optional_ | `string`  <br>The ID of a note to search under: only its descendants are found. |
+| `ancestorDepth`  <br>_optional_ | `string`  <br>How deep under `ancestorNoteId` the found notes can lie: `eq`, `gt` or `lt` followed by a depth, such as `eq1` for its children only or `lt4` for less than four levels down. |
+| `orderBy`  <br>_optional_ | `string`  <br>What to order the results by: a note property such as `title`, `dateCreated` or `dateModified`, or `relevancy`, the default. |
+| `orderDirection`  <br>_optional_ | `string`  <br>`asc` or `desc`; the direction of `orderBy`. |
+| `limit`  <br>_optional_ | `number \| null`  <br>The largest number of results to return. |
+| `debug`  <br>_optional_ | `boolean`  <br>Whether to write how the query was parsed to the backend log. |
+| `fuzzyAttributeSearch`  <br>_optional_ | `boolean`  <br>Whether attribute conditions match loosely: `#status=done` also matches values that contain `done`, and `#stat` matches attributes whose name starts with `stat`. Defaults to `false`. |
+
 ### `NoteAndBranch`
 
 Result of the backend note-creation helpers.
@@ -1107,6 +1243,22 @@ Result of the backend note-creation helpers.
 | --- | --- |
 | `note` | `BNote`  <br>The new note. For `duplicateSubtree()`, it is the copy of the original note. |
 | `branch` | `BBranch`  <br>The branch that places the new note under its parent. |
+
+### `AppInfo`
+
+Information about the running Trilium, as `api.getAppInfo()` returns it.
+
+| Property | Description |
+| --- | --- |
+| `appVersion` | `string`  <br>The version of Trilium, such as `0.106.0`. |
+| `dbVersion` | `number`  <br>The version of the database schema. |
+| `nodeVersion`  <br>_optional_ | `string`  <br>The version of Node.js; absent in the standalone and mobile apps, which have no Node.js. |
+| `syncVersion` | `number`  <br>The version of the sync protocol, which both sides of a sync must share. |
+| `buildDate` | `string`  <br>When this build of Trilium was made. |
+| `buildRevision` | `string`  <br>The Git commit this build of Trilium was made from. |
+| `dataDirectory`  <br>_optional_ | `string`  <br>The directory that holds the database and the other data; absent in the standalone and mobile apps. |
+| `clipperProtocolVersion` | `string`  <br>The version of the protocol the web clipper speaks with Trilium. |
+| `utcDateTime` | `string`  <br>The date and time, in UTC, that Trilium started, in ISO 8601 form. |
 
 ### `SubtreeOpts`
 
@@ -1138,20 +1290,6 @@ One resolved tree path to a note (subset of the client's `NotePathRecord`).
 | `isSearch`  <br>_optional_ | `boolean`  <br>Whether the note itself is a search note. Only frontend scripts get this property; backend records leave it out. |
 | `notePath` | `string[]`  <br>The note IDs along the path, from `root` to the note itself. |
 | `isHidden` | `boolean`  <br>Whether the path passes through the hidden subtree, `_hidden`, which holds Trilium's system notes. |
-
-### `Attachment`
-
-An attachment as seen by frontend scripts (subset of the client's `FAttachment`).
-
-| Property | Description |
-| --- | --- |
-| `attachmentId` | `string`  <br>The ID of the attachment. |
-| `ownerId` | `string`  <br>The ID of the note the attachment belongs to. For an attachment of a revision, it is the ID of the revision. |
-| `role` | `string`  <br>The purpose of the attachment, such as `image` for an image shown in a text note or `file` for an attached file. Trilium also uses roles of its own, such as `viewConfig` for a collection's view settings. |
-| `mime` | `string`  <br>The MIME type of the attachment's content, such as `image/png`. |
-| `title` | `string`  <br>The title of the attachment, usually its file name. |
-| `utcDateModified` | `string`  <br>The date and time, in UTC, that the attachment was last saved, such as `2026-10-22 12:03:05.123Z`. Replacing the content counts as saving. |
-| `contentLength` | `number`  <br>The length of the attachment's content. Only some ways of loading an attachment fill it in, such as `getAttachments()`; on the backend, `getAttachmentsByRole()` leaves it `undefined`. |
 
 ### `SaveAttachmentInput`
 

@@ -1,5 +1,5 @@
 import { dayjs, formatLogMessage, type ToMarkdownResponse } from "@triliumnext/commons";
-import type { FrontendApi as PublicFrontendApi, ScriptFNote as PublicScriptFNote } from "@triliumnext/commons/src/lib/script_api.js";
+import type { FrontendApi as PublicFrontendApi, ScriptFNote as PublicScriptFNote, ScriptLinkOptions } from "@triliumnext/commons/src/lib/script_api.js";
 import DOMPurify from "dompurify";
 
 import appContext from "../components/app_context.js";
@@ -509,7 +509,10 @@ export default FrontendScriptApi as any as {
 // claims an `api`/`FNote` member that has since been renamed or removed here.
 type _MissingApiMembers = Exclude<keyof PublicFrontendApi, keyof Api>;
 type _MissingFNoteMembers = Exclude<keyof PublicScriptFNote, keyof FNote>;
+type _MissingLinkOptions = Exclude<keyof ScriptLinkOptions, keyof NonNullable<Parameters<typeof linkService.createLink>[1]>>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _apiDriftGuard: [_MissingApiMembers] extends [never] ? true : _MissingApiMembers = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _fnoteDriftGuard: [_MissingFNoteMembers] extends [never] ? true : _MissingFNoteMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _linkOptionsDriftGuard: [_MissingLinkOptions] extends [never] ? true : _MissingLinkOptions = true;

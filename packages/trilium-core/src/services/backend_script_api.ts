@@ -1,5 +1,5 @@
 import { type AttributeRow, dayjs, formatLogMessage } from "@triliumnext/commons";
-import type { BackendApi as PublicBackendApi, ScriptBNote as PublicScriptBNote, ScriptRequest, ScriptResponse } from "@triliumnext/commons/src/lib/script_api.js";
+import type { BackendApi as PublicBackendApi, ScriptAppInfo, ScriptBAttachment, ScriptBEtapiToken, ScriptBNote as PublicScriptBNote, ScriptBOption, ScriptRequest, ScriptResponse, ScriptSearchParams } from "@triliumnext/commons/src/lib/script_api.js";
 import AbstractBeccaEntity from "../becca/entities/abstract_becca_entity";
 import Becca from "../becca/becca-interface";
 import * as htmlParser from "node-html-parser";
@@ -28,6 +28,7 @@ import log, { getLog } from "./log.js";
 import noteService from "./notes.js";
 import optionsService from "./options.js";
 import searchService from "./search/services/search.js";
+import type { SearchParams as CoreSearchParams } from "./search/services/types.js";
 import SpacedUpdate from "./spaced_update.js";
 import specialNotesService from "./special_notes.js";
 import { getSql } from "./sql/index";
@@ -558,11 +559,26 @@ export default BackendScriptApi as any as {
 // The public backend script API surface lives in @triliumnext/commons (self-
 // contained so it can feed the in-editor language service and the script-
 // deployer). These checks fail to compile — naming the offending member — if
-// that public surface claims an `api`/`BNote` member that has since been renamed
-// or removed here.
+// that public surface claims a member of `api`, or of a type it returns, that has
+// since been renamed or removed here.
 type _MissingBackendApiMembers = Exclude<keyof PublicBackendApi, keyof Api>;
 type _MissingBNoteMembers = Exclude<keyof PublicScriptBNote, keyof BNote>;
+type _MissingBAttachmentMembers = Exclude<keyof ScriptBAttachment, keyof BAttachment>;
+type _MissingBOptionMembers = Exclude<keyof ScriptBOption, keyof BOption>;
+type _MissingBEtapiTokenMembers = Exclude<keyof ScriptBEtapiToken, keyof BEtapiToken>;
+type _MissingSearchParams = Exclude<keyof ScriptSearchParams, keyof CoreSearchParams>;
+type _MissingAppInfoMembers = Exclude<keyof ScriptAppInfo, keyof typeof appInfo>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _backendApiDriftGuard: [_MissingBackendApiMembers] extends [never] ? true : _MissingBackendApiMembers = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _bnoteDriftGuard: [_MissingBNoteMembers] extends [never] ? true : _MissingBNoteMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _battachmentDriftGuard: [_MissingBAttachmentMembers] extends [never] ? true : _MissingBAttachmentMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _boptionDriftGuard: [_MissingBOptionMembers] extends [never] ? true : _MissingBOptionMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _betapiTokenDriftGuard: [_MissingBEtapiTokenMembers] extends [never] ? true : _MissingBEtapiTokenMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _searchParamsDriftGuard: [_MissingSearchParams] extends [never] ? true : _MissingSearchParams = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _appInfoDriftGuard: [_MissingAppInfoMembers] extends [never] ? true : _MissingAppInfoMembers = true;

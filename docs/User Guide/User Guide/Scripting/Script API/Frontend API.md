@@ -25,7 +25,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>originEntity</code></td>
-            <td><p><code>unknown</code><br>Entity whose event triggered this execution, or <code>null</code>. Most frontend scripts are started by the user or by the UI (startup scripts, widgets), so this is usually <code>null</code>. It is set to a note when: - the script runs through a <code>~renderNote</code> relation — then it's the note being rendered (the one carrying the relation), not the script note; - a backend script calls <code>api.runOnFrontend()</code> — then it's the backend execution's <code>originEntity</code>, provided that entity was a note.</p></td>
+            <td><p><code>FNote | null</code><br>Entity whose event triggered this execution, or <code>null</code>. Most frontend scripts are started by the user or by the UI (startup scripts, widgets), so this is usually <code>null</code>. It is set to a note when: - the script runs through a <code>~renderNote</code> relation — then it's the note being rendered (the one carrying the relation), not the script note; - a backend script calls <code>api.runOnFrontend()</code> — then it's the backend execution's <code>originEntity</code>, provided that entity was a note.</p></td>
         </tr>
         <tr>
             <td><code>dayjs</code></td>
@@ -173,11 +173,11 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>createLink</code></td>
-            <td><pre><code class="language-application-typescript">createLink(notePath: string, params?: Record&lt;string, unknown&gt;): unknown</code></pre><p>Create a note link (jQuery object) for given note.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>notePath</code></td><td><code>string</code><br>(or noteId)</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>Record&lt;string, unknown&gt;</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>unknown</code>: - jQuery element with the link (wrapped in <span>)</span></p></td>
+            <td><pre><code class="language-application-typescript">createLink(notePath: string, params?: LinkOptions): Promise&lt;unknown&gt;</code></pre><p>Create a note link (jQuery object) for given note.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>notePath</code></td><td><code>string</code><br>(or noteId)</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>LinkOptions</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: - jQuery element with the link (wrapped in <span>)</span></p></td>
         </tr>
         <tr>
             <td><code>createNoteLink</code></td>
-            <td><pre><code class="language-application-typescript">createNoteLink(notePath: string, params?: Record&lt;string, unknown&gt;): unknown</code></pre><aside class="admonition warning"><p>Deprecated. - use api.createLink() instead</p></aside></td>
+            <td><pre><code class="language-application-typescript">createNoteLink(notePath: string, params?: LinkOptions): Promise&lt;unknown&gt;</code></pre><aside class="admonition warning"><p>Deprecated. - use api.createLink() instead</p></aside></td>
         </tr>
         <tr>
             <td><code>triggerCommand</code></td>
@@ -1118,6 +1118,20 @@ A run of picker items under a heading of their own.
 | `groupHeader` | `string`  <br>The heading shown above the group's items. An empty string shows the items without a heading. |
 | `items` | `PickerItem[]`  <br>The items in the group, in the order the picker shows them. |
 
+### `LinkOptions`
+
+Options of `api.createLink()`.
+
+| Property | Description |
+| --- | --- |
+| `title`  <br>_optional_ | `string`  <br>The text of the link. Defaults to the note's title. |
+| `showTooltip`  <br>_optional_ | `boolean`  <br>Whether a preview of the note shows while the mouse pointer rests on the link. Defaults to `true`. |
+| `showNotePath`  <br>_optional_ | `boolean`  <br>Whether the path of the note's parents shows below the link. Defaults to `false`. |
+| `showNoteIcon`  <br>_optional_ | `boolean`  <br>Whether the note's icon shows before the link. Defaults to `false`. |
+| `referenceLink`  <br>_optional_ | `boolean`  <br>Whether the link is styled as a reference link, as in text notes. Defaults to `false`. |
+| `autoConvertToImage`  <br>_optional_ | `boolean`  <br>Whether an image, canvas or Mermaid note shows as its picture instead of a link. Defaults to `false`. |
+| `titleSuffix`  <br>_optional_ | `string`  <br>Text shown right after the link's title. |
+
 ### `NotePathRecord`
 
 One resolved tree path to a note (subset of the client's `NotePathRecord`).
@@ -1178,7 +1192,7 @@ An attachment as seen by frontend scripts (subset of the client's `FAttachment`)
 | `mime` | `string`  <br>The MIME type of the attachment's content, such as `image/png`. |
 | `title` | `string`  <br>The title of the attachment, usually its file name. |
 | `utcDateModified` | `string`  <br>The date and time, in UTC, that the attachment was last saved, such as `2026-10-22 12:03:05.123Z`. Replacing the content counts as saving. |
-| `contentLength` | `number`  <br>The length of the attachment's content. Only some ways of loading an attachment fill it in, such as `getAttachments()`; on the backend, `getAttachmentsByRole()` leaves it `undefined`. |
+| `contentLength` | `number`  <br>The length of the attachment's content. Only some ways of loading an attachment fill it in, such as `getAttachments()`. |
 
 ### `CreateAttribute`
 
