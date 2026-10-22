@@ -456,7 +456,7 @@
     "modal_title": "노트 유형 선택",
     "templates": "템플릿",
     "location": "위치",
-    "location_placeholder": "비워 두면 기본 위치를 사용합니다."
+    "location_placeholder": "비워 두면 기본 위치를 사용합니다"
   },
   "password_not_set": {
     "title": "비밀번호가 설정되지 않았습니다",
@@ -2873,7 +2873,7 @@
     "line_numbers_auto": "자동",
     "line_numbers_on": "켜기",
     "line_numbers_off": "끄기",
-    "line_numbers_auto_description": "전역 설정을 따릅니다."
+    "line_numbers_auto_description": "전역 설정 따르기"
   },
   "electron_integration": {
     "desktop-application": "데스크톱 애플리케이션",
@@ -4788,11 +4788,11 @@
     "reverse_lines": "줄 순서 뒤집기",
     "deduplicate_lines": "중복 줄 제거",
     "trim_leading": "앞쪽 공백 제거",
-    "trim_leading_tooltip": "각 줄의 시작 부분에 있는 공백 문자를 제거합니다.",
+    "trim_leading_tooltip": "각 줄의 시작 부분에 있는 공백 문자를 제거합니다",
     "trim_trailing": "뒤쪽 공백 제거",
-    "trim_trailing_tooltip": "각 줄의 끝 부분에 있는 공백 문자를 제거합니다.",
+    "trim_trailing_tooltip": "각 줄의 끝 부분에 있는 공백 문자를 제거합니다",
     "trim_both": "양쪽 공백 제거",
-    "trim_both_tooltip": "각 줄의 시작과 끝에 있는 공백 문자를 제거합니다.",
+    "trim_both_tooltip": "각 줄의 시작과 끝에 있는 공백 문자를 제거합니다",
     "remove_blank_lines": "빈 줄 제거",
     "to_uppercase": "대문자로 변환",
     "to_lowercase": "소문자로 변환",
