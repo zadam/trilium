@@ -3415,69 +3415,80 @@ The same data is served by GET /api/metrics to the web session.
 
 === "200: instance metrics"
 
-    *   `text/plain`: `string`
-    *   `application/json`: `Metrics`
+    === "`text/plain`: `string`"
 
-    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
-    <div class="trilium-multicolumn-column">
+        ```plain
+        # HELP trilium_info Trilium instance information
+        # TYPE trilium_info gauge
+        trilium_info{version="0.99.3",db_version="231"} 1 1701432000
 
-    | Property | Type | Description |
-    | --- | --- | --- |
-    | `version` | `object` |  |
-    | `database` | `object` |  |
-    | `noteTypes` | `object` | Number of active notes per note type |
-    | `attachmentTypes` | `object` | Number of active attachments per MIME type |
-    | `statistics` | `object` |  |
-    | `timestamp` | `string` |  |
+        # HELP trilium_notes_total Total number of notes including deleted
+        # TYPE trilium_notes_total gauge
+        trilium_notes_total 1234 1701432000
+        ```
 
-    </div>
-    <div class="trilium-multicolumn-column">
+    === "`application/json`: `Metrics`"
 
-    ```json
-    {
-        "version": {
-            "app": "0.99.3",
-            "db": 231,
-            "node": "v22.14.0",
-            "sync": 35,
-            "buildDate": "2024-09-07T18:36:34Z",
-            "buildRevision": "7c0d6930fa8f20d269dcfbcbc8f636a25f6bb9a7"
-        },
-        "database": {
-            "totalNotes": 0,
-            "deletedNotes": 0,
-            "activeNotes": 0,
-            "protectedNotes": 0,
-            "totalAttachments": 0,
-            "deletedAttachments": 0,
-            "activeAttachments": 0,
-            "totalRevisions": 0,
-            "totalBranches": 0,
-            "totalAttributes": 0,
-            "totalBlobs": 0,
-            "totalEtapiTokens": 0,
-            "totalRecentNotes": 0
-        },
-        "noteTypes": {
-            "text": 800,
-            "code": 200
-        },
-        "attachmentTypes": {
-            "image/png": 45,
-            "application/pdf": 14
-        },
-        "statistics": {
-            "oldestNote": "string",
-            "newestNote": "string",
-            "lastModified": "string",
-            "databaseSizeBytes": 0
-        },
-        "timestamp": "2024-12-01T12:00:00.000Z"
-    }
-    ```
+        <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+        <div class="trilium-multicolumn-column">
 
-    </div>
-    </div>
+        | Property | Type | Description |
+        | --- | --- | --- |
+        | `version` | `object` |  |
+        | `database` | `object` |  |
+        | `noteTypes` | `object` | Number of active notes per note type |
+        | `attachmentTypes` | `object` | Number of active attachments per MIME type |
+        | `statistics` | `object` |  |
+        | `timestamp` | `string` |  |
+
+        </div>
+        <div class="trilium-multicolumn-column">
+
+        ```json
+        {
+            "version": {
+                "app": "0.99.3",
+                "db": 231,
+                "node": "v22.14.0",
+                "sync": 35,
+                "buildDate": "2024-09-07T18:36:34Z",
+                "buildRevision": "7c0d6930fa8f20d269dcfbcbc8f636a25f6bb9a7"
+            },
+            "database": {
+                "totalNotes": 0,
+                "deletedNotes": 0,
+                "activeNotes": 0,
+                "protectedNotes": 0,
+                "totalAttachments": 0,
+                "deletedAttachments": 0,
+                "activeAttachments": 0,
+                "totalRevisions": 0,
+                "totalBranches": 0,
+                "totalAttributes": 0,
+                "totalBlobs": 0,
+                "totalEtapiTokens": 0,
+                "totalRecentNotes": 0
+            },
+            "noteTypes": {
+                "text": 800,
+                "code": 200
+            },
+            "attachmentTypes": {
+                "image/png": 45,
+                "application/pdf": 14
+            },
+            "statistics": {
+                "oldestNote": "string",
+                "newestNote": "string",
+                "lastModified": "string",
+                "databaseSizeBytes": 0
+            },
+            "timestamp": "2024-12-01T12:00:00.000Z"
+        }
+        ```
+
+        </div>
+        </div>
 
 === "default: unexpected error"
 

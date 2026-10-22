@@ -201,9 +201,7 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         if (body.description) {
             blocks.push(body.description.trim());
         }
-        for (const [ mime, media ] of Object.entries(body.content ?? {})) {
-            blocks.push(`*   ${mediaLine(mime, media)}`, ...renderBody(spec, mime, media, "request"));
-        }
+        blocks.push(...renderContent(spec, body.content ?? {}, "request"));
     }
 
     const responses = Object.entries(operation.responses ?? {});
@@ -214,10 +212,7 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
     for (const [ status, response ] of responses) {
         const { description, content } = resolve<Response>(spec, response);
 
-        const panel: string[] = [];
-        for (const [ mime, media ] of Object.entries(content ?? {})) {
-            panel.push(`*   ${mediaLine(mime, media)}`, ...renderBody(spec, mime, media, "response"));
-        }
+        const panel = renderContent(spec, content ?? {}, "response");
         if (!panel.length) {
             panel.push("No content.");
         }
@@ -243,7 +238,24 @@ function mediaLine(mime: string, { schema }: MediaType) {
 
 type Direction = "request" | "response";
 
-/** The property table of a body's schema and a JSON sample of the body, side by side when both exist. */
+/**
+ * The content types of a body, each with its table and sample. When there are several and one of
+ * them has something to show, each content type becomes a tab; otherwise they stay a list.
+ */
+function renderContent(spec: OpenApiSpec, content: Record<string, MediaType>, direction: Direction) {
+    const bodies = Object.entries(content)
+        .map(([ mime, media ]) => ({ line: mediaLine(mime, media), body: renderBody(spec, mime, media, direction) }));
+
+    if (bodies.length > 1 && bodies.some(({ body }) => body.length)) {
+        return bodies.flatMap(({ line, body }) => [ `=== "${line}"`, ...body.map(indent) ]);
+    }
+    return bodies.flatMap(({ line, body }) => [ `*   ${line}`, ...body ]);
+}
+
+/**
+ * The property table of a body's schema and a sample of the body, side by side when both exist.
+ * The sample is the body's own example in any format, else one generated for a JSON body.
+ */
 function renderBody(spec: OpenApiSpec, mime: string, { schema, example, examples }: MediaType, direction: Direction) {
     const blocks: string[] = [];
     const resolved = schema && resolve(spec, schema);
@@ -251,11 +263,12 @@ function renderBody(spec: OpenApiSpec, mime: string, { schema, example, examples
         blocks.push(propertyTable(spec, resolved));
     }
 
-    if (mime.includes("json")) {
-        const sample = example ?? Object.values(examples ?? {})[0]?.value ?? (schema && sampleOf(spec, schema, direction));
-        if (sample !== undefined) {
-            blocks.push(`\`\`\`json\n${JSON.stringify(sample, null, 4)}\n\`\`\``);
-        }
+    const isJson = mime.includes("json");
+    const sample = example ?? Object.values(examples ?? {})[0]?.value
+        ?? (isJson && schema ? sampleOf(spec, schema, direction) : undefined);
+    if (sample !== undefined) {
+        const text = typeof sample === "string" && !isJson ? sample.trimEnd() : JSON.stringify(sample, null, 4);
+        blocks.push(`\`\`\`${isJson ? "json" : "plaintext"}\n${text}\n\`\`\``);
     }
 
     return blocks.length > 1 ? [ columns(blocks) ] : blocks;

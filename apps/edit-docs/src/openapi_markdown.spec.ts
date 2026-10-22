@@ -270,7 +270,60 @@ describe("openApiToMarkdown", () => {
         }, "    "));
         // The example of a media type replaces the generated sample.
         expect(markdown).toContain(sample({ message: "bad" }, "    "));
-        // Only JSON bodies get a sample.
+        // Only JSON bodies get a generated sample.
         expect(markdown.match(/```json/g)).toHaveLength(3);
+    });
+
+    it("puts the content types of a body in tabs when one of them has something to show", () => {
+        const spec: OpenApiSpec = {
+            info: { title: "ETAPI" },
+            paths: {
+                "/metrics": {
+                    get: {
+                        responses: {
+                            "200": {
+                                description: "metrics",
+                                content: {
+                                    "text/plain": { schema: { type: "string" }, example: "# HELP notes\nnotes 12\n" },
+                                    "application/json": { schema: { type: "object", properties: { notes: { type: "integer" } } } }
+                                }
+                            }
+                        }
+                    }
+                },
+                "/notes/{noteId}/content": {
+                    put: {
+                        requestBody: {
+                            content: {
+                                "text/plain": { schema: { type: "string" } },
+                                "application/octet-stream": { schema: { type: "string", format: "binary" } }
+                            }
+                        },
+                        responses: {}
+                    }
+                }
+            }
+        };
+
+        const markdown = openApiToMarkdown(spec);
+
+        // The tabs nest in the status's tab; a non-JSON example shows as plain text, the language
+        // the Markdown import maps to `text/plain` rather than to automatic highlighting.
+        expect(markdown).toContain([
+            "=== \"200: metrics\"",
+            "",
+            "    === \"`text/plain`: `string`\"",
+            "",
+            "        ```plaintext",
+            "        # HELP notes",
+            "        notes 12",
+            "        ```",
+            "",
+            "    === \"`application/json`: `object`\"",
+            "",
+            "        <div class=\"trilium-multicolumn-layout\" data-trilium-column-ratios=\"1-1\">"
+        ].join("\n"));
+        // Content types with nothing to show stay a list rather than tabs with empty panels.
+        expect(markdown).toContain("**Request body**\n\n*   `text/plain`: `string`\n\n*   `application/octet-stream`: `string (binary)`");
     });
 });
