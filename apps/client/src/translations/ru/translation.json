@@ -4942,6 +4942,8 @@
     "remove_blank_lines": "Удалить пустые строки",
     "to_uppercase": "В верхний регистр",
     "to_lowercase": "В нижний регистр",
-    "remove_diacritics": "Удалить диакритические знаки"
+    "remove_diacritics": "Удалить диакритические знаки",
+    "to_sentence_case": "Регистр как в предложении",
+    "to_title_case": "Заголовочный регистр"
   }
 }
