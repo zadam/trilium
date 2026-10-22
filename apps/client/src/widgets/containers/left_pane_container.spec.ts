@@ -121,6 +121,33 @@ describe("LeftPaneContainer", () => {
         expect(host.hasClass("hidden-int")).toBe(false);
     });
 
+    it("moves the focus to the note when its shortcut closes a peek from the tree", () => {
+        mount(false);
+        document.body.insertAdjacentHTML(
+            "beforeend", `<button class="left-pane-peek-button"></button>`
+        );
+        const tree = container.$widget.find(".tree-stub")[0];
+        const peekButton = document.querySelector<HTMLElement>(".left-pane-peek-button");
+        tree.tabIndex = -1;
+
+        container.peekLeftPaneEvent();
+        tree.focus();
+        expect(document.activeElement).toBe(tree);
+        triggerEvent.mockClear();
+        container.peekLeftPaneEvent();
+        expect(container.$widget.hasClass("hidden-int")).toBe(true);
+        expect(triggerEvent).toHaveBeenCalledWith("focusOnDetail", { ntxId: undefined });
+
+        // The peek button closing it keeps the focus.
+        container.peekLeftPaneEvent();
+        peekButton?.focus();
+        expect(document.activeElement).toBe(peekButton);
+        triggerEvent.mockClear();
+        container.peekLeftPaneEvent();
+        expect(container.$widget.hasClass("hidden-int")).toBe(true);
+        expect(triggerEvent).not.toHaveBeenCalledWith("focusOnDetail", expect.anything());
+    });
+
     it("gives its peek up to another pane's, and stays docked", () => {
         mount(false);
         const host = container.$widget;

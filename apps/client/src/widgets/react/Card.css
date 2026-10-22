@@ -379,7 +379,6 @@ body[dir=rtl] .tn-card-option::after {
         }
     }
 
-    /* Transparent: each button paints itself, and the gaps show the card through. */
     .tn-card-section.tn-card-adders {
         display: flex;
         gap: var(--card-section-gap);
@@ -388,8 +387,6 @@ body[dir=rtl] .tn-card-option::after {
         background: transparent;
     }
 
-    /* Painted as a segment rather than a button, all of one width, undoing what Bootstrap and the
-       theme give a button. */
     .tn-card-adders > button.tn-card-adder.btn {
         display: flex;
         flex: 1 1 0;
@@ -418,7 +415,6 @@ body[dir=rtl] .tn-card-option::after {
         }
     }
 
-    /* The row is transparent, so its buttons carry the card's corners. */
     .tn-card-adders:first-of-type > button.tn-card-adder:first-child {
         border-start-start-radius: var(--card-border-radius);
     }

@@ -851,6 +851,8 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
 }): T | null | undefined {
     const [ blob, setBlob ] = useState<T | null>();
     const requestIdRef = useRef(0);
+    /** The request whose content, saved elsewhere, waits for `shownRef` to show. */
+    const waitingRequestIdRef = useRef<number | undefined>(undefined);
     const missedContentChangeRef = useRef(false);
     const whenShown = useWhenShown(opts?.shownRef);
 
@@ -865,6 +867,7 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
     async function refresh(isSavedElsewhere = false) {
         const requestId = ++requestIdRef.current;
         const isWaiting = isSavedElsewhere && !!opts?.shownRef;
+        waitingRequestIdRef.current = isWaiting ? requestId : undefined;
         if (note && !isWaiting) {
             reportLoadState("loading");
         }
@@ -906,6 +909,10 @@ export function useNoteBlob<T extends { content: string } = FBlob>(note: FNote |
             // The change came from our own component, so the refetch was skipped; remember it so
             // the content is brought up to date when the widget is displayed again.
             missedContentChangeRef.current = true;
+        } else if (loadResults.isNoteContentReloaded(note.noteId)
+            && waitingRequestIdRef.current === requestIdRef.current) {
+            // A later save here outdates the content that waits to show.
+            requestIdRef.current++;
         }
     });
 

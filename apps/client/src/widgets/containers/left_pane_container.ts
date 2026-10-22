@@ -70,6 +70,7 @@ export default class LeftPaneContainer extends Container<Component> {
         this.mode = reducePaneMode(prev, action);
         if (this.mode === prev) return;
 
+        const hasFocus = this.$widget[0]?.contains(document.activeElement) ?? false;
         this.applyMode();
 
         const persist = persistedPaneVisible(prev, this.mode);
@@ -79,8 +80,9 @@ export default class LeftPaneContainer extends Container<Component> {
 
         if (this.mode !== "closed") {
             this.triggerEvent("focusTree", {});
-        } else if (action === "close" || action === "toggleDocked") {
-            // Only a hard close moves the focus. A dismissed peek leaves it on the pressed element.
+        } else if (action === "close" || action === "toggleDocked"
+            || (action === "togglePeek" && hasFocus)) {
+            // A dismissed peek, or one the peek button closes, leaves the focus where it is.
             const ntxId = appContext.tabManager.getActiveContext()?.ntxId;
             const noteContainer = document.querySelector(`.note-split[data-ntx-id="${ntxId}"]`);
             if (!noteContainer?.contains(document.activeElement)) {
