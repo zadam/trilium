@@ -104,8 +104,6 @@ class BRevision extends AbstractBeccaEntity<BRevision> {
         return this._getContent();
     }
 
-    /**
-     * @throws Error in case of invalid JSON */
     getJsonContent(): {} | null {
         const content = this.getContent();
 

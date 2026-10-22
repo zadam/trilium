@@ -60,77 +60,21 @@ interface NoteAndBranch {
 }
 
 export interface Api {
-    /**
-     * Converts the given HTML string to Markdown.
-     *
-     * @param html - HTML content to convert
-     * @returns Markdown representation of the input HTML
-     */
     htmlToMarkdown(html: string): string;
 
-    /**
-     * Converts the given Markdown string to HTML.
-     *
-     * @param markdown - Markdown content to convert
-     * @returns HTML representation of the input Markdown
-     */
     markdownToHtml(markdown: string): string;
 
-    /**
-     * Note where the script execution started — the entry point of the current script bundle
-     * (in C terms, the file containing `main()`). When a script is spread across multiple code
-     * notes (descendant code notes loaded as modules via `require()`), every note in the
-     * bundle shares the same `startNote`, while {@link currentNote} differs per note.
-     * Messages from `api.log()` are grouped under this note.
-     *
-     * When a frontend script calls `api.runOnBackend()`, the frontend's `startNote` is
-     * preserved here; since that note may not be resolvable on the backend, this can be null.
-     */
     startNote?: BNote | null;
 
-    /**
-     * Note containing the source code that is currently executing (in C terms, `__FILE__`).
-     * Equal to {@link startNote} unless execution has moved into a descendant module note
-     * loaded via `require()`. Don't confuse this with the concept of the active note in
-     * the UI.
-     */
     currentNote: BNote;
 
-    /**
-     * Entity whose event triggered this execution; `undefined` when the run was not
-     * event-driven (e.g. started manually via "Execute script" or `note.executeScript()`).
-     *
-     * What it holds depends on the trigger:
-     * - `~runOnNoteCreation`, `~runOnNoteChange`, `~runOnNoteTitleChange`,
-     *   `~runOnNoteContentChange` — the affected note ({@link BNote});
-     * - `~runOnChildNoteCreation` — the newly created child note;
-     * - `~runOnAttributeCreation`, `~runOnAttributeChange` — the attribute;
-     * - `~runOnBranchCreation`, `~runOnBranchChange`, `~runOnBranchDeletion` — the branch;
-     * - scheduled scripts (`#run=backendStartup` / `#run=hourly` / `#run=daily`) — the
-     *   script note itself;
-     * - search scripts (`~searchScript`) — the search note.
-     */
     originEntity?: AbstractBeccaEntity<any> | null;
 
     // Note: these are optional here (unlike the gated public surface in
     // `@triliumnext/commons`, where they're required) because this interface types
     // *every* backend script, and they're only populated for custom request handlers.
-    /**
-     * The request. Only present when the script runs as a custom request handler (a note with the
-     * `#customRequestHandler` label invoked via `/custom/...`); `undefined` for every other backend
-     * script. {@link ScriptRequest} is the same subset the in-editor language service offers; the
-     * object itself is Express's `req`, whose full API the Custom Request Handler guide points to.
-     */
     req?: ScriptRequest;
-    /**
-     * The response to write the HTTP reply to, under the same conditions as {@link ApiParams.req}
-     * and likewise Express's own `res` at runtime.
-     */
     res?: ScriptResponse;
-    /**
-     * Capture groups from the `#customRequestHandler` regex that matched this request's
-     * URL, in order. Only present in custom request handlers.
-     */
     pathParams?: string[];
 
     /**
@@ -139,14 +83,8 @@ export interface Api {
      */
     axios: undefined;
 
-    /**
-     * day.js library for date manipulation. See {@link https://day.js.org} for documentation
-     */
     dayjs: typeof dayjs;
 
-    /**
-     * xml2js library for XML parsing. See {@link https://github.com/Leonidas-from-XIV/node-xml2js} for documentation
-     */
 
     xml2js: typeof xml2js;
 
@@ -156,15 +94,8 @@ export interface Api {
      */
     cheerio: undefined;
 
-    /**
-     * node-html-parser library for HTML parsing. See {@link https://github.com/taoqf/node-fast-html-parser} for documentation.
-     */
     htmlParser: typeof htmlParser;
 
-    /**
-     * Instance name identifies particular Trilium instance. It can be useful for scripts
-     * if some action needs to happen on only one specific instance.
-     */
     getInstanceName(): string | null;
 
     getNote(noteId: string): BNote | null;
@@ -178,39 +109,14 @@ export interface Api {
     getOptions(): BOption[];
     getAttribute(attributeId: string): BAttribute | null;
 
-    /**
-     * This is a powerful search method - you can search by attributes and their values, e.g.:
-     * "#dateModified =* MONTH AND #log". See {@link https://triliumnext.github.io/Docs/Wiki/search.html} for full documentation for all options
-     */
     searchForNotes(query: string, searchParams: SearchParams): BNote[];
 
-    /**
-     * This is a powerful search method - you can search by attributes and their values, e.g.:
-     * "#dateModified =* MONTH AND #log". See {@link https://triliumnext.github.io/Docs/Wiki/search.html} for full documentation for all options
-     */
     searchForNote(query: string, searchParams: SearchParams): BNote | null;
 
-    /**
-     * Retrieves notes with given label name & value
-     *
-     * @param name - attribute name
-     * @param value - attribute value
-     */
     getNotesWithLabel(name: string, value?: string): BNote[];
 
-    /**
-     * Retrieves first note with given label name & value
-     *
-     * @param name - attribute name
-     * @param value - attribute value
-     */
     getNoteWithLabel(name: string, value?: string): BNote | null;
 
-    /**
-     * If there's no branch between note and parent note, create one. Otherwise, do nothing. Returns the new or existing branch.
-     *
-     * @param prefix - if branch is created between note and parent note, set this prefix
-     */
     ensureNoteIsPresentInParent(
         noteId: string,
         parentNoteId: string,
@@ -219,33 +125,14 @@ export interface Api {
         branch: BBranch | null;
     };
 
-    /**
-     * If there's a branch between note and parent note, remove it. Otherwise, do nothing.
-     */
     ensureNoteIsAbsentFromParent(noteId: string, parentNoteId: string): void;
 
-    /**
-     * Based on the value, either create or remove branch between note and parent note.
-     *
-     * @param present - true if we want the branch to exist, false if we want it gone
-     * @param prefix - if branch is created between note and parent note, set this prefix
-     */
     toggleNoteInParent(present: true, noteId: string, parentNoteId: string, prefix: string): void;
 
-    /**
-     * Create text note. See also createNewNote() for more options.
-     */
     createTextNote(parentNoteId: string, title: string, content: string): NoteAndBranch;
 
-    /**
-     * Create data note - data in this context means object serializable to JSON. Created note will be of type 'code' and
-     * JSON MIME type. See also createNewNote() for more options.
-     */
     createDataNote(parentNoteId: string, title: string, content: {}): NoteAndBranch;
 
-    /**
-     * @returns object contains newly created entities note and branch
-     */
     createNewNote(params: NoteParams): NoteAndBranch;
 
     /**
@@ -267,80 +154,24 @@ export interface Api {
     logMessages: Record<string, string[]>;
     logSpacedUpdates: Record<string, SpacedUpdate>;
 
-    /**
-     * Log given message to trilium logs and log pane in UI.
-     * Accepts multiple arguments which are joined with spaces, similar to `console.log`.
-     */
     log(...args: unknown[]): void;
 
-    /**
-     * Returns root note of the calendar.
-     */
     getRootCalendarNote(): BNote | null;
 
-    /**
-     * Returns day note for given date. If such note doesn't exist, it is created.
-     *
-     * @method
-     * @param date in YYYY-MM-DD format
-     * @param rootNote - specify calendar root note, normally leave empty to use the default calendar
-     */
     getDayNote(date: string, rootNote?: BNote): BNote | null;
 
-    /**
-     * Returns today's day note. If such note doesn't exist, it is created.
-     *
-     * @param rootNote specify calendar root note, normally leave empty to use the default calendar
-     */
     getTodayNote(rootNote?: BNote): BNote | null;
 
-    /**
-     * Returns note for the first date of the week of the given date.
-     *
-     * @param date in YYYY-MM-DD format
-     * @param rootNote - specify calendar root note, normally leave empty to use the default calendar
-     */
     getWeekFirstDayNote(date: string, rootNote: BNote): BNote | null;
 
-    /**
-     * Returns week note for given date. If such a note doesn't exist, it is created.
-     *
-     * <p>
-     * If the calendar does not support week notes, this method will return `null`.
-     *
-     * @param date in YYYY-MM-DD format
-     * @param rootNote - specify calendar root note, normally leave empty to use the default calendar
-     * @return an existing or newly created week note, or `null` if the calendar does not support week notes.
-     */
     getWeekNote(date: string, rootNote: BNote): BNote | null;
 
-    /**
-     * Returns month note for given date. If such a note doesn't exist, it is created.
-     *
-     * @param date in YYYY-MM format
-     * @param rootNote - specify calendar root note, normally leave empty to use the default calendar
-     */
     getMonthNote(date: string, rootNote: BNote): BNote | null;
 
-    /**
-     * Returns quarter note for given date. If such a note doesn't exist, it is created.
-     *
-     * @param date in YYYY-MM format
-     * @param rootNote - specify calendar root note, normally leave empty to use the default calendar
-     */
     getQuarterNote(date: string, rootNote: BNote): BNote | null;
 
-    /**
-     * Returns year note for given year. If such a note doesn't exist, it is created.
-     *
-     * @param year in YYYY format
-     * @param rootNote - specify calendar root note, normally leave empty to use the default calendar
-     */
     getYearNote(year: string, rootNote?: BNote): BNote | null;
 
-    /**
-     * Sort child notes of a given note.
-     */
     sortNotes(
         parentNoteId: string,
         sortConfig: {
@@ -353,56 +184,20 @@ export interface Api {
         }
     ): void;
 
-    /**
-     * This method finds note by its noteId and prefix and either sets it to the given parentNoteId
-     * or removes the branch (if parentNoteId is not given).
-     *
-     * This method looks similar to toggleNoteInParent() but differs because we're looking up branch by prefix.
-     *
-     * @deprecated this method is pretty confusing and serves specialized purpose only
-     */
     setNoteToParent(noteId: string, prefix: string, parentNoteId: string | null): void;
 
-    /**
-     * This functions wraps code which is supposed to be running in transaction. If transaction already
-     * exists, then we'll use that transaction.
-     *
-     * @param func
-     * @returns result of func callback
-     */
     transactional(func: () => void): any;
 
-    /**
-     * Return randomly generated string of given length. This random string generation is NOT cryptographically secure.
-     *
-     * @param length of the string
-     * @returns random string
-     */
     randomString(length: number): string;
 
-    /**
-     * @param to escape
-     * @returns escaped string
-     */
     escapeHtml(string: string): string;
 
-    /**
-     * @param string to unescape
-     * @returns unescaped string
-     */
     unescapeHtml(string: string): string;
 
-    /**
-     * sql
-     * @type {module:sql}
-     */
     sql: any;
 
     getAppInfo(): typeof appInfo;
 
-    /**
-     * Creates a new launcher to the launchbar. If the launcher (id) already exists, it will be updated.
-     */
     createOrUpdateLauncher(opts: {
         /** id of the launcher, only alphanumeric at least 6 characters long */
         id: string;
@@ -427,51 +222,14 @@ export interface Api {
         widgetNoteId?: string;
     }): { note: BNote };
 
-    /**
-     * @param format - either 'html' or 'markdown'
-     */
     exportSubtreeToZipFile(noteId: string, format: "markdown" | "html", zipFilePath: string): Promise<void>;
 
-    /**
-     * Executes given anonymous function on the frontend(s).
-     * Internally, this serializes the anonymous function into string and sends it to frontend(s) via WebSocket.
-     * Note that there can be multiple connected frontend instances (e.g. in different tabs). In such case, all
-     * instances execute the given function.
-     *
-     * @param script - script to be executed on the frontend
-     * @param params - list of parameters to the anonymous function to be sent to frontend
-     * @returns no return value is provided.
-     */
     runOnFrontend(script: () => void | string, params: []): void;
 
-    /**
-     * Sync process can make data intermittently inconsistent. Scripts which require strong data consistency
-     * can use this function to wait for a possible sync process to finish and prevent new sync process from starting
-     * while it is running.
-     *
-     * Because this is an async process, the inner callback doesn't have automatic transaction handling, so in case
-     * you need to make some DB changes, you need to surround your call with api.transactional(...)
-     *
-     * @param callback - function to be executed while sync process is not running
-     * @returns resolves once the callback is finished (callback is awaited)
-     */
     runOutsideOfSync(callback: () => void): Promise<void>;
 
-    /**
-     * @param backupName - If the backupName is e.g. "now", then the backup will be written to "backup-now.db" file
-     * @returns resolves once the backup is finished
-     */
     backupNow(backupName: string): Promise<string>;
 
-    /**
-     * Enables the complete duplication of the specified original note and all its children into the specified parent note.
-     * The new note will be named the same as the original, with (Dup) added to the end of it.
-     *
-     * @param origNoteId - the noteId for the original note to be duplicated
-     * @param newParentNoteId - the noteId for the parent note where the duplication is to be placed.
-     *
-     * @returns the note and the branch of the newly created note.
-     */
     duplicateSubtree(origNoteId: string, newParentNoteId: string): { note: BNote; branch: BBranch; }
 
     /**

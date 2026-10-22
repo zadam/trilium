@@ -25,11 +25,11 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>req</code></td>
-            <td><p><code>ScriptRequest</code><br>Express request object. Available only inside custom request handlers — a note with the <code>#customRequestHandler</code> label, invoked via a <code>/custom/...</code> URL. The editor surfaces this member only for such notes (where the request always supplies it), so it is non-optional rather than forcing a null-check.</p></td>
+            <td><p><code>ScriptRequest</code><br>The HTTP request, present only when the script runs as a custom request handler: a note with the <code>#customRequestHandler</code> label, invoked through a <code>/custom/...</code> URL. It is <code>undefined</code> in every other backend script. The object is Express's own request, so it has more members than <code>ScriptRequest</code> lists.</p></td>
         </tr>
         <tr>
             <td><code>res</code></td>
-            <td><p><code>ScriptResponse</code><br>Express response object — write the HTTP response here, e.g. <code>api.res.status(200).json({ ok: true })</code>. Available only inside custom request handlers (where it is always supplied), so it is non-optional.</p></td>
+            <td><p><code>ScriptResponse</code><br>The HTTP response to write the reply to, such as <code>api.res.status(200).json({ ok: true })</code>. Like <code>req</code>, it is present only in custom request handlers, and is Express's own response.</p></td>
         </tr>
         <tr>
             <td><code>pathParams</code></td>
@@ -252,31 +252,31 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
     <tbody>
         <tr>
             <td><code>noteId</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The ID of the note. The root note's ID is <code>root</code>. System notes have IDs that start with <code>_</code>, such as <code>_hidden</code>.</p></td>
         </tr>
         <tr>
             <td><code>title</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The title of the note. For a protected note read outside a protected session, this holds the encrypted title. Use <code>getTitleOrProtected()</code> to show a title safely.</p></td>
         </tr>
         <tr>
             <td><code>type</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The note type, such as <code>text</code>, <code>code</code>, <code>file</code>, <code>image</code>, <code>search</code> or <code>book</code>. Together with <code>mime</code>, it decides how Trilium renders the content.</p></td>
         </tr>
         <tr>
             <td><code>mime</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The MIME type of the note's content, such as <code>text/html</code> for a text note or <code>application/javascript;env=backend</code> for a backend script.</p></td>
         </tr>
         <tr>
             <td><code>isProtected</code></td>
-            <td><p><code>boolean</code></p></td>
+            <td><p><code>boolean</code><br>Whether the note is protected. The title and content of a protected note are encrypted, and can be read or changed only while a protected session is active.</p></td>
         </tr>
         <tr>
             <td><code>isArchived</code></td>
-            <td><p><code>boolean</code></p></td>
+            <td><p><code>boolean</code><br>Whether the note is archived: it has an <code>archived</code> label of its own or inherits one. A non-inheritable <code>archived</code> label on an ancestor does not count; see <code>areAllNotePathsArchived()</code>.</p></td>
         </tr>
         <tr>
             <td><code>isDeleted</code></td>
-            <td><p><code>boolean</code></p></td>
+            <td><p><code>boolean</code><br>Whether the note has been deleted, or its deletion is in progress. It becomes <code>true</code> on an object a script still holds after the note is deleted.</p></td>
         </tr>
         <tr>
             <td><code>shareId</code></td>
@@ -284,55 +284,55 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>blobId</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The ID of the blob that stores the note's content. It changes whenever the content changes, and notes with identical content share a blob.</p></td>
         </tr>
         <tr>
             <td><code>dateCreated</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The date and time the note was created, in local time with its UTC offset, for example <code>2026-10-22 14:03:05.123+0200</code>.</p></td>
         </tr>
         <tr>
             <td><code>dateModified</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The date and time the note was last modified, in local time with its UTC offset, for example <code>2026-10-22 14:03:05.123+0200</code>. It changes when the content changes or the note itself is saved, such as after a title change.</p></td>
         </tr>
         <tr>
             <td><code>utcDateCreated</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The date and time the note was created, in UTC, for example <code>2026-10-22 12:03:05.123Z</code>.</p></td>
         </tr>
         <tr>
             <td><code>utcDateModified</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The date and time the note was last modified, in UTC, for example <code>2026-10-22 12:03:05.123Z</code>. It changes when the content changes or the note itself is saved.</p></td>
         </tr>
         <tr>
             <td><code>getContent</code></td>
-            <td><pre><code class="language-application-typescript">getContent(): string | Uint8Array&lt;ArrayBufferLike&gt;</code></pre></td>
+            <td><pre><code class="language-application-typescript">getContent(): string | Uint8Array&lt;ArrayBufferLike&gt;</code></pre><p>Returns the content of the note: a string for text-based notes (see <code>hasStringContent()</code>), a <code>Uint8Array</code> for binary ones such as images and files. The content is read from the database on each call. For a protected note outside a protected session, it returns an empty string.</p></td>
         </tr>
         <tr>
             <td><code>setContent</code></td>
-            <td><pre><code class="language-application-typescript">setContent(content: string | Uint8Array&lt;ArrayBufferLike&gt;, opts?: { forceFrontendReload?: boolean }): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">setContent(content: string | Uint8Array&lt;ArrayBufferLike&gt;, opts?: { forceFrontendReload?: boolean }): void</code></pre><p>Replaces the content of the note and saves it immediately; there is no need to call <code>save()</code> afterwards. If the content is unchanged, nothing is saved and <code>dateModified</code> stays the same.</p><p>The call throws an error when <code>content</code> is <code>null</code> or <code>undefined</code>, when the note is protected and no protected session is active, and when the note is read-only, such as a page of the in-app help.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>content</code></td><td><code>string | Uint8Array&lt;ArrayBufferLike&gt;</code><br>The new content: a string for text-based notes, or a <code>Uint8Array</code> for binary ones such as images and files.</td></tr><tr><td><code>opts</code><br><em>optional</em></td><td><code>{ forceFrontendReload?: boolean }</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getJsonContent</code></td>
-            <td><pre><code class="language-application-typescript">getJsonContent(): T | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getJsonContent(): T | null</code></pre><p>Returns the note's content parsed as JSON. Returns <code>null</code> when the content is empty, blank or binary, and throws an error when it is not valid JSON.</p></td>
         </tr>
         <tr>
             <td><code>getJsonContentSafely</code></td>
-            <td><pre><code class="language-application-typescript">getJsonContentSafely(): unknown</code></pre></td>
+            <td><pre><code class="language-application-typescript">getJsonContentSafely(): unknown</code></pre><p>Returns the note's content parsed as JSON, like <code>getJsonContent()</code>, but returns <code>null</code> instead of throwing an error when the content is not valid JSON.</p></td>
         </tr>
         <tr>
             <td><code>setJsonContent</code></td>
-            <td><pre><code class="language-application-typescript">setJsonContent(content: unknown): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">setJsonContent(content: unknown): void</code></pre><p>Serializes <code>content</code> to JSON, indented with tabs, and saves it as the note's content through <code>setContent()</code>, with the same errors.</p></td>
         </tr>
         <tr>
             <td><code>hasStringContent</code></td>
-            <td><pre><code class="language-application-typescript">hasStringContent(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasStringContent(): boolean</code></pre><p>Returns whether <code>getContent()</code> returns a string rather than a <code>Uint8Array</code>. This holds for text, code, canvas, Mermaid and other text-based note types, and for MIME types such as <code>text/*</code>, <code>application/json</code>, <code>application/javascript</code> and <code>image/svg+xml</code>.</p></td>
         </tr>
         <tr>
             <td><code>getFileName</code></td>
-            <td><pre><code class="language-application-typescript">getFileName(): string</code></pre></td>
+            <td><pre><code class="language-application-typescript">getFileName(): string</code></pre><p>Returns a file name for the note, as used when it is downloaded or exported: the title with characters invalid in file names removed (<code>untitled</code> when the title is empty), plus an extension. The extension is <code>.html</code> for text notes, <code>.json</code> for relation maps, canvases and saved searches, and otherwise comes from the MIME type, unless the title already ends in a matching one.</p></td>
         </tr>
         <tr>
             <td><code>getFlatText</code></td>
-            <td><pre><code class="language-application-typescript">getFlatText(): string</code></pre></td>
+            <td><pre><code class="language-application-typescript">getFlatText(): string</code></pre><p>Returns a single line of text that Trilium searches when matching notes: the note ID, type, MIME type, branch prefixes, title and attributes (as <code>#name=value</code> and <code>~name=value</code>, inherited ones included), lowercased and with diacritics removed. The content is not included.</p></td>
         </tr>
         <tr>
             <td><code>getPojo</code></td>
@@ -340,519 +340,519 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>getTitleOrProtected</code></td>
-            <td><pre><code class="language-application-typescript">getTitleOrProtected(): string</code></pre></td>
+            <td><pre><code class="language-application-typescript">getTitleOrProtected(): string</code></pre><p>Returns the note's title, or the literal string <code>[protected]</code> when the note is protected and no protected session is active.</p></td>
         </tr>
         <tr>
             <td><code>getIcon</code></td>
-            <td><pre><code class="language-application-typescript">getIcon(): string</code></pre></td>
+            <td><pre><code class="language-application-typescript">getIcon(): string</code></pre><p>Returns the CSS classes of the note's icon, for example <code>tn-icon bx bx-note</code>. The icon comes from the note's <code>iconClass</code> label (its own or inherited) when it has one, and otherwise from its type.</p></td>
         </tr>
         <tr>
             <td><code>parents</code></td>
-            <td><p><code>ScriptBNote[]</code></p></td>
+            <td><p><code>ScriptBNote[]</code><br>The parent notes of this note: one per place the note appears in the tree, so a cloned note has several. Parents that are not archived come first. This is the same array <code>getParentNotes()</code> returns; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>children</code></td>
-            <td><p><code>ScriptBNote[]</code></p></td>
+            <td><p><code>ScriptBNote[]</code><br>The child notes of this note, in their order in the tree. This is the same array <code>getChildNotes()</code> returns; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>parentBranches</code></td>
-            <td><p><code>ScriptBBranch[]</code></p></td>
+            <td><p><code>ScriptBBranch[]</code><br>The branches that place this note under each of its parents, in the same order as <code>parents</code>. This is the same array <code>getParentBranches()</code> returns; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>parentCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of parent notes, which is greater than 1 for a cloned note.</p></td>
         </tr>
         <tr>
             <td><code>childrenCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of child notes, including hidden and system notes.</p></td>
         </tr>
         <tr>
             <td><code>getParentNotes</code></td>
-            <td><pre><code class="language-application-typescript">getParentNotes(): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getParentNotes(): ScriptBNote[]</code></pre><p>Returns the parent notes of this note, one per place the note appears in the tree. Parents that are not archived come first. The result is the <code>parents</code> array itself; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>getChildNotes</code></td>
-            <td><pre><code class="language-application-typescript">getChildNotes(): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getChildNotes(): ScriptBNote[]</code></pre><p>Returns the child notes of this note, in their order in the tree. The result is the <code>children</code> array itself; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>getVisibleChildNotes</code></td>
-            <td><pre><code class="language-application-typescript">getVisibleChildNotes(): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getVisibleChildNotes(): ScriptBNote[]</code></pre><p>Returns the child notes that are shown in a shared note's navigation tree, in tree order. It leaves out system notes, whose IDs start with <code>_</code>, and notes with a <code>shareHiddenFromTree</code> label, their own or inherited. Archived notes are included.</p></td>
         </tr>
         <tr>
             <td><code>getParentBranches</code></td>
-            <td><pre><code class="language-application-typescript">getParentBranches(): ScriptBBranch[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getParentBranches(): ScriptBBranch[]</code></pre><p>Returns the branches that place this note under each of its parents. The result is the <code>parentBranches</code> array itself; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>getChildBranches</code></td>
-            <td><pre><code class="language-application-typescript">getChildBranches(): ScriptBBranch[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getChildBranches(): ScriptBBranch[]</code></pre><p>Returns the branches that connect this note to each of its children, in their order in the tree. A branch holds the child's position and prefix.</p></td>
         </tr>
         <tr>
             <td><code>getVisibleChildBranches</code></td>
-            <td><pre><code class="language-application-typescript">getVisibleChildBranches(): ScriptBBranch[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getVisibleChildBranches(): ScriptBBranch[]</code></pre><p>Returns the child branches whose notes are shown in a shared note's navigation tree, in tree order. It leaves out system notes, whose IDs start with <code>_</code>, and notes with a <code>shareHiddenFromTree</code> label, their own or inherited. Archived notes are included.</p></td>
         </tr>
         <tr>
             <td><code>getStrongParentBranches</code></td>
-            <td><pre><code class="language-application-typescript">getStrongParentBranches(): ScriptBBranch[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getStrongParentBranches(): ScriptBBranch[]</code></pre><p>Returns the parent branches the user created, leaving out the automatic placements under the shared notes (<code>_share</code>) and the bookmarks (<code>_lbBookmarks</code>). A note whose last such branch is deleted is deleted too.</p></td>
         </tr>
         <tr>
             <td><code>getFilteredChildBranches</code></td>
-            <td><pre><code class="language-application-typescript">getFilteredChildBranches(): ScriptBBranch[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getFilteredChildBranches(): ScriptBBranch[]</code></pre><p>Returns the same branches as <code>getChildBranches()</code>. Despite its name, it filters nothing: archived and hidden children are included.</p></td>
         </tr>
         <tr>
             <td><code>getBranches</code></td>
-            <td><pre><code class="language-application-typescript">getBranches(): ScriptBBranch[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getBranches(): ScriptBBranch[]</code></pre><p>Returns the branches that place this note under each of its parents.</p><aside class="admonition warning"><p>Deprecated. Use <code>getParentBranches()</code> instead.</p></aside></td>
         </tr>
         <tr>
             <td><code>hasChildren</code></td>
-            <td><pre><code class="language-application-typescript">hasChildren(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasChildren(): boolean</code></pre><p>Returns whether the note has at least one child note, including hidden and system notes.</p></td>
         </tr>
         <tr>
             <td><code>hasVisibleChildren</code></td>
-            <td><pre><code class="language-application-typescript">hasVisibleChildren(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasVisibleChildren(): boolean</code></pre><p>Returns whether <code>getVisibleChildNotes()</code> returns at least one note.</p></td>
         </tr>
         <tr>
             <td><code>getAncestors</code></td>
-            <td><pre><code class="language-application-typescript">getAncestors(): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAncestors(): ScriptBNote[]</code></pre><p>Returns every ancestor of the note across all of its paths in the tree, each note once, up to and including the root note. The note itself is not included. The order follows the parents: each parent comes first, followed by its own ancestors.</p></td>
         </tr>
         <tr>
             <td><code>getAncestorNoteIds</code></td>
-            <td><pre><code class="language-application-typescript">getAncestorNoteIds(): string[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAncestorNoteIds(): string[]</code></pre><p>Returns the IDs of the notes <code>getAncestors()</code> returns, in the same order.</p></td>
         </tr>
         <tr>
             <td><code>getDescendantNoteIds</code></td>
-            <td><pre><code class="language-application-typescript">getDescendantNoteIds(): string[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getDescendantNoteIds(): string[]</code></pre><p>Returns the IDs of this note and all its descendants.</p><aside class="admonition warning"><p>Deprecated. Use <code>getSubtreeNoteIds()</code> instead.</p></aside></td>
         </tr>
         <tr>
             <td><code>getDistanceToAncestor</code></td>
-            <td><pre><code class="language-application-typescript">getDistanceToAncestor(ancestorNoteId: string): number</code></pre></td>
+            <td><pre><code class="language-application-typescript">getDistanceToAncestor(ancestorNoteId: string): number</code></pre><p>Returns the number of levels between this note and the given ancestor along the shortest path: <code>1</code> for a parent, <code>2</code> for a grandparent, and <code>0</code> for the note itself. If the note is not a descendant of the given note, it returns <code>999999</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>ancestorNoteId</code></td><td><code>string</code><br>The ID of the ancestor note to measure the distance to.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>hasAncestor</code></td>
-            <td><pre><code class="language-application-typescript">hasAncestor(ancestorNoteId: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasAncestor(ancestorNoteId: string): boolean</code></pre><p>Returns whether the given note is an ancestor of this note on any of its paths. It returns <code>false</code> for the note's own ID.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>ancestorNoteId</code></td><td><code>string</code><br>The ID of the note to look for among the ancestors.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>isDescendantOfNote</code></td>
-            <td><pre><code class="language-application-typescript">isDescendantOfNote(ancestorNoteId: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isDescendantOfNote(ancestorNoteId: string): boolean</code></pre><p>Returns whether the given note lies on at least one of this note's paths from the root. Unlike <code>hasAncestor()</code>, it returns <code>true</code> for the note's own ID.</p></td>
         </tr>
         <tr>
             <td><code>isRoot</code></td>
-            <td><pre><code class="language-application-typescript">isRoot(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isRoot(): boolean</code></pre><p>Returns whether this note is the root of the note tree, whose ID is <code>root</code>.</p></td>
         </tr>
         <tr>
             <td><code>getSubtree</code></td>
-            <td><pre><code class="language-application-typescript">getSubtree(opts?: ScriptSubtreeOpts): { notes: ScriptBNote[]; relationships: ScriptSubtreeRelationship[] }</code></pre></td>
+            <td><pre><code class="language-application-typescript">getSubtree(opts?: ScriptSubtreeOpts): { notes: ScriptBNote[]; relationships: ScriptSubtreeRelationship[] }</code></pre><p>Returns the note and all its descendants, each note once, together with every parent-child relationship among them, including those of cloned notes.</p><p><strong>Returns</strong> <code>{ notes: ScriptBNote[]; relationships: ScriptSubtreeRelationship[] }</code>: An object with <code>notes</code>, the notes of the subtree including this note, and <code>relationships</code>, the <code>{ parentNoteId, childNoteId }</code> pairs connecting them.</p></td>
         </tr>
         <tr>
             <td><code>getSubtreeNoteIds</code></td>
-            <td><pre><code class="language-application-typescript">getSubtreeNoteIds(opts?: ScriptSubtreeOpts): string[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getSubtreeNoteIds(opts?: ScriptSubtreeOpts): string[]</code></pre><p>Returns the IDs of this note and all its descendants, each once. Takes the same options as <code>getSubtree()</code>.</p></td>
         </tr>
         <tr>
             <td><code>getSubtreeNotesIncludingTemplated</code></td>
-            <td><pre><code class="language-application-typescript">getSubtreeNotesIncludingTemplated(): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getSubtreeNotesIncludingTemplated(): ScriptBNote[]</code></pre><p>Returns the notes that this note's inheritable attributes reach: the note itself, its descendants, and every note that uses one of them as a <code>template</code> or <code>inherit</code> relation target, along with that note's descendants. Each note appears once; the hidden subtree (<code>_hidden</code>) is skipped.</p></td>
         </tr>
         <tr>
             <td><code>getInheritingNotes</code></td>
-            <td><pre><code class="language-application-typescript">getInheritingNotes(): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getInheritingNotes(): ScriptBNote[]</code></pre><p>Returns the notes that this note's non-inheritable attributes apply to: the note itself and every note that uses it as a <code>template</code> or <code>inherit</code> relation target. Their descendants are not included.</p></td>
         </tr>
         <tr>
             <td><code>getAllNotePaths</code></td>
-            <td><pre><code class="language-application-typescript">getAllNotePaths(): string[][]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAllNotePaths(): string[][]</code></pre><p>Returns every path from the root note to this note, one per placement in the tree. Each path is an array of note IDs that starts with <code>root</code> and ends with this note's ID.</p></td>
         </tr>
         <tr>
             <td><code>getBestNotePath</code></td>
-            <td><pre><code class="language-application-typescript">getBestNotePath(hoistedNoteId?: string): string[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getBestNotePath(hoistedNoteId?: string): string[]</code></pre><p>Returns the best path from the root note to this note as an array of note IDs, ranked as in <code>getSortedNotePathRecords()</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>hoistedNoteId</code><br><em>optional</em></td><td><code>string</code><br>The ID of the note whose subtree is preferred. Defaults to <code>root</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getBestNotePathString</code></td>
-            <td><pre><code class="language-application-typescript">getBestNotePathString(hoistedNoteId?: string): string</code></pre></td>
+            <td><pre><code class="language-application-typescript">getBestNotePathString(hoistedNoteId?: string): string</code></pre><p>Returns the best path from the root note to this note as a string of note IDs joined by <code>/</code>, for example <code>root/a1h315/js725h</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>hoistedNoteId</code><br><em>optional</em></td><td><code>string</code><br>The ID of the note whose subtree is preferred. Defaults to <code>root</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getSortedNotePathRecords</code></td>
-            <td><pre><code class="language-application-typescript">getSortedNotePathRecords(hoistedNoteId?: string): ScriptNotePathRecord[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getSortedNotePathRecords(hoistedNoteId?: string): ScriptNotePathRecord[]</code></pre><p>Returns a record for every path from the root note to this note, best path first. Paths within the hoisted note's subtree come first, then paths without archived notes, then paths outside the hidden subtree, then shorter paths.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>hoistedNoteId</code><br><em>optional</em></td><td><code>string</code><br>The ID of the note whose subtree is preferred. Defaults to <code>root</code>.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>ScriptNotePathRecord[]</code>: Records whose <code>notePath</code> holds the note IDs from the root to this note, with flags telling whether the path lies within the hoisted subtree (<code>isInHoistedSubTree</code>), passes through an archived note, the note itself included (<code>isArchived</code>), or lies within the hidden subtree (<code>isHidden</code>).</p></td>
         </tr>
         <tr>
             <td><code>areAllNotePathsArchived</code></td>
-            <td><pre><code class="language-application-typescript">areAllNotePathsArchived(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">areAllNotePathsArchived(): boolean</code></pre><p>Returns whether every path to this note passes through an archived note. Unlike <code>isArchived</code>, this also counts a non-inheritable <code>archived</code> label on an ancestor. It throws an error if the note has no path from the root.</p></td>
         </tr>
         <tr>
             <td><code>ownedAttributes</code></td>
-            <td><p><code>ScriptAttribute[]</code></p></td>
+            <td><p><code>ScriptAttribute[]</code><br>The labels and relations defined directly on this note, without inherited ones.</p></td>
         </tr>
         <tr>
             <td><code>targetRelations</code></td>
-            <td><p><code>ScriptAttribute[]</code></p></td>
+            <td><p><code>ScriptAttribute[]</code><br>The relations in other notes (or this one) that point to this note. This includes the link relations Trilium creates automatically for links in note content, such as <code>internalLink</code> and <code>imageLink</code>.</p></td>
         </tr>
         <tr>
             <td><code>attributeCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of labels and relations on this note, inherited ones and automatic link relations included.</p></td>
         </tr>
         <tr>
             <td><code>ownedAttributeCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of labels and relations defined directly on this note, automatic link relations included.</p></td>
         </tr>
         <tr>
             <td><code>labelCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of labels on this note, inherited ones included.</p></td>
         </tr>
         <tr>
             <td><code>ownedLabelCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of labels defined directly on this note.</p></td>
         </tr>
         <tr>
             <td><code>relationCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of relations on this note, inherited ones included. Excludes the link relations Trilium creates automatically for links in note content (<code>internalLink</code>, <code>imageLink</code>, <code>relationMapLink</code>, <code>includeNoteLink</code>).</p></td>
         </tr>
         <tr>
             <td><code>relationCountIncludingLinks</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of relations on this note, inherited ones included, together with the link relations Trilium creates automatically for links in note content.</p></td>
         </tr>
         <tr>
             <td><code>ownedRelationCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of relations defined directly on this note, excluding the link relations Trilium creates automatically for links in note content.</p></td>
         </tr>
         <tr>
             <td><code>ownedRelationCountIncludingLinks</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of relations defined directly on this note, together with the link relations Trilium creates automatically for links in note content.</p></td>
         </tr>
         <tr>
             <td><code>targetRelationCount</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of relations in other notes that point to this note, excluding the link relations Trilium creates automatically for links in note content.</p></td>
         </tr>
         <tr>
             <td><code>targetRelationCountIncludingLinks</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The number of relations in other notes that point to this note, together with the link relations Trilium creates automatically for links in note content.</p></td>
         </tr>
         <tr>
             <td><code>getAttributes</code></td>
-            <td><pre><code class="language-application-typescript">getAttributes(type?: string, name?: string): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttributes(type?: string, name?: string): ScriptAttribute[]</code></pre><p>Returns the labels and relations of this note, inherited ones included, optionally filtered by type and name. Without a filter, the result is the note's own cached array; don't modify it.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code><br><em>optional</em></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>; any other value throws an error.</td></tr><tr><td><code>name</code><br><em>optional</em></td><td><code>string</code><br>The attribute name, without the leading <code>#</code> or <code>~</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getOwnedAttributes</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedAttributes(type?: string, name?: string): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedAttributes(type?: string, name?: string): ScriptAttribute[]</code></pre><p>Returns the labels and relations defined directly on this note, optionally filtered by type and name. Without a filter, the result is the <code>ownedAttributes</code> array itself; don't modify it.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code><br><em>optional</em></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>; any other value throws an error.</td></tr><tr><td><code>name</code><br><em>optional</em></td><td><code>string</code><br>The attribute name, without the leading <code>#</code> or <code>~</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getAttribute</code></td>
-            <td><pre><code class="language-application-typescript">getAttribute(type: string, name: string): ScriptAttribute | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttribute(type: string, name: string): ScriptAttribute | null</code></pre><p>Returns the first attribute of the given type and name, inherited ones included, or <code>null</code> if there is none.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getOwnedAttribute</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedAttribute(type: string, name: string, value?: string | null): ScriptAttribute | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedAttribute(type: string, name: string, value?: string | null): ScriptAttribute | null</code></pre><p>Returns the first attribute of the given type and name defined directly on this note, or <code>null</code> if there is none. It skips inheritance, so it can be much faster than <code>getAttribute()</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string | null</code><br>The value to match; when omitted, any value matches.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getAttributeValue</code></td>
-            <td><pre><code class="language-application-typescript">getAttributeValue(type: string, name: string): string | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttributeValue(type: string, name: string): string | null</code></pre><p>Returns the value of the first attribute of the given type and name, inherited ones included, or <code>null</code> if there is none. For a relation, the value is the target note's ID.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getOwnedAttributeValue</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedAttributeValue(type: string, name: string): string | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedAttributeValue(type: string, name: string): string | null</code></pre><p>Returns the value of the first attribute of the given type and name defined directly on this note, or <code>null</code> if there is none. For a relation, the value is the target note's ID.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getAttributeById</code></td>
-            <td><pre><code class="language-application-typescript">getAttributeById(attributeId: string): ScriptAttribute | undefined</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttributeById(attributeId: string): ScriptAttribute | undefined</code></pre><p>Returns the attribute of this note with the given ID, inherited ones included, or <code>undefined</code> if there is none.</p></td>
         </tr>
         <tr>
             <td><code>getAttributeCaseInsensitive</code></td>
-            <td><pre><code class="language-application-typescript">getAttributeCaseInsensitive(type: string, name: string, value?: string | null): ScriptAttribute | undefined</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttributeCaseInsensitive(type: string, name: string, value?: string | null): ScriptAttribute | undefined</code></pre><p>Returns the first attribute of the given type whose name, and optionally value, matches regardless of letter case, or <code>undefined</code> if none does. Inherited attributes are included.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string | null</code><br>The value to match; an empty or omitted value matches any value.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>hasAttribute</code></td>
-            <td><pre><code class="language-application-typescript">hasAttribute(type: string, name: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasAttribute(type: string, name: string): boolean</code></pre><p>Returns <code>true</code> if the note has a label or relation of the given type and name, inherited ones included.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>hasOwnedAttribute</code></td>
-            <td><pre><code class="language-application-typescript">hasOwnedAttribute(type: string, name: string, value?: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasOwnedAttribute(type: string, name: string, value?: string): boolean</code></pre><p>Returns whether the note has a label or relation of the given type and name defined directly on it. Inherited attributes don't count.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The value to match; when omitted, any value matches.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getLabelDefinitions</code></td>
-            <td><pre><code class="language-application-typescript">getLabelDefinitions(): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getLabelDefinitions(): ScriptAttribute[]</code></pre><p>Returns the attribute definitions on this note, inherited ones included. Currently returns the same <code>#relation:*</code> definitions as <code>getRelationDefinitions()</code>, not the <code>#label:*</code> ones; to read label definitions, filter <code>getLabels()</code> by names that start with <code>label:</code>.</p></td>
         </tr>
         <tr>
             <td><code>getRelationDefinitions</code></td>
-            <td><pre><code class="language-application-typescript">getRelationDefinitions(): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getRelationDefinitions(): ScriptAttribute[]</code></pre><p>Returns the relation definitions on this note, inherited ones included: the <code>#relation:*</code> labels that declare promoted relations, such as <code>#relation:author="promoted,single"</code>.</p></td>
         </tr>
         <tr>
             <td><code>getTargetRelations</code></td>
-            <td><pre><code class="language-application-typescript">getTargetRelations(): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getTargetRelations(): ScriptAttribute[]</code></pre><p>Returns the relations in other notes (or this one) that point to this note, the automatic link relations included. Same as <code>targetRelations</code>.</p></td>
         </tr>
         <tr>
             <td><code>getLabel</code></td>
-            <td><pre><code class="language-application-typescript">getLabel(name: string): ScriptAttribute | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getLabel(name: string): ScriptAttribute | null</code></pre><p>Returns the first label with the given name, inherited ones included, or <code>null</code> if there is none. Pass the name without the leading <code>#</code>.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedLabel</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedLabel(name: string): ScriptAttribute | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedLabel(name: string): ScriptAttribute | null</code></pre><p>Returns the first label with the given name defined directly on this note, or <code>null</code> if there is none.</p></td>
         </tr>
         <tr>
             <td><code>getLabels</code></td>
-            <td><pre><code class="language-application-typescript">getLabels(name?: string): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getLabels(name?: string): ScriptAttribute[]</code></pre><p>Returns the labels of this note, inherited ones included. When <code>name</code> is given, only labels with that name are returned.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedLabels</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedLabels(name: string): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedLabels(name: string): ScriptAttribute[]</code></pre><p>Returns the labels with the given name defined directly on this note.</p></td>
         </tr>
         <tr>
             <td><code>getLabelValue</code></td>
-            <td><pre><code class="language-application-typescript">getLabelValue(name: string): string | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getLabelValue(name: string): string | null</code></pre><p>Returns the value of the first label with the given name, inherited ones included, or <code>null</code> if there is none. A label without a value returns an empty string.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedLabelValue</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedLabelValue(name: string): string | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedLabelValue(name: string): string | null</code></pre><p>Returns the value of the first label with the given name defined directly on this note, or <code>null</code> if there is none.</p></td>
         </tr>
         <tr>
             <td><code>getLabelValues</code></td>
-            <td><pre><code class="language-application-typescript">getLabelValues(name: string): string[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getLabelValues(name: string): string[]</code></pre><p>Returns the values of all labels with the given name, inherited ones included, for labels that can occur more than once.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedLabelValues</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedLabelValues(name: string): string[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedLabelValues(name: string): string[]</code></pre><p>Returns the values of all labels with the given name defined directly on this note.</p></td>
         </tr>
         <tr>
             <td><code>hasLabel</code></td>
-            <td><pre><code class="language-application-typescript">hasLabel(name: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasLabel(name: string): boolean</code></pre><p>Returns whether the note has a label with the given name, inherited ones included.</p></td>
         </tr>
         <tr>
             <td><code>hasOwnedLabel</code></td>
-            <td><pre><code class="language-application-typescript">hasOwnedLabel(name: string, value?: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasOwnedLabel(name: string, value?: string): boolean</code></pre><p>Returns whether the note has a label with the given name defined directly on it.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The value to match; when omitted, any value matches.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>isLabelTruthy</code></td>
-            <td><pre><code class="language-application-typescript">isLabelTruthy(name: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isLabelTruthy(name: string): boolean</code></pre><p>Returns whether the note has a label with the given name, inherited ones included, whose value is not <code>"false"</code>. A label without a value counts as <code>true</code>.</p></td>
         </tr>
         <tr>
             <td><code>hasInheritableArchivedLabel</code></td>
-            <td><pre><code class="language-application-typescript">hasInheritableArchivedLabel(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasInheritableArchivedLabel(): boolean</code></pre><p>Returns <code>true</code> if the note has an inheritable <code>#archived</code> label, owned or inherited, so that the note's descendants are archived too.</p></td>
         </tr>
         <tr>
             <td><code>getRelation</code></td>
-            <td><pre><code class="language-application-typescript">getRelation(name: string): ScriptAttribute | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getRelation(name: string): ScriptAttribute | null</code></pre><p>Returns the first relation with the given name, inherited ones included, or <code>null</code> if there is none. Pass the name without the leading <code>~</code>.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedRelation</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedRelation(name: string): ScriptAttribute | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedRelation(name: string): ScriptAttribute | null</code></pre><p>Returns the first relation with the given name defined directly on this note, or <code>null</code> if there is none.</p></td>
         </tr>
         <tr>
             <td><code>getRelations</code></td>
-            <td><pre><code class="language-application-typescript">getRelations(name?: string): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getRelations(name?: string): ScriptAttribute[]</code></pre><p>Returns the relations of this note, inherited ones included. When <code>name</code> is given, only relations with that name are returned.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedRelations</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedRelations(name?: string | null): ScriptAttribute[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedRelations(name?: string | null): ScriptAttribute[]</code></pre><p>Returns the relations defined directly on this note. When <code>name</code> is given, only relations with that name are returned.</p></td>
         </tr>
         <tr>
             <td><code>getRelationValue</code></td>
-            <td><pre><code class="language-application-typescript">getRelationValue(name: string): string | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getRelationValue(name: string): string | null</code></pre><p>Returns the ID of the note that the first relation with the given name points to, inherited relations included, or <code>null</code> if there is none. To get the note itself, use <code>getRelationTarget()</code>.</p></td>
         </tr>
         <tr>
             <td><code>getOwnedRelationValue</code></td>
-            <td><pre><code class="language-application-typescript">getOwnedRelationValue(name: string): string | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getOwnedRelationValue(name: string): string | null</code></pre><p>Returns the ID of the note that the first relation with the given name defined directly on this note points to, or <code>null</code> if there is none.</p></td>
         </tr>
         <tr>
             <td><code>getRelationTarget</code></td>
-            <td><pre><code class="language-application-typescript">getRelationTarget(name: string): ScriptBNote | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getRelationTarget(name: string): ScriptBNote | null</code></pre><p>Returns the note that the first relation with the given name points to, or <code>null</code> if the note has no such relation. Inherited relations are included.</p></td>
         </tr>
         <tr>
             <td><code>hasRelation</code></td>
-            <td><pre><code class="language-application-typescript">hasRelation(name: string, value?: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasRelation(name: string, value?: string): boolean</code></pre><p>Returns whether the note has a relation with the given name, inherited ones included.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The ID of the target note to match; when omitted, any target matches.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>hasOwnedRelation</code></td>
-            <td><pre><code class="language-application-typescript">hasOwnedRelation(name: string, value?: string): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">hasOwnedRelation(name: string, value?: string): boolean</code></pre><p>Returns whether the note has a relation with the given name defined directly on it.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The ID of the target note to match; when omitted, any target matches.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>addLabel</code></td>
-            <td><pre><code class="language-application-typescript">addLabel(name: string, value?: string, isInheritable?: boolean): ScriptAttribute</code></pre></td>
+            <td><pre><code class="language-application-typescript">addLabel(name: string, value?: string, isInheritable?: boolean): ScriptAttribute</code></pre><p>Adds a label to this note, saves it and returns it. It adds a new label even when the note already has one with that name; to change an existing label instead, use <code>setLabel()</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code><br>The label name, without the leading <code>#</code>.</td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The label value. Defaults to an empty string.</td></tr><tr><td><code>isInheritable</code><br><em>optional</em></td><td><code>boolean</code><br>Whether the note's descendants inherit the label. Defaults to <code>false</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>addRelation</code></td>
-            <td><pre><code class="language-application-typescript">addRelation(name: string, targetNoteId: string, isInheritable?: boolean): ScriptAttribute</code></pre></td>
+            <td><pre><code class="language-application-typescript">addRelation(name: string, targetNoteId: string, isInheritable?: boolean): ScriptAttribute</code></pre><p>Adds a relation from this note to another note, saves it and returns it. It adds a new relation even when the note already has one with that name; to change an existing relation instead, use <code>setRelation()</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code><br>The relation name, without the leading <code>~</code>.</td></tr><tr><td><code>targetNoteId</code></td><td><code>string</code></td></tr><tr><td><code>isInheritable</code><br><em>optional</em></td><td><code>boolean</code><br>Whether the note's descendants inherit the relation. Defaults to <code>false</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>addAttribute</code></td>
-            <td><pre><code class="language-application-typescript">addAttribute(type: string, name: string, value?: string, isInheritable?: boolean): ScriptAttribute</code></pre></td>
+            <td><pre><code class="language-application-typescript">addAttribute(type: string, name: string, value?: string, isInheritable?: boolean): ScriptAttribute</code></pre><p>Adds a label or relation to this note, saves it and returns it. <code>addLabel()</code> and <code>addRelation()</code> do the same for one type.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code><br>The attribute name, without the leading <code>#</code> or <code>~</code>.</td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The label's text, or the relation's target note ID. Defaults to an empty string.</td></tr><tr><td><code>isInheritable</code><br><em>optional</em></td><td><code>boolean</code><br>Whether the note's descendants inherit the attribute. Defaults to <code>false</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>setLabel</code></td>
-            <td><pre><code class="language-application-typescript">setLabel(name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">setLabel(name: string, value?: string): void</code></pre><p>Sets the value of the first label with the given name defined directly on this note, or adds a non-inheritable label if the note has none of its own. Inherited labels are left alone. The change is saved immediately.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The new value. Defaults to an empty string.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>setRelation</code></td>
-            <td><pre><code class="language-application-typescript">setRelation(name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">setRelation(name: string, value?: string): void</code></pre><p>Points the first relation with the given name defined directly on this note to another note, or adds a non-inheritable relation if the note has none of its own. Inherited relations are left alone. The change is saved immediately.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The ID of the target note.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>setAttribute</code></td>
-            <td><pre><code class="language-application-typescript">setAttribute(type: string, name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">setAttribute(type: string, name: string, value?: string): void</code></pre><p>Sets the value of the first attribute of the given type and name defined directly on this note, or adds a non-inheritable one if the note has none of its own. <code>setLabel()</code> and <code>setRelation()</code> do the same for one type. The change is saved immediately.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The label's text, or the relation's target note ID. Defaults to an empty string.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>setAttributeValueById</code></td>
-            <td><pre><code class="language-application-typescript">setAttributeValueById(attributeId: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">setAttributeValueById(attributeId: string, value?: string): void</code></pre><p>Sets the value of the attribute with the given ID, which must be defined directly on this note, and saves it. Throws an error if the note has no such attribute of its own.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>attributeId</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The new value. Defaults to an empty string.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>toggleLabel</code></td>
-            <td><pre><code class="language-application-typescript">toggleLabel(enabled: boolean, name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">toggleLabel(enabled: boolean, name: string, value?: string): void</code></pre><p>Sets the label like <code>setLabel()</code> when <code>enabled</code> is <code>true</code>, and removes it like <code>removeLabel()</code> when it is <code>false</code>.</p></td>
         </tr>
         <tr>
             <td><code>toggleRelation</code></td>
-            <td><pre><code class="language-application-typescript">toggleRelation(enabled: boolean, name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">toggleRelation(enabled: boolean, name: string, value?: string): void</code></pre><p>Sets the relation like <code>setRelation()</code> when <code>enabled</code> is <code>true</code>, and removes it like <code>removeRelation()</code> when it is <code>false</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>boolean</code></td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The ID of the target note.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>toggleAttribute</code></td>
-            <td><pre><code class="language-application-typescript">toggleAttribute(type: string, enabled: boolean, name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">toggleAttribute(type: string, enabled: boolean, name: string, value?: string): void</code></pre><p>Sets the attribute like <code>setAttribute()</code> when <code>enabled</code> is <code>true</code>, and removes it like <code>removeAttribute()</code> when it is <code>false</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>enabled</code></td><td><code>boolean</code></td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code></td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>removeLabel</code></td>
-            <td><pre><code class="language-application-typescript">removeLabel(name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">removeLabel(name: string, value?: string): void</code></pre><p>Removes every label with the given name defined directly on this note. Inherited labels are not affected.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The value to match; when omitted, labels with any value are removed.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>removeRelation</code></td>
-            <td><pre><code class="language-application-typescript">removeRelation(name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">removeRelation(name: string, value?: string): void</code></pre><p>Removes every relation with the given name defined directly on this note. Inherited relations are not affected.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The ID of the target note to match; when omitted, relations to any note are removed.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>removeAttribute</code></td>
-            <td><pre><code class="language-application-typescript">removeAttribute(type: string, name: string, value?: string): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">removeAttribute(type: string, name: string, value?: string): void</code></pre><p>Removes every attribute of the given type and name defined directly on this note. Inherited attributes are not affected.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>type</code></td><td><code>string</code><br><code>"label"</code> or <code>"relation"</code>.</td></tr><tr><td><code>name</code></td><td><code>string</code></td></tr><tr><td><code>value</code><br><em>optional</em></td><td><code>string</code><br>The value to match; when omitted, attributes with any value are removed.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>isInherited</code></td>
-            <td><pre><code class="language-application-typescript">isInherited(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isInherited(): boolean</code></pre><p>Returns <code>true</code> if another note uses this note as its template or inheritance source, through a <code>~template</code> or <code>~inherit</code> relation. Despite the name, it does not tell whether this note inherits attributes itself.</p></td>
         </tr>
         <tr>
             <td><code>revisionCount</code></td>
-            <td><p><code>number | null</code></p></td>
+            <td><p><code>number | null</code><br>The number of revisions of this note. It is <code>null</code> until a search that filters or sorts by <code>revisionCount</code> or one of the size properties has run; <code>getRevisions().length</code> always works.</p></td>
         </tr>
         <tr>
             <td><code>getRevisions</code></td>
-            <td><pre><code class="language-application-typescript">getRevisions(): ScriptBRevision[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getRevisions(): ScriptBRevision[]</code></pre><p>Returns the saved revisions of this note, oldest first.</p></td>
         </tr>
         <tr>
             <td><code>saveRevision</code></td>
-            <td><pre><code class="language-application-typescript">saveRevision(opts?: { description?: string; source?: string }): ScriptBRevision</code></pre></td>
+            <td><pre><code class="language-application-typescript">saveRevision(opts?: { description?: string; source?: string }): ScriptBRevision</code></pre><p>Saves a revision that snapshots the note's current title, content and attachments, and returns it. Afterwards, Trilium erases the oldest revisions beyond the number the revision settings keep.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code><br><em>optional</em></td><td><code>{ description?: string; source?: string }</code><br><code>description</code> names the revision; <code>source</code> records what created it: <code>"auto"</code> (the default), <code>"manual"</code>, <code>"etapi"</code>, <code>"llm"</code> or <code>"restore"</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getAttachments</code></td>
-            <td><pre><code class="language-application-typescript">getAttachments(): ScriptAttachment[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttachments(): ScriptAttachment[]</code></pre><p>Returns the attachments of this note, ordered by position. Deleted attachments are excluded.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentById</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentById(attachmentId: string): ScriptAttachment</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttachmentById(attachmentId: string): ScriptAttachment</code></pre><p>Returns the attachment of this note with the given ID. Returns <code>undefined</code> if this note has no such attachment, although the type does not say so.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentByTitle</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentByTitle(title: string): ScriptAttachment | undefined</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttachmentByTitle(title: string): ScriptAttachment | undefined</code></pre><p>Returns the first attachment of this note whose title matches exactly, or <code>undefined</code> if none does.</p></td>
         </tr>
         <tr>
             <td><code>getAttachmentsByRole</code></td>
-            <td><pre><code class="language-application-typescript">getAttachmentsByRole(role: string): ScriptAttachment[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getAttachmentsByRole(role: string): ScriptAttachment[]</code></pre><p>Returns the attachments of this note with the given role, such as <code>"image"</code> or <code>"file"</code>, ordered by position.</p></td>
         </tr>
         <tr>
             <td><code>saveAttachment</code></td>
-            <td><pre><code class="language-application-typescript">saveAttachment(attachment: ScriptSaveAttachmentInput, matchBy?: "title" | "attachmentId"): ScriptAttachment</code></pre></td>
+            <td><pre><code class="language-application-typescript">saveAttachment(attachment: ScriptSaveAttachmentInput, matchBy?: "title" | "attachmentId"): ScriptAttachment</code></pre><p>Saves an attachment of this note and returns it. If an existing attachment matches, only its content is replaced; otherwise a new attachment is created from <code>attachment</code>, protected if the note is. Missing content is saved as an empty string.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>attachment</code></td><td><code>ScriptSaveAttachmentInput</code></td></tr><tr><td><code>matchBy</code><br><em>optional</em></td><td><code>"title" | "attachmentId"</code><br>How to find an existing attachment to update: <code>"attachmentId"</code> (the default) by <code>attachment.attachmentId</code>, which throws an error if no attachment has that ID, or <code>"title"</code> by <code>attachment.title</code> among this note's attachments.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>convertToParentAttachment</code></td>
-            <td><pre><code class="language-application-typescript">convertToParentAttachment(opts?: Record&lt;string, unknown&gt;): ScriptAttachment | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">convertToParentAttachment(opts?: Record&lt;string, unknown&gt;): ScriptAttachment | null</code></pre><p>Converts this image note into an image attachment of its parent text note, points the parent's content at the attachment, deletes this note and returns the attachment. Returns <code>null</code> and changes nothing when <code>isEligibleForConversionToAttachment()</code> returns <code>false</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code><br><em>optional</em></td><td><code>Record&lt;string, unknown&gt;</code><br>Pass <code>{ autoConversion: true }</code> to also require that the parent links the image.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>isEligibleForConversionToAttachment</code></td>
-            <td><pre><code class="language-application-typescript">isEligibleForConversionToAttachment(opts?: Record&lt;string, unknown&gt;): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isEligibleForConversionToAttachment(opts?: Record&lt;string, unknown&gt;): boolean</code></pre><p>Returns <code>true</code> if this note can be converted into an attachment of its parent: it is an image note with no children and a single parent, the parent is a text note, both are readable in the current session, and at most one <code>~imageLink</code> relation points to the image, from the parent.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code><br><em>optional</em></td><td><code>Record&lt;string, unknown&gt;</code><br>Pass <code>{ autoConversion: true }</code> to also require that the parent links the image.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>contentSize</code></td>
-            <td><p><code>number | null</code></p></td>
+            <td><p><code>number | null</code><br>The size of the note's content in bytes. Like the other size properties, it is <code>null</code> until a search that filters or sorts by one of them, or by <code>revisionCount</code>, has run.</p></td>
         </tr>
         <tr>
             <td><code>contentAndAttachmentsSize</code></td>
-            <td><p><code>number | null</code></p></td>
+            <td><p><code>number | null</code><br>The size in bytes of the note's content together with its attachments, counting content that several of them share once. It is <code>null</code> until a search that uses it has run.</p></td>
         </tr>
         <tr>
             <td><code>contentAndAttachmentsAndRevisionsSize</code></td>
-            <td><p><code>number | null</code></p></td>
+            <td><p><code>number | null</code><br>The size in bytes of the note's content together with its attachments and its revisions and their attachments, counting shared content once. It is <code>null</code> until a search that uses it has run.</p></td>
         </tr>
         <tr>
             <td><code>cloneTo</code></td>
-            <td><pre><code class="language-application-typescript">cloneTo(parentNoteId: string): ScriptCloneResponse</code></pre></td>
+            <td><pre><code class="language-application-typescript">cloneTo(parentNoteId: string): ScriptCloneResponse</code></pre><p>Places this note under another parent note as well, keeping its existing placements, and expands the new parent in the note tree. The result does not throw on failure; check <code>success</code>, and read <code>message</code> for why it failed (for example, the note is already in that parent, the target is a search note, or the clone would create a cycle).</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>parentNoteId</code></td><td><code>string</code><br>The ID of the note to clone into.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>ScriptCloneResponse</code>: On success, <code>branchId</code> of the new branch and <code>notePath</code> of the clone.</p></td>
         </tr>
         <tr>
             <td><code>deleteNote</code></td>
-            <td><pre><code class="language-application-typescript">deleteNote(deleteId?: string | null): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">deleteNote(deleteId?: string | null): void</code></pre><p>Deletes the note from every place in the tree, together with its descendants that have no other placement, and runs its <code>runOnNoteDeletion</code> relations first. Deleted notes stay recoverable until they are erased. Does nothing if the note is already deleted.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>deleteId</code><br><em>optional</em></td><td><code>string | null</code><br>An ID that groups the deleted notes, branches and attributes so that they can be restored together. Defaults to a new random ID.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>sortParents</code></td>
-            <td><pre><code class="language-application-typescript">sortParents(): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">sortParents(): void</code></pre><p>Reorders this note's <code>parents</code> and <code>parentBranches</code> in memory so that archived and hidden parents come last, which makes Trilium prefer the other paths when it picks a note path. Saves nothing.</p></td>
         </tr>
         <tr>
             <td><code>sortChildren</code></td>
-            <td><pre><code class="language-application-typescript">sortChildren(): void</code></pre></td>
+            <td><pre><code class="language-application-typescript">sortChildren(): void</code></pre><p>Reorders this note's <code>children</code> array in memory by each child's <code>notePosition</code>. Saves nothing and does not change the order shown in the note tree.</p></td>
         </tr>
         <tr>
             <td><code>searchNotesInSubtree</code></td>
-            <td><pre><code class="language-application-typescript">searchNotesInSubtree(searchString: string): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">searchNotesInSubtree(searchString: string): ScriptBNote[]</code></pre><p>Returns the notes that match a search query. Despite the name, the search covers the whole tree, not only this note's subtree, and leaves out archived and hidden notes; to limit it to this note's subtree, call <code>api.searchForNotes(query, { ancestorNoteId: note.noteId })</code>.</p></td>
         </tr>
         <tr>
             <td><code>searchNoteInSubtree</code></td>
-            <td><pre><code class="language-application-typescript">searchNoteInSubtree(searchString: string): ScriptBNote | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">searchNoteInSubtree(searchString: string): ScriptBNote | null</code></pre><p>Returns the first note that matches a search query, or <code>undefined</code> if none does. Like <code>searchNotesInSubtree()</code>, the search covers the whole tree, not only this note's subtree.</p></td>
         </tr>
         <tr>
             <td><code>getSearchResultNotes</code></td>
-            <td><pre><code class="language-application-typescript">getSearchResultNotes(): ScriptBNote[]</code></pre></td>
+            <td><pre><code class="language-application-typescript">getSearchResultNotes(): ScriptBNote[]</code></pre><p>Runs the saved search of a search note and returns the notes it finds. Returns an empty array for other note types, and when the search fails (the error goes to the backend log).</p></td>
         </tr>
         <tr>
             <td><code>isFolder</code></td>
-            <td><pre><code class="language-application-typescript">isFolder(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isFolder(): boolean</code></pre><p>Returns <code>true</code> if this note is a search note or has at least one child, archived children included.</p></td>
         </tr>
         <tr>
             <td><code>isContentAvailable</code></td>
-            <td><pre><code class="language-application-typescript">isContentAvailable(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isContentAvailable(): boolean</code></pre><p>Returns <code>true</code> if the note's title and content can be read: the note is not protected, or a protected session is open. Otherwise the content reads as an empty string and the title as <code>"[protected]"</code>.</p></td>
         </tr>
         <tr>
             <td><code>isStringNote</code></td>
-            <td><pre><code class="language-application-typescript">isStringNote(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isStringNote(): boolean</code></pre><p>Returns whether <code>getContent()</code> returns a string rather than a <code>Uint8Array</code>.</p><aside class="admonition warning"><p>Deprecated. Use <code>hasStringContent()</code> instead.</p></aside></td>
         </tr>
         <tr>
             <td><code>isHtml</code></td>
-            <td><pre><code class="language-application-typescript">isHtml(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isHtml(): boolean</code></pre><p>Returns whether this is a code, file or render note with the MIME type <code>text/html</code>.</p></td>
         </tr>
         <tr>
             <td><code>isImage</code></td>
-            <td><pre><code class="language-application-typescript">isImage(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isImage(): boolean</code></pre><p>Returns whether this is an image note, or a file note with an <code>image/*</code> MIME type.</p></td>
         </tr>
         <tr>
             <td><code>isJavaScript</code></td>
-            <td><pre><code class="language-application-typescript">isJavaScript(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isJavaScript(): boolean</code></pre><p>Returns whether this is a code, file or launcher note with a JavaScript MIME type.</p></td>
         </tr>
         <tr>
             <td><code>isJsx</code></td>
-            <td><pre><code class="language-application-typescript">isJsx(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isJsx(): boolean</code></pre><p>Returns <code>true</code> if this is a code note with the MIME type <code>text/jsx</code>.</p></td>
         </tr>
         <tr>
             <td><code>isJson</code></td>
-            <td><pre><code class="language-application-typescript">isJson(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isJson(): boolean</code></pre><p>Returns whether the note's MIME type is <code>application/json</code>, whatever its type.</p></td>
         </tr>
         <tr>
             <td><code>isMarkdown</code></td>
-            <td><pre><code class="language-application-typescript">isMarkdown(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isMarkdown(): boolean</code></pre><p>Returns whether this is a code note with a Markdown MIME type.</p></td>
         </tr>
         <tr>
             <td><code>isOptions</code></td>
-            <td><pre><code class="language-application-typescript">isOptions(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isOptions(): boolean</code></pre><p>Returns <code>true</code> if this note is one of the settings pages in the hidden subtree, whose IDs start with <code>_options</code>.</p></td>
         </tr>
         <tr>
             <td><code>isLaunchBarConfig</code></td>
-            <td><pre><code class="language-application-typescript">isLaunchBarConfig(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isLaunchBarConfig(): boolean</code></pre><p>Returns <code>true</code> if this note is a launcher or one of the containers that configure the desktop or mobile launch bar.</p></td>
         </tr>
         <tr>
             <td><code>isHiddenCompletely</code></td>
-            <td><pre><code class="language-application-typescript">isHiddenCompletely(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isHiddenCompletely(): boolean</code></pre><p>Returns whether every path to this note passes through the hidden subtree (<code>_hidden</code>), so that the note has no placement in the visible tree. Returns <code>false</code> for the root note and for <code>_hidden</code> itself.</p></td>
         </tr>
         <tr>
             <td><code>isInHiddenSubtree</code></td>
-            <td><pre><code class="language-application-typescript">isInHiddenSubtree(): boolean</code></pre></td>
+            <td><pre><code class="language-application-typescript">isInHiddenSubtree(): boolean</code></pre><p>Returns <code>true</code> if this note is the hidden root note (<code>_hidden</code>) or lies under it in any of its placements. The hidden subtree holds Trilium's system notes, such as settings, launchers and templates.</p></td>
         </tr>
         <tr>
             <td><code>getScriptEnv</code></td>
-            <td><pre><code class="language-application-typescript">getScriptEnv(): "frontend" | "backend" | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getScriptEnv(): "frontend" | "backend" | null</code></pre><p>Returns where the note runs as a script: <code>"backend"</code> for JavaScript with <code>env=backend</code> in its MIME type, <code>"frontend"</code> for frontend JavaScript, JSX, HTML and render notes, and <code>null</code> for notes that are not scripts.</p></td>
         </tr>
         <tr>
             <td><code>executeScript</code></td>
-            <td><pre><code class="language-application-typescript">executeScript(): unknown</code></pre></td>
+            <td><pre><code class="language-application-typescript">executeScript(): unknown</code></pre><p>Runs this note as a backend script and returns the script's return value, which is a promise for an async script. The note must be a backend JavaScript code note; for any other note it runs nothing and returns <code>undefined</code>. Throws an error if the note is protected and no protected session is active, or if backend scripting is disabled.</p></td>
         </tr>
     </tbody>
 </table>
@@ -957,35 +957,35 @@ A branch (note→parent placement) as seen by backend scripts (subset of `BBranc
     <tbody>
         <tr>
             <td><code>branchId</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The ID of the branch. Moving a note to another parent replaces its branch with a new one, so store the note ID rather than the branch ID when you need a stable reference.</p></td>
         </tr>
         <tr>
             <td><code>noteId</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The ID of the child note this branch places in the tree.</p></td>
         </tr>
         <tr>
             <td><code>parentNoteId</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The ID of the parent note. For the root note's branch, it is <code>"none"</code>.</p></td>
         </tr>
         <tr>
             <td><code>prefix</code></td>
-            <td><p><code>string | null</code></p></td>
+            <td><p><code>string | null</code><br>The text shown before the note's title in the note tree for this placement only, or <code>null</code> if there is none.</p></td>
         </tr>
         <tr>
             <td><code>notePosition</code></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The position of the note among its siblings under this parent; notes with lower values come first.</p></td>
         </tr>
         <tr>
             <td><code>isExpanded</code></td>
-            <td><p><code>boolean</code></p></td>
+            <td><p><code>boolean</code><br>Whether the note is expanded in the note tree at this placement, showing its children.</p></td>
         </tr>
         <tr>
             <td><code>getNote</code></td>
-            <td><pre><code class="language-application-typescript">getNote(): ScriptBNote</code></pre></td>
+            <td><pre><code class="language-application-typescript">getNote(): ScriptBNote</code></pre><p>Returns the child note this branch places in the tree.</p></td>
         </tr>
         <tr>
             <td><code>getParentNote</code></td>
-            <td><pre><code class="language-application-typescript">getParentNote(): ScriptBNote | null</code></pre></td>
+            <td><pre><code class="language-application-typescript">getParentNote(): ScriptBNote | null</code></pre><p>Returns the parent note. The root note's branch has no parent note.</p></td>
         </tr>
     </tbody>
 </table>
@@ -1004,43 +1004,43 @@ A note revision as seen by backend scripts (subset of trilium-core's `BRevision`
     <tbody>
         <tr>
             <td><code>revisionId</code><br><em>optional</em></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The ID of the revision.</p></td>
         </tr>
         <tr>
             <td><code>noteId</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The ID of the note this revision belongs to.</p></td>
         </tr>
         <tr>
             <td><code>type</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The note's type at the time of the revision, such as <code>"text"</code> or <code>"code"</code>.</p></td>
         </tr>
         <tr>
             <td><code>mime</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The note's MIME type at the time of the revision.</p></td>
         </tr>
         <tr>
             <td><code>title</code></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>The note's title at the time of the revision. For a protected revision outside a protected session, it is <code>"[protected]"</code>.</p></td>
         </tr>
         <tr>
             <td><code>dateLastEdited</code><br><em>optional</em></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>When the note was last edited before the revision was saved, in local time with its UTC offset, formatted as <code>YYYY-MM-DD HH:mm:ss.SSS+ZZZZ</code> (for example, <code>2026-10-22 14:05:09.123+0200</code>).</p></td>
         </tr>
         <tr>
             <td><code>utcDateLastEdited</code><br><em>optional</em></td>
-            <td><p><code>string</code></p></td>
+            <td><p><code>string</code><br>When the note was last edited before the revision was saved, in UTC, formatted as <code>YYYY-MM-DD HH:mm:ss.SSSZ</code> (for example, <code>2026-10-22 12:05:09.123Z</code>).</p></td>
         </tr>
         <tr>
             <td><code>contentLength</code><br><em>optional</em></td>
-            <td><p><code>number</code></p></td>
+            <td><p><code>number</code><br>The size of the revision's content in bytes, when it was loaded together with the revision. Revisions returned by <code>note.getRevisions()</code> and <code>note.saveRevision()</code> leave it <code>undefined</code>.</p></td>
         </tr>
         <tr>
             <td><code>getContent</code></td>
-            <td><pre><code class="language-application-typescript">getContent(): string | Uint8Array&lt;ArrayBufferLike&gt;</code></pre></td>
+            <td><pre><code class="language-application-typescript">getContent(): string | Uint8Array&lt;ArrayBufferLike&gt;</code></pre><p>Returns the content of the revision: a string for text-based note types, a <code>Uint8Array</code> for binary ones such as images and files. For a protected revision outside a protected session, it returns an empty string.</p></td>
         </tr>
         <tr>
             <td><code>getJsonContent</code></td>
-            <td><pre><code class="language-application-typescript">getJsonContent(): unknown</code></pre></td>
+            <td><pre><code class="language-application-typescript">getJsonContent(): unknown</code></pre><p>Returns the revision's content parsed as JSON. Returns <code>null</code> when the content is empty, blank or binary, and throws an error when it is not valid JSON.</p></td>
         </tr>
     </tbody>
 </table>
@@ -1059,19 +1059,19 @@ A date as day.js wraps it (subset).
     <tbody>
         <tr>
             <td><code>format</code></td>
-            <td><pre><code class="language-application-typescript">format(template?: string): string</code></pre></td>
+            <td><pre><code class="language-application-typescript">format(template?: string): string</code></pre><p>Formats the date, such as <code>"YYYY-MM-DD"</code> for <code>2026-10-22</code>. Without a template, it returns the ISO 8601 form with the UTC offset, such as <code>2026-10-22T14:03:05+02:00</code>.</p></td>
         </tr>
         <tr>
             <td><code>add</code></td>
-            <td><pre><code class="language-application-typescript">add(value: number, unit: string): ScriptDayjsInstance</code></pre></td>
+            <td><pre><code class="language-application-typescript">add(value: number, unit: string): ScriptDayjsInstance</code></pre><p>Returns a new date, <code>value</code> units later. The date it is called on stays unchanged.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>value</code></td><td><code>number</code></td></tr><tr><td><code>unit</code></td><td><code>string</code><br>The unit, such as <code>"day"</code>, <code>"week"</code>, <code>"month"</code> or <code>"year"</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>subtract</code></td>
-            <td><pre><code class="language-application-typescript">subtract(value: number, unit: string): ScriptDayjsInstance</code></pre></td>
+            <td><pre><code class="language-application-typescript">subtract(value: number, unit: string): ScriptDayjsInstance</code></pre><p>Returns a new date, <code>value</code> units earlier. The date it is called on stays unchanged.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>value</code></td><td><code>number</code></td></tr><tr><td><code>unit</code></td><td><code>string</code><br>The unit, such as <code>"day"</code>, <code>"week"</code>, <code>"month"</code> or <code>"year"</code>.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>toDate</code></td>
-            <td><pre><code class="language-application-typescript">toDate(): Date</code></pre></td>
+            <td><pre><code class="language-application-typescript">toDate(): Date</code></pre><p>Returns the date as a JavaScript <code>Date</code>.</p></td>
         </tr>
     </tbody>
 </table>
