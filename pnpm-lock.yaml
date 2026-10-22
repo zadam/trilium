@@ -593,8 +593,8 @@ importers:
         specifier: 0.12.20
         version: 0.12.20
       paperjs-offset:
-        specifier: 2.2.1
-        version: 2.2.1
+        specifier: 2.2.2
+        version: 2.2.2
       ttf2woff2:
         specifier: 8.0.1
         version: 8.0.1(supports-color@10.2.2)
@@ -9629,8 +9629,8 @@ packages:
     resolution: {integrity: sha512-il3NkXmeQKZvTSp0bVUHWecXbf+QmThhG1H2zV3ZQXVK/iD7paWbUJXaYqgM8nL1Dzr7fMYV26BMfYeJs2hdxQ==}
     engines: {node: '>=8.0.0'}
 
-  paperjs-offset@2.2.1:
-    resolution: {integrity: sha512-IG2mMG+fQ6CrOAOqJk48KXWIAKVZN1Z1olZOQ9gPnZy5jbYQXe2R+d6VqMmkD4BOElhoBbtVFukGRfyZmDyGZQ==}
+  paperjs-offset@2.2.2:
+    resolution: {integrity: sha512-GCiPvZ83eKXqNM+RAOpg1wZiCPBw5FWEOIDs6fNGEVPWSiWULsWWzPeN1IT/BaQ9FkdsOqNWtbPWaiWLHTX2yg==}
 
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
@@ -22074,7 +22074,7 @@ snapshots:
 
   paper@0.12.20: {}
 
-  paperjs-offset@2.2.1: {}
+  paperjs-offset@2.2.2: {}
 
   parent-module@1.0.1:
     dependencies:
