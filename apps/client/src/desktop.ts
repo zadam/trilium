@@ -16,14 +16,17 @@ import { preloadCommonNoteTypes } from "./widgets/note_types.js";
 
 await appContext.earlyInit();
 
+// Started before the widget bundles are requested, so the layout's modules load while the backend
+// answers. Imported dynamically because its components need the translations `earlyInit()` loads.
+const desktopLayoutLoaded = import("./layouts/desktop_layout.js");
+
 /**
  * Resolves once the layout is rendered and froca has the note tree. index.ts keeps the splash up
  * until then, so the bundle, layout and tree requests below are not made behind a blank page. A
  * failed start still resolves it: the toast that reports the failure has to become visible.
  */
 export const ready = bundleService.getWidgetBundlesByParent().then(async (widgetBundles) => {
-    // A dynamic import is required for layouts since they initialize components which require translations.
-    const DesktopLayout = (await import("./layouts/desktop_layout.js")).default;
+    const DesktopLayout = (await desktopLayoutLoaded).default;
 
     appContext.setLayout(new DesktopLayout(widgetBundles));
     try {
