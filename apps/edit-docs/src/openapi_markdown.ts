@@ -86,7 +86,7 @@ export function openApiToMarkdown(spec: OpenApiSpec): string {
     if (schemas.length) {
         blocks.push("## Schemas");
         for (const [ name, schema ] of schemas) {
-            blocks.push(...renderSchema(name, schema));
+            blocks.push(...renderSchema(spec, name, schema));
         }
     }
 
@@ -147,46 +147,63 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
             blocks.push(`*   ${code(mime)}: ${code(typeOf(schema))}`);
             const resolved = schema && resolve(spec, schema);
             if (resolved?.properties) {
-                blocks.push(propertyTable(resolved));
+                blocks.push(propertyTable(spec, resolved));
             }
         }
     }
 
     const responses = Object.entries(operation.responses ?? {});
     if (responses.length) {
-        blocks.push("**Responses**", table(
-            [ "Status", "Description", "Type" ],
-            responses.map(([ status, response ]) => {
-                const { description, content } = resolve<Response>(spec, response);
-                const types = new Set(Object.values(content ?? {}).map(({ schema }) => typeOf(schema)));
-                return [ code(status), description ?? "", [ ...types ].filter(Boolean).map(code).join(", ") ];
-            })
-        ));
+        blocks.push("**Responses**");
+    }
+    for (const [ status, response ] of responses) {
+        const { description, content } = resolve<Response>(spec, response);
+
+        // Content types of one response usually share a schema, which is then listed once.
+        const schemas = new Map<string, Schema>();
+        for (const { schema } of Object.values(content ?? {})) {
+            if (schema) {
+                schemas.set(typeOf(schema), schema);
+            }
+        }
+
+        const types = [ ...schemas.keys() ].map(code).join(", ");
+        const summary = [ code(status), description?.trim() ].filter(Boolean).join(": ");
+        blocks.push(`*   ${summary}${types ? ` (${types})` : ""}`);
+        for (const schema of schemas.values()) {
+            const resolved = resolve(spec, schema);
+            if (resolved.properties) {
+                blocks.push(propertyTable(spec, resolved));
+            }
+        }
     }
 
     return blocks;
 }
 
-function renderSchema(name: string, schema: Schema) {
+function renderSchema(spec: OpenApiSpec, name: string, schema: Schema) {
     const blocks = [ `### ${code(name)}` ];
     if (schema.description) {
         blocks.push(schema.description.trim());
     }
 
-    blocks.push(schema.properties ? propertyTable(schema) : `Type: ${code(typeOf(schema))}`);
+    blocks.push(schema.properties ? propertyTable(spec, schema) : `Type: ${code(typeOf(schema))}`);
     return blocks;
 }
 
-function propertyTable({ properties, required }: Schema) {
+function propertyTable(spec: OpenApiSpec, { properties, required }: Schema) {
     const requiredProperties = new Set(required);
     return table(
         [ "Property", "Type", "Required", "Description" ],
-        Object.entries(properties ?? {}).map(([ property, propertySchema ]) => [
-            code(property),
-            code(typeOf(propertySchema)),
-            requiredProperties.has(property) ? "Yes" : "No",
-            describe({ description: propertySchema.description, schema: propertySchema })
-        ])
+        Object.entries(properties ?? {}).map(([ property, propertySchema ]) => {
+            const resolved = resolve(spec, propertySchema);
+            return [
+                code(property),
+                code(typeOf(propertySchema)),
+                requiredProperties.has(property) ? "Yes" : "No",
+                describe({ description: propertySchema.description ?? resolved.description, schema: resolved })
+            ];
+        })
     );
 }
 

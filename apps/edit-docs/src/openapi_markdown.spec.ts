@@ -62,11 +62,17 @@ describe("openApiToMarkdown", () => {
             "",
             "**Responses**"
         ].join("\n"));
+        // A response with a body is followed by the properties of its schema, like the request body.
         expect(markdown).toContain([
-            "| Status | Description | Type |",
-            "| --- | --- | --- |",
-            "| `200` | note updated | `Note` |",
-            "| `default` | unexpected error |  |"
+            "**Responses**",
+            "",
+            "*   `200`: note updated (`Note`)",
+            "",
+            "| Property | Type | Required | Description |",
+            "| --- | --- | --- | --- |",
+            "| `title` | `string` | Yes |  |",
+            "",
+            "*   `default`: unexpected error"
         ].join("\n"));
     });
 
@@ -101,6 +107,7 @@ describe("openApiToMarkdown", () => {
                         required: [ "noteId" ],
                         properties: {
                             noteId: { ...ENTITY_ID, description: "The note's ID" },
+                            parentNoteId: ENTITY_ID,
                             type: { type: "string", enum: [ "text", "code" ], description: "note type" },
                             attributes: { type: "array", items: { $ref: "#/components/schemas/Attribute" } },
                             dateCreated: { type: "string", format: "date-time", nullable: true },
@@ -124,6 +131,8 @@ describe("openApiToMarkdown", () => {
             "| Property | Type | Required | Description |",
             "| --- | --- | --- | --- |",
             "| `noteId` | `EntityId` | Yes | The note's ID |",
+            // Without a description of its own, a property takes the one of the schema it references.
+            "| `parentNoteId` | `EntityId` | No | Unique ID |",
             "| `type` | `string` | No | note type. One of `text`, `code`. |",
             "| `attributes` | `array of Attribute` | No |  |",
             "| `dateCreated` | `string (date-time) \\| null` | No |  |",
