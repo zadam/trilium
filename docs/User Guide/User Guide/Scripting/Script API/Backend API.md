@@ -1,5 +1,5 @@
 # Backend API
-## `BackendApi`
+## <a id="type-BackendApi"></a>`BackendApi`
 
 The `api` global available inside **backend** script notes (`application/javascript;env=backend`). Runs server-side: no DOM, no jQuery.
 
@@ -13,23 +13,23 @@ The `api` global available inside **backend** script notes (`application/javascr
     <tbody>
         <tr>
             <td><code>startNote</code><br><em>optional</em></td>
-            <td><p><code>BNote | null</code><br>Note where the script execution started — the entry point of the current script bundle (in C terms, the file containing <code>main()</code>). When a script is spread across multiple code notes (descendant code notes loaded as modules via <code>require()</code>), every note in the bundle shares the same <code>startNote</code>, while <code>currentNote</code> differs per note. Messages from <code>api.log()</code> are grouped under this note. When a frontend script calls <code>api.runOnBackend()</code>, the frontend's <code>startNote</code> is preserved here; since that note may not be resolvable on the backend, this can be null.</p></td>
+            <td><p><a href="#type-BNote"><code>BNote</code></a> | <code>null</code><br>Note where the script execution started — the entry point of the current script bundle (in C terms, the file containing <code>main()</code>). When a script is spread across multiple code notes (descendant code notes loaded as modules via <code>require()</code>), every note in the bundle shares the same <code>startNote</code>, while <code>currentNote</code> differs per note. Messages from <code>api.log()</code> are grouped under this note. When a frontend script calls <code>api.runOnBackend()</code>, the frontend's <code>startNote</code> is preserved here; since that note may not be resolvable on the backend, this can be null.</p></td>
         </tr>
         <tr>
             <td><code>currentNote</code></td>
-            <td><p><code>BNote</code><br>Note containing the source code that is currently executing (in C terms, <code>__FILE__</code>). Equal to <code>startNote</code> unless execution has moved into a descendant module note loaded via <code>require()</code>. Don't confuse this with the concept of the active note in the UI.</p></td>
+            <td><p><a href="#type-BNote"><code>BNote</code></a><br>Note containing the source code that is currently executing (in C terms, <code>__FILE__</code>). Equal to <code>startNote</code> unless execution has moved into a descendant module note loaded via <code>require()</code>. Don't confuse this with the concept of the active note in the UI.</p></td>
         </tr>
         <tr>
             <td><code>originEntity</code><br><em>optional</em></td>
-            <td><p><code>Attribute | BBranch | BNote | null</code><br>Entity whose event triggered this execution; <code>undefined</code> when the run was not event-driven (e.g. started manually via "Execute script" or <code>note.executeScript()</code>). What it holds depends on the trigger: - <code>~runOnNoteCreation</code>, <code>~runOnNoteChange</code>, <code>~runOnNoteTitleChange</code>, <code>~runOnNoteContentChange</code> — the affected note; - <code>~runOnChildNoteCreation</code> — the newly created child note; - <code>~runOnAttributeCreation</code>, <code>~runOnAttributeChange</code> — the attribute; - <code>~runOnBranchCreation</code>, <code>~runOnBranchChange</code>, <code>~runOnBranchDeletion</code> — the branch; - scheduled scripts (<code>#run=backendStartup</code> / <code>#run=hourly</code> / <code>#run=daily</code>) — the script note itself; - search scripts (<code>~searchScript</code>) — the search note.</p></td>
+            <td><p><a href="#type-Attribute"><code>Attribute</code></a> | <a href="#type-BBranch"><code>BBranch</code></a> | <a href="#type-BNote"><code>BNote</code></a> | <code>null</code><br>Entity whose event triggered this execution; <code>undefined</code> when the run was not event-driven (e.g. started manually via "Execute script" or <code>note.executeScript()</code>). What it holds depends on the trigger: - <code>~runOnNoteCreation</code>, <code>~runOnNoteChange</code>, <code>~runOnNoteTitleChange</code>, <code>~runOnNoteContentChange</code> — the affected note; - <code>~runOnChildNoteCreation</code> — the newly created child note; - <code>~runOnAttributeCreation</code>, <code>~runOnAttributeChange</code> — the attribute; - <code>~runOnBranchCreation</code>, <code>~runOnBranchChange</code>, <code>~runOnBranchDeletion</code> — the branch; - scheduled scripts (<code>#run=backendStartup</code> / <code>#run=hourly</code> / <code>#run=daily</code>) — the script note itself; - search scripts (<code>~searchScript</code>) — the search note.</p></td>
         </tr>
         <tr>
             <td><code>req</code></td>
-            <td><p><code>Request</code><br>The HTTP request, present only when the script runs as a custom request handler: a note with the <code>#customRequestHandler</code> label, invoked through a <code>/custom/...</code> URL. It is <code>undefined</code> in every other backend script. The object is Express's own request, so it has more members than <code>Request</code> lists.</p></td>
+            <td><p><a href="#type-Request"><code>Request</code></a><br>The HTTP request, present only when the script runs as a custom request handler: a note with the <code>#customRequestHandler</code> label, invoked through a <code>/custom/...</code> URL. It is <code>undefined</code> in every other backend script. The object is Express's own request, so it has more members than <a href="#type-Request"><code>Request</code></a> lists.</p></td>
         </tr>
         <tr>
             <td><code>res</code></td>
-            <td><p><code>Response</code><br>The HTTP response to write the reply to, such as <code>api.res.status(200).json({ ok: true })</code>. Like <code>req</code>, it is present only in custom request handlers, and is Express's own response.</p></td>
+            <td><p><a href="#type-Response"><code>Response</code></a><br>The HTTP response to write the reply to, such as <code>api.res.status(200).json({ ok: true })</code>. Like <code>req</code>, it is present only in custom request handlers, and is Express's own response.</p></td>
         </tr>
         <tr>
             <td><code>pathParams</code></td>
@@ -37,15 +37,15 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>dayjs</code></td>
-            <td><p><code>Dayjs</code><br>day.js library for date manipulation. See <code>https://day.js.org</code> for documentation</p></td>
+            <td><p><a href="#type-Dayjs"><code>Dayjs</code></a><br>day.js library for date manipulation. See <code>https://day.js.org</code> for documentation</p></td>
         </tr>
         <tr>
             <td><code>xml2js</code></td>
-            <td><p><code>Xml2js</code><br>The xml2js library, which converts between XML and JavaScript objects.</p></td>
+            <td><p><a href="#type-Xml2js"><code>Xml2js</code></a><br>The xml2js library, which converts between XML and JavaScript objects.</p></td>
         </tr>
         <tr>
             <td><code>htmlParser</code></td>
-            <td><p><code>HtmlParser</code><br>The node-html-parser library, which parses HTML into elements that can be queried.</p></td>
+            <td><p><a href="#type-HtmlParser"><code>HtmlParser</code></a><br>The node-html-parser library, which parses HTML into elements that can be queried.</p></td>
         </tr>
         <tr>
             <td><code>getInstanceName</code></td>
@@ -125,7 +125,7 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>createNewNote</code></td>
-            <td><pre><code class="language-application-typescript">createNewNote(params: { parentNoteId: string; title: string; content: string | Uint8Array&lt;ArrayBufferLike&gt;; type: string; mime?: string; [key: string]: unknown }): NoteAndBranch</code></pre><p><strong>Returns</strong> <code>NoteAndBranch</code>: object contains newly created entities note and branch</p></td>
+            <td><pre><code class="language-application-typescript">createNewNote(params: { parentNoteId: string; title: string; content: string | Uint8Array&lt;ArrayBufferLike&gt;; type: string; mime?: string; [key: string]: unknown }): NoteAndBranch</code></pre><p><strong>Returns</strong> <a href="#type-NoteAndBranch"><code>NoteAndBranch</code></a>: object contains newly created entities note and branch</p></td>
         </tr>
         <tr>
             <td><code>logMessages</code></td>
@@ -145,31 +145,31 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>getDayNote</code></td>
-            <td><pre><code class="language-application-typescript">getDayNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns day note for given date. If such note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><code>BNote</code><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getDayNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns day note for given date. If such note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><a href="#type-BNote"><code>BNote</code></a><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getTodayNote</code></td>
-            <td><pre><code class="language-application-typescript">getTodayNote(rootNote?: BNote): BNote | null</code></pre><p>Returns today's day note. If such note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>rootNote</code><br><em>optional</em></td><td><code>BNote</code><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getTodayNote(rootNote?: BNote): BNote | null</code></pre><p>Returns today's day note. If such note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>rootNote</code><br><em>optional</em></td><td><a href="#type-BNote"><code>BNote</code></a><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getWeekFirstDayNote</code></td>
-            <td><pre><code class="language-application-typescript">getWeekFirstDayNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns note for the first date of the week of the given date.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><code>BNote</code><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getWeekFirstDayNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns note for the first date of the week of the given date.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><a href="#type-BNote"><code>BNote</code></a><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getWeekNote</code></td>
-            <td><pre><code class="language-application-typescript">getWeekNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns week note for given date. If such a note doesn't exist, it is created.</p><p>If the calendar does not support week notes, this method will return `null`.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><code>BNote</code><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>BNote | null</code>: an existing or newly created week note, or <code>null</code> if the calendar does not support week notes.</p></td>
+            <td><pre><code class="language-application-typescript">getWeekNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns week note for given date. If such a note doesn't exist, it is created.</p><p>If the calendar does not support week notes, this method will return `null`.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM-DD format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><a href="#type-BNote"><code>BNote</code></a><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure><p><strong>Returns</strong> <a href="#type-BNote"><code>BNote</code></a> | <code>null</code>: an existing or newly created week note, or <code>null</code> if the calendar does not support week notes.</p></td>
         </tr>
         <tr>
             <td><code>getMonthNote</code></td>
-            <td><pre><code class="language-application-typescript">getMonthNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns month note for given date. If such a note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><code>BNote</code><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getMonthNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns month note for given date. If such a note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><a href="#type-BNote"><code>BNote</code></a><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getQuarterNote</code></td>
-            <td><pre><code class="language-application-typescript">getQuarterNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns quarter note for given date. If such a note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><code>BNote</code><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getQuarterNote(date: string, rootNote?: BNote): BNote | null</code></pre><p>Returns quarter note for given date. If such a note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>date</code></td><td><code>string</code><br>in YYYY-MM format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><a href="#type-BNote"><code>BNote</code></a><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>getYearNote</code></td>
-            <td><pre><code class="language-application-typescript">getYearNote(year: string, rootNote?: BNote): BNote | null</code></pre><p>Returns year note for given year. If such a note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>year</code></td><td><code>string</code><br>in YYYY format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><code>BNote</code><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">getYearNote(year: string, rootNote?: BNote): BNote | null</code></pre><p>Returns year note for given year. If such a note doesn't exist, it is created.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>year</code></td><td><code>string</code><br>in YYYY format</td></tr><tr><td><code>rootNote</code><br><em>optional</em></td><td><a href="#type-BNote"><code>BNote</code></a><br>specify calendar root note, normally leave empty to use the default calendar</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>sortNotes</code></td>
@@ -205,7 +205,7 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>sql</code></td>
-            <td><p><code>Sql</code><br>Direct access to Trilium's SQLite database.</p></td>
+            <td><p><a href="#type-Sql"><code>Sql</code></a><br>Direct access to Trilium's SQLite database.</p></td>
         </tr>
         <tr>
             <td><code>getAppInfo</code></td>
@@ -233,12 +233,12 @@ The `api` global available inside **backend** script notes (`application/javascr
         </tr>
         <tr>
             <td><code>duplicateSubtree</code></td>
-            <td><pre><code class="language-application-typescript">duplicateSubtree(origNoteId: string, newParentNoteId: string): NoteAndBranch</code></pre><p>Enables the complete duplication of the specified original note and all its children into the specified parent note. The new note will be named the same as the original, with (Dup) added to the end of it.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>origNoteId</code></td><td><code>string</code><br>the noteId for the original note to be duplicated</td></tr><tr><td><code>newParentNoteId</code></td><td><code>string</code><br>the noteId for the parent note where the duplication is to be placed.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>NoteAndBranch</code>: the note and the branch of the newly created note.</p></td>
+            <td><pre><code class="language-application-typescript">duplicateSubtree(origNoteId: string, newParentNoteId: string): NoteAndBranch</code></pre><p>Enables the complete duplication of the specified original note and all its children into the specified parent note. The new note will be named the same as the original, with (Dup) added to the end of it.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>origNoteId</code></td><td><code>string</code><br>the noteId for the original note to be duplicated</td></tr><tr><td><code>newParentNoteId</code></td><td><code>string</code><br>the noteId for the parent note where the duplication is to be placed.</td></tr></tbody></table></figure><p><strong>Returns</strong> <a href="#type-NoteAndBranch"><code>NoteAndBranch</code></a>: the note and the branch of the newly created note.</p></td>
         </tr>
     </tbody>
 </table>
 
-## `BNote`
+## <a id="type-BNote"></a>`BNote`
 
 A note as seen by backend scripts (subset of trilium-core's `BNote`).
 
@@ -348,15 +348,15 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>parents</code></td>
-            <td><p><code>BNote[]</code><br>The parent notes of this note: one per place the note appears in the tree, so a cloned note has several. Parents that are not archived come first. This is the same array <code>getParentNotes()</code> returns; don't modify it.</p></td>
+            <td><p><a href="#type-BNote"><code>BNote</code></a><code>[]</code><br>The parent notes of this note: one per place the note appears in the tree, so a cloned note has several. Parents that are not archived come first. This is the same array <code>getParentNotes()</code> returns; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>children</code></td>
-            <td><p><code>BNote[]</code><br>The child notes of this note, in their order in the tree. This is the same array <code>getChildNotes()</code> returns; don't modify it.</p></td>
+            <td><p><a href="#type-BNote"><code>BNote</code></a><code>[]</code><br>The child notes of this note, in their order in the tree. This is the same array <code>getChildNotes()</code> returns; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>parentBranches</code></td>
-            <td><p><code>BBranch[]</code><br>The branches that place this note under each of its parents, in the same order as <code>parents</code>. This is the same array <code>getParentBranches()</code> returns; don't modify it.</p></td>
+            <td><p><a href="#type-BBranch"><code>BBranch</code></a><code>[]</code><br>The branches that place this note under each of its parents, in the same order as <code>parents</code>. This is the same array <code>getParentBranches()</code> returns; don't modify it.</p></td>
         </tr>
         <tr>
             <td><code>parentCount</code></td>
@@ -440,7 +440,7 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>getSubtree</code></td>
-            <td><pre><code class="language-application-typescript">getSubtree(opts?: SubtreeOpts): { notes: BNote[]; relationships: SubtreeRelationship[] }</code></pre><p>Returns the note and all its descendants, each note once, together with every parent-child relationship among them, including those of cloned notes.</p><p><strong>Returns</strong> <code>{ notes: BNote[]; relationships: SubtreeRelationship[] }</code>: An object with <code>notes</code>, the notes of the subtree including this note, and <code>relationships</code>, the <code>{ parentNoteId, childNoteId }</code> pairs connecting them.</p></td>
+            <td><pre><code class="language-application-typescript">getSubtree(opts?: SubtreeOpts): { notes: BNote[]; relationships: SubtreeRelationship[] }</code></pre><p>Returns the note and all its descendants, each note once, together with every parent-child relationship among them, including those of cloned notes.</p><p><strong>Returns</strong> <code>{ notes:</code> <a href="#type-BNote"><code>BNote</code></a><code>[]; relationships:</code> <a href="#type-SubtreeRelationship"><code>SubtreeRelationship</code></a><code>[] }</code>: An object with <code>notes</code>, the notes of the subtree including this note, and <code>relationships</code>, the <code>{ parentNoteId, childNoteId }</code> pairs connecting them.</p></td>
         </tr>
         <tr>
             <td><code>getSubtreeNoteIds</code></td>
@@ -468,7 +468,7 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>getSortedNotePathRecords</code></td>
-            <td><pre><code class="language-application-typescript">getSortedNotePathRecords(hoistedNoteId?: string): NotePathRecord[]</code></pre><p>Returns a record for every path from the root note to this note, best path first. Paths within the hoisted note's subtree come first, then paths without archived notes, then paths outside the hidden subtree, then shorter paths.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>hoistedNoteId</code><br><em>optional</em></td><td><code>string</code><br>The ID of the note whose subtree is preferred. Defaults to <code>root</code>.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>NotePathRecord[]</code>: Records whose <code>notePath</code> holds the note IDs from the root to this note, with flags telling whether the path lies within the hoisted subtree (<code>isInHoistedSubTree</code>), passes through an archived note, the note itself included (<code>isArchived</code>), or lies within the hidden subtree (<code>isHidden</code>).</p></td>
+            <td><pre><code class="language-application-typescript">getSortedNotePathRecords(hoistedNoteId?: string): NotePathRecord[]</code></pre><p>Returns a record for every path from the root note to this note, best path first. Paths within the hoisted note's subtree come first, then paths without archived notes, then paths outside the hidden subtree, then shorter paths.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>hoistedNoteId</code><br><em>optional</em></td><td><code>string</code><br>The ID of the note whose subtree is preferred. Defaults to <code>root</code>.</td></tr></tbody></table></figure><p><strong>Returns</strong> <a href="#type-NotePathRecord"><code>NotePathRecord</code></a><code>[]</code>: Records whose <code>notePath</code> holds the note IDs from the root to this note, with flags telling whether the path lies within the hoisted subtree (<code>isInHoistedSubTree</code>), passes through an archived note, the note itself included (<code>isArchived</code>), or lies within the hidden subtree (<code>isHidden</code>).</p></td>
         </tr>
         <tr>
             <td><code>areAllNotePathsArchived</code></td>
@@ -476,11 +476,11 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>ownedAttributes</code></td>
-            <td><p><code>Attribute[]</code><br>The labels and relations defined directly on this note, without inherited ones.</p></td>
+            <td><p><a href="#type-Attribute"><code>Attribute</code></a><code>[]</code><br>The labels and relations defined directly on this note, without inherited ones.</p></td>
         </tr>
         <tr>
             <td><code>targetRelations</code></td>
-            <td><p><code>Attribute[]</code><br>The relations in other notes (or this one) that point to this note. This includes the link relations Trilium creates automatically for links in note content, such as <code>internalLink</code> and <code>imageLink</code>.</p></td>
+            <td><p><a href="#type-Attribute"><code>Attribute</code></a><code>[]</code><br>The relations in other notes (or this one) that point to this note. This includes the link relations Trilium creates automatically for links in note content, such as <code>internalLink</code> and <code>imageLink</code>.</p></td>
         </tr>
         <tr>
             <td><code>attributeCount</code></td>
@@ -744,7 +744,7 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>saveAttachment</code></td>
-            <td><pre><code class="language-application-typescript">saveAttachment(attachment: SaveAttachmentInput, matchBy?: "title" | "attachmentId"): BAttachment</code></pre><p>Saves an attachment of this note and returns it. If an existing attachment matches, only its content is replaced; otherwise a new attachment is created from <code>attachment</code>, protected if the note is. Missing content is saved as an empty string.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>attachment</code></td><td><code>SaveAttachmentInput</code></td></tr><tr><td><code>matchBy</code><br><em>optional</em></td><td><code>"title" | "attachmentId"</code><br>How to find an existing attachment to update: <code>"attachmentId"</code> (the default) by <code>attachment.attachmentId</code>, which throws an error if no attachment has that ID, or <code>"title"</code> by <code>attachment.title</code> among this note's attachments.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">saveAttachment(attachment: SaveAttachmentInput, matchBy?: "title" | "attachmentId"): BAttachment</code></pre><p>Saves an attachment of this note and returns it. If an existing attachment matches, only its content is replaced; otherwise a new attachment is created from <code>attachment</code>, protected if the note is. Missing content is saved as an empty string.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>attachment</code></td><td><a href="#type-SaveAttachmentInput"><code>SaveAttachmentInput</code></a></td></tr><tr><td><code>matchBy</code><br><em>optional</em></td><td><code>"title" | "attachmentId"</code><br>How to find an existing attachment to update: <code>"attachmentId"</code> (the default) by <code>attachment.attachmentId</code>, which throws an error if no attachment has that ID, or <code>"title"</code> by <code>attachment.title</code> among this note's attachments.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>convertToParentAttachment</code></td>
@@ -768,7 +768,7 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
         </tr>
         <tr>
             <td><code>cloneTo</code></td>
-            <td><pre><code class="language-application-typescript">cloneTo(parentNoteId: string): CloneResponse</code></pre><p>Places this note under another parent note as well, keeping its existing placements, and expands the new parent in the note tree. The result does not throw on failure; check <code>success</code>, and read <code>message</code> for why it failed (for example, the note is already in that parent, the target is a search note, or the clone would create a cycle).</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>parentNoteId</code></td><td><code>string</code><br>The ID of the note to clone into.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>CloneResponse</code>: On success, <code>branchId</code> of the new branch and <code>notePath</code> of the clone.</p></td>
+            <td><pre><code class="language-application-typescript">cloneTo(parentNoteId: string): CloneResponse</code></pre><p>Places this note under another parent note as well, keeping its existing placements, and expands the new parent in the note tree. The result does not throw on failure; check <code>success</code>, and read <code>message</code> for why it failed (for example, the note is already in that parent, the target is a search note, or the clone would create a cycle).</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>parentNoteId</code></td><td><code>string</code><br>The ID of the note to clone into.</td></tr></tbody></table></figure><p><strong>Returns</strong> <a href="#type-CloneResponse"><code>CloneResponse</code></a>: On success, <code>branchId</code> of the new branch and <code>notePath</code> of the clone.</p></td>
         </tr>
         <tr>
             <td><code>deleteNote</code></td>
@@ -857,7 +857,7 @@ A note as seen by backend scripts (subset of trilium-core's `BNote`).
     </tbody>
 </table>
 
-## `BBranch`
+## <a id="type-BBranch"></a>`BBranch`
 
 A branch (note→parent placement) as seen by backend scripts (subset of `BBranch`).
 
@@ -904,7 +904,7 @@ A branch (note→parent placement) as seen by backend scripts (subset of `BBranc
     </tbody>
 </table>
 
-## `Request`
+## <a id="type-Request"></a>`Request`
 
 Minimal Express `Request` surface available to **custom request handlers** (a subset of Express's `Request` — re-declared here to keep this module self-contained). Only the commonly used members are typed; the real object is a full Express request.
 
@@ -947,7 +947,7 @@ Minimal Express `Request` surface available to **custom request handlers** (a su
     </tbody>
 </table>
 
-## `Response`
+## <a id="type-Response"></a>`Response`
 
 Minimal Express `Response` surface available to **custom request handlers** (a subset of Express's `Response`). Write the HTTP response through this object, e.g. `api.res.status(200).json({ ok: true })`.
 
@@ -990,7 +990,7 @@ Minimal Express `Response` surface available to **custom request handlers** (a s
     </tbody>
 </table>
 
-## `BAttachment`
+## <a id="type-BAttachment"></a>`BAttachment`
 
 An attachment as seen by backend scripts (subset of trilium-core's `BAttachment`).
 
@@ -1085,7 +1085,7 @@ An attachment as seen by backend scripts (subset of trilium-core's `BAttachment`
     </tbody>
 </table>
 
-## `BRevision`
+## <a id="type-BRevision"></a>`BRevision`
 
 A note revision as seen by backend scripts (subset of trilium-core's `BRevision`).
 
@@ -1140,7 +1140,7 @@ A note revision as seen by backend scripts (subset of trilium-core's `BRevision`
     </tbody>
 </table>
 
-## `Sql`
+## <a id="type-Sql"></a>`Sql`
 
 Direct access to Trilium's SQLite database (subset of trilium-core's `SqlService`). Queries mark parameters with `?` and take their values in an array, in order. Changes made here bypass Trilium's own bookkeeping: they do not sync, and Trilium's in-memory copy of the notes does not see them until the next restart. Change notes through the note methods instead.
 
@@ -1195,7 +1195,7 @@ Direct access to Trilium's SQLite database (subset of trilium-core's `SqlService
     </tbody>
 </table>
 
-## `DayjsInstance`
+## <a id="type-DayjsInstance"></a>`DayjsInstance`
 
 A date as day.js wraps it (subset).
 
@@ -1228,7 +1228,7 @@ A date as day.js wraps it (subset).
 
 ## Types
 
-### `Attribute`
+### <a id="type-Attribute"></a>`Attribute`
 
 A label or relation attached to a note.
 
@@ -1241,7 +1241,7 @@ A label or relation attached to a note.
 | `isInheritable` | `boolean`  <br>Whether the note's descendants inherit the attribute. |
 | `isOwned` | `boolean`  <br>Not set by Trilium: neither frontend nor backend attributes carry this property, so it reads `undefined`. |
 
-### `Dayjs`
+### <a id="type-Dayjs"></a>`Dayjs`
 
 Minimal day.js surface (the real API exposes the full day.js factory).
 
@@ -1249,15 +1249,15 @@ Minimal day.js surface (the real API exposes the full day.js factory).
 type Dayjs = (date?: string | number | Date) => DayjsInstance
 ```
 
-### `Xml2js`
+### <a id="type-Xml2js"></a>`Xml2js`
 
 The [xml2js](https://github.com/Leonidas-from-XIV/node-xml2js) library, version 0.6, which converts between XML and JavaScript objects, such as with `xml2js.parseStringPromise(xml)`.
 
-### `HtmlParser`
+### <a id="type-HtmlParser"></a>`HtmlParser`
 
 The [node-html-parser](https://github.com/taoqf/node-html-parser) library, version 9, which parses HTML into elements that can be queried, such as with `htmlParser.parse(html).querySelectorAll("a")`.
 
-### `BEtapiToken`
+### <a id="type-BEtapiToken"></a>`BEtapiToken`
 
 An ETAPI token, which grants an external program access to the ETAPI (subset of trilium-core's `BEtapiToken`). The token itself is not available, only its hash, which this type leaves out.
 
@@ -1269,7 +1269,7 @@ An ETAPI token, which grants an external program access to the ETAPI (subset of 
 | `utcDateModified`  <br>_optional_ | `string`  <br>The date and time, in UTC, that the token was last changed, such as renamed. |
 | `isDeleted` | `boolean`  <br>Whether the token has been deleted, which revokes it. |
 
-### `BOption`
+### <a id="type-BOption"></a>`BOption`
 
 An option, one of Trilium's settings (subset of trilium-core's `BOption`).
 
@@ -1280,7 +1280,7 @@ An option, one of Trilium's settings (subset of trilium-core's `BOption`).
 | `isSynced`  <br>_optional_ | `boolean`  <br>Whether the option syncs to other devices; device-specific options do not. |
 | `utcDateModified`  <br>_optional_ | `string`  <br>The date and time, in UTC, that the option last changed. |
 
-### `SearchParams`
+### <a id="type-SearchParams"></a>`SearchParams`
 
 Options of `api.searchForNotes()` and `api.searchForNote()`.
 
@@ -1298,16 +1298,16 @@ Options of `api.searchForNotes()` and `api.searchForNote()`.
 | `debug`  <br>_optional_ | `boolean`  <br>Whether to write how the query was parsed to the backend log. |
 | `fuzzyAttributeSearch`  <br>_optional_ | `boolean`  <br>Whether attribute conditions match loosely: `#status=done` also matches values that contain `done`, and `#stat` matches attributes whose name starts with `stat`. Defaults to `false`. |
 
-### `NoteAndBranch`
+### <a id="type-NoteAndBranch"></a>`NoteAndBranch`
 
 Result of the backend note-creation helpers.
 
 | Property | Description |
 | --- | --- |
-| `note` | `BNote`  <br>The new note. For `duplicateSubtree()`, it is the copy of the original note. |
-| `branch` | `BBranch`  <br>The branch that places the new note under its parent. |
+| `note` | [`BNote`](#type-BNote)  <br>The new note. For `duplicateSubtree()`, it is the copy of the original note. |
+| `branch` | [`BBranch`](#type-BBranch)  <br>The branch that places the new note under its parent. |
 
-### `AppInfo`
+### <a id="type-AppInfo"></a>`AppInfo`
 
 Information about the running Trilium, as `api.getAppInfo()` returns it.
 
@@ -1323,9 +1323,9 @@ Information about the running Trilium, as `api.getAppInfo()` returns it.
 | `clipperProtocolVersion` | `string`  <br>The version of the protocol the web clipper speaks with Trilium. |
 | `utcDateTime` | `string`  <br>The date and time, in UTC, that Trilium started, in ISO 8601 form. |
 
-### `SubtreeOpts`
+### <a id="type-SubtreeOpts"></a>`SubtreeOpts`
 
-Options accepted by the subtree traversal helpers on `BNote`.
+Options accepted by the subtree traversal helpers on [`BNote`](#type-BNote).
 
 | Property | Description |
 | --- | --- |
@@ -1333,16 +1333,16 @@ Options accepted by the subtree traversal helpers on `BNote`.
 | `includeHidden`  <br>_optional_ | `boolean`  <br>Whether to descend into the hidden subtree, `_hidden`, which holds Trilium's system notes. Defaults to `false`. |
 | `resolveSearch`  <br>_optional_ | `boolean`  <br>Whether to run each search note and include its results as its children. Defaults to `false`, which includes the search note but none of its results. |
 
-### `SubtreeRelationship`
+### <a id="type-SubtreeRelationship"></a>`SubtreeRelationship`
 
-A single parent→child link in a subtree (`BNote.getSubtree`).
+A single parent→child link in a subtree ([`BNote.getSubtree`](#type-BNote)).
 
 | Property | Description |
 | --- | --- |
 | `parentNoteId` | `string`  <br>The ID of the parent note. With `resolveSearch`, it can be a search note and the child one of its results. |
 | `childNoteId` | `string`  <br>The ID of the child note. With `includeArchived: false`, it can name an archived note that the list of notes leaves out. |
 
-### `NotePathRecord`
+### <a id="type-NotePathRecord"></a>`NotePathRecord`
 
 One resolved tree path to a note (subset of the client's `NotePathRecord`).
 
@@ -1354,9 +1354,9 @@ One resolved tree path to a note (subset of the client's `NotePathRecord`).
 | `notePath` | `string[]`  <br>The note IDs along the path, from `root` to the note itself. |
 | `isHidden` | `boolean`  <br>Whether the path passes through the hidden subtree, `_hidden`, which holds Trilium's system notes. |
 
-### `SaveAttachmentInput`
+### <a id="type-SaveAttachmentInput"></a>`SaveAttachmentInput`
 
-Input accepted by `BNote.saveAttachment`.
+Input accepted by [`BNote.saveAttachment`](#type-BNote).
 
 | Property | Description |
 | --- | --- |
@@ -1367,9 +1367,9 @@ Input accepted by `BNote.saveAttachment`.
 | `content`  <br>_optional_ | `string \| Uint8Array<ArrayBufferLike>`  <br>The content of the attachment: a string, or bytes for binary content. Defaults to an empty string. |
 | `position`  <br>_optional_ | `number`  <br>The place of the attachment among the note's attachments, which `getAttachments()` lists by ascending `position`. Used only when a new attachment is created. |
 
-### `CloneResponse`
+### <a id="type-CloneResponse"></a>`CloneResponse`
 
-Result of a clone operation (`BNote.cloneTo`); mirrors `CloneResponse`.
+Result of a clone operation ([`BNote.cloneTo`](#type-BNote)); mirrors `CloneResponse`.
 
 | Property | Description |
 | --- | --- |

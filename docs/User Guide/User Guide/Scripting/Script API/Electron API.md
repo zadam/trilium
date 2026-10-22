@@ -3,7 +3,7 @@ The Electron API is the bridge between Trilium's interface and Electron's main p
 
 It is not part of the `api` global of script notes, but frontend scripts running in the desktop application can call it directly. It is `undefined` in the browser and in the standalone build, so guard calls with `if (window.electronApi)`.
 
-## `Api`
+## <a id="type-Api"></a>`Api`
 
 The complete surface exposed to the renderer as `window.electronApi` via `contextBridge`. The renderer must access Electron-only functionality through this object — direct `require("electron")` and `@electron/remote` are unavailable because `nodeIntegration` is disabled and `contextIsolation` is enabled.
 
@@ -11,25 +11,25 @@ The runtime value lives in `apps/desktop/src/preload.ts`; this interface is the 
 
 | Property | Description |
 | --- | --- |
-| `window` | `WindowApi`  <br>Window chrome, zoom, theme, lifecycle, and main → renderer events. |
-| `clipboard` | `ClipboardApi`  <br>System clipboard access beyond what the standard Web Clipboard API offers. |
-| `shell` | `ShellApi`  <br>Shell integration — opening URLs, files, and downloads with OS handlers. |
-| `contextMenu` | `ContextMenuApi`  <br>Native context-menu plumbing for right-click events on web contents. |
-| `spellcheck` | `SpellcheckApi`  <br>Chromium spell checker controls (dictionary, language list). |
-| `systemIntegration` | `SystemIntegrationApi`  <br>OS integration — system tray and autostart / launch-on-login. |
-| `printing` | `PrintingApi`  <br>Printing and PDF export pipeline. |
-| `navigation` | `NavigationApi`  <br>Read/write access to Chromium's back/forward navigation history. |
-| `ws` | `WsApi`  <br>In-process bridge that replaces the renderer↔server WebSocket. |
-| `security` | `SecurityApi`  <br>Security settings (backend scripting, SQL console) stored outside the DB. |
-| `backupPassphrase` | `BackupPassphraseApi`  <br>Write-only access to the backup passphrase, kept in the OS keyring. |
-| `onenote` | `OneNoteApi`  <br>OneNote importer sign-in via a loopback OAuth redirect (desktop only). |
-| `nativeExport` | `NativeExportApi`  <br>Desktop-native subtree export that streams a `.zip` straight to a file. |
-| `nativeImport` | `NativeImportApi`  <br>Desktop-native large-`.zip` import that reads the user's file in place via a capability token. |
-| `dialog` | `DialogApi`  <br>Native OS pickers that hand the renderer a location the user chose themselves. |
-| `restore` | `RestoreApi`  <br>Choosing a backup to restore during setup, read where it lies rather than uploaded. |
-| `transcription` | `TranscriptionApi`  <br>Meeting transcription: starting and stopping a recording, and following its state. |
+| `window` | [`WindowApi`](#type-WindowApi)  <br>Window chrome, zoom, theme, lifecycle, and main → renderer events. |
+| `clipboard` | [`ClipboardApi`](#type-ClipboardApi)  <br>System clipboard access beyond what the standard Web Clipboard API offers. |
+| `shell` | [`ShellApi`](#type-ShellApi)  <br>Shell integration — opening URLs, files, and downloads with OS handlers. |
+| `contextMenu` | [`ContextMenuApi`](#type-ContextMenuApi)  <br>Native context-menu plumbing for right-click events on web contents. |
+| `spellcheck` | [`SpellcheckApi`](#type-SpellcheckApi)  <br>Chromium spell checker controls (dictionary, language list). |
+| `systemIntegration` | [`SystemIntegrationApi`](#type-SystemIntegrationApi)  <br>OS integration — system tray and autostart / launch-on-login. |
+| `printing` | [`PrintingApi`](#type-PrintingApi)  <br>Printing and PDF export pipeline. |
+| `navigation` | [`NavigationApi`](#type-NavigationApi)  <br>Read/write access to Chromium's back/forward navigation history. |
+| `ws` | [`WsApi`](#type-WsApi)  <br>In-process bridge that replaces the renderer↔server WebSocket. |
+| `security` | [`SecurityApi`](#type-SecurityApi)  <br>Security settings (backend scripting, SQL console) stored outside the DB. |
+| `backupPassphrase` | [`BackupPassphraseApi`](#type-BackupPassphraseApi)  <br>Write-only access to the backup passphrase, kept in the OS keyring. |
+| `onenote` | [`OneNoteApi`](#type-OneNoteApi)  <br>OneNote importer sign-in via a loopback OAuth redirect (desktop only). |
+| `nativeExport` | [`NativeExportApi`](#type-NativeExportApi)  <br>Desktop-native subtree export that streams a `.zip` straight to a file. |
+| `nativeImport` | [`NativeImportApi`](#type-NativeImportApi)  <br>Desktop-native large-`.zip` import that reads the user's file in place via a capability token. |
+| `dialog` | [`DialogApi`](#type-DialogApi)  <br>Native OS pickers that hand the renderer a location the user chose themselves. |
+| `restore` | [`RestoreApi`](#type-RestoreApi)  <br>Choosing a backup to restore during setup, read where it lies rather than uploaded. |
+| `transcription` | [`TranscriptionApi`](#type-TranscriptionApi)  <br>Meeting transcription: starting and stopping a recording, and following its state. |
 
-## `WindowApi`
+## <a id="type-WindowApi"></a>`WindowApi`
 
 Window-level controls: zoom, theme, title bar, full screen, lifecycle, and a handful of main → renderer event subscriptions.
 
@@ -160,7 +160,7 @@ Window-level controls: zoom, theme, title bar, full screen, lifecycle, and a han
     </tbody>
 </table>
 
-## `ClipboardApi`
+## <a id="type-ClipboardApi"></a>`ClipboardApi`
 
 Renderer access to the system clipboard for cases the standard Web API can't cover.
 
@@ -187,7 +187,7 @@ Renderer access to the system clipboard for cases the standard Web API can't cov
     </tbody>
 </table>
 
-## `ShellApi`
+## <a id="type-ShellApi"></a>`ShellApi`
 
 Wrappers around Electron's `shell` module for interacting with the OS (default browser, default file handler, downloads, etc.).
 
@@ -228,7 +228,7 @@ Every method here is validated in the main process before dispatch — see `apps
     </tbody>
 </table>
 
-## `ContextMenuApi`
+## <a id="type-ContextMenuApi"></a>`ContextMenuApi`
 
 Bridge for the native context menu shown over web contents.
 
@@ -242,7 +242,7 @@ Bridge for the native context menu shown over web contents.
     <tbody>
         <tr>
             <td><code>onContextMenu</code></td>
-            <td><pre><code class="language-application-typescript">onContextMenu(callback: (params: ContextMenuParams) =&gt; void): void</code></pre><p>Subscribes to right-click events forwarded from the main process.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(params: ContextMenuParams) =&gt; void</code><br>Receives where the user clicked and what is under the cursor.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">onContextMenu(callback: (params: ContextMenuParams) =&gt; void): void</code></pre><p>Subscribes to right-click events forwarded from the main process.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(params:</code> <a href="#type-ContextMenuParams"><code>ContextMenuParams</code></a><code>) =&gt; void</code><br>Receives where the user clicked and what is under the cursor.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>webContentsAction</code></td>
@@ -251,7 +251,7 @@ Bridge for the native context menu shown over web contents.
     </tbody>
 </table>
 
-## `SpellcheckApi`
+## <a id="type-SpellcheckApi"></a>`SpellcheckApi`
 
 Renderer-side access to Chromium's built-in spell checker.
 
@@ -282,7 +282,7 @@ Renderer-side access to Chromium's built-in spell checker.
     </tbody>
 </table>
 
-## `SystemIntegrationApi`
+## <a id="type-SystemIntegrationApi"></a>`SystemIntegrationApi`
 
 OS integration controls — system tray and autostart / launch-on-login.
 
@@ -305,7 +305,7 @@ OS integration controls — system tray and autostart / launch-on-login.
     </tbody>
 </table>
 
-## `PrintingApi`
+## <a id="type-PrintingApi"></a>`PrintingApi`
 
 Printing and PDF export flow. Trilium drives Electron's printing pipeline through a small state machine that the main process owns, with progress and results pushed back to the renderer via IPC events.
 
@@ -360,7 +360,7 @@ Printing and PDF export flow. Trilium drives Electron's printing pipeline throug
     </tbody>
 </table>
 
-## `NavigationApi`
+## <a id="type-NavigationApi"></a>`NavigationApi`
 
 Accessors for the underlying Chromium navigation history of the current web contents (back/forward stack), exposed so the renderer can mirror it in custom UI such as the breadcrumb / tab back button.
 
@@ -415,7 +415,7 @@ Accessors for the underlying Chromium navigation history of the current web cont
     </tbody>
 </table>
 
-## `WsApi`
+## <a id="type-WsApi"></a>`WsApi`
 
 In-process replacement for the renderer↔server WebSocket. Backed by Chromium IPC instead of a TCP socket — no port is bound and no auth check is needed because the channel is only reachable from the renderer the BrowserWindow owns. Wire format is whatever the server's `MessagingProvider` accepts (currently `WebSocketMessage` / log-error / log-info / ping).
 
@@ -438,7 +438,7 @@ In-process replacement for the renderer↔server WebSocket. Backed by Chromium I
     </tbody>
 </table>
 
-## `SecurityApi`
+## <a id="type-SecurityApi"></a>`SecurityApi`
 
 Security settings that live outside the database (in `data_dir/security.json`) to prevent malicious scripts from modifying them. Changes require a native OS confirmation dialog and an app restart to take effect.
 
@@ -465,7 +465,7 @@ Security settings that live outside the database (in `data_dir/security.json`) t
     </tbody>
 </table>
 
-## `BackupPassphraseApi`
+## <a id="type-BackupPassphraseApi"></a>`BackupPassphraseApi`
 
 The backup passphrase, kept encrypted by the OS keyring in a file outside the database (the database is what ends up inside the backup, so a passphrase stored there would ride along inside the very container it protects).
 
@@ -496,7 +496,7 @@ Both changes are also gated on a native OS confirmation, which a script can requ
     </tbody>
 </table>
 
-## `OneNoteApi`
+## <a id="type-OneNoteApi"></a>`OneNoteApi`
 
 Desktop-only OneNote importer sign-in, driven from the main process via a loopback OAuth redirect.
 
@@ -515,7 +515,7 @@ Desktop-only OneNote importer sign-in, driven from the main process via a loopba
     </tbody>
 </table>
 
-## `NativeExportApi`
+## <a id="type-NativeExportApi"></a>`NativeExportApi`
 
 Desktop-native subtree export that streams a `.zip` straight to a file.
 
@@ -534,7 +534,7 @@ Desktop-native subtree export that streams a `.zip` straight to a file.
     </tbody>
 </table>
 
-## `NativeImportApi`
+## <a id="type-NativeImportApi"></a>`NativeImportApi`
 
 Desktop-native import that reads the user's file **in place** (bounded memory, no temp copy) — the whole point being multi-GB `.zip` archives, though any importable file is accepted. The renderer never handles a filesystem path: `pickFiles` runs the OS dialog in the main process and returns opaque capability tokens, which `importFromToken` redeems. A script can't forge a token or pass a path, so it can never read an arbitrary file.
 
@@ -556,12 +556,12 @@ Desktop-native import that reads the user's file **in place** (bounded memory, n
         </tr>
         <tr>
             <td><code>importFromToken</code></td>
-            <td><pre><code class="language-application-typescript">importFromToken(opts: { token: string; parentNoteId: string; taskId: string; options: NativeImportOptions; last: boolean; format?: string }): Promise&lt;NativeImportResult&gt;</code></pre><p>Imports the file behind a token, with progress/success/error reported over the WebSocket like the HTTP import path.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code></td><td><code>{ token: string; parentNoteId: string; taskId: string; options: NativeImportOptions; last: boolean; format?: string }</code><br>The <code>token</code> to redeem, the <code>parentNoteId</code> to import under, the <code>taskId</code> that reports progress, and the import <code>options</code>. When importing several files in one batch, set <code>last</code> only on the final call so the success toast fires once, after everything is in. <code>format</code> routes the file to a specific importer (e.g. <code>"obsidian"</code>), mirroring the HTTP route's format tag.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">importFromToken(opts: { token: string; parentNoteId: string; taskId: string; options: NativeImportOptions; last: boolean; format?: string }): Promise&lt;NativeImportResult&gt;</code></pre><p>Imports the file behind a token, with progress/success/error reported over the WebSocket like the HTTP import path.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>opts</code></td><td><code>{ token: string; parentNoteId: string; taskId: string; options:</code> <a href="#type-NativeImportOptions"><code>NativeImportOptions</code></a><code>; last: boolean; format?: string }</code><br>The <code>token</code> to redeem, the <code>parentNoteId</code> to import under, the <code>taskId</code> that reports progress, and the import <code>options</code>. When importing several files in one batch, set <code>last</code> only on the final call so the success toast fires once, after everything is in. <code>format</code> routes the file to a specific importer (e.g. <code>"obsidian"</code>), mirroring the HTTP route's format tag.</td></tr></tbody></table></figure></td>
         </tr>
     </tbody>
 </table>
 
-## `DialogApi`
+## <a id="type-DialogApi"></a>`DialogApi`
 
 Native OS pickers that hand the renderer a location the user chose themselves.
 
@@ -584,7 +584,7 @@ Native OS pickers that hand the renderer a location the user chose themselves.
     </tbody>
 </table>
 
-## `RestoreApi`
+## <a id="type-RestoreApi"></a>`RestoreApi`
 
 Choosing a backup to restore from the desktop, where the file is already on the same disk as the database it is going to replace and has no business being uploaded to reach it.
 
@@ -605,7 +605,7 @@ Only usable during setup: what it puts forward is restored by the ordinary `POST
     </tbody>
 </table>
 
-## `TranscriptionApi`
+## <a id="type-TranscriptionApi"></a>`TranscriptionApi`
 
 Meeting transcription, recorded and transcribed on this computer by the main process. The renderer only starts and stops it; the audio never passes through the renderer.
 
@@ -643,18 +643,18 @@ Meeting transcription, recorded and transcribed on this computer by the main pro
         </tr>
         <tr>
             <td><code>onStateChanged</code></td>
-            <td><pre><code class="language-application-typescript">onStateChanged(callback: (state: TranscriptionState) =&gt; void): () =&gt; void</code></pre><p>Subscribes to changes of the transcription state, made from any window.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(state: TranscriptionState) =&gt; void</code><br>Receives the new state.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>() =&gt; void</code>: A function that removes the listener.</p></td>
+            <td><pre><code class="language-application-typescript">onStateChanged(callback: (state: TranscriptionState) =&gt; void): () =&gt; void</code></pre><p>Subscribes to changes of the transcription state, made from any window.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(state:</code> <a href="#type-TranscriptionState"><code>TranscriptionState</code></a><code>) =&gt; void</code><br>Receives the new state.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>() =&gt; void</code>: A function that removes the listener.</p></td>
         </tr>
         <tr>
             <td><code>onLevel</code></td>
-            <td><pre><code class="language-application-typescript">onLevel(callback: (source: TranscriptSource, level: number) =&gt; void): () =&gt; void</code></pre><p>Subscribes to the audio level of the running recording, about four times a second per source.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(source: TranscriptSource, level: number) =&gt; void</code><br>Receives the source and the RMS, from 0 to 1, of each chunk it delivers.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>() =&gt; void</code>: A function that stops the calls.</p></td>
+            <td><pre><code class="language-application-typescript">onLevel(callback: (source: TranscriptSource, level: number) =&gt; void): () =&gt; void</code></pre><p>Subscribes to the audio level of the running recording, about four times a second per source.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>callback</code></td><td><code>(source:</code> <a href="#type-TranscriptSource"><code>TranscriptSource</code></a><code>, level: number) =&gt; void</code><br>Receives the source and the RMS, from 0 to 1, of each chunk it delivers.</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>() =&gt; void</code>: A function that stops the calls.</p></td>
         </tr>
     </tbody>
 </table>
 
 ## Types
 
-### `ContextMenuParams`
+### <a id="type-ContextMenuParams"></a>`ContextMenuParams`
 
 Parameters delivered by the main process to the renderer when the user opens the system context menu (right-click) somewhere inside a web view.
 
@@ -673,7 +673,7 @@ Mirrors the subset of fields from Electron's `Electron.ContextMenuParams` that t
 | `dictionarySuggestions` | `string[]`  <br>Spell-check suggestions for `misspelledWord`, in order of relevance. |
 | `editFlags` | `{ canCut: boolean; canCopy: boolean; canPaste: boolean }`  <br>Hints about which clipboard operations are currently available. |
 
-### `BackupPassphraseStatus`
+### <a id="type-BackupPassphraseStatus"></a>`BackupPassphraseStatus`
 
 What the Options UI needs to know about the stored backup passphrase.
 
@@ -682,7 +682,7 @@ What the Options UI needs to know about the stored backup passphrase.
 | `available` | `boolean`  <br>Whether the OS offers a keyring to keep the passphrase in. Without one it cannot be stored safely, and since unattended backups cannot ask for it, encryption is unavailable altogether. |
 | `set` | `boolean`  <br>Whether a passphrase is currently stored. |
 
-### `BackupPassphraseChange`
+### <a id="type-BackupPassphraseChange"></a>`BackupPassphraseChange`
 
 What became of a request to change the stored backup passphrase.
 
@@ -692,9 +692,9 @@ What became of a request to change the stored backup passphrase.
 | `"cancelled"` | The user declined the OS confirmation, so nothing changed. |
 | `"unavailable"` | There is no keyring on this system to keep a passphrase in. |
 
-### `OneNoteLoginResult`
+### <a id="type-OneNoteLoginResult"></a>`OneNoteLoginResult`
 
-Outcome of a `OneNoteApi.login` attempt.
+Outcome of a [`OneNoteApi.login`](#type-OneNoteApi) attempt.
 
 | Property | Description |
 | --- | --- |
@@ -702,9 +702,9 @@ Outcome of a `OneNoteApi.login` attempt.
 | `account`  <br>_optional_ | `{ name: string; email: string }`  <br>The connected Microsoft account, present when `connected` is true. |
 | `error`  <br>_optional_ | `string`  <br>A human-readable failure reason when `connected` is false (absent on user cancellation). |
 
-### `NativeExportResult`
+### <a id="type-NativeExportResult"></a>`NativeExportResult`
 
-Outcome of a `NativeExportApi.exportSubtreeToFile` request.
+Outcome of a [`NativeExportApi.exportSubtreeToFile`](#type-NativeExportApi) request.
 
 | Property | Description |
 | --- | --- |
@@ -712,16 +712,16 @@ Outcome of a `NativeExportApi.exportSubtreeToFile` request.
 | `filePath`  <br>_optional_ | `string`  <br>Absolute path the archive was written to (when `status === "saved"`). |
 | `message`  <br>_optional_ | `string`  <br>Failure detail (when `status === "error"`). |
 
-### `NativeImportPickResult`
+### <a id="type-NativeImportPickResult"></a>`NativeImportPickResult`
 
-Outcome of `NativeImportApi.pickFiles`: capability tokens, never paths.
+Outcome of [`NativeImportApi.pickFiles`](#type-NativeImportApi): capability tokens, never paths.
 
 | Property | Description |
 | --- | --- |
 | `status` | `"cancelled" \| "selected"` |
-| `files`  <br>_optional_ | `NativeImportPickedFile[]`  <br>The user-chosen files (when `status === "selected"`); one or more, since the dialog allows multi-select. |
+| `files`  <br>_optional_ | [`NativeImportPickedFile`](#type-NativeImportPickedFile)`[]`  <br>The user-chosen files (when `status === "selected"`); one or more, since the dialog allows multi-select. |
 
-### `NativeImportOptions`
+### <a id="type-NativeImportOptions"></a>`NativeImportOptions`
 
 Import flags forwarded to the native importer (mirrors the HTTP route's options; no path).
 
@@ -735,9 +735,9 @@ Import flags forwarded to the native importer (mirrors the HTTP route's options;
 | `explodeArchives` | `boolean` |
 | `replaceUnderscoresWithSpaces` | `boolean` |
 
-### `NativeImportResult`
+### <a id="type-NativeImportResult"></a>`NativeImportResult`
 
-Outcome of `NativeImportApi.importFromToken`.
+Outcome of [`NativeImportApi.importFromToken`](#type-NativeImportApi).
 
 | Property | Description |
 | --- | --- |
@@ -745,18 +745,18 @@ Outcome of `NativeImportApi.importFromToken`.
 | `importedNoteId`  <br>_optional_ | `string`  <br>Root note of the import (when `status === "imported"`). |
 | `message`  <br>_optional_ | `string`  <br>Failure detail (when `status === "error"`). |
 
-### `NativeDirectoryPickResult`
+### <a id="type-NativeDirectoryPickResult"></a>`NativeDirectoryPickResult`
 
-Outcome of `DialogApi.pickDirectory`.
+Outcome of [`DialogApi.pickDirectory`](#type-DialogApi).
 
 | Property | Description |
 | --- | --- |
 | `status` | `"cancelled" \| "selected"` |
 | `path`  <br>_optional_ | `string`  <br>Absolute path of the chosen directory (when `status === "selected"`). |
 
-### `NativeBackupPickResult`
+### <a id="type-NativeBackupPickResult"></a>`NativeBackupPickResult`
 
-Outcome of `RestoreApi.pickBackup`: what the chosen backup is, never where it is.
+Outcome of [`RestoreApi.pickBackup`](#type-RestoreApi): what the chosen backup is, never where it is.
 
 The file itself stays with the main process, which holds it as the one waiting to be restored, so the renderer is given only what the screen has to show and decide with.
 
@@ -767,20 +767,20 @@ The file itself stays with the main process, which holds it as the one waiting t
 | `encrypted`  <br>_optional_ | `boolean`  <br>Whether a passphrase has to be asked for before it can be restored. |
 | `message`  <br>_optional_ | `string`  <br>Failure detail (when `status === "error"`), e.g. setup already being busy. |
 
-### `TranscriptionState`
+### <a id="type-TranscriptionState"></a>`TranscriptionState`
 
-What `TranscriptionApi` reports to every window.
+What [`TranscriptionApi`](#type-TranscriptionApi) reports to every window.
 
 | Property | Description |
 | --- | --- |
 | `status` | `"idle" \| "starting" \| "recording" \| "stopping"`  <br>Phase of the meeting transcription; at most one recording runs at a time. |
 | `noteId` | `string \| null`  <br>The meeting note the recording belongs to, or `null` when idle. |
-| `pendingSources` | `TranscriptSource[]`  <br>The sources heard speaking, or whose speech is still being transcribed. |
-| `sourceIssues`  <br>_optional_ | `Partial<Record<TranscriptSource, "not_captured" \| "no_audio" \| "silent">>`  <br>While recording, the sources whose audio is not being transcribed, and why; absent when every source delivers sound.  <br>Why a source's audio is not being transcribed: its capture did not start (`not_captured`), it has delivered no audio for 10 s (`no_audio`), as when its capture hangs, or it has delivered only digital silence for a while (`silent`), as from a muted device. |
+| `pendingSources` | [`TranscriptSource`](#type-TranscriptSource)`[]`  <br>The sources heard speaking, or whose speech is still being transcribed. |
+| `sourceIssues`  <br>_optional_ | `Partial<Record<`[`TranscriptSource`](#type-TranscriptSource)`, "not_captured" \| "no_audio" \| "silent">>`  <br>While recording, the sources whose audio is not being transcribed, and why; absent when every source delivers sound.  <br>Why a source's audio is not being transcribed: its capture did not start (`not_captured`), it has delivered no audio for 10 s (`no_audio`), as when its capture hangs, or it has delivered only digital silence for a while (`silent`), as from a muted device. |
 | `startedAt`  <br>_optional_ | `number`  <br>When the recording started, in milliseconds since the epoch: set once it records, kept while it stops, absent otherwise. |
 | `error`  <br>_optional_ | `string`  <br>A problem to tell the user about, sent once with the state it concerns: the recording ended without being stopped, or its transcript cannot be saved. `getState()` never returns it. |
 
-### `TranscriptSource`
+### <a id="type-TranscriptSource"></a>`TranscriptSource`
 
 Where an utterance was heard: the local speaker's microphone, or everyone else on the system output.
 
@@ -788,7 +788,7 @@ Where an utterance was heard: the local speaker's microphone, or everyone else o
 type TranscriptSource = "microphone" | "system"
 ```
 
-### `NativeImportPickedFile`
+### <a id="type-NativeImportPickedFile"></a>`NativeImportPickedFile`
 
 A single user-chosen file: a capability token (redeemed to import it) and its display name — never a path.
 

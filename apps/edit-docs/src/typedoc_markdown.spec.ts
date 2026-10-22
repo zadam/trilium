@@ -48,6 +48,8 @@ export interface DemoWindowApi {
     screen: Screen;
     /** Who the window serves. */
     audience: Audience;
+    /** Who the window served before. */
+    previousAudience: Audience | null;
 
     /**
      * Resizes the window.
@@ -63,7 +65,11 @@ export interface DemoWindowApi {
     /** @deprecated Use {@link resize}. */
     maximize(): void;
 
-    /** Asks to close the window. */
+    /**
+     * Asks to close the window.
+     *
+     * @returns What became of the request.
+     */
     requestClose(audience: Audience): Promise<Outcome>;
 }
 
@@ -80,6 +86,9 @@ const IMPORTED = `
 /** Who a window serves. */
 export type Audience = "user" | "guest";
 `;
+
+/** A heading's level and name, past the anchor the heading of a declaration starts with. */
+const HEADING = /^(#+) (?:<a id="[^"]+"><\/a>)?`?(\w+)`?/gm;
 
 describe("typeDocToMarkdown", () => {
     let dir: string;
@@ -110,9 +119,9 @@ describe("typeDocToMarkdown", () => {
     };
 
     it("opens with the package comment, then the root and what it reaches, in order of reference", () => {
-        expect(markdown.startsWith("The demo API, exposed as `window.demoApi`.\n\n## `DemoApi`")).toBe(true);
+        expect(markdown.startsWith("The demo API, exposed as `window.demoApi`.\n\n## <a id=\"type-DemoApi\"></a>`DemoApi`")).toBe(true);
 
-        const headings = [ ...markdown.matchAll(/^(#+) `?(\w+)`?/gm) ].map(([ , level, name ]) => `${level} ${name}`);
+        const headings = [ ...markdown.matchAll(HEADING) ].map(([ , level, name ]) => `${level} ${name}`);
         // The root and the interfaces with methods come first, and the types they use follow under
         // "Types". The exports the root never reaches belong to another page.
         expect(headings).toEqual([
@@ -124,22 +133,22 @@ describe("typeDocToMarkdown", () => {
 
     it("lists properties in a table, their type above their description", () => {
         expect(markdown).toContain([
-            "## `DemoApi`",
+            "## <a id=\"type-DemoApi\"></a>`DemoApi`",
             "",
             "The root of the API.",
             "",
             "| Property | Description |",
             "| --- | --- |",
-            "| `window` | `DemoWindowApi`<br>Window controls, as `DemoWindowApi` lists them. |",
+            "| `window` | [`DemoWindowApi`](#type-DemoWindowApi)<br>Window controls, as [`DemoWindowApi`](#type-DemoWindowApi) lists them. |",
             "| `version` | `string`<br>The version, as in `1.2.3`. |"
         ].join("\n"));
-        // An optional property says so under its name; a union's pipe is escaped in its cell.
-        expect(markdown).toContain("| `width` | `Size`<br>The new width. |");
+        // An optional property says so under its name.
+        expect(markdown).toContain("| `width` | [`Size`](#type-Size)<br>The new width. |");
         expect(markdown).toContain("| `animate`<br>*optional* | `boolean` |");
     });
 
     it("lists the members of an interface with methods in one HTML table, in the export's layout", () => {
-        const section = markdown.slice(markdown.indexOf("## `DemoWindowApi`"), markdown.indexOf("## `ResizeOptions`"));
+        const section = markdown.slice(markdown.indexOf("`DemoWindowApi`\n"), markdown.indexOf("`ResizeOptions`\n"));
         expect(section).toContain([
             "<table>",
             "    <thead>",
@@ -162,7 +171,7 @@ describe("typeDocToMarkdown", () => {
         const resize = row("resize");
         expect(resize).toMatch(/<pre><code class="language-[^"]+">resize\(options: ResizeOptions\): Promise&lt;boolean&gt;<\/code><\/pre>/);
         expect(resize).toContain("<p>Resizes the window.</p>");
-        expect(resize).toMatch(/<th>Parameter<\/th>.*<td><code>options<\/code><\/td><td><code>ResizeOptions<\/code><br>How to resize.<\/td>/);
+        expect(resize).toMatch(/<th>Parameter<\/th>.*<td><code>options<\/code><\/td><td><a href="#type-ResizeOptions"><code>ResizeOptions<\/code><\/a><br>How to resize.<\/td>/);
         expect(resize).toContain("<strong>Returns</strong> <code>Promise&lt;boolean&gt;</code>: Whether it resized.");
 
         // Without descriptions, the signature already says everything a table or a Returns line would.
@@ -174,12 +183,24 @@ describe("typeDocToMarkdown", () => {
 
     it("warns about a deprecated member and writes links as code", () => {
         expect(row("maximize")).toMatch(/<aside class="admonition warning">.*Deprecated. Use <code>resize<\/code>./);
-        expect(markdown).toContain("Options of `DemoWindowApi.resize`.");
+        expect(markdown).toContain("Options of [`DemoWindowApi.resize`](#type-DemoWindowApi).");
+    });
+
+    it("links the types the page has a heading for, leaving the rest of the type as code", () => {
+        expect(row("requestClose")).toContain("<strong>Returns</strong> <code>Promise&lt;</code><a href=\"#type-Outcome\">"
+            + "<code>Outcome</code></a><code>&gt;</code>: What became of the request.");
+        // The operators between a union's members stay outside the code, as on the ETAPI page.
+        expect(row("previousAudience")).toContain(
+            "<a href=\"#type-Audience\"><code>Audience</code></a> | <code>null</code><br>Who the window served before.");
+        // A code block cannot hold a link, so a signature stays plain text.
+        expect(row("requestClose")).toContain("requestClose(audience: Audience): Promise&lt;Outcome&gt;</code></pre>");
+        // A union written out in place of its name has no heading to link to.
+        expect(row("screen")).not.toContain("href");
     });
 
     it("writes a type alias as its declaration", () => {
         expect(markdown).toContain([
-            "### `Size`",
+            "### <a id=\"type-Size\"></a>`Size`",
             "",
             "A size in pixels.",
             "",
@@ -195,10 +216,10 @@ describe("typeDocToMarkdown", () => {
             "<code>\"primary\" | \"secondary\"</code><br>Where the window is.<br>Which screen a window is on.");    });
 
     it("keeps an entry for a union used more than once, even one another module declares", () => {
-        expect(row("audience")).toContain("<code>Audience</code>");
+        expect(row("audience")).toContain("<a href=\"#type-Audience\"><code>Audience</code></a>");
         expect(row("requestClose")).toContain("requestClose(audience: Audience): Promise&lt;Outcome&gt;");
         expect(markdown).toContain([
-            "### `Audience`",
+            "### <a id=\"type-Audience\"></a>`Audience`",
             "",
             "Who a window serves.",
             "",
@@ -210,7 +231,7 @@ describe("typeDocToMarkdown", () => {
 
     it("lists the values of a union whose values are documented", () => {
         expect(markdown).toContain([
-            "### `Outcome`",
+            "### <a id=\"type-Outcome\"></a>`Outcome`",
             "",
             "What became of a request.",
             "",
@@ -223,11 +244,13 @@ describe("typeDocToMarkdown", () => {
 
     it("strips the configured prefixes from the names of the declarations it shows", () => {
         const stripped = typeDocToMarkdown(project, { root: "DemoApi", stripPrefixes: [ "Demo" ] });
-        const headings = [ ...stripped.matchAll(/^#+ `(\w+)`/gm) ].map(([ , name ]) => name);
-        expect(headings).toEqual([ "Api", "WindowApi", "Audience", "ResizeOptions", "Outcome", "Size" ]);
+        const headings = [ ...stripped.matchAll(HEADING) ].map(([ , , name ]) => name);
+        expect(headings).toEqual([ "Api", "WindowApi", "Types", "Audience", "ResizeOptions", "Outcome", "Size" ]);
+        expect(stripped).toContain("## <a id=\"type-WindowApi\"></a>`WindowApi`");
         // References, signatures, links and code spans that name a declaration follow it.
-        expect(stripped).toContain("| `window` | `WindowApi`<br>Window controls, as `WindowApi` lists them. |");
-        expect(stripped).toContain("Options of `WindowApi.resize`.");
+        expect(stripped).toContain(
+            "| `window` | [`WindowApi`](#type-WindowApi)<br>Window controls, as [`WindowApi`](#type-WindowApi) lists them. |");
+        expect(stripped).toContain("Options of [`WindowApi.resize`](#type-WindowApi).");
         expect(stripped).toContain("requestClose(audience: Audience): Promise&lt;Outcome&gt;");
         expect(stripped).not.toMatch(/Demo(Window)?Api/);
     });

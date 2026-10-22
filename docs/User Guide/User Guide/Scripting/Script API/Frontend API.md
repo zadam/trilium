@@ -1,5 +1,5 @@
 # Frontend API
-## `FrontendApi`
+## <a id="type-FrontendApi"></a>`FrontendApi`
 
 The `api` global available inside **frontend** script notes (`application/javascript;env=frontend`).
 
@@ -13,35 +13,35 @@ The `api` global available inside **frontend** script notes (`application/javasc
     <tbody>
         <tr>
             <td><code>$container</code></td>
-            <td><p><code>JQuery | null</code><br>The element a render note's script renders into: the script of a note that a <code>~renderNote</code> relation points to. It is <code>null</code> for scripts that run any other way.</p></td>
+            <td><p><a href="#type-JQuery"><code>JQuery</code></a> | <code>null</code><br>The element a render note's script renders into: the script of a note that a <code>~renderNote</code> relation points to. It is <code>null</code> for scripts that run any other way.</p></td>
         </tr>
         <tr>
             <td><code>startNote</code></td>
-            <td><p><code>FNote</code><br>Note where the script execution started — the entry point of the current script bundle (in C terms, the file containing <code>main()</code>). When a script is spread across multiple code notes (descendant code notes loaded as modules via <code>require()</code>), every note in the bundle shares the same <code>startNote</code>, while <code>currentNote</code> differs per note. Messages from <code>api.log()</code> are grouped under this note.</p></td>
+            <td><p><a href="#type-FNote"><code>FNote</code></a><br>Note where the script execution started — the entry point of the current script bundle (in C terms, the file containing <code>main()</code>). When a script is spread across multiple code notes (descendant code notes loaded as modules via <code>require()</code>), every note in the bundle shares the same <code>startNote</code>, while <code>currentNote</code> differs per note. Messages from <code>api.log()</code> are grouped under this note.</p></td>
         </tr>
         <tr>
             <td><code>currentNote</code></td>
-            <td><p><code>FNote</code><br>Note containing the source code that is currently executing (in C terms, <code>__FILE__</code>). Equal to <code>startNote</code> unless execution has moved into a descendant module note loaded via <code>require()</code>. Don't confuse this with the note open in the UI — use <code>api.getActiveContextNote()</code> for that.</p></td>
+            <td><p><a href="#type-FNote"><code>FNote</code></a><br>Note containing the source code that is currently executing (in C terms, <code>__FILE__</code>). Equal to <code>startNote</code> unless execution has moved into a descendant module note loaded via <code>require()</code>. Don't confuse this with the note open in the UI — use <code>api.getActiveContextNote()</code> for that.</p></td>
         </tr>
         <tr>
             <td><code>originEntity</code></td>
-            <td><p><code>FNote | null</code><br>Entity whose event triggered this execution, or <code>null</code>. Most frontend scripts are started by the user or by the UI (startup scripts, widgets), so this is usually <code>null</code>. It is set to a note when: - the script runs through a <code>~renderNote</code> relation — then it's the note being rendered (the one carrying the relation), not the script note; - a backend script calls <code>api.runOnFrontend()</code> — then it's the backend execution's <code>originEntity</code>, provided that entity was a note.</p></td>
+            <td><p><a href="#type-FNote"><code>FNote</code></a> | <code>null</code><br>Entity whose event triggered this execution, or <code>null</code>. Most frontend scripts are started by the user or by the UI (startup scripts, widgets), so this is usually <code>null</code>. It is set to a note when: - the script runs through a <code>~renderNote</code> relation — then it's the note being rendered (the one carrying the relation), not the script note; - a backend script calls <code>api.runOnFrontend()</code> — then it's the backend execution's <code>originEntity</code>, provided that entity was a note.</p></td>
         </tr>
         <tr>
             <td><code>dayjs</code></td>
-            <td><p><code>Dayjs</code><br>day.js library for date manipulation. See <code>https://day.js.org</code> for documentation</p></td>
+            <td><p><a href="#type-Dayjs"><code>Dayjs</code></a><br>day.js library for date manipulation. See <code>https://day.js.org</code> for documentation</p></td>
         </tr>
         <tr>
             <td><code>RightPanelWidget</code></td>
-            <td><p><code>WidgetClass&lt;RightPanelWidget&gt;</code><br>Base class for right-panel widgets — <code>class X extends api.RightPanelWidget { … }</code>.</p></td>
+            <td><p><a href="#type-WidgetClass"><code>WidgetClass</code></a><code>&lt;</code><a href="#type-RightPanelWidget"><code>RightPanelWidget</code></a><code>&gt;</code><br>Base class for right-panel widgets — <code>class X extends api.RightPanelWidget { … }</code>.</p></td>
         </tr>
         <tr>
             <td><code>NoteContextAwareWidget</code></td>
-            <td><p><code>WidgetClass&lt;NoteContextAwareWidget&gt;</code><br>Base class for note-context-aware widgets — <code>class X extends api.NoteContextAwareWidget { … }</code>.</p></td>
+            <td><p><a href="#type-WidgetClass"><code>WidgetClass</code></a><code>&lt;</code><a href="#type-NoteContextAwareWidget"><code>NoteContextAwareWidget</code></a><code>&gt;</code><br>Base class for note-context-aware widgets — <code>class X extends api.NoteContextAwareWidget { … }</code>.</p></td>
         </tr>
         <tr>
             <td><code>BasicWidget</code></td>
-            <td><p><code>WidgetClass&lt;BasicWidget&gt;</code><br>Base class for basic widgets — <code>class X extends api.BasicWidget { … }</code>.</p></td>
+            <td><p><a href="#type-WidgetClass"><code>WidgetClass</code></a><code>&lt;</code><a href="#type-BasicWidget"><code>BasicWidget</code></a><code>&gt;</code><br>Base class for basic widgets — <code>class X extends api.BasicWidget { … }</code>.</p></td>
         </tr>
         <tr>
             <td><code>activateNote</code></td>
@@ -61,11 +61,11 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>runOnBackend</code></td>
-            <td><pre><code class="language-application-typescript">runOnBackend(func: Func, params?: unknown[]): Promise&lt;unknown&gt;</code></pre><p>Executes given anonymous function on the backend. Internally this serializes the anonymous function into string and sends it to backend via AJAX. Please make sure that the supplied function is synchronous. Only sync functions will work correctly with transaction management. If you really know what you're doing, you can call api.runAsyncOnBackendWithManualTransactionHandling()</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>func</code></td><td><code>Func</code><br>(synchronous) function to be executed on the backend</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>unknown[]</code><br>list of parameters to the anonymous function to be sent to backend</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: return value of the executed function on the backend</p></td>
+            <td><pre><code class="language-application-typescript">runOnBackend(func: Func, params?: unknown[]): Promise&lt;unknown&gt;</code></pre><p>Executes given anonymous function on the backend. Internally this serializes the anonymous function into string and sends it to backend via AJAX. Please make sure that the supplied function is synchronous. Only sync functions will work correctly with transaction management. If you really know what you're doing, you can call api.runAsyncOnBackendWithManualTransactionHandling()</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>func</code></td><td><a href="#type-Func"><code>Func</code></a><br>(synchronous) function to be executed on the backend</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>unknown[]</code><br>list of parameters to the anonymous function to be sent to backend</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: return value of the executed function on the backend</p></td>
         </tr>
         <tr>
             <td><code>runAsyncOnBackendWithManualTransactionHandling</code></td>
-            <td><pre><code class="language-application-typescript">runAsyncOnBackendWithManualTransactionHandling(func: Func, params?: unknown[]): Promise&lt;unknown&gt;</code></pre><p>Executes given anonymous function on the backend. Internally this serializes the anonymous function into string and sends it to backend via AJAX. This function is meant for advanced needs where an async function is necessary. In this case, the automatic request-scoped transaction management is not applied, and you need to manually define transaction via api.transactional().</p><p>If you have a synchronous function, please use api.runOnBackend().</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>func</code></td><td><code>Func</code><br>(synchronous) function to be executed on the backend</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>unknown[]</code><br>list of parameters to the anonymous function to be sent to backend</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: return value of the executed function on the backend</p></td>
+            <td><pre><code class="language-application-typescript">runAsyncOnBackendWithManualTransactionHandling(func: Func, params?: unknown[]): Promise&lt;unknown&gt;</code></pre><p>Executes given anonymous function on the backend. Internally this serializes the anonymous function into string and sends it to backend via AJAX. This function is meant for advanced needs where an async function is necessary. In this case, the automatic request-scoped transaction management is not applied, and you need to manually define transaction via api.transactional().</p><p>If you have a synchronous function, please use api.runOnBackend().</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>func</code></td><td><a href="#type-Func"><code>Func</code></a><br>(synchronous) function to be executed on the backend</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>unknown[]</code><br>list of parameters to the anonymous function to be sent to backend</td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;unknown&gt;</code>: return value of the executed function on the backend</p></td>
         </tr>
         <tr>
             <td><code>isBackendScriptingEnabled</code></td>
@@ -97,7 +97,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>createNote</code></td>
-            <td><pre><code class="language-application-typescript">createNote(parentNotePath: string, opts?: CreateNoteOpts): Promise&lt;{ note: FNote | null; branch: FBranch | undefined }&gt;</code></pre><p>Creates a new note as a child of the given parent, entirely on the frontend — no backend scripting required (unlike <code>api.runOnBackend(() =&gt; api.createTextNote(...))</code>). By default the new note is activated in the current tab with its title focused for editing; pass <code>{ activate: false }</code> to create it silently.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>parentNotePath</code></td><td><code>string</code><br>note path (or noteId) of the parent under which to create the note</td></tr><tr><td><code>opts</code><br><em>optional</em></td><td><code>CreateNoteOpts</code><br>creation options — e.g. <code>{ title, content, type, mime, activate }</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;{ note: FNote | null; branch: FBranch | undefined }&gt;</code>: the created note and its branch, resolved from the frontend cache</p></td>
+            <td><pre><code class="language-application-typescript">createNote(parentNotePath: string, opts?: CreateNoteOpts): Promise&lt;{ note: FNote | null; branch: FBranch | undefined }&gt;</code></pre><p>Creates a new note as a child of the given parent, entirely on the frontend — no backend scripting required (unlike <code>api.runOnBackend(() =&gt; api.createTextNote(...))</code>). By default the new note is activated in the current tab with its title focused for editing; pass <code>{ activate: false }</code> to create it silently.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>parentNotePath</code></td><td><code>string</code><br>note path (or noteId) of the parent under which to create the note</td></tr><tr><td><code>opts</code><br><em>optional</em></td><td><a href="#type-CreateNoteOpts"><code>CreateNoteOpts</code></a><br>creation options — e.g. <code>{ title, content, type, mime, activate }</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;{ note:</code> <a href="#type-FNote"><code>FNote</code></a> | <code>null; branch:</code> <a href="#type-FBranch"><code>FBranch</code></a> | <code>undefined }&gt;</code>: the created note and its branch, resolved from the frontend cache</p></td>
         </tr>
         <tr>
             <td><code>getInstanceName</code></td>
@@ -109,7 +109,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>getActiveContextNote</code></td>
-            <td><pre><code class="language-application-typescript">getActiveContextNote(): FNote</code></pre><p><strong>Returns</strong> <code>FNote</code>: active note (loaded into center pane)</p></td>
+            <td><pre><code class="language-application-typescript">getActiveContextNote(): FNote</code></pre><p><strong>Returns</strong> <a href="#type-FNote"><code>FNote</code></a>: active note (loaded into center pane)</p></td>
         </tr>
         <tr>
             <td><code>getActiveContext</code></td>
@@ -121,11 +121,11 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>getNoteContexts</code></td>
-            <td><pre><code class="language-application-typescript">getNoteContexts(): NoteContext[]</code></pre><p><strong>Returns</strong> <code>NoteContext[]</code>: returns all note contexts (splits) in all tabs</p></td>
+            <td><pre><code class="language-application-typescript">getNoteContexts(): NoteContext[]</code></pre><p><strong>Returns</strong> <a href="#type-NoteContext"><code>NoteContext</code></a><code>[]</code>: returns all note contexts (splits) in all tabs</p></td>
         </tr>
         <tr>
             <td><code>getMainNoteContexts</code></td>
-            <td><pre><code class="language-application-typescript">getMainNoteContexts(): NoteContext[]</code></pre><p><strong>Returns</strong> <code>NoteContext[]</code>: returns all main contexts representing tabs</p></td>
+            <td><pre><code class="language-application-typescript">getMainNoteContexts(): NoteContext[]</code></pre><p><strong>Returns</strong> <a href="#type-NoteContext"><code>NoteContext</code></a><code>[]</code>: returns all main contexts representing tabs</p></td>
         </tr>
         <tr>
             <td><code>getActiveContextTextEditor</code></td>
@@ -169,11 +169,11 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>pickSingleItem</code></td>
-            <td><pre><code class="language-application-typescript">pickSingleItem(props: { title?: string; items: PickerItem[] | PickerItemGroup[]; placeholder?: string }): Promise&lt;PickerItem | null&gt;</code></pre><p>Show a dialog for picking one item out of many, grouped and searchable.</p><p><code>items</code> are either the items themselves or groups of them, never the two mixed. Named for the one thing it does now: picking several at once will be a method of its own beside this.</p><p><strong>Returns</strong> <code>Promise&lt;PickerItem | null&gt;</code>: promise resolving to the item picked, or null where the user backed out.</p></td>
+            <td><pre><code class="language-application-typescript">pickSingleItem(props: { title?: string; items: PickerItem[] | PickerItemGroup[]; placeholder?: string }): Promise&lt;PickerItem | null&gt;</code></pre><p>Show a dialog for picking one item out of many, grouped and searchable.</p><p><code>items</code> are either the items themselves or groups of them, never the two mixed. Named for the one thing it does now: picking several at once will be a method of its own beside this.</p><p><strong>Returns</strong> <code>Promise&lt;</code><a href="#type-PickerItem"><code>PickerItem</code></a> | <code>null&gt;</code>: promise resolving to the item picked, or null where the user backed out.</p></td>
         </tr>
         <tr>
             <td><code>createLink</code></td>
-            <td><pre><code class="language-application-typescript">createLink(notePath: string, params?: LinkOptions): Promise&lt;JQuery&gt;</code></pre><p>Create a note link (jQuery object) for given note.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>notePath</code></td><td><code>string</code><br>(or noteId)</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><code>LinkOptions</code></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;JQuery&gt;</code>: - jQuery element with the link (wrapped in <span>)</span></p></td>
+            <td><pre><code class="language-application-typescript">createLink(notePath: string, params?: LinkOptions): Promise&lt;JQuery&gt;</code></pre><p>Create a note link (jQuery object) for given note.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>notePath</code></td><td><code>string</code><br>(or noteId)</td></tr><tr><td><code>params</code><br><em>optional</em></td><td><a href="#type-LinkOptions"><code>LinkOptions</code></a></td></tr></tbody></table></figure><p><strong>Returns</strong> <code>Promise&lt;</code><a href="#type-JQuery"><code>JQuery</code></a><code>&gt;</code>: - jQuery element with the link (wrapped in <span>)</span></p></td>
         </tr>
         <tr>
             <td><code>createNoteLink</code></td>
@@ -189,7 +189,7 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>setupElementTooltip</code></td>
-            <td><pre><code class="language-application-typescript">setupElementTooltip(el: JQuery): void</code></pre><p>Shows a preview of the linked note while the mouse pointer rests on the element, as Trilium does for links in note content. The element must be a link whose <code>href</code> or <code>data-href</code> points to a note, such as <code>#root/abc123</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>el</code></td><td><code>JQuery</code><br>The link, as a jQuery object.</td></tr></tbody></table></figure></td>
+            <td><pre><code class="language-application-typescript">setupElementTooltip(el: JQuery): void</code></pre><p>Shows a preview of the linked note while the mouse pointer rests on the element, as Trilium does for links in note content. The element must be a link whose <code>href</code> or <code>data-href</code> points to a note, such as <code>#root/abc123</code>.</p><figure class="table"><table><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><code>el</code></td><td><a href="#type-JQuery"><code>JQuery</code></a><br>The link, as a jQuery object.</td></tr></tbody></table></figure></td>
         </tr>
         <tr>
             <td><code>protectNote</code></td>
@@ -285,12 +285,12 @@ The `api` global available inside **frontend** script notes (`application/javasc
         </tr>
         <tr>
             <td><code>preact</code></td>
-            <td><p><code>Preact</code><br>The Preact API surface (components, hooks) for render scripts.</p></td>
+            <td><p><a href="#type-Preact"><code>Preact</code></a><br>The Preact API surface (components, hooks) for render scripts.</p></td>
         </tr>
     </tbody>
 </table>
 
-## `FNote`
+## <a id="type-FNote"></a>`FNote`
 
 A note as seen by frontend scripts (subset of the client's `FNote`).
 
@@ -580,7 +580,7 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
         </tr>
         <tr>
             <td><code>attachments</code></td>
-            <td><p><code>Attachment[] | null</code><br>The note's attachments, or <code>null</code> until <code>getAttachments()</code> loads them. Use <code>getAttachments()</code> instead of reading this property.</p></td>
+            <td><p><a href="#type-Attachment"><code>Attachment</code></a><code>[] | null</code><br>The note's attachments, or <code>null</code> until <code>getAttachments()</code> loads them. Use <code>getAttachments()</code> instead of reading this property.</p></td>
         </tr>
         <tr>
             <td><code>getAttachments</code></td>
@@ -741,9 +741,9 @@ A note as seen by frontend scripts (subset of the client's `FNote`).
     </tbody>
 </table>
 
-## `RightPanelWidget`
+## <a id="type-RightPanelWidget"></a>`RightPanelWidget`
 
-Instance shape of `RightPanelWidget` (subset) — a widget shown in the right sidebar.
+Instance shape of [`RightPanelWidget`](#type-RightPanelWidget) (subset) — a widget shown in the right sidebar.
 
 <table>
     <thead>
@@ -755,11 +755,11 @@ Instance shape of `RightPanelWidget` (subset) — a widget shown in the right si
     <tbody>
         <tr>
             <td><code>$widget</code></td>
-            <td><p><code>JQuery</code><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
+            <td><p><a href="#type-JQuery"><code>JQuery</code></a><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
         </tr>
         <tr>
             <td><code>isEnabled</code></td>
-            <td><pre><code class="language-application-typescript">isEnabled(): boolean | null | undefined</code></pre><p>Returns whether the widget is shown: always for a <code>BasicWidget</code>, and only while a note is active for a <code>NoteContextAwareWidget</code>. A disabled widget stays in the DOM, hidden, and a <code>NoteContextAwareWidget</code> does not call <code>refreshWithNote()</code> while it is disabled.</p></td>
+            <td><pre><code class="language-application-typescript">isEnabled(): boolean | null | undefined</code></pre><p>Returns whether the widget is shown: always for a <a href="#type-BasicWidget"><code>BasicWidget</code></a>, and only while a note is active for a <a href="#type-NoteContextAwareWidget"><code>NoteContextAwareWidget</code></a>. A disabled widget stays in the DOM, hidden, and a <a href="#type-NoteContextAwareWidget"><code>NoteContextAwareWidget</code></a> does not call <code>refreshWithNote()</code> while it is disabled.</p></td>
         </tr>
         <tr>
             <td><code>doRender</code></td>
@@ -791,11 +791,11 @@ Instance shape of `RightPanelWidget` (subset) — a widget shown in the right si
         </tr>
         <tr>
             <td><code>note</code></td>
-            <td><p><code>FNote | null</code><br>The note currently shown in this widget's context.</p></td>
+            <td><p><a href="#type-FNote"><code>FNote</code></a> | <code>null</code><br>The note currently shown in this widget's context.</p></td>
         </tr>
         <tr>
             <td><code>noteContext</code><br><em>optional</em></td>
-            <td><p><code>NoteContext</code><br>The note context (split) this widget is attached to.</p></td>
+            <td><p><a href="#type-NoteContext"><code>NoteContext</code></a><br>The note context (split) this widget is attached to.</p></td>
         </tr>
         <tr>
             <td><code>refreshWithNote</code></td>
@@ -816,9 +816,9 @@ Instance shape of `RightPanelWidget` (subset) — a widget shown in the right si
     </tbody>
 </table>
 
-## `NoteContextAwareWidget`
+## <a id="type-NoteContextAwareWidget"></a>`NoteContextAwareWidget`
 
-Instance shape of `NoteContextAwareWidget` (subset) — reacts to the active note.
+Instance shape of [`NoteContextAwareWidget`](#type-NoteContextAwareWidget) (subset) — reacts to the active note.
 
 <table>
     <thead>
@@ -830,11 +830,11 @@ Instance shape of `NoteContextAwareWidget` (subset) — reacts to the active not
     <tbody>
         <tr>
             <td><code>$widget</code></td>
-            <td><p><code>JQuery</code><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
+            <td><p><a href="#type-JQuery"><code>JQuery</code></a><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
         </tr>
         <tr>
             <td><code>isEnabled</code></td>
-            <td><pre><code class="language-application-typescript">isEnabled(): boolean | null | undefined</code></pre><p>Returns whether the widget is shown: always for a <code>BasicWidget</code>, and only while a note is active for a <code>NoteContextAwareWidget</code>. A disabled widget stays in the DOM, hidden, and a <code>NoteContextAwareWidget</code> does not call <code>refreshWithNote()</code> while it is disabled.</p></td>
+            <td><pre><code class="language-application-typescript">isEnabled(): boolean | null | undefined</code></pre><p>Returns whether the widget is shown: always for a <a href="#type-BasicWidget"><code>BasicWidget</code></a>, and only while a note is active for a <a href="#type-NoteContextAwareWidget"><code>NoteContextAwareWidget</code></a>. A disabled widget stays in the DOM, hidden, and a <a href="#type-NoteContextAwareWidget"><code>NoteContextAwareWidget</code></a> does not call <code>refreshWithNote()</code> while it is disabled.</p></td>
         </tr>
         <tr>
             <td><code>doRender</code></td>
@@ -866,11 +866,11 @@ Instance shape of `NoteContextAwareWidget` (subset) — reacts to the active not
         </tr>
         <tr>
             <td><code>note</code></td>
-            <td><p><code>FNote | null</code><br>The note currently shown in this widget's context.</p></td>
+            <td><p><a href="#type-FNote"><code>FNote</code></a> | <code>null</code><br>The note currently shown in this widget's context.</p></td>
         </tr>
         <tr>
             <td><code>noteContext</code><br><em>optional</em></td>
-            <td><p><code>NoteContext</code><br>The note context (split) this widget is attached to.</p></td>
+            <td><p><a href="#type-NoteContext"><code>NoteContext</code></a><br>The note context (split) this widget is attached to.</p></td>
         </tr>
         <tr>
             <td><code>refreshWithNote</code></td>
@@ -883,9 +883,9 @@ Instance shape of `NoteContextAwareWidget` (subset) — reacts to the active not
     </tbody>
 </table>
 
-## `BasicWidget`
+## <a id="type-BasicWidget"></a>`BasicWidget`
 
-Instance shape of `BasicWidget` (subset) — the base for custom frontend widgets.
+Instance shape of [`BasicWidget`](#type-BasicWidget) (subset) — the base for custom frontend widgets.
 
 <table>
     <thead>
@@ -897,11 +897,11 @@ Instance shape of `BasicWidget` (subset) — the base for custom frontend widget
     <tbody>
         <tr>
             <td><code>$widget</code></td>
-            <td><p><code>JQuery</code><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
+            <td><p><a href="#type-JQuery"><code>JQuery</code></a><br>The widget's root element, which <code>doRender()</code> assigns, such as <code>this.$widget = $(TPL)</code>.</p></td>
         </tr>
         <tr>
             <td><code>isEnabled</code></td>
-            <td><pre><code class="language-application-typescript">isEnabled(): boolean | null | undefined</code></pre><p>Returns whether the widget is shown: always for a <code>BasicWidget</code>, and only while a note is active for a <code>NoteContextAwareWidget</code>. A disabled widget stays in the DOM, hidden, and a <code>NoteContextAwareWidget</code> does not call <code>refreshWithNote()</code> while it is disabled.</p></td>
+            <td><pre><code class="language-application-typescript">isEnabled(): boolean | null | undefined</code></pre><p>Returns whether the widget is shown: always for a <a href="#type-BasicWidget"><code>BasicWidget</code></a>, and only while a note is active for a <a href="#type-NoteContextAwareWidget"><code>NoteContextAwareWidget</code></a>. A disabled widget stays in the DOM, hidden, and a <a href="#type-NoteContextAwareWidget"><code>NoteContextAwareWidget</code></a> does not call <code>refreshWithNote()</code> while it is disabled.</p></td>
         </tr>
         <tr>
             <td><code>doRender</code></td>
@@ -934,7 +934,7 @@ Instance shape of `BasicWidget` (subset) — the base for custom frontend widget
     </tbody>
 </table>
 
-## `FBranch`
+## <a id="type-FBranch"></a>`FBranch`
 
 A branch (parent↔child link) as seen by frontend scripts (subset of `FBranch`).
 
@@ -989,7 +989,7 @@ A branch (parent↔child link) as seen by frontend scripts (subset of `FBranch`)
     </tbody>
 </table>
 
-## `NoteContext`
+## <a id="type-NoteContext"></a>`NoteContext`
 
 A split/tab context as seen by frontend scripts (subset of `NoteContext`).
 
@@ -1007,7 +1007,7 @@ A split/tab context as seen by frontend scripts (subset of `NoteContext`).
         </tr>
         <tr>
             <td><code>note</code></td>
-            <td><p><code>FNote | null</code><br>The note this context shows, or <code>null</code> if the context is empty.</p></td>
+            <td><p><a href="#type-FNote"><code>FNote</code></a> | <code>null</code><br>The note this context shows, or <code>null</code> if the context is empty.</p></td>
         </tr>
         <tr>
             <td><code>notePath</code></td>
@@ -1024,7 +1024,7 @@ A split/tab context as seen by frontend scripts (subset of `NoteContext`).
     </tbody>
 </table>
 
-## `DayjsInstance`
+## <a id="type-DayjsInstance"></a>`DayjsInstance`
 
 A date as day.js wraps it (subset).
 
@@ -1057,11 +1057,11 @@ A date as day.js wraps it (subset).
 
 ## Types
 
-### `JQuery`
+### <a id="type-JQuery"></a>`JQuery`
 
 A jQuery object: one or more page elements with jQuery's methods, as `$(…)` returns. The [jQuery API documentation](https://api.jquery.com/) describes them, and the script editor offers them as completions.
 
-### `Dayjs`
+### <a id="type-Dayjs"></a>`Dayjs`
 
 Minimal day.js surface (the real API exposes the full day.js factory).
 
@@ -1069,7 +1069,7 @@ Minimal day.js surface (the real API exposes the full day.js factory).
 type Dayjs = (date?: string | number | Date) => DayjsInstance
 ```
 
-### `WidgetClass`
+### <a id="type-WidgetClass"></a>`WidgetClass`
 
 Constructor type allowing `class X extends api.Widget { … }`.
 
@@ -1077,15 +1077,15 @@ Constructor type allowing `class X extends api.Widget { … }`.
 type WidgetClass = (...args: unknown[]) => T
 ```
 
-### `Func`
+### <a id="type-Func"></a>`Func`
 
 ```typescript
 type Func = (...args: unknown[]) => unknown | string
 ```
 
-### `CreateNoteOpts`
+### <a id="type-CreateNoteOpts"></a>`CreateNoteOpts`
 
-Options accepted by `FrontendApi.createNote`.
+Options accepted by [`FrontendApi.createNote`](#type-FrontendApi).
 
 | Property | Description |
 | --- | --- |
@@ -1099,17 +1099,17 @@ Options accepted by `FrontendApi.createNote`.
 | `focus`  <br>_optional_ | `"title" \| "content"`  <br>Which part of the activated note to focus. Defaults to "title". |
 | `target`  <br>_optional_ | `string`  <br>Where to place the note relative to the parent/target: "into" (default) or "after". |
 | `targetBranchId`  <br>_optional_ | `string`  <br>Branch ID used together with `target: "after"`. |
-| `attributes`  <br>_optional_ | `CreateAttribute[]`  <br>Attributes to set atomically on creation. |
+| `attributes`  <br>_optional_ | [`CreateAttribute`](#type-CreateAttribute)`[]`  <br>Attributes to set atomically on creation. |
 
-### `TextEditor`
+### <a id="type-TextEditor"></a>`TextEditor`
 
 The editor of a text note, a CKEditor 5 editor. The [CKEditor 5 API documentation](https://ckeditor.com/docs/ckeditor5/latest/api/module_core_editor_editor-Editor.html) describes it; `editor.model` and `editor.getData()` are the usual starting points.
 
-### `CodeEditor`
+### <a id="type-CodeEditor"></a>`CodeEditor`
 
 The editor of a code note, a CodeMirror 6 `EditorView`. The [CodeMirror reference](https://codemirror.net/docs/ref/#view.EditorView) describes it; `editor.state.doc.toString()` reads the code.
 
-### `PickerItem`
+### <a id="type-PickerItem"></a>`PickerItem`
 
 One thing a picker offers, as `pickSingleItem` takes and answers with.
 
@@ -1120,7 +1120,7 @@ One thing a picker offers, as `pickSingleItem` takes and answers with.
 | `icon`  <br>_optional_ | `string`  <br>An icon class, `bx` prefix included. |
 | `tooltip`  <br>_optional_ | `string`  <br>HTML shown in a tooltip while the item is hovered. |
 
-### `PickerItemGroup`
+### <a id="type-PickerItemGroup"></a>`PickerItemGroup`
 
 A run of picker items under a heading of their own.
 
@@ -1128,9 +1128,9 @@ A run of picker items under a heading of their own.
 | --- | --- |
 | `key` | `string`  <br>The ID of the group. It must be unique among the groups. |
 | `groupHeader` | `string`  <br>The heading shown above the group's items. An empty string shows the items without a heading. |
-| `items` | `PickerItem[]`  <br>The items in the group, in the order the picker shows them. |
+| `items` | [`PickerItem`](#type-PickerItem)`[]`  <br>The items in the group, in the order the picker shows them. |
 
-### `LinkOptions`
+### <a id="type-LinkOptions"></a>`LinkOptions`
 
 Options of `api.createLink()`.
 
@@ -1144,11 +1144,11 @@ Options of `api.createLink()`.
 | `autoConvertToImage`  <br>_optional_ | `boolean`  <br>Whether an image, canvas or Mermaid note shows as its picture instead of a link. Defaults to `false`. |
 | `titleSuffix`  <br>_optional_ | `string`  <br>Text shown right after the link's title. |
 
-### `Preact`
+### <a id="type-Preact"></a>`Preact`
 
 The Preact API that render notes import from `trilium:preact`: Preact's own functions and hooks, and Trilium's components and `defineWidget()`. In a JSX note, the script editor offers its full type.
 
-### `NotePathRecord`
+### <a id="type-NotePathRecord"></a>`NotePathRecord`
 
 One resolved tree path to a note (subset of the client's `NotePathRecord`).
 
@@ -1160,7 +1160,7 @@ One resolved tree path to a note (subset of the client's `NotePathRecord`).
 | `notePath` | `string[]`  <br>The note IDs along the path, from `root` to the note itself. |
 | `isHidden` | `boolean`  <br>Whether the path passes through the hidden subtree, `_hidden`, which holds Trilium's system notes. |
 
-### `Attribute`
+### <a id="type-Attribute"></a>`Attribute`
 
 A label or relation attached to a note.
 
@@ -1173,7 +1173,7 @@ A label or relation attached to a note.
 | `isInheritable` | `boolean`  <br>Whether the note's descendants inherit the attribute. |
 | `isOwned` | `boolean`  <br>Not set by Trilium: neither frontend nor backend attributes carry this property, so it reads `undefined`. |
 
-### `Blob`
+### <a id="type-Blob"></a>`Blob`
 
 A note's binary/text content blob (subset of the client's `FBlob`).
 
@@ -1185,9 +1185,9 @@ A note's binary/text content blob (subset of the client's `FBlob`).
 | `dateModified` | `string`  <br>The local date and time this content was first stored, with the UTC offset, such as `2026-10-22 14:03:05.123+0200`. A blob never changes, so new content gets a new blob. |
 | `utcDateModified` | `string`  <br>The date and time, in UTC, that this content was first stored, such as `2026-10-22 12:03:05.123Z`. |
 
-### `NoteMetadata`
+### <a id="type-NoteMetadata"></a>`NoteMetadata`
 
-Creation/modification timestamps returned by `FNote.getMetadata`.
+Creation/modification timestamps returned by [`FNote.getMetadata`](#type-FNote).
 
 | Property | Description |
 | --- | --- |
@@ -1196,7 +1196,7 @@ Creation/modification timestamps returned by `FNote.getMetadata`.
 | `dateModified` | `string`  <br>The local date and time the note was last modified, with the UTC offset, such as `2026-10-22 14:03:05.123+0200`. A change to the note's content counts as a modification. |
 | `utcDateModified` | `string`  <br>The date and time, in UTC, that the note was last modified, such as `2026-10-22 12:03:05.123Z`. A change to the note's content counts as a modification. |
 
-### `Attachment`
+### <a id="type-Attachment"></a>`Attachment`
 
 An attachment as seen by frontend scripts (subset of the client's `FAttachment`).
 
@@ -1210,9 +1210,9 @@ An attachment as seen by frontend scripts (subset of the client's `FAttachment`)
 | `utcDateModified` | `string`  <br>The date and time, in UTC, that the attachment was last saved, such as `2026-10-22 12:03:05.123Z`. Replacing the content counts as saving. |
 | `contentLength` | `number`  <br>The length of the attachment's content. Only some ways of loading an attachment fill it in, such as `getAttachments()`. |
 
-### `CreateAttribute`
+### <a id="type-CreateAttribute"></a>`CreateAttribute`
 
-An attribute to create together with a note (see `CreateNoteOpts.attributes`).
+An attribute to create together with a note (see [`CreateNoteOpts.attributes`](#type-CreateNoteOpts)).
 
 | Property | Description |
 | --- | --- |

@@ -59,12 +59,13 @@ export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<
  *
  * `root` and the interfaces with methods come first, each under a heading of its own; the types
  * they use follow under "Types". A union of literals that one place uses is written out there
- * instead of getting an entry.
+ * instead of getting an entry. A reference to a declaration the page shows links to its heading.
  */
 export function typeDocToMarkdown(project: Project, { root, stripPrefixes = [] }: TypeDocMarkdownOptions = {}): string {
     const { declarations, inlined } = selectDeclarations(project, root);
     inlinedAliases = inlined;
     displayNames = stripNames(declarations.map((declaration) => declaration.name), stripPrefixes);
+    shownNames = new Set(declarations.map((declaration) => declaration.name));
     try {
         const blocks: string[] = [];
         if (project.comment) {
@@ -90,6 +91,7 @@ export function typeDocToMarkdown(project: Project, { root, stripPrefixes = [] }
     } finally {
         inlinedAliases = new Map();
         displayNames = new Map();
+        shownNames = new Set();
     }
 }
 
@@ -118,6 +120,14 @@ let inlinedAliases = new Map<string, Declaration>();
 /** The names the page writes for the declarations it shows, where they differ, while it renders. */
 let displayNames = new Map<string, string>();
 
+/** The declarations that have a heading on the page, while it renders. */
+let shownNames = new Set<string>();
+
+/** Whether `typeToString()` marks the names it can link, for `typeMarkdown()` to find. */
+let markingLinks = false;
+const LINK_START = "\u0002";
+const LINK_END = "\u0003";
+
 /**
  * Maps each name that starts with one of `prefixes`, before an uppercase letter, to the name
  * without it, trying the longest prefix first. Throws when two names would end up the same.
@@ -145,10 +155,19 @@ function displayName(name: string) {
     return displayNames.get(name) ?? name;
 }
 
-/** A dotted reference, such as `Api.member`, with its first part renamed. */
-function displayReference(reference: string) {
+/**
+ * A dotted reference, such as `Api.member`, as code with its first part renamed. It links to the
+ * heading of that first part when the page shows it.
+ */
+function referenceMarkdown(reference: string) {
     const [ first, ...rest ] = reference.split(".");
-    return [ displayName(first), ...rest ].join(".");
+    const text = code([ displayName(first), ...rest ].join("."));
+    return shownNames.has(first) ? `[${text}](#${anchor(first)})` : text;
+}
+
+/** The id of the anchor in a declaration's heading. */
+function anchor(name: string) {
+    return `type-${displayName(name)}`;
 }
 
 /**
@@ -243,7 +262,7 @@ function referencedNames(declaration: Declaration) {
 }
 
 function renderDeclaration(declaration: Declaration, heading: string) {
-    const blocks = [ `${heading} ${code(displayName(declaration.name))}` ];
+    const blocks = [ `${heading} <a id="${anchor(declaration.name)}"></a>${code(displayName(declaration.name))}` ];
     if (declaration.comment) {
         blocks.push(renderComment(declaration.comment));
     }
@@ -252,7 +271,7 @@ function renderDeclaration(declaration: Declaration, heading: string) {
         const type = declaration.type;
         blocks.push(type?.type === "union" && type.elementSummaries
             ? table([ "Value", "Description" ], type.types.map((value, index) => [
-                code(typeToString(value)),
+                typeMarkdown(value),
                 oneLine(partsToMarkdown(type.elementSummaries?.[index] ?? []))
             ]))
             : fence(`type ${displayName(declaration.name)} = ${typeToString(type)}`));
@@ -282,7 +301,7 @@ function renderDeclaration(declaration: Declaration, heading: string) {
 }
 
 function propertyDetails(property: Declaration) {
-    const type = typeToString(property.type ?? property.getSignature?.type);
+    const type = typeMarkdown(property.type ?? property.getSignature?.type);
     return details(type, [ property.comment, ...inlinedComments(property) ]);
 }
 
@@ -316,13 +335,13 @@ function methodDetails(method: Declaration) {
     if (parameters.some((parameter) => parameter.comment)) {
         blocks.push(table([ "Parameter", "Description" ], parameters.map((parameter) => [
             parameter.flags.isOptional ? `${code(parameter.name)}<br>*optional*` : code(parameter.name),
-            details(typeToString(parameter.type), [ parameter.comment ])
+            details(typeMarkdown(parameter.type), [ parameter.comment ])
         ])));
     }
 
     const returns = blockTag(signature.comment, "@returns");
     if (returns) {
-        blocks.push(`**Returns** ${code(typeToString(signature.type))}: ${returns}`);
+        blocks.push(`**Returns** ${typeMarkdown(signature.type)}: ${returns}`);
     }
 
     return blocks.filter(Boolean).join("\n\n");
@@ -347,25 +366,26 @@ function blockTag(comment: Comment | undefined, tag: string) {
 
 /**
  * Comment text as Markdown; a `{@link}` becomes its target's name as code. A code span that names
- * a declaration, such as `` `Api` `` or `` `Api.member` ``, follows its display name.
+ * a declaration, such as `` `Api` `` or `` `Api.member` ``, follows its display name. Both link to
+ * the declaration's heading.
  */
 function partsToMarkdown(parts: JSONOutput.CommentDisplayPart[]) {
     const renderPart = (part: JSONOutput.CommentDisplayPart) => {
         if (part.kind === "inline-tag") {
-            return code(displayReference(part.text));
+            return referenceMarkdown(part.text);
         }
         const reference = part.kind === "code" ? /^`([\w$]+(?:\.[\w$]+)*)`$/.exec(part.text) : null;
-        return reference ? code(displayReference(reference[1])) : part.text;
+        return reference ? referenceMarkdown(reference[1]) : part.text;
     };
     return parts.map(renderPart).join("")
         .replaceAll("\r\n", "\n")
         .trim();
 }
 
-/** A table cell holding a type, with each description on a line below. */
+/** A table cell holding a type, written by `typeMarkdown()`, with each description on a line below. */
 function details(type: string, comments: (Comment | undefined)[]) {
     const descriptions = comments.map((comment) => comment ? oneLine(partsToMarkdown(comment.summary)) : "");
-    return [ code(type), ...descriptions ].filter(Boolean).join("<br>");
+    return [ type, ...descriptions ].filter(Boolean).join("<br>");
 }
 
 function oneLine(text: string) {
@@ -385,6 +405,29 @@ function parametersToString(signature: Signature) {
     return `(${parameters.join(", ")})`;
 }
 
+/**
+ * A type as Markdown: `typeToString()` as code, except that each declaration the page shows links
+ * to its heading, with the rest of the type as code around it. The `|` and `&` next to a link stay
+ * outside the code.
+ */
+function typeMarkdown(type: SomeType | undefined) {
+    markingLinks = true;
+    let text: string;
+    try {
+        text = typeToString(type);
+    } finally {
+        markingLinks = false;
+    }
+
+    return text.split(new RegExp(`${LINK_START}(\\w+)${LINK_END}`)).map((part, index) => {
+        if (index % 2) {
+            return referenceMarkdown(part);
+        }
+        const [ , before, core, after ] = /^([\s|&]*)([\s\S]*?)([\s|&]*)$/.exec(part) ?? [ "", "", part, "" ];
+        return core ? `${before}${code(core)}${after}` : part;
+    }).join("");
+}
+
 /** A type as TypeScript writes it. */
 function typeToString(type: SomeType | undefined): string {
     if (!type) {
@@ -400,7 +443,9 @@ function typeToString(type: SomeType | undefined): string {
                 return typeToString(alias.type);
             }
             const args = type.typeArguments?.map(typeToString).join(", ");
-            const name = displayName(type.name);
+            const name = markingLinks && shownNames.has(type.name)
+                ? `${LINK_START}${type.name}${LINK_END}`
+                : displayName(type.name);
             return args ? `${name}<${args}>` : name;
         }
         case "literal":
