@@ -58,10 +58,53 @@ iframe.pdf-view {
     overflow: auto;
 }
 
-.ck-content pre .copy-button {
+.ck-content pre:has(> .copy-button) {
+    position: relative;
+
+    & > code {
+        padding-inline-end: 3em;
+    }
+}
+
+.ck-content pre > .copy-button {
     position: absolute;
     top: 0.5em;
-    right: 0.5em;
+    inset-inline-end: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2em;
+    height: 2em;
+    border: 0;
+    border-radius: 6px;
+    padding: 0;
+    background: transparent;
+    color: var(--text-menu);
+    font-size: 1rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 150ms ease;
+
+    & > .tn-icon {
+        font-size: 1.25em;
+    }
+
+    &:hover {
+        background: var(--background-highlight);
+        color: var(--text-primary);
+    }
+}
+
+.ck-content pre:hover > .copy-button,
+.ck-content pre > .copy-button:focus-visible,
+.ck-content pre > .copy-button.copied {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .ck-content pre > .copy-button {
+        opacity: 0.6;
+    }
 }
 
 /* The heading weight of the app's default theme (`theme-next/notes/text.css`), and the sizes and
