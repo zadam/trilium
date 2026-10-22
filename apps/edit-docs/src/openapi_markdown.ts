@@ -18,6 +18,7 @@ export interface OpenApiSpec {
         parameters?: Record<string, Parameter>;
         requestBodies?: Record<string, RequestBody>;
         responses?: Record<string, Response>;
+        headers?: Record<string, Header>;
         securitySchemes?: Record<string, SecurityScheme>;
     };
 }
@@ -81,8 +82,16 @@ interface RequestBody extends MediaTypes {
     required?: boolean;
 }
 
+interface Header {
+    description?: string;
+    required?: boolean;
+    schema?: Schema;
+    example?: unknown;
+}
+
 interface Response extends MediaTypes {
     description?: string;
+    headers?: Record<string, Header | Reference>;
 }
 
 interface Operation {
@@ -224,12 +233,10 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
     }
     // One tab per status; consecutive tabs form a single tab block.
     for (const [ status, response ] of responses) {
-        const { description, content } = resolve<Response>(spec, response);
+        const { description, headers, content } = resolve<Response>(spec, response);
 
-        const panel = renderContent(spec, content ?? {}, "response");
-        if (!panel.length) {
-            panel.push("No content.");
-        }
+        const body = renderContent(spec, content ?? {}, "response");
+        const panel = [ ...renderHeaders(spec, headers ?? {}), ...body.length ? body : [ "No content." ] ];
 
         // A tab's title is one line.
         const title = [ status, description?.replace(/\s+/g, " ").trim() ].filter(Boolean).join(": ");
@@ -237,6 +244,20 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
     }
 
     return blocks;
+}
+
+/** The table of a response's headers, each described by its example when it has no description. */
+function renderHeaders(spec: OpenApiSpec, headers: Record<string, Header | Reference>) {
+    const rows = Object.entries(headers).map(([ name, header ]) => {
+        const { description, required, schema, example } = resolve<Header>(spec, header);
+        const sample = example ?? schema?.example;
+        const text = description ?? (sample === undefined ? "" : `Example: ${code(String(sample))}`);
+        return [
+            nameCell(name, required),
+            detailsCell(typeMarkdown(spec, schema), describe({ description: text, schema }))
+        ];
+    });
+    return rows.length ? [ "**Response headers**", table([ "Name", "Description" ], rows) ] : [];
 }
 
 /** Indents a block into the panel of a tab, which holds the lines indented by four spaces. */

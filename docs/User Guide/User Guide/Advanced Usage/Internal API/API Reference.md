@@ -58,6 +58,12 @@ Responds with 401 when the password is wrong or, with two-factor authentication 
 
 === "200: Login successful"
 
+    **Response headers**
+
+    | Name | Description |
+    | --- | --- |
+    | `Set-Cookie` | `string`  <br>Example: `trilium.sid=s%3A...` |
+
     No content.
 
 === "401: Invalid credentials"
@@ -1058,6 +1064,12 @@ Core note operations
 
 === "200: File content"
 
+    **Response headers**
+
+    | Name | Description |
+    | --- | --- |
+    | `Content-Disposition` | `string`  <br>Example: `attachment; filename="document.pdf"` |
+
     *   `application/octet-stream`: `string (binary)`
 
 ### Download file note (alternative path)
@@ -1075,6 +1087,12 @@ Core note operations
 **Responses**
 
 === "200: File content"
+
+    **Response headers**
+
+    | Name | Description |
+    | --- | --- |
+    | `Content-Disposition` | `string`  <br>Example: `attachment; filename="document.pdf"` |
 
     *   `application/octet-stream`: `string (binary)`
 
@@ -2272,6 +2290,12 @@ File attachments
 
 === "206: Partial content"
 
+    **Response headers**
+
+    | Name | Description |
+    | --- | --- |
+    | `Content-Range` | `string`  <br>Example: `bytes 0-1023/146515` |
+
     *   `application/octet-stream`: `string (binary)`
 
 ### Get note attachments
@@ -2715,6 +2739,12 @@ File attachments
 
 === "200: Attachment content"
 
+    **Response headers**
+
+    | Name | Description |
+    | --- | --- |
+    | `Content-Disposition` | `string`  <br>Example: `attachment; filename="document.pdf"` |
+
     *   `application/octet-stream`: `string (binary)`
 
 ### Download attachment (alternative path)
@@ -2732,6 +2762,12 @@ File attachments
 **Responses**
 
 === "200: Attachment content"
+
+    **Response headers**
+
+    | Name | Description |
+    | --- | --- |
+    | `Content-Disposition` | `string`  <br>Example: `attachment; filename="document.pdf"` |
 
     *   `application/octet-stream`: `string (binary)`
 
@@ -3120,6 +3156,12 @@ Note revision history
 **Responses**
 
 === "200: Revision content"
+
+    **Response headers**
+
+    | Name | Description |
+    | --- | --- |
+    | `Content-Disposition` | `string` |
 
     *   `application/octet-stream`: `string (binary)`
 

@@ -137,6 +137,70 @@ describe("openApiToMarkdown", () => {
         ].join("\n"));
     });
 
+    it("lists a response's headers ahead of its body", () => {
+        const markdown = openApiToMarkdown({
+            info: { title: "Internal API" },
+            paths: {
+                "/login": {
+                    post: {
+                        operationId: "login",
+                        responses: {
+                            "200": {
+                                description: "Login successful",
+                                headers: {
+                                    "Set-Cookie": { schema: { type: "string", example: "trilium.sid=s%3A..." } }
+                                }
+                            }
+                        }
+                    }
+                },
+                "/download": {
+                    get: {
+                        operationId: "download",
+                        responses: {
+                            "200": {
+                                description: "File",
+                                headers: {
+                                    "Content-Disposition": { $ref: "#/components/headers/Disposition" }
+                                },
+                                content: { "application/octet-stream": { schema: { type: "string", format: "binary" } } }
+                            }
+                        }
+                    }
+                }
+            },
+            components: {
+                headers: {
+                    Disposition: { description: "How to save the file.", required: true, schema: { type: "string" } }
+                }
+            }
+        });
+
+        // A response without a body still says so below its headers.
+        expect(markdown).toContain([
+            "=== \"200: Login successful\"",
+            "",
+            "    **Response headers**",
+            "",
+            "    | Name | Description |",
+            "    | --- | --- |",
+            "    | `Set-Cookie` | `string`<br>Example: `trilium.sid=s%3A...` |",
+            "",
+            "    No content."
+        ].join("\n"));
+        expect(markdown).toContain([
+            "=== \"200: File\"",
+            "",
+            "    **Response headers**",
+            "",
+            "    | Name | Description |",
+            "    | --- | --- |",
+            "    | `Content-Disposition`<br>*required* | `string`<br>How to save the file. |",
+            "",
+            "    *   `application/octet-stream`: `string (binary)`"
+        ].join("\n"));
+    });
+
     it("groups operations by their first tag when the spec has tags", () => {
         const spec: OpenApiSpec = {
             info: { title: "Internal" },
@@ -219,6 +283,7 @@ describe("openApiToMarkdown", () => {
             "| `content` | [`EntityId`](#schema-EntityId)<br>Line one line \\| two |"
         ].join("\n"));
     });
+
 
     it("renders JSON samples of request and response bodies", () => {
         const note = { $ref: "#/components/schemas/Note" };
