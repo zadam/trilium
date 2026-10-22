@@ -46,6 +46,10 @@ interface Schema {
     allOf?: Schema[];
     oneOf?: Schema[];
     anyOf?: Schema[];
+    example?: unknown;
+    default?: unknown;
+    readOnly?: boolean;
+    writeOnly?: boolean;
 }
 
 interface Parameter {
@@ -56,8 +60,14 @@ interface Parameter {
     schema?: Schema;
 }
 
+interface MediaType {
+    schema?: Schema;
+    example?: unknown;
+    examples?: Record<string, { value?: unknown }>;
+}
+
 interface MediaTypes {
-    content?: Record<string, { schema?: Schema }>;
+    content?: Record<string, MediaType>;
 }
 
 interface RequestBody extends MediaTypes {
@@ -175,12 +185,8 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         if (body.description) {
             blocks.push(body.description.trim());
         }
-        for (const [ mime, { schema } ] of Object.entries(body.content ?? {})) {
-            blocks.push(`*   ${code(mime)}: ${code(typeOf(schema))}`);
-            const resolved = schema && resolve(spec, schema);
-            if (resolved?.properties) {
-                blocks.push(propertyTable(spec, resolved));
-            }
+        for (const [ mime, media ] of Object.entries(body.content ?? {})) {
+            blocks.push(`*   ${code(mime)}: ${code(typeOf(media.schema))}`, ...renderBody(spec, mime, media, "request"));
         }
     }
 
@@ -192,26 +198,107 @@ function renderOperation(spec: OpenApiSpec, { method, path, pathItem, operation 
         const { description, content } = resolve<Response>(spec, response);
 
         // Content types of one response usually share a schema, which is then listed once.
-        const schemas = new Map<string, Schema>();
-        for (const { schema } of Object.values(content ?? {})) {
-            if (schema) {
-                schemas.set(typeOf(schema), schema);
+        const bodies = new Map<string, [ string, MediaType ]>();
+        for (const [ mime, media ] of Object.entries(content ?? {})) {
+            const type = typeOf(media.schema);
+            if (type && !bodies.has(type)) {
+                bodies.set(type, [ mime, media ]);
             }
         }
 
-        const types = [ ...schemas.keys() ].map(code).join(", ");
+        const types = [ ...bodies.keys() ].map(code).join(", ");
         const summary = [ code(status), description?.trim() ].filter(Boolean).join(": ");
         blocks.push(`*   ${summary}${types ? ` (${types})` : ""}`);
-        for (const schema of schemas.values()) {
-            const resolved = resolve(spec, schema);
-            if (resolved.properties) {
-                blocks.push(propertyTable(spec, resolved));
-            }
+        for (const [ mime, media ] of bodies.values()) {
+            blocks.push(...renderBody(spec, mime, media, "response"));
         }
     }
 
     return blocks;
 }
+
+type Direction = "request" | "response";
+
+/** The property table of a body's schema, then a JSON sample of the body. */
+function renderBody(spec: OpenApiSpec, mime: string, { schema, example, examples }: MediaType, direction: Direction) {
+    const blocks: string[] = [];
+    const resolved = schema && resolve(spec, schema);
+    if (resolved?.properties) {
+        blocks.push(propertyTable(spec, resolved));
+    }
+
+    if (mime.includes("json")) {
+        const sample = example ?? Object.values(examples ?? {})[0]?.value ?? (schema && sampleOf(spec, schema, direction));
+        if (sample !== undefined) {
+            blocks.push(`\`\`\`json\n${JSON.stringify(sample, null, 4)}\n\`\`\``);
+        }
+    }
+
+    return blocks;
+}
+
+/**
+ * A value matching the schema, built from its examples where it has them. A request leaves out
+ * read-only properties and a response write-only ones; a schema met again inside itself
+ * becomes `{}`.
+ */
+function sampleOf(spec: OpenApiSpec, schema: Schema, direction: Direction, seen: ReadonlySet<string> = new Set()): unknown {
+    if (schema.example !== undefined) {
+        return schema.example;
+    }
+    if (schema.$ref) {
+        return seen.has(schema.$ref)
+            ? {}
+            : sampleOf(spec, resolve(spec, schema), direction, new Set([ ...seen, schema.$ref ]));
+    }
+    if (schema.default !== undefined) {
+        return schema.default;
+    }
+    if (schema.enum?.length) {
+        return schema.enum[0];
+    }
+    if (schema.allOf) {
+        return Object.assign({}, ...schema.allOf.map((part) => sampleOf(spec, part, direction, seen)));
+    }
+    const variant = schema.oneOf?.[0] ?? schema.anyOf?.[0];
+    if (variant) {
+        return sampleOf(spec, variant, direction, seen);
+    }
+
+    const type = [ schema.type ].flat().find((t) => t !== "null") ?? (schema.properties ? "object" : undefined);
+    switch (type) {
+        case "object": {
+            const sample: Record<string, unknown> = {};
+            for (const [ property, propertySchema ] of Object.entries(schema.properties ?? {})) {
+                const resolved = resolve(spec, propertySchema);
+                const hidden = direction === "request"
+                    ? propertySchema.readOnly ?? resolved.readOnly
+                    : propertySchema.writeOnly ?? resolved.writeOnly;
+                if (!hidden) {
+                    sample[property] = sampleOf(spec, propertySchema, direction, seen);
+                }
+            }
+            return sample;
+        }
+        case "array":
+            return schema.items ? [ sampleOf(spec, schema.items, direction, seen) ] : [];
+        case "string":
+            return STRING_SAMPLES[schema.format ?? ""] ?? "string";
+        case "integer":
+        case "number":
+            return 0;
+        case "boolean":
+            return true;
+        default:
+            return null;
+    }
+}
+
+/** Placeholders for strings of a known format, the ones Redocly uses. */
+const STRING_SAMPLES: Record<string, string> = {
+    "date-time": "2019-08-24T14:15:22Z",
+    "date": "2019-08-24"
+};
 
 function renderSchema(spec: OpenApiSpec, name: string, schema: Schema) {
     const blocks = [ `### ${code(name)}` ];

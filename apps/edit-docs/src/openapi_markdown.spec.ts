@@ -87,6 +87,12 @@ describe("openApiToMarkdown", () => {
             "| --- | --- | --- |",
             "| `title`<br>*required* | `string` |  |",
             "",
+            "```json",
+            "{",
+            "    \"title\": \"string\"",
+            "}",
+            "```",
+            "",
             "**Responses**"
         ].join("\n"));
         // A response with a body is followed by the properties of its schema, like the request body.
@@ -98,6 +104,12 @@ describe("openApiToMarkdown", () => {
             "| Property | Type | Description |",
             "| --- | --- | --- |",
             "| `title`<br>*required* | `string` |  |",
+            "",
+            "```json",
+            "{",
+            "    \"title\": \"string\"",
+            "}",
+            "```",
             "",
             "*   `default`: unexpected error"
         ].join("\n"));
@@ -171,5 +183,70 @@ describe("openApiToMarkdown", () => {
             "| `parent` | `EntityId \\| string \\| null` |  |",
             "| `content` | `EntityId` | Line one line \\| two |"
         ].join("\n"));
+    });
+
+    it("renders JSON samples of request and response bodies", () => {
+        const note = { $ref: "#/components/schemas/Note" };
+        const spec: OpenApiSpec = {
+            info: { title: "ETAPI" },
+            paths: {
+                "/notes": {
+                    post: {
+                        requestBody: { content: { "application/json": { schema: note } } },
+                        responses: {
+                            "201": { description: "created", content: { "application/json; charset=utf-8": { schema: note } } },
+                            "400": {
+                                description: "invalid",
+                                content: { "application/json": { schema: note, example: { message: "bad" } } }
+                            }
+                        }
+                    }
+                },
+                "/notes/{noteId}/content": {
+                    put: {
+                        requestBody: { content: { "text/plain": { schema: { type: "string" } } } },
+                        responses: { "204": { description: "updated" } }
+                    }
+                }
+            },
+            components: {
+                schemas: {
+                    EntityId: { type: "string", example: "abc123" },
+                    Note: {
+                        type: "object",
+                        properties: {
+                            noteId: { $ref: "#/components/schemas/EntityId", readOnly: true },
+                            title: { type: "string" },
+                            type: { type: "string", enum: [ "text", "code" ] },
+                            isExpanded: { type: "boolean", default: false },
+                            dateCreated: { type: "string", format: "date-time" },
+                            isProtected: { type: "boolean", readOnly: true },
+                            childNoteIds: { type: "array", items: { $ref: "#/components/schemas/EntityId" } },
+                            position: { type: "integer" },
+                            password: { type: "string", writeOnly: true },
+                            parent: note
+                        }
+                    }
+                }
+            }
+        };
+
+        const markdown = openApiToMarkdown(spec);
+        const sample = (value: unknown) => `\`\`\`json\n${JSON.stringify(value, null, 4)}\n\`\`\``;
+
+        // A request leaves out read-only properties, a response write-only ones; a schema that
+        // contains itself stops at an empty object.
+        expect(markdown).toContain(sample({
+            title: "string", type: "text", isExpanded: false, dateCreated: "2019-08-24T14:15:22Z",
+            childNoteIds: [ "abc123" ], position: 0, password: "string", parent: {}
+        }));
+        expect(markdown).toContain(sample({
+            noteId: "abc123", title: "string", type: "text", isExpanded: false, dateCreated: "2019-08-24T14:15:22Z",
+            isProtected: true, childNoteIds: [ "abc123" ], position: 0, parent: {}
+        }));
+        // The example of a media type replaces the generated sample.
+        expect(markdown).toContain(sample({ message: "bad" }));
+        // Only JSON bodies get a sample.
+        expect(markdown.match(/```json/g)).toHaveLength(3);
     });
 });

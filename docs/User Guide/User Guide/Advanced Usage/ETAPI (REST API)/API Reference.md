@@ -41,6 +41,24 @@ Create a note and place it into the note tree
 | `utcDateCreated` | `UtcDateTime` | UTC timestap of the note creation. Specify only if you want to override the default (current datetime). |
 | `utcDateModified` | `UtcDateTime` | UTC timestamp of the note's last modification, e.g. to keep the date of a note being migrated from another application. The local dateModified is derived from it. Specify only if you want to override the default (current datetime). |
 
+```json
+{
+    "parentNoteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "application/json",
+    "content": "string",
+    "notePosition": 0,
+    "prefix": "string",
+    "isExpanded": true,
+    "noteId": "evnnmvHTCgIn",
+    "branchId": "evnnmvHTCgIn",
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 **Responses**
 
 *   `201`: note created (`NoteWithBranch`)
@@ -50,6 +68,56 @@ Create a note and place it into the note tree
 | `note` | `Note` |  |
 | `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
+```json
+{
+    "note": {
+        "noteId": "evnnmvHTCgIn",
+        "title": "string",
+        "type": "text",
+        "mime": "string",
+        "isProtected": true,
+        "blobId": "string",
+        "attributes": [
+            {
+                "attributeId": "evnnmvHTCgIn",
+                "noteId": "evnnmvHTCgIn",
+                "type": "label",
+                "name": "shareCss",
+                "value": "string",
+                "position": 0,
+                "isInheritable": true,
+                "utcDateModified": "2021-12-31 19:18:11.930Z"
+            }
+        ],
+        "parentNoteIds": [
+            "evnnmvHTCgIn"
+        ],
+        "childNoteIds": [
+            "evnnmvHTCgIn"
+        ],
+        "parentBranchIds": [
+            "evnnmvHTCgIn"
+        ],
+        "childBranchIds": [
+            "evnnmvHTCgIn"
+        ],
+        "dateCreated": "2021-12-31 20:18:11.930+0100",
+        "dateModified": "2021-12-31 20:18:11.930+0100",
+        "utcDateCreated": "2021-12-31 19:18:11.930Z",
+        "utcDateModified": "2021-12-31 19:18:11.930Z"
+    },
+    "branch": {
+        "branchId": "evnnmvHTCgIn",
+        "noteId": "evnnmvHTCgIn",
+        "parentNoteId": "evnnmvHTCgIn",
+        "prefix": "string",
+        "notePosition": 0,
+        "isExpanded": true,
+        "utcDateModified": "2021-12-31 19:18:11.930Z"
+    }
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -57,6 +125,14 @@ Create a note and place it into the note tree
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /notes`
 
@@ -87,6 +163,50 @@ Search notes
 | `results`  <br>_required_ | `array of Note` |  |
 | `debugInfo` | `object` | debugging info on parsing the search query enabled with &debug=true parameter |
 
+```json
+{
+    "results": [
+        {
+            "noteId": "evnnmvHTCgIn",
+            "title": "string",
+            "type": "text",
+            "mime": "string",
+            "isProtected": true,
+            "blobId": "string",
+            "attributes": [
+                {
+                    "attributeId": "evnnmvHTCgIn",
+                    "noteId": "evnnmvHTCgIn",
+                    "type": "label",
+                    "name": "shareCss",
+                    "value": "string",
+                    "position": 0,
+                    "isInheritable": true,
+                    "utcDateModified": "2021-12-31 19:18:11.930Z"
+                }
+            ],
+            "parentNoteIds": [
+                "evnnmvHTCgIn"
+            ],
+            "childNoteIds": [
+                "evnnmvHTCgIn"
+            ],
+            "parentBranchIds": [
+                "evnnmvHTCgIn"
+            ],
+            "childBranchIds": [
+                "evnnmvHTCgIn"
+            ],
+            "dateCreated": "2021-12-31 20:18:11.930+0100",
+            "dateModified": "2021-12-31 20:18:11.930+0100",
+            "utcDateCreated": "2021-12-31 19:18:11.930Z",
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "debugInfo": {}
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -94,6 +214,14 @@ Search notes
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /notes/{noteId}`
 
@@ -129,6 +257,45 @@ Returns a note identified by its ID
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -136,6 +303,14 @@ Returns a note identified by its ID
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `DELETE /notes/{noteId}`
 
@@ -159,6 +334,14 @@ deletes a single note based on the noteId supplied
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `PATCH /notes/{noteId}`
 
@@ -194,6 +377,18 @@ patch a note identified by the noteId with changes in the body
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "blobId": "string",
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 **Responses**
 
 *   `200`: note updated (`Note`)
@@ -216,6 +411,45 @@ patch a note identified by the noteId with changes in the body
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -223,6 +457,14 @@ patch a note identified by the noteId with changes in the body
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /notes/{noteId}/content`
 
@@ -287,6 +529,14 @@ Exports ZIP file export of a given note subtree. To export whole document, use "
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
 ### `POST /notes/{noteId}/import`
 
 Imports ZIP file into a given note.
@@ -308,6 +558,56 @@ Imports ZIP file into a given note.
 | `note` | `Note` |  |
 | `branch` | `Branch` | Branch places the note into the tree, it represents the relationship between a parent note and child note |
 
+```json
+{
+    "note": {
+        "noteId": "evnnmvHTCgIn",
+        "title": "string",
+        "type": "text",
+        "mime": "string",
+        "isProtected": true,
+        "blobId": "string",
+        "attributes": [
+            {
+                "attributeId": "evnnmvHTCgIn",
+                "noteId": "evnnmvHTCgIn",
+                "type": "label",
+                "name": "shareCss",
+                "value": "string",
+                "position": 0,
+                "isInheritable": true,
+                "utcDateModified": "2021-12-31 19:18:11.930Z"
+            }
+        ],
+        "parentNoteIds": [
+            "evnnmvHTCgIn"
+        ],
+        "childNoteIds": [
+            "evnnmvHTCgIn"
+        ],
+        "parentBranchIds": [
+            "evnnmvHTCgIn"
+        ],
+        "childBranchIds": [
+            "evnnmvHTCgIn"
+        ],
+        "dateCreated": "2021-12-31 20:18:11.930+0100",
+        "dateModified": "2021-12-31 20:18:11.930+0100",
+        "utcDateCreated": "2021-12-31 19:18:11.930Z",
+        "utcDateModified": "2021-12-31 19:18:11.930Z"
+    },
+    "branch": {
+        "branchId": "evnnmvHTCgIn",
+        "noteId": "evnnmvHTCgIn",
+        "parentNoteId": "evnnmvHTCgIn",
+        "prefix": "string",
+        "notePosition": 0,
+        "isExpanded": true,
+        "utcDateModified": "2021-12-31 19:18:11.930Z"
+    }
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -315,6 +615,14 @@ Imports ZIP file into a given note.
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `POST /notes/{noteId}/revision`
 
@@ -340,6 +648,14 @@ Create a note revision for the given note
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
 ### `GET /notes/{noteId}/revisions`
 
 Returns the revisions of a note identified by its ID. Protected revisions are omitted, since they cannot be read through ETAPI individually either.
@@ -355,6 +671,27 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 **Responses**
 
 *   `200`: list of revisions (`array of Revision`)
+
+```json
+[
+    {
+        "revisionId": "evnnmvHTCgIn",
+        "noteId": "evnnmvHTCgIn",
+        "type": "text",
+        "mime": "string",
+        "isProtected": true,
+        "title": "string",
+        "blobId": "string",
+        "dateLastEdited": "2021-12-31 20:18:11.930+0100",
+        "dateCreated": "2021-12-31 20:18:11.930+0100",
+        "utcDateLastEdited": "2021-12-31 19:18:11.930Z",
+        "utcDateCreated": "2021-12-31 19:18:11.930Z",
+        "utcDateModified": "2021-12-31 19:18:11.930Z",
+        "contentLength": 0
+    }
+]
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -362,6 +699,14 @@ Returns the revisions of a note identified by its ID. Protected revisions are om
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /notes/{noteId}/attachments`
 
@@ -378,6 +723,25 @@ Returns all attachments for a note identified by its ID
 **Responses**
 
 *   `200`: list of attachments (`array of Attachment`)
+
+```json
+[
+    {
+        "attachmentId": "evnnmvHTCgIn",
+        "ownerId": "evnnmvHTCgIn",
+        "role": "string",
+        "mime": "string",
+        "title": "string",
+        "position": 0,
+        "blobId": "string",
+        "dateModified": "2021-12-31 20:18:11.930+0100",
+        "utcDateModified": "2021-12-31 19:18:11.930Z",
+        "utcDateScheduledForErasureSince": "2021-12-31 19:18:11.930Z",
+        "contentLength": 0
+    }
+]
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -385,6 +749,14 @@ Returns all attachments for a note identified by its ID
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `POST /notes/{noteId}/undelete`
 
@@ -406,6 +778,12 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 | --- | --- | --- |
 | `success` | `boolean` |  |
 
+```json
+{
+    "success": true
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -413,6 +791,14 @@ Restore a deleted note. The note must be deleted and must have at least one unde
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /notes/history`
 
@@ -429,6 +815,23 @@ Returns recent changes including note creations, modifications, and deletions
 **Responses**
 
 *   `200`: list of recent changes (`array of RecentChange`)
+
+```json
+[
+    {
+        "noteId": "evnnmvHTCgIn",
+        "title": "string",
+        "current_title": "string",
+        "current_isDeleted": true,
+        "current_deleteId": "string",
+        "current_isProtected": true,
+        "utcDate": "2021-12-31 19:18:11.930Z",
+        "date": "2021-12-31 20:18:11.930+0100",
+        "canBeUndeleted": true
+    }
+]
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -436,6 +839,14 @@ Returns recent changes including note creations, modifications, and deletions
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /revisions/{revisionId}`
 
@@ -469,6 +880,24 @@ Returns a revision identified by its ID
 | `utcDateModified` | `UtcDateTime` |  |
 | `contentLength` | `integer (int32)` |  |
 
+```json
+{
+    "revisionId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "title": "string",
+    "blobId": "string",
+    "dateLastEdited": "2021-12-31 20:18:11.930+0100",
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "utcDateLastEdited": "2021-12-31 19:18:11.930Z",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z",
+    "contentLength": 0
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -476,6 +905,14 @@ Returns a revision identified by its ID
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /revisions/{revisionId}/content`
 
@@ -500,6 +937,14 @@ Returns revision content identified by its ID
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
 
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
+
 ### `POST /branches`
 
 Create a branch (clone a note to a different location in the tree). In case there is a branch between parent note and child note already, then this will update the existing branch with prefix, notePosition and isExpanded.
@@ -520,6 +965,15 @@ Create a branch (clone a note to a different location in the tree). In case ther
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "branchId": "evnnmvHTCgIn",
+    "prefix": "string",
+    "notePosition": 0,
+    "isExpanded": true
+}
+```
+
 **Responses**
 
 *   `200`: branch updated (branch between parent note and child note already existed) (`Branch`)
@@ -534,6 +988,18 @@ Create a branch (clone a note to a different location in the tree). In case ther
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "branchId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "parentNoteId": "evnnmvHTCgIn",
+    "prefix": "string",
+    "notePosition": 0,
+    "isExpanded": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `201`: branch created (`Branch`)
 
 | Property | Type | Description |
@@ -546,6 +1012,18 @@ Create a branch (clone a note to a different location in the tree). In case ther
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "branchId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "parentNoteId": "evnnmvHTCgIn",
+    "prefix": "string",
+    "notePosition": 0,
+    "isExpanded": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -553,6 +1031,14 @@ Create a branch (clone a note to a different location in the tree). In case ther
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /branches/{branchId}`
 
@@ -580,6 +1066,18 @@ Returns a branch identified by its ID
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "branchId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "parentNoteId": "evnnmvHTCgIn",
+    "prefix": "string",
+    "notePosition": 0,
+    "isExpanded": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -587,6 +1085,14 @@ Returns a branch identified by its ID
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `DELETE /branches/{branchId}`
 
@@ -610,6 +1116,14 @@ deletes a branch based on the branchId supplied. If this is the last branch of t
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `PATCH /branches/{branchId}`
 
@@ -637,6 +1151,15 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "branchId": "evnnmvHTCgIn",
+    "prefix": "string",
+    "notePosition": 0,
+    "isExpanded": true
+}
+```
+
 **Responses**
 
 *   `200`: branch updated (`Branch`)
@@ -651,6 +1174,18 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 | `isExpanded` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "branchId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "parentNoteId": "evnnmvHTCgIn",
+    "prefix": "string",
+    "notePosition": 0,
+    "isExpanded": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -658,6 +1193,14 @@ patch a branch identified by the branchId with changes in the body. Only prefix 
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `POST /attachments`
 
@@ -678,6 +1221,17 @@ create an attachment
 | `content` | `string` | Text content of the attachment, stored as-is. To store binary content, create the attachment without it, then upload the data with `PUT /attachments/{attachmentId}/content`. |
 | `position` | `integer (int32)` |  |
 
+```json
+{
+    "ownerId": "evnnmvHTCgIn",
+    "role": "string",
+    "mime": "string",
+    "title": "string",
+    "content": "string",
+    "position": 0
+}
+```
+
 **Responses**
 
 *   `201`: attachment created (`Attachment`)
@@ -696,6 +1250,22 @@ create an attachment
 | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
 | `contentLength` | `integer (int32)` |  |
 
+```json
+{
+    "attachmentId": "evnnmvHTCgIn",
+    "ownerId": "evnnmvHTCgIn",
+    "role": "string",
+    "mime": "string",
+    "title": "string",
+    "position": 0,
+    "blobId": "string",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateModified": "2021-12-31 19:18:11.930Z",
+    "utcDateScheduledForErasureSince": "2021-12-31 19:18:11.930Z",
+    "contentLength": 0
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -703,6 +1273,14 @@ create an attachment
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /attachments/{attachmentId}`
 
@@ -734,6 +1312,22 @@ Returns an attachment identified by its ID
 | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
 | `contentLength` | `integer (int32)` |  |
 
+```json
+{
+    "attachmentId": "evnnmvHTCgIn",
+    "ownerId": "evnnmvHTCgIn",
+    "role": "string",
+    "mime": "string",
+    "title": "string",
+    "position": 0,
+    "blobId": "string",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateModified": "2021-12-31 19:18:11.930Z",
+    "utcDateScheduledForErasureSince": "2021-12-31 19:18:11.930Z",
+    "contentLength": 0
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -741,6 +1335,14 @@ Returns an attachment identified by its ID
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `DELETE /attachments/{attachmentId}`
 
@@ -764,6 +1366,14 @@ deletes an attachment based on the attachmentId supplied.
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `PATCH /attachments/{attachmentId}`
 
@@ -795,6 +1405,18 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
 | `contentLength` | `integer (int32)` |  |
 
+```json
+{
+    "ownerId": "evnnmvHTCgIn",
+    "role": "string",
+    "mime": "string",
+    "title": "string",
+    "position": 0,
+    "blobId": "string",
+    "contentLength": 0
+}
+```
+
 **Responses**
 
 *   `200`: attribute updated (`Attachment`)
@@ -813,6 +1435,22 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 | `utcDateScheduledForErasureSince` | `UtcDateTime` |  |
 | `contentLength` | `integer (int32)` |  |
 
+```json
+{
+    "attachmentId": "evnnmvHTCgIn",
+    "ownerId": "evnnmvHTCgIn",
+    "role": "string",
+    "mime": "string",
+    "title": "string",
+    "position": 0,
+    "blobId": "string",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateModified": "2021-12-31 19:18:11.930Z",
+    "utcDateScheduledForErasureSince": "2021-12-31 19:18:11.930Z",
+    "contentLength": 0
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -820,6 +1458,14 @@ patch an attachment identified by the attachmentId with changes in the body. Onl
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /attachments/{attachmentId}/content`
 
@@ -881,6 +1527,17 @@ create an attribute for a given note
 | `isInheritable` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true
+}
+```
+
 **Responses**
 
 *   `201`: attribute created (`Attribute`)
@@ -896,6 +1553,19 @@ create an attribute for a given note
 | `isInheritable` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -903,6 +1573,14 @@ create an attribute for a given note
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /attributes/{attributeId}`
 
@@ -931,6 +1609,19 @@ Returns an attribute identified by its ID
 | `isInheritable` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -938,6 +1629,14 @@ Returns an attribute identified by its ID
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `DELETE /attributes/{attributeId}`
 
@@ -961,6 +1660,14 @@ deletes an attribute based on the attributeId supplied.
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `PATCH /attributes/{attributeId}`
 
@@ -989,6 +1696,17 @@ patch an attribute identified by the attributeId with changes in the body. For l
 | `isInheritable` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true
+}
+```
+
 **Responses**
 
 *   `200`: attribute updated (`Attribute`)
@@ -1004,6 +1722,19 @@ patch an attribute identified by the attributeId with changes in the body. For l
 | `isInheritable` | `boolean` |  |
 | `utcDateModified` | `UtcDateTime` |  |
 
+```json
+{
+    "attributeId": "evnnmvHTCgIn",
+    "noteId": "evnnmvHTCgIn",
+    "type": "label",
+    "name": "shareCss",
+    "value": "string",
+    "position": 0,
+    "isInheritable": true,
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1011,6 +1742,14 @@ patch an attribute identified by the attributeId with changes in the body. For l
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `POST /refresh-note-ordering/{parentNoteId}`
 
@@ -1034,6 +1773,14 @@ notePositions in branches are not automatically pushed to connected clients and 
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /inbox/{date}`
 
@@ -1069,6 +1816,45 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1076,6 +1862,14 @@ returns an "inbox" note, into which note can be created. Date will be used depen
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /calendar/days/{date}`
 
@@ -1111,6 +1905,45 @@ returns a day note for a given date. Gets created if doesn't exist.
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1118,6 +1951,14 @@ returns a day note for a given date. Gets created if doesn't exist.
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /calendar/week-first-day/{date}`
 
@@ -1155,6 +1996,45 @@ Returns the day note for the first day of the week containing the given date, ho
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1162,6 +2042,14 @@ Returns the day note for the first day of the week containing the given date, ho
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /calendar/weeks/{week}`
 
@@ -1199,6 +2087,45 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1206,6 +2133,14 @@ Returns a week note for a given ISO week (format YYYY-Www, e.g., 2025-W01). The 
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /calendar/months/{month}`
 
@@ -1243,6 +2178,45 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1250,6 +2224,14 @@ Returns a month note for a given month (format YYYY-MM, e.g., 2022-02). The note
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /calendar/years/{year}`
 
@@ -1287,6 +2269,45 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 | `utcDateCreated` | `UtcDateTime` |  |
 | `utcDateModified` | `UtcDateTime` | Writable through PATCH, e.g. to restore a migrated note's date after its content was rewritten. The local dateModified is derived from it. |
 
+```json
+{
+    "noteId": "evnnmvHTCgIn",
+    "title": "string",
+    "type": "text",
+    "mime": "string",
+    "isProtected": true,
+    "blobId": "string",
+    "attributes": [
+        {
+            "attributeId": "evnnmvHTCgIn",
+            "noteId": "evnnmvHTCgIn",
+            "type": "label",
+            "name": "shareCss",
+            "value": "string",
+            "position": 0,
+            "isInheritable": true,
+            "utcDateModified": "2021-12-31 19:18:11.930Z"
+        }
+    ],
+    "parentNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childNoteIds": [
+        "evnnmvHTCgIn"
+    ],
+    "parentBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "childBranchIds": [
+        "evnnmvHTCgIn"
+    ],
+    "dateCreated": "2021-12-31 20:18:11.930+0100",
+    "dateModified": "2021-12-31 20:18:11.930+0100",
+    "utcDateCreated": "2021-12-31 19:18:11.930Z",
+    "utcDateModified": "2021-12-31 19:18:11.930Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1294,6 +2315,14 @@ Returns a year note for a given year (format YYYY, e.g., 2022). The note is crea
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `POST /auth/login`
 
@@ -1309,6 +2338,12 @@ get an ETAPI token based on password for further use with ETAPI
 | --- | --- | --- |
 | `password` | `string` | user's password used to e.g. login to Trilium server and/or protect notes |
 
+```json
+{
+    "password": "string"
+}
+```
+
 **Responses**
 
 *   `201`: auth token (`object`)
@@ -1316,6 +2351,12 @@ get an ETAPI token based on password for further use with ETAPI
 | Property | Type | Description |
 | --- | --- | --- |
 | `authToken` | `string` |  |
+
+```json
+{
+    "authToken": "Bc4bFn0Ffiok_4NpbVCDnFz7B2WU+pdhW8B5Ne3DiR5wXrEyqdjgRIsk="
+}
+```
 
 *   `429`: Client IP has been blacklisted because too many requests (possibly failed authentications) were made within a short time frame, try again later
 *   `default`: unexpected error (`Error`)
@@ -1325,6 +2366,14 @@ get an ETAPI token based on password for further use with ETAPI
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `POST /auth/logout`
 
@@ -1342,6 +2391,14 @@ logout (delete/deactivate) an ETAPI token
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /app-info`
 
@@ -1364,6 +2421,19 @@ returns information about the running Trilium instance
 | `clipperProtocolVersion` | `string` | version of the supported Trilium Web Clipper protocol |
 | `utcDateTime` | `string` | current UTC date time |
 
+```json
+{
+    "appVersion": "0.50.2",
+    "dbVersion": 194,
+    "syncVersion": 25,
+    "buildDate": "2022-02-09T22:52:36+01:00",
+    "buildRevision": "23daaa2387a0655685377f0a541d154aeec2aae8",
+    "dataDirectory": "/home/user/data",
+    "clipperProtocolVersion": 1.1,
+    "utcDateTime": "2022-03-07T21:54:25.277Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1371,6 +2441,14 @@ returns information about the running Trilium instance
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `PUT /backup/{backupName}`
 
@@ -1394,6 +2472,14 @@ Create a database backup under a given name
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ### `GET /metrics`
 
@@ -1424,6 +2510,49 @@ The same data is served by GET /api/metrics to the web session.
 | `statistics` | `object` |  |
 | `timestamp` | `string` |  |
 
+```json
+{
+    "version": {
+        "app": "0.99.3",
+        "db": 231,
+        "node": "v22.14.0",
+        "sync": 35,
+        "buildDate": "2024-09-07T18:36:34Z",
+        "buildRevision": "7c0d6930fa8f20d269dcfbcbc8f636a25f6bb9a7"
+    },
+    "database": {
+        "totalNotes": 0,
+        "deletedNotes": 0,
+        "activeNotes": 0,
+        "protectedNotes": 0,
+        "totalAttachments": 0,
+        "deletedAttachments": 0,
+        "activeAttachments": 0,
+        "totalRevisions": 0,
+        "totalBranches": 0,
+        "totalAttributes": 0,
+        "totalBlobs": 0,
+        "totalEtapiTokens": 0,
+        "totalRecentNotes": 0
+    },
+    "noteTypes": {
+        "text": 800,
+        "code": 200
+    },
+    "attachmentTypes": {
+        "image/png": 45,
+        "application/pdf": 14
+    },
+    "statistics": {
+        "oldestNote": "string",
+        "newestNote": "string",
+        "lastModified": "string",
+        "databaseSizeBytes": 0
+    },
+    "timestamp": "2024-12-01T12:00:00.000Z"
+}
+```
+
 *   `default`: unexpected error (`Error`)
 
 | Property | Type | Description |
@@ -1431,6 +2560,14 @@ The same data is served by GET /api/metrics to the web session.
 | `status`  <br>_required_ | `integer (int32)` | HTTP status, identical to the one given in HTTP response |
 | `code`  <br>_required_ | `string` | stable string constant |
 | `message`  <br>_required_ | `string` | Human readable error, potentially with more details, |
+
+```json
+{
+    "status": 400,
+    "code": "NOTE_IS_PROTECTED",
+    "message": "Note 'evnnmvHTCgIn' is protected and cannot be modified through ETAPI"
+}
+```
 
 ## Schemas
 
