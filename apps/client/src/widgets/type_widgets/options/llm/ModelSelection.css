@@ -69,3 +69,8 @@
         margin-bottom: 0.25em;
     }
 }
+
+.no-items.model-selection-error {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
