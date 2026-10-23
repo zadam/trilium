@@ -2565,7 +2565,7 @@ iframe.print-iframe {
 
 /* Scrolling container */
 
-.note-split:not(.type-text.view-mode-normal) > .scrolling-container:has(> :is(.note-detail.full-height, .note-list-widget.full-height)) {
+.note-split > .scrolling-container:has(> :is(.note-detail.full-height, .note-list-widget.full-height)) {
     display: flex;
     flex-direction: column;
 }
@@ -2576,6 +2576,13 @@ iframe.print-iframe {
     flex-grow: 1;
     width: 100%;
     overflow: hidden;
+}
+
+/* Fills what the content above leaves, but never less than half the container, so content taller
+   than the container pushes the collection below it instead of squeezing it to nothing. */
+.scrolling-container > .note-list-widget.full-height {
+    flex: 1 0 0;
+    min-height: 50%;
 }
 
 /* A full-height note fills the container instead of scrolling it, so the padding that lets
