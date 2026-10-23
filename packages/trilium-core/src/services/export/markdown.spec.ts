@@ -14,7 +14,17 @@ describe("Markdown export", () => {
             "language-text-x-asm-mips": "mips",
             "language-text-jsx": "jsx",
             "language-text-html": "html",
-            "language-text-plain": "plaintext"
+            "language-text-plain": "plaintext",
+            "language-text-x-csrc": "c",
+            "language-text-x-c-src": "cpp",
+            "language-text-x-rustsrc": "rust",
+            "language-text-typescript-jsx": "tsx",
+            "language-text-x-toml": "toml",
+            "language-text-x-scala": "scala",
+            "language-text-jinja2": "jinja",
+            "language-text-x-literate-haskell": "literate-haskell",
+            "language-text-x-mysql": "mysql",
+            "language-text-x-mssql": "tsql"
         };
 
         for (const [ input, output ] of Object.entries(conversionTable)) {
