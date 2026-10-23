@@ -3609,7 +3609,11 @@
     "new-column-label": "Label...",
     "new-column-relation": "Relation...",
     "properties": "Table properties...",
-    "properties-title": "Table properties"
+    "properties-title": "Table properties",
+    "column-note-id": "Note ID",
+    "column-title": "Title",
+    "column-date-created": "Created",
+    "column-date-modified": "Modified"
   },
   "book_properties_config": {
     "board-inbox-column": "Show inbox column",

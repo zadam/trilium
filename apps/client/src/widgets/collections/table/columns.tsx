@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { CellComponent, ColumnComponent, ColumnDefinition, EmptyCallback, FormatterParams, RowComponent, ValueBooleanCallback, ValueVoidCallback } from "tabulator-tables";
 
 import froca from "../../../services/froca.js";
+import { t } from "../../../services/i18n.js";
 import { safeUrlHref } from "../../../utils/url.js";
 import { applyLinkScheme, asLabelValues, formatLabelDate, LabelValueChips } from "../../attribute_widgets/label_value_display.jsx";
 import LabelValueInput from "../../attribute_widgets/label_value_input.jsx";
@@ -120,6 +121,16 @@ function relationTitle(row: RowComponent, column: ColumnComponent): string {
     return relationTitles?.[name] ?? "";
 }
 
+/**
+ * A column showing one of the note's own dates. The rows hold the dates as ISO strings, so the
+ * string sorter orders them by time.
+ */
+const noteDateColumn: Partial<ColumnDefinition> = {
+    formatter: (cell) => formatLabelDate(cell.getValue(), true),
+    sorter: "string",
+    visible: false
+};
+
 interface BuildColumnArgs {
     info: AttributeDefinitionInformation[];
     movableRows: boolean;
@@ -153,13 +164,13 @@ export function buildColumnDefinitions({ info, movableRows, existingColumnData, 
         },
         {
             field: "noteId",
-            title: "Note ID",
+            title: t("table_view.column-note-id"),
             formatter: wrapFormatter(({ cell }) => <code>{cell.getValue()}</code>),
             visible: false
         },
         {
             field: "title",
-            title: "Title",
+            title: t("table_view.column-title"),
             editor: "input",
             formatter: wrapFormatter(({ cell }) => {
                 const { noteId, iconClass, colorClass } = cell.getRow().getData();
@@ -168,6 +179,16 @@ export function buildColumnDefinitions({ info, movableRows, existingColumnData, 
                 </span>;
             }),
             width: 400
+        },
+        {
+            field: "dateCreated",
+            title: t("table_view.column-date-created"),
+            ...noteDateColumn
+        },
+        {
+            field: "dateModified",
+            title: t("table_view.column-date-modified"),
+            ...noteDateColumn
         }
     ];
 

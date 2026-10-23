@@ -227,6 +227,30 @@ describe("buildColumnDefinitions — typed columns", () => {
     });
 });
 
+describe("buildColumnDefinitions — note dates", () => {
+    it("offers the creation and modification dates as hidden, read-only date & time columns", () => {
+        const columns = buildColumnDefinitions({
+            info: [],
+            movableRows: false,
+            existingColumnData: undefined,
+            rowNumberHint: 1
+        });
+
+        for (const field of [ "dateCreated", "dateModified" ]) {
+            const column = columns.find((candidate) => candidate.field === field);
+            if (!column) throw new Error(`expected a ${field} column`);
+            expect(column).toMatchObject({ visible: false, sorter: "string" });
+            expect(column.editor).toBeUndefined();
+
+            const formatter = column.formatter;
+            if (typeof formatter !== "function") throw new Error("expected a formatter of its own");
+            const value = "2026-01-05T09:30:00.000Z";
+            expect(formatter({ getValue: () => value } as CellComponent, {}, () => {}))
+                .toBe(formatLabelDate(value, true));
+        }
+    });
+});
+
 describe("buildColumnDefinitions — relation columns", () => {
     function relationColumn(isMulti: boolean) {
         return buildColumnDefinitions({

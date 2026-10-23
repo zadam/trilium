@@ -21,6 +21,7 @@ There are also a few predefined columns:
     *   This simply counts the note and is affected by sorting.
 *   <a class="reference-link" href="../Advanced%20Usage/Note%20ID.md">Note ID</a>, representing the unique ID used internally by Trilium
 *   The title of the note.
+*   _Created_ and _Modified_, the date and time the note was created and last modified. These columns are hidden by default and can't be edited; show them from the column context menu and click their header to sort by them.
 
 ## Interaction
 
@@ -135,7 +136,7 @@ Limitations:
 
 ## Limitations
 
-*   There is no support to filter the rows by a certain criteria. Consider using the table view in search for that use case.
+*   There is no support to filter the rows by a certain criteria. Consider using the table view in search for that use case; for example, `note.dateCreated >= TODAY-7` lists the notes created in the last week.
 
 ## Use in search
 

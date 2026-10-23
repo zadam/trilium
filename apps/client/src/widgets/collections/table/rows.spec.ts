@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import FAttribute from "../../../entities/fattribute";
 import type FNote from "../../../entities/fnote";
@@ -160,6 +160,49 @@ describe("buildRowDefinitions", () => {
             relations: { assignee: "gonemissing12" },
             relationTitles: { assignee: "" }
         });
+    });
+
+    it("carries each note's creation and modification dates as ISO strings, nested rows included", async () => {
+        const parent = buildNote({
+            title: "Collection",
+            children: [
+                { title: "Task", children: [ { title: "Subtask" } ] },
+                { title: "Unknown to the server" }
+            ]
+        });
+        const [ task, unknown ] = await Promise.all(parent.getChildBranches().map((branch) => branch.getNote()));
+        const subtask = await task?.getChildBranches()[0]?.getNote();
+        if (!task || !subtask || !unknown) throw new Error("expected the child notes to be built");
+
+        const post = vi.spyOn(server, "post").mockResolvedValue({
+            [task.noteId]: {
+                utcDateCreated: "2026-01-05 09:30:00.000Z",
+                utcDateModified: "2026-03-01 12:00:00.000Z"
+            },
+            [subtask.noteId]: {
+                utcDateCreated: "2026-02-10 08:00:00.000Z",
+                utcDateModified: "2026-02-11 08:00:00.000Z"
+            }
+        });
+
+        const { definitions } = await buildRowDefinitions(parent, [], false);
+
+        // The whole tree in one request rather than one per level.
+        expect(post.mock.calls.filter(([ url ]) => url === "notes/metadata")).toHaveLength(1);
+        expect(definitions).toMatchObject([
+            {
+                title: "Task",
+                dateCreated: "2026-01-05T09:30:00.000Z",
+                dateModified: "2026-03-01T12:00:00.000Z",
+                _children: [ {
+                    title: "Subtask",
+                    dateCreated: "2026-02-10T08:00:00.000Z",
+                    dateModified: "2026-02-11T08:00:00.000Z"
+                } ]
+            },
+            { title: "Unknown to the server", dateCreated: undefined, dateModified: undefined }
+        ]);
+        post.mockRestore();
     });
 });
 
