@@ -87,22 +87,22 @@
   "global_menu": {
     "menu": "メニュー",
     "options": "設定",
-    "open_new_window": "新しいウィンドウを開く",
+    "open_new_window": "新しいウィンドウ",
     "zoom": "ズーム",
-    "toggle_fullscreen": "全画面表示の切り替え",
+    "toggle_fullscreen": "全画面表示",
     "reset_zoom_level": "ズームレベルのリセット",
-    "open_dev_tools": "開発者ツールを開く",
-    "open_sql_console": "SQLコンソールを開く",
-    "open_sql_console_history": "SQLコンソールの履歴を開く",
-    "open_search_history": "検索履歴を開く",
-    "show_backend_log": "バックエンドログの表示",
+    "open_dev_tools": "開発者ツール",
+    "open_sql_console": "SQLコンソール",
+    "open_sql_console_history": "SQLコンソールの履歴",
+    "open_search_history": "検索履歴",
+    "show_backend_log": "バックエンドログ",
     "reload_hint": "リロードは、アプリ全体を再起動することなく、視覚的な不具合を解消することができます。",
     "reload_frontend": "フロントエンドをリロード",
-    "show_hidden_subtree": "隠れたサブツリーを表示",
-    "show_help": "ヘルプを表示",
+    "show_hidden_subtree": "非表示ノート",
+    "show_help": "ヘルプ",
     "about": "Trilium Notesについて",
     "logout": "ログアウト",
-    "show-cheatsheet": "チートシートを表示",
+    "show-cheatsheet": "キーボードショートカット",
     "zoom_out": "ズームアウト",
     "zoom_in": "ズームイン",
     "advanced": "高度",
@@ -110,13 +110,14 @@
     "switch_to_mobile_version": "モバイル版に切り替え",
     "switch_to_desktop_version": "デスクトップ版に切り替え",
     "configure_launchbar": "ランチャーバーの設定...",
-    "show_shared_notes_subtree": "共有ノートのサブツリーを表示",
+    "show_shared_notes_subtree": "共有ノート",
     "new-version-available": "新しいアップデートが利用可能",
     "download-update": "{{latestVersion}} をバージョンを入手",
     "search_notes": "検索ノート",
-    "show_deleted_notes": "削除されたノートを表示",
-    "show_space_usage": "スペース使用状況を表示",
-    "theme": "テーマ"
+    "show_deleted_notes": "削除されたノート",
+    "show_space_usage": "スペース使用状況",
+    "theme": "テーマ",
+    "fullscreen": "全画面表示"
   },
   "left_pane_toggle": {
     "hide_panel": "パネルを非表示",
@@ -1011,7 +1012,11 @@
     "new-column-label": "ラベル...",
     "new-column-relation": "リレーション...",
     "properties": "表 プロパティ...",
-    "properties-title": "表 プロパティ"
+    "properties-title": "表 プロパティ",
+    "column-note-id": "ノート ID",
+    "column-title": "タイトル",
+    "column-date-created": "作成日時",
+    "column-date-modified": "更新日時"
   },
   "search_script": {
     "title": "検索スクリプト",
@@ -2394,7 +2399,7 @@
     "replace_all": "すべて置換"
   },
   "title_bar_buttons": {
-    "window-on-top": "ウィンドウを最前面に維持"
+    "window-on-top": "常に手前に表示"
   },
   "note_detail": {
     "could_not_find_typewidget": "タイプ {{type}} の typeWidget が見つかりませんでした",
