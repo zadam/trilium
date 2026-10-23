@@ -5,6 +5,8 @@ import Container from "./container.js";
 import { findScrollAnchor, restoreScrollAnchor, type ScrollAnchor } from "./scroll_anchor.js";
 import "./scrolling_container.css";
 
+const SCROLL_HOLD_TIMEOUT_MS = 10_000;
+
 export default class ScrollingContainer extends Container<BasicWidget> {
 
     private noteContext?: NoteContext;
@@ -12,6 +14,7 @@ export default class ScrollingContainer extends Container<BasicWidget> {
     private pendingAnchorFrame: number | null = null;
     private resizeObserver?: ResizeObserver;
     private scrollListener?: AbortController;
+    private scrollHold?: AbortController;
 
     constructor() {
         super();
@@ -65,6 +68,7 @@ export default class ScrollingContainer extends Container<BasicWidget> {
 
     cleanup() {
         this.scrollListener?.abort();
+        this.scrollHold?.abort();
         this.resizeObserver?.disconnect();
         if (this.pendingAnchorFrame !== null) {
             cancelAnimationFrame(this.pendingAnchorFrame);
@@ -92,18 +96,40 @@ export default class ScrollingContainer extends Container<BasicWidget> {
 
     async handleEventInChildren<T extends EventNames>(name: T, data: EventData<T>) {
         if (name === "readOnlyTemporarilyDisabled" && this.noteContext && "noteContext" in data && this.noteContext.ntxId === data.noteContext?.ntxId) {
-            const scrollTop = this.$widget.scrollTop() ?? 0;
+            this.holdScrollPosition(this.$widget[0]);
+        }
 
-            const promise = super.handleEventInChildren(name, data);
+        return super.handleEventInChildren(name, data);
+    }
 
-            // there seems to be some asynchronicity, and we need to wait a bit before scrolling
-            if (promise) {
-                promise.then(() => setTimeout(() => this.$widget.scrollTop(scrollTop), 500));
-            }
+    /**
+     * Keeps `scrollTop` while the note detail swaps between read-only and editable text. The
+     * content stays collapsed until the other type widget has loaded and filled in, which takes
+     * seconds when CKEditor loads for the first time, so the position is put back on every resize
+     * of the content until the user scrolls, types or clicks.
+     */
+    private holdScrollPosition(container: HTMLElement) {
+        this.scrollHold?.abort();
+        const scrollTop = container.scrollTop;
+        if (!scrollTop) return;
 
-            return promise;
-        } else {
-            return super.handleEventInChildren(name, data);
+        const hold = new AbortController();
+        this.scrollHold = hold;
+        const observer = new ResizeObserver(() => {
+            container.scrollTo({ top: scrollTop, behavior: "instant" });
+        });
+        for (const child of container.children) {
+            observer.observe(child);
+        }
+
+        const release = () => hold.abort();
+        const timeout = setTimeout(release, SCROLL_HOLD_TIMEOUT_MS);
+        hold.signal.addEventListener("abort", () => {
+            observer.disconnect();
+            clearTimeout(timeout);
+        });
+        for (const type of [ "wheel", "touchstart", "pointerdown", "keydown" ]) {
+            container.addEventListener(type, release, { passive: true, signal: hold.signal });
         }
     }
 

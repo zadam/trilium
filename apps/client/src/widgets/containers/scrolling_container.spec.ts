@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type NoteContext from "../../components/note_context";
 import ScrollingContainer from "./scrolling_container";
 
 describe("ScrollingContainer", () => {
@@ -79,6 +80,25 @@ describe("ScrollingContainer", () => {
         expect(frames).toHaveLength(framesBefore);
     });
 
+    it("keeps the position while switching to editing, until the user scrolls", async () => {
+        const { scrollingContainer, container, scrollTo } = render();
+        const noteContext = { ntxId: "ntx" } as NoteContext;
+        scrollingContainer.setNoteContextEvent({ noteContext });
+
+        await scrollingContainer.handleEventInChildren("readOnlyTemporarilyDisabled", { noteContext });
+        const hold = FakeResizeObserver.instances[1];
+        expect(hold).toBeDefined();
+
+        container.scrollTop = 0;
+        hold.resize(500, 2000);
+        expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 1000, behavior: "instant" });
+
+        container.dispatchEvent(new Event("wheel"));
+        hold.resize(500, 3000);
+        expect(scrollTo).toHaveBeenCalledOnce();
+        expect(hold.disconnected).toBe(true);
+    });
+
     /** Renders a container scrolled so that a paragraph sits right at its top edge. */
     function render() {
         const scrollingContainer = new ScrollingContainer();
@@ -123,6 +143,7 @@ class FakeResizeObserver {
     }
 
     resize(width: number, height: number) {
+        if (this.disconnected) return;
         const entry = { contentRect: new DOMRect(0, 0, width, height) } as ResizeObserverEntry;
         this.callback([ entry ], this as unknown as ResizeObserver);
     }
