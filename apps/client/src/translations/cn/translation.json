@@ -681,7 +681,8 @@
     "board_hide_add_column": "对于看板集合，在最后一列之后隐藏 <em>添加列</em> 按钮。仍可从看板或列的上下文菜单中添加列。",
     "meeting_recording": "标记由启动栏中「转录会议」按钮创建的笔记，其中保存着会议的转录文本。",
     "template_title_template": "设置在模板笔记上：从该模板创建的笔记的默认标题，用来替代父笔记的 <code>#titleTemplate</code>。求值方式与 <code>#titleTemplate</code> 相同，会注入 <code>now</code> 和 <code>parentNote</code> 变量，例如 <code>Meeting ${now.format('YYYY-MM-DD')}</code>。",
-    "calendar_hide_routine_events": "将每周重复 {{days}} 天或以上的定时事件从月视图、年视图和列表视图中隐藏。无论其值为何都会生效。"
+    "calendar_hide_routine_events": "将每周重复 {{days}} 天或以上的定时事件从月视图、年视图和列表视图中隐藏。无论其值为何都会生效。",
+    "exclude_from_llm": "对 AI 聊天和 MCP 服务器隐藏此笔记。将标签设为可继承，即可一并隐藏其下方的笔记。"
   },
   "attribute_editor": {
     "help_text_body1": "要添加标签，只需输入例如 <code>#rock</code> ；或者如果你还想同时添加数值，则可输入例如 <code>#year = 2020</code>",
@@ -912,7 +913,8 @@
     "download-update": "取得版本 {{latestVersion}}",
     "search_notes": "搜索笔记",
     "show_deleted_notes": "显示已删除的笔记",
-    "show_space_usage": "显示空间占用"
+    "show_space_usage": "显示空间占用",
+    "theme": "主题"
   },
   "zen_mode": {
     "button_exit": "退出禅模式"
@@ -927,7 +929,8 @@
   },
   "left_pane_toggle": {
     "hide_panel": "隐藏面板",
-    "peek_panel": "速览面板"
+    "peek_panel": "速览笔记树面板",
+    "toggle": "切换笔记树面板"
   },
   "move_pane_button": {
     "move_left": "向左移动",
@@ -2050,7 +2053,8 @@
     "subtree-hidden-moved-description-collection": "此集合隐藏其树中的子笔记。",
     "subtree-hidden-moved-description-other": "子笔记隐藏于此笔记的树中。",
     "follow-active-note": "跟随活跃笔记",
-    "follow-active-note-title": "自动滚动笔记树并展开父节点，以显示当前活跃的笔记。禁用后，笔记树保持不动，仅背景高亮会更新。"
+    "follow-active-note-title": "自动滚动笔记树并展开父节点，以显示当前活跃的笔记。禁用后，笔记树保持不动，仅背景高亮会更新。",
+    "show-all-notes": "显示所有笔记"
   },
   "title_bar_buttons": {
     "window-on-top": "保持此窗口置顶"
@@ -2114,7 +2118,8 @@
     "new_tab": "新标签页",
     "pin_tab": "固定标签页",
     "unpin_tab": "取消固定标签页",
-    "pinned_prefix": "已固定: "
+    "pinned_prefix": "已固定: ",
+    "leave_full_screen": "退出全屏"
   },
   "toc": {
     "table_of_contents": "目录",

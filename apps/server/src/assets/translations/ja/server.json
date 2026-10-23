@@ -78,7 +78,7 @@
     "show-note-map": "右ペインにノートマップを表示",
     "focus-collection-properties": "コレクションの表示タイプセレクターにフォーカスを移動",
     "focus-formatting-toolbar": "固定の書式設定ツールバーとエディター間でフォーカスを移動",
-    "peek-left-pane": "水平レイアウトにおいて、コンテンツの上に浮かぶ一時的なパネルとしてノートツリーをピーク表示する"
+    "peek-left-pane": "コンテンツの上に浮かぶ一時的なパネルとしてノートツリーを表示する"
   },
   "keyboard_action_names": {
     "back-in-note-history": "ノートの履歴を戻る",
@@ -391,7 +391,8 @@
     "page-navigation": "前後のページ",
     "hidden-subpages_other": "ツリーから非表示になっているサブページ {{count}} 個",
     "previous-tabs": "前のタブエリアへスクロール",
-    "next-tabs": "次のタブエリアへスクロール"
+    "next-tabs": "次のタブエリアへスクロール",
+    "copy-code": "コードをコピー"
   },
   "hidden_subtree_templates": {
     "text-snippet": "テキストスニペット",

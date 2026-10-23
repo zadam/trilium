@@ -78,7 +78,7 @@
     "show-note-map": "오른쪽 창에 노트 맵을 표시합니다",
     "focus-collection-properties": "컬렉션의 보기 유형 선택기로 포커스를 이동합니다",
     "focus-formatting-toolbar": "고정 서식 도구 모음과 편집기 사이에서 포커스를 이동합니다",
-    "peek-left-pane": "가로 레이아웃에서 노트 트리를 콘텐츠 위에 떠 있는 임시 패널로 미리 표시합니다"
+    "peek-left-pane": "콘텐츠 위에 떠 있는 임시 패널로 노트 트리 미리보기"
   },
   "hidden-subtree": {
     "zen-mode": "젠 모드",
@@ -462,7 +462,8 @@
     "page-navigation": "이전 및 다음 페이지",
     "hidden-subpages_other": "트리에서 숨겨진 하위 페이지 {{count}}개",
     "previous-tabs": "이전 탭으로 스크롤",
-    "next-tabs": "다음 탭으로 스크롤"
+    "next-tabs": "다음 탭으로 스크롤",
+    "copy-code": "코드 복사"
   },
   "hidden_subtree_templates": {
     "text-snippet": "텍스트 스니펫",

@@ -78,7 +78,7 @@
     "show-note-map": "在右侧边栏中显示笔记图谱",
     "focus-collection-properties": "将焦点移到集合的视图类型选择器",
     "focus-formatting-toolbar": "在固定格式工具栏与编辑器之间移动焦点",
-    "peek-left-pane": "在水平布局中，以浮在内容上方的临时面板速览笔记树"
+    "peek-left-pane": "以浮在内容上方的临时面板速览笔记树"
   },
   "login": {
     "title": "登录",
@@ -403,7 +403,8 @@
     "page-navigation": "上一页和下一页",
     "hidden-subpages_other": "{{count}} 个已从树中隐藏的子页面",
     "previous-tabs": "滚动到前面的标签页",
-    "next-tabs": "滚动到后面的标签页"
+    "next-tabs": "滚动到后面的标签页",
+    "copy-code": "复制代码"
   },
   "hidden_subtree_templates": {
     "text-snippet": "文本片段",

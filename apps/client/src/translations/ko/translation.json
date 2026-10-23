@@ -865,7 +865,8 @@
     "board_hide_add_column": "보드 컬렉션에서 마지막 열 뒤에 있는 <em>열 추가</em> 버튼을 숨깁니다. 보드 또는 열의 컨텍스트 메뉴에서는 계속 열을 추가할 수 있습니다.",
     "meeting_recording": "실행 표시줄의 \"회의 내용 전사\" 버튼으로 생성된 노트임을 나타냅니다. 이 노트에는 회의 전사 내용이 저장됩니다.",
     "calendar_hide_routine_events": "일주일에 {{days}}일 이상 반복되는 시간 지정 일정을 월간, 연간 및 목록 보기에서 숨깁니다. 속성값에 관계없이 적용됩니다.",
-    "template_title_template": "템플릿 노트에 설정하는 속성으로, 해당 템플릿에서 생성되는 노트의 기본 제목을 지정합니다. 부모 노트의 <code>#titleTemplate</code> 설정보다 우선 적용됩니다. <code>#titleTemplate</code> 설정과 동일한 방식으로 평가되며, 자동으로 제공되는 <code>now</code> 및 <code>parentNote</code> 변수를 사용할 수 있습니다. 예: <code>Meeting ${now.format('YYYY-MM-DD')}</code>."
+    "template_title_template": "템플릿 노트에 설정하는 속성으로, 해당 템플릿에서 생성되는 노트의 기본 제목을 지정합니다. 부모 노트의 <code>#titleTemplate</code> 설정보다 우선 적용됩니다. <code>#titleTemplate</code> 설정과 동일한 방식으로 평가되며, 자동으로 제공되는 <code>now</code> 및 <code>parentNote</code> 변수를 사용할 수 있습니다. 예: <code>Meeting ${now.format('YYYY-MM-DD')}</code>.",
+    "exclude_from_llm": "이 노트를 AI 채팅과 MCP 서버에서 숨깁니다. 하위 노트도 숨기려면 라벨을 상속 가능하도록 설정하세요."
   },
   "attribute_editor": {
     "help_text_body1": "레이블을 추가하려면 예를 들어 <code>#rock</code> 값을 입력합니다. 값도 함께 추가하려면 예를 들어 <code>#year = 2020</code> 값을 입력합니다",
@@ -1159,7 +1160,8 @@
     "new-version-available": "새 업데이트가 있습니다",
     "download-update": "버전 {{latestVersion}} 다운로드",
     "search_notes": "노트 검색",
-    "show_space_usage": "공간 사용량 표시"
+    "show_space_usage": "공간 사용량 표시",
+    "theme": "테마"
   },
   "zen_mode": {
     "button_exit": "젠 모드 종료"
@@ -1174,7 +1176,8 @@
   },
   "left_pane_toggle": {
     "hide_panel": "패널 숨기기",
-    "peek_panel": "패널 미리 보기"
+    "peek_panel": "노트 트리 패널 미리보기",
+    "toggle": "노트 트리 창 전환"
   },
   "move_pane_button": {
     "move_left": "왼쪽으로 이동",
@@ -2652,7 +2655,8 @@
     "subtree-hidden-tooltip_other": "트리에서 숨겨진 하위 노트 {{count}}개",
     "subtree-hidden-moved-title": "{{title}}에 추가됨",
     "subtree-hidden-moved-description-collection": "이 컬렉션은 트리에 하위 노트를 숨깁니다.",
-    "subtree-hidden-moved-description-other": "이 노트의 트리에는 하위 노트가 숨겨져 있습니다."
+    "subtree-hidden-moved-description-other": "이 노트의 트리에는 하위 노트가 숨겨져 있습니다.",
+    "show-all-notes": "모든 노트 표시"
   },
   "mobile_note_navigator": {
     "back": "한 단계 위로",
@@ -2724,7 +2728,8 @@
     "reopen_last_tab": "마지막 닫힌 탭을 다시 열기",
     "move_tab_to_new_window": "이 탭을 새 창으로 옮기기",
     "copy_tab_to_new_window": "이 탭을 새 창으로 복사",
-    "new_tab": "새 탭"
+    "new_tab": "새 탭",
+    "leave_full_screen": "전체 화면 종료"
   },
   "toc": {
     "table_of_contents": "목차",

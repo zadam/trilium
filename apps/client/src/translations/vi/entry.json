@@ -159,6 +159,10 @@
         "backup-saved-to": "Tệp sao lưu đã được lưu vào {{- location}}. Nhấn \"Hoàn tất\" để quay lại ứng dụng.",
         "backup-name-description": "Đặt tên cho bản sao lưu này để bạn dễ nhận ra sau này, hoặc giữ lại tên được gợi ý.",
         "backup-password": "Mật khẩu (không bắt buộc)",
-        "backup-name": "Tên bản sao lưu"
+        "backup-name": "Tên bản sao lưu",
+        "sync-from-server-failed": "Sync lỗi",
+        "server-totp-token": "Mã mật khẩu một lần hoặc mã khôi phục (không bắt buộc)",
+        "totp-required": "Máy chủ này yêu cầu mã mật khẩu một lần hoặc mã khôi phục.",
+        "wrong-totp": "Mã mật khẩu một lần hoặc mã khôi phục không đúng. Vui lòng thử lại."
     }
 }
