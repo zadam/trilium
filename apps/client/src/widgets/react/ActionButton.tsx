@@ -12,7 +12,8 @@ import { useCommandTrigger } from "./react_utils";
 export interface ActionButtonProps extends Pick<
     HTMLAttributes<HTMLButtonElement>,
     "onClick" | "onAuxClick" | "onContextMenu" | "onBlur" | "style" | "aria-expanded"
-    | "aria-pressed"
+    | "aria-pressed" | "onClickCapture" | "onPointerDown" | "onPointerUp" | "onPointerLeave"
+    | "onPointerCancel"
 > {
     text: string;
     titlePosition?: "top" | "right" | "bottom" | "left";

@@ -1949,6 +1949,76 @@ export function useLongPressContextMenu(handler: (e: MouseEvent) => void, holdMs
     };
 }
 
+/**
+ * Calls `handler` on a right-click, and when a press of the primary button or a finger stays on
+ * the element for `holdMs`. After a hold, the click that ends the press and the `contextmenu`
+ * event Android raises for the same press do nothing.
+ *
+ * Returns props to spread onto the target element.
+ */
+export function useHoldContextMenu(handler: (e: MouseEvent) => void, holdMs = 500) {
+    const timerRef = useRef<number | null>(null);
+    const heldRef = useRef(false);
+
+    const clear = useCallback(() => {
+        if (timerRef.current !== null) {
+            window.clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => clear, [clear]);
+
+    const onPointerDown = useCallback(
+        (e: PointerEvent) => {
+            heldRef.current = false;
+            clear();
+            if (e.button !== 0) return;
+            timerRef.current = window.setTimeout(() => {
+                timerRef.current = null;
+                heldRef.current = true;
+                handler(e);
+            }, holdMs);
+        },
+        [handler, holdMs, clear]
+    );
+
+    const onPointerUp = useCallback(() => {
+        clear();
+        // The click of this press is dispatched in the same task, before the timeout runs.
+        if (heldRef.current) {
+            window.setTimeout(() => heldRef.current = false);
+        }
+    }, [clear]);
+
+    const onContextMenu = useCallback(
+        (e: MouseEvent) => {
+            clear();
+            if (heldRef.current) {
+                e.preventDefault();
+                return;
+            }
+            handler(e);
+        },
+        [handler, clear]
+    );
+
+    const onClickCapture = useCallback((e: MouseEvent) => {
+        if (!heldRef.current) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, []);
+
+    return {
+        onContextMenu,
+        onPointerDown,
+        onPointerUp,
+        onPointerLeave: clear,
+        onPointerCancel: clear,
+        onClickCapture
+    };
+}
+
 export function useResizeObserver(ref: RefObject<HTMLElement | null>, callback: () => void) {
     const resizeObserver = useRef<ResizeObserver>(null);
     useEffect(() => {
