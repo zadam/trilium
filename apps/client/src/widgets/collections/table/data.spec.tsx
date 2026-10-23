@@ -129,6 +129,7 @@ describe("useData", () => {
         await mount(note, noteIds, true);
         expect(captured?.columnDefs?.map((column) => column.field)).toContain("labels.status");
         expect(captured?.columnDefs?.some((column) => column.editor || column.editorParams)).toBe(false);
+        expect(captured?.columnDefs?.every((column) => column.editable === false)).toBe(true);
         expect(captured?.movableRows).toBe(false);
     });
 

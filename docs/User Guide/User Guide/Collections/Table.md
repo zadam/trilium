@@ -71,12 +71,23 @@ There are multiple menus:
     *   Inserting a new child note for the selected row.
     *   Deleting the row.
 
+### Opening notes
+
+Hovering over a row shows an _Open_ button at the end of its title, which opens the note in quick edit. On a touch screen, the button is always visible.
+
+Clicking the title itself renames the note instead (see below). To open the note elsewhere:
+
+*   <kbd>Ctrl</kbd>+click or middle click the title to open the note in a new tab.
+*   <kbd>Shift</kbd>+click the title to open it in a new window.
+*   Right click the row to open the note in a new tab, split or window, or in quick edit.
+
 ### Editing data
 
 Simply click on a cell within a row to change its value. The change will not only reflect in the table, but also as an attribute of the corresponding note.
 
 *   The editing will respect the type of the promoted attribute, by presenting a normal text box, a number selector or a date selector for example.
-*   It also possible to change the title of a note.
+*   A boolean column shows a checkbox, which is checked or unchecked with a single click. A note without the label shows an unchecked box.
+*   It also possible to change the title of a note by clicking it.
 *   Editing relations is also possible
     *   Simply click on a relation and it will become editable. Enter the text to look for a note and click on it.
     *   To remove a relation, remove the title of the note from the text box and click outside the cell.
@@ -89,7 +100,7 @@ If the _Name_ field of a column is changed, this will trigger a batch operation 
 
 ### Read-only tables
 
-On a [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md) table, the cells can't be edited and the rows can't be dragged. The _New row_ and _New column_ buttons are hidden, and the context menus offer only what leaves the notes as they are: sorting and hiding columns, and opening the notes. Columns can still be resized and reordered, but the layout isn't saved. The _Table properties_ dialog isn't available.
+On a [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md) table, the cells can't be edited and the rows can't be dragged. Clicking a note's title opens it in quick edit, so there's no _Open_ button. The _New row_ and _New column_ buttons are hidden, and the context menus offer only what leaves the notes as they are: sorting and hiding columns, and opening the notes. Columns can still be resized and reordered, but the layout isn't saved. The _Table properties_ dialog isn't available.
 
 ## Working with the data
 
@@ -98,7 +109,7 @@ On a [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md
 By default, the order of the notes matches the order in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a>. However, it is possible to sort the data by the values of a column:
 
 *   To do so, simply click on a column.
-*   To switch between ascending or descending sort, simply click again on the same column. The arrow next to the column will indicate the direction of the sort.
+*   To switch between ascending or descending sort, simply click again on the same column. The arrow next to the column will indicate the direction of the sort. On a column that isn't sorted, the arrow appears only while hovering over its header.
 *   To disable sorting and fall back to the original order, right click any column on the header and select _Clear sorting._
 
 ### Reordering and hiding columns

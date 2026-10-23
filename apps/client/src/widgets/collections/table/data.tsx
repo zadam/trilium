@@ -124,7 +124,7 @@ export default function useData(note: FNote, noteIds: string[], viewConfig: Tabl
 }
 
 function withoutEditor({ editor, editorParams, ...column }: ColumnDefinition): ColumnDefinition {
-    return column;
+    return { ...column, editable: false };
 }
 
 /**

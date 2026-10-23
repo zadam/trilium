@@ -6,6 +6,10 @@
     display: flex;
     flex-direction: column;
 
+    > .collection-properties {
+        border-bottom: 0;
+    }
+
     .tabulator-tableholder {
         height: unset !important;
     }
