@@ -56,6 +56,6 @@ Some notes get their titles assigned automatically rather than typed:
 
 ### Protected notes
 
-The titles of <a class="reference-link" href="Protected%20Notes.md">Protected Notes</a> are encrypted along with their content. Before entering your password, Trilium cannot decrypt the title: the note tree labels the note _Protected_, the title field and the tab show `[protected]`, and the title cannot be modified.
+The titles of <a class="reference-link" href="Protected%20Notes.md">Protected Notes</a> are encrypted along with their content. Before entering your password, Trilium cannot decrypt the title: the note tree and the title field label the note _Protected_, the tab shows `[protected]`, and the title cannot be modified.
 
 Once you enter your password and a protected session is active, the real title is decrypted and displayed, and becomes editable again.

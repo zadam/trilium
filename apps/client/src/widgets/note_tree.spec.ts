@@ -161,7 +161,7 @@ describe("NoteTreeWidget", () => {
         }
 
         it("reads Protected while the protected session is locked", () => {
-            const label = `<span class="protected-title">note_tree.protected-note-title</span>`;
+            const label = `<span class="protected-title">protected_session.locked_note_title</span>`;
             expect(prepareProtectedNode(false)?.title).toBe(`Prefix - ${label}`);
         });
 

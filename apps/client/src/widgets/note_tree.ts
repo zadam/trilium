@@ -778,7 +778,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
     getTitleHtml(note: FNote, branch: FBranch) {
         const title = note.isContentAvailable()
             ? utils.escapeHtml(note.title)
-            : `<span class="protected-title">${t("note_tree.protected-note-title")}</span>`;
+            : `<span class="protected-title">${t("protected_session.locked_note_title")}</span>`;
 
         return branch.prefix ? `${utils.escapeHtml(branch.prefix)} - ${title}` : title;
     }
