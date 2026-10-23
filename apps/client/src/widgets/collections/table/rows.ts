@@ -44,7 +44,7 @@ export async function buildRowDefinitions(parentNote: FNote, infos: AttributeDef
 
     for (const branch of childBranches) {
         const note = await branch.getNote();
-        if (!note || (!includeArchived && note.isArchived)) {
+        if (!note || !isRowNote(note, includeArchived)) {
             continue;
         }
 
@@ -111,9 +111,14 @@ async function loadRowNotes(parentNote: FNote, includeArchived: boolean, maxDept
     let parents = [ parentNote ];
     for (let depth = 0; parents.length > 0; depth++) {
         const notes = await froca.getNotes(parents.flatMap((note) => note.children), true);
-        parents = notes.filter((note) => (includeArchived || !note.isArchived)
+        parents = notes.filter((note) => isRowNote(note, includeArchived)
             && note.hasChildren() && (maxDepth < 0 || depth < maxDepth));
     }
+}
+
+/** Whether the note gets a row. `_hidden` sits under root, where the note tree leaves it out too. */
+function isRowNote(note: FNote, includeArchived: boolean) {
+    return note.noteId !== "_hidden" && (includeArchived || !note.isArchived);
 }
 
 /**

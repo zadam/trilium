@@ -240,6 +240,27 @@ describe("buildRowDefinitions", () => {
         expect(definitions[2]._children?.[1]._children?.[0]).toMatchObject({ title: "C2.x" });
         post.mockRestore();
     });
+
+    it("leaves out the hidden subtree, as the note tree does under root", async () => {
+        const parent = buildNote({
+            title: "Root",
+            children: [
+                { title: "Task" },
+                { id: "_hidden", title: "Hidden Notes", children: [ { title: "Help" } ] }
+            ]
+        });
+        const hiddenChild = froca.getNoteFromCache("_hidden")?.children[0];
+        if (!hiddenChild) throw new Error("expected the hidden subtree to be built");
+        delete froca.notes[hiddenChild];
+        const post = vi.spyOn(server, "post").mockResolvedValue({});
+
+        const { definitions, hasSubtree } = await buildRowDefinitions(parent, [], false);
+
+        expect(definitions.map((def) => def.title)).toEqual([ "Task" ]);
+        expect(hasSubtree).toBe(false);
+        expect(post.mock.calls.filter(([ url ]) => url === "tree/load")).toHaveLength(0);
+        post.mockRestore();
+    });
 });
 
 /** Gives the note another relation under a name it already carries, which one literal cannot. */
