@@ -177,7 +177,7 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
                     }
                 ] satisfies MenuCommandItem<TreeCommandNames>[]),
                 {
-                    title: t("tree-context-menu.delete"),
+                    title: t("tree-context-menu.delete-short"),
                     command: "deleteNotes",
                     keyboardShortcut: "deleteNotes",
                     uiIcon: "bx bx-trash destructive-action-icon",

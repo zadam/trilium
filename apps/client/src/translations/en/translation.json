@@ -2533,6 +2533,7 @@
     "archive": "Archive",
     "unarchive": "Unarchive",
     "delete": "Delete...",
+    "delete-short": "Delete",
     "search-in-subtree": "Search in subtree",
     "hoist-note": "Hoist note",
     "unhoist-note": "Unhoist note",
