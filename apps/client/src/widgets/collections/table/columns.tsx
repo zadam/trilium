@@ -74,6 +74,8 @@ const labelTypeMappings: Record<ColumnType, Partial<ColumnDefinition>> = {
     number: {
         editor: "number",
         cssClass: NUMERIC_CELL_CLASS,
+        hozAlign: "right",
+        headerHozAlign: "right",
         sorter: "number"
     },
     time: {

@@ -205,6 +205,19 @@ describe("buildColumnDefinitions — typed columns", () => {
         expect(classOf("text")).toBeUndefined();
     });
 
+    it("right-aligns a number column, header included, so that its digits line up by place", () => {
+        const columns = buildColumnDefinitions({
+            info: [ { name: "number", type: "number" }, { name: "date", type: "date" } ],
+            movableRows: false,
+            existingColumnData: undefined,
+            rowNumberHint: 1
+        });
+        const columnOf = (name: string) => columns.find((column) => column.field === `labels.${name}`);
+
+        expect(columnOf("number")).toMatchObject({ hozAlign: "right", headerHozAlign: "right" });
+        expect(columnOf("date")?.hozAlign).toBeUndefined();
+    });
+
     it("hands a url column's href through the scheme guard rather than linking the value as stored", () => {
         const column = buildColumnDefinitions({
             info: [ { name: "site", type: "url" } ],
