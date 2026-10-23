@@ -101,10 +101,14 @@ describe("useKeyboardPanel", () => {
             return <div ref={measureRef} />;
         }
 
-        // The menu rises by the toolbar's gap above the place, to meet the toolbar.
+        const placeHeight = () => document.body.style.getPropertyValue("--tn-keyboard-place-height");
+
+        // The menu rises by the toolbar's gap above the place, to meet the toolbar. The keyboard's
+        // own height stays, for the stylesheet to cap the menu at.
         act(() => render(<Menu />, host));
         expect(isKeyboardPanelOpen()).toBe(true);
-        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("234px");
+        expect(placeHeight()).toBe("234px");
+        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("300px");
         document.body.style.removeProperty("--mobile-toolbar-gap");
 
         // An entry that runs focuses the text, and no keyboard comes up to take the place over.
@@ -113,6 +117,7 @@ describe("useKeyboardPanel", () => {
             editable.focus();
         });
         expect(isKeyboardPanelOpen()).toBe(false);
+        expect(placeHeight()).toBe("");
         expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("300px");
         height.mockRestore();
         document.body.style.removeProperty("--tn-keyboard-height");

@@ -85,7 +85,10 @@ body.mobile {
     &.keyboard-panel-open {
         --keyboard-panel-lift: max(
             0px,
-            calc(var(--tn-keyboard-height, 0px) - var(--tn-layout-shrink, 0px))
+            calc(
+                var(--tn-keyboard-place-height, var(--tn-keyboard-height, 0px))
+                - var(--tn-layout-shrink, 0px)
+            )
         );
         --mobile-toolbar-clearance: calc(
             var(--mobile-toolbar-height) + var(--mobile-toolbar-gap) + var(--keyboard-panel-lift)
@@ -119,7 +122,7 @@ body.mobile {
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
         height: auto;
-        max-height: 50vh;
+        max-height: min(50vh, calc(var(--tn-keyboard-height, 50vh) + var(--mobile-toolbar-gap)));
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.replaces-panel[data-reveal]:not([data-closing]) {

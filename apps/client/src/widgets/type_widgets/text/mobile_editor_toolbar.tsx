@@ -165,7 +165,8 @@ function useActiveToolbarElement(editor: CKTextEditor | undefined, pluginName: "
  * the place, which it takes over without a reveal.
  *
  * With no keyboard up, the menu takes a place of its own height (`isOwnHeight`): `measureRef` on
- * its element sets `--tn-keyboard-height` to that height, less the toolbar's gap, while it is open.
+ * its element sets `--tn-keyboard-place-height` to that height, less the toolbar's gap, while it is
+ * open. The stylesheet caps such a menu at the keyboard's `--tn-keyboard-height`.
  */
 export function useKeyboardPanel(enabled: boolean) {
     const [ { isPanel, replacesPanel, isOwnHeight } ] = useState(() => {
@@ -182,7 +183,6 @@ export function useKeyboardPanel(enabled: boolean) {
         return handBackKeyboardPlace;
     }, [ isPanel ]);
 
-    // Measured once the place is taken, which saves the keyboard's height first.
     const [ element, measureRef ] = useState<HTMLElement | null>(null);
     useLayoutEffect(() => {
         if (!element || !isOwnHeight) return;
@@ -190,7 +190,7 @@ export function useKeyboardPanel(enabled: boolean) {
         // The menu rises by `--mobile-toolbar-gap` above the place, to meet the toolbar.
         const gap = parseFloat(getComputedStyle(document.body).getPropertyValue("--mobile-toolbar-gap")) || 0;
         const measure = () => {
-            document.body.style.setProperty("--tn-keyboard-height", `${element.offsetHeight - gap}px`);
+            document.body.style.setProperty("--tn-keyboard-place-height", `${element.offsetHeight - gap}px`);
         };
         measure();
         const observer = new ResizeObserver(measure);
@@ -265,8 +265,6 @@ const PRESS_TIMEOUT = 500;
 let pendingHandBack: { cancel(): void } | undefined;
 /** Whether the place was taken with no keyboard up, sized by the menu in it. */
 let hasOwnHeightPlace = false;
-/** The `--tn-keyboard-height` of the keyboard, which a place of the menu's own height covers. */
-let keyboardHeight = "";
 /** Whether `useClosedByToolbarTap` is closing a menu from within the click of its press. */
 let isClosingInClick = false;
 /** Called as `keyboard-panel-open` is set on the body or cleared. */
@@ -283,9 +281,6 @@ function takeKeyboardPlace(isOwnHeight: boolean) {
         return;
     }
     hasOwnHeightPlace = isOwnHeight;
-    if (isOwnHeight) {
-        keyboardHeight = document.body.style.getPropertyValue("--tn-keyboard-height");
-    }
     setKeyboardPanelOpen(true);
     holdVisibleBottom(true);
 }
@@ -315,7 +310,7 @@ function handBackKeyboardPlace() {
         if (pendingHandBack === handBack) pendingHandBack = undefined;
         if (hasOwnHeightPlace) {
             hasOwnHeightPlace = false;
-            document.body.style.setProperty("--tn-keyboard-height", keyboardHeight);
+            document.body.style.removeProperty("--tn-keyboard-place-height");
         }
         setKeyboardPanelOpen(false);
         holdVisibleBottom(false);

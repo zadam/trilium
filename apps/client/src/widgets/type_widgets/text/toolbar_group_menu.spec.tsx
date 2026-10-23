@@ -66,7 +66,7 @@ describe("createToolbarGroupMenuHost", () => {
                 "mobile-bottom-menu", "keyboard-panel", "keyboard-panel-own-height"
             ]));
             await vi.waitFor(() => {
-                expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("320px");
+                expect(document.body.style.getPropertyValue("--tn-keyboard-place-height")).toBe("320px");
             });
             expect(document.body.classList).toContain("keyboard-panel-open");
         } finally {
