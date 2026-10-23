@@ -290,7 +290,11 @@
     "row-insert-above": "Вставить строку сверху",
     "new-column-relation": "Отношение...",
     "properties": "Свойства таблицы...",
-    "properties-title": "Свойства таблицы"
+    "properties-title": "Свойства таблицы",
+    "column-note-id": "ID заметки",
+    "column-title": "Название",
+    "column-date-created": "Создана",
+    "column-date-modified": "Изменена"
   },
   "add_label": {
     "add_label": "Добавить метку",
