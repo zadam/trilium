@@ -55,6 +55,31 @@ pnpm exec tsx scripts/flatpak/generate-sources.mts ../org.triliumnotes.Trilium
 commit. The pinned commit must be **pushed** — Flathub clones `TriliumNext/Trilium` at
 that SHA.
 
+To build and run the Flathub recipe locally, without touching the packaging repo:
+
+```sh
+pnpm desktop:flathub-build   # scripts/flatpak/build-local.mts
+pnpm desktop:flathub-start
+```
+
+`build-local.mts` renders the same manifest into `apps/desktop/out/flathub/` with the git
+source swapped for a `type: dir` source over the working tree, so uncommitted changes are
+built and nothing needs committing or pushing. `skip` matches exact relative paths, not
+patterns, so the script lists every path `git ls-files --others --ignored --directory`
+reports (~200: each `node_modules`, `dist`, …). `.git` stays in: the manifest's
+`chore:update-build-info --from-commit` reads `git log`, and the local build keeps
+Flathub's build commands unchanged. It regenerates `generated-sources.json` only when the
+working tree's lockfile changes, and installs through `org.flatpak.Builder` as branch `local`, beside the Flathub install. An
+install becomes flatpak's `current` branch, which the desktop launcher runs, so the script
+puts the previous one back (`flatpak info` cannot report it once several are installed;
+the script reads the `app/<id>/current` link).
+`flathub:start` runs that branch on its own `trilium-data-local` and Electron data dirs
+under `~/.var/app/org.triliumnotes.Trilium`, so a dev build never migrates the real
+sandboxed database. Without `flatpak-node-generator` on PATH it runs the generator on the
+Builder's Python from `~/.cache/flatpak-builder-tools` (cloned at the CI pin), raising
+aiohttp 3.10's 8190-byte header limit, which GitHub's release responses exceed. A full
+build takes about ten minutes.
+
 ## Settled decisions and why (do not relitigate without new facts)
 
 - **From source, not repackaged.** The AppImage-extract fallback (Zettlr-style) exists

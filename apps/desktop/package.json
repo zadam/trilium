@@ -21,6 +21,8 @@
     "electron-forge:package": "pnpm build && electron-forge package dist",
     "electron-forge:test-packaged": "pnpm electron-forge:package && tsx scripts/test-packaged.ts",
     "electron-forge:start":"pnpm build && electron-forge start dist",
+    "flathub:build": "tsx ../../scripts/flatpak/build-local.mts",
+    "flathub:start": "flatpak run --branch=local --env=TRILIUM_DATA_DIR=$HOME/.var/app/org.triliumnotes.Trilium/data/trilium-data-local --env=TRILIUM_ELECTRON_DATA_DIR=$HOME/.var/app/org.triliumnotes.Trilium/config/trilium-electron-local org.triliumnotes.Trilium",
     "e2e": "pnpm build && cross-env TRILIUM_INTEGRATION_TEST=memory-no-store TRILIUM_PORT=8082 TRILIUM_DATA_DIR=data-e2e TRILIUM_ELECTRON_DATA_DIR=data-e2e-electron-8082 ELECTRON_IS_DEV=0 playwright test",
     "generate-setup-banners": "tsx electron-forge/setup-icon/generate/generate.mts",
     "generate-dmg-background": "tsx electron-forge/dmg-background/generate.mts",
