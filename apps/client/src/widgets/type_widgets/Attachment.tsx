@@ -23,6 +23,7 @@ import content_renderer, { hasRenderedPreview } from "../../services/content_ren
 import froca from "../../services/froca";
 import image from "../../services/image";
 import { getAttachmentImageUrl } from "../../services/image_urls";
+import importService from "../../services/import";
 import { type ViewScope } from "../../services/link";
 import options from "../../services/options";
 import protected_session_holder from "../../services/protected_session_holder";
@@ -35,7 +36,7 @@ import { ExternallyControlledCollapsible } from "../react/Collapsible";
 import Dropdown from "../react/Dropdown";
 import { FormDropdownDivider, FormListItem } from "../react/FormList";
 import HelpButton from "../react/HelpButton";
-import { useAttachments, useTriliumEvent } from "../react/hooks";
+import { useAttachments, useFileDrop, useTriliumEvent } from "../react/hooks";
 import Icon from "../react/Icon";
 import ImageViewer from "../react/ImageViewer";
 import NoItems from "../react/NoItems";
@@ -54,14 +55,19 @@ const CanvasDrawingDetail = lazy(() =>
  * Displays the full list of attachments of a note and allows the user to interact with them.
  */
 export function AttachmentList({ note }: TypeWidgetProps) {
+    const containerRef = useRef<HTMLDivElement>(null);
     const attachments = useAttachments(note);
     const groups = useMemo(() => partitionAttachmentsByGroup(attachments), [ attachments ]);
     // Nothing to fold away until the app has made an attachment of its own, which most notes never give
     // it reason to — so an ordinary note's list looks exactly as it did.
     const hasFoldedAway = groups.system.length > 0;
+    const isDraggingFiles = useFileDrop(containerRef, (files) => {
+        const shrinkImages = options.is("compressImages");
+        void importService.uploadFiles("attachments", note.noteId, files, { shrinkImages });
+    });
 
     return (
-        <div className="attachment-list-container">
+        <div ref={containerRef} className="attachment-list-container">
             <AttachmentListHeader noteId={note.noteId} />
             <div className="attachment-list-body">
                 {groups.user.length ? (
@@ -88,6 +94,12 @@ export function AttachmentList({ note }: TypeWidgetProps) {
                     opened on the last. */}
                 {hasFoldedAway && <SystemAttachments key={note.noteId} attachments={groups.system} />}
             </div>
+            {isDraggingFiles && (
+                <div className="attachment-list-drop-overlay">
+                    <Icon icon="bx bx-cloud-upload" />
+                    {t("attachment_list.drop_files")}
+                </div>
+            )}
         </div>
     );
 }

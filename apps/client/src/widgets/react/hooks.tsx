@@ -1886,6 +1886,88 @@ async function warnIfArchivedNotesHidden(addedNoteIds: string[]) {
 }
 
 /**
+ * Accepts files dragged onto `containerRef` from outside the page and passes them to `onDrop`.
+ * Returns whether such a drag is over the container.
+ */
+export function useFileDrop(
+    containerRef: RefObject<HTMLElement | null>,
+    onDrop: (files: File[]) => void
+) {
+    const [ isDraggedOver, setIsDraggedOver ] = useState(false);
+    const onDropRef = useRef(onDrop);
+    onDropRef.current = onDrop;
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        // A drag that starts in the page, such as an image, can also carry files.
+        let isDragFromPage = false;
+        // `dragenter` and `dragleave` also fire when the drag moves between the children.
+        let depth = 0;
+
+        const carriesFiles = (e: DragEvent) =>
+            !isDragFromPage && !!e.dataTransfer?.types.includes("Files");
+        const markDragFromPage = () => { isDragFromPage = true; };
+        const clearDragFromPage = () => { isDragFromPage = false; };
+
+        function onDragEnter(e: DragEvent) {
+            if (!carriesFiles(e)) return;
+            e.preventDefault();
+            depth++;
+            setIsDraggedOver(true);
+        }
+
+        function onDragOver(e: DragEvent) {
+            if (!carriesFiles(e) || !e.dataTransfer) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "copy";
+        }
+
+        function onDragLeave(e: DragEvent) {
+            if (!carriesFiles(e)) return;
+            depth = Math.max(0, depth - 1);
+            if (depth === 0) {
+                setIsDraggedOver(false);
+            }
+        }
+
+        function onDropFiles(e: DragEvent) {
+            if (!carriesFiles(e)) return;
+            e.preventDefault();
+            depth = 0;
+            setIsDraggedOver(false);
+
+            const files = Array.from(e.dataTransfer?.files ?? []);
+            if (files.length) {
+                onDropRef.current(files);
+            }
+        }
+
+        document.addEventListener("dragstart", markDragFromPage, true);
+        document.addEventListener("dragend", clearDragFromPage, true);
+        // A drop can remove the dragged element, and its `dragend` then never reaches the document.
+        document.addEventListener("drop", clearDragFromPage);
+        container.addEventListener("dragenter", onDragEnter);
+        container.addEventListener("dragover", onDragOver);
+        container.addEventListener("dragleave", onDragLeave);
+        container.addEventListener("drop", onDropFiles);
+
+        return () => {
+            document.removeEventListener("dragstart", markDragFromPage, true);
+            document.removeEventListener("dragend", clearDragFromPage, true);
+            document.removeEventListener("drop", clearDragFromPage);
+            container.removeEventListener("dragenter", onDragEnter);
+            container.removeEventListener("dragover", onDragOver);
+            container.removeEventListener("dragleave", onDragLeave);
+            container.removeEventListener("drop", onDropFiles);
+        };
+    }, [ containerRef ]);
+
+    return isDraggedOver;
+}
+
+/**
  * Long-press + contextmenu handler bundle. `contextmenu` covers desktop right-click and
  * Android Chrome long-press; explicit touch handlers cover iOS/WKWebView where
  * `contextmenu` doesn't fire on long-press.
