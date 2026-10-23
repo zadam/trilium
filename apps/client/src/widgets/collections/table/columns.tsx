@@ -384,6 +384,13 @@ function TitleFormatter({ cell }: FormatterOpts) {
             <span
                 className={`reference-link ${colorClass}`}
                 data-href={href}
+                onMouseDown={(e) => {
+                    // The press would focus the cell, and Tabulator opens the editor on focus.
+                    if (isCtrlKey(e) || e.shiftKey || e.button === 1) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }}
                 onClick={(e) => {
                     if (isCtrlKey(e) || e.shiftKey) {
                         e.stopPropagation();

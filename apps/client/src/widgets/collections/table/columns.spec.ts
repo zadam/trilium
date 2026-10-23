@@ -791,4 +791,25 @@ describe("title column", () => {
         expect(goToLinkExt).toHaveBeenCalledWith(expect.any(MouseEvent), "#root/abc123");
         expect(cellClick).not.toHaveBeenCalled();
     });
+
+    // Tabulator opens the editor when the cell takes focus, which a press gives it before the click
+    // arrives, so a press meant for the link must not focus the cell.
+    it("keeps a Ctrl, Shift or middle press on the title from focusing the cell, but not a plain one", () => {
+        const { cellElement, title } = renderTitleCell({ editable: true });
+        const cellMouseDown = vi.fn();
+        cellElement.addEventListener("mousedown", cellMouseDown);
+        const press = (init: MouseEventInit) => {
+            const event = new MouseEvent("mousedown", { bubbles: true, cancelable: true, ...init });
+            title.dispatchEvent(event);
+            return event.defaultPrevented;
+        };
+
+        expect(press({ ctrlKey: true })).toBe(true);
+        expect(press({ shiftKey: true })).toBe(true);
+        expect(press({ button: 1 })).toBe(true);
+        expect(cellMouseDown).not.toHaveBeenCalled();
+
+        expect(press({})).toBe(false);
+        expect(cellMouseDown).toHaveBeenCalledTimes(1);
+    });
 });
