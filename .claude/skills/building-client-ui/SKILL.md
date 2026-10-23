@@ -138,6 +138,12 @@ Rules for both:
   - a confirm (Delete note..., Reset..., Convert to attachment...)
 
   An item that acts at once, toggles, navigates, opens a note or tab, opens a submenu, or opens a dialog that only displays information (Recent changes, Note Info, About) has no "...". Write three periods, which most catalogue keys use. The "..." belongs in the English string, before any `<kbd>` in it (`"Delete... <kbd data-command=\"deleteNotes\"></kbd>"`). When the dialog's title or a heading shows the same words, give that use its own key without the "..." (`board_view.properties` / `board_view.properties-title`).
+- **Name a menu item by what it gives the user: a verb only for an action.** This follows the Windows and macOS menu convention.
+  - An item that opens a place (a dialog, a note, a subtree, a log) is a noun, without "Show" or "Open": _Deleted notes_, _Backend log_, _SQL console_, _Help_, _Keyboard shortcuts_. The dialog's own title is usually the right noun.
+  - A toggle is a noun for the mode, never "Toggle X": _Fullscreen_, _Zen mode_, _Always on top_. Its row shows the state (`checkable`/`checked`, or `active`).
+  - A submenu is a noun: _Theme_, _Advanced_.
+  - An item that does something once, or acts on the selection, keeps an imperative verb: _Cut_, _Delete note..._, _Reload frontend_, _Switch to desktop version_, _Log out_ (the verb, not the noun "Logout"). Keep the verb as well where the noun alone would read as a toggle: _Configure launch bar..._, not _Launch bar_.
+  - "New window" is the platform phrase for opening another window. Don't write "Open new window".
 - **Style a popup by its own classes.** It lives in `<body>`, inside a `.tn-dropdown-portal` wrapper that carries the dropdown's `className`, so a rule scoped under the toggle's ancestors (`.status-bar .dropdown-menu`) never matches it. Use `dropdownContainerClassName` with top-level rules. Its z-index (1200, over dialogs) is set in `Popup.css`; `--bs-dropdown-zindex` doesn't reach it.
 
 Other floating surfaces:
