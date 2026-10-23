@@ -59,9 +59,11 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
             <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
             <FormDropdownDivider />
 
-            <ZoomControls parentComponent={parentComponent} />
-            <ToggleWindowOnTop />
-            <KeyboardActionMenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
+            {isMobile() ? <ViewModeRow /> : <>
+                <ZoomControls parentComponent={parentComponent} />
+                <ToggleWindowOnTop />
+                <KeyboardActionMenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
+            </>}
             <FormDropdownDivider />
 
             {!isMobile() && <SwitchToOptions />}
@@ -263,6 +265,20 @@ function ZoomControls({ parentComponent }: { parentComponent?: Component | null 
         </FormListItem>
     ) : (
         <MenuItem icon="bx bx-expand-alt" command="toggleFullscreen" text={t("global_menu.toggle_fullscreen")} />
+    );
+}
+
+/** Fullscreen and Zen mode in two columns, as the mobile note menu sets backlinks and note paths. */
+function ViewModeRow() {
+    return (
+        <div className="form-list-row">
+            <div className="form-list-col">
+                <MenuItem command="toggleFullscreen" icon="bx bx-expand-alt" text={t("global_menu.fullscreen")} />
+            </div>
+            <div className="form-list-col">
+                <MenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
+            </div>
+        </div>
     );
 }
 

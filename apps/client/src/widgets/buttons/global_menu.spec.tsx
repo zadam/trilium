@@ -312,4 +312,21 @@ describe("GlobalMenu", () => {
         expect([ ...topLevel, ...advanced ].some((row) => row?.startsWith("global_menu.open_new_window"))).toBe(false);
         expect([ ...topLevel, ...advanced ].some((row) => row?.startsWith("global_menu.show-cheatsheet"))).toBe(false);
     });
+
+    it("sets fullscreen and Zen mode side by side on a phone, and as rows elsewhere", async () => {
+        const pairOf = (scope: Element | null | undefined) => [ ...scope?.querySelectorAll(":scope > .form-list-row > .form-list-col") ?? [] ]
+            .map((col) => col.textContent?.trim());
+
+        const desktop = await openSubmenu("global_menu.advanced");
+        expect(pairOf(desktop.topLevelScroll)).toEqual([]);
+        expect(desktop.topLevel).toContain("global_menu.toggle_fullscreen");
+        expect(desktop.topLevel.some((row) => row?.startsWith("global_menu.toggle-zen-mode"))).toBe(true);
+        render(null, container ?? document.body);
+
+        ctrl.mobile = true;
+        const phone = await openSubmenu("global_menu.advanced");
+        expect(pairOf(phone.topLevelScroll)).toEqual([ "global_menu.fullscreen", "global_menu.toggle-zen-mode" ]);
+        expect(phone.topLevel.some((row) => row?.startsWith("global_menu.toggle_fullscreen"))).toBe(false);
+        expect(phone.topLevel.some((row) => row?.startsWith("global_menu.toggle-zen-mode"))).toBe(false);
+    });
 });
