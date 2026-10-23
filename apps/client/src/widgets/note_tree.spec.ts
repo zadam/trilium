@@ -2,9 +2,11 @@ import $ from "jquery";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import appContext from "../components/app_context.js";
+import type { EventData } from "../components/app_context.js";
 import type TabManager from "../components/tab_manager.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 import noteCreateService from "../services/note_create.js";
+import options from "../services/options.js";
 import server from "../services/server.js";
 import treeService from "../services/tree.js";
 import ws from "../services/ws.js";
@@ -134,6 +136,54 @@ describe("NoteTreeWidget", () => {
 
         // The popup's own hoisted note is passed explicitly — not the active tab's.
         expect(isHoisted).toHaveBeenCalledWith("_taskStates");
+    });
+
+    describe("restoring the active node after an entity reload", () => {
+        async function reload(follow: boolean) {
+            const widget = await renderWidget();
+            vi.spyOn(options, "is").mockImplementation((name) => name === "treeScrollFollowNavigation" && follow);
+            vi.spyOn(widget, "activityDetected").mockImplementation(() => {});
+            vi.spyOn(widget, "getActiveNode").mockReturnValue({ hasFocus: () => false } as Fancytree.FancytreeNode);
+            vi.spyOn(treeService, "getNotePath").mockReturnValue("root/parent/child");
+
+            const tree = { options: { activeVisible: true } };
+            (widget as unknown as { tree: unknown }).tree = tree;
+            let activeVisibleOnActivation: boolean | undefined;
+            const node = {
+                data: { noteId: "child" },
+                setActive: vi.fn(() => {
+                    activeVisibleOnActivation = tree.options.activeVisible;
+                })
+            };
+            const getNodeFromPath = vi.spyOn(widget, "getNodeFromPath")
+                .mockResolvedValue(node as unknown as Fancytree.FancytreeNode);
+
+            await widget.entitiesReloadedEvent({
+                loadResults: {
+                    isEmptyForTree: () => false,
+                    getAttributeRows: () => [],
+                    getBranchRows: () => [],
+                    getNoteIds: () => [],
+                    getNoteReorderings: () => []
+                }
+            } as unknown as EventData<"entitiesReloaded">);
+
+            return { getNodeFromPath, node, activeVisibleOnActivation };
+        }
+
+        it("keeps collapsed ancestors collapsed when the tree does not follow the active note (#12220)", async () => {
+            const { getNodeFromPath, node, activeVisibleOnActivation } = await reload(false);
+            expect(getNodeFromPath).toHaveBeenCalledWith("root/parent/child", false, false);
+            expect(node.setActive).toHaveBeenCalled();
+            expect(activeVisibleOnActivation).toBe(false);
+        });
+
+        it("expands to the active note when the tree follows it", async () => {
+            const { getNodeFromPath, node, activeVisibleOnActivation } = await reload(true);
+            expect(getNodeFromPath).toHaveBeenCalledWith("root/parent/child", true, false);
+            expect(node.setActive).toHaveBeenCalled();
+            expect(activeVisibleOnActivation).toBe(true);
+        });
     });
 });
 

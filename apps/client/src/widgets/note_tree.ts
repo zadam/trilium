@@ -1422,7 +1422,8 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             return;
         }
 
-        let node: Fancytree.FancytreeNode | null | undefined = await this.expandToNote(activeNotePath, false);
+        const follow = this.treeScrollFollowNavigation;
+        let node: Fancytree.FancytreeNode | null | undefined = await this.getNodeFromPath(activeNotePath, follow, false);
 
         if (node && node.data.noteId !== treeService.getNoteIdFromUrl(activeNotePath)) {
             // if the active note has been moved elsewhere then it won't be found by the path,
@@ -1446,7 +1447,14 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             this.tree.$container.focus();
         }
 
-        await node.setActive(true, { noEvents: true, noFocus: !activeNodeFocused });
+        // fancytree's `activeVisible` expands the ancestors of a node it activates.
+        const prevActiveVisible = this.tree.options.activeVisible;
+        this.tree.options.activeVisible = follow;
+        try {
+            await node.setActive(true, { noEvents: true, noFocus: !activeNodeFocused });
+        } finally {
+            this.tree.options.activeVisible = prevActiveVisible;
+        }
     }
 
     sortChildren(node: Fancytree.FancytreeNode) {
