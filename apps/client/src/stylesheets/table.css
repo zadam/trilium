@@ -123,6 +123,18 @@
     border-bottom-color: var(--col-header-arrow-inactive-color);
 }
 
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable.table-right-aligned-column {
+    .tabulator-col-title {
+        padding-right: 0;
+        padding-left: 25px;
+    }
+
+    .tabulator-col-sorter {
+        right: auto;
+        left: 4px;
+    }
+}
+
 @media (hover: hover) and (pointer: fine) {
     .tabulator .tabulator-header .tabulator-col.tabulator-sortable.tabulator-col-sorter-element:hover {
         background-color: var(--col-header-hover-background-color);

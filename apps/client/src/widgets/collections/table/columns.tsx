@@ -23,6 +23,8 @@ type ColumnType = LabelType | "relation";
 
 /** Sets a column's digits at equal widths, so that its numbers and dates line up row to row. */
 const NUMERIC_CELL_CLASS = "table-numeric-cell";
+/** Moves the header's sort arrow to the left, so that a right-aligned title ends where its cells do. */
+const RIGHT_ALIGNED_COLUMN_CLASS = "table-right-aligned-column";
 
 export interface AttributeDefinitionInformation {
     name: string;
@@ -73,7 +75,7 @@ const labelTypeMappings: Record<ColumnType, Partial<ColumnDefinition>> = {
     },
     number: {
         editor: "number",
-        cssClass: NUMERIC_CELL_CLASS,
+        cssClass: `${NUMERIC_CELL_CLASS} ${RIGHT_ALIGNED_COLUMN_CLASS}`,
         hozAlign: "right",
         headerHozAlign: "right",
         sorter: "number"
@@ -166,6 +168,7 @@ export function buildColumnDefinitions({ info, movableRows, existingColumnData, 
             title: "#",
             headerSort: false,
             hozAlign: "center",
+            headerHozAlign: "center",
             resizable: false,
             frozen: true,
             cssClass: "table-row-number",

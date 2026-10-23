@@ -200,7 +200,7 @@ describe("buildColumnDefinitions — typed columns", () => {
         const classOf = (name: string) => columns.find((column) => column.field === `labels.${name}`)?.cssClass;
 
         for (const name of [ "date", "datetime", "time", "number" ]) {
-            expect(classOf(name)).toBe("table-numeric-cell");
+            expect(classOf(name)?.split(" ")).toContain("table-numeric-cell");
         }
         expect(classOf("text")).toBeUndefined();
     });
@@ -215,7 +215,20 @@ describe("buildColumnDefinitions — typed columns", () => {
         const columnOf = (name: string) => columns.find((column) => column.field === `labels.${name}`);
 
         expect(columnOf("number")).toMatchObject({ hozAlign: "right", headerHozAlign: "right" });
+        expect(columnOf("number")?.cssClass?.split(" ")).toContain("table-right-aligned-column");
         expect(columnOf("date")?.hozAlign).toBeUndefined();
+        expect(columnOf("date")?.cssClass?.split(" ")).not.toContain("table-right-aligned-column");
+    });
+
+    it("centers the row number column's header over its numbers", () => {
+        const [ rowNumberColumn ] = buildColumnDefinitions({
+            info: [],
+            movableRows: false,
+            existingColumnData: undefined,
+            rowNumberHint: 1
+        });
+
+        expect(rowNumberColumn).toMatchObject({ title: "#", hozAlign: "center", headerHozAlign: "center" });
     });
 
     it("hands a url column's href through the scheme guard rather than linking the value as stored", () => {

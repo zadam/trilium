@@ -124,6 +124,8 @@ function SqlResultTable({ rows }: { rows: object[] }) {
                     formatter: "rownum",
                     width: 60,
                     hozAlign: "right",
+                    headerHozAlign: "right",
+                    headerSort: false,
                     frozen: true,
                     cssClass: "table-row-number"
                 },
