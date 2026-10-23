@@ -23,8 +23,6 @@
     --cell-horiz-padding-size: 8px;
     --cell-vert-padding-size: 8px;
 
-    --cell-editable-hover-background-color: color-mix(in srgb, var(--table-tint-color) 6%, transparent);
-
     --cell-editing-ring-color: var(--input-focus-outline-color, color-mix(in srgb, var(--table-tint-color) 40%, transparent));
     --cell-editing-ring-width: 2px;
     --cell-editing-background-color: var(--input-focus-background, var(--table-background-color));
@@ -221,10 +219,8 @@
     background-color: var(--range-border-color);
 }
 
-@media (hover: hover) and (pointer: fine) {
-    .tabulator:not(.tabulator-editing) .tabulator-row .tabulator-cell.tabulator-editable:hover {
-        background-color: var(--cell-editable-hover-background-color);
-    }
+.tabulator:not(.tabulator-editing) .tabulator-row .tabulator-cell.tabulator-editable {
+    cursor: pointer;
 }
 
 .tabulator-row .tabulator-cell.tabulator-editing {
