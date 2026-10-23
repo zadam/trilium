@@ -36,6 +36,7 @@
         "apps/edit-docs/demo/**": true,
         "**/.claude/worktrees/**": true
     },
+    "vitest.rootConfig": "vitest.config.ts",
     "files.watcherExclude": {
         "**/.claude/worktrees/**": true
     },
