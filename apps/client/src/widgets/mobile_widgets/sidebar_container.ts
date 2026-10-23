@@ -1,5 +1,6 @@
 import type { EventData } from "../../components/app_context.js";
 import type { Screen } from "../../components/mobile_screen_switcher.js";
+import options from "../../services/options.js";
 import type BasicWidget from "../basic_widget.js";
 import FlexContainer, { type FlexDirection } from "../containers/flex_container.js";
 
@@ -28,11 +29,14 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
     private originalSidebarTransition: string;
     private originalBackdropTransition: string;
     private screenWidth: number;
+    /** Whether the sidebar is shown in tablet mode, where it sits next to the note (same option as the left pane on desktop). */
+    private leftPaneVisible: boolean;
 
     constructor(screenName: Screen, direction: FlexDirection) {
         super(direction);
 
         this.screenName = screenName;
+        this.leftPaneVisible = options.is("leftPaneVisible");
         this.currentTranslate = -100;
         this.translatePercentage = 0;
         this.dragState = DRAG_STATE_NONE;
@@ -43,6 +47,9 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
 
     doRender() {
         super.doRender();
+
+        // Only has an effect in tablet mode, see `style.css`.
+        this.$widget.toggleClass("left-pane-hidden", !this.leftPaneVisible);
 
         document.addEventListener("touchstart", (e) => this.#onDragStart(e));
         document.addEventListener("touchmove", (e) => this.#onDragMove(e), { passive: false });
@@ -173,6 +180,13 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
 
         this.currentTranslate = isOpen ? 0 : -100;
         this.dragState = DRAG_STATE_NONE;
+    }
+
+    setLeftPaneVisibilityEvent({ leftPaneVisible }: EventData<"setLeftPaneVisibility">) {
+        this.leftPaneVisible = leftPaneVisible ?? !this.leftPaneVisible;
+        this.$widget.toggleClass("left-pane-hidden", !this.leftPaneVisible);
+
+        options.save("leftPaneVisible", this.leftPaneVisible.toString());
     }
 
     activeScreenChangedEvent({ activeScreen }: EventData<"activeScreenChanged">) {
