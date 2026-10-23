@@ -197,20 +197,36 @@ async function writeGeneratedPages(mapping: NoteMapping) {
 
     const meta = JSON.parse(await fs.readFile(path.join(mapping.path, "!!!meta.json"), "utf-8")) as NoteMetaFile;
     for (const page of pages) {
-        const dataFile = findDataFile(meta.files, page.noteId);
-        if (!dataFile?.endsWith(".md")) {
+        const found = findDataFile(meta.files, page.noteId);
+        if (!found?.dataFile.endsWith(".md")) {
             throw new Error(`Generated page ${page.noteId} needs a Markdown data file in ${mapping.path}.`);
         }
 
-        await fs.writeFile(path.join(mapping.path, dataFile), await page.render());
+        const markdown = await toExportedMarkdown(await page.render(), found.note.title ?? "");
+        await fs.writeFile(path.join(mapping.path, found.dataFile), markdown);
     }
 }
 
-/** The path of a note's data file relative to the export root, built from its ancestors' folders. */
-function findDataFile(notes: NoteMeta[], noteId: string, dir = ""): string | undefined {
+/**
+ * Converts generated Markdown to the form `MarkdownExportProvider` writes, so an import that no
+ * export follows leaves the page unchanged on disk.
+ */
+async function toExportedMarkdown(markdown: string, title: string) {
+    const { markdownImportService, markdownExportService } = await import("@triliumnext/core");
+    const html = markdownImportService.renderToHtml(markdown, title);
+    const exported = markdownExportService.toMarkdown(html);
+    return exported.startsWith("# ") ? exported : `# ${title}\n${exported}`;
+}
+
+/** A note's meta and the path of its data file relative to the export root. */
+function findDataFile(
+    notes: NoteMeta[], noteId: string, dir = ""
+): { note: NoteMeta; dataFile: string } | undefined {
     for (const note of notes) {
         if (note.noteId === noteId) {
-            return note.dataFileName ? path.join(dir, note.dataFileName) : undefined;
+            return note.dataFileName
+                ? { note, dataFile: path.join(dir, note.dataFileName) }
+                : undefined;
         }
 
         const found = findDataFile(note.children ?? [], noteId, path.join(dir, note.dirFileName ?? ""));
