@@ -3,11 +3,13 @@ on:
   push:
     branches:
       - main
+      - stable
       - standalone
       - "release/*"
   pull_request:
     branches:
       - main
+      - stable
       - standalone
       - "release/*"
 
