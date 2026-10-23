@@ -301,7 +301,6 @@ describe("GlobalMenu", () => {
         ctrl.mobile = true;
         const { topLevel, advanced } = await openAdvanced();
 
-        expect(topLevel).toContain("global_menu.show_deleted_notes");
         for (const key of [ "global_menu.open_new_window", "global_menu.show-cheatsheet", "global_menu.show_shared_notes_subtree",
             "global_menu.show_space_usage", "global_menu.switch_to_desktop_version" ]) {
             expect(topLevel.some((row) => row?.startsWith(key))).toBe(false);
@@ -313,20 +312,27 @@ describe("GlobalMenu", () => {
         expect([ ...topLevel, ...advanced ].some((row) => row?.startsWith("global_menu.show-cheatsheet"))).toBe(false);
     });
 
-    it("sets fullscreen and Zen mode side by side on a phone, and as rows elsewhere", async () => {
-        const pairOf = (scope: Element | null | undefined) => [ ...scope?.querySelectorAll(":scope > .form-list-row > .form-list-col") ?? [] ]
-            .map((col) => col.textContent?.trim());
+    it("pairs the history views, and fullscreen with Zen mode, on a phone, and keeps them as rows elsewhere", async () => {
+        const pairsOf = (scope: Element | null | undefined) => [ ...scope?.querySelectorAll(":scope > .form-list-row") ?? [] ]
+            .map((row) => [ ...row.querySelectorAll(":scope > .form-list-col") ].map((col) => col.textContent?.trim()));
+        const pairedKeys = [ "recent_changes.title", "global_menu.show_deleted_notes", "global_menu.toggle_fullscreen", "global_menu.toggle-zen-mode" ];
 
         const desktop = await openSubmenu("global_menu.advanced");
-        expect(pairOf(desktop.topLevelScroll)).toEqual([]);
+        expect(pairsOf(desktop.topLevelScroll)).toEqual([]);
+        expect(desktop.topLevel).toContain("global_menu.show_deleted_notes");
         expect(desktop.topLevel).toContain("global_menu.toggle_fullscreen");
         expect(desktop.topLevel.some((row) => row?.startsWith("global_menu.toggle-zen-mode"))).toBe(true);
         render(null, container ?? document.body);
 
         ctrl.mobile = true;
         const phone = await openSubmenu("global_menu.advanced");
-        expect(pairOf(phone.topLevelScroll)).toEqual([ "global_menu.fullscreen", "global_menu.toggle-zen-mode" ]);
-        expect(phone.topLevel.some((row) => row?.startsWith("global_menu.toggle_fullscreen"))).toBe(false);
-        expect(phone.topLevel.some((row) => row?.startsWith("global_menu.toggle-zen-mode"))).toBe(false);
+        expect(phone.topLevel[0]).toBe("global_menu.search_notes");
+        expect(pairsOf(phone.topLevelScroll)).toEqual([
+            [ "recent_changes.title", "global_menu.show_deleted_notes" ],
+            [ "global_menu.fullscreen", "global_menu.toggle-zen-mode" ]
+        ]);
+        for (const key of pairedKeys) {
+            expect(phone.topLevel.some((row) => row?.startsWith(key))).toBe(false);
+        }
     });
 });

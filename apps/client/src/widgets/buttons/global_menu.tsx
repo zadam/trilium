@@ -49,17 +49,24 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
             </>}
             mobileBackdrop
         >
-            {isMobile() && <>
+            {isMobile() ? <>
                 <MenuItem command="searchNotes" icon="bx bx-search" text={t("global_menu.search_notes")} />
-                <MenuItem command="showRecentChanges" icon="bx bx-history" text={t("recent_changes.title")} />
-                <FormDropdownDivider />
+                <MenuItemColumns>
+                    <MenuItem command="showRecentChanges" icon="bx bx-history" text={t("recent_changes.title")} />
+                    <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
+                </MenuItemColumns>
+            </> : <>
+                <MenuItem command="openNewWindow" icon="bx bx-window-open" text={t("global_menu.open_new_window")} />
+                <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
             </>}
-
-            {!isMobile() && <MenuItem command="openNewWindow" icon="bx bx-window-open" text={t("global_menu.open_new_window")} />}
-            <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
             <FormDropdownDivider />
 
-            {isMobile() ? <ViewModeRow /> : <>
+            {isMobile() ? (
+                <MenuItemColumns>
+                    <MenuItem command="toggleFullscreen" icon="bx bx-expand-alt" text={t("global_menu.fullscreen")} />
+                    <MenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
+                </MenuItemColumns>
+            ) : <>
                 <ZoomControls parentComponent={parentComponent} />
                 <ToggleWindowOnTop />
                 <KeyboardActionMenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
@@ -268,16 +275,11 @@ function ZoomControls({ parentComponent }: { parentComponent?: Component | null 
     );
 }
 
-/** Fullscreen and Zen mode in two columns, as the mobile note menu sets backlinks and note paths. */
-function ViewModeRow() {
+/** Sets menu items side by side, one per column, as the mobile note menu sets backlinks and note paths. */
+function MenuItemColumns({ children }: { children: ComponentChildren[] }) {
     return (
         <div className="form-list-row">
-            <div className="form-list-col">
-                <MenuItem command="toggleFullscreen" icon="bx bx-expand-alt" text={t("global_menu.fullscreen")} />
-            </div>
-            <div className="form-list-col">
-                <MenuItem command="toggleZenMode" icon="bx bxs-yin-yang" text={t("global_menu.toggle-zen-mode")} />
-            </div>
+            {children.map((child, index) => <div key={index} className="form-list-col">{child}</div>)}
         </div>
     );
 }
