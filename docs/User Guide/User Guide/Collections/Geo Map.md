@@ -19,7 +19,7 @@ Starting with v0.105.0, the geomap uses MapLibre GL which requires WebGL v1 supp
 
 If the map could not be drawn because WebGL could not be initialized, an error message will appear instead of the map (_This map can't be drawn because WebGL isn't available…_).
 
-The button that shows your location is offered only when Trilium is reached over HTTPS, in the desktop application or in the mobile application. Browsers refuse to share the location of a device with a page served over plain HTTP, so on such a server the button does not appear.
+The button that shows your location is offered only when Trilium is reached over HTTPS, in the desktop application or in the mobile application. Browsers refuse to share the location of a device with a page served over plain HTTP, so on such a server the button does not appear. The desktop application on Linux does not offer it either, because it has no way to find the location of the device there.
 
 ## Interaction
 
