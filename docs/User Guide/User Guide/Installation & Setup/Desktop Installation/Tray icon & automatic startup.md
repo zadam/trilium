@@ -43,6 +43,10 @@ Two options control the automatic startup functionality in <a class="reference-
 *   If _Start minimized to tray_ is also enabled, the application will start up in the background and can be revealed from the tray icon.
     *   This only applies if _Launch on startup_ is enabled, manual starts are not impacted by this option.
 
+### Linux: Flatpak
+
+The Flatpak cannot write to the autostart directory itself, so _Launch on startup_ asks the desktop's Background portal instead, which creates `~/.config/autostart/org.triliumnotes.Trilium.desktop`. If the desktop environment is set to ask before letting applications run in the background, it shows a prompt the first time; denying it leaves _Launch on startup_ without effect, and the permission can be changed later from the system settings.
+
 ### Linux: custom launch command for packagers
 
 On Linux, _Launch on startup_ writes a `trilium.desktop` entry to the user's autostart directory (`$XDG_CONFIG_HOME/autostart`, usually `~/.config/autostart`). Its `Exec` line points to the AppImage when running from one, or to the running executable otherwise.
