@@ -2249,7 +2249,7 @@
   },
   "left_pane_toggle": {
     "hide_panel": "Скрыть панель",
-    "peek_panel": "Посмотреть на панель"
+    "peek_panel": "Посмотреть на панель дерева"
   },
   "move_pane_button": {
     "move_left": "Переместить влево",
