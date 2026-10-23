@@ -86,6 +86,7 @@ Clicking the title itself renames the note instead (see below). To open the note
 Simply click on a cell within a row to change its value. The change will not only reflect in the table, but also as an attribute of the corresponding note.
 
 *   The editing will respect the type of the promoted attribute, by presenting a normal text box, a number selector or a date selector for example.
+*   A boolean column shows a checkbox, which is checked or unchecked with a single click. A note without the label shows an unchecked box.
 *   It also possible to change the title of a note by clicking it.
 *   Editing relations is also possible
     *   Simply click on a relation and it will become editable. Enter the text to look for a note and click on it.

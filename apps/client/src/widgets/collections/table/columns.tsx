@@ -57,9 +57,10 @@ const labelTypeMappings: Record<ColumnType, Partial<ColumnDefinition>> = {
         editor: wrapEditor(SelectEditor)
     },
     boolean: {
-        // A checkbox, as the promoted field shows the flag. Toggling stays Tabulator's own.
+        // A checkbox, as the promoted field shows the flag. The box sets the cell itself, so the
+        // column has no editor to open.
         formatter: wrapFormatter(FlagFormatter),
-        editor: "tickCross",
+        editor: undefined,
         // Values arrive as strings ("true"/"false") from stored labels but as real booleans
         // once toggled via the editor; the boolean sorter normalizes both, whereas the default
         // string sorter treats boolean `false` as empty and orders it inconsistently.
@@ -635,18 +636,33 @@ function ColorFormatter({ cell }: FormatterOpts) {
     return <LabelValueChips values={[ color ]} labelType="color" />;
 }
 
+// `modExists` is provided by Tabulator but missing from the current type definitions.
+type TabulatorWithModExists = ReturnType<CellComponent["getTable"]> & {
+    modExists(name: string): boolean;
+};
+
 /** A flag cell as a checkbox, unticked for a note without the label. */
 function FlagFormatter({ cell }: FormatterOpts) {
     const value = cell.getValue();
-    // A stored label arrives as the text "true"/"false", but one just toggled through the tickCross
-    // editor is a real boolean. A note without the label reads as false, as the promoted checkbox
-    // shows it unticked.
+    // A stored label arrives as the text "true"/"false", but one just set from the box is a real
+    // boolean. A note without the label reads as false, as the promoted checkbox shows it unticked.
     const isSet = value === true || value === "true";
+    // A read-only table is built without the edit module.
+    const isEditable = (cell.getTable() as TabulatorWithModExists).modExists("edit");
 
-    // Display only: `table.css` lets clicks through to the cell, which opens the `tickCross` editor.
+    // `cell.setValue()` fires `cellEdited`, which saves the label as an edit from an editor would.
     return (
-        <label className="tn-checkbox table-flag-checkbox">
-            <input type="checkbox" checked={isSet} tabIndex={-1} aria-readonly="true" />
+        <label className={clsx("tn-checkbox table-flag-checkbox", !isEditable && "read-only")}>
+            <input
+                type="checkbox"
+                checked={isSet}
+                tabIndex={isEditable ? 0 : -1}
+                aria-readonly={!isEditable}
+                onClick={(e) => {
+                    if (!isEditable) e.preventDefault();
+                }}
+                onChange={(e) => cell.setValue(e.currentTarget.checked)}
+            />
         </label>
     );
 }

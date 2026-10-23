@@ -263,28 +263,51 @@ describe("buildColumnDefinitions — typed columns", () => {
 
         const formatter = column?.formatter;
         if (typeof formatter !== "function") throw new Error("expected a formatter of its own");
-        const format = (value: unknown) =>
-            formatter({ getValue: () => value } as CellComponent, {}, () => {}) as HTMLElement;
 
-        const checkboxOf = (value: unknown) => {
-            const element = format(value);
+        // The box toggles the cell itself, so the column opens no editor.
+        expect(column?.editor).toBeUndefined();
+
+        const checkboxOf = (value: unknown, { editable = true } = {}) => {
+            const setValue = vi.fn();
+            const cell = {
+                getValue: () => value,
+                setValue,
+                getTable: () => ({ modExists: (name: string) => editable && name === "edit" })
+            } as unknown as CellComponent;
+            const element = formatter(cell, {}, () => {}) as HTMLElement;
+            // A checkbox fires `change` only while connected, as it is inside a rendered cell.
+            document.body.append(element);
             const checkbox = element.querySelector<HTMLInputElement>("label.tn-checkbox > input[type=checkbox]");
             if (!checkbox) throw new Error("expected a checkbox in a tn-checkbox label");
             expect(element.querySelector(".tn-chip")).toBeNull();
-            return checkbox;
+            return { checkbox, setValue };
         };
 
-        // A stored label holds the text "true", a value fresh from the tickCross editor a real
-        // boolean.
+        // A stored label holds the text "true", a value set from the box a real boolean.
         for (const set of [ "true", true ]) {
-            expect(checkboxOf(set).checked).toBe(true);
+            expect(checkboxOf(set).checkbox.checked).toBe(true);
         }
         // A note without the label reads as false, as the promoted checkbox shows it unticked.
         for (const unset of [ "false", false, "", undefined, null ]) {
-            expect(checkboxOf(unset).checked).toBe(false);
+            expect(checkboxOf(unset).checkbox.checked).toBe(false);
         }
-        // The cell's editor does the toggling, so the box stays out of the tab order.
-        expect(checkboxOf(true).tabIndex).toBe(-1);
+
+        // A click writes the new value straight to the cell, which saves it as an edit.
+        const unticked = checkboxOf(null);
+        expect(unticked.checkbox.tabIndex).toBe(0);
+        act(() => unticked.checkbox.click());
+        expect(unticked.setValue).toHaveBeenCalledExactlyOnceWith(true);
+
+        const ticked = checkboxOf("true");
+        act(() => ticked.checkbox.click());
+        expect(ticked.setValue).toHaveBeenCalledExactlyOnceWith(false);
+
+        // A read-only table, built without the edit module, keeps the box as it is.
+        const readOnly = checkboxOf("true", { editable: false });
+        expect(readOnly.checkbox.tabIndex).toBe(-1);
+        act(() => readOnly.checkbox.click());
+        expect(readOnly.checkbox.checked).toBe(true);
+        expect(readOnly.setValue).not.toHaveBeenCalled();
     });
 });
 
