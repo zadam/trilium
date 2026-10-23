@@ -3,7 +3,7 @@ To provide frontend logs, we need to open the Developer Console. Often the easie
 
 If that doesn't work, then:
 
-*   in Trilium desktop app, go to top-left menu button -> Advanced -> Open dev tools
+*   in Trilium desktop app, go to top-left menu button -> Advanced -> Developer tools
 *   In Firefox/Chrome right-click anywhere in the page and click Inspect:
 
 ![](Frontend%20logs_error-logs-firefox-context-men.png)

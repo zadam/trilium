@@ -32,7 +32,7 @@ Since tabs are a commonly used feature, there are multiple keyboard shortcuts th
 
 ## Full screen
 
-To show Trilium in full screen, press <kbd>F11</kbd> or the <span class="tn-icon bx bx-expand-alt"></span> _Toggle fullscreen_ button in the <a class="reference-link" href="Global%20menu.md">Global menu</a>. While in full screen, the tab bar shows a <span class="tn-icon bx bx-exit-fullscreen"></span> _Leave full screen_ button before the <a class="reference-link" href="Right%20Sidebar.md">Right Sidebar</a> toggle; press it to return to the normal window.
+To show Trilium in full screen, press <kbd>F11</kbd> or the <span class="tn-icon bx bx-expand-alt"></span> _Fullscreen_ button in the <a class="reference-link" href="Global%20menu.md">Global menu</a>. While in full screen, the tab bar shows a <span class="tn-icon bx bx-exit-fullscreen"></span> _Leave full screen_ button before the <a class="reference-link" href="Right%20Sidebar.md">Right Sidebar</a> toggle; press it to return to the normal window.
 
 ## Background tabs
 

@@ -125,7 +125,7 @@ When you share a note, you actually share the entire subtree of notes beneath it
 
 ## Viewing and managing shared notes
 
-You can view a list of all shared notes by clicking on _Advanced_ → "Show shared notes subtree" in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>. This allows you to manage and navigate through all the notes you have made public.
+You can view a list of all shared notes by clicking on _Advanced_ → _Shared notes_ in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>. This allows you to manage and navigate through all the notes you have made public.
 
 ## Security considerations
 

@@ -1,7 +1,7 @@
 # Backend (server) logs
 ## Accessing via the backend log
 
-In the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>, go to _Advanced_ → _Show backend log_. This will display the current backend log (i.e. today's), with the historical information available only on disk (see below).
+In the <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a>, go to _Advanced_ → _Backend log_. This will display the current backend log (i.e. today's), with the historical information available only on disk (see below).
 
 The log is colored to make it easier to read: request status codes by class, slow SQL queries, and errors in red. The statement of a slow SQL query is highlighted the same way as in the <a class="reference-link" href="../../Advanced%20Usage/Database/Manually%20altering%20the%20database/SQL%20Console.md">SQL Console</a>, using the color scheme of code notes (see _Color schemes_ in <a class="reference-link" href="../../Note%20Types/Code.md">Code</a>).
 

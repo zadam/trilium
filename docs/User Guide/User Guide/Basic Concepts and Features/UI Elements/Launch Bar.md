@@ -32,7 +32,7 @@ The launch bar on mobile uses a different configuration from the desktop one. Th
 
 To configure the launch bar on mobile, go to <a class="reference-link" href="Global%20menu.md">Global menu</a> and select _Configure launch bar_.
 
-The configure the mobile launch bar while on the desktop (especially useful to configure more complicated launchers such as scripts or custom widgets), go to <a class="reference-link" href="Global%20menu.md">Global menu</a> → Advanced → Show hidden subtree and look for the _Mobile Launch Bar_ section. While in the hidden subtree, it's also possible to drag launchers between the _Mobile Launch Bar_ and (Desktop) _Launch Bar_ sections.
+The configure the mobile launch bar while on the desktop (especially useful to configure more complicated launchers such as scripts or custom widgets), go to <a class="reference-link" href="Global%20menu.md">Global menu</a> → Advanced → Hidden notes and look for the _Mobile Launch Bar_ section. While in the hidden subtree, it's also possible to drag launchers between the _Mobile Launch Bar_ and (Desktop) _Launch Bar_ sections.
 
 ### Adding/removing and reordering launchers
 
