@@ -1607,28 +1607,29 @@
     "zoom_in": "Увеличить масштаб",
     "configure_launchbar": "Настроить панель запуска...",
     "reload_frontend": "Перезагрузить интерфейс",
-    "show_help": "Показать справку",
-    "show-cheatsheet": "Быстрая справка",
+    "show_help": "Помощь",
+    "show-cheatsheet": "Сочетания клавиш",
     "toggle-zen-mode": "Режим дзен",
-    "open_new_window": "Открыть новое окно",
+    "open_new_window": "Новое окно",
     "reset_zoom_level": "Сбросить масштабирование",
-    "open_dev_tools": "Открыть Панель разработчика",
-    "open_sql_console": "Открыть консоль SQL",
-    "open_search_history": "Открыть историю поиска",
-    "show_backend_log": "Показать журнал сервера",
-    "show_hidden_subtree": "Показать скрытое поддерево",
+    "open_dev_tools": "Инструменты разработчика",
+    "open_sql_console": "Консоль SQL",
+    "open_search_history": "История поиска",
+    "show_backend_log": "Журнал сервера",
+    "show_hidden_subtree": "Скрытые заметки",
     "about": "О Trilium Notes",
     "reload_hint": "Перезагрузка может помочь устранить некоторые визуальные сбои без перезапуска всего приложения.",
-    "open_sql_console_history": "Открыть историю консоли SQL",
-    "show_shared_notes_subtree": "Поддерево общедоступных заметок",
+    "open_sql_console_history": "История консоли SQL",
+    "show_shared_notes_subtree": "Общедоступные заметки",
     "switch_to_mobile_version": "Переключиться на мобильную версию",
     "switch_to_desktop_version": "Переключиться на настольную версию",
     "new-version-available": "Доступно обновление",
     "download-update": "Обновить до {{latestVersion}}",
     "search_notes": "Поиск заметок",
-    "show_deleted_notes": "Показать удалённые заметки",
-    "show_space_usage": "Показать использование места",
-    "theme": "Тема"
+    "show_deleted_notes": "Удалённые заметки",
+    "show_space_usage": "Использование места",
+    "theme": "Тема",
+    "fullscreen": "На весь экран"
   },
   "zpetne_odkazy": {
     "no_backlinks": "Нет заметок с ссылкой на эту."
@@ -2629,7 +2630,7 @@
     "note_revisions_snapshot_description_short": "Промежуток времени, по истечении которого создаётся новая версия заметки."
   },
   "title_bar_buttons": {
-    "window-on-top": "Закрепить окно"
+    "window-on-top": "Поверх всех окон"
   },
   "abstract_search_option": {
     "remove_this_search_option": "Удалить эту опцию поиска",
