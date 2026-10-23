@@ -35,7 +35,8 @@ describe("markdown", () => {
             .map((mimeType) => normalizeMimeTypeForCKEditor(mimeType.mime))
             .filter((language) => getMarkdownNameFromCKEditorLanguage(language) !== undefined);
         expect(languages).toEqual(expect.arrayContaining([
-            "text-plain", "text-x-csrc", "text-x-c-src", "text-typescript-jsx"
+            "text-plain", "text-x-csrc", "text-x-c-src", "text-typescript-jsx", "text-x-scala",
+            "text-jinja2"
         ]));
 
         for (const language of languages) {

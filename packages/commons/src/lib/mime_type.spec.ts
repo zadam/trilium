@@ -54,6 +54,26 @@ describe("getMimeTypeFromMarkdownName", () => {
         expect(getMimeTypeFromMarkdownName("clike")?.mime).toBe("text/x-csrc");
     });
 
+    it("resolves the fence names of GitHub Linguist", () => {
+        expect(getMimeTypeFromMarkdownName("scala")?.mime).toBe("text/x-scala");
+        expect(getMimeTypeFromMarkdownName("restructuredtext")?.mime).toBe("text/x-rst");
+        expect(getMimeTypeFromMarkdownName("rst")?.mime).toBe("text/x-rst");
+        expect(getMimeTypeFromMarkdownName("matlab")?.mime).toBe("text/x-octave");
+        expect(getMimeTypeFromMarkdownName("lhs")?.mime).toBe("text/x-literate-haskell");
+        expect(getMimeTypeFromMarkdownName("jinja")?.mime).toBe("text/jinja2");
+        expect(getMimeTypeFromMarkdownName("tex")?.mime).toBe("text/x-stex");
+        expect(getMimeTypeFromMarkdownName("roff")?.mime).toBe("text/troff");
+    });
+
+    it("lets no alias take the mdLanguageCode of another entry", () => {
+        for (const mimeType of MIME_TYPES_DICT) {
+            if (mimeType.mdLanguageCode) {
+                const resolved = getMimeTypeFromMarkdownName(mimeType.mdLanguageCode);
+                expect(resolved?.mdLanguageCode, mimeType.mime).toBe(mimeType.mdLanguageCode);
+            }
+        }
+    });
+
     it("lists each alias on one entry only", () => {
         const aliases = MIME_TYPES_DICT.flatMap((mimeType) => mimeType.aliases ?? []);
         expect(new Set(aliases).size).toBe(aliases.length);
@@ -85,6 +105,8 @@ describe("getMarkdownNameFromCKEditorLanguage", () => {
         expect(getMarkdownNameFromCKEditorLanguage("text-x-rustsrc")).toBe("rust");
         expect(getMarkdownNameFromCKEditorLanguage("text-x-nginx-conf")).toBe("nginx");
         expect(getMarkdownNameFromCKEditorLanguage("text-typescript-jsx")).toBe("tsx");
+        expect(getMarkdownNameFromCKEditorLanguage("text-jinja2")).toBe("jinja");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-stex")).toBe("tex");
     });
 
     it("returns undefined for an unknown language or one whose names resolve elsewhere", () => {

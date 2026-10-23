@@ -19,7 +19,10 @@ describe("Markdown export", () => {
             "language-text-x-c-src": "cpp",
             "language-text-x-rustsrc": "rust",
             "language-text-typescript-jsx": "tsx",
-            "language-text-x-toml": "toml"
+            "language-text-x-toml": "toml",
+            "language-text-x-scala": "scala",
+            "language-text-jinja2": "jinja",
+            "language-text-x-literate-haskell": "literate-haskell"
         };
 
         for (const [ input, output ] of Object.entries(conversionTable)) {
