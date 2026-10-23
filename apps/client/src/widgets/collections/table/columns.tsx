@@ -57,8 +57,7 @@ const labelTypeMappings: Record<ColumnType, Partial<ColumnDefinition>> = {
         editor: wrapEditor(SelectEditor)
     },
     boolean: {
-        // The same chip a set of flags wears, one chip for the one value, so a column of flags
-        // reads the same whether each note holds one or several. Toggling stays Tabulator's own.
+        // A checkbox, as the promoted field shows the flag. Toggling stays Tabulator's own.
         formatter: wrapFormatter(FlagFormatter),
         editor: "tickCross",
         // Values arrive as strings ("true"/"false") from stored labels but as real booleans
@@ -636,15 +635,20 @@ function ColorFormatter({ cell }: FormatterOpts) {
     return <LabelValueChips values={[ color ]} labelType="color" />;
 }
 
-/** A flag cell as the chip a set of flags shows, with an unset cell holding no chip at all. */
+/** A flag cell as a checkbox, unticked for a note without the label. */
 function FlagFormatter({ cell }: FormatterOpts) {
     const value = cell.getValue();
     // A stored label arrives as the text "true"/"false", but one just toggled through the tickCross
     // editor is a real boolean. A note without the label reads as false, as the promoted checkbox
     // shows it unticked.
-    const flag = value === true || value === "true" ? "true" : "false";
+    const isSet = value === true || value === "true";
 
-    return <LabelValueChips values={[ flag ]} labelType="boolean" />;
+    // Display only: `table.css` lets clicks through to the cell, which opens the `tickCross` editor.
+    return (
+        <label className="tn-checkbox table-flag-checkbox">
+            <input type="checkbox" checked={isSet} tabIndex={-1} aria-readonly="true" />
+        </label>
+    );
 }
 
 /**

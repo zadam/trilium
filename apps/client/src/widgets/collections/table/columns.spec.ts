@@ -253,7 +253,7 @@ describe("buildColumnDefinitions — typed columns", () => {
         expect(url({ getValue: () => "https://example.com" } as CellComponent)).toBe("https://example.com");
     });
 
-    it("shows a single flag as the chip a set of flags wears, and an unset one as false", () => {
+    it("shows a single flag as a checkbox, ticked only when the flag is true", () => {
         const [ column ] = buildColumnDefinitions({
             info: [ { name: "done", type: "boolean" } ],
             movableRows: false,
@@ -266,17 +266,25 @@ describe("buildColumnDefinitions — typed columns", () => {
         const format = (value: unknown) =>
             formatter({ getValue: () => value } as CellComponent, {}, () => {}) as HTMLElement;
 
+        const checkboxOf = (value: unknown) => {
+            const element = format(value);
+            const checkbox = element.querySelector<HTMLInputElement>("label.tn-checkbox > input[type=checkbox]");
+            if (!checkbox) throw new Error("expected a checkbox in a tn-checkbox label");
+            expect(element.querySelector(".tn-chip")).toBeNull();
+            return checkbox;
+        };
+
         // A stored label holds the text "true", a value fresh from the tickCross editor a real
-        // boolean; either reads as the one chip, washed with its answer.
+        // boolean.
         for (const set of [ "true", true ]) {
-            expect(format(set).querySelector(".tn-chip")?.className).toContain("label-flag-chip-set");
-            expect(format(set).querySelector(".tn-icon")?.getAttribute("title")).toBe("true");
+            expect(checkboxOf(set).checked).toBe(true);
         }
         // A note without the label reads as false, as the promoted checkbox shows it unticked.
         for (const unset of [ "false", false, "", undefined, null ]) {
-            expect(format(unset).querySelector(".tn-chip")?.className).toContain("label-flag-chip-unset");
-            expect(format(unset).querySelector(".tn-icon")?.getAttribute("title")).toBe("false");
+            expect(checkboxOf(unset).checked).toBe(false);
         }
+        // The cell's editor does the toggling, so the box stays out of the tab order.
+        expect(checkboxOf(true).tabIndex).toBe(-1);
     });
 });
 

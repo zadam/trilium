@@ -111,6 +111,15 @@
     }
 }
 
+.tabulator-cell label.table-flag-checkbox {
+    --box-label-gap: 0;
+
+    display: inline-block;
+    height: var(--box-size, 1em);
+    vertical-align: middle;
+    pointer-events: none;
+}
+
 .tabulator-cell:not(.tabulator-editable) {
     .table-open-note {
         display: none;
