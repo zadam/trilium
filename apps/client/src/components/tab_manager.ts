@@ -37,6 +37,8 @@ export default class TabManager extends Component {
     public activeNtxId: string | null;
     public recentlyClosedTabs: TabState[];
     public tabsUpdate: SpacedUpdate;
+    /** Set while `switchToHistoryEntry()` runs: the history entry is replaced instead of pushed. */
+    private isShowingHistoryEntry = false;
 
     constructor() {
         super();
@@ -185,7 +187,11 @@ export default class TabManager extends Component {
         // update if it's the first history entry or there has been a change
         if (window.history.length === 0 || calculatedHash !== window.location?.hash) {
             // using pushState instead of directly modifying document.location because it does not trigger hashchange
-            window.history.pushState(null, "", calculatedHash);
+            if (this.isShowingHistoryEntry) {
+                window.history.replaceState(null, "", calculatedHash);
+            } else {
+                window.history.pushState(null, "", calculatedHash);
+            }
         }
 
         const activeNoteContext = this.getActiveContext();
@@ -286,6 +292,23 @@ export default class TabManager extends Component {
 
         if (notePath) {
             await noteContext.setNote(notePath, { viewScope });
+        }
+    }
+
+    /**
+     * Shows the history entry the browser went to. The state this reaches replaces the entry, so
+     * the entries after it stay reachable.
+     */
+    async switchToHistoryEntry(
+        ntxId: string | null,
+        notePath: string,
+        viewScope: Record<string, any> = {}
+    ) {
+        this.isShowingHistoryEntry = true;
+        try {
+            await this.switchToNoteContext(ntxId, notePath, viewScope);
+        } finally {
+            this.isShowingHistoryEntry = false;
         }
     }
 

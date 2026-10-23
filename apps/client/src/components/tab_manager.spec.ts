@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildNote } from "../test/easy-froca.js";
 import appContext from "./app_context.js";
@@ -309,5 +309,74 @@ describe("note contexts outside the tab row", () => {
         tm.unregisterDetachedContext(current);
         expect(tm.getCommandContext("_tree-popup")).toBeNull();
         expect(tm.getCommandContext("_nowhere")).toBeNull();
+    });
+});
+
+describe("going to an entry of the navigation history", () => {
+    let tm: TabManager;
+
+    beforeEach(() => {
+        // `appContext.triggerEvent` passes on the note switch, and an earlier test mocks it.
+        vi.restoreAllMocks();
+        buildNote({
+            id: "root",
+            title: "root",
+            children: [
+                { id: "historyA", title: "A" },
+                { id: "historyB", title: "B" },
+                { id: "historyC", title: "C" }
+            ]
+        });
+        tm = new TabManager();
+        // A note context reports a note switch through the app, which passes it to its children.
+        appContext.tabManager = tm;
+        appContext.child(tm);
+    });
+
+    afterEach(() => {
+        appContext.removeChild(tm);
+        vi.restoreAllMocks();
+        window.history.replaceState(null, "", "/");
+    });
+
+    it("rewrites the entry of another tab instead of pushing over the entries ahead", async () => {
+        const first = await tm.openEmptyTab();
+        const second = await tm.openEmptyTab();
+        await tm.activateNoteContext(first.ntxId);
+        await first.setNote("root/historyA");
+        await first.setNote("root/historyB");
+        await tm.activateNoteContext(second.ntxId);
+        await second.setNote("root/historyC");
+
+        // The browser is back on the entry of A, which the first tab has since left for B.
+        const entry = `#root/historyA?ntxId=${first.ntxId}`;
+        window.history.replaceState(null, "", entry);
+        const pushState = vi.spyOn(window.history, "pushState");
+
+        await tm.switchToHistoryEntry(first.ntxId, "root/historyA", { viewMode: "default" });
+        expect(pushState).not.toHaveBeenCalled();
+        expect(tm.activeNtxId).toBe(first.ntxId);
+        expect(first.notePath).toBe("root/historyA");
+        expect(window.location.hash).toBe(entry);
+
+        // A note opened afterwards is a new entry again.
+        await first.setNote("root/historyC");
+        expect(pushState).toHaveBeenCalledOnce();
+        expect(window.location.hash).toBe(`#root/historyC?ntxId=${first.ntxId}`);
+    });
+
+    it("rewrites the entry of a closed tab with the tab that reopens it", async () => {
+        const tab = await tm.openEmptyTab();
+        await tm.activateNoteContext(tab.ntxId);
+        window.history.replaceState(null, "", "#root/historyA?ntxId=closedTab");
+        const pushState = vi.spyOn(window.history, "pushState");
+
+        await tm.switchToHistoryEntry("closedTab", "root/historyA", { viewMode: "default" });
+
+        expect(pushState).not.toHaveBeenCalled();
+        const reopened = tm.getActiveContext();
+        expect(reopened).not.toBe(tab);
+        expect(reopened?.notePath).toBe("root/historyA");
+        expect(window.location.hash).toBe(`#root/historyA?ntxId=${reopened?.ntxId}`);
     });
 });

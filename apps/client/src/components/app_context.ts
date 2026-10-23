@@ -815,7 +815,7 @@ function registerWindowHandlers(appContext: AppContext) {
         const { notePath, ntxId, viewScope, searchString } = linkService.parseNavigationStateFromUrl(window.location.href);
 
         if (notePath || ntxId) {
-            appContext.tabManager.switchToNoteContext(ntxId, notePath, viewScope);
+            appContext.tabManager.switchToHistoryEntry(ntxId, notePath, viewScope);
         } else if (searchString) {
             appContext.triggerCommand("searchNotes", { searchString });
         }
