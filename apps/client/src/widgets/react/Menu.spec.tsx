@@ -14,9 +14,13 @@ vi.mock("../../services/keyboard_actions", async (importOriginal) => {
         ...original,
         default: {
             ...original.default,
-            getAction: vi.fn(async (name: string) => (name === "cutNotesToClipboard"
-                ? { effectiveShortcuts: [ "CommandOrControl+X" ] }
-                : undefined))
+            getAction: vi.fn(async (name: string) => {
+                const shortcuts: Record<string, string[]> = {
+                    cutNotesToClipboard: [ "CommandOrControl+X" ],
+                    deleteNotes: [ "CommandOrControl+D" ]
+                };
+                return name in shortcuts ? { effectiveShortcuts: shortcuts[name] } : undefined;
+            })
         }
     };
 });
@@ -343,7 +347,11 @@ describe("Menu with an action row", () => {
                 items: [
                     { title: "Cut", command: "cut", uiIcon: "bx bx-cut", keyboardShortcut: "cutNotesToClipboard" },
                     { title: "Copy", command: "copy", uiIcon: "bx bx-copy", enabled: false },
-                    { title: "Delete", command: "delete", uiIcon: "bx bx-trash", uiIconBadge: "bx bx-x", tooltip: "Delete, asking first" }
+                    {
+                        title: "Delete", command: "delete",
+                        uiIcon: "bx bx-trash", uiIconBadge: "bx bx-x",
+                        keyboardShortcut: "deleteNotes", tooltip: "Delete\nAsks first"
+                    }
                 ]
             },
             { kind: "separator" },
@@ -392,7 +400,7 @@ describe("Menu with an action row", () => {
         ]);
     });
 
-    it("names each action, or describes it, with the shortcut a row would show in its tooltip", async () => {
+    it("names or describes each action in its tooltip, with the shortcut on line 1", async () => {
         const { menu } = renderMenu();
         const [ cut, , remove ] = menu.querySelectorAll<HTMLElement>(".tn-menu-action");
         const tooltipText = (button: HTMLElement | undefined) => {
@@ -408,7 +416,9 @@ describe("Menu with an action row", () => {
         const shortcut = joinShortcut(formatShortcut("CommandOrControl+X"));
         await vi.waitFor(() => expect(tooltipText(cut)).toBe(`Cut (${shortcut})`));
         expect(shortcut).not.toContain("CommandOrControl");
-        expect(tooltipText(remove)).toBe("Delete, asking first");
+        const deleteKey = joinShortcut(formatShortcut("CommandOrControl+D"));
+        await vi.waitFor(() =>
+            expect(tooltipText(remove)).toBe(`Delete (${deleteKey})\nAsks first`));
     });
 
     it("gives the actions no tooltip on a phone, which has no pointer to hover with", async () => {

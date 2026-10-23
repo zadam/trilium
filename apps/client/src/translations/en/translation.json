@@ -2554,11 +2554,11 @@
     "cut": "Cut",
     "move-to": "Move to...",
     "paste-into": "Paste into",
-    "paste-into-tooltip_one": "Paste into this note as a clone",
-    "paste-into-tooltip_other": "Paste into this note as clones",
+    "paste-into-tooltip_one": "Paste into this note\nThe note will be pasted as a clone, which means it's the exact same note (not a duplicate), but in multiple places at once.",
+    "paste-into-tooltip_other": "Paste into this note\nThe notes will be pasted as clones, which means they're the exact same notes (not duplicates), but in multiple places at once.",
     "paste-after": "Paste after",
-    "paste-after-tooltip_one": "Paste after this note as a clone",
-    "paste-after-tooltip_other": "Paste after this note as clones",
+    "paste-after-tooltip_one": "Paste after this note\nThe note will be pasted as a clone, which means it's the exact same note (not a duplicate), but in multiple places at once.",
+    "paste-after-tooltip_other": "Paste after this note\nThe notes will be pasted as clones, which means they're the exact same notes (not duplicates), but in multiple places at once.",
     "duplicate": "Duplicate",
     "duplicate-with-children": "Note and its children",
     "duplicate-note-only": "This note only",
@@ -2570,7 +2570,7 @@
     "convert-to-attachment-confirm": "Are you sure you want to convert the selected notes into attachments of their parent notes? This operation only applies to Image notes, other notes will be skipped.",
     "open-in-popup": "Quick edit",
     "clone": "Copy",
-    "clone-tooltip": "Paste it elsewhere to have the same note in two places at once"
+    "clone-tooltip": "Copy for pasting as a clone somewhere else in the tree, or as a link into a note"
   },
   "read-only-info": {
     "edit-note": "Edit note"

@@ -1538,12 +1538,16 @@ export function useStaticTooltipWithKeyboardShortcut(
 ) {
     const [ keyboardShortcut, setKeyboardShortcut ] = useState<string[]>();
     // Memoized, since `useStaticTooltip` recreates the tooltip whenever its config changes.
-    const config = useMemo(() => ({
-        title: keyboardShortcut?.length
-            ? `${title} (${keyboardShortcut.map((shortcut) => joinShortcut(formatShortcut(shortcut))).join(", ")})`
-            : title,
-        ...opts
-    }), [ title, keyboardShortcut, opts ]);
+    const config = useMemo(() => {
+        if (!keyboardShortcut?.length) return { title, ...opts };
+
+        // The shortcut follows the first line, which names the action; later lines describe it.
+        const shortcuts = keyboardShortcut
+            .map((shortcut) => joinShortcut(formatShortcut(shortcut)))
+            .join(", ");
+        const [ name, ...description ] = title.split("\n");
+        return { title: [ `${name} (${shortcuts})`, ...description ].join("\n"), ...opts };
+    }, [ title, keyboardShortcut, opts ]);
     useStaticTooltip(elRef, config);
 
     useEffect(() => {
