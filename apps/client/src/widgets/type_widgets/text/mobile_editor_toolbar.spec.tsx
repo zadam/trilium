@@ -94,15 +94,18 @@ describe("useKeyboardPanel", () => {
     it("sizes the place by the menu with no keyboard, giving it back as the menu closes", async () => {
         const { editable, host } = buildPanelFixture();
         document.body.style.setProperty("--tn-keyboard-height", "300px");
+        document.body.style.setProperty("--mobile-toolbar-gap", "6px");
         const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(240);
         function Menu() {
             const { measureRef } = useKeyboardPanel(true);
             return <div ref={measureRef} />;
         }
 
+        // The menu rises by the toolbar's gap above the place, to meet the toolbar.
         act(() => render(<Menu />, host));
         expect(isKeyboardPanelOpen()).toBe(true);
-        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("240px");
+        expect(document.body.style.getPropertyValue("--tn-keyboard-height")).toBe("234px");
+        document.body.style.removeProperty("--mobile-toolbar-gap");
 
         // An entry that runs focuses the text, and no keyboard comes up to take the place over.
         await act(async () => {

@@ -165,7 +165,7 @@ function useActiveToolbarElement(editor: CKTextEditor | undefined, pluginName: "
  * the place, which it takes over without a reveal.
  *
  * With no keyboard up, the menu takes a place of its own height (`isOwnHeight`): `measureRef` on
- * its element sets `--tn-keyboard-height` to that height while it is open.
+ * its element sets `--tn-keyboard-height` to that height, less the toolbar's gap, while it is open.
  */
 export function useKeyboardPanel(enabled: boolean) {
     const [ { isPanel, replacesPanel, isOwnHeight } ] = useState(() => {
@@ -187,8 +187,10 @@ export function useKeyboardPanel(enabled: boolean) {
     useLayoutEffect(() => {
         if (!element || !isOwnHeight) return;
 
+        // The menu rises by `--mobile-toolbar-gap` above the place, to meet the toolbar.
+        const gap = parseFloat(getComputedStyle(document.body).getPropertyValue("--mobile-toolbar-gap")) || 0;
         const measure = () => {
-            document.body.style.setProperty("--tn-keyboard-height", `${element.offsetHeight}px`);
+            document.body.style.setProperty("--tn-keyboard-height", `${element.offsetHeight - gap}px`);
         };
         measure();
         const observer = new ResizeObserver(measure);
