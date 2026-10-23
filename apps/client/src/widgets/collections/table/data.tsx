@@ -8,6 +8,7 @@ import froca from "../../../services/froca";
 import { buildColumnDefinitions } from "./columns";
 import attributes from "../../../services/attributes";
 import { RefObject } from "preact";
+import { sameNoteIds } from "../NoteList";
 
 export interface TableConfig {
     tableData: {
@@ -27,10 +28,17 @@ export default function useData(note: FNote, noteIds: string[], viewConfig: Tabl
     const [ rowData, setRowData ] = useState<TableData[]>();
     const [ hasChildren, setHasChildren ] = useState<boolean>();
     const [ isSorted ] = useNoteLabelBoolean(note, "sorted");
-    // Derived during render, so that the refresh started on mount already builds the row handle.
-    const movableRows = !isReadOnly && !isSorted && note.type !== "search" && !hasChildren;
+    const canMoveRows = !isReadOnly && !isSorted && note.type !== "search";
+    const movableRows = canMoveRows && !hasChildren;
     const latestRefreshId = useRef(0);
     const columnsPending = useRef(false);
+    // Whether the current columns carry the row handle, which a refresh compares against the
+    // subtree it finds rather than waiting for `hasChildren` to trigger another refresh.
+    const columnsMovable = useRef<boolean | undefined>(undefined);
+    // The children the latest refresh walked, so that the note list arriving after the mount
+    // refresh does not walk the same tree again.
+    const walkedChildren = useRef<string[]>([]);
+    const lastNoteIds = useRef(noteIds);
 
     // Rows change far more often than the columns do, and rebuilding the columns is not free: they
     // are replaced wholesale in Tabulator, which resets the scroll — so a refresh only rebuilds
@@ -41,15 +49,15 @@ export default function useData(note: FNote, noteIds: string[], viewConfig: Tabl
     async function refresh(rebuildColumns = true) {
         const refreshId = ++latestRefreshId.current;
         columnsPending.current ||= rebuildColumns;
+        walkedChildren.current = [ ...note.children ];
         const info = getAttributeDefinitionInformation(note);
-
-        // Ensure all note IDs are loaded.
-        await froca.getNotes(noteIds);
 
         const { definitions: rowData, hasSubtree: hasChildren, rowNumber } = await buildRowDefinitions(note, info, includeArchived, maxDepth);
         if (refreshId !== latestRefreshId.current) return;
-        if (columnsPending.current) {
+        const movableRows = canMoveRows && !hasChildren;
+        if (columnsPending.current || movableRows !== columnsMovable.current) {
             columnsPending.current = false;
+            columnsMovable.current = movableRows;
             const columnDefs = buildColumnDefinitions({
                 info,
                 movableRows,
@@ -70,7 +78,19 @@ export default function useData(note: FNote, noteIds: string[], viewConfig: Tabl
         setHasChildren(hasChildren);
     }
 
-    useEffect(() => { refresh() }, [ note, noteIds, maxDepth, movableRows, isReadOnly ]);
+    useEffect(() => { refresh() }, [ note, includeArchived, maxDepth, canMoveRows, isReadOnly ]);
+
+    // The rows come from the note's branches, so a new note list only needs a refresh when it
+    // differs from the children the latest refresh walked, such as a search collection run again.
+    useEffect(() => {
+        if (noteIds === lastNoteIds.current) return;
+        lastNoteIds.current = noteIds;
+        const expected = walkedChildren.current.filter((noteId) => noteId !== "_hidden"
+            && (includeArchived || note.type === "search" || !froca.getNoteFromCache(noteId)?.isArchived));
+        if (!sameNoteIds(noteIds, expected)) {
+            refresh(false);
+        }
+    }, [ noteIds ]);
 
     useTriliumEvent("entitiesReloaded", ({ loadResults}) => {
         if (glob.device === "print") return;

@@ -273,7 +273,7 @@ export function useNoteIds(note: FNote | null | undefined, viewType: ViewTypeOpt
 }
 
 /** Order-sensitive equality for note-id lists, used to skip no-op `noteIds` updates. */
-function sameNoteIds(a: string[], b: string[]) {
+export function sameNoteIds(a: string[], b: string[]) {
     return a.length === b.length && a.every((id, index) => id === b[index]);
 }
 

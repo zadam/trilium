@@ -14,12 +14,15 @@ describe("useData", () => {
     let container: HTMLElement;
     let handlers: Map<string, (data: unknown) => void>;
     let captured: ReturnType<typeof useData> | undefined;
+    /** Every distinct row set and column set the hook has handed out, in order. */
+    let builds: { rows: Set<unknown>; columns: Set<unknown> };
     let resetNewAttributePosition: ReturnType<typeof vi.fn<() => void>>;
 
     beforeEach(() => {
         vi.clearAllMocks();
         handlers = new Map();
         captured = undefined;
+        builds = { rows: new Set(), columns: new Set() };
         resetNewAttributePosition = vi.fn();
         container = document.createElement("div");
         document.body.appendChild(container);
@@ -34,6 +37,8 @@ describe("useData", () => {
     /** Runs the hook as the table does, under a parent that can hand it a reload. */
     function Probe({ note, noteIds, isReadOnly }: { note: FNote; noteIds: string[]; isReadOnly?: boolean }) {
         captured = useData(note, noteIds, undefined, { current: undefined }, resetNewAttributePosition, isReadOnly);
+        if (captured.rowData) builds.rows.add(captured.rowData);
+        if (captured.columnDefs) builds.columns.add(captured.columnDefs);
         return null;
     }
 
@@ -150,6 +155,34 @@ describe("useData", () => {
         await settle(50);
 
         expect(captured?.rowData?.map((row) => row.title)).toEqual([ "Task 1", "Task 2" ]);
+    });
+
+    it("builds a nested table once, though its note list and its subtree are known only later", async () => {
+        const note = buildNote({
+            title: "Collection",
+            children: [ { title: "Task", children: [ { title: "Subtask" } ] }, { title: "Other" } ]
+        });
+
+        // `useNoteIds()` starts out empty and hands over the list once its search returns.
+        await mount(note, []);
+        await mount(note, [ ...note.children ]);
+
+        expect(builds.rows.size).toBe(1);
+        expect(builds.columns.size).toBe(1);
+        // The subtree keeps the rows from being dragged, and the one column set built knows it.
+        expect(captured?.movableRows).toBe(false);
+        expect(captured?.columnDefs?.[0]).toMatchObject({ title: "#", rowHandle: false });
+    });
+
+    it("rebuilds the rows for a note list that differs from the one it walked", async () => {
+        const { note, noteIds } = collection();
+        await mount(note, noteIds);
+
+        // A search collection's results change without a branch reload; only the list tells.
+        note.children.reverse();
+        await mount(note, [ ...note.children ]);
+
+        expect(captured?.rowData?.map((row) => row.title)).toEqual([ "Task 2", "Task 1" ]);
     });
 
     it("refreshes only the rows for a row change, leaving the columns be", async () => {
