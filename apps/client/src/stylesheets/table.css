@@ -13,7 +13,7 @@
     --col-header-bottom-border: 1px solid var(--main-border-color);
 
     --row-background-color: var(--table-background-color);
-    --row-hover-background-color: color-mix(in srgb, var(--table-tint-color) 4%, var(--table-background-color));
+    --row-placeholder-background-color: color-mix(in srgb, var(--table-tint-color) 4%, var(--table-background-color));
     --row-moving-background-color: color-mix(in srgb, var(--table-tint-color) 6%, var(--table-background-color));
     --row-moving-shadow: 0 4px 12px rgba(0, 0, 0, var(--dropdown-shadow-opacity, 0.2));
     --row-text-color: var(--main-text-color);
@@ -152,9 +152,8 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .tabulator .tabulator-row:not(.tabulator-moving):hover,
     .tabulator .tabulator-row.tabulator-selectable:hover {
-        background-color: var(--row-hover-background-color);
+        background-color: var(--row-background-color);
         cursor: default;
     }
 }
@@ -170,7 +169,7 @@
 }
 
 .tabulator .tabulator-row.tabulator-row-placeholder {
-    background: var(--row-hover-background-color);
+    background: var(--row-placeholder-background-color);
 }
 
 /* Cells */
