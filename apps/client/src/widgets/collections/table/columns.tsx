@@ -57,8 +57,8 @@ const labelTypeMappings: Record<ColumnType, Partial<ColumnDefinition>> = {
         editor: wrapEditor(SelectEditor)
     },
     boolean: {
-        // A checkbox, as the promoted field shows the flag. The box sets the cell itself, so the
-        // column has no editor to open.
+        // A checkbox, as the promoted field shows the flag. `editor: undefined` overrides the input
+        // editor `buildColumnDefinitions` gives every column; the box sets the cell itself.
         formatter: wrapFormatter(FlagFormatter),
         editor: undefined,
         // Values arrive as strings ("true"/"false") from stored labels but as real booleans
