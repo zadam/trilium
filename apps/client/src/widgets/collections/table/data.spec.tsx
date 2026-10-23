@@ -28,6 +28,7 @@ describe("useData", () => {
     afterEach(() => {
         render(null, container);
         container.remove();
+        vi.restoreAllMocks();
     });
 
     /** Runs the hook as the table does, under a parent that can hand it a reload. */
@@ -53,9 +54,22 @@ describe("useData", () => {
         await settle();
     }
 
-    function settle() {
+    function settle(ms = 0) {
         return act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
+            await new Promise((resolve) => setTimeout(resolve, ms));
+        });
+    }
+
+    /** Holds back the next `froca.getNotes()` call, as a cold cache does the refresh that fetches. */
+    function delayNextGetNotes() {
+        const getNotes = froca.getNotes.bind(froca);
+        let delayed = false;
+        vi.spyOn(froca, "getNotes").mockImplementation(async (...args) => {
+            if (!delayed) {
+                delayed = true;
+                await new Promise((resolve) => setTimeout(resolve, 20));
+            }
+            return getNotes(...args);
         });
     }
 
@@ -111,6 +125,31 @@ describe("useData", () => {
         expect(captured?.columnDefs?.map((column) => column.field)).toContain("labels.status");
         expect(captured?.columnDefs?.some((column) => column.editor || column.editorParams)).toBe(false);
         expect(captured?.movableRows).toBe(false);
+    });
+
+    it("gives movable rows a handle even when the first refresh finishes last", async () => {
+        const { note, noteIds } = collection();
+        delayNextGetNotes();
+        await mount(note, noteIds);
+        await settle(50);
+
+        // Without the handle column, Tabulator drags a row by any cell, and opening a cell's
+        // editor on mousedown keeps the mouseup from cancelling the drag (#12225).
+        expect(captured?.movableRows).toBe(true);
+        expect(captured?.columnDefs?.[0]).toMatchObject({ title: "#", rowHandle: true });
+    });
+
+    it("keeps an older, slower refresh from overwriting a newer one", async () => {
+        const { note, noteIds } = collection();
+        await mount(note, noteIds);
+
+        const other = buildNote({ title: "Other", children: [ { title: "Other task" } ] });
+        delayNextGetNotes();
+        await mount(other, []);
+        await mount(note, noteIds);
+        await settle(50);
+
+        expect(captured?.rowData?.map((row) => row.title)).toEqual([ "Task 1", "Task 2" ]);
     });
 
     it("refreshes only the rows for a row change, leaving the columns be", async () => {

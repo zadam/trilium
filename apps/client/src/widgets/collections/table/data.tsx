@@ -2,7 +2,7 @@ import type { ColumnDefinition } from "tabulator-tables";
 import FNote from "../../../entities/fnote";
 import { useNoteLabelBoolean, useNoteLabelInt, useTriliumEvent } from "../../react/hooks";
 import { ParentComponent } from "../../react/react_utils";
-import { useContext, useEffect, useState } from "preact/hooks";
+import { useContext, useEffect, useRef, useState } from "preact/hooks";
 import getAttributeDefinitionInformation, { buildRowDefinitions, TableData } from "./rows";
 import froca from "../../../services/froca";
 import { buildColumnDefinitions } from "./columns";
@@ -27,19 +27,29 @@ export default function useData(note: FNote, noteIds: string[], viewConfig: Tabl
     const [ rowData, setRowData ] = useState<TableData[]>();
     const [ hasChildren, setHasChildren ] = useState<boolean>();
     const [ isSorted ] = useNoteLabelBoolean(note, "sorted");
-    const [ movableRows, setMovableRows ] = useState(false);
+    // Derived during render, so that the refresh started on mount already builds the row handle.
+    const movableRows = !isReadOnly && !isSorted && note.type !== "search" && !hasChildren;
+    const latestRefreshId = useRef(0);
+    const columnsPending = useRef(false);
 
     // Rows change far more often than the columns do, and rebuilding the columns is not free: they
     // are replaced wholesale in Tabulator, which resets the scroll — so a refresh only rebuilds
     // them when asked, and a change that can only touch rows leaves them be.
+    //
+    // Only the latest refresh commits its result, as an older one holds stale values such as
+    // `movableRows`; it takes over the column rebuild of any refresh it supersedes.
     async function refresh(rebuildColumns = true) {
+        const refreshId = ++latestRefreshId.current;
+        columnsPending.current ||= rebuildColumns;
         const info = getAttributeDefinitionInformation(note);
 
         // Ensure all note IDs are loaded.
         await froca.getNotes(noteIds);
 
         const { definitions: rowData, hasSubtree: hasChildren, rowNumber } = await buildRowDefinitions(note, info, includeArchived, maxDepth);
-        if (rebuildColumns) {
+        if (refreshId !== latestRefreshId.current) return;
+        if (columnsPending.current) {
+            columnsPending.current = false;
             const columnDefs = buildColumnDefinitions({
                 info,
                 movableRows,
@@ -89,11 +99,6 @@ export default function useData(note: FNote, noteIds: string[], viewConfig: Tabl
             return;
         }
     });
-
-    // Identify if movable rows.
-    useEffect(() => {
-        setMovableRows(!isReadOnly && !isSorted && note.type !== "search" && !hasChildren);
-    }, [ isReadOnly, isSorted, note, hasChildren ]);
 
     return { columnDefs, rowData, movableRows, hasChildren };
 }
