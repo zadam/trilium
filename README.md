@@ -14,6 +14,8 @@ Trilium Notes is a free and open-source, cross-platform hierarchical note taking
 
 Looking for "Trillium Notes"? The project's canonical spelling is "Trilium Notes", with one `l`.
 
+[![Deploy to Railyard](https://app.railyard.run/deploy/badge)](https://app.railyard.run/deploy?repo=https://github.com/TriliumNext/Trilium)
+
 <img src="./docs/app.png" alt="Trilium Screenshot" width="1000">
 
 ## ⏬ Download
