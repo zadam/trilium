@@ -37,7 +37,7 @@ export default class TabManager extends Component {
     public activeNtxId: string | null;
     public recentlyClosedTabs: TabState[];
     public tabsUpdate: SpacedUpdate;
-    /** The note context that the latest `switchToHistoryEntry()` call shows. */
+    /** The note context that shows the entry of the latest `switchToHistoryEntry()` call. */
     private historyEntry: { noteContext: NoteContext } | null = null;
 
     constructor() {
@@ -470,6 +470,8 @@ export default class TabManager extends Component {
             pinned?: boolean | null;
             /** Where the new tab is placed in the row. Defaults to `"end"`; link/middle-click opens pass `"afterCurrent"`. */
             placement?: TabPlacement | null;
+            /** The pinned note context whose navigation opens this tab. */
+            redirectedFrom?: NoteContext | null;
         } = {}
     ): Promise<NoteContext> {
         const activate = !!opts.activate;
@@ -494,6 +496,11 @@ export default class TabManager extends Component {
         }
 
         if (activate && noteContext.notePath) {
+            // The new tab continues the navigation of the history entry it was redirected from.
+            if (opts.redirectedFrom && this.historyEntry?.noteContext === opts.redirectedFrom) {
+                this.historyEntry.noteContext = noteContext;
+            }
+
             this.activateNoteContext(noteContext.ntxId, false);
 
             await this.triggerEvent("noteSwitchedAndActivated", {

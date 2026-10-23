@@ -201,7 +201,8 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
             return appContext.tabManager.openContextWithNote(resolvedNotePath, {
                 activate: true,
                 viewScope,
-                hoistedNoteId: this.hoistedNoteId
+                hoistedNoteId: this.hoistedNoteId,
+                redirectedFrom: this
             });
         }
 

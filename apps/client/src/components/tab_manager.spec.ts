@@ -380,6 +380,25 @@ describe("going to an entry of the navigation history", () => {
         expect(window.location.hash).toBe(`#root/historyA?ntxId=${reopened?.ntxId}`);
     });
 
+    it("rewrites the entry of a pinned tab with the tab it opens instead", async () => {
+        const pinnedTab = await tm.openEmptyTab();
+        await tm.activateNoteContext(pinnedTab.ntxId);
+        await pinnedTab.setNote("root/historyA");
+        await pinnedTab.setNote("root/historyB");
+        pinnedTab.pinned = true;
+
+        window.history.replaceState(null, "", `#root/historyA?ntxId=${pinnedTab.ntxId}`);
+        const pushState = vi.spyOn(window.history, "pushState");
+
+        await tm.switchToHistoryEntry(pinnedTab.ntxId, "root/historyA", { viewMode: "default" });
+
+        expect(pushState).not.toHaveBeenCalled();
+        const opened = tm.getActiveContext();
+        expect(opened).not.toBe(pinnedTab);
+        expect(pinnedTab.notePath).toBe("root/historyB");
+        expect(window.location.hash).toBe(`#root/historyA?ntxId=${opened?.ntxId}`);
+    });
+
     it("pushes a tab switch made while the entry is still loading", async () => {
         const first = await tm.openEmptyTab();
         const second = await tm.openEmptyTab();
