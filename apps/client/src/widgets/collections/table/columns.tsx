@@ -652,6 +652,7 @@ function FlagFormatter({ cell }: FormatterOpts) {
                 type="checkbox"
                 checked={isSet}
                 tabIndex={isEditable ? 0 : -1}
+                aria-label={definition.title}
                 aria-readonly={!isEditable}
                 onClick={(e) => {
                     if (!isEditable) e.preventDefault();

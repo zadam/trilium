@@ -299,6 +299,7 @@ describe("buildColumnDefinitions — typed columns", () => {
         // A click writes the new value straight to the cell, which saves it as an edit.
         const unticked = checkboxOf(null);
         expect(unticked.checkbox.tabIndex).toBe(0);
+        expect(unticked.checkbox.getAttribute("aria-label")).toBe("Done");
         act(() => unticked.checkbox.click());
         expect(unticked.setValue).toHaveBeenCalledExactlyOnceWith(true);
 
