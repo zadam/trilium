@@ -1016,7 +1016,8 @@
     "column-note-id": "ノート ID",
     "column-title": "タイトル",
     "column-date-created": "作成日時",
-    "column-date-modified": "更新日時"
+    "column-date-modified": "更新日時",
+    "open-note": "開く"
   },
   "search_script": {
     "title": "検索スクリプト",
