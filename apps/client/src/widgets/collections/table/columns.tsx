@@ -640,9 +640,9 @@ function ColorFormatter({ cell }: FormatterOpts) {
 function FlagFormatter({ cell }: FormatterOpts) {
     const value = cell.getValue();
     // A stored label arrives as the text "true"/"false", but one just toggled through the tickCross
-    // editor is a real boolean; the chip reads the stored spelling of either.
-    const flag = typeof value === "boolean" ? String(value) : value;
-    if (typeof flag !== "string" || !flag) return <span />;
+    // editor is a real boolean. A note without the label reads as false, as the promoted checkbox
+    // shows it unticked.
+    const flag = value === true || value === "true" ? "true" : "false";
 
     return <LabelValueChips values={[ flag ]} labelType="boolean" />;
 }
