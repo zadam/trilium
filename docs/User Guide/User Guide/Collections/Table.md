@@ -96,6 +96,8 @@ Simply click on a cell within a row to change its value. The change will not onl
 
 It is possible to edit a column by right clicking it and selecting _Edit column…_ This will basically change the label/relation definition at the collection level.
 
+Turn on _Multiple values_ to let each note hold several values in that column. The cell then shows them as chips (see [Multiple values](../Advanced%20Usage/Attributes/Promoted%20Attributes.md) in Promoted Attributes). The same toggle is available when adding a column.
+
 If the _Name_ field of a column is changed, this will trigger a batch operation in which the corresponding label/relation will be renamed in all the children.
 
 ### Read-only tables
