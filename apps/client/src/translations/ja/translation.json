@@ -115,11 +115,13 @@
     "download-update": "{{latestVersion}} をバージョンを入手",
     "search_notes": "検索ノート",
     "show_deleted_notes": "削除されたノートを表示",
-    "show_space_usage": "スペース使用状況を表示"
+    "show_space_usage": "スペース使用状況を表示",
+    "theme": "テーマ"
   },
   "left_pane_toggle": {
     "hide_panel": "パネルを非表示",
-    "peek_panel": "ピークパネル"
+    "peek_panel": "ツリーパネルをピーク表示",
+    "toggle": "ツリーペインの表示を切り替え"
   },
   "move_pane_button": {
     "move_left": "左に移動",
@@ -289,7 +291,8 @@
     "new_tab": "新しいタブ",
     "pin_tab": "タブを固定",
     "unpin_tab": "タブの固定を解除",
-    "pinned_prefix": "固定済み: "
+    "pinned_prefix": "固定済み: ",
+    "leave_full_screen": "全画面表示を終了"
   },
   "tasks": {
     "due": {
@@ -1659,7 +1662,8 @@
     "board_hide_add_column": "ボードコレクションで、最後の列の後に表示される <em>列を追加</em> ボタンを非表示にします。ボードや列のコンテキストメニューから列を追加することは引き続き可能です。",
     "meeting_recording": "ランチャーバーの \"ミーティングの文字起こし\" ボタンから作成されたノートを示します。このノートには、ミーティングの文字起こし内容が記録されます。",
     "template_title_template": "テンプレートノートに設定: このテンプレートから作成されるノートのデフォルトタイトルとして使用され、親ノート <code>#titleTemplate</code> の代わりに使用されます。<code>#titleTemplate</code> と同様に評価（変換）され、<code>now</code> と <code>parentNote</code> の変数が利用可能です。例: <code>Meeting ${now.format('YYYY-MM-DD')}</code>。",
-    "calendar_hide_routine_events": "週に {{days}} 日以上繰り返される予定を、月、年、リスト、の各表示から非表示にします。設定した値に応じて適用されます。"
+    "calendar_hide_routine_events": "週に {{days}} 日以上繰り返される予定を、月、年、リスト、の各表示から非表示にします。設定した値に応じて適用されます。",
+    "exclude_from_llm": "このノートを AI チャットおよび MCP サーバーから非表示にします。ラベルに継承設定を適用することで、その下にあるノートもまとめて非表示にできます。"
   },
   "link_context_menu": {
     "open_note_in_popup": "クイック編集",
@@ -1740,7 +1744,8 @@
     "subtree-hidden-moved-description-collection": "このコレクションはツリー内の子ノートを非表示にします。",
     "subtree-hidden-moved-description-other": "このノートのツリーでは子ノートは非表示になっています。",
     "follow-active-note": "アクティブなノートに追従",
-    "follow-active-note-title": "ツリーをスクロールし、親ノードを展開してアクティブなノートを表示します。無効にすると、ツリーは固定されたままとなり、背景のハイライトのみが更新されます。"
+    "follow-active-note-title": "ツリーをスクロールし、親ノードを展開してアクティブなノートを表示します。無効にすると、ツリーは固定されたままとなり、背景のハイライトのみが更新されます。",
+    "show-all-notes": "すべてのノートを表示"
   },
   "bulk_actions": {
     "bulk_actions": "一括操作",
