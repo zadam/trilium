@@ -6,6 +6,7 @@ import { getLog } from "../services/log.js";
 import { dbReady } from "../services/sql_init.js";
 import ws from "../services/ws.js";
 import becca from "./becca.js";
+import * as bulkDeletion from "../services/bulk_deletion.js";
 import type AbstractBeccaEntity from "./entities/abstract_becca_entity.js";
 import BAttribute from "./entities/battribute.js";
 import BBranch from "./entities/bbranch.js";
@@ -321,6 +322,14 @@ function postProcessEntityUpdate(entityName: string, entityRow: any) {
 
 eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENTITY_DELETE_SYNCED], ({ entityName, entityId }) => {
     if (!becca.loaded) {
+        return;
+    }
+
+    if (entityName === "attributes" && bulkDeletion.isActive()) {
+        // attribute bookkeeping (incl. the O(bucket) attributeIndex update) is
+        // performed set-based in bulk_deletion.flush(); branch and note
+        // maintenance stays per-entity because the deletion recursion and the
+        // clone handling depend on it being immediate
         return;
     }
 

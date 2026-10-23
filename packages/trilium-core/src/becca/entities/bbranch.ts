@@ -3,6 +3,7 @@
 import type { BranchRow } from "@triliumnext/commons";
 
 import dateUtils from "../../services/utils/date";
+import * as bulkDeletion from "../../services/bulk_deletion.js";
 import handlers from "../../services/handlers.js";
 import { getLog } from "../../services/log.js";
 import TaskContext from "../../services/task_context.js";
@@ -147,6 +148,21 @@ class BBranch extends AbstractBeccaEntity<BBranch> {
             taskContext = new TaskContext("no-progress-reporting", "deleteNotes", null);
         }
 
+        // The outermost deletion buffers the per-entity soft-delete writes and
+        // flushes them in bulk at the end; nested deletions keep adding to the
+        // running batch.
+        const isOutermostDeletion = bulkDeletion.begin();
+
+        try {
+            return this.deleteBranchInner(deleteId, taskContext);
+        } finally {
+            if (isOutermostDeletion) {
+                bulkDeletion.flush();
+            }
+        }
+    }
+
+    private deleteBranchInner(deleteId: string, taskContext: TaskContext<"deleteNotes">): boolean {
         taskContext.increaseProgressCount();
 
         const note = this.getNote();

@@ -2,10 +2,12 @@ import { ValidationError } from "../../errors.js";
 import eventService from "../../services/events";
 
 import blobService from "../../services/blob.js";
+import * as bulkDeletion from "../../services/bulk_deletion.js";
 import * as cls from "../../services/context";
 import dateUtils from "../../services/utils/date";
 import entityChangesService from "../../services/entity_changes.js";
 import { getLog } from "../../services/log.js";
+import getInstanceId from "../../services/instance_id.js";
 import protectedSessionService from "../../services/protected_session.js";
 import becca from "../becca.js";
 import type { ConstructorData,default as Becca } from "../becca-interface.js";
@@ -323,6 +325,38 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
         this.utcDateModified = dateUtils.utcNowDateTime();
 
+        if (this.dateModified) {
+            this.dateModified = dateUtils.localNowDateTime();
+        }
+
+        if (bulkDeletion.isActive()) {
+            // Inside a subtree deletion the writes are flushed in bulk by the
+            // outermost deleteBranch(): events keep firing here, per-entity
+            // SQL does not.
+            bulkDeletion.add({
+                entityName,
+                primaryKey: constructorData.primaryKeyName,
+                id: entityId,
+                deleteId,
+                entity: this,
+                touchDateModified: !!this.dateModified,
+                entityChange: {
+                    entityName,
+                    entityId,
+                    hash: this.generateHash(true),
+                    isErased: false,
+                    utcDateChanged: this.getUtcDateChanged(),
+                    isSynced: entityName !== "options" || !!this.isSynced,
+                    changeId: randomString(12),
+                    componentId: cls.getComponentId() || "NA",
+                    instanceId: getInstanceId()
+                }
+            });
+
+            eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
+            return;
+        }
+
         const sql = getSql();
         sql.execute(
             /*sql*/`UPDATE ${entityName} SET isDeleted = 1, deleteId = ?, utcDateModified = ?
@@ -331,8 +365,6 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
         );
 
         if (this.dateModified) {
-            this.dateModified = dateUtils.localNowDateTime();
-
             sql.execute(/*sql*/`UPDATE ${entityName} SET dateModified = ? WHERE ${constructorData.primaryKeyName} = ?`, [this.dateModified, entityId]);
         }
 
