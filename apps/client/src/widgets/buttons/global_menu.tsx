@@ -6,6 +6,7 @@ import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
 import { CommandNames } from "../../components/app_context";
 import Component from "../../components/component";
+import type { MenuCommandItem } from "../../menus/context_menu";
 import {
     COLOR_SCHEME_CYCLE, COLOR_SCHEME_ICONS, ColorScheme, resolveColorScheme, THEME_FAMILY_SCHEMES
 } from "../../services/color_scheme";
@@ -17,6 +18,7 @@ import {
     useStaticTooltip, useStaticTooltipWithKeyboardShortcut, useTriliumOption, useTriliumOptionBool,
     useUserThemes
 } from "../react/hooks";
+import { MenuItemRows } from "../react/Menu";
 import { ParentComponent } from "../react/react_utils";
 
 interface MenuItemProps<T> {
@@ -36,6 +38,15 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
     const { isUpdateAvailable, latestVersion } = useTriliumUpdateStatus();
     const logoRef = useRef<SVGSVGElement>(null);
     useStaticTooltip(logoRef);
+    const commandAction = (command: CommandNames, uiIcon: string, title: string): MenuCommandItem<CommandNames> => ({
+        title, uiIcon, handler: () => void parentComponent?.triggerCommand(command)
+    });
+    /** Drawn as a strip of cards at the top of the menu on a phone. */
+    const mobileActions = [
+        commandAction("searchNotes", "bx bx-search", t("global_menu.search_notes")),
+        commandAction("showRecentChanges", "bx bx-history", t("recent_changes.title")),
+        commandAction("showDeletedNotes", "bx bx-trash-alt", t("global_menu.show_deleted_notes"))
+    ];
 
     return (
         <Dropdown
@@ -49,17 +60,13 @@ export default function GlobalMenu({ isHorizontalLayout }: { isHorizontalLayout:
             </>}
             mobileBackdrop
         >
-            {isMobile() ? <>
-                <MenuItem command="searchNotes" icon="bx bx-search" text={t("global_menu.search_notes")} />
-                <MenuItemColumns>
-                    <MenuItem command="showRecentChanges" icon="bx bx-history" text={t("recent_changes.title")} />
-                    <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
-                </MenuItemColumns>
-            </> : <>
+            {isMobile() ? (
+                <MenuItemRows items={[ { kind: "actions", items: mobileActions, className: "global-menu-strip tn-menu-actions-cards" } ]} />
+            ) : <>
                 <MenuItem command="openNewWindow" icon="bx bx-window-open" text={t("global_menu.open_new_window")} />
                 <MenuItem command="showDeletedNotes" icon="bx bx-trash-alt" text={t("global_menu.show_deleted_notes")} />
+                <FormDropdownDivider />
             </>}
-            <FormDropdownDivider />
 
             {isMobile() ? (
                 <MenuItemColumns>

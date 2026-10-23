@@ -46,10 +46,6 @@
     .form-list-col {
         flex-grow: 1;
     }
-
-    .dropdown-item + & {
-        margin-top: 1em;
-    }
 }
 
 .dropdown-header.dropdown-header-with-action {
