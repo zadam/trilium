@@ -33,7 +33,11 @@
         "**/node_modules": true,
         "docs/**/*.html": true,
         "docs/**/*.png": true,
-        "apps/edit-docs/demo/**": true
+        "apps/edit-docs/demo/**": true,
+        "**/.claude/worktrees/**": true
+    },
+    "files.watcherExclude": {
+        "**/.claude/worktrees/**": true
     },
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
