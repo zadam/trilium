@@ -53,6 +53,14 @@ describe("byMimeType", () => {
         expect(byMimeType["application/x-ejs"]).toBeNull();
     });
 
+    it("highlights ASN.1 and MariaDB with their own grammars", async () => {
+        const asn1 = await byMimeType["text/x-ttcn-asn"]?.();
+        expect(asn1).toMatchObject({ name: "asn1" });
+
+        const { mariaDB } = await import("@codemirror/legacy-modes/mode/sql");
+        expect(await byMimeType["text/x-mariadb"]?.()).toBe(mariaDB);
+    });
+
     it("highlights the statements of slow queries in the Trilium log as SQLite", async () => {
         const syntax = await byMimeType["text/x-trilium-log"]?.();
         expect(Array.isArray(syntax)).toBe(true);
