@@ -1,6 +1,22 @@
 {
   "about": {
-    "data_directory": "Direktorijum sa podacima:"
+    "data_directory": "Direktorijum sa podacima:",
+    "version_label": "Verzija:",
+    "version": "{{appVersion}} (database: {{dbVersion}}, sync protocol: {{syncVersion}})",
+    "contributors_label": "Doprinosioci:",
+    "contributor_roles": {
+      "lead-dev": "glavni developer",
+      "original-dev": "originalni developer"
+    },
+    "role_brief_history": {
+      "lead-dev": "Elian Doran je osnovao TriliumNext 2024. godine, a \"community fork\" je nastao nakon što se Zadam povukao iz projekta. Zadam je kasnije preneo originalni repozitorijum TriliumNext timu, čime je spojio oba projekta u jedan."
+    },
+    "contributor_full_list": "Pogledajte celu zajednicu",
+    "channel": {
+      "nightly": "Noćni"
+    },
+    "github_tooltip": "Prijavi probleme, predloži nove funkcionalnosti ili podrži na GitHub-u",
+    "license_tooltip": "Licenca"
   },
   "toast": {
     "critical-error": {
