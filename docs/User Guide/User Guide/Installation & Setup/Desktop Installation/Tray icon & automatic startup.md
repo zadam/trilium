@@ -21,6 +21,13 @@ The tray icon has the following functionality:
     *   Bookmarks and recent notes are displayed in a sub-menu and clicking them navigates to that note.
     *   Quitting the application.
 
+### Opening a new window from the taskbar
+
+A new window can also be opened without the tray icon, by right-clicking the application's icon:
+
+*   On Windows, in the taskbar, select _Open New Window_.
+*   On Linux, in the dock or application launcher (such as GNOME's or KDE's), select _New Window_.
+
 ### Closing to system tray
 
 This is an option which is not enabled by default and it allows a specific behavior: instead of exiting the application when the last window has been closed, the last window is instead hidden with the tray icon remaining available.
