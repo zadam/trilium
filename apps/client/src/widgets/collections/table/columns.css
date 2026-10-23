@@ -63,3 +63,7 @@
     inset-block-start: auto;
     inset-block-end: 0;
 }
+
+.tabulator-cell.table-numeric-cell {
+    font-variant-numeric: tabular-nums;
+}

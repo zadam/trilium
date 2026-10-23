@@ -184,6 +184,27 @@ describe("buildColumnDefinitions — typed columns", () => {
         expect(editorOf("time")).toBe("time");
     });
 
+    it("sets numbers and dates in equal-width digits, so that a column of them lines up", () => {
+        const columns = buildColumnDefinitions({
+            info: [
+                { name: "date", type: "date" },
+                { name: "datetime", type: "datetime" },
+                { name: "time", type: "time" },
+                { name: "number", type: "number" },
+                { name: "text", type: "text" }
+            ],
+            movableRows: false,
+            existingColumnData: undefined,
+            rowNumberHint: 1
+        });
+        const classOf = (name: string) => columns.find((column) => column.field === `labels.${name}`)?.cssClass;
+
+        for (const name of [ "date", "datetime", "time", "number" ]) {
+            expect(classOf(name)).toBe("table-numeric-cell");
+        }
+        expect(classOf("text")).toBeUndefined();
+    });
+
     it("hands a url column's href through the scheme guard rather than linking the value as stored", () => {
         const column = buildColumnDefinitions({
             info: [ { name: "site", type: "url" } ],
@@ -239,7 +260,7 @@ describe("buildColumnDefinitions — note dates", () => {
         for (const field of [ "dateCreated", "dateModified" ]) {
             const column = columns.find((candidate) => candidate.field === field);
             if (!column) throw new Error(`expected a ${field} column`);
-            expect(column).toMatchObject({ visible: false, sorter: "string" });
+            expect(column).toMatchObject({ visible: false, sorter: "string", cssClass: "table-numeric-cell" });
             expect(column.editor).toBeUndefined();
 
             const formatter = column.formatter;

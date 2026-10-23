@@ -21,6 +21,9 @@ import type { TableData } from "./rows.js";
 
 type ColumnType = LabelType | "relation";
 
+/** Sets a column's digits at equal widths, so that its numbers and dates line up row to row. */
+const NUMERIC_CELL_CLASS = "table-numeric-cell";
+
 export interface AttributeDefinitionInformation {
     name: string;
     title?: string;
@@ -59,21 +62,25 @@ const labelTypeMappings: Record<ColumnType, Partial<ColumnDefinition>> = {
     },
     date: {
         editor: "date",
+        cssClass: NUMERIC_CELL_CLASS,
         // Values are stored as ISO ("YYYY-MM-DD"), which Tabulator would otherwise render as-is.
         formatter: (cell) => formatLabelDate(cell.getValue(), false)
     },
     datetime: {
         editor: "datetime",
+        cssClass: NUMERIC_CELL_CLASS,
         formatter: (cell) => formatLabelDate(cell.getValue(), true)
     },
     number: {
         editor: "number",
+        cssClass: NUMERIC_CELL_CLASS,
         sorter: "number"
     },
     time: {
         // No `format` param, so the editor stays on the stored "HH:mm" and needs no luxon — the same
         // value, through the same native field, as the promoted attribute of this type.
-        editor: "time"
+        editor: "time",
+        cssClass: NUMERIC_CELL_CLASS
     },
     url: {
         formatter: "link",
@@ -128,6 +135,7 @@ function relationTitle(row: RowComponent, column: ColumnComponent): string {
 const noteDateColumn: Partial<ColumnDefinition> = {
     formatter: (cell) => formatLabelDate(cell.getValue(), true),
     sorter: "string",
+    cssClass: NUMERIC_CELL_CLASS,
     visible: false
 };
 
