@@ -65,6 +65,14 @@ describe("getMimeTypeFromMarkdownName", () => {
         expect(getMimeTypeFromMarkdownName("roff")?.mime).toBe("text/troff");
     });
 
+    it("resolves the fence names of other highlighters for the languages GitHub lacks", () => {
+        expect(getMimeTypeFromMarkdownName("mysql")?.mime).toBe("text/x-mysql");
+        expect(getMimeTypeFromMarkdownName("tsql")?.mime).toBe("text/x-mssql");
+        expect(getMimeTypeFromMarkdownName("cljs")?.mime).toBe("text/x-clojurescript");
+        expect(getMimeTypeFromMarkdownName("ttcn3")?.mime).toBe("text/x-ttcn");
+        expect(getMimeTypeFromMarkdownName("excel")?.mime).toBe("text/x-spreadsheet");
+    });
+
     it("lets no alias take the mdLanguageCode of another entry", () => {
         for (const mimeType of MIME_TYPES_DICT) {
             if (mimeType.mdLanguageCode) {
@@ -107,14 +115,16 @@ describe("getMarkdownNameFromCKEditorLanguage", () => {
         expect(getMarkdownNameFromCKEditorLanguage("text-typescript-jsx")).toBe("tsx");
         expect(getMarkdownNameFromCKEditorLanguage("text-jinja2")).toBe("jinja");
         expect(getMarkdownNameFromCKEditorLanguage("text-x-stex")).toBe("tex");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-mssql")).toBe("tsql");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-spreadsheet")).toBe("excel");
     });
 
     it("returns undefined for an unknown language or one whose names resolve elsewhere", () => {
         expect(getMarkdownNameFromCKEditorLanguage("text-x-not-a-language")).toBeUndefined();
         expect(getMarkdownNameFromCKEditorLanguage(MIME_TYPE_AUTO)).toBeUndefined();
         expect(getMarkdownNameFromCKEditorLanguage("text-x-trilium-search")).toBeUndefined();
-        // `sql` resolves to `text/x-sql`, not to the MySQL dialect.
-        expect(getMarkdownNameFromCKEditorLanguage("text-x-mysql")).toBeUndefined();
+        // `sql` resolves to `text/x-sql`, not to the MariaDB dialect.
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-mariadb")).toBeUndefined();
     });
 
     it("returns for every language only a name that resolves back to it", () => {

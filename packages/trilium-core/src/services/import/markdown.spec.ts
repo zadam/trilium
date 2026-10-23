@@ -36,7 +36,7 @@ describe("markdown", () => {
             .filter((language) => getMarkdownNameFromCKEditorLanguage(language) !== undefined);
         expect(languages).toEqual(expect.arrayContaining([
             "text-plain", "text-x-csrc", "text-x-c-src", "text-typescript-jsx", "text-x-scala",
-            "text-jinja2"
+            "text-jinja2", "text-x-mysql", "text-x-spreadsheet"
         ]));
 
         for (const language of languages) {

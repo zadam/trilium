@@ -22,7 +22,9 @@ describe("Markdown export", () => {
             "language-text-x-toml": "toml",
             "language-text-x-scala": "scala",
             "language-text-jinja2": "jinja",
-            "language-text-x-literate-haskell": "literate-haskell"
+            "language-text-x-literate-haskell": "literate-haskell",
+            "language-text-x-mysql": "mysql",
+            "language-text-x-mssql": "tsql"
         };
 
         for (const [ input, output ] of Object.entries(conversionTable)) {
