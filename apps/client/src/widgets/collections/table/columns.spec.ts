@@ -269,10 +269,14 @@ describe("buildColumnDefinitions — typed columns", () => {
 
         const checkboxOf = (value: unknown, { editable = true } = {}) => {
             const setValue = vi.fn();
+            const definition = { ...column, title: "Done", ...(!editable && { editable: false }) };
             const cell = {
                 getValue: () => value,
                 setValue,
-                getTable: () => ({ modExists: (name: string) => editable && name === "edit" })
+                getColumn: () => ({ getDefinition: () => definition }),
+                // Tabulator registers modules on its shared class, so a read-only table built after
+                // an editable one has the edit module as well.
+                getTable: () => ({ modExists: () => true })
             } as unknown as CellComponent;
             const element = formatter(cell, {}, () => {}) as HTMLElement;
             // A checkbox fires `change` only while connected, as it is inside a rendered cell.
@@ -302,7 +306,7 @@ describe("buildColumnDefinitions — typed columns", () => {
         act(() => ticked.checkbox.click());
         expect(ticked.setValue).toHaveBeenCalledExactlyOnceWith(false);
 
-        // A read-only table, built without the edit module, keeps the box as it is.
+        // A read-only table marks its columns `editable: false`, which keeps the box as it is.
         const readOnly = checkboxOf("true", { editable: false });
         expect(readOnly.checkbox.tabIndex).toBe(-1);
         act(() => readOnly.checkbox.click());

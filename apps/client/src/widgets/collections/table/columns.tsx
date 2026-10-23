@@ -636,19 +636,14 @@ function ColorFormatter({ cell }: FormatterOpts) {
     return <LabelValueChips values={[ color ]} labelType="color" />;
 }
 
-// `modExists` is provided by Tabulator but missing from the current type definitions.
-type TabulatorWithModExists = ReturnType<CellComponent["getTable"]> & {
-    modExists(name: string): boolean;
-};
-
 /** A flag cell as a checkbox, unticked for a note without the label. */
 function FlagFormatter({ cell }: FormatterOpts) {
     const value = cell.getValue();
     // A stored label arrives as the text "true"/"false", but one just set from the box is a real
     // boolean. A note without the label reads as false, as the promoted checkbox shows it unticked.
     const isSet = value === true || value === "true";
-    // A read-only table is built without the edit module.
-    const isEditable = (cell.getTable() as TabulatorWithModExists).modExists("edit");
+    const definition = cell.getColumn().getDefinition();
+    const isEditable = definition.editable !== false;
 
     // `cell.setValue()` fires `cellEdited`, which saves the label as an edit from an editor would.
     return (
