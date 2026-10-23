@@ -67,7 +67,7 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
         this.#initThemeColor();
 
         const $widget = super.render();
-        if (isIOS() && isMobileApp()) {
+        if (isMobile() && (!isIOS() || isMobileApp())) {
             this.#trackLayoutInsets();
         }
         return $widget;
@@ -153,8 +153,10 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
     }
 
     /**
-     * In the iOS app, `Keyboard.resize: "native"` resizes the web view for the keyboard, and the
-     * layout follows `innerHeight` only some time later. `--tn-layout-shrink` is how much shorter
+     * The layout shrinks for the keyboard on Android (`interactive-widget=resizes-content`, or
+     * `adjustResize` in the app) and in the iOS app (`Keyboard.resize: "native"`), where it follows
+     * `innerHeight` only some time later. Mobile Safari keeps the layout, and
+     * `usePositioningOniOS` lifts the toolbar there instead. `--tn-layout-shrink` is how much shorter
      * than the window the layout is, and `--tn-layout-overhang` how far it reaches below the visible
      * bottom, so `mobile_editor_toolbar.css` places the toolbar and its menus for the layout as it
      * stands.
