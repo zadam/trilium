@@ -168,6 +168,7 @@ export function buildColumnDefinitions({ info, movableRows, existingColumnData, 
             hozAlign: "center",
             resizable: false,
             frozen: true,
+            cssClass: "table-row-number",
             rowHandle: movableRows,
             width: calculateIndexColumnWidth(rowNumberHint, movableRows),
             formatter: (cell) => rowNumberFormatter(cell, movableRows)

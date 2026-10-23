@@ -124,7 +124,8 @@ function SqlResultTable({ rows }: { rows: object[] }) {
                     formatter: "rownum",
                     width: 60,
                     hozAlign: "right",
-                    frozen: true
+                    frozen: true,
+                    cssClass: "table-row-number"
                 },
                 ...Object.keys(rows[0]).map(key => ({
                     title: key,
