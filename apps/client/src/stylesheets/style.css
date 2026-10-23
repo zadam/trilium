@@ -938,6 +938,23 @@ svg.ck-icon.note-icon {
     --ck-content-line-height: var(--bs-body-line-height);
 }
 
+/*
+ * Table borders in text notes. `ckeditor5-content.css` hardcodes a light grey, which glares on a
+ * dark background. The default mixes the text color into transparency, which matches that grey
+ * on a light theme. A border set through the table or cell properties is inline and still wins.
+ */
+:where(:root) {
+    --text-note-table-border-color: color-mix(in srgb, var(--main-text-color) 25%, transparent);
+}
+
+:root .ck-content .table table:not(.layout-table) {
+    border-color: var(--text-note-table-border-color);
+
+    & > :is(thead, tbody, tfoot) > tr > :is(td, th) {
+        border-color: var(--text-note-table-border-color);
+    }
+}
+
 :root .ck-content .table table:not(.layout-table) th {
     background-color: var(--accented-background-color);
 }

@@ -228,7 +228,9 @@ Press the <span class="tn-icon cke cke-caption"></span> button to insert a capt
 
 ## Table borders
 
-By default, tables will come with a predefined gray border.
+By default, tables come with a gray border that is lighter or darker to suit the current [theme](../../Basic%20Concepts%20and%20Features/Themes.md), so it stays discreet on a dark background.
+
+To change the default border of every table, set the `--text-note-table-border-color` variable in a [custom theme](../../Theme%20development/Creating%20a%20custom%20theme.md) or in [custom app-wide CSS](../../Theme%20development/Custom%20app-wide%20CSS.md), for example `:root { --text-note-table-border-color: #555; }`. Set it to `transparent` to hide the borders of all the tables that don't have a border of their own.
 
 To adjust the borders, follow these steps:
 
