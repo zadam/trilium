@@ -38,6 +38,10 @@ export async function buildRowDefinitions(parentNote: FNote, infos: AttributeDef
         maxDepth = 0;
     }
 
+    if (currentDepth === 0) {
+        await loadRowNotes(parentNote, includeArchived, maxDepth);
+    }
+
     for (const branch of childBranches) {
         const note = await branch.getNote();
         if (!note || (!includeArchived && note.isArchived)) {
@@ -96,6 +100,20 @@ export async function buildRowDefinitions(parentNote: FNote, infos: AttributeDef
         hasSubtree,
         rowNumber
     };
+}
+
+/**
+ * Loads every note `buildRowDefinitions()` visits, one request per level of the tree. The initial
+ * tree holds only the expanded branches, so a note met one `branch.getNote()` at a time otherwise
+ * costs a `tree/load` request of its own.
+ */
+async function loadRowNotes(parentNote: FNote, includeArchived: boolean, maxDepth: number) {
+    let parents = [ parentNote ];
+    for (let depth = 0; parents.length > 0; depth++) {
+        const notes = await froca.getNotes(parents.flatMap((note) => note.children), true);
+        parents = notes.filter((note) => (includeArchived || !note.isArchived)
+            && note.hasChildren() && (maxDepth < 0 || depth < maxDepth));
+    }
 }
 
 /**

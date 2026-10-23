@@ -204,6 +204,42 @@ describe("buildRowDefinitions", () => {
         ]);
         post.mockRestore();
     });
+
+    it("loads the notes it is missing one level at a time, not one note at a time", async () => {
+        const parent = buildNote({
+            title: "Collection",
+            children: [ "A", "B", "C" ].map((title) => ({
+                title,
+                children: [ 1, 2 ].map((n) => ({ title: `${title}${n}`, children: [ { title: `${title}${n}.x` } ] }))
+            }))
+        });
+        // Everything below the direct children is known only by its branch, as after `GET /api/tree`.
+        const unloaded = new Map<string, FNote>();
+        const childrenOf = (note: FNote) => froca.getNotesFromCache(note.children);
+        for (const child of childrenOf(parent)) {
+            for (const grandchild of childrenOf(child)) {
+                for (const note of [ grandchild, ...childrenOf(grandchild) ]) {
+                    unloaded.set(note.noteId, note);
+                    delete froca.notes[note.noteId];
+                }
+            }
+        }
+        const post = vi.spyOn(server, "post").mockImplementation((async (url: string, data: { noteIds: string[] }) => {
+            if (url !== "tree/load") return {};
+            for (const noteId of data.noteIds) {
+                const note = unloaded.get(noteId);
+                if (note) froca.notes[noteId] = note;
+            }
+            return { notes: [], branches: [], attributes: [] };
+        }) as unknown as typeof server.post);
+
+        const { definitions } = await buildRowDefinitions(parent, [], false);
+
+        expect(post.mock.calls.filter(([ url ]) => url === "tree/load").map(([ , data ]) => (data as { noteIds: string[] }).noteIds.length))
+            .toEqual([ 6, 6 ]);
+        expect(definitions[2]._children?.[1]._children?.[0]).toMatchObject({ title: "C2.x" });
+        post.mockRestore();
+    });
 });
 
 /** Gives the note another relation under a name it already carries, which one literal cannot. */
