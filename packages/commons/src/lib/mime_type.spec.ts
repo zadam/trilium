@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
-    getMimeTypeFromFileName, getMimeTypeFromMarkdownName, MIME_TYPE_AUTO, MIME_TYPES_DICT,
+    getMarkdownNameFromCKEditorLanguage, getMimeTypeFromFileName, getMimeTypeFromMarkdownName,
+    MIME_TYPE_AUTO, MIME_TYPES_DICT,
     normalizeMimeTypeForCKEditor, resolveEnabledMimeTypes, shouldSyntaxHighlight
 } from "./mime_type.js";
 
@@ -66,6 +67,50 @@ describe("getMimeTypeFromMarkdownName", () => {
         const first = getMimeTypeFromMarkdownName("css");
         const second = getMimeTypeFromMarkdownName("css");
         expect(second).toBe(first);
+    });
+});
+
+describe("getMarkdownNameFromCKEditorLanguage", () => {
+    it("keeps the last segment of the language when it resolves back", () => {
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-toml")).toBe("toml");
+        expect(getMarkdownNameFromCKEditorLanguage("application-x-bat")).toBe("bat");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-vb")).toBe("vb");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-hcl")).toBe("hcl");
+    });
+
+    it("falls back to the mdLanguageCode or an alias when the segment resolves elsewhere", () => {
+        expect(getMarkdownNameFromCKEditorLanguage("text-plain")).toBe("plaintext");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-csrc")).toBe("c");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-c-src")).toBe("cpp");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-rustsrc")).toBe("rust");
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-nginx-conf")).toBe("nginx");
+        expect(getMarkdownNameFromCKEditorLanguage("text-typescript-jsx")).toBe("tsx");
+    });
+
+    it("returns undefined for an unknown language or one whose names resolve elsewhere", () => {
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-not-a-language")).toBeUndefined();
+        expect(getMarkdownNameFromCKEditorLanguage(MIME_TYPE_AUTO)).toBeUndefined();
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-trilium-search")).toBeUndefined();
+        // `sql` resolves to `text/x-sql`, not to the MySQL dialect.
+        expect(getMarkdownNameFromCKEditorLanguage("text-x-mysql")).toBeUndefined();
+    });
+
+    it("returns for every language only a name that resolves back to it", () => {
+        const named = MIME_TYPES_DICT.filter((mimeType) => {
+            const language = normalizeMimeTypeForCKEditor(mimeType.mime);
+            const name = getMarkdownNameFromCKEditorLanguage(language);
+            if (name !== undefined) {
+                expect(getMimeTypeFromMarkdownName(name), mimeType.mime).toBe(mimeType);
+            }
+            return name !== undefined;
+        });
+        expect(named.length).toBeGreaterThan(0);
+    });
+
+    it("relies on every MIME type normalizing to a distinct language", () => {
+        const languages = MIME_TYPES_DICT.map((mimeType) =>
+            normalizeMimeTypeForCKEditor(mimeType.mime));
+        expect(new Set(languages).size).toBe(languages.length);
     });
 });
 

@@ -271,6 +271,7 @@ export function shouldSyntaxHighlight(code: string) {
 }
 
 let byMarkdownNameMappings: Record<string, MimeTypeDefinition> | null = null;
+let byCKEditorLanguageMappings: Record<string, string> | null = null;
 
 export type MermaidMimeType = "text/vnd.mermaid" | "text/mermaid";
 export type SupportedMimeTypes = typeof MIME_TYPES_DICT_RAW[number]["mime"] | MermaidMimeType;
@@ -299,6 +300,34 @@ export function getMimeTypeFromMarkdownName(mdLanguageCode: string) {
     }
 
     return byMarkdownNameMappings[mdLanguageCode];
+}
+
+/**
+ * The Markdown fence name of a CKEditor code block language that
+ * {@link getMimeTypeFromMarkdownName} resolves back to the same entry, so the language survives an
+ * export and a re-import. The last segment of the language comes first (`toml` for `text-x-toml`),
+ * then the entry's `mdLanguageCode` and `aliases` (`cpp` for `text-x-c-src`).
+ *
+ * @param ckEditorLanguage a MIME type normalized with {@link normalizeMimeTypeForCKEditor}.
+ * @returns the fence name, or `undefined` for an unknown language or one without such a name.
+ */
+export function getMarkdownNameFromCKEditorLanguage(ckEditorLanguage: string) {
+    if (!byCKEditorLanguageMappings) {
+        byCKEditorLanguageMappings = {};
+        for (const mimeType of MIME_TYPES_DICT) {
+            const language = normalizeMimeTypeForCKEditor(mimeType.mime);
+            const names = [
+                language.split("-").at(-1), mimeType.mdLanguageCode, ...(mimeType.aliases ?? [])
+            ];
+            const name = names.find((name) =>
+                name && getMimeTypeFromMarkdownName(name) === mimeType);
+            if (name) {
+                byCKEditorLanguageMappings[language] = name;
+            }
+        }
+    }
+
+    return byCKEditorLanguageMappings[ckEditorLanguage];
 }
 
 /**

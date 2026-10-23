@@ -1,5 +1,6 @@
 import {
-    MULTICOLUMN_COLUMN_CLASS, MULTICOLUMN_LAYOUT_CLASS, safeLinkPreviewHref, type TaskStateDef
+    getMarkdownNameFromCKEditorLanguage, MIME_TYPE_AUTO, MULTICOLUMN_COLUMN_CLASS,
+    MULTICOLUMN_LAYOUT_CLASS, safeLinkPreviewHref, type TaskStateDef
 } from "@triliumnext/commons";
 import { ADMONITION_TYPE_MAPPINGS } from "@triliumnext/commons/src/lib/markdown_renderer.js";
 import { HIGHLIGHT_BACKGROUND } from "@triliumnext/commons/src/lib/marked_extensions.js";
@@ -164,17 +165,13 @@ function rewriteLanguageTag(source: string) {
     }
 
     switch (source) {
-        case "text-x-trilium-auto":
+        case MIME_TYPE_AUTO:
             return "";
         case "application-javascript-env-frontend":
         case "application-javascript-env-backend":
             return "javascript";
-        case "text-x-nginx-conf":
-            return "nginx";
-        case "text-plain":
-            return "plaintext";
         default:
-            return source.split("-").at(-1);
+            return getMarkdownNameFromCKEditorLanguage(source) ?? source.split("-").at(-1);
     }
 }
 
