@@ -13,7 +13,8 @@ describe("Markdown export", () => {
             "language-application-javascript-env-backend": "javascript",
             "language-text-x-asm-mips": "mips",
             "language-text-jsx": "jsx",
-            "language-text-html": "html"
+            "language-text-html": "html",
+            "language-text-plain": "plaintext"
         };
 
         for (const [ input, output ] of Object.entries(conversionTable)) {

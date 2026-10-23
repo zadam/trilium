@@ -3427,7 +3427,7 @@ The same data is served by GET /api/metrics to the web session.
 
     === "`text/plain`: `string`"
 
-        ```plain
+        ```plaintext
         # HELP trilium_info Trilium instance information
         # TYPE trilium_info gauge
         trilium_info{version="0.99.3",db_version="231"} 1 1701432000

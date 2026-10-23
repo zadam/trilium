@@ -171,6 +171,8 @@ function rewriteLanguageTag(source: string) {
             return "javascript";
         case "text-x-nginx-conf":
             return "nginx";
+        case "text-plain":
+            return "plaintext";
         default:
             return source.split("-").at(-1);
     }
