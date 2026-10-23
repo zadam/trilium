@@ -12,7 +12,8 @@ vi.mock("../services/clipboard", () => ({ default: { getContents: vi.fn(() => nu
 vi.mock("../components/app_context", () => ({ default: { tabManager: { getActiveContext: () => undefined } } }));
 vi.mock("../services/i18n", () => ({
     t: (key: string, options?: { count?: number }) =>
-        (options?.count === undefined ? key : `${key} ${options.count}`)
+        (options?.count === undefined ? key : `${key} ${options.count}`),
+    translationsInitializedPromise: Promise.resolve()
 }));
 
 describe("buildTreeContextMenuItems", () => {

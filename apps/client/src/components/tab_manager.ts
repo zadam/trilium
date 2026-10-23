@@ -37,8 +37,8 @@ export default class TabManager extends Component {
     public activeNtxId: string | null;
     public recentlyClosedTabs: TabState[];
     public tabsUpdate: SpacedUpdate;
-    /** Set while `switchToHistoryEntry()` runs: the history entry is replaced instead of pushed. */
-    private isShowingHistoryEntry = false;
+    /** The note context that the latest `switchToHistoryEntry()` call shows. */
+    private historyEntry: { noteContext: NoteContext } | null = null;
 
     constructor() {
         super();
@@ -183,18 +183,23 @@ export default class TabManager extends Component {
 
     setCurrentNavigationStateToHash() {
         const calculatedHash = this.calculateHash();
+        const activeNoteContext = this.getActiveContext();
+
+        // Activating another note context is a new navigation, even while the history entry loads.
+        if (this.historyEntry?.noteContext !== activeNoteContext) {
+            this.historyEntry = null;
+        }
 
         // update if it's the first history entry or there has been a change
         if (window.history.length === 0 || calculatedHash !== window.location?.hash) {
             // using pushState instead of directly modifying document.location because it does not trigger hashchange
-            if (this.isShowingHistoryEntry) {
+            if (this.historyEntry) {
                 window.history.replaceState(null, "", calculatedHash);
             } else {
                 window.history.pushState(null, "", calculatedHash);
             }
         }
 
-        const activeNoteContext = this.getActiveContext();
         this.updateDocumentTitle(activeNoteContext);
 
         this.triggerEvent("activeNoteChanged", {ntxId:activeNoteContext?.ntxId}); // trigger this even in on popstate event
@@ -296,19 +301,26 @@ export default class TabManager extends Component {
     }
 
     /**
-     * Shows the history entry the browser went to. The state this reaches replaces the entry, so
-     * the entries after it stay reachable.
+     * Shows the history entry the browser went to. While its note context is active, the hash
+     * updates replace the entry instead of pushing one, so the entries after it stay reachable.
      */
     async switchToHistoryEntry(
         ntxId: string | null,
         notePath: string,
         viewScope: Record<string, any> = {}
     ) {
-        this.isShowingHistoryEntry = true;
+        const noteContext = this.noteContexts.find((nc) => nc.ntxId === ntxId) ||
+            await this.openEmptyTab();
+        const historyEntry = { noteContext };
+        this.historyEntry = historyEntry;
+
         try {
-            await this.switchToNoteContext(ntxId, notePath, viewScope);
+            await this.activateNoteContext(noteContext.ntxId);
+            await noteContext.setNote(notePath, { viewScope });
         } finally {
-            this.isShowingHistoryEntry = false;
+            if (this.historyEntry === historyEntry) {
+                this.historyEntry = null;
+            }
         }
     }
 

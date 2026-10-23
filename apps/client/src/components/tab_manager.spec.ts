@@ -379,4 +379,59 @@ describe("going to an entry of the navigation history", () => {
         expect(reopened?.notePath).toBe("root/historyA");
         expect(window.location.hash).toBe(`#root/historyA?ntxId=${reopened?.ntxId}`);
     });
+
+    it("pushes a tab switch made while the entry is still loading", async () => {
+        const first = await tm.openEmptyTab();
+        const second = await tm.openEmptyTab();
+        await second.setNote("root/historyC");
+        await tm.activateNoteContext(first.ntxId);
+        await first.setNote("root/historyA");
+        await first.setNote("root/historyB");
+
+        window.history.replaceState(null, "", `#root/historyA?ntxId=${first.ntxId}`);
+        let showA: (notePath: string) => void = () => {};
+        vi.spyOn(first, "getResolvedNotePath")
+            .mockReturnValueOnce(new Promise((resolve) => { showA = resolve; }));
+        const pushState = vi.spyOn(window.history, "pushState");
+        const replaceState = vi.spyOn(window.history, "replaceState");
+
+        const restoring = tm.switchToHistoryEntry(
+            first.ntxId, "root/historyA", { viewMode: "default" }
+        );
+        await tm.activateNoteContext(second.ntxId);
+        showA("root/historyA");
+        await restoring;
+
+        expect(replaceState).not.toHaveBeenCalled();
+        expect(pushState).toHaveBeenCalledOnce();
+        expect(window.location.hash).toBe(`#root/historyC?ntxId=${second.ntxId}`);
+        expect(first.notePath).toBe("root/historyA");
+    });
+
+    it("keeps rewriting entries when two of them load at once", async () => {
+        const tab = await tm.openEmptyTab();
+        await tm.activateNoteContext(tab.ntxId);
+        await tab.setNote("root/historyA");
+        await tab.setNote("root/historyB");
+        await tab.setNote("root/historyC");
+
+        let showB: (notePath: string) => void = () => {};
+        let showA: (notePath: string) => void = () => {};
+        vi.spyOn(tab, "getResolvedNotePath")
+            .mockReturnValueOnce(new Promise((resolve) => { showB = resolve; }))
+            .mockReturnValueOnce(new Promise((resolve) => { showA = resolve; }));
+        const pushState = vi.spyOn(window.history, "pushState");
+
+        // Back twice: the entry of A is reached before B has loaded.
+        const toB = tm.switchToHistoryEntry(tab.ntxId, "root/historyB", { viewMode: "default" });
+        const toA = tm.switchToHistoryEntry(tab.ntxId, "root/historyA", { viewMode: "default" });
+        showB("root/historyB");
+        await toB;
+        expect(window.location.hash).toBe(`#root/historyB?ntxId=${tab.ntxId}`);
+        showA("root/historyA");
+        await toA;
+
+        expect(pushState).not.toHaveBeenCalled();
+        expect(window.location.hash).toBe(`#root/historyA?ntxId=${tab.ntxId}`);
+    });
 });

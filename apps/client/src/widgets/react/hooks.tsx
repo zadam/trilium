@@ -1971,7 +1971,15 @@ export function useHoldContextMenu(handler: (e: MouseEvent) => void, holdMs = 50
         }
     }, []);
 
-    useEffect(() => clear, [clear]);
+    // The click of the press is dispatched in the same task as its `pointerup`, before the timeout.
+    const endHold = useCallback(() => {
+        window.setTimeout(() => heldRef.current = false);
+    }, []);
+
+    useEffect(() => () => {
+        clear();
+        window.removeEventListener("pointerup", endHold, true);
+    }, [clear, endHold]);
 
     const onPointerDown = useCallback(
         (e: PointerEvent) => {
@@ -1981,19 +1989,13 @@ export function useHoldContextMenu(handler: (e: MouseEvent) => void, holdMs = 50
             timerRef.current = window.setTimeout(() => {
                 timerRef.current = null;
                 heldRef.current = true;
+                // The press can end off the element, which then receives no `pointerup`.
+                window.addEventListener("pointerup", endHold, { capture: true, once: true });
                 handler(e);
             }, holdMs);
         },
-        [handler, holdMs, clear]
+        [handler, holdMs, clear, endHold]
     );
-
-    const onPointerUp = useCallback(() => {
-        clear();
-        // The click of this press is dispatched in the same task, before the timeout runs.
-        if (heldRef.current) {
-            window.setTimeout(() => heldRef.current = false);
-        }
-    }, [clear]);
 
     const onContextMenu = useCallback(
         (e: MouseEvent) => {
@@ -2016,7 +2018,7 @@ export function useHoldContextMenu(handler: (e: MouseEvent) => void, holdMs = 50
     return {
         onContextMenu,
         onPointerDown,
-        onPointerUp,
+        onPointerUp: clear,
         onPointerLeave: clear,
         onPointerCancel: clear,
         onClickCapture

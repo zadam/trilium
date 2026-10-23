@@ -844,6 +844,20 @@ describe("useHoldContextMenu", () => {
         expect(onClick).toHaveBeenCalledOnce();
     });
 
+    it("ends the hold when the press is released off the button", () => {
+        fire("pointerdown", { button: 0 });
+        vi.advanceTimersByTime(500);
+        fire("pointerleave");
+        document.body.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, button: 0 }));
+        vi.runAllTimers();
+
+        // A keyboard click and the context menu key.
+        fire("click");
+        expect(onClick).toHaveBeenCalledOnce();
+        fire("contextmenu");
+        expect(handler).toHaveBeenCalledTimes(2);
+    });
+
     it("leaves a short press, a press that slides off and another button alone", () => {
         fire("pointerdown", { button: 0 });
         vi.advanceTimersByTime(300);
