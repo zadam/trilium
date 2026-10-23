@@ -4,8 +4,8 @@ import { act } from "preact/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
-    isKeyboardPanelOpen, useEditorsFocused, useIsKeyboardPanelOpen, useKeyboardPanel,
-    useShownToolbarElement
+    isKeyboardPanelOpen, useClosedByToolbarTap, useEditorsFocused, useIsKeyboardPanelOpen,
+    useKeyboardPanel, useShownToolbarElement
 } from "./mobile_editor_toolbar";
 
 describe("useEditorsFocused", () => {
@@ -266,6 +266,43 @@ describe("useKeyboardPanel", () => {
             vi.advanceTimersByTime(1000);
         });
         expect(isKeyboardPanelOpen()).toBe(false);
+    });
+
+    it("gives the place to the keyboard a tap on another toolbar button brings up", async () => {
+        const { root, editable, host } = buildPanelFixture();
+        const row = document.createElement("div");
+        row.className = "classic-toolbar-island";
+        row.innerHTML = `<div class="classic-toolbar-widget"><button class="anchor"></button><button class="bold"></button></div>`;
+        document.body.append(row);
+        const anchor = row.querySelector<HTMLElement>(".anchor");
+        const bold = row.querySelector<HTMLElement>(".bold");
+        if (!anchor || !bold) throw new Error("toolbar fixture is missing a button");
+        function Menu() {
+            useKeyboardPanel(true);
+            useClosedByToolbarTap(anchor as HTMLElement, () => render(null, host));
+            return null;
+        }
+
+        vi.useFakeTimers({ toFake: [ "setTimeout", "clearTimeout" ] });
+        root.classList.add("virtual-keyboard-opened");
+        act(() => render(<Menu />, host));
+        root.classList.remove("virtual-keyboard-opened");
+
+        // The tap's click closes the menu in a capture listener. A browser drains the microtasks
+        // after each listener of a user's click, so the button's own listener, which focuses the
+        // text, runs after them.
+        await act(async () => bold.click());
+        expect(isKeyboardPanelOpen()).toBe(true);
+        editable.focus();
+
+        // The keyboard comes up well within `PRESS_TIMEOUT`, and the place goes with it.
+        act(() => {
+            vi.advanceTimersByTime(1);
+        });
+        root.classList.add("virtual-keyboard-opened");
+        await act(async () => {});
+        expect(isKeyboardPanelOpen()).toBe(false);
+        row.remove();
     });
 });
 

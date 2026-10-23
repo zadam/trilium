@@ -220,7 +220,13 @@ export function useClosedByToolbarTap(anchor: HTMLElement, close: () => void) {
         const onClick = (event: MouseEvent) => {
             const target = event.target;
             if (!(target instanceof Element) || anchor.contains(target)) return;
-            if (target.closest(MOBILE_TOOLBAR_ROW)) closeRef.current();
+            if (!target.closest(MOBILE_TOOLBAR_ROW)) return;
+            isClosingInClick = true;
+            try {
+                closeRef.current();
+            } finally {
+                isClosingInClick = false;
+            }
         };
         window.addEventListener("click", onClick, true);
         return () => window.removeEventListener("click", onClick, true);
@@ -259,6 +265,8 @@ let pendingHandBack: { cancel(): void } | undefined;
 let hasOwnHeightPlace = false;
 /** The `--tn-keyboard-height` of the keyboard, which a place of the menu's own height covers. */
 let keyboardHeight = "";
+/** Whether `useClosedByToolbarTap` is closing a menu from within the click of its press. */
+let isClosingInClick = false;
 /** Called as `keyboard-panel-open` is set on the body or cleared. */
 const keyboardPanelListeners = new Set<() => void>();
 
@@ -291,6 +299,7 @@ function takeKeyboardPlace(isOwnHeight: boolean) {
  */
 function handBackKeyboardPlace() {
     let isCancelled = false;
+    const isClosedInClick = isClosingInClick;
     let stopWaiting = () => {};
     const handBack = {
         cancel() {
@@ -352,6 +361,12 @@ function handBackKeyboardPlace() {
             stopWaiting();
             setTimeout(settle);
         };
+        // The browser drains microtasks between the listeners of a click, so a menu closed in
+        // one has its click still in progress, and that click reaches no listener added now.
+        if (isClosedInClick) {
+            onClick();
+            return;
+        }
         window.addEventListener("click", onClick, true);
         const timer = setTimeout(() => {
             stopWaiting();
