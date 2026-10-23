@@ -22,7 +22,7 @@ It can be accessed by going to the <a class="reference-link" href="../../../Bas
 
 After executing a query, a table with the results will be displayed:
 
-*   Clicking on a column allows sorting ascending or descending.
+*   Clicking on a column allows sorting ascending or descending. The `#` column numbers the rows and can't be sorted.
 *   Underneath each column there is an input field which allows filtering by text.
 *   Press <kbd>Ctrl</kbd>+<kbd>C</kbd> to copy the current cell to clipboard.
 *   Multiple cells can be selected by dragging or by holding <kbd>Shift</kbd> + arrow keys

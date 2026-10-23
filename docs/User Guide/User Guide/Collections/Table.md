@@ -108,7 +108,7 @@ On a [read-only](../Basic%20Concepts%20and%20Features/Notes/Read-Only%20Notes.md
 By default, the order of the notes matches the order in the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a>. However, it is possible to sort the data by the values of a column:
 
 *   To do so, simply click on a column.
-*   To switch between ascending or descending sort, simply click again on the same column. The arrow next to the column will indicate the direction of the sort.
+*   To switch between ascending or descending sort, simply click again on the same column. The arrow next to the column will indicate the direction of the sort. On a column that isn't sorted, the arrow appears only while hovering over its header.
 *   To disable sorting and fall back to the original order, right click any column on the header and select _Clear sorting._
 
 ### Reordering and hiding columns
