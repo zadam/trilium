@@ -885,36 +885,37 @@
   "global_menu": {
     "menu": "菜单",
     "options": "选项",
-    "open_new_window": "打开新窗口",
+    "open_new_window": "新窗口",
     "switch_to_mobile_version": "切换到移动版",
     "switch_to_desktop_version": "切换到桌面版",
     "zoom": "缩放",
-    "toggle_fullscreen": "切换全屏",
+    "toggle_fullscreen": "全屏",
     "zoom_out": "缩小",
     "reset_zoom_level": "重置缩放级别",
     "zoom_in": "放大",
     "configure_launchbar": "配置启动栏...",
-    "show_shared_notes_subtree": "显示分享笔记子树",
+    "show_shared_notes_subtree": "共享笔记",
     "advanced": "高级",
-    "open_dev_tools": "打开开发工具",
-    "open_sql_console": "打开 SQL 控制台",
-    "open_sql_console_history": "打开 SQL 控制台历史记录",
-    "open_search_history": "打开搜索历史",
-    "show_backend_log": "显示后台日志",
+    "open_dev_tools": "开发者工具",
+    "open_sql_console": "SQL 控制台",
+    "open_sql_console_history": "SQL 控制台历史记录",
+    "open_search_history": "搜索历史",
+    "show_backend_log": "后端日志",
     "reload_hint": "重载可以帮助解决一些视觉故障，而无需重启整个应用程序。",
     "reload_frontend": "重载前端",
-    "show_hidden_subtree": "显示隐藏子树",
-    "show_help": "显示帮助",
+    "show_hidden_subtree": "隐藏笔记",
+    "show_help": "帮助",
     "about": "关于 TriliumNext 笔记",
     "logout": "登出",
-    "show-cheatsheet": "显示快捷帮助",
+    "show-cheatsheet": "键盘快捷键",
     "toggle-zen-mode": "禅模式",
     "new-version-available": "新更新可用",
     "download-update": "取得版本 {{latestVersion}}",
     "search_notes": "搜索笔记",
-    "show_deleted_notes": "显示已删除的笔记",
-    "show_space_usage": "显示空间占用",
-    "theme": "主题"
+    "show_deleted_notes": "已删除笔记",
+    "show_space_usage": "空间占用",
+    "theme": "主题",
+    "fullscreen": "全屏"
   },
   "zen_mode": {
     "button_exit": "退出禅模式"
@@ -2057,7 +2058,7 @@
     "show-all-notes": "显示所有笔记"
   },
   "title_bar_buttons": {
-    "window-on-top": "保持此窗口置顶"
+    "window-on-top": "始终置顶"
   },
   "note_detail": {
     "could_not_find_typewidget": "找不到类型为 '{{type}}' 的 typeWidget",
