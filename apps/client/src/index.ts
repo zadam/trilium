@@ -7,6 +7,7 @@ import "@triliumnext/ckeditor5/src/theme/collapsible_blocks.css";
 import "@triliumnext/ckeditor5/src/theme/external_links.css";
 import "@triliumnext/ckeditor5/src/theme/footnotes.css";
 import "@triliumnext/ckeditor5/src/theme/headings.css";
+import "@triliumnext/ckeditor5/src/theme/lists.css";
 import "@triliumnext/ckeditor5/src/theme/reference_links.css";
 import "@triliumnext/ckeditor5/src/theme/table_scroll.css";
 import "@triliumnext/ckeditor5/src/theme/table_sticky_header.css";

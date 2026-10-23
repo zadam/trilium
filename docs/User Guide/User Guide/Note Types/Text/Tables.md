@@ -211,6 +211,7 @@ The following options can be adjusted:
 *   The width and height of the cell in percentage (must end with `%`) or pixels (must end with `px`).
 *   The padding (the distance of the text compared to the cell's borders).
 *   The alignment of the text, both horizontally (left, centered, right, justified) and vertically (top, middle or bottom).
+    *   In a centered or right-aligned cell, each item of a bulleted, numbered or to-do list moves together with its bullet, number or checkbox.
 
 The cell will immediately update to reflect the changes, but the _Save_ button must be pressed for the changes to persist.
 
