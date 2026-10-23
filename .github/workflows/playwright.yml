@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - hotfix
+      - stable
     paths-ignore:
       - "docs/**"
       - "*.md"
