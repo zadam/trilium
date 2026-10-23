@@ -15,6 +15,13 @@ vi.mock("../../react/NoteAutocomplete", async () => {
     };
 });
 
+const goToLinkExt = vi.hoisted(() => vi.fn());
+vi.mock("../../../services/link", async (importOriginal) => ({
+    ...await importOriginal<typeof import("../../../services/link")>(),
+    goToLinkExt
+}));
+
+import appContext from "../../../components/app_context";
 import options from "../../../services/options";
 import { buildNote } from "../../../test/easy-froca";
 import { formatLabelDate } from "../../attribute_widgets/label_value_display";
@@ -715,5 +722,73 @@ describe("formatLabelDate", () => {
         expect(formatLabelDate(undefined, false)).toBe("");
         expect(formatLabelDate(null, true)).toBe("");
         expect(formatLabelDate("", false)).toBe("");
+    });
+});
+
+describe("title column", () => {
+    function renderTitleCell({ editable }: { editable: boolean }) {
+        const column = buildColumnDefinitions({
+            info: [],
+            movableRows: false,
+            existingColumnData: undefined,
+            rowNumberHint: 1
+        }).find((candidate) => candidate.field === "title");
+        const formatter = column?.formatter;
+        if (typeof formatter !== "function") throw new Error("expected a formatter of its own");
+
+        const cellElement = document.createElement("div");
+        cellElement.className = editable ? "tabulator-cell tabulator-editable" : "tabulator-cell";
+        const cellClick = vi.fn();
+        cellElement.addEventListener("click", cellClick);
+        const row = { getData: () => ({ noteId: "abc123", iconClass: "bx bx-file", colorClass: "" }) };
+        act(() => {
+            cellElement.append(formatter({ getValue: () => "My note", getRow: () => row } as unknown as CellComponent, {}, () => {}) as HTMLElement);
+        });
+        document.body.append(cellElement);
+
+        const title = cellElement.querySelector<HTMLElement>(".reference-link");
+        const openButton = cellElement.querySelector<HTMLButtonElement>(".table-open-note button");
+        if (!title || !openButton) throw new Error("expected a title and an open button");
+        return { cellElement, cellClick, title, openButton };
+    }
+
+    it("opens the note in quick edit from the open button, without starting to edit the cell", () => {
+        const triggerCommand = vi.spyOn(appContext, "triggerCommand").mockReturnValue(undefined);
+        const { cellClick, openButton } = renderTitleCell({ editable: true });
+
+        act(() => openButton.click());
+
+        expect(triggerCommand).toHaveBeenCalledWith("openInPopup", { noteIdOrPath: "abc123" });
+        expect(cellClick).not.toHaveBeenCalled();
+        triggerCommand.mockRestore();
+    });
+
+    it("leaves a plain click on an editable title to the cell's editor, and opens a read-only one", () => {
+        const triggerCommand = vi.spyOn(appContext, "triggerCommand").mockReturnValue(undefined);
+
+        const editable = renderTitleCell({ editable: true });
+        act(() => editable.title.click());
+        expect(editable.cellClick).toHaveBeenCalledTimes(1);
+        expect(triggerCommand).not.toHaveBeenCalled();
+
+        const readOnly = renderTitleCell({ editable: false });
+        act(() => readOnly.title.click());
+        expect(triggerCommand).toHaveBeenCalledWith("openInPopup", { noteIdOrPath: "abc123" });
+        triggerCommand.mockRestore();
+    });
+
+    it("follows the note link on a Ctrl, Shift or middle click instead of editing the cell", () => {
+        goToLinkExt.mockClear();
+        const { cellClick, title } = renderTitleCell({ editable: true });
+
+        act(() => {
+            title.dispatchEvent(new MouseEvent("click", { bubbles: true, ctrlKey: true }));
+            title.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }));
+            title.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, button: 1 }));
+        });
+
+        expect(goToLinkExt).toHaveBeenCalledTimes(3);
+        expect(goToLinkExt).toHaveBeenCalledWith(expect.any(MouseEvent), "#root/abc123");
+        expect(cellClick).not.toHaveBeenCalled();
     });
 });

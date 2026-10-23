@@ -3613,7 +3613,8 @@
     "column-note-id": "Note ID",
     "column-title": "Title",
     "column-date-created": "Created",
-    "column-date-modified": "Modified"
+    "column-date-modified": "Modified",
+    "open-note": "Open"
   },
   "book_properties_config": {
     "board-inbox-column": "Show inbox column",

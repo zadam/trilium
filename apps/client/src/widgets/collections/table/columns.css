@@ -67,3 +67,36 @@
 .tabulator-cell.table-numeric-cell {
     font-variant-numeric: tabular-nums;
 }
+
+.tabulator-cell .table-open-note {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    display: flex;
+    align-items: center;
+    padding-inline: 4px var(--cell-horiz-padding-size);
+    background-color: var(--row-background-color);
+    opacity: 0;
+    transition: opacity 100ms linear;
+}
+
+.tabulator-row:hover .tabulator-cell .table-open-note,
+.tabulator-cell .table-open-note:focus-within {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .tabulator-cell .table-open-note {
+        opacity: 1;
+    }
+}
+
+.tabulator-cell:not(.tabulator-editable) {
+    .table-open-note {
+        display: none;
+    }
+
+    .table-title > .reference-link {
+        cursor: pointer;
+    }
+}

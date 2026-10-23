@@ -6,13 +6,17 @@ import { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { CellComponent, ColumnComponent, ColumnDefinition, EmptyCallback, FormatterParams, RowComponent, ValueBooleanCallback, ValueVoidCallback } from "tabulator-tables";
 
+import appContext from "../../../components/app_context.js";
 import froca from "../../../services/froca.js";
 import { t } from "../../../services/i18n.js";
+import { goToLinkExt } from "../../../services/link.js";
+import { isCtrlKey } from "../../../services/utils.js";
 import { safeUrlHref } from "../../../utils/url.js";
 import { applyLinkScheme, asLabelValues, formatLabelDate, LabelValueChips } from "../../attribute_widgets/label_value_display.jsx";
 import LabelValueInput from "../../attribute_widgets/label_value_input.jsx";
 import MultiValueInput from "../../attribute_widgets/multi_value_input.jsx";
 import RelationValuesInput, { RelationValueChips } from "../../attribute_widgets/relation_values_input.jsx";
+import Button from "../../react/Button.jsx";
 import { useGrowsUpwards } from "../../react/grows_upwards.js";
 import Icon from "../../react/Icon.jsx";
 import NoteAutocomplete from "../../react/NoteAutocomplete.jsx";
@@ -186,12 +190,7 @@ export function buildColumnDefinitions({ info, movableRows, existingColumnData, 
             field: "title",
             title: t("table_view.column-title"),
             editor: "input",
-            formatter: wrapFormatter(({ cell }) => {
-                const { noteId, iconClass, colorClass } = cell.getRow().getData();
-                return <span className={`reference-link ${colorClass}`} data-href={`#root/${noteId}`}>
-                    <Icon icon={iconClass} />{" "}{cell.getValue()}
-                </span>;
-            }),
+            formatter: wrapFormatter(TitleFormatter),
             width: 400
         },
         {
@@ -368,6 +367,53 @@ function wrapEditor(Component: (opts: EditorOpts) => JSX.Element): ((
         const elWithParams = <Component cell={cell} success={success} cancel={cancel} editorParams={editorParams} />;
         return renderReactWidget(null, elWithParams)[0];
     };
+}
+
+/**
+ * A click on the title belongs to the cell's editor, which renames the note; the note opens from
+ * the button beside it instead. A read-only cell has no editor, so a click on its title opens the
+ * note. Ctrl, Shift and middle clicks follow the link as they do anywhere else.
+ */
+function TitleFormatter({ cell }: FormatterOpts) {
+    const { noteId, iconClass, colorClass } = cell.getRow().getData();
+    const href = `#root/${noteId}`;
+    const openNote = () => appContext.triggerCommand("openInPopup", { noteIdOrPath: noteId });
+
+    return (
+        <span className="table-title">
+            <span
+                className={`reference-link ${colorClass}`}
+                data-href={href}
+                onClick={(e) => {
+                    if (isCtrlKey(e) || e.shiftKey) {
+                        e.stopPropagation();
+                        goToLinkExt(e, href);
+                    } else if (!e.currentTarget.closest(".tabulator-cell")?.classList.contains("tabulator-editable")) {
+                        openNote();
+                    }
+                }}
+                onAuxClick={(e) => {
+                    if (e.button === 1) {
+                        goToLinkExt(e, href);
+                    }
+                }}
+            >
+                <Icon icon={iconClass} />{" "}{cell.getValue()}
+            </span>
+            <span className="table-open-note">
+                <Button
+                    text={t("table_view.open-note")}
+                    icon="bx-expand-alt"
+                    kind="lowProfile"
+                    size="micro"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openNote();
+                    }}
+                />
+            </span>
+        </span>
+    );
 }
 
 function NoteFormatter({ cell }: FormatterOpts) {
