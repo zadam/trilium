@@ -727,14 +727,12 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             return;
         }
 
-        const title = `${branch.prefix ? `${branch.prefix} - ` : ""}${note.title}`;
-
         node.data.isProtected = note.isProtected;
         node.data.noteType = note.type;
         node.folder = note.isFolder();
         node.icon = note.getIcon();
         node.extraClasses = this.getExtraClasses(note);
-        node.title = utils.escapeHtml(title);
+        node.title = this.getTitleHtml(note, branch);
 
         if (node.isExpanded() !== branch.isExpanded) {
             await node.setExpanded(branch.isExpanded, { noEvents: true, noAnimation: true });
@@ -751,8 +749,6 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             return null;
         }
 
-        const title = `${branch.prefix ? `${branch.prefix} - ` : ""}${note.title}`;
-
         const isFolder = note.isFolder();
 
         const node: Fancytree.FancytreeNewNode = {
@@ -761,7 +757,7 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
             branchId: branch.branchId,
             isProtected: note.isProtected,
             noteType: note.type,
-            title: utils.escapeHtml(title),
+            title: this.getTitleHtml(note, branch),
             extraClasses: this.getExtraClasses(note),
             icon: note.getIcon(),
             refKey: note.noteId,
@@ -777,6 +773,14 @@ export default class NoteTreeWidget extends NoteContextAwareWidget {
         }
 
         return node;
+    }
+
+    getTitleHtml(note: FNote, branch: FBranch) {
+        const title = note.isContentAvailable()
+            ? utils.escapeHtml(note.title)
+            : `<span class="protected-title">${t("note_tree.protected-note-title")}</span>`;
+
+        return branch.prefix ? `${utils.escapeHtml(branch.prefix)} - ${title}` : title;
     }
 
     getExtraClasses(note: FNote) {

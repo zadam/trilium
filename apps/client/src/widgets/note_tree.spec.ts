@@ -4,15 +4,22 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import appContext from "../components/app_context.js";
 import type { EventData } from "../components/app_context.js";
 import type TabManager from "../components/tab_manager.js";
+import froca from "../services/froca.js";
 import hoistedNoteService from "../services/hoisted_note.js";
 import noteCreateService from "../services/note_create.js";
 import options from "../services/options.js";
+import protectedSessionHolder from "../services/protected_session_holder.js";
 import server from "../services/server.js";
 import treeService from "../services/tree.js";
 import ws from "../services/ws.js";
+import { buildNote } from "../test/easy-froca.js";
 import NoteTreeWidget, { publishDropMarkerShift } from "./note_tree.js";
 
 vi.mock("../services/import.js", () => ({ uploadFiles: vi.fn() }));
+vi.mock("../services/i18n.js", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../services/i18n.js")>()),
+    t: (key: string) => key
+}));
 
 describe("fancytree scrollIntoView patch", () => {
     it("resolves instead of crashing for a node without rendered markup (#10407)", async () => {
@@ -136,6 +143,31 @@ describe("NoteTreeWidget", () => {
 
         // The popup's own hoisted note is passed explicitly — not the active tab's.
         expect(isHoisted).toHaveBeenCalledWith("_taskStates");
+    });
+
+    describe("the title of a protected note", () => {
+        function prepareProtectedNode(isUnlocked: boolean) {
+            vi.spyOn(protectedSessionHolder, "isProtectedSessionAvailable").mockReturnValue(isUnlocked);
+            const parent = buildNote({ title: "Parent", children: [ { title: "R&D" } ] });
+            const childNoteId = parent.children[0];
+            const branch = froca.getBranch(`${parent.noteId}_${childNoteId}`);
+            if (!branch) {
+                throw new Error("fixture missing");
+            }
+            froca.notes[childNoteId].isProtected = true;
+            branch.prefix = "Prefix";
+
+            return new NoteTreeWidget().prepareNode(branch);
+        }
+
+        it("reads Protected while the protected session is locked", () => {
+            const label = `<span class="protected-title">note_tree.protected-note-title</span>`;
+            expect(prepareProtectedNode(false)?.title).toBe(`Prefix - ${label}`);
+        });
+
+        it("reads the note's own title inside the protected session", () => {
+            expect(prepareProtectedNode(true)?.title).toBe("Prefix - R&amp;D");
+        });
     });
 
     describe("restoring the active node after an entity reload", () => {
