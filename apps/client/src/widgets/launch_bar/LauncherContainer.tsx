@@ -1,3 +1,5 @@
+import "./LauncherContainer.css";
+
 import { useCallback, useLayoutEffect, useRef, useState } from "preact/hooks";
 
 import FNote from "../../entities/fnote";
@@ -10,9 +12,11 @@ import { onWheelHorizontalScroll } from "../widget_utils";
 import BookmarkButtons from "./BookmarkButtons";
 import CalendarWidget from "./CalendarWidget";
 import ColorSchemeSwitcher from "./ColorSchemeSwitcher";
+import { CustomNoteLauncher } from "./GenericButtons";
 import HistoryNavigationButton from "./HistoryNavigation";
 import { LaunchBarContext } from "./launch_bar_widgets";
 import { CommandButton, CustomWidget, NoteLauncher, QuickSearchLauncherWidget, ScriptLauncher, TodayLauncher } from "./LauncherDefinitions";
+import LauncherDropTarget from "./LauncherDropTarget";
 import ProtectedSessionStatusWidget from "./ProtectedSessionStatusWidget";
 import RecordMeetingButton from "./RecordMeetingButton";
 import SidebarChatButton from "./SidebarChatButton";
@@ -41,23 +45,37 @@ export default function LauncherContainer({ isHorizontalLayout }: { isHorizontal
                 isHorizontalLayout
             }}>
                 {childNotes?.map(childNote => {
-                    if (childNote.type !== "launcher") {
-                        console.warn(`Note '${childNote.noteId}' '${childNote.title}' is not a launcher even though it's in the launcher subtree`);
-                        return false;
-                    }
-
                     if (!isDesktop() && childNote.isLabelTruthy("desktopOnly")) {
                         return false;
                     }
 
-                    return <Launcher key={childNote.noteId} note={childNote} isHorizontalLayout={isHorizontalLayout} />;
+                    // `LauncherDropTarget` measures each launcher through its slot.
+                    return (
+                        <div
+                            key={childNote.noteId}
+                            className="launcher-slot"
+                            data-launcher-id={childNote.noteId}
+                        >
+                            <Launcher note={childNote} isHorizontalLayout={isHorizontalLayout} />
+                        </div>
+                    );
                 })}
             </LaunchBarContext.Provider>
+            <LauncherDropTarget
+                containerRef={containerRef}
+                parentNoteId={getVisibleLaunchersRootId()}
+                isHorizontalLayout={isHorizontalLayout}
+            />
         </div>
     );
 }
 
 function Launcher({ note, isHorizontalLayout }: { note: FNote, isHorizontalLayout: boolean }) {
+    // A note cloned into the launch bar opens itself.
+    if (note.type !== "launcher") {
+        return <CustomNoteLauncher launcherNote={note} getTargetNoteId={() => note.noteId} />;
+    }
+
     const launcherType = note.getLabelValue("launcherType");
     if (glob.TRILIUM_SAFE_MODE && launcherType === "customWidget") return;
 
@@ -121,8 +139,7 @@ export function useLauncherChildNotes() {
 
     // Load the root note.
     const loadRoot = useCallback(() => {
-        const visibleLaunchersRootId = isMobile() ? "_lbMobileVisibleLaunchers" : "_lbVisibleLaunchers";
-        froca.getNote(visibleLaunchersRootId, true).then(setVisibleLaunchersRoot);
+        froca.getNote(getVisibleLaunchersRootId(), true).then(setVisibleLaunchersRoot);
     }, []);
     useLayoutEffect(loadRoot, [ loadRoot ]);
 
@@ -147,6 +164,11 @@ export function useLauncherChildNotes() {
     });
 
     return childNotes;
+}
+
+/** The note whose children are the launchers shown in this layout's launch bar. */
+function getVisibleLaunchersRootId() {
+    return isMobile() ? "_lbMobileVisibleLaunchers" : "_lbVisibleLaunchers";
 }
 
 // Measures the scrollbar's actual consumed size (which varies by browser and the OS "show scroll

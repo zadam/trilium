@@ -1882,6 +1882,54 @@ Note tree structure and branches
     </div>
     </div>
 
+### Clone note before branch
+
+`PUT /api/notes/{noteId}/clone-before/{beforeBranchId}` · `cloneBeforeBranch`
+
+**Authorization**: `sessionAuth` or `tokenAuth`
+
+**Path parameters**
+
+| Name | Description |
+| --- | --- |
+| `noteId`  <br>_required_ | `string`  <br>12-character note ID |
+| `beforeBranchId`  <br>_required_ | `string` |
+
+**Responses**
+
+=== "200: Note cloned"
+
+    *   `application/json`: [`Branch`](#schema-Branch)
+
+    <div class="trilium-multicolumn-layout" data-trilium-column-ratios="1-1">
+    <div class="trilium-multicolumn-column">
+
+    | Property | Description |
+    | --- | --- |
+    | `branchId`  <br>_required_ | `string`  <br>Branch ID (parentNoteId\_noteId) |
+    | `noteId`  <br>_required_ | `string` |
+    | `parentNoteId`  <br>_required_ | `string` |
+    | `notePosition`  <br>_required_ | `integer` |
+    | `prefix` | `string \| null` |
+    | `isExpanded` | `boolean` |
+
+    </div>
+    <div class="trilium-multicolumn-column">
+
+    ```json
+    {
+        "branchId": "string",
+        "noteId": "string",
+        "parentNoteId": "string",
+        "notePosition": 0,
+        "prefix": "string",
+        "isExpanded": true
+    }
+    ```
+
+    </div>
+    </div>
+
 ### Toggle note presence in parent
 
 `PUT /api/notes/{noteId}/toggle-in-parent/{parentNoteId}/{present}` · `toggleInParent`

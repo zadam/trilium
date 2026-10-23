@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import Component from "../../components/component.js";
 import type FNote from "../../entities/fnote.js";
 import { buildNote } from "../../test/easy-froca.js";
+import { TREE_CLIPBOARD_TYPE } from "../react/hooks.js";
 import { ParentComponent } from "../react/react_utils.js";
 import LauncherContainer, { useLauncherChildNotes } from "./LauncherContainer.js";
 
@@ -16,6 +17,13 @@ vi.mock("../../services/utils", async (importOriginal) => ({
 }));
 vi.mock("./RecordMeetingButton", () => ({
     default: () => <span className="record-meeting-button" />
+}));
+vi.mock("./GenericButtons", async (importOriginal) => ({
+    ...await importOriginal<typeof import("./GenericButtons")>(),
+    CustomNoteLauncher: ({ launcherNote, getTargetNoteId }: {
+        launcherNote: FNote,
+        getTargetNoteId: (launcherNote: FNote) => unknown
+    }) => <span className="custom-note-launcher" data-target={`${getTargetNoteId(launcherNote)}`} />
 }));
 
 let container: HTMLDivElement;
@@ -114,5 +122,35 @@ describe("LauncherContainer", () => {
         mount();
         await flush();
         expect(container.querySelector(".record-meeting-button")).not.toBeNull();
+    });
+
+    it("shows a note cloned into the bar as a launcher of itself, and takes drops", async () => {
+        buildNote({
+            id: "_lbVisibleLaunchers",
+            title: "Visible Launchers",
+            children: [ { id: "clonedNote", title: "Cloned note" } ]
+        });
+        container = document.createElement("div");
+        document.body.appendChild(container);
+        act(() => render(
+            <ParentComponent.Provider value={new Component()}>
+                <LauncherContainer isHorizontalLayout={false} />
+            </ParentComponent.Provider>, container));
+        await flush();
+
+        const slot = container.querySelector(".launcher-slot[data-launcher-id='clonedNote']");
+        const launcher = slot?.querySelector(".custom-note-launcher");
+        expect(launcher?.getAttribute("data-target")).toBe("clonedNote");
+
+        const bar = container.querySelector("#launcher-container");
+        expect(bar).not.toBeNull();
+        const dragOver = new Event("dragover", { bubbles: true, cancelable: true });
+        Object.defineProperty(dragOver, "dataTransfer", {
+            value: { types: [ TREE_CLIPBOARD_TYPE ] }
+        });
+        act(() => {
+            bar?.dispatchEvent(dragOver);
+        });
+        expect(document.body.querySelector(".launcher-drop-indicator")).not.toBeNull();
     });
 });
