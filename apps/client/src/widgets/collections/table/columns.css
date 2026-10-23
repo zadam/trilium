@@ -80,6 +80,26 @@
     transition: opacity 100ms linear;
 }
 
+.tabulator-cell .table-open-note .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 8px;
+    border: 1px solid var(--main-border-color);
+    border-radius: 6px;
+    background-color: var(--main-background-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity, 0.2) * 0.75));
+    color: var(--muted-text-color);
+    font-size: 0.85em;
+    transition: color 100ms linear, box-shadow 100ms linear;
+
+    &:hover {
+        background-color: var(--main-background-color);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, var(--dropdown-shadow-opacity, 0.2));
+        color: var(--main-text-color);
+    }
+}
+
 .tabulator-row:hover .tabulator-cell .table-open-note,
 .tabulator-cell .table-open-note:focus-within {
     opacity: 1;
