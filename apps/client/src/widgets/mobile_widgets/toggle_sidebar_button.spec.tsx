@@ -15,12 +15,19 @@ vi.mock("../react/hooks", async (importOriginal) => ({
 
 import ToggleSidebarButton from "./toggle_sidebar_button";
 
+/** Answers `matchMedia()` as a phone or a tablet would. */
+function mockWidth(width: "phone" | "tablet") {
+    return vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+        matches: width === "phone" && query === "(max-width: 991px)",
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn()
+    }) as unknown as MediaQueryList);
+}
+
 /** Renders the button at a phone or tablet width and clicks it. */
 function clickAt(width: "phone" | "tablet") {
-    const matchMedia = vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
-        matches: width === "phone" && query === "(max-width: 991px)",
-        media: query
-    }) as MediaQueryList);
+    const matchMedia = mockWidth(width);
 
     const container = renderInto(<ToggleSidebarButton />);
     // `SplitNoteContainer` binds this on the `.note-split` the button renders inside.
@@ -49,6 +56,20 @@ describe("ToggleSidebarButton", () => {
 
         expect(triggerCommand).toHaveBeenCalledWith("setActiveScreen", { screen: "tree" });
         expect(triggerCommand).not.toHaveBeenCalledWith("toggleLeftPane");
+    });
+
+    it("goes back to the tree on an iPhone, where the tree lies under the note", () => {
+        mockWidth("phone");
+        const userAgent = vi.spyOn(navigator, "userAgent", "get");
+
+        userAgent.mockReturnValue("Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile");
+        expect(renderInto(<ToggleSidebarButton />).querySelector("button.bx-sidebar")).not.toBeNull();
+
+        userAgent.mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) Mobile");
+        const button = renderInto(<ToggleSidebarButton />).querySelector<HTMLButtonElement>("button.bx-chevron-left");
+        expect(button).not.toBeNull();
+        button?.click();
+        expect(triggerCommand).toHaveBeenCalledWith("setActiveScreen", { screen: "tree" });
     });
 
     it("toggles the sidebar on a tablet, where it sits next to the note", () => {

@@ -1,6 +1,7 @@
 import type { EventData } from "../../components/app_context.js";
 import type { Screen } from "../../components/mobile_screen_switcher.js";
 import options from "../../services/options.js";
+import { isIOS, isNarrowLayout, onNarrowLayoutChange } from "../../services/utils.js";
 import type BasicWidget from "../basic_widget.js";
 import FlexContainer, { type FlexDirection } from "../containers/flex_container.js";
 
@@ -15,6 +16,16 @@ const DRAG_OPEN_THRESHOLD = 10;
 const DRAG_CLOSED_START_THRESHOLD = 10;
 /** The number of pixels the user has to drag across the screen to the left when the sidebar is opened to trigger the drag close animation. */
 const DRAG_OPENED_START_THRESHOLD = 100;
+/** How far the navigator lies toward the start while the note covers it in a navigation stack (0-100). */
+const STACK_PARALLAX = 30;
+
+/**
+ * Whether the tree and the note form a navigation stack, as on iOS phones: the tree lies under the
+ * note, which slides away to reveal it, in place of a drawer sliding over the note.
+ */
+export function isNavigationStack() {
+    return isIOS() && isNarrowLayout();
+}
 
 export default class SidebarContainer extends FlexContainer<BasicWidget> {
     private screenName: Screen;
@@ -26,7 +37,9 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
     private translatePercentage: number;
     private sidebarEl!: HTMLElement;
     private backdropEl!: HTMLElement;
+    private detailEl?: HTMLElement;
     private originalSidebarTransition: string;
+    private originalDetailTransition: string;
     private originalBackdropTransition: string;
     private screenWidth: number;
     /** Whether the sidebar is shown in tablet mode, where it sits next to the note (same option as the left pane on desktop). */
@@ -42,6 +55,7 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         this.dragState = DRAG_STATE_NONE;
         this.originalSidebarTransition = "";
         this.originalBackdropTransition = "";
+        this.originalDetailTransition = "";
         this.screenWidth = document.body.getBoundingClientRect().width;
     }
 
@@ -50,6 +64,9 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
 
         // Only has an effect in tablet mode, see `style.css`.
         this.$widget.toggleClass("left-pane-hidden", !this.leftPaneVisible);
+
+        this.#updateNavigationStack();
+        onNarrowLayoutChange(() => this.#updateNavigationStack());
 
         document.addEventListener("touchstart", (e) => this.#onDragStart(e));
         document.addEventListener("touchmove", (e) => this.#onDragMove(e), { passive: false });
@@ -63,6 +80,11 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         // Prevent dragging if too far from the edge of the screen and the menu is closed.
         const dragRefX = glob.isRtl ? this.screenWidth - x : x;
         if (dragRefX > 30 && this.currentTranslate === -100) {
+            return;
+        }
+
+        // In a navigation stack, the note comes back by opening it, not by a swipe.
+        if (isNavigationStack() && this.currentTranslate !== -100) {
             return;
         }
 
@@ -83,6 +105,7 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
                 /* Disable the transitions since they affect performance, they are going to reenabled once drag ends. */
                 this.sidebarEl.style.transition = "none";
                 this.backdropEl.style.transition = "none";
+                if (this.detailEl) this.detailEl.style.transition = "none";
 
                 this.backdropEl.style.opacity = String(this.currentTranslate === -100 ? 0 : 1);
                 this.backdropEl.classList.add("show");
@@ -99,11 +122,7 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
             const translatePercentage = Math.min(0, Math.max(this.currentTranslate + (deltaX / width) * 100, -100));
             const backdropOpacity = Math.max(0, 1 + translatePercentage / 100);
             this.translatePercentage = translatePercentage;
-            if (glob.isRtl) {
-                this.sidebarEl.style.transform = `translateX(${-translatePercentage}%)`;
-            } else {
-                this.sidebarEl.style.transform = `translateX(${translatePercentage}%)`;
-            }
+            this.#applyTranslate(translatePercentage);
             this.backdropEl.style.opacity = String(backdropOpacity);
         }
 
@@ -157,6 +176,33 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         this.backdropEl = backdropEl;
         this.originalSidebarTransition = this.sidebarEl.style.transition;
         this.originalBackdropTransition = this.backdropEl.style.transition;
+
+        this.detailEl = document.getElementById("detail-container") ?? undefined;
+        this.originalDetailTransition = this.detailEl?.style.transition ?? "";
+    }
+
+    /** Marks the body while the tree and the note form a navigation stack, and repositions both. */
+    #updateNavigationStack() {
+        document.body.classList.toggle("navigation-stack", isNavigationStack());
+        this.#setSidebarOpen(this.currentTranslate === 0);
+    }
+
+    /**
+     * Places the tree `translatePercentage` of the way from open (0) to closed (-100): in a drawer by
+     * moving the tree over the note, in a navigation stack by moving the note off the tree.
+     */
+    #applyTranslate(translatePercentage: number) {
+        const direction = glob.isRtl ? -1 : 1;
+
+        if (!isNavigationStack()) {
+            this.sidebarEl.style.transform = `translateX(${direction * translatePercentage}%)`;
+            if (this.detailEl) this.detailEl.style.transform = "";
+            return;
+        }
+
+        const openness = 100 + translatePercentage;
+        this.sidebarEl.style.transform = `translateX(${-direction * STACK_PARALLAX * (100 - openness) / 100}%)`;
+        if (this.detailEl) this.detailEl.style.transform = `translateX(${direction * openness}%)`;
     }
 
     #setSidebarOpen(isOpen: boolean) {
@@ -165,14 +211,9 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         }
 
         this.sidebarEl.classList.toggle("show", isOpen);
-        if (isOpen) {
-            this.sidebarEl.style.transform = "translateX(0)";
-        } else if (glob.isRtl) {
-            this.sidebarEl.style.transform = "translateX(100%)";
-        } else {
-            this.sidebarEl.style.transform = "translateX(-100%)";
-        }
+        this.#applyTranslate(isOpen ? 0 : -100);
         this.sidebarEl.style.transition = this.originalSidebarTransition;
+        if (this.detailEl) this.detailEl.style.transition = this.originalDetailTransition;
 
         this.backdropEl.classList.toggle("show", isOpen);
         this.backdropEl.style.transition = this.originalBackdropTransition;

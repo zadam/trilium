@@ -1910,6 +1910,49 @@ pre.code-embed-editor.read-only .cm-activeLine {
         transform: translateX(100%);
     }
 
+    /* The tree lies under the note, which `SidebarContainer` slides away to reveal it. */
+    body.navigation-stack {
+        #mobile-sidebar-container {
+            display: none;
+        }
+
+        #mobile-rest-container {
+            overflow: clip;
+        }
+
+        #mobile-rest-container > #mobile-sidebar-wrapper {
+            width: 100%;
+            z-index: 0;
+        }
+
+        #detail-container {
+            z-index: 1;
+            background: var(--main-background-color);
+            transition: transform 250ms ease-in-out;
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset-block: 0;
+                inset-inline-end: 100%;
+                width: 24px;
+                background: linear-gradient(to left, rgba(0, 0, 0, 0.12), transparent);
+                pointer-events: none;
+            }
+        }
+
+        &[dir="rtl"] #detail-container::before {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.12), transparent);
+        }
+
+        .mobile-navigator-scroll {
+            padding-bottom: var(
+                --mobile-bottom-bar-height,
+                calc(var(--launcher-pane-height) + var(--mobile-bottom-offset))
+            );
+        }
+    }
+
     #detail-container {
         width: 100%;
     }
