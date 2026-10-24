@@ -116,4 +116,21 @@ describe("RootContainer", () => {
         rootContainer.entitiesReloadedEvent({ loadResults });
         expect(isMarked()).toBe(true);
     });
+
+    it("keeps backdrop effects on a mobile device only on iOS", () => {
+        const isDisabled = () => document.body.classList.contains("backdrop-effects-disabled");
+        const userAgent = vi.spyOn(navigator, "userAgent", "get");
+        options.set("backdropEffectsEnabled", "true");
+
+        userAgent.mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) Mobile");
+        new RootContainer(false).render();
+        expect(isDisabled()).toBe(false);
+
+        userAgent.mockReturnValue("Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile");
+        new RootContainer(false).render();
+        expect(isDisabled()).toBe(true);
+
+        userAgent.mockRestore();
+        document.body.classList.remove("backdrop-effects-disabled", "ios");
+    });
 });
