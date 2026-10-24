@@ -148,7 +148,6 @@ body {
     user-select: text;
 }
 
-/* The edge and top highlight of a glass surface, drawn without a border, and its drop shadow. */
 :root {
     --glass-edge:
         inset 0 0 0 1px var(--glass-edge-color),

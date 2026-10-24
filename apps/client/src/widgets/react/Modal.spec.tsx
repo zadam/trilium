@@ -266,9 +266,22 @@ describe("Modal", () => {
         act(() => onResize());
         expect(dialog?.classList).toContain("modal-dialog-tall");
 
+        // Going tall widens the dialog, which can rewrap it a little shorter.
+        height = 380;
+        act(() => onResize());
+        expect(dialog?.classList).toContain("modal-dialog-tall");
+
         height = 300;
         act(() => onResize());
         expect(dialog?.classList).not.toContain("modal-dialog-tall");
+
+        // The screen can change height without the dialog changing size.
+        height = 380;
+        act(() => onResize());
+        expect(dialog?.classList).not.toContain("modal-dialog-tall");
+        vi.stubGlobal("innerHeight", 700);
+        act(() => { window.dispatchEvent(new Event("resize")); });
+        expect(dialog?.classList).toContain("modal-dialog-tall");
         vi.unstubAllGlobals();
     });
 

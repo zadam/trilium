@@ -349,16 +349,22 @@ export function ScriptModal(props: ModalProps) {
 
 /**
  * Whether the dialog takes up more than half the screen. iOS shows such a dialog as an opaque sheet
- * attached to the screen's edges, and a shorter one as a floating glass sheet.
+ * attached to the screen's edges, and a shorter one as a floating glass sheet. A tall dialog turns
+ * short again only below 45%, since the wider tall sheet can rewrap its content a little shorter.
  */
 function useIsTallerThanHalfScreen(dialog: HTMLElement | null) {
     const [ isTall, setIsTall ] = useState(false);
 
     useEffect(() => {
         if (!dialog) return;
-        const observer = new ResizeObserver(() => setIsTall(dialog.offsetHeight > window.innerHeight / 2));
+        const update = () => setIsTall((wasTall) => dialog.offsetHeight > window.innerHeight * (wasTall ? 0.45 : 0.5));
+        const observer = new ResizeObserver(update);
         observer.observe(dialog);
-        return () => observer.disconnect();
+        window.addEventListener("resize", update);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("resize", update);
+        };
     }, [ dialog ]);
 
     return isTall;

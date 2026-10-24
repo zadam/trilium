@@ -9,7 +9,6 @@ body.mobile.ios {
     --mobile-sheet-margin: 8px;
     --mobile-sheet-radius: 28px;
 
-    /* The formatting toolbar: a capsule, with its buttons spaced out. */
     --mobile-toolbar-border: 0px;
     --mobile-toolbar-gap: 10px;
     --mobile-toolbar-radius: calc(var(--mobile-toolbar-height) / 2);
@@ -18,7 +17,6 @@ body.mobile.ios {
     --mobile-toolbar-item-gap: 14px;
     --mobile-toolbar-items-inset: 8px;
 
-    /* A menu in the keyboard's place stands a gap below the toolbar, as the keyboard does. */
     --keyboard-panel-rise: 0px;
     --keyboard-panel-margin: var(--mobile-sheet-margin);
 
@@ -32,7 +30,6 @@ body.mobile.ios {
         --mobile-menu-group-radius: 12px;
     }
 
-    /* The note tree, as an inset grouped list. */
     #mobile-rest-container > #mobile-sidebar-wrapper {
         background: var(--grouped-background-color);
     }
@@ -123,7 +120,6 @@ body.mobile.ios {
             }
         }
 
-        /* Sheets, including the toolbar's menu in the keyboard's place. */
         :is(
             .tn-dropdown-portal:is(.global-menu, .right-dropdown-widget) > .dropdown-menu,
             .dropdown-menu.mobile-bottom-menu
@@ -147,7 +143,6 @@ body.mobile.ios {
             padding-bottom: var(--menu-padding-size) !important;
         }
 
-        /* The title row and the launcher bar float over the note, which scrolls beneath them. */
         #mobile-bottom-bar {
             position: relative;
             z-index: 999;
@@ -186,7 +181,6 @@ body.mobile.ios {
                 scroll-padding-bottom: var(--mobile-bottom-bar-height);
             }
 
-            /* With no keyboard, the formatting toolbar stands above the launch bar. */
             .classic-toolbar-island {
                 bottom: calc(var(--tn-layout-overhang, 0px) + var(--mobile-bottom-bar-height));
             }
@@ -227,8 +221,6 @@ body.mobile.ios {
             scroll-padding-top: var(--mobile-title-row-height);
         }
 
-        /* Dialogs: a short one floats as a glass sheet, a tall one is an opaque sheet attached to
-           the screen's edges. */
         .modal-dialog:not(.modal-dialog-full-page-on-mobile) > .modal-content {
             border: 0;
             border-radius: var(--mobile-sheet-radius) var(--mobile-sheet-radius) 0 0;
@@ -256,8 +248,7 @@ body.mobile.ios {
             }
         }
 
-        /* The title is centered on the sheet: it starts as far from the leading edge as the buttons
-           after it reach from the trailing one, each a 40px circle with an 8px margin. */
+        /* Each button after the title is a 40px circle with the 8px margin from dialogs.css. */
         .modal .modal-header {
             --modal-header-trailing-width: 48px;
 

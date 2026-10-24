@@ -1878,7 +1878,6 @@ pre.code-embed-editor.read-only .cm-activeLine {
         padding-bottom: calc(max(var(--menu-padding-size), var(--safe-area-inset-bottom, env(safe-area-inset-bottom)))) !important;
     }
 
-    /* The tree lies under the note, which `SidebarContainer` slides away to reveal it. */
     #mobile-rest-container {
         overflow: clip;
         position: relative;
