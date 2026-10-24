@@ -1149,7 +1149,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Branch'
-                
+
+  /api/notes/{noteId}/clone-before/{beforeBranchId}:
+    put:
+      tags: [Tree, Notes]
+      summary: Clone note before branch
+      operationId: cloneBeforeBranch
+      parameters:
+        - $ref: '#/components/parameters/noteId'
+        - name: beforeBranchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Note cloned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Branch'
+
   /api/notes/{noteId}/toggle-in-parent/{parentNoteId}/{present}:
     put:
       tags: [Tree, Notes]

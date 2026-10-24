@@ -669,6 +669,7 @@ div.bookmark-folder-widget .note-link .tn-icon {
     content: "\eb4a";
     font-family: "boxicons";
     transform: translateX(25%);
+    color: var(--quick-search-result-highlight-color);
     background: var(--left-pane-background-color);
     border-radius: 50%;
 }

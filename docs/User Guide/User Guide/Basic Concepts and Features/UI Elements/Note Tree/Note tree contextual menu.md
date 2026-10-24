@@ -21,18 +21,18 @@ The most frequent actions stand side by side at the top of the menu, each as an 
 *   **Cut**
     *   Will place the given notes in clipboard.
     *   Use one of the two paste functions (or the keyboard shortcuts) to move them to the desired location.
-*   **Clone**
+*   **Copy**
     *   Will place the given notes in clipboard.
     *   Use one of the two paste functions (or the keyboard shortcuts) to copy them to the desired location.
     *   Note that the copy function here works according to the <a class="reference-link" href="../../Notes/Cloning%20Notes.md">Cloning Notes</a> functionality (i.e. the note itself will be present in two locations at once, and editing it in one place will edit it everywhere).
     *   To simply create a duplicate note that can be modified independently, look for _Duplicate_.
 *   **Paste into**
     *   Pastes the notes in clipboard as child notes of the right-clicked one.
-    *   Shown only after notes have been cut or cloned.
+    *   Shown only after notes have been cut or copied.
 *   **Paste after**
     *   Pastes the notes in clipboard underneath the right-clicked one.
-    *   Shown only after notes have been cut or cloned.
-*   **Delete…**
+    *   Shown only after notes have been cut or copied.
+*   **Delete**
     *   Will delete the given notes, asking for confirmation first.
     *   In the dialog, the following options can be configured:
         *   _Delete also all clones_ to ensure that the note will be deleted everywhere if it has been placed into multiple locations (see <a class="reference-link" href="../../Notes/Cloning%20Notes.md">Cloning Notes</a>).

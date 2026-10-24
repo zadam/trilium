@@ -382,6 +382,15 @@ async function cloneNoteAfter(noteId: string, afterBranchId: string) {
     }
 }
 
+// beware that the first arg is noteId and the second is branchId!
+async function cloneNoteBefore(noteId: string, beforeBranchId: string) {
+    const resp = await server.put<Response>(`notes/${noteId}/clone-before/${beforeBranchId}`);
+
+    if (!resp.success) {
+        toastService.showError(resp.message);
+    }
+}
+
 export default {
     moveBeforeBranch,
     moveAfterBranch,
@@ -389,6 +398,7 @@ export default {
     deleteNotes,
     moveNodeUpInHierarchy,
     cloneNoteAfter,
+    cloneNoteBefore,
     cloneNoteToBranch,
     cloneNoteToParentNote
 };

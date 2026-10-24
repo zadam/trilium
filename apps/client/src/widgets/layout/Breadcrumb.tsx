@@ -7,6 +7,7 @@ import { Fragment } from "preact/jsx-runtime";
 import appContext from "../../components/app_context";
 import Component from "../../components/component";
 import NoteContext from "../../components/note_context";
+import type FNote from "../../entities/fnote";
 import contextMenu, { MenuItem } from "../../menus/context_menu";
 import NoteColorPicker from "../../menus/custom-items/NoteColorPicker";
 import link_context_menu from "../../menus/link_context_menu";
@@ -229,8 +230,8 @@ function BreadcrumbSeparatorDropdownContent({ notePath, noteContext, activeNoteP
                         onClick={() => noteContext?.setNote(childNotePath)}
                     >
                         {childNotePath !== activeNotePath
-                            ? <span>{note.title}</span>
-                            : <strong>{note.title}</strong>}
+                            ? <span><BreadcrumbNoteTitle note={note} /></span>
+                            : <strong><BreadcrumbNoteTitle note={note} /></strong>}
                     </FormListItem>
                 </li>;
             })}
@@ -267,11 +268,22 @@ function BreadcrumbCollapsed({ items, noteContext }: {
                         icon={note.getIcon()}
                         onClick={() => noteContext?.setNote(notePath)}
                     >
-                        <span>{note.title}</span>
+                        <span><BreadcrumbNoteTitle note={note} /></span>
                     </FormListItem>
                 </li>;
             })}
         </Dropdown>
+    );
+}
+
+export function BreadcrumbNoteTitle({ note }: { note: FNote }) {
+    return (
+        <>
+            {note.isContentAvailable()
+                ? note.title
+                : <span className="protected-title">{t("protected_session.locked_note_title")}</span>}
+            {note.isProtected && <Icon icon="bx bx-lock-alt" className="protected-icon" />}
+        </>
     );
 }
 

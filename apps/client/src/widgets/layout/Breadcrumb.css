@@ -113,3 +113,14 @@
         height: 23px;
     }
 }
+
+.breadcrumb-child-list {
+    .protected-title {
+        font-style: italic;
+    }
+
+    .protected-icon {
+        --menu-item-icon-color: var(--quick-search-result-highlight-color);
+        margin-inline-start: 6px;
+    }
+}

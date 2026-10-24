@@ -530,6 +530,15 @@ describe("clone helpers", () => {
         await branches.cloneNoteAfter("noteN", "afterB");
         expect(toastService.showError).toHaveBeenCalledWith("e3");
     });
+
+    it("cloneNoteBefore calls server and surfaces errors", async () => {
+        await branches.cloneNoteBefore("noteN", "beforeB");
+        expect(server.put).toHaveBeenCalledWith("notes/noteN/clone-before/beforeB");
+
+        server.put = vi.fn(async () => ({ success: false, message: "e4" })) as typeof server.put;
+        await branches.cloneNoteBefore("noteN", "beforeB");
+        expect(toastService.showError).toHaveBeenCalledWith("e4");
+    });
 });
 
 describe("ws task-message subscribers", () => {

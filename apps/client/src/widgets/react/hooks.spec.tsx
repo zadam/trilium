@@ -14,6 +14,7 @@ import {
     useDelayedVisibility,
     useDetachedNoteContext,
     useFocusWithin,
+    useHoldContextMenu,
     useImperativeSearchHighlighlighting,
     useMediaQuery,
     useNoteLabelBoolean,
@@ -783,5 +784,100 @@ describe("useWhenShown", () => {
             globalThis.ResizeObserver = ResizeObserver;
             host.remove();
         }
+    });
+});
+
+describe("useHoldContextMenu", () => {
+    let container: HTMLElement;
+    let button: HTMLButtonElement;
+    const handler = vi.fn();
+    const onClick = vi.fn();
+
+    function HoldProbe() {
+        return <button type="button" onClick={onClick} {...useHoldContextMenu(handler)} />;
+    }
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+        handler.mockReset();
+        onClick.mockReset();
+        container = document.createElement("div");
+        document.body.append(container);
+        act(() => render(<HoldProbe />, container));
+        const rendered = container.querySelector("button");
+        if (!rendered) throw new Error("The probe did not render its button.");
+        button = rendered;
+    });
+
+    afterEach(() => {
+        act(() => render(null, container));
+        container.remove();
+        vi.useRealTimers();
+    });
+
+    function fire(type: string, init: PointerEventInit = {}) {
+        const event = type === "click" || type === "contextmenu"
+            ? new MouseEvent(type, { bubbles: true, cancelable: true, ...init })
+            : new PointerEvent(type, { bubbles: true, cancelable: true, ...init });
+        button.dispatchEvent(event);
+        return event;
+    }
+
+    it("opens after a 500 ms hold and swallows the click that ends it", () => {
+        fire("pointerdown", { button: 0, clientX: 12, clientY: 34 });
+        vi.advanceTimersByTime(499);
+        expect(handler).not.toHaveBeenCalled();
+        vi.advanceTimersByTime(1);
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0])
+            .toMatchObject({ type: "pointerdown", clientX: 12, clientY: 34 });
+
+        // The `contextmenu` Android raises for the same press.
+        expect(fire("contextmenu").defaultPrevented).toBe(true);
+        fire("pointerup", { button: 0 });
+        expect(fire("click").defaultPrevented).toBe(true);
+        expect(handler).toHaveBeenCalledOnce();
+        expect(onClick).not.toHaveBeenCalled();
+
+        vi.runAllTimers();
+        fire("click");
+        expect(onClick).toHaveBeenCalledOnce();
+    });
+
+    it("ends the hold when the press is released off the button", () => {
+        fire("pointerdown", { button: 0 });
+        vi.advanceTimersByTime(500);
+        fire("pointerleave");
+        document.body.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, button: 0 }));
+        vi.runAllTimers();
+
+        // A keyboard click and the context menu key.
+        fire("click");
+        expect(onClick).toHaveBeenCalledOnce();
+        fire("contextmenu");
+        expect(handler).toHaveBeenCalledTimes(2);
+    });
+
+    it("leaves a short press, a press that slides off and another button alone", () => {
+        fire("pointerdown", { button: 0 });
+        vi.advanceTimersByTime(300);
+        fire("pointerup", { button: 0 });
+        fire("click");
+
+        fire("pointerdown", { button: 0 });
+        fire("pointerleave");
+        fire("pointerdown", { button: 1 });
+        vi.runAllTimers();
+
+        expect(handler).not.toHaveBeenCalled();
+        expect(onClick).toHaveBeenCalledOnce();
+    });
+
+    it("opens on a right-click", () => {
+        fire("pointerdown", { button: 2 });
+        const event = fire("contextmenu");
+        expect(handler).toHaveBeenCalledWith(event);
+        vi.runAllTimers();
+        expect(handler).toHaveBeenCalledOnce();
     });
 });

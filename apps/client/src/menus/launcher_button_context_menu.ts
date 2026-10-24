@@ -20,9 +20,23 @@ function getBookmarkBranch(launcherNote: FNote) {
     return launcherNote.getParentBranches().find((b) => b.parentNoteId === "_lbBookmarks");
 }
 
-async function removeFromLaunchBar(launcherNote: FNote) {
-    const bookmarkBranch = getBookmarkBranch(launcherNote);
-    if (bookmarkBranch) {
+/**
+ * Returns the branch that shows the note in the launch bar section `parentNoteId`. Without a
+ * section, a bookmark comes before a launcher.
+ */
+function getLaunchBarBranch(launcherNote: FNote, parentNoteId: string | undefined) {
+    if (parentNoteId) {
+        return launcherNote.getParentBranches().find((b) => b.parentNoteId === parentNoteId);
+    }
+
+    return getBookmarkBranch(launcherNote) ?? getVisibleLauncherBranch(launcherNote);
+}
+
+async function removeFromLaunchBar(launcherNote: FNote, parentNoteId: string | undefined) {
+    const launcherBranch = getLaunchBarBranch(launcherNote, parentNoteId);
+    if (!launcherBranch) return;
+
+    if (launcherBranch.parentNoteId === "_lbBookmarks") {
         // Individual bookmarks are represented via a branch under `_lbBookmarks`; removing them
         // from the launch bar is the same as unbookmarking the note.
         const resp = await server.put<ToggleInParentResponse>(
@@ -34,9 +48,6 @@ async function removeFromLaunchBar(launcherNote: FNote) {
         return;
     }
 
-    const launcherBranch = getVisibleLauncherBranch(launcherNote);
-    if (!launcherBranch) return;
-
     const isMobileLauncher = launcherBranch.parentNoteId === "_lbMobileVisibleLaunchers";
     // Branch IDs in the hidden subtree follow the `${parentNoteId}_${noteId}` convention,
     // so the branch linking `_lb(Mobile)?Root` to the "available" launchers root is predictable.
@@ -46,9 +57,12 @@ async function removeFromLaunchBar(launcherNote: FNote) {
     await branchService.moveToParentNote([launcherBranch.branchId], targetBranchId);
 }
 
-export function canRemoveFromLaunchBar(launcherNote: FNote | null | undefined) {
+export function canRemoveFromLaunchBar(
+    launcherNote: FNote | null | undefined,
+    parentNoteId?: string
+) {
     if (!launcherNote) return false;
-    return !!(getVisibleLauncherBranch(launcherNote) || getBookmarkBranch(launcherNote));
+    return !!getLaunchBarBranch(launcherNote, parentNoteId);
 }
 
 export interface ShowLauncherContextMenuOptions<T extends string> {
@@ -56,6 +70,8 @@ export interface ShowLauncherContextMenuOptions<T extends string> {
     extraItems?: MenuItem<T>[];
     /** Handler for the {@link extraItems}. The "Remove from launch bar" item is handled internally and will not be forwarded. */
     onCommand?: (command: T | undefined) => void;
+    /** The launch bar section that shows the button. "Remove from launch bar" removes it there. */
+    parentNoteId?: string;
 }
 
 const REMOVE_COMMAND = "__removeFromLaunchBar__";
@@ -75,7 +91,7 @@ export async function showLauncherContextMenu<T extends string>(
     // Widget-specific items (e.g. "Open in new tab" for note launchers, history entries, "Remove from launch bar").
     const widgetItems = [...(options.extraItems ?? [])] as MenuItem<string>[];
 
-    if (canRemoveFromLaunchBar(launcherNote)) {
+    if (canRemoveFromLaunchBar(launcherNote, options.parentNoteId)) {
         if (widgetItems.length > 0) {
             widgetItems.push({ kind: "separator" });
         }
@@ -99,7 +115,7 @@ export async function showLauncherContextMenu<T extends string>(
         selectMenuItemHandler: ({ command }) => {
             if (command === REMOVE_COMMAND) {
                 if (launcherNote) {
-                    void removeFromLaunchBar(launcherNote);
+                    void removeFromLaunchBar(launcherNote, options.parentNoteId);
                 }
                 return;
             }

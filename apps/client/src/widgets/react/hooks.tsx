@@ -1538,12 +1538,16 @@ export function useStaticTooltipWithKeyboardShortcut(
 ) {
     const [ keyboardShortcut, setKeyboardShortcut ] = useState<string[]>();
     // Memoized, since `useStaticTooltip` recreates the tooltip whenever its config changes.
-    const config = useMemo(() => ({
-        title: keyboardShortcut?.length
-            ? `${title} (${keyboardShortcut.map((shortcut) => joinShortcut(formatShortcut(shortcut))).join(", ")})`
-            : title,
-        ...opts
-    }), [ title, keyboardShortcut, opts ]);
+    const config = useMemo(() => {
+        if (!keyboardShortcut?.length) return { title, ...opts };
+
+        // The shortcut follows the first line, which names the action; later lines describe it.
+        const shortcuts = keyboardShortcut
+            .map((shortcut) => joinShortcut(formatShortcut(shortcut)))
+            .join(", ");
+        const [ name, ...description ] = title.split("\n");
+        return { title: [ `${name} (${shortcuts})`, ...description ].join("\n"), ...opts };
+    }, [ title, keyboardShortcut, opts ]);
     useStaticTooltip(elRef, config);
 
     useEffect(() => {
@@ -1882,6 +1886,88 @@ async function warnIfArchivedNotesHidden(addedNoteIds: string[]) {
 }
 
 /**
+ * Accepts files dragged onto `containerRef` from outside the page and passes them to `onDrop`.
+ * Returns whether such a drag is over the container.
+ */
+export function useFileDrop(
+    containerRef: RefObject<HTMLElement | null>,
+    onDrop: (files: File[]) => void
+) {
+    const [ isDraggedOver, setIsDraggedOver ] = useState(false);
+    const onDropRef = useRef(onDrop);
+    onDropRef.current = onDrop;
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        // A drag that starts in the page, such as an image, can also carry files.
+        let isDragFromPage = false;
+        // `dragenter` and `dragleave` also fire when the drag moves between the children.
+        let depth = 0;
+
+        const carriesFiles = (e: DragEvent) =>
+            !isDragFromPage && !!e.dataTransfer?.types.includes("Files");
+        const markDragFromPage = () => { isDragFromPage = true; };
+        const clearDragFromPage = () => { isDragFromPage = false; };
+
+        function onDragEnter(e: DragEvent) {
+            if (!carriesFiles(e)) return;
+            e.preventDefault();
+            depth++;
+            setIsDraggedOver(true);
+        }
+
+        function onDragOver(e: DragEvent) {
+            if (!carriesFiles(e) || !e.dataTransfer) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "copy";
+        }
+
+        function onDragLeave(e: DragEvent) {
+            if (!carriesFiles(e)) return;
+            depth = Math.max(0, depth - 1);
+            if (depth === 0) {
+                setIsDraggedOver(false);
+            }
+        }
+
+        function onDropFiles(e: DragEvent) {
+            if (!carriesFiles(e)) return;
+            e.preventDefault();
+            depth = 0;
+            setIsDraggedOver(false);
+
+            const files = Array.from(e.dataTransfer?.files ?? []);
+            if (files.length) {
+                onDropRef.current(files);
+            }
+        }
+
+        document.addEventListener("dragstart", markDragFromPage, true);
+        document.addEventListener("dragend", clearDragFromPage, true);
+        // A drop can remove the dragged element, and its `dragend` then never reaches the document.
+        document.addEventListener("drop", clearDragFromPage);
+        container.addEventListener("dragenter", onDragEnter);
+        container.addEventListener("dragover", onDragOver);
+        container.addEventListener("dragleave", onDragLeave);
+        container.addEventListener("drop", onDropFiles);
+
+        return () => {
+            document.removeEventListener("dragstart", markDragFromPage, true);
+            document.removeEventListener("dragend", clearDragFromPage, true);
+            document.removeEventListener("drop", clearDragFromPage);
+            container.removeEventListener("dragenter", onDragEnter);
+            container.removeEventListener("dragover", onDragOver);
+            container.removeEventListener("dragleave", onDragLeave);
+            container.removeEventListener("drop", onDropFiles);
+        };
+    }, [ containerRef ]);
+
+    return isDraggedOver;
+}
+
+/**
  * Long-press + contextmenu handler bundle. `contextmenu` covers desktop right-click and
  * Android Chrome long-press; explicit touch handlers cover iOS/WKWebView where
  * `contextmenu` doesn't fire on long-press.
@@ -1946,6 +2032,78 @@ export function useLongPressContextMenu(handler: (e: MouseEvent) => void, holdMs
         onTouchMove,
         onTouchEnd,
         onTouchCancel: clear
+    };
+}
+
+/**
+ * Calls `handler` on a right-click, and when a press of the primary button or a finger stays on
+ * the element for `holdMs`. After a hold, the click that ends the press and the `contextmenu`
+ * event Android raises for the same press do nothing.
+ *
+ * Returns props to spread onto the target element.
+ */
+export function useHoldContextMenu(handler: (e: MouseEvent) => void, holdMs = 500) {
+    const timerRef = useRef<number | null>(null);
+    const heldRef = useRef(false);
+
+    const clear = useCallback(() => {
+        if (timerRef.current !== null) {
+            window.clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+    }, []);
+
+    // The click of the press is dispatched in the same task as its `pointerup`, before the timeout.
+    const endHold = useCallback(() => {
+        window.setTimeout(() => heldRef.current = false);
+    }, []);
+
+    useEffect(() => () => {
+        clear();
+        window.removeEventListener("pointerup", endHold, true);
+    }, [clear, endHold]);
+
+    const onPointerDown = useCallback(
+        (e: PointerEvent) => {
+            heldRef.current = false;
+            clear();
+            if (e.button !== 0) return;
+            timerRef.current = window.setTimeout(() => {
+                timerRef.current = null;
+                heldRef.current = true;
+                // The press can end off the element, which then receives no `pointerup`.
+                window.addEventListener("pointerup", endHold, { capture: true, once: true });
+                handler(e);
+            }, holdMs);
+        },
+        [handler, holdMs, clear, endHold]
+    );
+
+    const onContextMenu = useCallback(
+        (e: MouseEvent) => {
+            clear();
+            if (heldRef.current) {
+                e.preventDefault();
+                return;
+            }
+            handler(e);
+        },
+        [handler, clear]
+    );
+
+    const onClickCapture = useCallback((e: MouseEvent) => {
+        if (!heldRef.current) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, []);
+
+    return {
+        onContextMenu,
+        onPointerDown,
+        onPointerUp: clear,
+        onPointerLeave: clear,
+        onPointerCancel: clear,
+        onClickCapture
     };
 }
 

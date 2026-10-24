@@ -362,6 +362,7 @@ body.mobile .tn-menu-actions.tn-menu-actions-cards {
 .tn-menu-action-title {
     max-width: 100%;
     overflow: hidden;
+    font-size: 0.8em;
     text-overflow: ellipsis;
     white-space: nowrap;
 }

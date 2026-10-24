@@ -131,6 +131,11 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
     const notOptionsOrHelp = notOptions && notHelp;
     const parentNotSearch = !parentNote || parentNote.type !== "search";
     const insertNoteAfterEnabled = isNotRoot && !isHoisted && parentNotSearch;
+    const clipboardContents = clipboard.getContents();
+    // Pasting copied notes clones them; pasting cut notes moves them.
+    const pasteTooltip = (key: string) => clipboardContents?.mode === "copy"
+        ? t(key, { count: clipboardContents.noteIds.length })
+        : undefined;
 
     // Both submenus are built from the same templates, so they are fetched once and shared.
     const noteTypeData = insertNoteAfterEnabled || notSearch
@@ -159,9 +164,10 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
                 },
                 { title: t("tree-context-menu.clone"), tooltip: t("tree-context-menu.clone-tooltip"), command: "copyNotesToClipboard", keyboardShortcut: "copyNotesToClipboard", uiIcon: "bx bx-copy", enabled: isNotRoot && !isHoisted && notHelp },
                 // Shown only while something is cut or copied, which is when they are looked for.
-                ...(clipboard.isClipboardEmpty() ? [] : [
+                ...(!clipboardContents ? [] : [
                     {
                         title: t("tree-context-menu.paste-into"),
+                        tooltip: pasteTooltip("tree-context-menu.paste-into-tooltip"),
                         command: "pasteNotesFromClipboard",
                         keyboardShortcut: "pasteNotesFromClipboard",
                         uiIcon: "bx bx-clipboard",
@@ -170,6 +176,7 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
                     },
                     {
                         title: t("tree-context-menu.paste-after"),
+                        tooltip: pasteTooltip("tree-context-menu.paste-after-tooltip"),
                         command: "pasteNotesAfterFromClipboard",
                         uiIcon: "bx bx-clipboard",
                         uiIconBadge: "bx bx-down-arrow-alt",
@@ -177,7 +184,7 @@ export async function buildTreeContextMenuItems(ctx: TreeContextMenuContext): Pr
                     }
                 ] satisfies MenuCommandItem<TreeCommandNames>[]),
                 {
-                    title: t("tree-context-menu.delete"),
+                    title: t("tree-context-menu.delete-short"),
                     command: "deleteNotes",
                     keyboardShortcut: "deleteNotes",
                     uiIcon: "bx bx-trash destructive-action-icon",

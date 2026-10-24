@@ -42,6 +42,15 @@ Similarly, to remove it from the launch bar, simply look for it in _Visible Laun
 
 Drag-and-drop the items in the tree in order to change their order. See <a class="reference-link" href="Note%20Tree.md">Note Tree</a> for more interaction options, including using keyboard shortcuts.
 
+### Adding a note by drag and drop
+
+To add a note to the launch bar, drag it from the <a class="reference-link" href="Note%20Tree.md">Note Tree</a> onto the launch bar. A line between the launchers shows where the note will be placed. If the launch bar is scrollable, hold the note near either end to scroll it. Dropping the note adds a button with the note's title and icon, which opens the note when clicked.
+
+*   Several notes selected in the tree can be dropped at once; they keep their order.
+*   A note that is already on the launch bar, or a launcher dragged from the _Available Launchers_ section, is moved to the new place instead of being added again.
+
+The button is a clone of the note in the _Visible Launchers_ section (see <a class="reference-link" href="../Notes/Cloning%20Notes.md">Cloning Notes</a>), so it always shows the note's current title and icon. Right click it and select _Remove from launch bar_ to move it to the _Available Launchers_, like any other launcher; the note itself stays where it is in the tree.
+
 ## Customizing the launcher
 
 *   The icon of a launcher can be changed just like a normal note. See [note icons](../Notes/Note%20Icons%20%26%20Colors.md) for more information.
