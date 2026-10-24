@@ -7,6 +7,7 @@ import contentHashService from "./content_hash.js";
 import * as cls from "./context.js";
 import entityChangesService from "./entity_changes.js";
 import getInstanceId from "./instance_id.js";
+import notes from "./notes.js";
 import options from "./options.js";
 import { fakeRequestProvider } from "../test/request_provider.js";
 import { type ExecOpts, initRequest, type RequestProvider } from "./request.js";
@@ -16,6 +17,7 @@ import sqlInit from "./sql_init.js";
 import syncService, { estimateEntityChangeRecordSize, MAX_SECTOR_RESYNC_ATTEMPTS, MAX_SYNC_ROUNDS } from "./sync.js";
 import syncOptions from "./sync_options.js";
 import syncUpdateService from "./sync_update.js";
+import { encodeBase64 } from "./utils/binary.js";
 import dateUtils from "./utils/date.js";
 import ws from "./ws.js";
 
@@ -349,6 +351,40 @@ describe("sync service", () => {
 
         await expect(runSync()).resolves.toEqual({ success: true });
         expect(pushedEntityIds()).toContain(blobId);
+    });
+
+    // The client stamped a note while its clock ran ahead, the server edited the note
+    // afterwards and dropped the client's blob in `deleteBlobIfNotUsed()`. The client's row wins
+    // the pull, so the push must carry the blob that row points at.
+    it("pushes the blob of a local note that wins against a newer server edit", async () => {
+        const clockAhead = dateUtils.utcDateTimeStr(new Date(Date.now() + 3600 * 1000));
+        const { noteId, clientBlobId } = cls.init(() => {
+            const { note } = notes.createNewNote({ parentNoteId: "root", title: "12173", content: "<p>client text</p>", type: "text" });
+            const sql = getSql();
+            sql.execute("UPDATE entity_changes SET utcDateChanged = ? WHERE entityName = 'notes' AND entityId = ?", [clockAhead, note.noteId]);
+            options.setOption("lastSyncedPush", String(syncService.getMaxEntityChangeId()));
+            return { noteId: note.noteId, clientBlobId: note.blobId };
+        });
+        const serverBlobId = "su12173ServerEdit";
+        const now = dateUtils.utcNowDateTime();
+        const clientRow = getSql().getRow<Record<string, unknown>>("SELECT * FROM notes WHERE noteId = ?", [noteId]);
+
+        config.changed = [
+            {
+                entityChanges: [
+                    { entityChange: ec({ entityName: "blobs", entityId: serverBlobId, utcDateChanged: now }), entity: { blobId: serverBlobId, content: encodeBase64("<p>server text</p>"), dateModified: now, utcDateModified: now } },
+                    { entityChange: ec({ entityId: noteId, hash: "serverEdit", utcDateChanged: now }), entity: { ...clientRow, blobId: serverBlobId, utcDateModified: now } }
+                ],
+                lastEntityChangeId: 2,
+                outstandingPullCount: 0
+            },
+            { entityChanges: [], lastEntityChangeId: 2, outstandingPullCount: 0 }
+        ];
+
+        await expect(runSync()).resolves.toEqual({ success: true });
+        expect(getSql().getValue("SELECT blobId FROM notes WHERE noteId = ?", [noteId])).toBe(clientBlobId);
+        expect(pushedEntityIds()).toContain(noteId);
+        expect(pushedEntityIds()).toContain(clientBlobId);
     });
 
     describe("unresolvable content hash divergence", () => {
