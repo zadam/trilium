@@ -7,6 +7,7 @@ import ws from "./ws.js";
 import { default as eventService } from "./events.js";
 import entity_constructor from "../becca/entity_constructor.js";
 import { decodeBase64, decodeBase64Into } from "./utils/binary.js";
+import dateUtils from "./utils/date.js";
 
 interface UpdateContext {
     alreadyErased: number;
@@ -74,9 +75,17 @@ function updateEntity(remoteEC: EntityChange, remoteEntityRow: EntityRow | undef
     }
 }
 
-function updateNormalEntity(remoteEC: EntityChange, remoteEntityRow: EntityRow | undefined, instanceId: string, updateContext: UpdateContext) {
+function updateNormalEntity(incomingEC: EntityChange, remoteEntityRow: EntityRow | undefined, instanceId: string, updateContext: UpdateContext) {
+    // A change dated later than now was written while a clock ran ahead, so its real age is
+    // unknown: an incoming one is stored as now, and a local one loses the conflict.
+    const now = dateUtils.utcNowDateTime();
+    const remoteEC = incomingEC.utcDateChanged && incomingEC.utcDateChanged > now
+        ? { ...incomingEC, utcDateChanged: now }
+        : incomingEC;
     const localEC = getSql().getRow<EntityChange | undefined>(/*sql*/`SELECT * FROM entity_changes WHERE entityName = ? AND entityId = ?`, [remoteEC.entityName, remoteEC.entityId]);
-    const localECIsOlderOrSameAsRemote = localEC && localEC.utcDateChanged && remoteEC.utcDateChanged && localEC.utcDateChanged <= remoteEC.utcDateChanged;
+    const localECIsFromTheFuture = !!localEC?.utcDateChanged && localEC.utcDateChanged > now;
+    const localECIsOlderOrSameAsRemote = localEC && (localECIsFromTheFuture
+        || (localEC.utcDateChanged && remoteEC.utcDateChanged && localEC.utcDateChanged <= remoteEC.utcDateChanged));
 
     if (!localEC || localECIsOlderOrSameAsRemote) {
         if (remoteEC.isErased) {

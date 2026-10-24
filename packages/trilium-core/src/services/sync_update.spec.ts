@@ -147,6 +147,25 @@ describe("sync_update service (real DB)", () => {
         expect(requeuedSince(maxIdBefore, "blobs", localBlobId)).toBe(false);
     });
 
+    it("lets a remote change win against a local change dated in the future", () => {
+        const noteId = createNote();
+        const clockAhead = dateUtils.utcDateTimeStr(new Date(Date.now() + 3600 * 1000));
+        cls.init(() => getSql().execute("UPDATE entity_changes SET utcDateChanged = ? WHERE entityName = 'notes' AND entityId = ?", [clockAhead, noteId]));
+
+        apply([{ entityChange: buildEC({ entityId: noteId, hash: "different", utcDateChanged: dateUtils.utcNowDateTime() }), entity: rowWith(noteId, { title: "remote-edit" }) }]);
+
+        expect(getSql().getValue("SELECT title FROM notes WHERE noteId = ?", [noteId])).toBe("remote-edit");
+    });
+
+    it("stores a remote change dated in the future at the current time", () => {
+        const noteId = createNote();
+
+        apply([{ entityChange: buildEC({ entityId: noteId, hash: "different", utcDateChanged: FUTURE }), entity: rowWith(noteId, { title: "remote-edit" }) }]);
+
+        expect(getSql().getValue("SELECT title FROM notes WHERE noteId = ?", [noteId])).toBe("remote-edit");
+        expect(localDateChanged("notes", noteId) <= dateUtils.utcNowDateTime()).toBe(true);
+    });
+
     it("is a no-op when local and remote are identical but remote is older", () => {
         const noteId = createNote();
         const sameHash = localHash("notes", noteId);
@@ -221,6 +240,10 @@ describe("sync_update service (real DB)", () => {
 
 function localChangeId(entityName: string, entityId: string): string {
     return getSql().getValue<string>("SELECT changeId FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]) ?? "";
+}
+
+function localDateChanged(entityName: string, entityId: string): string {
+    return getSql().getValue<string>("SELECT utcDateChanged FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]) ?? "";
 }
 
 function maxEntityChangeId(): number {
