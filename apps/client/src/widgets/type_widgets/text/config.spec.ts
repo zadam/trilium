@@ -94,6 +94,10 @@ vi.mock("../../../services/dialog.js", () => ({
 }));
 vi.mock("@triliumnext/highlightjs", () => ({ default: { name: "hljs-stub" } }));
 vi.mock("../../../services/math.js", () => ({ default: { name: "katex-stub" } }));
+vi.mock("../../../services/link_embed.js", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../../services/link_embed.js")>()),
+    fetchMetadata: vi.fn(async (url: string, ownerNoteId: string) => ({ url, embedType: "opengraph", title: ownerNoteId }))
+}));
 
 function baseOpts(overrides: Partial<BuildEditorOptions> = {}): BuildEditorOptions {
     return {
@@ -345,6 +349,18 @@ describe("CK config - tables", () => {
 
         optionsState.map.customDateTimeFormat = "DD.MM.YYYY HH:mm";
         expect(formatDateTime?.(date)).toBe("25.09.2026 10:30");
+    });
+
+    it("fetches link previews for the open note, and none without one", async () => {
+        let noteId: string | undefined = "noteAbc";
+        const linkEmbed = (await buildConfig(baseOpts({ getNoteId: () => noteId }))).linkEmbed;
+
+        expect(await linkEmbed?.fetchMetadata?.("https://a.example/"))
+            .toStrictEqual({ url: "https://a.example/", embedType: "opengraph", title: "noteAbc" });
+
+        noteId = undefined;
+        expect(await linkEmbed?.fetchMetadata?.("https://a.example/")).toMatchObject({ unresolved: true });
+        expect(linkEmbed?.detectEmbedType?.("https://youtube.com/watch?v=abc12345678")).toBe("youtube");
     });
 
     it("titles reference links through the link service", async () => {

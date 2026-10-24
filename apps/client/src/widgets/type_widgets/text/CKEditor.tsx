@@ -8,7 +8,6 @@ import { useEffect, useImperativeHandle, useRef, useState } from "preact/hooks";
 
 import froca from "../../../services/froca";
 import link from "../../../services/link";
-import linkEmbedService, { type EmbedMetadata } from "../../../services/link_embed";
 import { useKeyboardShortcuts, useLegacyImperativeHandlers, useNoteContext, useSyncedRef, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import type { AiNoteLocation } from "./ai_assistant_stream";
 import { useAiMenuFooter, useAiQuickActions } from "./ai_quick_actions";
@@ -133,6 +132,8 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
     // note would name whichever one happened to be open when the editor was built.
     const noteLocationRef = useRef<AiNoteLocation | null>(null);
     noteLocationRef.current = note ? { title: note.title, notePath } : null;
+    const noteIdRef = useRef<string | undefined>(undefined);
+    noteIdRef.current = note?.noteId;
 
     useKeyboardShortcuts("text-detail", containerRef, parentComponent, ntxId);
 
@@ -252,26 +253,6 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
         ) {
             await link.loadReferenceLinkTitle($el, href, note?.noteId, storedTitle);
         },
-        async fetchLinkMetadata(url: string) {
-            // The preview's pictures are stored as attachments of the note being edited, so there
-            // is nothing to fetch into before the note context has resolved one. Answering as
-            // unresolved leaves the URL a plain link, which is what the editor does with any
-            // preview it could not build.
-            if (!note) {
-                return linkEmbedService.unresolvedMetadata(url);
-            }
-
-            return await linkEmbedService.fetchMetadata(url, note.noteId);
-        },
-        detectEmbedType(url: string) {
-            return linkEmbedService.detectEmbedType(url);
-        },
-        renderLinkEmbed(container: HTMLElement, metadata: EmbedMetadata) {
-            linkEmbedService.renderEmbedPreview(container, metadata, true);
-        },
-        renderLinkMention(container: HTMLElement, metadata: EmbedMetadata) {
-            linkEmbedService.renderMentionPreview(container, metadata, true);
-        }
     });
 
     async function destroyEditor() {
@@ -303,7 +284,8 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
                 uiLanguage: uiLanguage as DISPLAYABLE_LOCALE_IDS,
                 contentLanguage: contentLanguage ?? null,
                 templates: templatesRef.current,
-                getNoteLocation: () => noteLocationRef.current
+                getNoteLocation: () => noteLocationRef.current,
+                getNoteId: () => noteIdRef.current
             });
 
             if (isStale) {

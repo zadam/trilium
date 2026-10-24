@@ -1,4 +1,4 @@
-import { type EditorConfig, getCkLocale, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
+import { type EditorConfig, getCkLocale, type LinkEmbedHost, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
@@ -9,6 +9,7 @@ import { t } from "../../../services/i18n.js";
 import imageService from "../../../services/image.js";
 import { getNoteImageSourceToLoad } from "../../../services/image_urls.js";
 import linkService from "../../../services/link.js";
+import { detectEmbedType, fetchMetadata, renderEmbedPreview, renderMentionPreview, unresolvedMetadata } from "../../../services/link_embed.js";
 import { default as mimeTypesService, getHighlightJsNameForMime } from "../../../services/mime_types.js";
 import options from "../../../services/options.js";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
@@ -47,6 +48,8 @@ export interface BuildEditorOptions {
      * here would name the note that happened to be open when it was built.
      */
     getNoteLocation?: AiNoteLocationProvider;
+    /** The ID of the note the editor is open on. A getter for the same reason as `getNoteLocation`. */
+    getNoteId?: () => string | undefined;
 }
 
 export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfig> {
@@ -203,6 +206,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             getTitle: linkService.getReferenceLinkTitle,
             getTitleSync: linkService.getReferenceLinkTitleSync
         },
+        linkEmbed: buildLinkEmbedHost(opts.getNoteId),
         slashCommand: {
             // Drop CKEditor's built-in list slash commands, whose Title Case titles the palette
             // re-defines in sentence case.
@@ -337,6 +341,21 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     return {
         ...config,
         ...buildToolbarConfig(opts.isClassicEditor, !!aiAssistantStream)
+    };
+}
+
+/** The link preview services of the editor, for the note `getNoteId()` names. */
+function buildLinkEmbedHost(getNoteId?: () => string | undefined): LinkEmbedHost {
+    return {
+        async fetchMetadata(url) {
+            // The pictures of a preview are stored as attachments of the note being edited, so
+            // without a note the URL stays a plain link, as for any preview that cannot be built.
+            const noteId = getNoteId?.();
+            return noteId ? await fetchMetadata(url, noteId) : unresolvedMetadata(url);
+        },
+        detectEmbedType,
+        renderEmbed: renderEmbedPreview,
+        renderMention: renderMentionPreview
     };
 }
 

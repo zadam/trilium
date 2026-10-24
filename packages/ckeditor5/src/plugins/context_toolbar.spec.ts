@@ -8,7 +8,6 @@ import bxPencil from "boxicons/svg/regular/bx-pencil.svg?raw";
 import { describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import { installGlobMock } from "../../test/globals-test-kit.js";
 import ContextToolbar from "./context_toolbar.js";
 import ImagePosition from "./image_position.js";
 import LinkEmbedToolbar from "./link_embed/link_embed_toolbar.js";
@@ -406,7 +405,6 @@ describe("ContextToolbar", () => {
     });
 
     it("names the toolbar of a link preview after the link it is", async () => {
-        installGlobMock({ getComponentByEl: () => ({ renderLinkMention: vi.fn(), detectEmbedType: () => "opengraph" }) });
         const editor = await createTestEditor([Essentials, Paragraph, LinkEmbedToolbar, ContextToolbar], {
             toolbar: ["contextToolbar"]
         });

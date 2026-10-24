@@ -219,19 +219,7 @@ describe("isContentEmbedWidget — real non-include-note widgets", () => {
         const loadEmbeddedNote = vi.fn();
         installGlobMock({
             getComponentByEl: () => ({
-                loadEmbeddedNote,
-                renderLinkEmbed: vi.fn(),
-                renderLinkMention: vi.fn(),
-                fetchLinkMetadata: async () => ({
-                    url: "https://example.com",
-                    embedType: "opengraph",
-                    title: "Example",
-                    description: "",
-                    favicon: "",
-                    siteName: "",
-                    image: ""
-                }),
-                detectEmbedType: () => "opengraph"
+                loadEmbeddedNote
             })
         });
 

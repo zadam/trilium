@@ -47,7 +47,6 @@ import { enterContentEmbed, getContentEmbedTools } from "./content_embed_tools";
 import { useEmbedEditors } from "./editable_embed";
 import EmbedHistories from "./embed_history";
 import getTemplates, { updateTemplateCache } from "./snippets.js";
-import linkEmbedService from "../../../services/link_embed";
 import { usesClassicToolbar } from "./toolbar";
 import {
     getAttachmentHref,
@@ -339,20 +338,6 @@ export default function EditableText({
         copyTabReference: () => void copyReference(copyTabReference),
         getContentEmbedTools,
         enterContentEmbed,
-        // Link preview functionality. The insert flow itself lives in the editor (a balloon form),
-        // so the host only has to supply the metadata and the rendering.
-        async fetchLinkMetadata(url: string) {
-            return await linkEmbedService.fetchMetadata(url, note.noteId);
-        },
-        detectEmbedType(url: string) {
-            return linkEmbedService.detectEmbedType(url);
-        },
-        renderLinkEmbed(container, metadata, editable) {
-            linkEmbedService.renderEmbedPreview(container, metadata, editable);
-        },
-        renderLinkMention(container, metadata, editable) {
-            linkEmbedService.renderMentionPreview(container, metadata, editable);
-        },
         // Keyboard shortcut
         async followLinkUnderCursorCommand() {
             const editor = await waitForEditor();

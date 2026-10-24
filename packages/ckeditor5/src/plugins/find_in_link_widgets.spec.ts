@@ -28,20 +28,6 @@ describe("FindInLinkWidgets", () => {
                         element.textContent = "Reference match";
                     }
                     return Promise.resolve();
-                }),
-                renderLinkEmbed: vi.fn((container: HTMLElement, metadata: LinkEmbedMetadata) => {
-                    if (metadata.embedType === "youtube") {
-                        return;
-                    }
-                    appendText(
-                        container,
-                        metadata.title,
-                        metadata.description,
-                        metadata.siteName || safeHostname(metadata.url)
-                    );
-                }),
-                renderLinkMention: vi.fn((container: HTMLElement, metadata: LinkEmbedMetadata) => {
-                    appendText(container, metadata.title || safeHostname(metadata.url));
                 })
             })
         });
@@ -58,6 +44,22 @@ describe("FindInLinkWidgets", () => {
             referenceLink: {
                 getTitle: vi.fn(async () => "Reference match"),
                 getTitleSync: vi.fn(() => "Reference match")
+            },
+            linkEmbed: {
+                renderEmbed: vi.fn((container: HTMLElement, metadata: LinkEmbedMetadata) => {
+                    if (metadata.embedType === "youtube") {
+                        return;
+                    }
+                    appendText(
+                        container,
+                        metadata.title,
+                        metadata.description,
+                        metadata.siteName || safeHostname(metadata.url)
+                    );
+                }),
+                renderMention: vi.fn((container: HTMLElement, metadata: LinkEmbedMetadata) => {
+                    appendText(container, metadata.title || safeHostname(metadata.url));
+                })
             }
         });
     });

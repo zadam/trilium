@@ -388,9 +388,7 @@ describe("ContentEmbed", () => {
             installGlobMock({
                 getComponentByEl: () => ({
                     triggerCommand,
-                    loadEmbeddedNote,
-                    renderLinkMention: vi.fn(),
-                    detectEmbedType: vi.fn(() => "opengraph")
+                    loadEmbeddedNote
                 })
             });
             const linkEditor = await createTestEditor([

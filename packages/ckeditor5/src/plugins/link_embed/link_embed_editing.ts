@@ -5,6 +5,7 @@ import {
     CHANGE_LINK_PREVIEW_TITLE_COMMAND,
     ChangeLinkDisplayCommand,
     ChangeLinkPreviewTitleCommand,
+    getLinkEmbedHost,
     InsertLinkEmbedCommand,
     LINK_EMBED_COMMAND,
     META_KEYS,
@@ -113,9 +114,7 @@ export default class LinkEmbedEditing extends Plugin {
                     'data-cke-ignore-events': 'true'
                 }, function (domDocument) {
                     const domElement = this.toDomElement(domDocument);
-                    const editorEl = editor.editing.view.getDomRoot();
-                    const component = glob.getComponentByEl<EditorComponent>(editorEl);
-                    component.renderLinkEmbed(domElement, { url, embedType, title, description, favicon, siteName, image }, true);
+                    getLinkEmbedHost(editor).renderEmbed(domElement, { url, embedType, title, description, favicon, siteName, image }, true);
                     preventCKEditorHandling(domElement, editor);
                     return domElement;
                 });
@@ -175,9 +174,7 @@ export default class LinkEmbedEditing extends Plugin {
                     'data-cke-ignore-events': 'true'
                 }, function (domDocument) {
                     const domElement = this.toDomElement(domDocument);
-                    const editorEl = editor.editing.view.getDomRoot();
-                    const component = glob.getComponentByEl<EditorComponent>(editorEl);
-                    component.renderLinkMention(domElement, { url, title, favicon }, true);
+                    getLinkEmbedHost(editor).renderMention(domElement, { url, title, favicon }, true);
                     preventCKEditorHandling(domElement, editor);
                     return domElement;
                 });

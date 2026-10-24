@@ -181,15 +181,6 @@ declare global {
          * attachment, or `null` when that fails. Hosts without drawings leave it out.
          */
         convertImageToDrawing?(src: string): Promise<string | null>;
-        /**
-         * Reads a page's preview metadata through the host. Never rejects: any failure — network
-         * error, HTTP error, unparseable page — resolves as `{ unresolved: true }` with
-         * hostname-derived placeholders, so callers branch on `unresolved` instead of catching.
-         */
-        fetchLinkMetadata(url: string): Promise<LinkEmbedMetadata>;
-        detectEmbedType(url: string): string;
-        renderLinkEmbed(container: HTMLElement, metadata: LinkEmbedMetadata, editable?: boolean): void;
-        renderLinkMention(container: HTMLElement, metadata: Pick<LinkEmbedMetadata, "url" | "title" | "favicon">, editable?: boolean): void;
     }
 
     type LocalUpload = NonNullable<StandaloneApi["localUpload"]>;
