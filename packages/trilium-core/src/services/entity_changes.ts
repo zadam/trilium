@@ -97,24 +97,6 @@ function putBlobEntityChange(blobId: string) {
     } as EntityChange);
 }
 
-/**
- * Moves every entity change dated later than now back to now. Such a change was written while the
- * clock ran ahead, and sync resolves conflicts by `utcDateChanged`, so it would otherwise win
- * against every real edit made before the clock catches up with it.
- */
-function restampFutureEntityChanges() {
-    const now = dateUtils.utcNowDateTime();
-    const sql = getSql();
-    const count = sql.getValue<number>("SELECT COUNT(*) FROM entity_changes WHERE utcDateChanged > ?", [now]) ?? 0;
-
-    if (count === 0) {
-        return;
-    }
-
-    sql.execute("UPDATE entity_changes SET utcDateChanged = ? WHERE utcDateChanged > ?", [now, now]);
-    getLog().info(`Moved ${count} entity changes dated in the future back to ${now}`);
-}
-
 function putNoteReorderingEntityChange(parentNoteId: string, componentId?: string) {
     putEntityChange({
         entityName: "note_reordering",
@@ -277,6 +259,5 @@ export default {
     fillAllEntityChanges,
     addEntityChangesForSector,
     getMaxEntityChangeId: () => maxEntityChangeId,
-    recalculateMaxEntityChangeId,
-    restampFutureEntityChanges
+    recalculateMaxEntityChangeId
 };

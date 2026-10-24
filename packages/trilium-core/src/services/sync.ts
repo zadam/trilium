@@ -111,9 +111,6 @@ async function sync() {
 
                 const syncContext = await login();
 
-                // The login succeeded, so the clock agrees with the sync server's.
-                entityChangesService.restampFutureEntityChanges();
-
                 await pushChanges(syncContext);
 
                 await pullChanges(syncContext);
