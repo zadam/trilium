@@ -38,7 +38,7 @@ describe("ContentEmbedInlineSource", () => {
         loadInlineEmbed = vi.fn();
         installGlobMock({
             getComponentByEl: () => ({
-                triggerCommand: vi.fn(), loadEmbeddedNote: vi.fn(), loadInlineEmbed
+                loadEmbeddedNote: vi.fn(), loadInlineEmbed
             })
         });
 

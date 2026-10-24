@@ -3,11 +3,6 @@ import "ckeditor5";
 import type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
 
 declare global {
-    interface Component {
-        componentId: string;
-        triggerCommand(command: string): void;
-    }
-
     interface LinkEmbedMetadata {
         url: string;
         embedType: string;
@@ -94,7 +89,7 @@ declare global {
         hasDisplayModes?: boolean;
     }
 
-    interface EditorComponent extends Component {
+    interface EditorComponent {
         /**
          * Paints the host's icon picker into `container`, and answers with the way to take it down
          * again. A host that shows the picker somewhere of its own — a phone, which has no room for
@@ -175,7 +170,7 @@ declare global {
     }
 
     var glob: {
-        getComponentByEl<T extends Component>(el: unknown): T;
+        getComponentByEl<T>(el: unknown): T;
     };
 }
 

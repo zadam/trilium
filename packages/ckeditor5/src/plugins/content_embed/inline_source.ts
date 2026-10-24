@@ -312,18 +312,4 @@ declare module 'ckeditor5' {
 		[ ContentEmbedInlineSource.pluginName ]: ContentEmbedInlineSource;
 	}
 
-	interface EditorConfig {
-		contentEmbed?: {
-			/**
-			 * The languages whose `<pre><code class="language-…">` code blocks show as embeds of
-			 * their source, rendered by the host's `loadInlineEmbed()`.
-			 */
-			inlineLanguages?: string[];
-			/**
-			 * Renders the `source` of an inline language into `container`, outside an embed, as
-			 * the AI assistant previews a response.
-			 */
-			renderInlinePreview?: ( language: string, source: string, container: HTMLElement ) => void;
-		};
-	}
 }

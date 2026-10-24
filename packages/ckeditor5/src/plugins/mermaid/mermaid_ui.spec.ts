@@ -28,7 +28,7 @@ describe("MermaidUI", () => {
     beforeEach(async () => {
         installGlobMock({
             getComponentByEl: () => ({
-                triggerCommand: vi.fn(), loadEmbeddedNote: vi.fn(), loadInlineEmbed: vi.fn()
+                loadEmbeddedNote: vi.fn(), loadInlineEmbed: vi.fn()
             })
         });
 

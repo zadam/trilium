@@ -3,6 +3,7 @@ import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
 
+import type { CommandNames } from "../../../components/app_context.js";
 import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
 import { getUploadBoxSize } from "../../../services/content_renderer.js";
 import { prompt } from "../../../services/dialog.js";
@@ -54,6 +55,8 @@ export interface BuildEditorOptions {
     getNoteId?: () => string | undefined;
     /** The ID of the component that hosts the editor, which changes the editor makes are sent as. */
     getComponentId?: () => string | undefined;
+    /** Triggers `command` on the component that hosts the editor. */
+    triggerHostCommand?: (command: CommandNames) => Promise<unknown> | undefined | null;
 }
 
 export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfig> {
@@ -83,6 +86,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             samples: SAMPLE_DIAGRAMS
         },
         contentEmbed: {
+            pickNote: bindHostCommand(opts, "addIncludeNoteToText"),
             inlineLanguages: SOURCE_EMBED_TYPES.map((type) => type.language),
             renderInlinePreview: (language, source, container) => {
                 void getSourceEmbedTypeByLanguage(language)?.renderPreview(source, container);
@@ -213,6 +217,12 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         linkEmbed: buildLinkEmbedHost(opts.getNoteId),
         getNoteId: opts.getNoteId,
         attachmentUpload: buildAttachmentUploadHost(opts.getComponentId),
+        internalLink: { openDialog: bindHostCommand(opts, "addLinkToText") },
+        markdownImport: { open: bindHostCommand(opts, "pasteMarkdownIntoText") },
+        cutToNote: {
+            cut: bindHostCommand(opts, "cutIntoNote"),
+            saveNow: bindHostCommand(opts, "saveNoteDetailNow")
+        },
         slashCommand: {
             // Drop CKEditor's built-in list slash commands, whose Title Case titles the palette
             // re-defines in sentence case.
@@ -347,6 +357,13 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     return {
         ...config,
         ...buildToolbarConfig(opts.isClassicEditor, !!aiAssistantStream)
+    };
+}
+
+/** A callback that triggers `command` on the component that hosts the editor, and waits for it. */
+function bindHostCommand(opts: BuildEditorOptions, command: CommandNames) {
+    return async () => {
+        await opts.triggerHostCommand?.(command);
     };
 }
 

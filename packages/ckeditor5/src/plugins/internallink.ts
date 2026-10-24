@@ -82,11 +82,7 @@ class InsertInternalLinkCommand extends Command {
     }
 
     execute() {
-        const editor = this.editor;
-        const editorEl = editor.editing.view.getDomRoot();
-        const component = glob.getComponentByEl(editorEl);
-
-        component.triggerCommand('addLinkToText');
+        this.editor.config.get('internalLink')?.openDialog();
     }
 }
 
@@ -170,4 +166,13 @@ function findLinkAtSelection(editor: Editor): { href: string; range: ModelRange 
     }
 
     return { href, range: findAttributeRange(position, 'linkHref', href, model) };
+}
+
+declare module 'ckeditor5' {
+    interface EditorConfig {
+        internalLink?: {
+            /** Opens the dialog that adds a link to a note at the selection, or edits the link there. */
+            openDialog(): void;
+        };
+    }
 }

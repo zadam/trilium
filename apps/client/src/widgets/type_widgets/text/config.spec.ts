@@ -389,6 +389,24 @@ describe("CK config - tables", () => {
         expect(config.attachmentUpload?.getEmbedBoxSize?.("image/png", 1)).toBe("medium");
     });
 
+    it("hands the dialogs and cut to note of the editor to the app commands that do them", async () => {
+        const triggerHostCommand = vi.fn(async () => undefined);
+        const config = await buildConfig(baseOpts({ triggerHostCommand }));
+        const callbacks = [
+            [ config.internalLink?.openDialog, "addLinkToText" ],
+            [ config.markdownImport?.open, "pasteMarkdownIntoText" ],
+            [ config.contentEmbed?.pickNote, "addIncludeNoteToText" ],
+            [ config.cutToNote?.cut, "cutIntoNote" ],
+            [ config.cutToNote?.saveNow, "saveNoteDetailNow" ]
+        ] as const;
+
+        for (const [ callback, command ] of callbacks) {
+            await callback?.();
+            expect(triggerHostCommand).toHaveBeenLastCalledWith(command);
+        }
+        expect(triggerHostCommand).toHaveBeenCalledTimes(callbacks.length);
+    });
+
     it("titles reference links through the link service", async () => {
         expect((await buildConfig(baseOpts())).referenceLink).toStrictEqual({
             getTitle: linkService.getReferenceLinkTitle,

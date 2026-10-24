@@ -807,10 +807,7 @@ class ContentEmbedEditing extends Plugin {
 
 class InsertContentEmbedCommand extends Command {
 	override execute() {
-		const editorEl = this.editor.editing.view.getDomRoot();
-		const component = glob.getComponentByEl(editorEl);
-
-		component.triggerCommand('addIncludeNoteToText');
+		this.editor.config.get( 'contentEmbed' )?.pickNote?.();
 	}
 
 	override refresh() {
@@ -1666,6 +1663,23 @@ declare module 'ckeditor5' {
 		toggleContentEmbedEditable: ToggleContentEmbedEditableCommand;
 		setContentEmbedCodeView: SetContentEmbedCodeViewCommand;
 		contentEmbedDisplayMode: ContentEmbedDisplayModeCommand;
+	}
+
+	interface EditorConfig {
+		contentEmbed?: {
+			/** Opens the dialog that picks a note to include at the selection. */
+			pickNote?: () => void;
+			/**
+			 * The languages whose `<pre><code class="language-…">` code blocks show as embeds of
+			 * their source, rendered by the host's `loadInlineEmbed()`.
+			 */
+			inlineLanguages?: string[];
+			/**
+			 * Renders the `source` of an inline language into `container`, outside an embed, as
+			 * the AI assistant previews a response.
+			 */
+			renderInlinePreview?: ( language: string, source: string, container: HTMLElement ) => void;
+		};
 	}
 }
 

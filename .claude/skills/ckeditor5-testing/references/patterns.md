@@ -39,9 +39,11 @@ Host services that need no component come through the editor config, so a spec p
 `createTestEditor( plugins, { … } )` instead of mocking `glob`: `formatDateTime` (date/time),
 `referenceLink: { getTitle, getTitleSync }` (reference links), `linkEmbed` (link previews —
 `createLinkEmbedHost()` in `test/link-embed-kit.ts` builds the mocked entry), and `getNoteId` plus
-`attachmentUpload: { getHeaders, getLocalUpload, getEmbedBoxSize }` (uploads). Each falls back to a
-placeholder when left out (an upload without `getNoteId` is rejected), so a spec that does not
-assert on it can omit it. A spec sharing one editor across tests can swap an entry with
+`attachmentUpload: { getHeaders, getLocalUpload, getEmbedBoxSize }` (uploads), and the dialogs a
+button hands over to the host: `internalLink: { openDialog }`, `markdownImport: { open }`,
+`contentEmbed: { pickNote }` and `cutToNote: { cut, saveNow }`. Each falls back to a placeholder or a
+no-op when left out (an upload without `getNoteId` is rejected), so a spec that does not assert on
+it can omit it. A spec sharing one editor across tests can swap an entry with
 `editor.config.set()`, which the plugins read at call time.
 
 Many in-aggregate plugins still reach for a global `glob` (the Trilium bridge — typed in
@@ -55,9 +57,9 @@ converter in `packages/ckeditor5/src/plugins/referencelink.ts`). Use the globals
 import { installGlobMock, mockClipboard } from '../../test/globals-test-kit.js';
 
 beforeEach( async () => {
-	const triggerCommand = vi.fn();
-	installGlobMock( { getComponentByEl: () => ( { triggerCommand } ) } ); // removed after the test
-	editor = await createTestEditor( [ Essentials, Paragraph, InternalLinkPlugin ] );
+	const loadReferenceLinkTitle = vi.fn( async () => undefined );
+	installGlobMock( { getComponentByEl: () => ( { loadReferenceLinkTitle } ) } ); // removed after the test
+	editor = await createTestEditor( [ Essentials, Paragraph, ReferenceLink ] );
 } );
 // no afterEach: setup.ts runs the kit's cleanups (and destroys the editor)
 ```

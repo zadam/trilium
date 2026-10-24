@@ -45,17 +45,19 @@ import ContentEmbed, {
 
 describe("ContentEmbed", () => {
     let editor: ClassicEditor;
-    let triggerCommand: ReturnType<typeof vi.fn>;
+    let pickNote: ReturnType<typeof vi.fn>;
     let loadEmbeddedNote: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
-        triggerCommand = vi.fn();
+        pickNote = vi.fn();
         loadEmbeddedNote = vi.fn();
         installGlobMock({
-            getComponentByEl: () => ({ triggerCommand, loadEmbeddedNote })
+            getComponentByEl: () => ({ loadEmbeddedNote })
         });
 
-        editor = await createTestEditor([Essentials, Paragraph, Widget, ContentEmbed]);
+        editor = await createTestEditor([Essentials, Paragraph, Widget, ContentEmbed], {
+            contentEmbed: { pickNote }
+        });
     });
 
     // -----------------------------------------------------------------------
@@ -207,9 +209,9 @@ describe("ContentEmbed", () => {
     // InsertContentEmbedCommand
     // -----------------------------------------------------------------------
 
-    it("triggers addIncludeNoteToText on the Trilium component when the insert command executes", () => {
+    it("has the host open the Include note dialog when the insert command executes", () => {
         editor.execute(COMMAND_NAME);
-        expect(triggerCommand).toHaveBeenCalledWith("addIncludeNoteToText");
+        expect(pickNote).toHaveBeenCalledOnce();
     });
 
     it("enables the insert command in a paragraph and disables it where blocks are disallowed", () => {
@@ -387,7 +389,6 @@ describe("ContentEmbed", () => {
         it("keeps the renderer's focus off for a press on a link preview", async () => {
             installGlobMock({
                 getComponentByEl: () => ({
-                    triggerCommand,
                     loadEmbeddedNote
                 })
             });
