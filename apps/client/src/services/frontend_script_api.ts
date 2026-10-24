@@ -508,10 +508,16 @@ export default FrontendScriptApi as any as {
 // checks fail to compile — naming the offending member — if that public surface
 // claims an `api`/`FNote` member that has since been renamed or removed here.
 type _MissingApiMembers = Exclude<keyof PublicFrontendApi, keyof Api>;
+// The reverse check: a member added to `api` fails to compile until the public surface declares it,
+// so the editor's completions and the generated references list it. The exceptions are deprecated
+// or private, and left out of the public surface on purpose.
+type _UndeclaredApiMembers = Exclude<keyof Api, keyof PublicFrontendApi | "addButtonToToolbar" | "__runOnBackendInner">;
 type _MissingFNoteMembers = Exclude<keyof PublicScriptFNote, keyof FNote>;
 type _MissingLinkOptions = Exclude<keyof ScriptLinkOptions, keyof NonNullable<Parameters<typeof linkService.createLink>[1]>>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _apiDriftGuard: [_MissingApiMembers] extends [never] ? true : _MissingApiMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _undeclaredApiGuard: [_UndeclaredApiMembers] extends [never] ? true : _UndeclaredApiMembers = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _fnoteDriftGuard: [_MissingFNoteMembers] extends [never] ? true : _MissingFNoteMembers = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

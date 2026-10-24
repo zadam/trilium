@@ -562,6 +562,10 @@ export default BackendScriptApi as any as {
 // that public surface claims a member of `api`, or of a type it returns, that has
 // since been renamed or removed here.
 type _MissingBackendApiMembers = Exclude<keyof PublicBackendApi, keyof Api>;
+// The reverse check: a member added to `api` fails to compile until the public surface declares it,
+// so the editor's completions and the generated references list it. The exceptions are deprecated
+// or private, and left out of the public surface on purpose.
+type _UndeclaredBackendApiMembers = Exclude<keyof Api, keyof PublicBackendApi | "axios" | "cheerio" | "createNote" | "__private">;
 type _MissingBNoteMembers = Exclude<keyof PublicScriptBNote, keyof BNote>;
 type _MissingBAttachmentMembers = Exclude<keyof ScriptBAttachment, keyof BAttachment>;
 type _MissingBOptionMembers = Exclude<keyof ScriptBOption, keyof BOption>;
@@ -571,6 +575,8 @@ type _MissingAppInfoMembers = Exclude<keyof ScriptAppInfo, keyof typeof appInfo>
 type _MissingSqlMembers = Exclude<keyof ScriptSql, keyof ReturnType<typeof getSql>>;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _backendApiDriftGuard: [_MissingBackendApiMembers] extends [never] ? true : _MissingBackendApiMembers = true;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _undeclaredBackendApiGuard: [_UndeclaredBackendApiMembers] extends [never] ? true : _UndeclaredBackendApiMembers = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _bnoteDriftGuard: [_MissingBNoteMembers] extends [never] ? true : _MissingBNoteMembers = true;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
