@@ -20,4 +20,4 @@ list `mermaid` in `contentEmbed.inlineLanguages`, or a diagram loads as a plain 
 
 The insert button derives from CKSource's `@ckeditor/ckeditor5-mermaid`, copyright CKSource
 Holding sp. z o.o., used under the GPL-2.0-or-later arm of its license — see `LICENSE.md` next to
-this file, which combines with this repository's AGPL-3.0-only.
+this file, which combines with this repository's AGPL-3.0-or-later.

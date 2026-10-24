@@ -5,6 +5,25 @@ In a nutshell, subscription-based providers work by either reusing your existing
 
 See also the dedicated <a class="reference-link" href="../Privacy.md">Privacy</a> section to better understand what data is being sent to a cloud provider.
 
+## Using the Flatpak
+
+The Flatpak version of Trilium (see [Installing from Flathub](../../Installation%20%26%20Setup/Desktop%20Installation.md)) runs in a sandbox that hides the programs installed on your computer, so on its own it cannot find Claude Code, the GitHub Copilot CLI, the Codex CLI or Google's Antigravity ACP server. Trilium can start them outside the sandbox once you allow it to:
+
+1.  Install the CLI on your computer and sign in to it, as described below for each provider.
+2.  Allow Trilium to start programs outside its sandbox by running this in a terminal:
+    
+    ```sh
+    flatpak override --user --talk-name=org.freedesktop.Flatpak org.triliumnotes.Trilium
+    ```
+3.  Restart Trilium, then go to <a class="reference-link" href="../../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a> → _AI / LLM_ and add the provider.
+
+Trilium then looks the CLI up in your computer's `PATH` and in your login shell's, and starts it there through `flatpak-spawn --host`. Until the permission is granted, adding one of these providers fails with a message that repeats these steps.
+
+> [!WARNING]
+> This permission lets Trilium run any program on your computer outside the sandbox, which is the same access an installation outside Flatpak has. To take it back, run `flatpak override --user --no-talk-name=org.freedesktop.Flatpak org.triliumnotes.Trilium` and restart Trilium.
+
+The environment variables that point Trilium at a CLI (such as `TRILIUM_CLAUDE_CODE_PATH`) name a file inside the sandbox, so with the Flatpak, leave them unset and let Trilium find the CLI on your computer.
+
 ## <span class="tn-icon tn-brand tn-brand-claude"></span> Claude Code
 
 To use a subscription:

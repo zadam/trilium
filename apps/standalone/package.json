@@ -3,7 +3,7 @@
   "version": "0.106.0",
   "description": "Standalone client for TriliumNext with SQLite WASM backend",
   "private": true,
-  "license": "AGPL-3.0-only",
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
     "dev": "vite dev",
