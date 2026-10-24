@@ -22,7 +22,7 @@ import { isIMEComposing } from "../../services/shortcuts";
 import { escapeQuotes, getErrorMessage } from "../../services/utils";
 import ActionButton from "../react/ActionButton";
 import CKEditor, { CKEditorApi } from "../react/CKEditor";
-import { useLegacyImperativeHandlers, useLegacyWidget, useTriliumEvent } from "../react/hooks";
+import { useLegacyWidget, useTriliumEvent } from "../react/hooks";
 import { createAutocompleteMentionList, createNoteMentionList } from "../type_widgets/text/mention_list_view";
 import AttributeDetailWidget, { AttributeNameSuggestion, fetchAttributeNames } from "./attribute_detail";
 
@@ -201,17 +201,6 @@ export default function AttributeEditor({ api, note, componentId, notePath, ntxI
         }
     });
 
-    // Interaction with CKEditor.
-    useLegacyImperativeHandlers(useMemo(() => ({
-        loadReferenceLinkTitle: async ($el: JQuery<HTMLElement>, href: string) => {
-            const { noteId } = link.parseNavigationStateFromUrl(href);
-            const note = noteId ? await froca.getNote(noteId, true) : null;
-            const title = note ? note.title : "[missing]";
-
-            $el.text(title);
-        }
-    }), []));
-
     // Keyboard shortcuts
     useTriliumEvent("addNewLabel", ({ ntxId: eventNtxId }) => {
         if (eventNtxId !== ntxId) return;
@@ -258,6 +247,7 @@ export default function AttributeEditor({ api, note, componentId, notePath, ntxI
                             toolbar: { items: [] },
                             placeholder: t("attribute_editor.placeholder"),
                             mention: { feeds: [], hostedFeeds: hostedMentions },
+                            referenceLink: { renderTitle: renderReferenceTitle },
                             licenseKey: "GPL",
                             language: "en"
                         }}
@@ -378,6 +368,13 @@ export default function AttributeEditor({ api, note, componentId, notePath, ntxI
             {createPortal(attributeDetailWidgetEl, document.body)}
         </>
     );
+}
+
+/** Fills `element` with the title of the note a relation's reference link points to. */
+async function renderReferenceTitle(element: HTMLElement, href: string) {
+    const { noteId } = link.parseNavigationStateFromUrl(href);
+    const note = noteId ? await froca.getNote(noteId, true) : null;
+    element.textContent = note ? note.title : "[missing]";
 }
 
 /**

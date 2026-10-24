@@ -191,8 +191,8 @@ export class ReferenceLinkEditing extends Plugin {
 			return;
 		}
 
-		const component = glob.getComponentByEl<EditorComponent>( editor.editing.view.getDomRoot() );
-		component?.fixReferenceLink?.( String( reference.getAttribute( 'storedTitle' ) ?? '' ), href => {
+		const storedTitle = String( reference.getAttribute( 'storedTitle' ) ?? '' );
+		editor.config.get( 'referenceLink' )?.fixLink?.( storedTitle, href => {
 			editor.execute( 'referenceLink', { href, replace: reference } );
 			editor.editing.view.focus();
 		} );
@@ -258,10 +258,12 @@ export class ReferenceLinkEditing extends Plugin {
 						return domElement;
 					}
 
-					const editorEl = editor.editing.view.getDomRoot();
-					const component = glob.getComponentByEl<EditorComponent>(editorEl);
-
-					component.loadReferenceLinkTitle($(domElement), href, storedTitle);
+					const renderTitle = editor.config.get( 'referenceLink' )?.renderTitle;
+					if ( renderTitle ) {
+						renderTitle( domElement, href, storedTitle );
+					} else {
+						domElement.textContent = getReferenceTitleSync( editor, href, storedTitle );
+					}
 
 					return domElement;
 				});
@@ -353,12 +355,22 @@ declare module "ckeditor5" {
 	interface EditorConfig {
 		referenceLink?: {
 			/** Resolves the title of the note or attachment `href` points to, loading it if needed. */
-			getTitle( href: string ): Promise<string>;
+			getTitle?( href: string ): Promise<string>;
 			/**
 			 * The title of the note or attachment `href` points to, from what is already loaded.
 			 * `storedTitle` is the title the saved content holds, for a note that is not loaded.
 			 */
-			getTitleSync( href: string, storedTitle?: string ): string;
+			getTitleSync?( href: string, storedTitle?: string ): string;
+			/**
+			 * Fills `element` with the label of the link to `href`, which the host can load.
+			 * Without it, the link shows what `getTitleSync()` reads.
+			 */
+			renderTitle?( element: HTMLElement, href: string, storedTitle?: string ): void;
+			/**
+			 * Lets the user pick the note a reference link to a missing note should point at
+			 * instead, starting from `storedTitle`, and calls `fix()` with the new href.
+			 */
+			fixLink?( storedTitle: string, fix: ( href: string ) => void ): void;
 		};
 	}
 }

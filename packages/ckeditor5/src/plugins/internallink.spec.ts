@@ -5,7 +5,6 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import { installGlobMock } from "../../test/globals-test-kit.js";
 import InternalLinkPlugin, {
     COMMAND_NAME, getLinkAtSelection, replaceLinkAtSelection
 } from "./internallink.js";
@@ -76,9 +75,6 @@ describe("the link at the selection", () => {
     let getTitle: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
-        installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined })
-        });
         getTitle = vi.fn(async () => "Target");
         editor = await createTestEditor([Essentials, Paragraph, Bold, LinkEditing, InternalLinkPlugin], {
             referenceLink: { getTitle, getTitleSync: () => "Target" }

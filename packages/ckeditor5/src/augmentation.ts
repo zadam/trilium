@@ -79,20 +79,5 @@ declare global {
          */
         hasDisplayModes?: boolean;
     }
-
-    interface EditorComponent {
-        loadReferenceLinkTitle(
-            $el: JQuery<HTMLElement>, href: string, storedTitle?: string
-        ): Promise<void>;
-        /**
-         * Lets the user pick the note a reference link to a missing note should point at instead,
-         * starting from `storedTitle`, and calls `fix()` with the new href.
-         */
-        fixReferenceLink?(storedTitle: string, fix: (href: string) => void): void;
-    }
-
-    var glob: {
-        getComponentByEl<T>(el: unknown): T;
-    };
 }
 

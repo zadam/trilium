@@ -1,10 +1,11 @@
 import type { EditorConfig, InlineEmbedSource } from "@triliumnext/ckeditor5";
 import { DISPLAYABLE_LOCALE_IDS, IMAGE_MIMES, LOCALES, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 import imageService from "../../../services/image.js";
 import linkService from "../../../services/link.js";
 import { ensureMimeTypesForHighlighting } from "../../../services/syntax_highlight.js";
+import type { AddLinkOpts } from "../../dialogs/add_link.js";
 import { buildConfig, type BuildEditorOptions, OPEN_SOURCE_LICENSE_KEY } from "./config.js";
 
 // Mutable option values, reset before each test (see `beforeEach`).
@@ -498,11 +499,38 @@ describe("CK config - tables", () => {
         expect(() => host?.loadNote?.("n1", wrapper, undefined, undefined, onBlockChange)).not.toThrow();
     });
 
-    it("titles reference links through the link service", async () => {
-        expect((await buildConfig(baseOpts())).referenceLink).toStrictEqual({
-            getTitle: linkService.getReferenceLinkTitle,
-            getTitleSync: linkService.getReferenceLinkTitleSync
-        });
+    it("titles reference links through the link service, in the note open at the time", async () => {
+        const loadTitle = vi.spyOn(linkService, "loadReferenceLinkTitle").mockResolvedValue();
+        onTestFinished(() => loadTitle.mockRestore());
+        let noteId = "n1";
+        const referenceLink = (await buildConfig(baseOpts({ getNoteId: () => noteId }))).referenceLink;
+        const element = document.createElement("span");
+
+        referenceLink?.renderTitle?.(element, "#root/n2", "Stored");
+        noteId = "n3";
+        referenceLink?.renderTitle?.(element, "#root/n2");
+
+        expect(referenceLink?.getTitle).toBe(linkService.getReferenceLinkTitle);
+        expect(referenceLink?.getTitleSync).toBe(linkService.getReferenceLinkTitleSync);
+        expect(loadTitle.mock.calls.map(([ $el, ...rest ]) => [ $el[0], ...rest ])).toEqual([
+            [ element, "#root/n2", "n1", "Stored" ],
+            [ element, "#root/n2", "n3", undefined ]
+        ]);
+    });
+
+    it("asks the host to fix a link to a missing note through the add link dialog", async () => {
+        const triggerHostCommand = vi.fn(async () => undefined);
+        const fix = vi.fn();
+        const referenceLink = (await buildConfig(baseOpts({ triggerHostCommand }))).referenceLink;
+
+        referenceLink?.fixLink?.("Gone", fix);
+
+        expect(triggerHostCommand).toHaveBeenCalledExactlyOnceWith("showAddLinkDialog", expect.objectContaining({
+            text: "Gone", hasSelection: false, fixLink: true
+        }));
+        const [ , dialog ] = triggerHostCommand.mock.calls[0] as unknown as [ string, AddLinkOpts ];
+        await dialog.addLink("root/n9", null);
+        expect(fix).toHaveBeenCalledExactlyOnceWith("#root/n9");
     });
 });
 

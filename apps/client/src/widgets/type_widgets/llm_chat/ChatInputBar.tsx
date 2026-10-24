@@ -13,7 +13,7 @@ import Button from "../../react/Button.js";
 import CKEditor, { type CKEditorApi } from "../../react/CKEditor.js";
 import Dropdown from "../../react/Dropdown.js";
 import { FormListHeader, FormListItem } from "../../react/FormList.js";
-import { useLegacyImperativeHandlers, useTriliumOption } from "../../react/hooks.js";
+import { useTriliumOption } from "../../react/hooks.js";
 import Icon from "../../react/Icon.js";
 import LightboxLink from "../../react/LightboxLink.js";
 import AddProviderModal, { type LlmProviderConfig, type ProviderStep } from "../options/llm/AddProviderModal.js";
@@ -114,16 +114,6 @@ export default function ChatInputBar({
 
     // Clipboard / drag-drop / file-picker upload management.
     const attachments = useChatAttachments(chat);
-
-    // CKEditor's ReferenceLink plugin calls back into the parent component to
-    // resolve a note's title from its href.
-    useLegacyImperativeHandlers({
-        async loadReferenceLinkTitle(
-            $el: JQuery<HTMLElement>, href: string | null = null, storedTitle?: string
-        ) {
-            await link.loadReferenceLinkTitle($el, href, undefined, storedTitle);
-        }
-    });
 
     const baseSubmit = onSubmit ?? chat.handleSubmit;
     // Clear the editor immediately when a submit fires with non-empty, non-streaming
@@ -319,6 +309,11 @@ export default function ChatInputBar({
                             toolbar: { items: [] },
                             placeholder: t("llm_chat.placeholder"),
                             mention: { feeds: [], hostedFeeds: hostedMentions },
+                            referenceLink: {
+                                renderTitle: (element, href, storedTitle) => {
+                                    void link.loadReferenceLinkTitle($(element), href, undefined, storedTitle);
+                                }
+                            },
                             licenseKey: "GPL"
                         }}
                         // The strings the box shows of its own — the link balloon it raises on Ctrl+K —

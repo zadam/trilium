@@ -33,11 +33,11 @@ standalone packages (and legacy specs mid-migration) still hand-roll the scaffol
 `document.createElement('div')` + `ClassicEditor.create(...)` + an `afterEach` that calls
 `editor.destroy()` and `editorElement.remove()`.
 
-## Stubbing the Trilium glue (`glob` / `navigator.clipboard` / jQuery `$`)
+## Stubbing the host and browser globals
 
-Host services that need no component come through the editor config, so a spec passes them to
-`createTestEditor( plugins, { … } )` instead of mocking `glob`: `formatDateTime` (date/time),
-`referenceLink: { getTitle, getTitleSync }` (reference links), `linkEmbed` (link previews —
+Everything the plugins need from Trilium comes through the editor config, so a spec passes it to
+`createTestEditor( plugins, { … } )`: `formatDateTime` (date/time),
+`referenceLink: { getTitle, getTitleSync, renderTitle, fixLink }` (reference links), `linkEmbed` (link previews —
 `createLinkEmbedHost()` in `test/link-embed-kit.ts` builds the mocked entry), and `getNoteId` plus
 `attachmentUpload: { getHeaders, getLocalUpload, getEmbedBoxSize }` (uploads), and the dialogs a
 button hands over to the host: `internalLink: { openDialog }`, `markdownImport: { open }`,
@@ -49,34 +49,22 @@ upload without `getNoteId` is rejected), so a spec that does not assert on it ca
 spec sharing one editor across tests can swap an entry with `editor.config.set()`, which the
 plugins read at call time.
 
-Many in-aggregate plugins still reach for a global `glob` (the Trilium bridge — typed in
-`packages/ckeditor5/src/augmentation.ts` with `getComponentByEl`, which finds the host component), some
-buttons hit `navigator.clipboard`, and some converters call jQuery `$(...)` (e.g. the `editingDowncast`
-converter in `packages/ckeditor5/src/plugins/referencelink.ts`). Use the globals kit
-(`test/globals-test-kit.ts`) so each stub **tears itself down** after the test — never hand-roll
-`globalThis.glob = …` plus a manual `delete`:
+The editor package reads no Trilium global and calls no jQuery. A spec that has to swap a browser
+global (`navigator.clipboard`, a `window` method) queues its restore with `registerTestCleanup()`
+from `test/globals-test-kit.ts`, which the global `afterEach` in `test/setup.ts` runs:
 
 ```ts
-import { installGlobMock, mockClipboard } from '../../test/globals-test-kit.js';
+import { registerTestCleanup } from '../../test/globals-test-kit.js';
 
-beforeEach( async () => {
-	const loadReferenceLinkTitle = vi.fn( async () => undefined );
-	installGlobMock( { getComponentByEl: () => ( { loadReferenceLinkTitle } ) } ); // removed after the test
-	editor = await createTestEditor( [ Essentials, Paragraph, ReferenceLink ] );
+const original = navigator.clipboard;
+Object.defineProperty( navigator, 'clipboard', { value: clipboard, configurable: true } );
+registerTestCleanup( () => {
+	Object.defineProperty( navigator, 'clipboard', { value: original, configurable: true } );
 } );
-// no afterEach: setup.ts runs the kit's cleanups (and destroys the editor)
 ```
 
-- `installGlobMock( obj )` casts to the global `glob` type for you and returns `obj` for assertions; its teardown is queued and run by the global `afterEach` in `test/setup.ts`.
-- `mockClipboard( obj )` swaps `navigator.clipboard` and restores the original afterwards.
-- jQuery `$` is already a global passthrough installed by `test/setup.ts` — specs don't set it.
-
-**Why a kit and not hand-rolled globals:** browser mode runs every spec in **one shared page**, so a
-leaked `glob`/`$`/clipboard survives into later specs and causes test-order-dependent flakiness — a
-review caught exactly this missing cleanup. The kit makes teardown automatic. (Existing specs still
-hand-roll `globalThis.glob = … as unknown as typeof glob` + a manual `delete` in `afterEach`; that's
-the legacy pattern being migrated to `installGlobMock` — see
-`packages/ckeditor5/src/plugins/internallink.spec.ts`.)
+Browser mode runs every spec in **one shared page**, so a global left swapped leaks into later specs
+and causes test-order-dependent failures.
 
 ## Schema
 

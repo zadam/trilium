@@ -23,7 +23,6 @@ import bxWindowAlt from "boxicons/svg/regular/bx-window-alt.svg?raw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import LinkEmbed from "../link_embed/link_embed.js";
 import ReferenceLink from "../referencelink.js";
 import ContentEmbed, {
@@ -802,12 +801,6 @@ describe("ContentEmbed with attachments", () => {
         loadEmbeddedNote = vi.fn();
         loadEmbeddedAttachment = vi.fn();
         getAttachmentHref = vi.fn(async () => LINK_HREF);
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadReferenceLinkTitle: vi.fn(async () => undefined)
-            })
-        });
-
         editor = await createTestEditor([
             Essentials, Paragraph, Undo, Widget, LinkEditing, ReferenceLink, ContentEmbed
         ], {

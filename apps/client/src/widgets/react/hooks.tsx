@@ -1571,11 +1571,10 @@ export function useLegacyImperativeHandlers(handlers: Record<string, Function>) 
  * bearing a component and reads it off there.
  *
  * The counterpart of {@link useLegacyImperativeHandlers} — that hook writes methods onto the parent
- * component, and this is what lets a caller holding only a DOM node arrive at the same object. The
- * text editor is the caller that matters: the calls that need state of the host component, such as
- * drawing reference-link titles and rendering included notes, find it with
- * `glob.getComponentByEl(editor.editing.view.getDomRoot())`. An editor in a subtree whose parent
- * component the DOM cannot name finds whichever widget encloses it, and fails on the first such call.
+ * component, and this is what lets a caller holding only a DOM node arrive at the same object, such
+ * as `resolveFocusedComponent()`, which collects the shortcut hints of the focused element, or a
+ * render note looking up its parent. A subtree whose parent component the DOM cannot name answers
+ * with whichever widget encloses it.
  *
  * Only needed where a subtree provides a `ParentComponent` of its own. A component built as a widget
  * marks its own element (see `BasicWidget.render`), and a React tree mounted under one answers to

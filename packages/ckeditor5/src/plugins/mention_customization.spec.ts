@@ -9,7 +9,6 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import { installGlobMock } from "../../test/globals-test-kit.js";
 import TriliumMentionUI from "./mention/trilium_mention_ui.js";
 import MentionCustomization from "./mention_customization.js";
 import ReferenceLink from "./referencelink.js";
@@ -18,12 +17,6 @@ describe("MentionCustomization", () => {
     let editor: ClassicEditor;
 
     beforeEach(async () => {
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadReferenceLinkTitle: vi.fn(async () => {})
-            })
-        });
-
         editor = await createTestEditor([
             Essentials,
             Paragraph,

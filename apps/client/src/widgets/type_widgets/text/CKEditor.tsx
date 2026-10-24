@@ -7,9 +7,8 @@ import { createPortal, HTMLAttributes, RefObject } from "preact";
 import { useEffect, useImperativeHandle, useRef, useState } from "preact/hooks";
 
 import froca from "../../../services/froca";
-import link from "../../../services/link";
 import { isMobile } from "../../../services/utils";
-import { useKeyboardShortcuts, useLegacyImperativeHandlers, useNoteContext, useSyncedRef, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
+import { useKeyboardShortcuts, useNoteContext, useSyncedRef, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
 import IconPicker from "../../react/IconPicker";
 import type { AiNoteLocation } from "./ai_assistant_stream";
 import { useAiMenuFooter, useAiQuickActions } from "./ai_quick_actions";
@@ -267,14 +266,6 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
         },
     }));
 
-    useLegacyImperativeHandlers({
-        async loadReferenceLinkTitle(
-            $el: JQuery<HTMLElement>, href: string | null = null, storedTitle?: string
-        ) {
-            await link.loadReferenceLinkTitle($el, href, note?.noteId, storedTitle);
-        },
-    });
-
     async function destroyEditor() {
         const editor = editorRef.current;
         editorRef.current = null;
@@ -307,7 +298,7 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
                 getNoteLocation: () => noteLocationRef.current,
                 getNoteId: () => noteRef.current?.noteId,
                 getComponentId: () => parentComponent?.componentId,
-                triggerHostCommand: (command) => parentComponent?.triggerCommand(command),
+                triggerHostCommand: (command, data) => parentComponent?.triggerCommand(command, data),
                 showIconPicker,
                 referenceSource: {
                     getEditor: () => editorRef.current,

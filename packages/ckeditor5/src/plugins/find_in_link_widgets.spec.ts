@@ -12,7 +12,6 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import { installGlobMock } from "../../test/globals-test-kit.js";
 import FindInLinkWidgets from "./find_in_link_widgets.js";
 import LinkEmbedEditing from "./link_embed/link_embed_editing.js";
 import ReferenceLink from "./referencelink.js";
@@ -21,17 +20,6 @@ describe("FindInLinkWidgets", () => {
     let editor: ClassicEditor;
 
     beforeEach(async () => {
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadReferenceLinkTitle: vi.fn((element: unknown) => {
-                    if (element instanceof HTMLElement) {
-                        element.textContent = "Reference match";
-                    }
-                    return Promise.resolve();
-                })
-            })
-        });
-
         editor = await createTestEditor([
             Essentials,
             Paragraph,

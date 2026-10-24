@@ -248,16 +248,6 @@ export default function EditableText({
             const opts = getAddLinkOpts(editorApiRef.current, waitForEditor);
             parentComponent?.triggerCommand("showAddLinkDialog", opts);
         },
-        fixReferenceLink(storedTitle: string, fix: (href: string) => void) {
-            parentComponent?.triggerCommand("showAddLinkDialog", {
-                text: storedTitle,
-                hasSelection: false,
-                fixLink: true,
-                async addLink(notePath) {
-                    fix(`#${notePath}`);
-                }
-            });
-        },
         pasteMarkdownIntoTextCommand() {
             if (!editorApiRef.current) return;
             parentComponent?.triggerCommand("showPasteMarkdownDialog", {

@@ -3,7 +3,7 @@ import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
 
-import type { CommandNames } from "../../../components/app_context.js";
+import type { CommandMappings, CommandNames } from "../../../components/app_context.js";
 import { buildReferenceConfig, type ReferenceSource } from "../../../services/block_reference.js";
 import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
 import { getUploadBoxSize } from "../../../services/content_renderer.js";
@@ -57,8 +57,10 @@ export interface BuildEditorOptions {
     getNoteId?: () => string | undefined;
     /** The ID of the component that hosts the editor, which changes the editor makes are sent as. */
     getComponentId?: () => string | undefined;
-    /** Triggers `command` on the component that hosts the editor. */
-    triggerHostCommand?: (command: CommandNames) => Promise<unknown> | undefined | null;
+    /** Triggers `command` with `data` on the component that hosts the editor. */
+    triggerHostCommand?: <K extends CommandNames>(
+        command: K, data?: CommandMappings[K]
+    ) => Promise<unknown> | undefined | null;
     /** Shows the icon picker the editor asks for, as `inlineIcon.showPicker` does. */
     showIconPicker?: (request: IconPickerRequest) => (() => void) | null;
     /** The note that the block and tab references the editor copies point to. */
@@ -228,7 +230,20 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         formatDateTime: (date, format) => formatDateTime(date, format ?? options.get("customDateTimeFormat")),
         referenceLink: {
             getTitle: linkService.getReferenceLinkTitle,
-            getTitleSync: linkService.getReferenceLinkTitleSync
+            getTitleSync: linkService.getReferenceLinkTitleSync,
+            renderTitle: (element, href, storedTitle) => {
+                void linkService.loadReferenceLinkTitle($(element), href, opts.getNoteId?.(), storedTitle);
+            },
+            fixLink: (storedTitle, fix) => {
+                void opts.triggerHostCommand?.("showAddLinkDialog", {
+                    text: storedTitle,
+                    hasSelection: false,
+                    fixLink: true,
+                    async addLink(notePath) {
+                        fix(`#${notePath}`);
+                    }
+                });
+            }
         },
         linkEmbed: buildLinkEmbedHost(opts.getNoteId),
         getNoteId: opts.getNoteId,

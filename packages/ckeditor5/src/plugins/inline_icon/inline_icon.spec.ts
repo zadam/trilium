@@ -7,7 +7,6 @@ import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 import { createTestEditor, getEditorElement } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import ReferenceLink from "../referencelink.js";
 import InlineIcon from "./inline_icon.js";
 import InlineIconEditing from "./inline_icon_editing.js";
@@ -101,10 +100,6 @@ describe("a reference link pasted from a rendered page", () => {
     // the clipboard. A reference takes no children, so the icon is dropped rather than split out
     // beside the link.
     it("loses the icon the renderer drew inside it, leaving the link alone", async () => {
-        installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle: () => Promise.resolve() })
-        });
-
         const editor = await createTestEditor([ Paragraph, Link, ReferenceLink, InlineIcon ], {
             referenceLink: { getTitle: async () => "Some note", getTitleSync: () => "Some note" }
         });
