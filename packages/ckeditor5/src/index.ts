@@ -39,6 +39,7 @@ export type { default as MobileToolbarItems } from "./plugins/mobile_toolbar_ite
 export type { LinkEmbedHost } from "./plugins/link_embed/link_embed_commands.js";
 export type { AttachmentUploadHost } from "./plugins/uploadimage.js";
 export type { IconPickerRequest } from "./plugins/inline_icon/inline_icon_ui.js";
+export type { BlockReferenceHost } from "./plugins/block_reference/block_reference.js";
 export type { ColorMenuHost, ColorMenuRequest, ColorMenuTarget } from "./plugins/color_menu.js";
 export { default as TriliumSnippets } from "./plugins/snippets/snippets.js";
 export type { SnippetDefinition } from "./plugins/snippets/snippetsconfig.js";

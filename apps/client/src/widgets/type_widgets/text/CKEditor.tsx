@@ -134,8 +134,8 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
     // note would name whichever one happened to be open when the editor was built.
     const noteLocationRef = useRef<AiNoteLocation | null>(null);
     noteLocationRef.current = note ? { title: note.title, notePath } : null;
-    const noteIdRef = useRef<string | undefined>(undefined);
-    noteIdRef.current = note?.noteId;
+    const noteRef = useRef(note);
+    noteRef.current = note;
     /** The open icon picker request and its balloon container, or `null` when none is open. */
     const [ iconPickerRequest, setIconPickerRequest ] = useState<IconPickerRequest | null>(null);
 
@@ -301,10 +301,16 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
                 contentLanguage: contentLanguage ?? null,
                 templates: templatesRef.current,
                 getNoteLocation: () => noteLocationRef.current,
-                getNoteId: () => noteIdRef.current,
+                getNoteId: () => noteRef.current?.noteId,
                 getComponentId: () => parentComponent?.componentId,
                 triggerHostCommand: (command) => parentComponent?.triggerCommand(command),
-                showIconPicker
+                showIconPicker,
+                referenceSource: {
+                    getEditor: () => editorRef.current,
+                    getNote: () => noteRef.current,
+                    getNotePath: () => noteLocationRef.current?.notePath,
+                    save: () => parentComponent?.triggerCommand("saveNoteDetailNow")
+                }
             });
 
             if (isStale) {

@@ -417,6 +417,22 @@ describe("CK config - tables", () => {
         expect((await buildConfig(baseOpts())).inlineIcon?.showPicker(request)).toBeNull();
     });
 
+    it("copies block and tab references from the reference source, and none without one", async () => {
+        const getEditor = vi.fn(() => null);
+        const referenceSource = {
+            getEditor, getNote: () => null, getNotePath: () => undefined, save: vi.fn()
+        };
+        const config = await buildConfig(baseOpts({ referenceSource }));
+
+        config.blockReference?.copyReference?.();
+        config.tabs?.copyReference?.();
+
+        expect(getEditor).toHaveBeenCalledTimes(2);
+        const bare = await buildConfig(baseOpts());
+        expect(bare.blockReference).toBeUndefined();
+        expect(bare.tabs).toBeUndefined();
+    });
+
     it("titles reference links through the link service", async () => {
         expect((await buildConfig(baseOpts())).referenceLink).toStrictEqual({
             getTitle: linkService.getReferenceLinkTitle,

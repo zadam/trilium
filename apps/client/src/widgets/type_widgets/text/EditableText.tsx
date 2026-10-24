@@ -14,10 +14,7 @@ import { deferred, formatBlockRange, parseBlockRange } from "@triliumnext/common
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../../components/app_context";
-import {
-    consumeBlockReference, copyBlockReference, copyBlockShareLink, copyTabReference,
-    openBlockHandleMenu
-} from "../../../services/block_reference";
+import { consumeBlockReference } from "../../../services/block_reference";
 import { consumeBookmark } from "../../../services/bookmark_jump";
 import dialog from "../../../services/dialog";
 import froca from "../../../services/froca";
@@ -26,7 +23,6 @@ import link, { parseNavigationStateFromUrl, type ViewScope } from "../../../serv
 import type LoadResults from "../../../services/load_results";
 import note_create from "../../../services/note_create";
 import { consumeSearchTerms } from "../../../services/search_jump";
-import { getNoteShareLink } from "../../../services/share_link";
 import toast from "../../../services/toast";
 import utils, { isMobile } from "../../../services/utils";
 import type { AddLinkOpts } from "../../dialogs/add_link";
@@ -190,19 +186,6 @@ export default function EditableText({
         consumeBlockReference(root, noteContext?.viewScope);
     }
 
-    async function copyReference(
-        copy: (editor: CKTextEditor, notePath: string, noteTitle: string) => void | Promise<void>
-            = copyBlockReference
-    ) {
-        const editor = editorRef.current;
-        if (!editor) return;
-
-        const notePath = noteContext?.notePath ?? `root/${note.noteId}`;
-        await copy(editor, notePath, note.title);
-        // Saved now, so that the link resolves at once.
-        spacedUpdate.updateNowIfNecessary();
-    }
-
     useTriliumEvent("scrollToEnd", () => {
         const editor = editorRef.current;
         if (!editor) return;
@@ -304,17 +287,6 @@ export default function EditableText({
         },
         getAttachmentHref,
         openContentEmbedMenu,
-        openBlockHandleMenu(event: MouseEvent, count: number) {
-            const shareLink = getNoteShareLink(note);
-            openBlockHandleMenu(event, count, {
-                copyReference: () => void copyReference(),
-                copyShareLink: shareLink
-                    ? () => void copyReference((editor) => copyBlockShareLink(editor, shareLink))
-                    : undefined
-            });
-        },
-        copyBlockReference: () => copyReference(),
-        copyTabReference: () => void copyReference(copyTabReference),
         getContentEmbedTools,
         enterContentEmbed,
         // Keyboard shortcut
@@ -372,7 +344,7 @@ export default function EditableText({
             });
         },
         async saveNoteDetailNowCommand() {
-            // used by cutToNote in CKEditor build
+            // Used by `cutToNote` and by the block and tab references the editor copies.
             spacedUpdate.updateNowIfNecessary();
         }
     });

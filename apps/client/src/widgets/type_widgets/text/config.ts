@@ -4,6 +4,7 @@ import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD
 import i18next from "i18next";
 
 import type { CommandNames } from "../../../components/app_context.js";
+import { buildReferenceConfig, type ReferenceSource } from "../../../services/block_reference.js";
 import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
 import { getUploadBoxSize } from "../../../services/content_renderer.js";
 import { prompt } from "../../../services/dialog.js";
@@ -59,6 +60,8 @@ export interface BuildEditorOptions {
     triggerHostCommand?: (command: CommandNames) => Promise<unknown> | undefined | null;
     /** Shows the icon picker the editor asks for, as `inlineIcon.showPicker` does. */
     showIconPicker?: (request: IconPickerRequest) => (() => void) | null;
+    /** The note that the block and tab references the editor copies point to. */
+    referenceSource?: ReferenceSource;
 }
 
 export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfig> {
@@ -222,6 +225,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         internalLink: { openDialog: bindHostCommand(opts, "addLinkToText") },
         markdownImport: { open: bindHostCommand(opts, "pasteMarkdownIntoText") },
         inlineIcon: { showPicker: (request) => opts.showIconPicker?.(request) ?? null },
+        ...(opts.referenceSource && buildReferenceConfig(opts.referenceSource)),
         cutToNote: {
             cut: bindHostCommand(opts, "cutIntoNote"),
             saveNow: bindHostCommand(opts, "saveNoteDetailNow")
