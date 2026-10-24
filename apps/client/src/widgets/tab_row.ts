@@ -4,6 +4,7 @@ import Draggabilly, { type MoveVector } from "draggabilly";
 import appContext, { type CommandListenerData, type CommandNames, type EventData } from "../components/app_context.js";
 import type NoteContext from "../components/note_context.js";
 import contextMenu from "../menus/context_menu.js";
+import { getRecentChangesMenuItems } from "../menus/recent_changes_menu_items.js";
 import attributeService from "../services/attributes.js";
 import cssClassManager from "../services/css_class_manager.js";
 import froca from "../services/froca.js";
@@ -98,6 +99,22 @@ const TAB_ROW_TPL = `
     .note-new-tab:hover {
         background-color: var(--accented-background-color);
         border-radius: var(--button-border-radius);
+    }
+
+    .tooltip.new-tab-tooltip {
+        .tooltip-inner {
+            text-align: center;
+        }
+
+        .action {
+            display: block;
+            padding-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .hint {
+            opacity: 0.75;
+        }
     }
 
     .tab-row-filler {
@@ -915,7 +932,10 @@ export default class TabRowWidget extends BasicWidget {
         this.$widget.append(this.$newTab);
 
         new Tooltip(this.$newTab[0], {
-            title: t("tab_row.add_new_tab"),
+            html: true,
+            title: `<span class="action">${utils.escapeHtml(t("tab_row.add_new_tab"))}</span>`
+                + `<span class="hint">${utils.escapeHtml(t("tab_row.add_new_tab_hint"))}</span>`,
+            customClass: "new-tab-tooltip",
             trigger: "hover",
             placement: "bottom",
             container: "body",
@@ -929,7 +949,10 @@ export default class TabRowWidget extends BasicWidget {
     }
 
     async showNewTabContextMenu(x: number, y: number) {
-        const workspaceNotes = await search.searchForNotes("#workspace #!template");
+        const [ workspaceNotes, recentChangesItems ] = await Promise.all([
+            search.searchForNotes("#workspace #!template"),
+            getRecentChangesMenuItems()
+        ]);
 
         contextMenu.show<CommandNames>({
             x,
@@ -947,7 +970,8 @@ export default class TabRowWidget extends BasicWidget {
                             hoistedNoteId: workspaceNote.noteId
                         });
                     }
-                }))
+                })),
+                ...recentChangesItems
             ],
             selectMenuItemHandler: ({ command }) => {
                 if (command) {
