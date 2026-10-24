@@ -1938,7 +1938,12 @@ pre.code-embed-editor.read-only .cm-activeLine {
                 width: 24px;
                 background: linear-gradient(to left, rgba(0, 0, 0, 0.12), transparent);
                 pointer-events: none;
+                transition: opacity 250ms ease-in-out;
             }
+        }
+
+        &:has(#mobile-sidebar-wrapper.show) #detail-container::before {
+            opacity: 0;
         }
 
         &[dir="rtl"] #detail-container::before {
