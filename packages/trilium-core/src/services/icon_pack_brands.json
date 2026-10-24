@@ -108,33 +108,39 @@
         "openai"
       ]
     },
-    "tn-brand-perplexity": {
+    "tn-brand-openrouter": {
       "glyph": "",
+      "terms": [
+        "openrouter"
+      ]
+    },
+    "tn-brand-perplexity": {
+      "glyph": "",
       "terms": [
         "perplexity"
       ]
     },
     "tn-brand-searxng": {
-      "glyph": "",
+      "glyph": "",
       "terms": [
         "searxng"
       ]
     },
     "tn-brand-serper": {
-      "glyph": "",
+      "glyph": "",
       "terms": [
         "serper"
       ]
     },
     "tn-brand-tavily": {
-      "glyph": "",
+      "glyph": "",
       "terms": [
         "tavily"
       ]
     }
   },
   "metrics": {
-    "ascent": 0.85025,
-    "descent": 0.14975
+    "ascent": 0.85,
+    "descent": 0.15
   }
 }
