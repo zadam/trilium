@@ -109,6 +109,7 @@ body.mobile.ios {
         );
         --mobile-bottom-bar-height: calc(var(--launcher-pane-horiz-size) + var(--mobile-bottom-offset));
         --mobile-backdrop-color: transparent;
+        --mobile-modal-backdrop-color: rgb(0 0 0 / 25%);
         /* Must equal the height of `.title-row` in style.css. */
         --mobile-title-row-height: 50px;
 
@@ -198,6 +199,55 @@ body.mobile.ios {
         .note-split:not(.options) > .title-row + .scrolling-container {
             padding-top: var(--mobile-title-row-height);
             scroll-padding-top: var(--mobile-title-row-height);
+        }
+
+        /* Dialogs: a short one floats as a glass sheet, a tall one is an opaque sheet attached to
+           the screen's edges. */
+        .modal-dialog:not(.modal-dialog-full-page-on-mobile) > .modal-content {
+            border: 0;
+            border-radius: var(--mobile-sheet-radius) var(--mobile-sheet-radius) 0 0;
+        }
+
+        /* The blur goes on `.modal-dialog`: WebKit draws a scroller's `backdrop-filter` without its
+           rounded corners. */
+        .modal-dialog:not(.modal-dialog-full-page-on-mobile, .modal-dialog-tall) {
+            bottom: var(--mobile-sheet-margin);
+            width: calc(100% - 2 * var(--mobile-sheet-margin));
+            border-radius: var(--mobile-sheet-radius);
+            background: var(--glass-background);
+            backdrop-filter: var(--dropdown-backdrop-filter);
+            box-shadow: var(--glass-shadow);
+
+            > .modal-content {
+                border-radius: var(--mobile-sheet-radius);
+                background: transparent !important;
+                box-shadow: none;
+            }
+
+            .modal-footer {
+                padding-bottom: 16px;
+                background: transparent;
+            }
+        }
+
+        .modal .modal-header {
+            .modal-title {
+                color: var(--main-text-color);
+                font-weight: 600;
+            }
+
+            :is(.btn-close, .help-button, .custom-title-bar-button) {
+                --modal-control-button-size: 40px;
+                font-size: 22px;
+                backdrop-filter: var(--dropdown-backdrop-filter);
+                box-shadow: var(--glass-shadow);
+
+                &,
+                &:hover {
+                    background: var(--glass-background);
+                    color: var(--main-text-color);
+                }
+            }
         }
     }
 }

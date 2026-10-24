@@ -68,6 +68,7 @@ body#trilium-app.backdrop-effects-disabled *::after {
     --bs-body-color: var(--main-text-color);
     /* What a menu, the sidebar or a dialog dims the page behind it with in the phone layout. */
     --mobile-backdrop-color: rgba(0, 0, 0, 0.5);
+    --mobile-modal-backdrop-color: var(--mobile-backdrop-color);
 }
 
 html {
@@ -1980,7 +1981,7 @@ pre.code-embed-editor.read-only .cm-activeLine {
     }
 
     body.mobile .modal.show {
-        background-color: var(--mobile-backdrop-color);
+        background-color: var(--mobile-modal-backdrop-color);
     }
 
     body.mobile .modal-backdrop {

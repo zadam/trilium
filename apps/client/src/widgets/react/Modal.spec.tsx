@@ -246,6 +246,32 @@ describe("Modal", () => {
         expect(mocks.raising).toEqual([ "suspendModalFocusTraps", "openDialog" ]);
     });
 
+    it("marks a dialog taller than half the screen", async () => {
+        let onResize = () => {};
+        vi.stubGlobal("ResizeObserver", class {
+            constructor(callback: () => void) { onResize = callback; }
+            observe() {}
+            disconnect() {}
+        });
+        vi.stubGlobal("innerHeight", 800);
+
+        await act(async () => {
+            render(<Modal size="md" show onHidden={() => {}}>body</Modal>, container);
+        });
+        const dialog = container.querySelector<HTMLElement>(".modal-dialog");
+        expect(dialog).not.toBeNull();
+        let height = 500;
+        Object.defineProperty(dialog, "offsetHeight", { get: () => height });
+
+        act(() => onResize());
+        expect(dialog?.classList).toContain("modal-dialog-tall");
+
+        height = 300;
+        act(() => onResize());
+        expect(dialog?.classList).not.toContain("modal-dialog-tall");
+        vi.unstubAllGlobals();
+    });
+
     it("opens a dialog that starts closed only once it is asked to show", async () => {
         const onHidden = vi.fn();
 
