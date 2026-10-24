@@ -261,20 +261,25 @@ export function flush(): void {
     const startTimestamp = Date.now();
     const counts: Record<string, number> = {};
 
-    // events already fired per entity from markAsDeleted(); handler cascades
-    // went through the same buffered path
-    bulkUpdate(entries);
-    bulkAttributeMaintenance(entries.filter((entry) => entry.entityName === "attributes"));
-    entityChangesService.recalculateMaxEntityChangeId();
-    hiddenAttributeIds = null;
+    try {
+        // events already fired per entity from markAsDeleted(); handler cascades
+        // went through the same buffered path
+        bulkUpdate(entries);
+        bulkAttributeMaintenance(entries.filter((entry) => entry.entityName === "attributes"));
+        entityChangesService.recalculateMaxEntityChangeId();
 
-    for (const entry of entries) {
-        counts[entry.entityName] = (counts[entry.entityName] ?? 0) + 1;
+        for (const entry of entries) {
+            counts[entry.entityName] = (counts[entry.entityName] ?? 0) + 1;
+        }
+
+        getLog().info(
+            `Bulk deletion flush: ${entries.length} entities (${Object.entries(counts)
+                .map(([entityName, count]) => `${entityName}: ${count}`)
+                .join(", ")}) in ${Date.now() - startTimestamp}ms`
+        );
+    } finally {
+        // a failed flush rolls the transaction back and the rollback hook
+        // reloads becca with the restored rows; readers must stop hiding them
+        hiddenAttributeIds = null;
     }
-
-    getLog().info(
-        `Bulk deletion flush: ${entries.length} entities (${Object.entries(counts)
-            .map(([entityName, count]) => `${entityName}: ${count}`)
-            .join(", ")}) in ${Date.now() - startTimestamp}ms`
-    );
 }

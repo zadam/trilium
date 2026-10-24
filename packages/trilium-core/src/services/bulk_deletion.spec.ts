@@ -150,6 +150,27 @@ describe("bulk deletion", () => {
             expect(bulkDeletion.hiddenAttributes()).toBeNull();
         });
 
+        it("releases the hidden attribute set even when the flush fails midway", () => {
+            const note = makeNote("bulk-deletion-flush-failure");
+            const label = makeLabel(note.noteId, "bulkflush", "x");
+            expect(becca.attributes[label.attributeId]).toBeDefined();
+
+            const poison = makeLabel(note.noteId, "bulkflush2", "y");
+            expect(bulkDeletion.begin()).toBe(true);
+            // first entry of the group carries a primaryKey whose SQL cannot
+            // execute, so the flush fails before finishing its writes
+            bulkDeletion.add({ ...entry(poison.attributeId), primaryKey: "noSuchColumn" });
+            bulkDeletion.add(entry(label.attributeId)); // its id lands in the hidden set
+            expect(bulkDeletion.hiddenAttributes()?.has(label.attributeId)).toBe(true);
+
+            expect(() => clsInit(() => bulkDeletion.flush())).toThrow();
+
+            // the transaction rolled back and becca reloaded the rows; readers
+            // must not keep hiding the attribute
+            expect(bulkDeletion.hiddenAttributes()).toBeNull();
+            expect(note.getOwnedAttributes().some((attr) => attr.attributeId === label.attributeId)).toBe(true);
+        });
+
         it("terminates reciprocal inverse relations through the batched deleteBranch and compacts both owners", () => {
             const note1 = makeNote("bulk-deletion-reciprocal-1");
             const note2 = makeNote("bulk-deletion-reciprocal-2");
