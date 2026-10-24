@@ -774,6 +774,10 @@ Instance shape of [`RightPanelWidget`](#type-RightPanelWidget) (subset) — a wi
             <td><pre><code class="language-application-typescript">cleanup(): void</code></pre><p>Tears down the widget; override to release resources.</p></td>
         </tr>
         <tr>
+            <td><code>toggleInt</code></td>
+            <td><pre><code class="language-application-typescript">toggleInt(show: boolean | null | undefined): void</code></pre><p>Shows or hides the widget from inside the widget itself, such as from <code>refreshWithNote()</code> when the note does not apply.</p></td>
+        </tr>
+        <tr>
             <td><code>id</code></td>
             <td><pre><code class="language-application-typescript">id(id: string): this</code></pre><p>Fluent builder: set the element id. Chainable.</p></td>
         </tr>
@@ -794,8 +798,24 @@ Instance shape of [`RightPanelWidget`](#type-RightPanelWidget) (subset) — a wi
             <td><p><a href="#type-FNote"><code>FNote</code></a> | <code>null</code><br>The note currently shown in this widget's context.</p></td>
         </tr>
         <tr>
+            <td><code>noteId</code></td>
+            <td><p><code>string | undefined</code><br>The ID of <code>note</code>, such as for <code>loadResults.isNoteContentReloaded(this.noteId)</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>notePath</code></td>
+            <td><p><code>string | null | undefined</code><br>The path of <code>note</code> in the tree, such as <code>root/abc123/def456</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>ntxId</code></td>
+            <td><p><code>string | null | undefined</code><br>The ID of the note context (split) this widget is attached to.</p></td>
+        </tr>
+        <tr>
             <td><code>noteContext</code><br><em>optional</em></td>
             <td><p><a href="#type-NoteContext"><code>NoteContext</code></a><br>The note context (split) this widget is attached to.</p></td>
+        </tr>
+        <tr>
+            <td><code>isNote</code></td>
+            <td><pre><code class="language-application-typescript">isNote(noteId: string): boolean</code></pre><p>Returns whether <code>noteId</code> is the note shown in this widget's context.</p></td>
         </tr>
         <tr>
             <td><code>refreshWithNote</code></td>
@@ -849,6 +869,10 @@ Instance shape of [`NoteContextAwareWidget`](#type-NoteContextAwareWidget) (subs
             <td><pre><code class="language-application-typescript">cleanup(): void</code></pre><p>Tears down the widget; override to release resources.</p></td>
         </tr>
         <tr>
+            <td><code>toggleInt</code></td>
+            <td><pre><code class="language-application-typescript">toggleInt(show: boolean | null | undefined): void</code></pre><p>Shows or hides the widget from inside the widget itself, such as from <code>refreshWithNote()</code> when the note does not apply.</p></td>
+        </tr>
+        <tr>
             <td><code>id</code></td>
             <td><pre><code class="language-application-typescript">id(id: string): this</code></pre><p>Fluent builder: set the element id. Chainable.</p></td>
         </tr>
@@ -869,8 +893,24 @@ Instance shape of [`NoteContextAwareWidget`](#type-NoteContextAwareWidget) (subs
             <td><p><a href="#type-FNote"><code>FNote</code></a> | <code>null</code><br>The note currently shown in this widget's context.</p></td>
         </tr>
         <tr>
+            <td><code>noteId</code></td>
+            <td><p><code>string | undefined</code><br>The ID of <code>note</code>, such as for <code>loadResults.isNoteContentReloaded(this.noteId)</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>notePath</code></td>
+            <td><p><code>string | null | undefined</code><br>The path of <code>note</code> in the tree, such as <code>root/abc123/def456</code>.</p></td>
+        </tr>
+        <tr>
+            <td><code>ntxId</code></td>
+            <td><p><code>string | null | undefined</code><br>The ID of the note context (split) this widget is attached to.</p></td>
+        </tr>
+        <tr>
             <td><code>noteContext</code><br><em>optional</em></td>
             <td><p><a href="#type-NoteContext"><code>NoteContext</code></a><br>The note context (split) this widget is attached to.</p></td>
+        </tr>
+        <tr>
+            <td><code>isNote</code></td>
+            <td><pre><code class="language-application-typescript">isNote(noteId: string): boolean</code></pre><p>Returns whether <code>noteId</code> is the note shown in this widget's context.</p></td>
         </tr>
         <tr>
             <td><code>refreshWithNote</code></td>
@@ -914,6 +954,10 @@ Instance shape of [`BasicWidget`](#type-BasicWidget) (subset) — the base for c
         <tr>
             <td><code>cleanup</code></td>
             <td><pre><code class="language-application-typescript">cleanup(): void</code></pre><p>Tears down the widget; override to release resources.</p></td>
+        </tr>
+        <tr>
+            <td><code>toggleInt</code></td>
+            <td><pre><code class="language-application-typescript">toggleInt(show: boolean | null | undefined): void</code></pre><p>Shows or hides the widget from inside the widget itself, such as from <code>refreshWithNote()</code> when the note does not apply.</p></td>
         </tr>
         <tr>
             <td><code>id</code></td>
