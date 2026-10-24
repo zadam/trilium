@@ -114,6 +114,34 @@ body.mobile {
         }
     }
 
+    /* Docked to the keyboard, or to the menu in its place. iOS 26 draws its keyboard as an inset,
+       rounded panel, so the island stays there. */
+    &:not(.ios) {
+        #root-widget.virtual-keyboard-opened {
+            --mobile-toolbar-clearance: var(--mobile-toolbar-height);
+        }
+
+        &.keyboard-panel-open .dropdown-menu.mobile-bottom-menu.keyboard-panel {
+            border-radius: 0;
+        }
+
+        #root-widget.virtual-keyboard-opened,
+        &.keyboard-panel-open {
+            --mobile-toolbar-gap: 0px;
+
+            .classic-toolbar-island {
+                border-width: 1px 0 0;
+                border-radius: 0;
+                box-shadow: none;
+
+                .classic-toolbar-widget,
+                .hide-keyboard-action .icon-action {
+                    border-radius: 0;
+                }
+            }
+        }
+    }
+
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
         --dropdown-bottom: calc(-1 * var(--tn-layout-shrink, 0px));
         height: calc(var(--tn-keyboard-height) + var(--mobile-toolbar-gap));
