@@ -137,9 +137,9 @@ describe("becca_loader", () => {
             expect(Object.keys(becca.attributes).length).toBe(attributesBefore);
         });
 
-        it("attributeDeleted removes attributes sharing a name in linear time", () => {
+        it("attributeDeleted removes an attribute from its index bucket without rebuilding it", () => {
             const makeLabel = (attributeId: string, noteId: string) => new BAttribute({
-                attributeId, noteId, type: "label", name: "loaderFloodLabel",
+                attributeId, noteId, type: "label", name: "loaderSharedLabel",
                 value: "", isInheritable: false, position: 0
             });
             const deleteAttribute = (attribute: BAttribute) => eventService.emit(
@@ -147,23 +147,21 @@ describe("becca_loader", () => {
                 { entityName: "attributes", entityId: attribute.attributeId, entity: attribute }
             );
 
-            const flood: BAttribute[] = [];
-            for (let i = 0; i < 40_000; i++) {
-                flood.push(makeLabel(`loaderFlood${i}`, `loaderFloodNote${i % 400}`));
-            }
-            const survivor = makeLabel("loaderFloodSurvivor", "loaderFloodNote0");
+            const first = makeLabel("loaderShared1", "loaderSharedNote1");
+            const second = makeLabel("loaderShared2", "loaderSharedNote2");
+            const third = makeLabel("loaderShared3", "loaderSharedNote1");
+            const bucket = becca.attributeIndex["label-loadersharedlabel"];
 
-            const start = performance.now();
-            for (const attribute of flood) {
-                deleteAttribute(attribute);
-            }
-            expect(performance.now() - start).toBeLessThan(1000);
+            deleteAttribute(second);
 
-            expect(becca.findAttributes("label", "loaderFloodLabel")).toEqual([ survivor ]);
-            expect(becca.getNote("loaderFloodNote1")).toBeNull();
+            // Rebuilding the bucket per deletion makes deleting n same-named attributes O(n²).
+            expect(becca.attributeIndex["label-loadersharedlabel"]).toBe(bucket);
+            expect(becca.findAttributes("label", "loaderSharedLabel")).toEqual([ first, third ]);
+            expect(becca.getNote("loaderSharedNote2")).toBeNull();
 
-            deleteAttribute(survivor);
-            expect(becca.findAttributes("label", "loaderFloodLabel")).toEqual([]);
+            deleteAttribute(first);
+            deleteAttribute(third);
+            expect(becca.findAttributes("label", "loaderSharedLabel")).toEqual([]);
         });
     });
 
