@@ -3015,6 +3015,7 @@
   },
   "launcher_button_context_menu": {
     "remove_from_launch_bar": "Remove from launch bar",
+    "show_as_folder": "Show as a folder",
     "configure_launch_bar": "Configure launch bar...",
     "launch_bar_orientation": "Launch bar orientation",
     "will_reload_frontend": "(will reload app)"
