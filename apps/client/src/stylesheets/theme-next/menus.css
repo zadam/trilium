@@ -237,6 +237,10 @@ body[dir=rtl] .dropdown-submenu .dropdown-toggle::after {
     border-top: 1px solid var(--menu-item-delimiter-color);
 }
 
+.dropdown-divider:has(+ li > .dropdown-header) {
+    display: none;
+}
+
 /* Static menus (used as a list, such as on the note revisions dialog) */
 body.desktop .dropdown-menu.static {
     box-shadow: unset;
