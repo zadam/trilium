@@ -575,8 +575,11 @@
     "show-subtree": "サブツリーを表示",
     "duplicate-with-children": "ノートと子ノート",
     "duplicate-note-only": "このノートのみ",
-    "clone": "クローン",
-    "clone-tooltip": "クローン（同じノートを2か所に同時に配置）"
+    "clone": "コピー",
+    "clone-tooltip": "ツリー内の別の場所にクローンとして貼り付けたり、ノート内にリンクとして挿入したりするためにコピーします",
+    "delete-short": "削除",
+    "paste-into-tooltip_other": "このノート内に貼り付け\nノートはクローンとして貼り付けられます。これは（複製ではなく）全く同じノートであり、同時に複数の場所に存在することを意味します。",
+    "paste-after-tooltip_other": "このノートの後ろに貼り付け\nノートはクローンとして貼り付けられます。これは（複製ではなく）全く同じノートであり、同時に複数の場所に存在することを意味します。"
   },
   "zen_mode": {
     "button_exit": "禅モードを退出"
@@ -2293,7 +2296,8 @@
     "protecting-finished-successfully": "保護が正常に完了しました。",
     "unprotecting-finished-successfully": "保護の解除が正常に完了しました。",
     "protecting-in-progress": "保護中: {{count}}",
-    "unprotecting-in-progress-count": "保護解除中: {{count}}"
+    "unprotecting-in-progress-count": "保護解除中: {{count}}",
+    "locked_note_title": "保護済み"
   },
   "consistency_checks": {
     "find_and_fix_button": "問題を修正",
@@ -2671,7 +2675,8 @@
     "upload_attachments": "添付ファイルをアップロード",
     "no_attachments": "このノートには添付ファイルはありません。",
     "no_user_attachments": "このノートには添付ファイルはありません。\nTrilium によって生成された添付ファイルは以下の通りです。",
-    "system_group": "Trilium により生成 ({{amount}})"
+    "system_group": "Trilium により生成 ({{amount}})",
+    "drop_files": "ファイルをドロップして添付ファイルとしてアップロード"
   },
   "book": {
     "no_children_help": "このコレクションには子ノートがないため、表示するものがありません。",
