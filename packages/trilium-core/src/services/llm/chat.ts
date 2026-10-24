@@ -53,11 +53,12 @@ export async function* runChat(
         return;
     }
 
-    // `webSearch` and `toolApprovals` come from here only, never from the request.
+    // `webSearch`, `toolApprovals` and `attachmentKinds` come from here only, never from the request.
     const config: LlmProviderConfig = {
         ...requestConfig,
         webSearch: getSearchProviderSetup(requestConfig.webSearchProviderId),
-        toolApprovals
+        toolApprovals,
+        attachmentKinds: undefined
     };
     try {
         if (!hasConfiguredProviders()) {
@@ -86,16 +87,25 @@ export async function* runChat(
         // denormalized metadata even for dynamically discovered models the curated
         // list doesn't know. Fall back to the provider's curated list, then the id.
         const selectedModel = getSelectedModel(config.providerId, modelId);
+        config.attachmentKinds = selectedModel?.attachmentKinds;
         const pricing = selectedModel?.pricing ?? provider.getModelPricing(modelId);
         const modelDisplayName = selectedModel?.name
             ?? provider.getAvailableModels().find(m => m.id === modelId)?.name
             ?? modelId;
 
+        const describeTurn = provider.describeTurn?.bind(provider);
+        const storedName = (id: string) => getSelectedModel(config.providerId, id)?.name;
+
         // Chunk-native provider (e.g. Claude Agent): it owns its own agentic loop
         // and produces LlmStreamChunks directly, including honouring the abort.
         const chunks = provider.chatChunks
             ? provider.chatChunks(messages, config, abortSignal)
-            : streamToChunks(provider.chat(messages, config, abortSignal), { model: modelDisplayName, provider: provider.name, pricing });
+            : streamToChunks(provider.chat(messages, config, abortSignal), {
+                model: modelDisplayName,
+                provider: provider.name,
+                pricing,
+                describeTurn: describeTurn && (steps => describeTurn(steps, modelId, storedName))
+            });
 
         for await (const chunk of withApprovalRequests(chunks, toolApprovals)) {
             if (abortSignal?.aborted) {
