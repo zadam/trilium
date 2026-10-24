@@ -126,6 +126,9 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
     /** The filter as the keys last left it, ahead of the render that shows it: keys come faster. */
     const filterRef = useRef<MenuFilter | undefined>(undefined);
     const setFilter = useCallback((next: MenuFilter | undefined) => {
+        const previous = filterRef.current;
+        if (previous && previous.level !== next?.level) holdWidth(menuRef.current, previous.level, false);
+        if (next) holdWidth(menuRef.current, next.level, true);
         filterRef.current = next;
         setFilterState(next);
     }, []);
@@ -758,6 +761,17 @@ function hasRowBefore(row: Element | undefined) {
 /** The filter input of the submenu open in `menu`, if one is. */
 function filterInputIn(menu: HTMLElement | null) {
     return menu?.querySelector<HTMLInputElement>(FILTER_INPUT) ?? null;
+}
+
+/**
+ * Holds the frame of the level a filter at `level` filters at no less than its current width, so
+ * the matches do not resize it as they change, or with `hold` false releases it. Called before the
+ * filter renders, while the frame still shows the rows the width is taken from.
+ */
+function holdWidth(menu: HTMLElement | null, level: number, hold: boolean) {
+    const input = menu?.querySelector<HTMLElement>(`${FILTER_INPUT}[data-level="${level + 1}"]`);
+    const frame = input?.closest<HTMLElement>(".dropdown-menu");
+    if (frame) frame.style.minWidth = hold ? `${frame.offsetWidth}px` : "";
 }
 
 /**

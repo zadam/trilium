@@ -1178,6 +1178,40 @@ describe("contextMenu", () => {
                 }
             });
 
+            it("holds its width while filtered, widening only for a wider match", async () => {
+                // As wide as its longest row, and no narrower than its `min-width`.
+                const width = function (this: HTMLElement) {
+                    if (!this.matches(".dropdown-menu")) return 0;
+                    const rows = [ ...this.querySelectorAll("li.dropdown-item") ].map((row) => row.textContent?.length ?? 0);
+                    return Math.max(parseFloat(this.style.minWidth) || 0, 10 * Math.max(0, ...rows));
+                };
+                vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(width);
+                const submenuLayer = () => menuElement()?.querySelector<HTMLElement>("div.dropdown-submenu > .dropdown-menu");
+                try {
+                    await openFilterable();
+                    await openSubmenuByKeys();
+                    // "Meeting & notes".
+                    expect(submenuLayer()?.offsetWidth).toBe(150);
+                    expect(submenuLayer()?.style.minWidth).toBe("");
+
+                    type("py");
+                    await vi.waitFor(() => expect(layer().rows).toEqual([ "Python|Code" ]));
+                    expect(submenuLayer()?.style.minWidth).toBe("150px");
+                    // "Board" with its badge and path, wider than the submenu was.
+                    edit("collection");
+                    await vi.waitFor(() => expect(layer().rows).toHaveLength(2));
+                    edit("tab");
+                    await vi.waitFor(() => expect(layer().rows).toEqual([ "Table|Collection" ]));
+                    expect(submenuLayer()?.style.minWidth).toBe("180px");
+
+                    edit("");
+                    await vi.waitFor(() => expect(layer().rows).toEqual(unfiltered));
+                    expect(submenuLayer()?.style.minWidth).toBe("");
+                } finally {
+                    vi.restoreAllMocks();
+                }
+            });
+
             it("scrolls the list to the top when the keys wrap to the first row", async () => {
                 await openFilterable();
                 await openSubmenuByKeys();

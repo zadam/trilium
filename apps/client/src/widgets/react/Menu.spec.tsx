@@ -541,6 +541,7 @@ describe("Menu of items above its anchor", () => {
         await vi.waitFor(() => expect(rowsOf(list()))
             .toEqual([ "JavaScript", "Plain text", "Python" ]));
         expect(activeRow(menu)).toBe("Python");
+        expect(menu.style.minWidth).toBe("200px");
         key(menu, "ArrowUp");
         await vi.waitFor(() => expect(activeRow(menu)).toBe("Plain text"));
     });
