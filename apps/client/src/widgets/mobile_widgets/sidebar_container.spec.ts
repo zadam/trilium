@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
 import options from "../../services/options";
+import { handleSystemBack } from "../../services/system_back";
 import SidebarContainer from "./sidebar_container";
 
 describe("SidebarContainer", () => {
@@ -85,6 +86,19 @@ describe("SidebarContainer", () => {
             sidebar.activeScreenChangedEvent({ activeScreen: "detail" });
             expect(detail.style.transform).toBe("translateX(0%)");
             expect(tree.style.transform).toBe("translateX(-30%)");
+        });
+
+        it("goes back from the note to the tree on the system back, and not from the tree", () => {
+            const sidebar = render(true);
+            const triggerCommand = vi.spyOn(sidebar, "triggerCommand").mockImplementation(() => undefined);
+
+            expect(handleSystemBack()).toBe(true);
+            expect(triggerCommand).toHaveBeenCalledWith("setActiveScreen", { screen: "tree" });
+
+            triggerCommand.mockClear();
+            sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
+            handleSystemBack();
+            expect(triggerCommand).not.toHaveBeenCalled();
         });
 
         it("puts the tree back beside the note once the screen widens to a tablet", () => {

@@ -9,6 +9,7 @@ import appContext from "../../components/app_context";
 import { openDialog } from "../../services/dialog";
 import { t } from "../../services/i18n";
 import { RENDER_SCOPE_CLASS } from "../../services/render_css_scope";
+import { onSystemBack } from "../../services/system_back";
 import { openInAppHelpFromUrl } from "../../services/utils";
 import { useSyncedRef } from "./hooks";
 import { suspendModalFocusTraps } from "./modal_focustrap";
@@ -183,6 +184,14 @@ export default function Modal({ children, className = "", size, title, customTit
     useEffect(() => {
         if (!show || !modalRef.current) return;
         return suspendModalFocusTraps(modalRef.current);
+    }, [ show ]);
+
+    useEffect(() => {
+        if (!show) return;
+        return onSystemBack(() => {
+            modalInstanceRef.current?.hide();
+            return true;
+        });
     }, [ show ]);
 
     useEffect(() => {

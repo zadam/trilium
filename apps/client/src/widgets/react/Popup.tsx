@@ -7,6 +7,8 @@ import {
 } from "preact";
 import { useCallback, useContext, useLayoutEffect, useMemo, useRef } from "preact/hooks";
 
+import { onSystemBack } from "../../services/system_back";
+
 /**
  * A surface that stands beside something rather than in the page's flow: a dropdown's menu, and
  * anything else that pops up from a control or at a point. It knows nothing of what it holds; it
@@ -190,6 +192,12 @@ export default function Popup({ anchor, placement = "bottom-start", offset: gap 
             window.removeEventListener("keydown", onKeyDown, true);
         };
     }, [ anchor ]);
+
+    useLayoutEffect(() => onSystemBack(() => {
+        if (!dismiss.current) return false;
+        dismiss.current("escape");
+        return true;
+    }), []);
 
     // Out of any ancestor that would clip it or, with a transform or a filter, place its fixed
     // position against itself. A browser showing an element fullscreen paints only that element.

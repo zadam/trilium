@@ -46,6 +46,7 @@ vi.mock("./modal_focustrap", () => ({
     suspendModalFocusTraps: mocks.suspendModalFocusTraps
 }));
 
+import { handleSystemBack } from "../../services/system_back";
 import Modal, { ScriptModal } from "./Modal";
 
 let container: HTMLDivElement;
@@ -283,6 +284,21 @@ describe("Modal", () => {
         act(() => { window.dispatchEvent(new Event("resize")); });
         expect(dialog?.classList).toContain("modal-dialog-tall");
         vi.unstubAllGlobals();
+    });
+
+    it("closes on the system back while it is shown", async () => {
+        await act(async () => {
+            render(<Modal size="md" show onHidden={() => {}}>body</Modal>, container);
+        });
+        expect(handleSystemBack()).toBe(true);
+        expect(mocks.hide).toHaveBeenCalledOnce();
+
+        await act(async () => {
+            render(<Modal size="md" show={false} onHidden={() => {}}>body</Modal>, container);
+        });
+        mocks.hide.mockClear();
+        expect(handleSystemBack()).toBe(false);
+        expect(mocks.hide).not.toHaveBeenCalled();
     });
 
     it("opens a dialog that starts closed only once it is asked to show", async () => {

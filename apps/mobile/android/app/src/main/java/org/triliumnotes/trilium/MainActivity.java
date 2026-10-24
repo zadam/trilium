@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -29,6 +30,7 @@ public class MainActivity extends BridgeActivity {
         enableEdgeToEdge();
         forwardInsetsToWebView();
         applySystemBarsAppearance();
+        handleBackInPage();
     }
 
     @Override
@@ -90,6 +92,26 @@ public class MainActivity extends BridgeActivity {
             }
 
             return insets;
+        });
+    }
+
+    /**
+     * Hands the system back gesture and button to the page, which closes the menu or dialog on top
+     * or steps back toward the note tree; when it has nothing to go back from, the app goes to the
+     * background, as at the root of any Android app.
+     */
+    private void handleBackInPage() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                getBridge().getWebView().evaluateJavascript(
+                        "window.__triliumHandleBack ? window.__triliumHandleBack() : false",
+                        (handled) -> {
+                            if (!"true".equals(handled)) {
+                                moveTaskToBack(true);
+                            }
+                        });
+            }
         });
     }
 

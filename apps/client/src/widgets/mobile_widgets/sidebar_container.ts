@@ -1,6 +1,7 @@
 import type { EventData } from "../../components/app_context.js";
 import type { Screen } from "../../components/mobile_screen_switcher.js";
 import options from "../../services/options.js";
+import { onSystemBack } from "../../services/system_back.js";
 import { isNarrowLayout, onNarrowLayoutChange } from "../../services/utils.js";
 import type BasicWidget from "../basic_widget.js";
 import FlexContainer, { type FlexDirection } from "../containers/flex_container.js";
@@ -57,6 +58,11 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         this.$widget.toggleClass("left-pane-hidden", !this.leftPaneVisible);
 
         onNarrowLayoutChange(() => this.#setSidebarOpen(this.currentTranslate === 0));
+        onSystemBack(() => {
+            if (!isNarrowLayout() || this.activeScreenName === this.screenName) return false;
+            this.triggerCommand("setActiveScreen", { screen: this.screenName });
+            return true;
+        });
 
         document.addEventListener("touchstart", (e) => this.#onDragStart(e));
         document.addEventListener("touchmove", (e) => this.#onDragMove(e), { passive: false });

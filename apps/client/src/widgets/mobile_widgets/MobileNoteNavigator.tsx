@@ -12,6 +12,7 @@ import froca from "../../services/froca";
 import hoisted_note from "../../services/hoisted_note";
 import { t } from "../../services/i18n";
 import note_create from "../../services/note_create";
+import { onSystemBack, type SystemBackHandler } from "../../services/system_back";
 import utils from "../../services/utils";
 import { NoteContent } from "../collections/legacy/ListOrGridView";
 import { Badge } from "../react/Badge";
@@ -189,6 +190,19 @@ export default function MobileNoteNavigator() {
         directionRef.current = "backward";
         navigateTo(stack.slice(0, -1));
     }, [stack, navigateTo]);
+
+    // Registered once, so a menu or dialog opened over the tree later answers back first.
+    const isTreeShown = useRef(false);
+    useTriliumEvent("activeScreenChanged", ({ activeScreen }) => {
+        isTreeShown.current = activeScreen === "tree";
+    });
+    const goBackOnSystemBack = useRef<SystemBackHandler>(() => false);
+    goBackOnSystemBack.current = () => {
+        if (!canGoBack || pendingPop || (utils.isNarrowLayout() && !isTreeShown.current)) return false;
+        goBack();
+        return true;
+    };
+    useEffect(() => onSystemBack(() => goBackOnSystemBack.current()), []);
 
     const openNotePath = useCallback(
         async (notePath: string) => {

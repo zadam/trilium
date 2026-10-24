@@ -4,6 +4,7 @@ import { h, JSX, render } from "preact";
 
 import note_tooltip from "../services/note_tooltip.js";
 import type { NotePresetId } from "../services/note_presets.js";
+import { onSystemBack } from "../services/system_back.js";
 import utils from "../services/utils.js";
 import { suspendModalFocusTraps } from "../widgets/react/modal_focustrap";
 
@@ -127,6 +128,8 @@ class ContextMenu {
     private lastShowRequest = 0;
     /** Stops closing the menu when the layout changes; see `show()`. */
     private stopFollowingLayout?: () => void;
+    /** Stops closing the menu on the system back gesture. */
+    private stopAnsweringBack?: () => void;
 
     constructor() {
         this.cover = utils.isMobile() ? document.getElementById("context-menu-cover") : null;
@@ -181,6 +184,10 @@ class ContextMenu {
         options.onShow?.(this.host);
         this.cover?.classList.add("show");
         document.body.classList.add("context-menu-shown");
+        this.stopAnsweringBack = onSystemBack(() => {
+            void this.hide();
+            return true;
+        });
         // A mobile menu is a sheet or placed at the press depending on the layout, decided here,
         // so it closes when a tablet turns past that width.
         if (utils.isMobile() && !options.forcePositionOnMobile) {
@@ -229,6 +236,8 @@ class ContextMenu {
         this.options = undefined;
         this.stopFollowingLayout?.();
         this.stopFollowingLayout = undefined;
+        this.stopAnsweringBack?.();
+        this.stopAnsweringBack = undefined;
         this.cover?.classList.remove("show");
         document.body.classList.remove("context-menu-shown");
 

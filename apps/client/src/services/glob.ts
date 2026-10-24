@@ -4,6 +4,7 @@ import server from "./server.js";
 import ws from "./ws.js";
 import froca from "./froca.js";
 import linkService from "./link.js";
+import { handleSystemBack } from "./system_back.js";
 
 function setupGlobs() {
     window.glob.isDesktop = utils.isDesktop;
@@ -20,6 +21,7 @@ function setupGlobs() {
     window.glob.appContext = appContext; // for debugging
     window.glob.froca = froca;
     window.glob.treeCache = froca; // compatibility for CKEditor builds for a while
+    window.__triliumHandleBack = handleSystemBack;
 
     window.onerror = function (msg, url, lineNo, columnNo, error) {
         ws.logError(formatUncaughtError(String(msg), error, `${url}:${lineNo}:${columnNo}`));
