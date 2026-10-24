@@ -390,6 +390,25 @@ describe("Menu with an action row", () => {
         expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ command: "cut" }), expect.any(KeyboardEvent));
     });
 
+    it("closes a row's submenu once the pointer turns to the actions, a disabled one included", async () => {
+        const { menu } = renderMenu();
+        const layers = () => menu.querySelectorAll(":scope > div.dropdown-submenu > .dropdown-menu").length;
+        const [ cut, copy ] = menu.querySelectorAll<HTMLElement>(".tn-menu-action");
+        const more = [ ...menu.querySelectorAll<HTMLElement>("li.dropdown-item") ]
+            .find((row) => row.querySelector(":scope > span")?.textContent === "More");
+        if (!cut || !copy || !more) throw new Error("expected the actions and the More row to render");
+        const point = (element: HTMLElement) =>
+            element.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, movementX: 3 }));
+
+        for (const action of [ cut, copy ]) {
+            more.dispatchEvent(new PointerEvent("pointerenter"));
+            await vi.waitFor(() => expect(layers()).toBe(1));
+            point(action);
+            await vi.waitFor(() => expect(layers()).toBe(0));
+        }
+        expect(more.classList).not.toContain("submenu-open");
+    });
+
     it("sets an action's badge over the corner of its icon, which gives way around it", () => {
         const { menu } = renderMenu();
         const icons = [ ...menu.querySelectorAll(".tn-menu-action-icon") ].map((icon) =>

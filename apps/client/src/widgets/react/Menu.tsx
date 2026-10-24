@@ -660,9 +660,12 @@ export function MenuTile({ icon, iconSvg, iconBadge, title, tooltip, keyboardSho
             aria-checked={checked}
             className={clsx("tn-menu-action", menu?.active?.id === id && "tn-menu-active")}
             disabled={disabled} tabIndex={menu ? -1 : undefined}
-            // The keyboard goes on from the action the pointer last pointed at, as from a row.
+            // As over a row, the pointer closes the submenu open at this level, and the keyboard
+            // goes on from the action it last pointed at.
             onPointerMove={(e) => {
-                if (menu && !disabled && menu.active?.id !== id && pointerMoved(e)) menu.setActive(level, id);
+                if (!menu || !pointerMoved(e)) return;
+                if (menu.open[level]) menu.openSubmenu(level);
+                if (!disabled && menu.active?.id !== id) menu.setActive(level, id);
             }}
             // A press keeps focus where it was, as on a row.
             onMouseDown={(e) => e.preventDefault()}

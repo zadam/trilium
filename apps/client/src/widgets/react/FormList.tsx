@@ -523,8 +523,12 @@ function MenuSubmenu({ menu, icon, iconSvg, title, description, children, onDrop
                 className={clsx("tn-menu-action", open && "submenu-open", isActive && "tn-menu-active", className)}
                 role="menuitem" aria-haspopup="menu" aria-expanded={open}
                 disabled={disabled} tabIndex={-1}
+                // As over a row, the pointer closes another submenu at this level, but the tile
+                // opens its own only on a press.
                 onPointerMove={(e) => {
-                    if (!disabled && !isActive && pointerMoved(e)) menu.setActive(level, id);
+                    if (!pointerMoved(e)) return;
+                    if (openSubmenu && !open) menu.openSubmenu(level);
+                    if (!disabled && !isActive) menu.setActive(level, id);
                 }}
                 // As any row: the press keeps focus where it was, and the release acts.
                 onMouseDown={(e) => e.preventDefault()}
