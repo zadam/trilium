@@ -448,9 +448,7 @@ function attributeDeleted(attributeId: string) {
 
     const key = `${attribute.type}-${attribute.name.toLowerCase()}`;
 
-    if (key in becca.attributeIndex) {
-        becca.attributeIndex[key] = becca.attributeIndex[key].filter((attr) => attr.attributeId !== attribute.attributeId);
-    }
+    becca.attributeIndex[key]?.delete(attribute);
 
     dropOrphanedSkeleton(note);
 }

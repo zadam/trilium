@@ -84,8 +84,8 @@ class BAttribute extends AbstractBeccaEntity<BAttribute> {
         this.becca.notes[this.noteId].ownedAttributes.push(this);
 
         const key = `${this.type}-${this.name.toLowerCase()}`;
-        this.becca.attributeIndex[key] = this.becca.attributeIndex[key] || [];
-        this.becca.attributeIndex[key].push(this);
+        this.becca.attributeIndex[key] ??= new Set();
+        this.becca.attributeIndex[key].add(this);
 
         const targetNote = this.targetNote;
 

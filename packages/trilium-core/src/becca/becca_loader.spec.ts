@@ -7,6 +7,7 @@ import { getSql } from "../services/sql/index.js";
 import ws from "../services/ws.js";
 import becca from "./becca.js";
 import beccaLoader, { load, reload } from "./becca_loader.js";
+import BAttribute from "./entities/battribute.js";
 import BNote from "./entities/bnote.js";
 
 let counter = 0;
@@ -134,6 +135,35 @@ describe("becca_loader", () => {
             ).not.toThrow();
 
             expect(Object.keys(becca.attributes).length).toBe(attributesBefore);
+        });
+
+        it("attributeDeleted removes attributes sharing a name in linear time", () => {
+            const makeLabel = (attributeId: string, noteId: string) => new BAttribute({
+                attributeId, noteId, type: "label", name: "loaderFloodLabel",
+                value: "", isInheritable: false, position: 0
+            });
+            const deleteAttribute = (attribute: BAttribute) => eventService.emit(
+                eventService.ENTITY_DELETED,
+                { entityName: "attributes", entityId: attribute.attributeId, entity: attribute }
+            );
+
+            const flood: BAttribute[] = [];
+            for (let i = 0; i < 40_000; i++) {
+                flood.push(makeLabel(`loaderFlood${i}`, `loaderFloodNote${i % 400}`));
+            }
+            const survivor = makeLabel("loaderFloodSurvivor", "loaderFloodNote0");
+
+            const start = performance.now();
+            for (const attribute of flood) {
+                deleteAttribute(attribute);
+            }
+            expect(performance.now() - start).toBeLessThan(1000);
+
+            expect(becca.findAttributes("label", "loaderFloodLabel")).toEqual([ survivor ]);
+            expect(becca.getNote("loaderFloodNote1")).toBeNull();
+
+            deleteAttribute(survivor);
+            expect(becca.findAttributes("label", "loaderFloodLabel")).toEqual([]);
         });
     });
 
