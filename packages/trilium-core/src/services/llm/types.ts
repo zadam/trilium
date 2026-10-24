@@ -26,6 +26,11 @@ export interface LlmProviderConfig extends LlmChatConfig {
      * tools run unasked.
      */
     toolApprovals?: ToolApprovals;
+    /**
+     * The attachment kinds the turn's model reads natively, from its stored selection, set by
+     * `runChat()`. Absent, the provider's own `acceptsAttachment()` decides.
+     */
+    attachmentKinds?: LlmAttachmentKind[];
 }
 
 /**

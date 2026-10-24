@@ -97,7 +97,7 @@ export class GoogleProvider extends BaseProvider {
         const systemPrompt = this.buildSystemPrompt(messages, config);
         const chatMessages = this.applyNoteHint(messages.filter(m => m.role !== "system"), config);
         const modelId = config.model || this.defaultModel;
-        const coreMessages = this.buildMessages(chatMessages, modelId);
+        const coreMessages = this.buildMessages(chatMessages, modelId, config.attachmentKinds);
 
         const streamOptions: Parameters<typeof streamText>[0] = {
             model: this.createModel(modelId),

@@ -17,7 +17,18 @@ vi.mock("@openrouter/ai-sdk-provider", async (importOriginal) => {
     };
 });
 
-import type { LlmStreamChunk } from "@triliumnext/commons";
+// Attachments resolve by kind rather than from Becca: an image part to PNG bytes.
+vi.mock("../attachment_content.js", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("../attachment_content.js")>();
+    return {
+        ...actual,
+        resolveAttachmentPart: (part: { type: string; text?: string }) => (part.type === "text"
+            ? { kind: "text", text: part.text }
+            : { kind: "image", bytes: new Uint8Array([ 137, 80, 78, 71 ]), mime: "image/png" })
+    };
+});
+
+import type { LlmMessage, LlmStreamChunk } from "@triliumnext/commons";
 
 import { installGlobalFetchAsApiTransport } from "../../../test/request_provider.js";
 import { streamToChunks } from "../stream.js";
@@ -222,6 +233,22 @@ describe("OpenRouterProvider chat", () => {
         expect((await requestBody({ model: "anthropic/claude-haiku-5.5" })).body).not.toHaveProperty("reasoning");
         // A level OpenRouter's list doesn't offer is not passed through.
         expect((await requestBody({ model: "anthropic/claude-haiku-5.5", reasoningEffort: "max" })).body).not.toHaveProperty("reasoning");
+    });
+
+    it("sends a placeholder for an earlier attachment the stored model can't read", async () => {
+        // The chat's provider instance never lists models, so the kinds come from the stored selection.
+        const messages: LlmMessage[] = [
+            { role: "user", content: [ { type: "text", text: "What is this?" }, { type: "image", attachmentId: "img1", mime: "image/png" } ] },
+            { role: "assistant", content: "A cat." },
+            { role: "user", content: "And now?" }
+        ];
+        fetchMock.mockClear();
+        const config: LlmProviderConfig = { model: "deepseek/deepseek-v4-pro", attachmentKinds: [] };
+        for await (const _ of streamToChunks(new OpenRouterProvider("sk-or").chat(messages, config))) { /* drain */ }
+        const body = JSON.parse(String((fetchMock.mock.calls[0][1] as RequestInit).body));
+        const first = body.messages.find((m: { role: string }) => m.role === "user").content;
+        expect(JSON.stringify(first)).toContain("[attached image]");
+        expect(JSON.stringify(first)).not.toContain("image_url");
     });
 
     it("names Trilium on each request", async () => {

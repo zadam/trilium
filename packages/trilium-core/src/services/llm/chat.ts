@@ -53,11 +53,12 @@ export async function* runChat(
         return;
     }
 
-    // `webSearch` and `toolApprovals` come from here only, never from the request.
+    // `webSearch`, `toolApprovals` and `attachmentKinds` come from here only, never from the request.
     const config: LlmProviderConfig = {
         ...requestConfig,
         webSearch: getSearchProviderSetup(requestConfig.webSearchProviderId),
-        toolApprovals
+        toolApprovals,
+        attachmentKinds: undefined
     };
     try {
         if (!hasConfiguredProviders()) {
@@ -86,6 +87,7 @@ export async function* runChat(
         // denormalized metadata even for dynamically discovered models the curated
         // list doesn't know. Fall back to the provider's curated list, then the id.
         const selectedModel = getSelectedModel(config.providerId, modelId);
+        config.attachmentKinds = selectedModel?.attachmentKinds;
         const pricing = selectedModel?.pricing ?? provider.getModelPricing(modelId);
         const modelDisplayName = selectedModel?.name
             ?? provider.getAvailableModels().find(m => m.id === modelId)?.name

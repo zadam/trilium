@@ -5,6 +5,8 @@ const state = vi.hoisted(() => ({
     configured: true,
     chunks: [] as unknown[],
     availableModels: [{ id: "m1", name: "Model One", isDefault: true }] as { id: string; name: string; isDefault?: boolean }[],
+    /** What `getSelectedModel()` finds in the stored provider configuration. */
+    selectedModel: undefined as { id: string; name: string; attachmentKinds?: string[] } | undefined,
     chatThrows: undefined as unknown,
     /** When true the fake provider is chunk-native, and records the signal it was handed. */
     chunkNative: false,
@@ -47,7 +49,7 @@ vi.mock("./index.js", () => {
     });
     return {
         hasConfiguredProviders: () => state.configured,
-        getSelectedModel: () => undefined,
+        getSelectedModel: () => state.selectedModel,
         getSearchProviderSetup: (id: string | undefined) => (id === "s1" ? { id: "s1", provider: "tavily", apiKey: "tk" } : undefined),
         getProvider: (id: string) => { state.providerIdRequested = id; return makeProvider(`id:${id}`); },
         getProviderByType: (type: string) => { state.providerTypeRequested = type; return makeProvider(`type:${type}`); }
@@ -101,6 +103,7 @@ describe("runChat", () => {
             configured: true,
             chunks: [],
             availableModels: [{ id: "m1", name: "Model One", isDefault: true }],
+            selectedModel: undefined,
             chatThrows: undefined,
             chunkNative: false,
             chunkSignal: undefined,
@@ -111,6 +114,17 @@ describe("runChat", () => {
         });
         generateChatTitle.mockClear();
         errorMock.mockClear();
+    });
+
+    it("hands the provider the attachment kinds of the stored model, never the request's", async () => {
+        state.selectedModel = { id: "m1", name: "Model One", attachmentKinds: [] };
+        await collect(HELLO, { model: "m1", attachmentKinds: [ "image", "file" ] });
+        expect((state.chatConfig as LlmProviderConfig).attachmentKinds).toEqual([]);
+
+        // A stored model without the field reads everything, so the provider decides.
+        state.selectedModel = { id: "m1", name: "Model One" };
+        await collect(HELLO, { model: "m1", attachmentKinds: [ "image" ] });
+        expect((state.chatConfig as LlmProviderConfig).attachmentKinds).toBeUndefined();
     });
 
     it("yields an error chunk and stops when nothing can serve the completion", async () => {

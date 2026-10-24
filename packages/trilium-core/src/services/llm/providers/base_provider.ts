@@ -314,8 +314,11 @@ export abstract class BaseProvider implements LlmProvider {
      * separately via the `system` option of `streamText` (see `buildSystemMessage`),
      * which is resilient against prompt injection.
      */
-    protected buildMessages(chatMessages: LlmMessage[], modelId: string): ModelMessage[] {
-        return chatMessages.map(m => buildModelMessage(m, kind => this.acceptsAttachment(kind, modelId)));
+    protected buildMessages(chatMessages: LlmMessage[], modelId: string, attachmentKinds?: LlmAttachmentKind[]): ModelMessage[] {
+        const accepts: AttachmentFilter = attachmentKinds
+            ? kind => attachmentKinds.includes(kind)
+            : kind => this.acceptsAttachment(kind, modelId);
+        return chatMessages.map(m => buildModelMessage(m, accepts));
     }
 
     /**
@@ -409,7 +412,7 @@ export abstract class BaseProvider implements LlmProvider {
         const systemPrompt = this.buildSystemPrompt(messages, config);
         const chatMessages = this.applyNoteHint(messages.filter(m => m.role !== "system"), config);
         const modelId = config.model || this.defaultModel;
-        const coreMessages = this.buildMessages(chatMessages, modelId);
+        const coreMessages = this.buildMessages(chatMessages, modelId, config.attachmentKinds);
 
         const streamOptions: Parameters<typeof streamText>[0] = {
             model: this.createModel(modelId),

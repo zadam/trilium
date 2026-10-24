@@ -139,7 +139,10 @@ export class OpenRouterProvider extends BaseProvider {
         return effort ? { openrouter: { reasoning: { effort } } } : undefined;
     }
 
-    /** Reads the model's input modalities; a model not listed yet is sent everything. */
+    /**
+     * Reads the model's input modalities, which become the stored model's `attachmentKinds` that a
+     * chat turn filters by instead. A model not listed yet is sent everything.
+     */
     protected override acceptsAttachment(kind: LlmAttachmentKind, modelId: string): boolean {
         const modalities = this.catalog.get(modelId)?.architecture?.input_modalities;
         return !modalities || modalities.includes(kind);
