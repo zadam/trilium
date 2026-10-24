@@ -21,7 +21,8 @@ For OpenRouter, the models are billed to your OpenRouter credits, and their pric
 
 *   The _Latest_ models that can use tools are selected by default, such as _Anthropic: Claude Sonnet Latest_. OpenRouter points each of them at the newest model of its line, so the selection stays current without editing the provider.
 *   Models that reason have a reasoning effort dropdown in the chat (_Low_, _Medium_ or _High_).
-*   _Auto Router_ (`openrouter/auto`) picks a model for each message, so the cost of a conversation that uses it is not displayed.
+*   _Auto Router_ (`openrouter/auto`) picks a model for each message. Below each reply, the chat names the model that wrote it, which is also the case when a _Latest_ model was used.
+*   The cost shown below a reply is what OpenRouter billed for it, rather than an estimate from the listed prices.
 *   Image generation models and the deferred _batch_ variants are not listed.
 *   Chat titles are generated with _Anthropic: Claude Haiku Latest_.
 *   Requests are attributed to Trilium on your OpenRouter activity page.

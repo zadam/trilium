@@ -38,6 +38,17 @@ export interface LlmProviderConfig extends LlmChatConfig {
  */
 export type StreamResult = ReturnType<typeof streamText>;
 
+/** The steps of a finished turn, one per request to the model. */
+export type TurnSteps = Awaited<StreamResult["steps"]>;
+
+/** What a finished turn reports about itself, in place of what the request named and the listed price. */
+export interface TurnReport {
+    /** Display name of the model that answered. */
+    model?: string;
+    /** What the provider billed for the turn, in USD. */
+    cost?: number;
+}
+
 /**
  * Pricing per million tokens for a model.
  */
@@ -115,6 +126,15 @@ export interface LlmProvider {
      * Get pricing for a model. Returns undefined if pricing is not available.
      */
     getModelPricing(model: string): ModelPricing | undefined;
+
+    /**
+     * Read a finished turn's steps for the model that answered and what the turn was billed. For a
+     * router that picks the model per request, both differ from what the turn asked for.
+     *
+     * @param requestedModel the id the turn asked for
+     * @param modelName the display name of a model in the provider's stored selection, if it is there
+     */
+    describeTurn?(steps: TurnSteps, requestedModel: string, modelName: (id: string) => string | undefined): Promise<TurnReport>;
 
     /**
      * Get list of available models for this provider.

@@ -93,11 +93,19 @@ export async function* runChat(
             ?? provider.getAvailableModels().find(m => m.id === modelId)?.name
             ?? modelId;
 
+        const describeTurn = provider.describeTurn?.bind(provider);
+        const storedName = (id: string) => getSelectedModel(config.providerId, id)?.name;
+
         // Chunk-native provider (e.g. Claude Agent): it owns its own agentic loop
         // and produces LlmStreamChunks directly, including honouring the abort.
         const chunks = provider.chatChunks
             ? provider.chatChunks(messages, config, abortSignal)
-            : streamToChunks(provider.chat(messages, config, abortSignal), { model: modelDisplayName, provider: provider.name, pricing });
+            : streamToChunks(provider.chat(messages, config, abortSignal), {
+                model: modelDisplayName,
+                provider: provider.name,
+                pricing,
+                describeTurn: describeTurn && (steps => describeTurn(steps, modelId, storedName))
+            });
 
         for await (const chunk of withApprovalRequests(chunks, toolApprovals)) {
             if (abortSignal?.aborted) {

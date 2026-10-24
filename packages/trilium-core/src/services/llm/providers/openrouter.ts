@@ -2,7 +2,7 @@ import { createOpenRouter, type OpenRouterProvider as OpenRouterSDKProvider } fr
 import type { LlmAttachmentKind, LlmReasoningEffort } from "@triliumnext/commons";
 import type { LanguageModel } from "ai";
 
-import type { LlmProviderConfig, ModelInfo, ModelPricing } from "../types.js";
+import type { LlmProviderConfig, ModelInfo, ModelPricing, TurnReport, TurnSteps } from "../types.js";
 import { BaseProvider, type RemoteModel } from "./base_provider.js";
 import { llmFetch } from "./fetch.js";
 
@@ -26,6 +26,8 @@ const BATCH_SUFFIX = ":batch";
 /** One entry of OpenRouter's `/models` listing, reduced to the fields read here. */
 interface OpenRouterModel {
     id: string;
+    /** The dated slug (`anthropic/claude-haiku-5.5-20261007`), which a response can name in place of the id. */
+    canonical_slug?: string;
     name?: string;
     created?: number;
     context_length?: number;
@@ -131,6 +133,39 @@ export class OpenRouterProvider extends BaseProvider {
     }
 
     /**
+     * Reports the model that wrote the answer, which differs from the one asked for when a router or
+     * a rolling alias picked it, and the sum of what OpenRouter billed each step.
+     */
+    async describeTurn(steps: TurnSteps, requestedModel: string, modelName: (id: string) => string | undefined): Promise<TurnReport> {
+        const costs = steps.map(step => billedCost(step.providerMetadata));
+        const cost = costs.length > 0 && costs.every(c => c !== undefined)
+            ? costs.reduce((sum, c) => sum + c, 0)
+            : undefined;
+
+        const answeredBy = steps.at(-1)?.response.modelId;
+        if (!answeredBy || answeredBy === requestedModel) {
+            return { cost };
+        }
+        const stored = modelName(answeredBy);
+        if (stored) {
+            return { cost, model: stored };
+        }
+        const listed = await this.findListed(answeredBy);
+        if (listed?.id === requestedModel) {
+            return { cost };
+        }
+        return { cost, model: listed?.name ?? answeredBy };
+    }
+
+    /** The listing's entry for an id or a dated slug, listing the models first if this instance hasn't. */
+    private async findListed(id: string): Promise<OpenRouterModel | undefined> {
+        if (this.catalog.size === 0) {
+            await this.listModels().catch(() => undefined);
+        }
+        return this.catalog.get(id) ?? [ ...this.catalog.values() ].find(m => m.canonical_slug === id);
+    }
+
+    /**
      * Sends the chat's effort. The client sends one only for a model that lists effort levels; without
      * one, the model runs at its own default.
      */
@@ -158,6 +193,13 @@ export class OpenRouterProvider extends BaseProvider {
             .filter(m => this.catalog.get(m.id)?.supported_parameters?.includes("tools"))
             .map(m => m.id));
     }
+}
+
+/** What OpenRouter billed for one step, from the `usage` it reports in the step's metadata. */
+function billedCost(metadata: TurnSteps[number]["providerMetadata"]): number | undefined {
+    const usage = metadata?.openrouter?.usage;
+    const cost = usage && typeof usage === "object" && "cost" in usage ? usage.cost : undefined;
+    return typeof cost === "number" ? cost : undefined;
 }
 
 /** A model that answers in text and replies straight away, which excludes image generators and batch variants. */

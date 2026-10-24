@@ -274,6 +274,30 @@ describe("streamToChunks", () => {
         expect(usage.usage.provider).toBe("anthropic");
     });
 
+    it("lets the provider's report of the turn override the requested model and the listed cost", async () => {
+        const steps = [ { response: { modelId: "anthropic/claude-sonnet-5.5" } } ];
+        const turn = () => ({
+            ...fakeResult([], Promise.resolve({ inputTokens: 1_000_000, outputTokens: 0 })),
+            steps: Promise.resolve(steps)
+        }) as unknown as StreamResult;
+        const options = { model: "Auto Router", provider: "openrouter", pricing: { input: 2, output: 2 } };
+
+        const seen: unknown[] = [];
+        const reported = usageOf(await collect(turn(), {
+            ...options,
+            describeTurn: async (turnSteps) => { seen.push(turnSteps); return { model: "Anthropic: Claude Sonnet 5.5", cost: 0.25 }; }
+        }));
+        expect(seen).toEqual([ steps ]);
+        expect(reported.usage).toMatchObject({ model: "Anthropic: Claude Sonnet 5.5", cost: 0.25, provider: "openrouter" });
+
+        // What the report leaves out, or a report that fails, falls back to the request's own.
+        expect(usageOf(await collect(turn(), { ...options, describeTurn: async () => ({}) })).usage)
+            .toMatchObject({ model: "Auto Router", cost: 2 });
+        const failed = await collect(turn(), { ...options, describeTurn: async () => { throw new Error("offline"); } });
+        expect(usageOf(failed).usage).toMatchObject({ model: "Auto Router", cost: 2 });
+        expect(failed.at(-1)).toEqual({ type: "done" });
+    });
+
     it("treats all input as no-cache when token details are absent", async () => {
         const pricing: ModelPricing = { input: 2, output: 6 };
         const chunks = await collect(fakeResult(

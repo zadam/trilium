@@ -19,7 +19,12 @@ const state = vi.hoisted(() => ({
     /** The config the provider's `chat()` was handed. */
     chatConfig: undefined as unknown,
     /** The abort signal the provider's `chat()` was handed. */
-    chatSignal: undefined as AbortSignal | undefined
+    chatSignal: undefined as AbortSignal | undefined,
+    /** When true the fake provider reports on its turns, and records what it was asked. */
+    describesTurns: false,
+    describeTurnArgs: undefined as unknown[] | undefined,
+    /** The options `streamToChunks()` was handed. */
+    streamOptions: undefined as StreamOptions | undefined
 }));
 
 vi.mock("./index.js", () => {
@@ -44,6 +49,9 @@ vi.mock("./index.js", () => {
                 }
             }
             : undefined,
+        describeTurn: state.describesTurns
+            ? async (...args: unknown[]) => { state.describeTurnArgs = args; return { model: "Routed" }; }
+            : undefined,
         getAvailableModels: () => state.availableModels,
         getModelPricing: () => ({ input: 0, output: 0 })
     });
@@ -60,7 +68,10 @@ vi.mock("./index.js", () => {
 // function and stays real, so the logged text is asserted against the production format.
 vi.mock("./stream.js", async (importOriginal) => ({
     ...await importOriginal<typeof import("./stream.js")>(),
-    async *streamToChunks() { for (const c of state.chunks) yield c; }
+    async *streamToChunks(_result: unknown, options: StreamOptions) {
+        state.streamOptions = options;
+        for (const c of state.chunks) yield c;
+    }
 }));
 
 const generateChatTitle = vi.fn(async (..._args: unknown[]) => {});
@@ -73,6 +84,7 @@ vi.mock("../log.js", async (importOriginal) => ({
 }));
 
 import { runChat } from "./chat.js";
+import type { StreamOptions } from "./stream.js";
 import { answerToolApproval } from "./tool_approval.js";
 import type { LlmProviderConfig } from "./types.js";
 
@@ -104,6 +116,9 @@ describe("runChat", () => {
             chunks: [],
             availableModels: [{ id: "m1", name: "Model One", isDefault: true }],
             selectedModel: undefined,
+            describesTurns: false,
+            describeTurnArgs: undefined,
+            streamOptions: undefined,
             chatThrows: undefined,
             chunkNative: false,
             chunkSignal: undefined,
@@ -125,6 +140,22 @@ describe("runChat", () => {
         state.selectedModel = { id: "m1", name: "Model One" };
         await collect(HELLO, { model: "m1", attachmentKinds: [ "image" ] });
         expect((state.chatConfig as LlmProviderConfig).attachmentKinds).toBeUndefined();
+    });
+
+    it("hands a provider that reports on its turns the steps, the model asked for and the stored names", async () => {
+        await collect(HELLO, { model: "m1" });
+        expect(state.streamOptions?.describeTurn).toBeUndefined();
+
+        state.describesTurns = true;
+        state.selectedModel = { id: "m2", name: "Model Two" };
+        await collect(HELLO, { model: "m1" });
+        const steps = [ { response: { modelId: "m2" } } ];
+        expect(await state.streamOptions?.describeTurn?.(steps as never)).toEqual({ model: "Routed" });
+
+        const [ seenSteps, requested, modelName ] = state.describeTurnArgs ?? [];
+        expect(seenSteps).toBe(steps);
+        expect(requested).toBe("m1");
+        expect((modelName as (id: string) => string | undefined)("m2")).toBe("Model Two");
     });
 
     it("yields an error chunk and stops when nothing can serve the completion", async () => {

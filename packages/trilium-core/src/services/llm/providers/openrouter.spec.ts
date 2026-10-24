@@ -42,7 +42,8 @@ beforeEach(installGlobalFetchAsApiTransport);
 
 const CATALOG = [
     {
-        id: "anthropic/claude-haiku-5.5", name: "Anthropic: Claude Haiku 5.5", context_length: 1000000,
+        id: "anthropic/claude-haiku-5.5", canonical_slug: "anthropic/claude-haiku-5.5-20261007",
+        name: "Anthropic: Claude Haiku 5.5", context_length: 1000000,
         pricing: { prompt: "0.0000001", completion: "0.0000005" },
         architecture: { input_modalities: [ "text", "image", "file" ], output_modalities: [ "text" ] },
         supported_parameters: [ "reasoning", "tools" ]
@@ -204,6 +205,54 @@ describe("OpenRouterProvider model listing", () => {
         const provider = new OpenRouterProvider("sk-or");
         const recommended = provider.recommendedModelIds(await provider.listModels());
         expect([ ...recommended ]).toEqual([ "~anthropic/claude-haiku-latest" ]);
+    });
+});
+
+describe("OpenRouterProvider turn report", () => {
+    const fetchMock = vi.fn();
+    const noStoredName = () => undefined;
+    /** A step as `streamText()` reports it: the model that answered, and OpenRouter's usage in its metadata. */
+    const step = (modelId: string, cost?: number) => ({
+        response: { modelId },
+        providerMetadata: { openrouter: { provider: "Google Vertex", usage: cost === undefined ? {} : { cost } } }
+    }) as never;
+
+    beforeEach(() => {
+        fetchMock.mockReset();
+        vi.stubGlobal("fetch", fetchMock);
+    });
+
+    it("adds up what OpenRouter billed each step, unless a step went unbilled", async () => {
+        const provider = new OpenRouterProvider("sk-or");
+        expect((await provider.describeTurn([ step("openrouter/auto", 0.0012), step("openrouter/auto", 0.0003) ], "openrouter/auto", noStoredName)).cost)
+            .toBeCloseTo(0.0015, 10);
+        expect((await provider.describeTurn([ step("openrouter/auto", 0.0012), step("openrouter/auto") ], "openrouter/auto", noStoredName)).cost)
+            .toBeUndefined();
+    });
+
+    it("names the model a router picked: from the stored selection, else from the listing, else by its id", async () => {
+        const provider = new OpenRouterProvider("sk-or");
+
+        // The model asked for answered, so its name stands and nothing is fetched.
+        expect((await provider.describeTurn([ step("anthropic/claude-haiku-5.5") ], "anthropic/claude-haiku-5.5", noStoredName)).model).toBeUndefined();
+
+        // A routed model the user selected is named without a request.
+        expect((await provider.describeTurn([ step("anthropic/claude-haiku-5.5") ], "openrouter/auto", () => "Claude Haiku (mine)")).model)
+            .toBe("Claude Haiku (mine)");
+        expect(fetchMock).not.toHaveBeenCalled();
+
+        // One that isn't is named from the listing, matched by id or by its dated slug.
+        stubListing(fetchMock);
+        expect((await provider.describeTurn([ step("anthropic/claude-haiku-5.5-20261007") ], "openrouter/auto", noStoredName)).model)
+            .toBe("Anthropic: Claude Haiku 5.5");
+        // The dated slug of the model asked for is still that model.
+        expect((await provider.describeTurn([ step("anthropic/claude-haiku-5.5-20261007") ], "anthropic/claude-haiku-5.5", noStoredName)).model)
+            .toBeUndefined();
+
+        // Offline, the id is all there is.
+        fetchMock.mockRejectedValue(new Error("offline"));
+        expect((await new OpenRouterProvider("sk-or").describeTurn([ step("x-ai/grok-9") ], "openrouter/auto", noStoredName)).model)
+            .toBe("x-ai/grok-9");
     });
 });
 
