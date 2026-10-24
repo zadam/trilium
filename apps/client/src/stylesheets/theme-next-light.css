@@ -109,6 +109,10 @@
     --menu-item-group-header-color: #00000061;
     --menu-section-background-color: #00000006;
 
+    --glass-background: #ffffffa6;
+    --glass-edge-color: #0000001f;
+    --glass-highlight-color: #ffffffcc;
+
     --modal-backdrop-color: #7c7c7c;
     --modal-shadow-color: #00000033;
     --modal-border-color: #797979;

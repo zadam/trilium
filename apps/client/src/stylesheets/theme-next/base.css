@@ -151,6 +151,13 @@ body.backdrop-effects-disabled {
     /* Backdrop effects are disabled, replace the menu background color with the
      * no-backdrop fallback color */
     --menu-background-color: var(--menu-background-color-no-backdrop);
+    --glass-background: var(--menu-background-color-no-backdrop);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    body {
+        --glass-background: var(--menu-background-color-no-backdrop);
+    }
 }
 
 /*
