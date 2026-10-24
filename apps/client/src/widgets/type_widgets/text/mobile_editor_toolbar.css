@@ -136,17 +136,6 @@ body.mobile {
 
         .classic-toolbar-island {
             bottom: var(--keyboard-panel-lift);
-            border-end-start-radius: 0;
-            border-end-end-radius: 0;
-
-            .classic-toolbar-widget {
-                border-end-start-radius: 0;
-                border-end-end-radius: 0;
-            }
-
-            .hide-keyboard-action .icon-action {
-                border-end-end-radius: 0;
-            }
         }
     }
 
@@ -187,6 +176,36 @@ body.mobile {
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
         height: auto;
         max-height: min(50vh, calc(var(--tn-keyboard-height, 50vh) + var(--mobile-toolbar-gap)));
+    }
+
+    /* On iOS, the menu is an island of its own, a gap below the toolbar as the keyboard is. */
+    &.ios {
+        --keyboard-panel-margin: 8px;
+
+        /* `useKeyboardPanel()` measures the place as if the menu rose by the gap to the toolbar. */
+        &.keyboard-panel-open:has(.dropdown-menu.keyboard-panel-own-height) {
+            --keyboard-panel-lift: calc(
+                var(--tn-keyboard-place-height, 0px) + var(--mobile-toolbar-gap) + var(--keyboard-panel-margin)
+            );
+        }
+
+        .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
+            --menu-background-color: var(--glass-background, var(--menu-background-color-no-backdrop));
+            height: calc(var(--tn-keyboard-height) - var(--keyboard-panel-margin));
+            max-height: calc(var(--tn-keyboard-height) - var(--keyboard-panel-margin));
+            margin: 0 var(--keyboard-panel-margin) var(--keyboard-panel-margin);
+            padding-bottom: var(--menu-padding-size, 8px) !important;
+            border: 1px solid var(--glass-edge-color, var(--dropdown-border-color));
+            border-radius: 28px;
+            box-shadow:
+                inset 0 1px 0 var(--glass-highlight-color, transparent),
+                0 8px 24px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity, 0.2) * 0.75));
+        }
+
+        .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
+            height: auto;
+            max-height: min(50vh, calc(var(--tn-keyboard-height, 50vh) - var(--keyboard-panel-margin)));
+        }
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.replaces-panel[data-reveal]:not([data-closing]) {
