@@ -20,10 +20,17 @@ vi.mock("./RecordMeetingButton", () => ({
 }));
 vi.mock("./GenericButtons", async (importOriginal) => ({
     ...await importOriginal<typeof import("./GenericButtons")>(),
-    CustomNoteLauncher: ({ launcherNote, getTargetNoteId }: {
+    CustomNoteLauncher: ({ launcherNote, getTargetNoteId, parentNoteId }: {
         launcherNote: FNote,
-        getTargetNoteId: (launcherNote: FNote) => unknown
-    }) => <span className="custom-note-launcher" data-target={`${getTargetNoteId(launcherNote)}`} />
+        getTargetNoteId: (launcherNote: FNote) => unknown,
+        parentNoteId?: string
+    }) => (
+        <span
+            className="custom-note-launcher"
+            data-target={`${getTargetNoteId(launcherNote)}`}
+            data-parent={`${parentNoteId}`}
+        />
+    )
 }));
 
 let container: HTMLDivElement;
@@ -141,6 +148,8 @@ describe("LauncherContainer", () => {
         const slot = container.querySelector(".launcher-slot[data-launcher-id='clonedNote']");
         const launcher = slot?.querySelector(".custom-note-launcher");
         expect(launcher?.getAttribute("data-target")).toBe("clonedNote");
+        // "Remove from launch bar" removes this placement, not a bookmark of the note.
+        expect(launcher?.getAttribute("data-parent")).toBe("_lbVisibleLaunchers");
 
         const bar = container.querySelector("#launcher-container");
         expect(bar).not.toBeNull();

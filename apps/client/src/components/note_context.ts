@@ -18,6 +18,7 @@ import type { HeadingContext } from "../widgets/sidebar/TableOfContents.js";
 import type { ChatHighlightsContext } from "../widgets/type_widgets/llm_chat/chat_highlights.js";
 import appContext, { type EventData, type EventListener } from "./app_context.js";
 import Component from "./component.js";
+import type { HistoryEntry } from "./tab_manager.js";
 
 export interface SetNoteOpts {
     triggerSwitchEvent?: unknown;
@@ -26,6 +27,8 @@ export interface SetNoteOpts {
     keepActiveDialog?: boolean;
     /** If true, the note is not added to the recent notes, as for an included note being edited. */
     skipRecentNotes?: boolean;
+    /** The `switchToHistoryEntry()` call that shows the note. Pinned tabs pass it on. */
+    historyEntry?: HistoryEntry;
 }
 
 export type GetTextEditorCallback = (editor: CKTextEditor) => void;
@@ -202,7 +205,7 @@ class NoteContext extends Component implements EventListener<"entitiesReloaded">
                 activate: true,
                 viewScope,
                 hoistedNoteId: this.hoistedNoteId,
-                redirectedFrom: this
+                historyEntry: opts.historyEntry
             });
         }
 

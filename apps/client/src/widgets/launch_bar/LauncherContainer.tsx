@@ -73,7 +73,13 @@ export default function LauncherContainer({ isHorizontalLayout }: { isHorizontal
 function Launcher({ note, isHorizontalLayout }: { note: FNote, isHorizontalLayout: boolean }) {
     // A note cloned into the launch bar opens itself.
     if (note.type !== "launcher") {
-        return <CustomNoteLauncher launcherNote={note} getTargetNoteId={() => note.noteId} />;
+        return (
+            <CustomNoteLauncher
+                launcherNote={note}
+                getTargetNoteId={() => note.noteId}
+                parentNoteId={getVisibleLaunchersRootId()}
+            />
+        );
     }
 
     const launcherType = note.getLabelValue("launcherType");

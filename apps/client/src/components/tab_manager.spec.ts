@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildNote } from "../test/easy-froca.js";
 import appContext from "./app_context.js";
@@ -315,6 +315,11 @@ describe("note contexts outside the tab row", () => {
 describe("going to an entry of the navigation history", () => {
     let tm: TabManager;
 
+    // Unlike browsers, happy-dom fires `hashchange` for `pushState()` and `replaceState()`.
+    const stopHashChange = (e: Event) => e.stopImmediatePropagation();
+    beforeAll(() => window.addEventListener("hashchange", stopHashChange, true));
+    afterAll(() => window.removeEventListener("hashchange", stopHashChange, true));
+
     beforeEach(() => {
         // `appContext.triggerEvent` passes on the note switch, and an earlier test mocks it.
         vi.restoreAllMocks();
@@ -397,6 +402,36 @@ describe("going to an entry of the navigation history", () => {
         expect(opened).not.toBe(pinnedTab);
         expect(pinnedTab.notePath).toBe("root/historyB");
         expect(window.location.hash).toBe(`#root/historyA?ntxId=${opened?.ntxId}`);
+    });
+
+    it("pushes a note a pinned tab opens while the entry is still loading", async () => {
+        const pinnedTab = await tm.openEmptyTab();
+        await tm.activateNoteContext(pinnedTab.ntxId);
+        await pinnedTab.setNote("root/historyA");
+        await pinnedTab.setNote("root/historyB");
+        pinnedTab.pinned = true;
+
+        window.history.replaceState(null, "", `#root/historyA?ntxId=${pinnedTab.ntxId}`);
+        let showA: (notePath: string) => void = () => {};
+        const resolvePath = vi.spyOn(pinnedTab, "getResolvedNotePath")
+            .mockReturnValueOnce(new Promise((resolve) => { showA = resolve; }));
+        const pushState = vi.spyOn(window.history, "pushState");
+        const replaceState = vi.spyOn(window.history, "replaceState");
+
+        const restoring = tm.switchToHistoryEntry(
+            pinnedTab.ntxId, "root/historyA", { viewMode: "default" }
+        );
+        await vi.waitFor(() => expect(resolvePath).toHaveBeenCalledOnce());
+        // A click in the tree while the entry loads.
+        const clicked = await pinnedTab.setNote("root/historyC");
+        showA("root/historyA");
+        await restoring;
+
+        expect(replaceState).not.toHaveBeenCalled();
+        expect(pushState).toHaveBeenCalledTimes(2);
+        expect(pushState).toHaveBeenNthCalledWith(
+            1, null, "", `#root/historyC?ntxId=${clicked?.ntxId}`
+        );
     });
 
     it("pushes a tab switch made while the entry is still loading", async () => {
