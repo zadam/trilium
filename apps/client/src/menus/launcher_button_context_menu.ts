@@ -107,7 +107,7 @@ export async function showLauncherContextMenu<T extends string>(
         widgetItems.push({
             title: t("launcher_button_context_menu.remove_from_launch_bar"),
             command: REMOVE_COMMAND,
-            uiIcon: "bx bx-x-circle"
+            uiIcon: "bx bx-x-circle destructive-action-icon"
         });
     }
 
