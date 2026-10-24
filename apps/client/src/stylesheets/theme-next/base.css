@@ -148,11 +148,13 @@ body {
     user-select: text;
 }
 
-/* The edge, top highlight and drop shadow of a glass surface, drawn without a border. */
+/* The edge and top highlight of a glass surface, drawn without a border, and its drop shadow. */
 :root {
-    --glass-shadow:
+    --glass-edge:
         inset 0 0 0 1px var(--glass-edge-color),
-        inset 0 1px 0 var(--glass-highlight-color),
+        inset 0 1px 0 var(--glass-highlight-color);
+    --glass-shadow:
+        var(--glass-edge),
         0 8px 24px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity) * 0.75));
 }
 

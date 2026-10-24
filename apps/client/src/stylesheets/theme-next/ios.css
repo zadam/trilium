@@ -240,7 +240,7 @@ body.mobile.ios {
                 --modal-control-button-size: 40px;
                 font-size: 22px;
                 backdrop-filter: var(--dropdown-backdrop-filter);
-                box-shadow: var(--glass-shadow);
+                box-shadow: var(--glass-edge);
 
                 &,
                 &:hover {
