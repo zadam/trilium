@@ -115,6 +115,10 @@ body.mobile.ios {
         &:has(#mobile-sidebar-wrapper.show) {
             background-color: var(--grouped-background-color);
 
+            #root-widget {
+                background-color: var(--grouped-background-color);
+            }
+
             #background-color-tracker {
                 color: var(--grouped-background-color) !important;
             }
