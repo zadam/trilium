@@ -10,6 +10,7 @@ import { useContext, useLayoutEffect, useMemo, useRef } from "preact/hooks";
 import { t } from "../../services/i18n";
 import { getActionSync } from "../../services/keyboard_actions";
 import { handleRightToLeftPlacement, isMobile, openInAppHelpFromUrl } from "../../services/utils";
+import ActionButton from "./ActionButton";
 import FormTextBox from "./FormTextBox";
 import FormToggle from "./FormToggle";
 import { useStaticTooltip, useSyncedRef, useUniqueName } from "./hooks";
@@ -770,7 +771,17 @@ function MenuFilterInput({ filter }: { filter: MenuFilter }) {
 
     return (
         <div className="tn-menu-filter">
-            <label className="tn-menu-filter-box tn-input-field">
+            {/* A press anywhere in the box, the clear button's included, keeps focus in the input,
+                and a click in it does not close the dropdown. */}
+            <div
+                className="tn-menu-filter-box tn-input-field"
+                onMouseDown={(e) => {
+                    if (e.target === inputRef.current) return;
+                    e.preventDefault();
+                    inputRef.current?.focus({ preventScroll: true });
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <FormTextBox
                     inputRef={inputRef} className="tn-menu-filter-input"
                     data-level={filter.level + 1} currentValue={filter.text}
@@ -780,8 +791,13 @@ function MenuFilterInput({ filter }: { filter: MenuFilter }) {
                         ? { rowId: filter.rowId, level: filter.level, text }
                         : undefined)}
                 />
-                <span className="bx bx-search" aria-hidden="true" />
-            </label>
+                {filter.text
+                    ? <ActionButton
+                        className="tn-menu-filter-clear" icon="bx bx-x" text={t("menu.clear_filter")}
+                        onClick={() => menu.setFilter(undefined)}
+                    />
+                    : <span className="bx bx-search" aria-hidden="true" />}
+            </div>
         </div>
     );
 }

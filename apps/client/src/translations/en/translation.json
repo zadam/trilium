@@ -4775,7 +4775,8 @@
     "no_matches": "No matches",
     "filter": "Filter",
     "filter_placeholder": "Type to filter…",
-    "back": "Back"
+    "back": "Back",
+    "clear_filter": "Clear the filter"
   },
   "block_reference": {
     "copy_one": "Copy reference to this block",
