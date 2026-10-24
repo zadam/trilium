@@ -555,7 +555,7 @@ function MenuItemRow<T>({ row, onSelect }: { row: MenuItem<T>, onSelect: MenuPro
     if ("kind" in row) {
         if (row.kind === "separator") return <FormDropdownDivider />;
         // Its title is text, as it can be a name the user wrote.
-        if (row.kind === "header") return <FormListHeader text={row.title} />;
+        if (row.kind === "header") return <FormListHeader text={row.title} actions={row.actions} />;
         if (row.kind === "actions") return <MenuActions items={row.items} className={row.className} onSelect={onSelect} />;
         return <FormListCustomItem><row.componentFn /></FormListCustomItem>;
     }

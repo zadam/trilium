@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { ComponentChildren, createPortal, type CSSProperties, RefObject } from "preact";
 import { useContext, useLayoutEffect, useMemo, useRef } from "preact/hooks";
 
+import type { MenuHeaderActions } from "../../menus/context_menu";
 import { t } from "../../services/i18n";
 import { getActionSync } from "../../services/keyboard_actions";
 import { handleRightToLeftPlacement, isMobile, openInAppHelpFromUrl } from "../../services/utils";
@@ -415,17 +416,45 @@ function FormListContent({ children, badges, description, disabled, disabledTool
 interface FormListHeaderOpts {
     /** Usually a heading, but anything a group can be introduced by: a summary, a row of marks. */
     text: ComponentChildren;
-    /** Optional element rendered right-aligned in the header (e.g. an edit action). */
-    action?: ComponentChildren;
+    /** Icon buttons at the end of the heading, which keep it as tall as a heading without them. */
+    actions?: MenuHeaderActions;
 }
 
-export function FormListHeader({ text, action }: FormListHeaderOpts) {
+/** The most actions a heading shows, as `MenuHeaderActions` allows. A script can pass more. */
+const MAX_HEADER_ACTIONS = 3;
+
+export function FormListHeader({ text, actions = [] }: FormListHeaderOpts) {
+    const menu = useContext(MenuContext);
+    const level = useContext(MenuLevelContext);
+    const shownActions = actions.slice(0, MAX_HEADER_ACTIONS);
+    const hasActions = shownActions.length > 0;
+
     // Its heading speaks for the row, which a menu does not count among its items.
     return (
         <li role="none">
-            <h6 className={clsx("dropdown-header", action && "dropdown-header-with-action")}>
+            <h6 className={clsx("dropdown-header", hasActions && "tn-menu-header-with-actions")}>
                 <span>{text}</span>
-                {action}
+                {hasActions && (
+                    <span
+                        className="tn-menu-header-actions"
+                        // As over a row, the pointer closes the submenu open at this level.
+                        onPointerMove={(e) => {
+                            if (menu?.open[level] && pointerMoved(e)) menu.openSubmenu(level);
+                        }}
+                        // A press keeps focus where it was, as on a row.
+                        onMouseDown={(e) => e.preventDefault()}
+                    >
+                        {shownActions.map(({ icon, caption, callback }, index) => (
+                            <ActionButton
+                                key={index} icon={icon} text={caption} titlePosition="top"
+                                onClick={(e) => {
+                                    menu?.close();
+                                    callback(e);
+                                }}
+                            />
+                        ))}
+                    </span>
+                )}
             </h6>
         </li>
     );

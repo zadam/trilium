@@ -3,7 +3,7 @@ import { render } from "preact";
 import { useState } from "preact/hooks";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { MenuItem } from "../../menus/context_menu";
+import type { MenuHeaderAction, MenuHeaderActions, MenuItem } from "../../menus/context_menu";
 import { formatShortcut, joinShortcut } from "../../services/keyboard_shortcut_display";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "./FormList";
 import Menu, { bottomUpOrder, MenuItemRows, type MenuProps } from "./Menu";
@@ -469,6 +469,90 @@ describe("Menu with an action row", () => {
         await vi.waitFor(() => expect(active(menu)).toBe("Delete"));
         key(menu, "ArrowRight");
         await vi.waitFor(() => expect(active(menu)).toBe("Cut"));
+    });
+});
+
+describe("Menu with heading actions", () => {
+    const host = document.createElement("div");
+    document.body.append(host);
+    afterEach(() => render(null, host));
+
+    function renderMenu() {
+        const calls: string[] = [];
+        const onSelect = vi.fn();
+        const action = (caption: string, icon: string): MenuHeaderAction =>
+            ({ caption, icon, callback: (e) => calls.push(`${caption} ${e.type}`) });
+        // Four, as a script can pass, past the three the type allows.
+        const actions = [ action("Help", "bx bx-help-circle"), action("Options", "bx bx-cog"),
+            action("Reset", "bx bx-reset"), action("Extra", "bx bx-plus") ];
+        const items: MenuItem<string>[] = [
+            { kind: "header", title: "Sort", actions: actions as MenuHeaderActions },
+            { title: "By title", command: "title" },
+            { title: "More", items: [ { title: "Inner", command: "inner" } ] }
+        ];
+        render(<Menu
+            anchor={{ x: 10, y: 10 }} items={items} onSelect={onSelect}
+            onClose={() => calls.push("close")}
+        />, host);
+
+        const menu = document.querySelector<HTMLElement>(".tn-popup.tn-menu");
+        const buttons = [ ...menu?.querySelectorAll<HTMLButtonElement>(
+            "h6.dropdown-header > .tn-menu-header-actions > button") ?? [] ];
+        if (!menu || !buttons.length) throw new Error("expected the menu and the heading's actions");
+        return { menu, buttons, calls, onSelect };
+    }
+
+    const key = (menu: HTMLElement, name: string) =>
+        menu.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true }));
+
+    it("draws at most three icon buttons after the title, named by tooltips and skipped by the keys", async () => {
+        const { menu, buttons } = renderMenu();
+        const tooltipText = (button: HTMLElement) => {
+            const tooltip = Tooltip.getInstance(button);
+            if (!tooltip) return undefined;
+            tooltip.show();
+            const text = document.querySelector(".tooltip:last-of-type .tooltip-inner")?.textContent;
+            tooltip.hide();
+            return text;
+        };
+
+        expect(menu.querySelector("h6.dropdown-header")?.textContent).toBe("Sort");
+        expect(buttons.map((button) => [ ...button.classList ].join(" "))).toEqual([
+            "icon-action bx bx-help-circle",
+            "icon-action bx bx-cog",
+            "icon-action bx bx-reset"
+        ]);
+        await vi.waitFor(() => expect(buttons.map(tooltipText)).toEqual([ "Help", "Options", "Reset" ]));
+
+        key(menu, "ArrowDown");
+        await vi.waitFor(() => expect(menu.querySelector("li.tn-menu-active > span")?.textContent).toBe("By title"));
+    });
+
+    it("closes the menu, then runs the action, keeping the focus and running no row", () => {
+        const { buttons, calls, onSelect } = renderMenu();
+        const [ , options ] = buttons;
+        if (!options) throw new Error("expected the Options action");
+
+        const press = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
+        options.dispatchEvent(press);
+        options.click();
+
+        expect(press.defaultPrevented).toBe(true);
+        expect(calls).toEqual([ "close", "Options click" ]);
+        expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it("closes a row's submenu once the pointer turns to the heading's actions", async () => {
+        const { menu, buttons: [ help ] } = renderMenu();
+        const layers = () => menu.querySelectorAll(":scope > div.dropdown-submenu > .dropdown-menu").length;
+        const more = [ ...menu.querySelectorAll<HTMLElement>("li.dropdown-item") ]
+            .find((row) => row.querySelector(":scope > span")?.textContent === "More");
+        if (!help || !more) throw new Error("expected the Help action and the More row");
+
+        more.dispatchEvent(new PointerEvent("pointerenter"));
+        await vi.waitFor(() => expect(layers()).toBe(1));
+        help.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, movementX: 3 }));
+        await vi.waitFor(() => expect(layers()).toBe(0));
     });
 });
 

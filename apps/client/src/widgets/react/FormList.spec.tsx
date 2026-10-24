@@ -46,6 +46,21 @@ describe("FormListHeader", () => {
         expect(row?.getAttribute("role")).toBe("none");
         expect(row?.querySelector("h6.dropdown-header")?.textContent).toBe("<b>Doing</b>");
     });
+
+    it("runs its actions outside a menu too", () => {
+        const host = document.createElement("div");
+        const callback = vi.fn();
+        render((
+            <menu role="none">
+                <FormListHeader text="Fonts" actions={[ { icon: "bx bx-cog", caption: "Options", callback } ]} />
+            </menu>
+        ), host);
+        const button = host.querySelector<HTMLButtonElement>("h6 > .tn-menu-header-actions > button");
+        if (!button) throw new Error("expected the action's button");
+
+        button.click();
+        expect(callback).toHaveBeenCalledWith(expect.any(MouseEvent));
+    });
 });
 
 describe("FormListItem", () => {

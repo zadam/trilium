@@ -34,6 +34,21 @@ export interface MenuSeparatorItem {
 export interface MenuHeader {
     title: string;
     kind: "header";
+    /** Icon buttons at the end of the heading, for secondary actions such as help or options. */
+    actions?: MenuHeaderActions;
+}
+
+/** The actions of a {@link MenuHeader}: at most three. */
+export type MenuHeaderActions = [] | [MenuHeaderAction] | [MenuHeaderAction, MenuHeaderAction]
+    | [MenuHeaderAction, MenuHeaderAction, MenuHeaderAction];
+
+export interface MenuHeaderAction {
+    /** The classes of the icon, such as `bx bx-help-circle`. */
+    icon: string;
+    /** The name of the action, shown as the button's tooltip. */
+    caption: string;
+    /** Called after the menu closes. */
+    callback: (e: MouseEvent) => void;
 }
 
 /** A row of items side by side, each drawn as its icon over its title. */
