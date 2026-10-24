@@ -2,8 +2,8 @@ body.mobile {
     /* Read by `PopupEditor.css` to clear the toolbar. */
     --mobile-toolbar-button-size: 44px;
     --mobile-toolbar-icon-size: 22px;
-    /* The 2px is the island's border. */
-    --mobile-toolbar-height: calc(var(--mobile-toolbar-button-size) + 2px);
+    --mobile-toolbar-border: 1px;
+    --mobile-toolbar-height: calc(var(--mobile-toolbar-button-size) + 2 * var(--mobile-toolbar-border));
     --mobile-toolbar-gap: 6px;
     --mobile-toolbar-radius: 6px;
     --mobile-toolbar-pill-radius: 6px;
@@ -34,7 +34,7 @@ body.mobile {
         inset-inline-end: 0;
         height: var(--mobile-toolbar-height);
         margin: 0 var(--mobile-toolbar-gap) var(--mobile-toolbar-gap);
-        border: 1px solid var(--card-border-color, var(--main-border-color));
+        border: var(--mobile-toolbar-border) solid var(--card-border-color, var(--main-border-color));
         border-radius: var(--mobile-toolbar-radius);
         /* `--card-background-color` is translucent in theme-next, so it tints an opaque backdrop. */
         background:
@@ -59,17 +59,15 @@ body.mobile {
     }
 
     &.ios {
+        --mobile-toolbar-border: 0px;
         --mobile-toolbar-gap: 10px;
         --mobile-toolbar-radius: calc(var(--mobile-toolbar-height) / 2);
         --mobile-toolbar-pill-radius: 999px;
 
         .classic-toolbar-island {
-            border-color: var(--glass-edge-color, var(--card-border-color, var(--main-border-color)));
             background: var(--glass-background, var(--main-background-color));
             backdrop-filter: var(--dropdown-backdrop-filter);
-            box-shadow:
-                inset 0 1px 0 var(--glass-highlight-color, transparent),
-                0 8px 24px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity, 0.2) * 0.75));
+            box-shadow: var(--glass-shadow, inset 0 0 0 1px var(--main-border-color));
         }
 
         .classic-toolbar-widget .ck.ck-toolbar .ck-toolbar__items {
@@ -98,7 +96,7 @@ body.mobile {
         inset-inline-start: 0;
         inset-inline-end: 0;
         height: 100%;
-        border-radius: calc(var(--mobile-toolbar-radius) - 1px);
+        border-radius: calc(var(--mobile-toolbar-radius) - var(--mobile-toolbar-border));
         overflow: scroll;
         display: flex;
         align-items: flex-end;
@@ -195,11 +193,9 @@ body.mobile {
             max-height: calc(var(--tn-keyboard-height) - var(--keyboard-panel-margin));
             margin: 0 var(--keyboard-panel-margin) var(--keyboard-panel-margin);
             padding-bottom: var(--menu-padding-size, 8px) !important;
-            border: 1px solid var(--glass-edge-color, var(--dropdown-border-color));
+            border: 0;
             border-radius: 28px;
-            box-shadow:
-                inset 0 1px 0 var(--glass-highlight-color, transparent),
-                0 8px 24px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity, 0.2) * 0.75));
+            box-shadow: var(--glass-shadow, inset 0 0 0 1px var(--dropdown-border-color));
         }
 
         .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
@@ -260,8 +256,8 @@ body.mobile {
             --icon-button-icon-ratio: 0.5;
             border-inline-start: 1px solid var(--main-border-color);
             border-radius: 0;
-            border-start-end-radius: calc(var(--mobile-toolbar-radius) - 1px);
-            border-end-end-radius: calc(var(--mobile-toolbar-radius) - 1px);
+            border-start-end-radius: calc(var(--mobile-toolbar-radius) - var(--mobile-toolbar-border));
+            border-end-end-radius: calc(var(--mobile-toolbar-radius) - var(--mobile-toolbar-border));
         }
     }
 

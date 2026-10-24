@@ -305,11 +305,9 @@ body.mobile .dropdown-menu.note-autocomplete-menu {
         --menu-background-color: var(--glass-background);
         margin: 0 var(--mobile-sheet-margin) var(--mobile-sheet-margin);
         max-height: calc(var(--tn-modal-max-height) - var(--dropdown-bottom) - var(--mobile-sheet-margin));
-        border: 1px solid var(--glass-edge-color);
+        border: 0;
         border-radius: 28px;
-        box-shadow:
-            inset 0 1px 0 var(--glass-highlight-color),
-            0 12px 32px rgba(0, 0, 0, var(--dropdown-shadow-opacity));
+        box-shadow: var(--glass-shadow);
     }
 
     body.mobile.ios :is(#context-menu-container, .dropdown-menu).mobile-bottom-menu:not(.keyboard-panel).show {

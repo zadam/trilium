@@ -147,6 +147,14 @@ body {
     user-select: text;
 }
 
+/* The edge, top highlight and drop shadow of a glass surface, drawn without a border. */
+:root {
+    --glass-shadow:
+        inset 0 0 0 1px var(--glass-edge-color),
+        inset 0 1px 0 var(--glass-highlight-color),
+        0 8px 24px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity) * 0.75));
+}
+
 body.backdrop-effects-disabled {
     /* Backdrop effects are disabled, replace the menu background color with the
      * no-backdrop fallback color */
