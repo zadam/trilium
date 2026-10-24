@@ -241,6 +241,86 @@ body.layout-horizontal > .horizontal {
     body.mobile #launcher-pane {
         background: transparent !important;
     }
+
+    /* On iOS, the title row and the launcher bar float over the note, which scrolls beneath them. */
+    body.mobile.ios {
+        --mobile-bottom-offset: max(
+            12px,
+            calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 8px)
+        );
+        --mobile-bottom-bar-height: calc(var(--launcher-pane-horiz-size) + var(--mobile-bottom-offset));
+        /* Must equal the height of `.title-row` in style.css. */
+        --mobile-title-row-height: 50px;
+
+        #mobile-bottom-bar {
+            position: relative;
+            z-index: 999;
+            height: var(--mobile-bottom-bar-height);
+            margin-top: calc(-1 * var(--mobile-bottom-bar-height));
+            padding-inline: 16px;
+            border-top: 0;
+            background: transparent;
+            pointer-events: none;
+        }
+
+        #mobile-bottom-bar > #launcher-pane {
+            pointer-events: auto;
+            border: 1px solid var(--glass-edge-color);
+            border-radius: calc(var(--launcher-pane-horiz-size) / 2);
+            background: var(--glass-background) !important;
+            backdrop-filter: var(--dropdown-backdrop-filter);
+            box-shadow:
+                inset 0 1px 0 var(--glass-highlight-color),
+                0 8px 24px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity) * 0.75));
+
+            .launcher-button {
+                border-radius: 50%;
+            }
+        }
+
+        &:not(.keyboard-panel-open) #root-widget:not(.virtual-keyboard-opened) .note-split > .scrolling-container {
+            padding-bottom: var(--mobile-bottom-bar-height);
+            scroll-padding-bottom: var(--mobile-bottom-bar-height);
+        }
+
+        .note-split:not(.options) > .title-row {
+            position: relative;
+            z-index: 999;
+            isolation: isolate;
+            margin-bottom: calc(-1 * var(--mobile-title-row-height));
+            padding-inline: 8px;
+            border-bottom: 0;
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 0 0 -16px;
+                z-index: -1;
+                background: linear-gradient(var(--main-background-color) 55%, transparent);
+                pointer-events: none;
+            }
+
+            .icon-action:not(.note-icon) {
+                border-radius: 50%;
+                background: var(--glass-background);
+                backdrop-filter: var(--dropdown-backdrop-filter);
+                box-shadow:
+                    inset 0 0 0 1px var(--glass-edge-color),
+                    inset 0 1px 0 var(--glass-highlight-color),
+                    0 4px 12px rgba(0, 0, 0, calc(var(--dropdown-shadow-opacity) / 2));
+                transition: scale 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
+
+                &:active {
+                    scale: 0.92;
+                }
+            }
+        }
+
+        .note-split:not(.options) > .title-row + .scrolling-container {
+            padding-top: var(--mobile-title-row-height);
+            scroll-padding-top: var(--mobile-title-row-height);
+        }
+    }
 }
 
 @media (min-width: 992px) {
