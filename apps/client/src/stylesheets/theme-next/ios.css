@@ -8,6 +8,29 @@ body.mobile.ios {
     --dropdown-backdrop-filter: blur(16px) saturate(1.5) brightness(1.15);
     --mobile-sheet-margin: 8px;
     --mobile-sheet-radius: 28px;
+    --mobile-screen-corner-radius: calc(var(--mobile-sheet-radius) + var(--mobile-sheet-margin));
+    --mobile-sheet-corner-radius: calc(var(--mobile-screen-corner-radius) - var(--mobile-sheet-margin));
+
+    /* The screen corner radii of iPhones, by their portrait size in points, from Apple's device specs. */
+    @media (device-width: 375px) and (device-height: 812px), (device-width: 414px) and (device-height: 896px) {
+        --mobile-screen-corner-radius: 39px;
+    }
+
+    @media (device-width: 390px) and (device-height: 844px) {
+        --mobile-screen-corner-radius: 47px;
+    }
+
+    @media (device-width: 428px) and (device-height: 926px) {
+        --mobile-screen-corner-radius: 53px;
+    }
+
+    @media (device-width: 393px) and (device-height: 852px), (device-width: 430px) and (device-height: 932px) {
+        --mobile-screen-corner-radius: 55px;
+    }
+
+    @media (device-width: 402px) and (device-height: 874px), (device-width: 440px) and (device-height: 956px) {
+        --mobile-screen-corner-radius: 62px;
+    }
 
     --mobile-toolbar-border: 0px;
     --mobile-toolbar-gap: 10px;
@@ -144,6 +167,7 @@ body.mobile.ios {
         }
 
         :is(#context-menu-container, .dropdown-menu).mobile-bottom-menu.show {
+            --mobile-sheet-radius: var(--mobile-sheet-corner-radius);
             padding-bottom: var(--menu-padding-size) !important;
         }
 
@@ -233,6 +257,7 @@ body.mobile.ios {
         /* The blur goes on `.modal-dialog`: WebKit draws a scroller's `backdrop-filter` without its
            rounded corners. */
         .modal-dialog:not(.modal-dialog-full-page-on-mobile, .modal-dialog-tall) {
+            --mobile-sheet-radius: var(--mobile-sheet-corner-radius);
             bottom: var(--mobile-sheet-margin);
             width: calc(100% - 2 * var(--mobile-sheet-margin));
             border-radius: var(--mobile-sheet-radius);
