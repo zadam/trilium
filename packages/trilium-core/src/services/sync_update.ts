@@ -108,11 +108,35 @@ function updateNormalEntity(remoteEC: EntityChange, remoteEntityRow: EntityRow |
     } else if ((localEC.hash !== remoteEC.hash || localEC.isErased !== remoteEC.isErased) && !localECIsOlderOrSameAsRemote) {
         // the change on our side is newer than on the other side, so the other side should update
         entityChangesService.putEntityChangeForOtherInstances(localEC);
+        requeueOwnBlobIfRemoteLacksIt(remoteEC, remoteEntityRow);
 
         return false;
     }
 
     return false;
+}
+
+const BLOB_OWNING_ENTITIES = new Set(["notes", "attachments", "revisions"]);
+
+/**
+ * Sends the local blob along with a local row that won a conflict. The remote side can have erased
+ * that blob in `deleteBlobIfNotUsed()` when its own row moved to another blob, and the blob's own
+ * entity change was pushed long ago, so without this the winning row arrives pointing at nothing.
+ */
+function requeueOwnBlobIfRemoteLacksIt(remoteEC: EntityChange, remoteEntityRow: EntityRow | undefined) {
+    if (!BLOB_OWNING_ENTITIES.has(remoteEC.entityName)) {
+        return;
+    }
+
+    const primaryKeyName = entity_constructor.getEntityFromEntityName(remoteEC.entityName).primaryKeyName;
+    const localBlobId = getSql().getValue<string>(
+        /*sql*/`SELECT blobId FROM ${remoteEC.entityName} WHERE ${primaryKeyName} = ?`,
+        [remoteEC.entityId]
+    );
+
+    if (localBlobId && localBlobId !== remoteEntityRow?.blobId) {
+        entityChangesService.putBlobEntityChange(localBlobId);
+    }
 }
 
 function preProcessContent(remoteEC: EntityChange, remoteEntityRow: EntityRow) {

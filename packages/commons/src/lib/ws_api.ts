@@ -22,6 +22,7 @@ export interface EntityChange {
 export interface EntityRow {
     isDeleted?: boolean;
     content?: Uint8Array | string;
+    blobId?: string;
 }
 
 export interface EntityChangeRecord {

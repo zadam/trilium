@@ -124,6 +124,29 @@ describe("sync_update service (real DB)", () => {
         expect(emitSpy).not.toHaveBeenCalledWith(events.ENTITY_CHANGE_SYNCED, expect.anything());
     });
 
+    it("requeues the local blob with a newer note whose blob the remote does not reference", () => {
+        const noteId = createNote();
+        const localBlobId = String(noteRow(noteId).blobId);
+        const maxIdBefore = maxEntityChangeId();
+
+        apply([{ entityChange: buildEC({ entityId: noteId, hash: "different", utcDateChanged: PAST }), entity: rowWith(noteId, { blobId: "su_remote_blob" }) }]);
+
+        expect(noteRow(noteId).blobId).toBe(localBlobId);
+        expect(requeuedSince(maxIdBefore, "notes", noteId)).toBe(true);
+        expect(requeuedSince(maxIdBefore, "blobs", localBlobId)).toBe(true);
+    });
+
+    it("does not requeue the blob when a newer local note shares it with the remote row", () => {
+        const noteId = createNote();
+        const localBlobId = String(noteRow(noteId).blobId);
+        const maxIdBefore = maxEntityChangeId();
+
+        apply([{ entityChange: buildEC({ entityId: noteId, hash: "different", utcDateChanged: PAST }), entity: rowWith(noteId, { title: "remote-title" }) }]);
+
+        expect(requeuedSince(maxIdBefore, "notes", noteId)).toBe(true);
+        expect(requeuedSince(maxIdBefore, "blobs", localBlobId)).toBe(false);
+    });
+
     it("is a no-op when local and remote are identical but remote is older", () => {
         const noteId = createNote();
         const sameHash = localHash("notes", noteId);
@@ -198,6 +221,15 @@ describe("sync_update service (real DB)", () => {
 
 function localChangeId(entityName: string, entityId: string): string {
     return getSql().getValue<string>("SELECT changeId FROM entity_changes WHERE entityName = ? AND entityId = ?", [entityName, entityId]) ?? "";
+}
+
+function maxEntityChangeId(): number {
+    return getSql().getValue<number>("SELECT COALESCE(MAX(id), 0) FROM entity_changes") ?? 0;
+}
+
+/** Whether the entity's change was written after `id`, which is what puts it in the next push. */
+function requeuedSince(id: number, entityName: string, entityId: string): boolean {
+    return !!getSql().getValue("SELECT 1 FROM entity_changes WHERE entityName = ? AND entityId = ? AND id > ?", [entityName, entityId, id]);
 }
 
 function blobRow(blobId: string, content: string): EntityRow {
