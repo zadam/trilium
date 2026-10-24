@@ -119,6 +119,7 @@ body.mobile.ios {
             .dropdown-menu.mobile-bottom-menu
         ).show {
             --menu-background-color: var(--glass-background);
+            --mobile-menu-group-radius: calc(var(--mobile-sheet-radius) - var(--menu-padding-size));
             border: 0;
             border-radius: var(--mobile-sheet-radius);
             box-shadow: var(--glass-shadow);
