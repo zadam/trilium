@@ -310,6 +310,12 @@
     opacity: 0.5;
 }
 
+.mobile-navigator-row-count {
+    flex: 0 0 auto;
+    color: var(--muted-text-color, var(--main-text-color));
+    font-variant-numeric: tabular-nums;
+}
+
 .mobile-navigator-row-hidden-badge {
     flex: 0 0 auto;
     min-width: 1.6em;

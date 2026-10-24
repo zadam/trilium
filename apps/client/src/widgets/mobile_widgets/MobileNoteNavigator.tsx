@@ -438,6 +438,7 @@ function NavigatorRow({ note, parentNoteId, childNotePath, isActive, isPending, 
                     {rawChildCount}
                 </span>
             )}
+            {hasChildren && <span className="mobile-navigator-row-count">{rawChildCount}</span>}
             {isPending ? (
                 <Icon icon="bx bx-loader bx-spin" className="mobile-navigator-row-chevron" />
             ) : hasChildren ? (
