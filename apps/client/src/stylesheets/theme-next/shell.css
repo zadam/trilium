@@ -12,6 +12,10 @@
     --dropdown-border-radius: 10px;
 }
 
+body.mobile.ios {
+    --dropdown-backdrop-filter: blur(16px) saturate(1.5) brightness(1.15);
+}
+
 #root-widget {
     background-color: var(--root-background);
 }
