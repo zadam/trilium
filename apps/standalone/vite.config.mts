@@ -372,6 +372,13 @@ export default defineConfig(() => ({
                 find: /^puppeteer$/,
                 replacement: join(__dirname, "src/stubs/empty.ts")
             },
+            // Turnish's `browser` entry parses HTML with the page's `DOMParser` or `document`, but the
+            // Web Worker that runs core has neither. Its Node entry falls back to domino, a DOM written
+            // in plain JavaScript that loads no Node built-ins.
+            {
+                find: /^turnish$/,
+                replacement: join(__dirname, "../../node_modules/turnish/dist/index.node.mjs")
+            },
             // EJS renders the share pages. Its ESM entry imports `node:fs` and `node:path` for the
             // file-loading it only reaches through its own `include()` without an `includer`; the
             // share renderer resolves includes itself or passes an `includer`, so the package's own
