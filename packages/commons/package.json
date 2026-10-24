@@ -23,7 +23,7 @@
     "numfmt": "4.1.1"
   },
   "devDependencies": {
-    "happy-dom": "21.0.3",
+    "happy-dom": "21.0.4",
     "preact": "11.0.1"
   }
 }
