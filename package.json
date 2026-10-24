@@ -87,7 +87,7 @@
     "vite": "8.3.4",
     "vitest": "5.0.5"
   },
-  "license": "AGPL-3.0-only",
+  "license": "AGPL-3.0-or-later",
   "author": {
     "name": "Trilium Notes Team",
     "email": "contact@eliandoran.me",

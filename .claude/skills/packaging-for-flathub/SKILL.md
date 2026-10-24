@@ -284,5 +284,3 @@ build adjudicates it).
    + rounded corners), `<branding>` colors (leaf-green `#cfe8c0` light / `#254d18` dark;
    compare peers via `flathub.org/api/v2/appstream/<id>` → `.branding`), metainfo
    description refresh, and the `--no-playwright-browsers` flag worth filing upstream.
-   License stays `AGPL-3.0-only` until the repo reconciles package.json with the README's
-   v3+ grant.

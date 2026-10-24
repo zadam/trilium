@@ -66,7 +66,7 @@ Vendored, then reworked.
 
 Forked from [isaul32/ckeditor5-math](https://github.com/isaul32/ckeditor5-math) by Sauli Anto,
 **ISC** licensed — see [`LICENSE`](./LICENSE) next to this file. ISC is permissive and combines with
-this repository's AGPL-3.0-only license.
+this repository's AGPL-3.0-or-later license.
 
 It is not tracked against upstream and could not easily be: the source was ported to TypeScript and
 through several CKEditor 5 API renames, the MathLive-based input view and its preview are Trilium's

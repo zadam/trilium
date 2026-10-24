@@ -13,7 +13,7 @@
     <name>Trilium Notes Team</name>
   </developer>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>AGPL-3.0-only</project_license>
+  <project_license>AGPL-3.0-or-later</project_license>
   <content_rating type="oars-1.1"/>
   <description>
     <p>Trilium Notes is a hierarchical note-taking application with focus on building large personal knowledge bases.</p>

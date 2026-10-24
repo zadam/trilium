@@ -4,7 +4,7 @@
   "description": "Build your personal knowledge base with Trilium Notes",
   "private": true,
   "main": "src/main.ts",
-  "license": "AGPL-3.0-only",
+  "license": "AGPL-3.0-or-later",
   "author": {
     "name": "Trilium Notes Team",
     "email": "contact@eliandoran.me",

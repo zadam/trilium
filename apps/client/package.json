@@ -3,7 +3,7 @@
   "version": "0.106.0",
   "description": "JQuery-based client for TriliumNext, used for both web and desktop (via Electron)",
   "private": true,
-  "license": "AGPL-3.0-only",
+  "license": "AGPL-3.0-or-later",
   "author": {
     "name": "Trilium Notes Team",
     "email": "contact@eliandoran.me",
