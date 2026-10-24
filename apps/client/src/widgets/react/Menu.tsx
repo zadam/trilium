@@ -53,11 +53,17 @@ export interface MenuProps<T> extends Pick<PopupProps, "anchor" | "offset" | "co
     isWanted?(): boolean;
     items?: MenuItem<T>[];
     /**
-     * For a menu of {@link items}: offers an input at its top that filters every item, at any depth,
-     * as `MenuCommandItem.filterable` does for a submenu. Placed above its anchor, the menu is
-     * drawn bottom-up: the input at the bottom, and the first row lowest and active as it opens.
+     * For a menu of {@link items}, or of components whose rows `MenuItemRows` draws: offers an
+     * input at its top that filters every item, at any depth, as `MenuCommandItem.filterable` does
+     * for a submenu. Placed above its anchor, the menu is drawn bottom-up: the input at the bottom,
+     * and the first row lowest and active as it opens.
      */
     filterable?: boolean;
+    /**
+     * For a {@link filterable} menu placed above its anchor: keeps the input at the bottom, but
+     * draws the rows in their own order, the first one at the top, as in the note tree.
+     */
+    keepOrder?: boolean;
     /** Called when one of {@link items} is pressed with the primary button, or run from the keyboard. */
     onSelect?(item: MenuCommandItem<T>, e: MouseEvent | KeyboardEvent): void;
     children?: ComponentChildren;
@@ -82,7 +88,7 @@ const ACTION_TOOLTIP = { placement: "top", animation: false } as const;
 /** How long typed letters keep adding to the text a row is looked up by. */
 const TYPEAHEAD_TIMEOUT = 500;
 
-export default function Menu<T>({ id, className, anchor, placement, bottomSheet, inline, startAt, items, filterable, onSelect, children, onClose, onDismiss, isWanted, elementRef, ...popupProps }: MenuProps<T>) {
+export default function Menu<T>({ id, className, anchor, placement, bottomSheet, inline, startAt, items, filterable, keepOrder, onSelect, children, onClose, onDismiss, isWanted, elementRef, ...popupProps }: MenuProps<T>) {
     const menuRef = useRef<HTMLDivElement | null>(null);
     // The submenus' layers render into the menu element, which rows reach through the context.
     const [ layerHost, setLayerHost ] = useState<HTMLElement | null>(null);
@@ -128,6 +134,8 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
     /** The placement above its anchor of a filterable menu, which is then drawn bottom-up. */
     const [ upwardPlacement, setUpwardPlacement ] = useState<Placement>();
     const bottomUp = !!upwardPlacement;
+    /** Whether the top level's rows are drawn in reverse, the first row lowest. */
+    const isReversed = bottomUp && !keepOrder;
     /** Whether the menu has asked to close, which it does once. */
     const closed = useRef(false);
     const close = useCallback(() => {
@@ -160,7 +168,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         });
     }, [ rows ]);
     const context: MenuContextValue = {
-        open, openSubmenu, active, setActive, rows, registerRow, keyboardDriven, dropStart, setDropStart, close, filter, setFilter, layerHost
+        open, openSubmenu, active, setActive, rows, registerRow, keyboardDriven, isReversed, dropStart, setDropStart, close, filter, setFilter, layerHost
     };
 
     /** The ids of the rows the keys can stand on at `level`, in the order they stand in. */
@@ -176,11 +184,11 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
 
     /**
      * Makes the first row at `level` that runs something the active one, if the level has rendered.
-     * The first row of a bottom-up menu is the lowest one.
+     * The first row of a reversed menu is the lowest one.
      */
     function activateFirstRow(level: number) {
         const runnable = navigableRows(level).filter((rowId) => !rows.get(rowId)?.custom);
-        const first = level === 0 && bottomUp ? runnable.at(-1) : runnable[0];
+        const first = level === 0 && isReversed ? runnable.at(-1) : runnable[0];
         if (first) setActive(level, first);
         return !!first;
     }
@@ -213,7 +221,9 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         const level = (filter ?? lastFilter.current)?.level;
         lastFilter.current = filter;
         if (level === undefined) return;
-        if (!activateFirstRow(level + 1)) pendingFirstRow.current = level + 1;
+        // Rows that `MenuItemRows` draws in a component of its own render after this effect.
+        activateFirstRow(level + 1);
+        pendingFirstRow.current = level + 1;
         // Typing into the input moves the active row, as the keys do.
         if (filter) setKeyboardDriven(true);
 
@@ -376,7 +386,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
             const rowId = open[parent]?.id;
             if (rowId && rows.get(rowId)?.filterable) target = { rowId, level: parent };
         }
-        if (!target && filterable && items) target = TOP_LEVEL;
+        if (!target && filterable) target = TOP_LEVEL;
         if (!target) return false;
         // The submenus open inside it give way to the list of matches.
         openSubmenu(target.level + 1);
@@ -391,15 +401,18 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         // A menu already closing, as one whose row ran before it was placed, leaves focus alone.
         if (closed.current || isWanted?.() === false) return;
         menuRef.current?.focus({ preventScroll: true });
-        if (!startAt && !isBottomUp) return;
+        const isLowestFirst = isBottomUp && !keepOrder;
+        if (!startAt && !isLowestFirst) return;
         const rowIds = navigableRows(0);
-        // A bottom-up menu starts at its lowest row, however it was opened.
-        const first = startAt === "first" && !isBottomUp ? rowIds[0] : rowIds.at(-1);
+        // A reversed menu starts at its lowest row, however it was opened.
+        const first = startAt === "first" && !isLowestFirst ? rowIds[0] : rowIds.at(-1);
         if (first) setActive(0, first);
+        // Rows that are still loading get the first row once they render.
+        else if (isLowestFirst || startAt === "first") pendingFirstRow.current = 0;
         setKeyboardDriven(true);
     }
 
-    const topLevelFilter = items && filterable
+    const topLevelFilter = filterable
         ? { ...TOP_LEVEL, text: filter?.level === TOP_LEVEL.level ? filter.text : "" }
         : undefined;
     const defaultPlacement = anchor instanceof HTMLElement ? "bottom-start" : "right-start";
@@ -450,7 +463,7 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
             >
                 <MenuList filter={topLevelFilter} bottomUp={bottomUp}>
                     {items
-                        ? <MenuItems items={items} bottomUp={bottomUp} onSelect={onSelect} />
+                        ? <MenuItems items={items} bottomUp={isReversed} onSelect={onSelect} />
                         : children}
                 </MenuList>
                 {/* The submenus' layers follow the scroller in here, portaled by their rows. */}
@@ -466,11 +479,15 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
  */
 export function MenuItemRows<T>({ items }: { items: MenuItem<T>[] }) {
     const menu = useContext(MenuContext);
+    const level = useContext(MenuLevelContext);
     return (
-        <MenuItems items={items} onSelect={(item, e) => {
-            item.handler?.(item, e);
-            if (!item.items) menu?.close();
-        }} />
+        <MenuItems
+            items={items} bottomUp={level === 0 && !!menu?.isReversed}
+            onSelect={(item, e) => {
+                item.handler?.(item, e);
+                if (!item.items) menu?.close();
+            }}
+        />
     );
 }
 

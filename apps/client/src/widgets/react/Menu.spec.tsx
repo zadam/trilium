@@ -1,11 +1,12 @@
 import { Tooltip } from "bootstrap";
 import { render } from "preact";
+import { useState } from "preact/hooks";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { MenuItem } from "../../menus/context_menu";
 import { formatShortcut, joinShortcut } from "../../services/keyboard_shortcut_display";
 import { FormDropdownDivider, FormDropdownSubmenu, FormListHeader, FormListItem } from "./FormList";
-import Menu, { bottomUpOrder, type MenuProps } from "./Menu";
+import Menu, { bottomUpOrder, MenuItemRows, type MenuProps } from "./Menu";
 import { shouldDropStart } from "./menu_context";
 
 vi.mock("../../services/keyboard_actions", async (importOriginal) => {
@@ -580,5 +581,53 @@ describe("Menu of items above its anchor", () => {
         await vi.waitFor(() => expect(menu.querySelectorAll("li")).toHaveLength(1));
         window.dispatchEvent(new Event("resize"));
         await vi.waitFor(() => expect(menu.style.top).toBe("610px"));
+    });
+
+    it("filters the rows MenuItemRows draws, bottom-up, once they load", async () => {
+        const items: MenuItem<unknown>[] = [
+            { title: "Python" }, { title: "JavaScript" }, { kind: "separator" }, { title: "New" }
+        ];
+        let load = () => {};
+        function LoadedRows() {
+            const [ isLoaded, setIsLoaded ] = useState(false);
+            load = () => setIsLoaded(true);
+            return isLoaded ? <MenuItemRows items={items} /> : null;
+        }
+        const menu = await openAt(700, {
+            filterable: true, placement: "top", children: <LoadedRows />
+        });
+        const box = menu.querySelector(":scope > .tn-menu-filterable");
+        const list = () => box?.querySelector(":scope > .tn-menu-scroll");
+        expect(classesOf(box)).toEqual([ "tn-menu-scroll", "tn-menu-filter" ]);
+        expect(activeRow(menu)).toBeUndefined();
+
+        load();
+        await vi.waitFor(() => expect(rowsOf(list()))
+            .toEqual([ "New", "---", "JavaScript", "Python" ]));
+        await vi.waitFor(() => expect(activeRow(menu)).toBe("Python"));
+
+        key(menu, "j");
+        await vi.waitFor(() => expect(rowsOf(list())).toEqual([ "JavaScript" ]));
+        expect(activeRow(menu)).toBe("JavaScript");
+    });
+
+    it("keeps the order of its rows with keepOrder, the best match first", async () => {
+        const menu = await openAt(700, { filterable: true, keepOrder: true, items: [
+            { title: "Python" }, { title: "JavaScript" }, { title: "Plain text" },
+            { kind: "separator" }, { title: "Markdown" }
+        ] });
+        const box = menu.querySelector(":scope > .tn-menu-filterable");
+        const list = () => box?.querySelector(":scope > .tn-menu-scroll");
+        // The input stays next to the toggle.
+        expect(classesOf(box)).toEqual([ "tn-menu-scroll", "tn-menu-filter" ]);
+        expect(rowsOf(list())).toEqual([ "Python", "JavaScript", "Plain text", "---", "Markdown" ]);
+        expect(activeRow(menu)).toBeUndefined();
+
+        key(menu, "p");
+        await vi.waitFor(() => expect(rowsOf(list()))
+            .toEqual([ "Python", "Plain text", "JavaScript" ]));
+        expect(activeRow(menu)).toBe("Python");
+        key(menu, "ArrowDown");
+        await vi.waitFor(() => expect(activeRow(menu)).toBe("Plain text"));
     });
 });

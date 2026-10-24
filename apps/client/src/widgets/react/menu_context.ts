@@ -71,6 +71,8 @@ export interface MenuContextValue {
     registerRow(id: string, row: RowEntry | undefined): void;
     /** Whether the keys moved the menu since the pointer last did. */
     keyboardDriven: boolean;
+    /** Whether the top level's rows are drawn in reverse, the first row lowest. */
+    isReversed: boolean;
     /**
      * Whether the submenus of each level's rows open towards the start, indexed by level. Only the
      * placement follows it; a row's arrow points to the end, as in the operating system's menus.
