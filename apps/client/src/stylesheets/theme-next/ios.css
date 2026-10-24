@@ -230,14 +230,53 @@ body.mobile.ios {
             }
         }
 
+        /* The title is centered on the sheet: it starts as far from the leading edge as the buttons
+           after it reach from the trailing one, each a 40px circle with an 8px margin. */
         .modal .modal-header {
-            .modal-title {
+            --modal-header-trailing-width: 48px;
+
+            &:has(> .modal-title:nth-last-child(3)) {
+                --modal-header-trailing-width: 96px;
+            }
+
+            &:has(> .modal-title:nth-last-child(4)) {
+                --modal-header-trailing-width: 144px;
+            }
+
+            .modal-title,
+            .tn-master-detail-title {
                 color: var(--main-text-color);
                 font-weight: 600;
+                text-align: center;
+            }
+
+            .modal-title {
+                display: -webkit-box;
+                padding-inline-start: var(--modal-header-trailing-width);
+                overflow: hidden;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+            }
+
+            .tn-master-detail-icon {
+                display: none;
+            }
+
+            /* The close button follows the master-detail header; the back button, 32px with a 4px
+               gap, takes part of its width. */
+            .tn-master-detail-header {
+                padding-inline-start: 48px;
+
+                &:has(> button.icon-action) {
+                    padding-inline-start: 12px;
+                }
             }
 
             :is(.btn-close, .help-button, .custom-title-bar-button) {
                 --modal-control-button-size: 40px;
+                flex-shrink: 0;
+                margin-inline-end: 0;
                 font-size: 22px;
                 backdrop-filter: var(--dropdown-backdrop-filter);
                 box-shadow: var(--glass-edge);
