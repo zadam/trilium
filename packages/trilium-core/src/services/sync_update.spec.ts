@@ -147,6 +147,23 @@ describe("sync_update service (real DB)", () => {
         expect(requeuedSince(maxIdBefore, "blobs", localBlobId)).toBe(false);
     });
 
+    it("does not requeue a sync stub with a newer note, so the remote keeps the full content", () => {
+        const noteId = createNote();
+        const stubBlobId = "suStubbedBlob";
+        cls.init(() => {
+            const sql = getSql();
+            const now = dateUtils.utcNowDateTime();
+            sql.execute("INSERT INTO blobs (blobId, content, dateModified, utcDateModified) VALUES (?, '', ?, ?)", [stubBlobId, now, now]);
+            sql.execute("UPDATE notes SET blobId = ? WHERE noteId = ?", [stubBlobId, noteId]);
+        });
+        const maxIdBefore = maxEntityChangeId();
+
+        apply([{ entityChange: buildEC({ entityId: noteId, hash: "different", utcDateChanged: PAST }), entity: rowWith(noteId, { blobId: "su_remote_blob" }) }]);
+
+        expect(requeuedSince(maxIdBefore, "notes", noteId)).toBe(true);
+        expect(requeuedSince(maxIdBefore, "blobs", stubBlobId)).toBe(false);
+    });
+
     it("lets a remote change win against a local change dated in the future", () => {
         const noteId = createNote();
         const clockAhead = dateUtils.utcDateTimeStr(new Date(Date.now() + 3600 * 1000));

@@ -1,5 +1,6 @@
 import type { EntityChange, EntityChangeRecord, EntityRow } from "@triliumnext/commons";
 
+import blobService from "./blob.js";
 import entityChangesService from "./entity_changes.js";
 import { getLog } from "./log.js";
 import { getSql } from "./sql/index.js";
@@ -131,6 +132,7 @@ const BLOB_OWNING_ENTITIES = new Set(["notes", "attachments", "revisions"]);
  * Sends the local blob along with a local row that won a conflict. The remote side can have erased
  * that blob in `deleteBlobIfNotUsed()` when its own row moved to another blob, and the blob's own
  * entity change was pushed long ago, so without this the winning row arrives pointing at nothing.
+ * A sync stub is never sent: its empty content would replace the full copy the remote holds.
  */
 function requeueOwnBlobIfRemoteLacksIt(remoteEC: EntityChange, remoteEntityRow: EntityRow | undefined) {
     if (!BLOB_OWNING_ENTITIES.has(remoteEC.entityName)) {
@@ -138,13 +140,17 @@ function requeueOwnBlobIfRemoteLacksIt(remoteEC: EntityChange, remoteEntityRow: 
     }
 
     const primaryKeyName = entity_constructor.getEntityFromEntityName(remoteEC.entityName).primaryKeyName;
-    const localBlobId = getSql().getValue<string>(
-        /*sql*/`SELECT blobId FROM ${remoteEC.entityName} WHERE ${primaryKeyName} = ?`,
+    const localBlob = getSql().getRowOrNull<{ blobId: string; contentLength: number }>(
+        /*sql*/`SELECT blobs.blobId, LENGTH(blobs.content) AS contentLength
+                FROM ${remoteEC.entityName} JOIN blobs USING (blobId)
+                WHERE ${remoteEC.entityName}.${primaryKeyName} = ?`,
         [remoteEC.entityId]
     );
 
-    if (localBlobId && localBlobId !== remoteEntityRow?.blobId) {
-        entityChangesService.putBlobEntityChange(localBlobId);
+    if (localBlob
+        && localBlob.blobId !== remoteEntityRow?.blobId
+        && !blobService.isSyncStub(localBlob.blobId, localBlob.contentLength)) {
+        entityChangesService.putBlobEntityChange(localBlob.blobId);
     }
 }
 

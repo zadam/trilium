@@ -27,11 +27,9 @@ function getBlobPojo(entityName: string, entityId: string, opts?: { preview: boo
 
     const pojo = blob.getPojo();
 
-    // A sync stub: the blob carries empty content but its (content-derived) blobId is not the hash of
-    // empty content — i.e. its real content was withheld by the sync server because it exceeded this
-    // device's `syncMaxBlobContentSize`. Detected before content is decoded/nulled below, off the raw
-    // stored length. The client shows an "open on server" placeholder instead of empty content.
-    const isStubbed = pojo.contentLength === 0 && pojo.blobId !== EMPTY_BLOB_ID;
+    // Detected before content is decoded/nulled below, off the raw stored length. The client shows an
+    // "open on server" placeholder instead of empty content.
+    const isStubbed = isSyncStub(pojo.blobId, pojo.contentLength);
 
     if (!entity.hasStringContent()) {
         pojo.content = null;
@@ -106,7 +104,7 @@ function getDeletedNoteBlobPojo(noteId: string) {
         utcDateModified: blobRow.utcDateModified
     };
 
-    const isStubbed = pojo.contentLength === 0 && pojo.blobId !== EMPTY_BLOB_ID;
+    const isStubbed = isSyncStub(pojo.blobId, pojo.contentLength);
 
     if (!isStringNote(noteRow.type, noteRow.mime)) {
         pojo.content = null;
@@ -208,8 +206,18 @@ function calculateContentHash({ blobId, content, textRepresentation }: Pick<Blob
     return hash(`${blobId}|${content.toString()}${textRepresentationSegment}`);
 }
 
+/**
+ * Whether a stored blob is a sync stub: empty content under a `blobId` that is not the hash of empty
+ * content, because the sync server withheld content larger than this device's
+ * `syncMaxBlobContentSize`.
+ */
+function isSyncStub(blobId: string | undefined, contentLength: number) {
+    return contentLength === 0 && blobId !== EMPTY_BLOB_ID;
+}
+
 export default {
     getBlobPojo,
+    isSyncStub,
     getDeletedNoteBlobPojo,
     processContent,
     encryptTextRepresentation,
