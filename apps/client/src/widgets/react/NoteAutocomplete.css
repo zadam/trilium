@@ -59,6 +59,13 @@
     max-width: min(600px, calc(100vw - 10px));
 }
 
+/* `NARROW_LAYOUT` in services/utils.ts. */
+@media (max-width: 991px) {
+    body.mobile .note-autocomplete-menu.note-mention-menu {
+        width: calc(100vw - 10px);
+    }
+}
+
 .note-autocomplete-menu .dropdown-item {
     /* Outranks Bootstrap's `nowrap`, so a long note path wraps within the list's width. */
     white-space: normal;
