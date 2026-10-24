@@ -229,7 +229,10 @@ describe("script note diagnostics", () => {
             SCRIPT_MIME_FRONTEND,
             "class MyWidget extends api.NoteContextAwareWidget {\n"
             + "    doRender() { this.$widget = $('<div>'); }\n"
-            + "    async refreshWithNote(note) { this.$widget.text(note?.title ?? ''); }\n"
+            + "    async refreshWithNote(note) {\n"
+            + "        this.toggleInt(this.isNote('root'));\n"
+            + "        this.$widget.text(`${this.noteId} ${this.notePath} ${this.ntxId} ${note?.title ?? ''}`);\n"
+            + "    }\n"
             + "}"
         );
         expect(codes).toEqual([]);

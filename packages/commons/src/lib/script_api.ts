@@ -884,6 +884,11 @@ interface BasicWidget {
     render(): ScriptJQuery;
     /** Tears down the widget; override to release resources. */
     cleanup(): void;
+    /**
+     * Shows or hides the widget from inside the widget itself, such as from `refreshWithNote()`
+     * when the note does not apply.
+     */
+    toggleInt(show: boolean | null | undefined): void;
     /** Fluent builder: set the element id. Chainable. */
     id(id: string): this;
     /** Fluent builder: add a CSS class. Chainable. */
@@ -902,8 +907,16 @@ interface BasicWidget {
 interface NoteContextAwareWidget extends BasicWidget {
     /** The note currently shown in this widget's context. */
     note: ScriptFNote | null;
+    /** The ID of `note`, such as for `loadResults.isNoteContentReloaded(this.noteId)`. */
+    readonly noteId: string | undefined;
+    /** The path of `note` in the tree, such as `root/abc123/def456`. */
+    readonly notePath: string | null | undefined;
+    /** The ID of the note context (split) this widget is attached to. */
+    readonly ntxId: string | null | undefined;
     /** The note context (split) this widget is attached to. */
     noteContext?: ScriptNoteContext;
+    /** Returns whether `noteId` is the note shown in this widget's context. */
+    isNote(noteId: string): boolean;
     /**
      * Updates the widget for the note in its context. Override it to refresh the widget's content;
      * it runs when that note changes and on `refresh()`, as long as `isEnabled()` returns `true`.
