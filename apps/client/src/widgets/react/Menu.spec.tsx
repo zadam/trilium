@@ -137,13 +137,18 @@ describe("Menu with declared rows", () => {
         expect(toggle?.querySelector(".description")?.previousElementSibling?.textContent).toBe("Search");
     });
 
-    it("draws the description of an item under its title", () => {
+    it("draws the description of an item under its title, and its trailing text at the end", () => {
         render(<Menu anchor={{ x: 10, y: 10 }} onClose={vi.fn()} items={[
-            { title: "Auto", description: "Follow the global setting", checked: true }
+            { title: "Auto", description: "Follow the global setting", checked: true },
+            { title: "Plan", trailingText: "Work › R&D" }
         ]} />, host);
         const description = document.querySelector(".dropdown-item .description");
         expect(description?.textContent).toBe("Follow the global setting");
         expect(description?.previousElementSibling?.textContent).toBe("Auto");
+
+        const trailingText = document.querySelector(".dropdown-item .menu-trailing-text");
+        expect(trailingText?.textContent).toBe("Work › R&D");
+        expect(trailingText?.previousElementSibling?.textContent).toBe("Plan");
     });
 
     it("closes the menu after running a row, but not for a row that opens a submenu or is disabled", async () => {

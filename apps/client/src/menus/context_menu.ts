@@ -110,6 +110,8 @@ export interface MenuCommandItem<T> {
     checked?: boolean;
     /** Classes put on the item itself, for a menu styling one of its entries differently. */
     className?: string;
+    /** Plain text at the trailing edge of the item, where a shortcut would go, such as a note's path. */
+    trailingText?: string;
     /** An icon shown at the trailing edge of the item, where a shortcut would go. */
     trailingIcon?: string;
     /**

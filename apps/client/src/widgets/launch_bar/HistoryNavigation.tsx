@@ -5,7 +5,7 @@ import contextMenu, { MenuCommandItem } from "../../menus/context_menu";
 import { showLauncherContextMenu } from "../../menus/launcher_button_context_menu";
 import froca from "../../services/froca";
 import link from "../../services/link";
-import tree from "../../services/tree";
+import tree, { NOTE_PATH_TITLE_SEPARATOR } from "../../services/tree";
 import { escapeHtml } from "../../services/utils";
 import { useHoldContextMenu } from "../react/hooks";
 import { LaunchBarActionButton, useLauncherIconAndTitle } from "./launch_bar_widgets";
@@ -79,8 +79,11 @@ export async function getHistoryItems(
         const { noteId, notePath } = link.parseNavigationStateFromUrl(url);
         if (!noteId || !notePath) continue;
 
+        const titles = await tree.getNotePathTitleComponents(notePath);
+        const title = titles.pop() ?? "";
         items.push({
-            title: escapeHtml(await tree.getNotePathTitle(notePath)),
+            title: escapeHtml(title),
+            trailingText: titles.join(NOTE_PATH_TITLE_SEPARATOR) || undefined,
             uiIcon: froca.getNoteFromCache(noteId)?.getIcon(),
             handler: go
         });

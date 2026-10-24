@@ -177,6 +177,8 @@ export interface FormListItemOpts {
     keyboardShortcut?: KeyboardActionNames;
     /** A shortcut shown as it is written, for a row with no action of its own. */
     shortcut?: string;
+    /** Text at the end of the row, where a shortcut would go. */
+    trailingText?: string;
     /** An icon at the end of the row, where a shortcut would go. */
     trailingIcon?: string;
 }
@@ -194,7 +196,7 @@ const TOOLTIP_CONFIG: Partial<Tooltip.Options> = {
     animation: false
 };
 
-export function FormListItem({ className, icon, iconSvg, iconClassName, value, title, active, disabled, checked, checkable, container, onClick, selected, rtl, description, itemRef: externalItemRef, keyboardShortcut, shortcut, trailingIcon, closeOnSelect, ...contentProps }: FormListItemOpts) {
+export function FormListItem({ className, icon, iconSvg, iconClassName, value, title, active, disabled, checked, checkable, container, onClick, selected, rtl, description, itemRef: externalItemRef, keyboardShortcut, shortcut, trailingText, trailingIcon, closeOnSelect, ...contentProps }: FormListItemOpts) {
     const itemRef = useSyncedRef<HTMLLIElement>(externalItemRef, null);
     // Inside a `Menu` the row is one of its items; elsewhere, as in a dropdown, it stands alone.
     const menu = useContext(MenuContext);
@@ -291,6 +293,7 @@ export function FormListItem({ className, icon, iconSvg, iconClassName, value, t
                     <FormListContent description={description} disabled={disabled} {...contentProps} />
                 )}
                 <FormListShortcut keyboardShortcut={keyboardShortcut} shortcut={shortcut} />
+                {trailingText && <span className="menu-trailing-text">{trailingText}</span>}
                 {trailingIcon && <span className={clsx(trailingIcon, "tn-icon", "menu-trailing-icon")} />}
             </span>
         </li>

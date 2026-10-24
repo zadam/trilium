@@ -83,27 +83,29 @@ describe("FormListItem", () => {
         expect(span?.textContent).toBe("Copynew");
     });
 
-    it("ends its row with a shortcut, then a trailing icon, leaving its own icon standing", () => {
+    it("ends its row with a shortcut, a trailing text, then a trailing icon, leaving its own icon standing", () => {
         const host = document.createElement("div");
         render((
             <menu role="none">
-                <FormListItem icon="bx bx-sort" shortcut="Ctrl+S" trailingIcon="bx bx-check">By title</FormListItem>
+                <FormListItem icon="bx bx-sort" shortcut="Ctrl+S" trailingText="Sorting" trailingIcon="bx bx-check">By title</FormListItem>
             </menu>
         ), host);
         const span = host.querySelector("li.dropdown-item > span");
 
         expect([ ...span?.children ?? [] ].map((child) => `${child.tagName.toLowerCase()}.${child.className}`)).toEqual([
-            "span.bx bx-sort tn-icon", "span.tn-menu-gap", "kbd.", "span.bx bx-check tn-icon menu-trailing-icon"
+            "span.bx bx-sort tn-icon", "span.tn-menu-gap", "kbd.", "span.menu-trailing-text",
+            "span.bx bx-check tn-icon menu-trailing-icon"
         ]);
-        expect(span?.textContent).toBe("By titleCtrl+S");
+        expect(span?.textContent).toBe("By titleCtrl+SSorting");
     });
 
-    it("shows no shortcuts on a phone, which has no keyboard to press them on", () => {
+    it("shows no shortcuts on a phone, which has no keyboard to press them on, but keeps a trailing text", () => {
         const host = document.createElement("div");
         const rows = () => render((
             <menu role="none">
                 <FormListItem shortcut="Ctrl+S">Save</FormListItem>
                 <FormListItem keyboardShortcut="copyNotesToClipboard">Copy</FormListItem>
+                <FormListItem trailingText="Work">Plan</FormListItem>
             </menu>
         ), host);
         rows();
@@ -115,7 +117,7 @@ describe("FormListItem", () => {
             rows();
             expect(host.querySelector("kbd")).toBeNull();
             expect(host.querySelector(".keyboard-shortcut")).toBeNull();
-            expect(host.textContent).toBe("SaveCopy");
+            expect(host.textContent).toBe("SaveCopyPlanWork");
         } finally {
             layout.onMobile = false;
         }
