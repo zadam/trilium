@@ -10,10 +10,9 @@ import {
     Table,
     Widget
 } from "ckeditor5";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createTestEditor, destroyTrackedEditors, pressKey } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
+import { createTestEditor, pressKey } from "../../../test/editor-kit.js";
 import TriliumMentionUI from "../mention/trilium_mention_ui.js";
 import type { MentionHostedList } from "../mention/types.js";
 import ContentEmbed from "./content_embed.js";
@@ -37,10 +36,9 @@ describe("ContentEmbedCaret entering an embed", () => {
 
     beforeEach(async () => {
         enterContentEmbed = vi.fn(() => true);
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote: vi.fn(), enterContentEmbed })
+        editor = await createTestEditor(TEXT_PLUGINS, {
+            contentEmbed: { enter: enterContentEmbed }
         });
-        editor = await createTestEditor(TEXT_PLUGINS);
     });
 
     it("enters the embed beside the caret with Left and Right", () => {
@@ -139,7 +137,7 @@ describe("ContentEmbedCaret entering an embed", () => {
         expect(pressKey(editor, "ArrowRight")).toBe(false);
         expect(enterContentEmbed).toHaveBeenCalledOnce();
 
-        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote: vi.fn() }) });
+        editor.config.set("contentEmbed", { enter: undefined });
         expect(pressKey(editor, "ArrowRight")).toBe(false);
     });
 
@@ -177,7 +175,10 @@ describe("ContentEmbedCaret entering an embed", () => {
     });
 
     it("follows the screen in right-to-left content", async () => {
-        const rtlEditor = await createTestEditor(TEXT_PLUGINS, { language: { content: "ar" } });
+        const rtlEditor = await createTestEditor(TEXT_PLUGINS, {
+            language: { content: "ar" },
+            contentEmbed: { enter: enterContentEmbed }
+        });
         setModelData(rtlEditor.model, `<paragraph>ab[]</paragraph>${EMBED}`);
         expect(pressKey(rtlEditor, "ArrowRight")).toBe(false);
         expect(pressKey(rtlEditor, "ArrowLeft")).toBe(true);
@@ -190,14 +191,9 @@ describe("ContentEmbedCaret leaving an embed", () => {
     let plugin: ContentEmbedCaret;
 
     beforeEach(async () => {
-        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote: vi.fn() }) });
         editor = await createTestEditor(TEXT_PLUGINS);
         plugin = editor.plugins.get(ContentEmbedCaret);
     });
-
-    // Destroying a focused editor with an embed selected reads the `glob` mock, which the global
-    // cleanups remove first.
-    afterEach(() => destroyTrackedEditors());
 
     it("focuses the editor with the caret in the text beside the embed", () => {
         setModelData(editor.model, `<paragraph>ab</paragraph>${EMBED}<paragraph>cd</paragraph>`);
@@ -222,14 +218,12 @@ describe("ContentEmbedCaret leaving an embed", () => {
     });
 
     it("scrolls to the fake caret below an embed taller than the window", () => {
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadEmbeddedNote: (_noteId: string, wrapper: HTMLElement) => {
-                    const content = document.createElement("div");
-                    content.style.height = `${window.innerHeight * 3}px`;
-                    wrapper.append(content);
-                }
-            })
+        editor.config.set("contentEmbed", {
+            loadNote: (_noteId: string, wrapper: HTMLElement) => {
+                const content = document.createElement("div");
+                content.style.height = `${window.innerHeight * 3}px`;
+                wrapper.append(content);
+            }
         });
         setModelData(editor.model, AB + EMBED);
         // As after reading down to the end of the embed, its top is above the window.
@@ -268,7 +262,6 @@ describe("ContentEmbedCaret as the editor of an embed", () => {
     let plugin: ContentEmbedCaret;
 
     beforeEach(async () => {
-        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote: vi.fn() }) });
         editor = await createTestEditor(TEXT_PLUGINS);
         plugin = editor.plugins.get(ContentEmbedCaret);
     });

@@ -4653,7 +4653,8 @@
       "move-down": "Move down",
       "image-position": "Image position",
       "list": "List",
-      "list-type": "List type"
+      "list-type": "List type",
+      "insert-a-preview-of-a-web-page-or-a-video": "Insert a preview of a web page or a video"
     },
     "task-state-dropped-title": "Invalid task states",
     "task-state-dropped-message_one": "A custom task state definition is invalid and was ignored.",

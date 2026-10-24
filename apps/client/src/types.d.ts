@@ -20,7 +20,6 @@ interface CustomGlobals extends BootstrapDefinition {
     isMobile: typeof utils.isMobile;
     getComponentByEl: typeof appContext.getComponentByEl;
     getHeaders: typeof server.getHeaders;
-    getLocalUpload: typeof server.getLocalUpload;
     getReferenceLinkTitle: (href: string) => Promise<string>;
     getReferenceLinkTitleSync: (href: string, storedTitle?: string) => string;
     getActiveContextNote: () => FNote | null;

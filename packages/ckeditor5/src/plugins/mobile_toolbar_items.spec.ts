@@ -43,7 +43,6 @@ import editorStylesheetUrl from "ckeditor5/ckeditor5.css?url";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import { installGlobMock } from "../../test/globals-test-kit.js";
 import admonitionIcon from "../icons/admonition.svg?raw";
 import blockTypeIcon from "../icons/block-type.svg?raw";
 import AdmonitionEditing from "./admonition/admonition_editing.js";
@@ -302,10 +301,10 @@ describe("MobileToolbarItems", () => {
 
 describe("addLink", () => {
     it("opens the link dialog of the internal link button, under the link icon", async () => {
-        const triggerCommand = vi.fn();
-        installGlobMock({ getComponentByEl: () => ({ triggerCommand }) });
+        const openDialog = vi.fn();
         const editor = await createTestEditor([Essentials, Paragraph, InternalLinkPlugin, MobileToolbarItems], {
-            toolbar: ["addLink"]
+            toolbar: ["addLink"],
+            internalLink: { openDialog }
         });
         setModelData(editor.model, "<paragraph>foo[]</paragraph>");
 
@@ -314,7 +313,7 @@ describe("addLink", () => {
         };
         expect([button.label, button.icon, button.isEnabled]).toStrictEqual(["Link", IconLink, true]);
         button.fire("execute");
-        expect(triggerCommand).toHaveBeenCalledExactlyOnceWith("addLinkToText");
+        expect(openDialog).toHaveBeenCalledOnce();
 
         editor.enableReadOnlyMode("spec");
         expect(button.isEnabled).toBe(false);

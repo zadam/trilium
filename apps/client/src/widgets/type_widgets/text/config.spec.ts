@@ -1,9 +1,11 @@
-import type { EditorConfig } from "@triliumnext/ckeditor5";
+import type { EditorConfig, InlineEmbedSource } from "@triliumnext/ckeditor5";
 import { DISPLAYABLE_LOCALE_IDS, IMAGE_MIMES, LOCALES, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 import imageService from "../../../services/image.js";
+import linkService from "../../../services/link.js";
 import { ensureMimeTypesForHighlighting } from "../../../services/syntax_highlight.js";
+import type { AddLinkOpts } from "../../dialogs/add_link.js";
 import { buildConfig, type BuildEditorOptions, OPEN_SOURCE_LICENSE_KEY } from "./config.js";
 
 // Mutable option values, reset before each test (see `beforeEach`).
@@ -93,6 +95,30 @@ vi.mock("../../../services/dialog.js", () => ({
 }));
 vi.mock("@triliumnext/highlightjs", () => ({ default: { name: "hljs-stub" } }));
 vi.mock("../../../services/math.js", () => ({ default: { name: "katex-stub" } }));
+vi.mock("../../../services/content_renderer.js", () => ({ getUploadBoxSize: vi.fn(() => "medium") }));
+const { convertImageToDrawing } = vi.hoisted(() => ({
+    convertImageToDrawing: vi.fn(async () => "d1")
+}));
+vi.mock("../canvas/image_to_drawing.js", () => ({ convertImageToDrawing }));
+vi.mock("../../../services/server.js", async (importOriginal) => {
+    const original = await importOriginal<typeof import("../../../services/server.js")>();
+    return {
+        default: {
+            ...original.default,
+            // `keyboard_actions` loads its actions through `get` on import.
+            get: vi.fn(async () => []),
+            getHeaders: vi.fn(async (headers?: Record<string, string | null | undefined>) => ({
+                "x-csrf-token": "csrf",
+                "trilium-hoisted-note-id": null,
+                ...headers
+            }))
+        }
+    };
+});
+vi.mock("../../../services/link_embed.js", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("../../../services/link_embed.js")>()),
+    fetchMetadata: vi.fn(async (url: string, ownerNoteId: string) => ({ url, embedType: "opengraph", title: ownerNoteId }))
+}));
 
 function baseOpts(overrides: Partial<BuildEditorOptions> = {}): BuildEditorOptions {
     return {
@@ -334,6 +360,177 @@ describe("CK config - tables", () => {
         optionsState.map.customDateTimeFormat = "DD.MM.YYYY HH:mm";
         expect((await buildConfig(baseOpts())).autoSort)
             .toEqual({ dateFormats: ["DD.MM.YYYY HH:mm"] });
+    });
+
+    it("formats inserted dates in a chosen format or the user's current one", async () => {
+        const { formatDateTime } = await buildConfig(baseOpts());
+        const date = new Date(2026, 8, 25, 10, 30);
+
+        expect(formatDateTime?.(date, "YYYY")).toBe("2026");
+
+        optionsState.map.customDateTimeFormat = "DD.MM.YYYY HH:mm";
+        expect(formatDateTime?.(date)).toBe("25.09.2026 10:30");
+    });
+
+    it("fetches link previews for the open note, and none without one", async () => {
+        let noteId: string | undefined = "noteAbc";
+        const linkEmbed = (await buildConfig(baseOpts({ getNoteId: () => noteId }))).linkEmbed;
+
+        expect(await linkEmbed?.fetchMetadata?.("https://a.example/"))
+            .toStrictEqual({ url: "https://a.example/", embedType: "opengraph", title: "noteAbc" });
+
+        noteId = undefined;
+        expect(await linkEmbed?.fetchMetadata?.("https://a.example/")).toMatchObject({ unresolved: true });
+        expect(linkEmbed?.detectEmbedType?.("https://youtube.com/watch?v=abc12345678")).toBe("youtube");
+    });
+
+    it("uploads to the open note, as a change of the editor's component", async () => {
+        const config = await buildConfig(baseOpts({ getNoteId: () => "noteAbc", getComponentId: () => "editor1" }));
+
+        expect(config.getNoteId?.()).toBe("noteAbc");
+        // Headers without a value are left out rather than sent as the text "null".
+        expect(await config.attachmentUpload?.getHeaders?.())
+            .toStrictEqual({ "x-csrf-token": "csrf", "trilium-component-id": "editor1" });
+        expect(config.attachmentUpload?.getEmbedBoxSize?.("image/png", 1)).toBe("medium");
+    });
+
+    it("hands the dialogs and cut to note of the editor to the app commands that do them", async () => {
+        const triggerHostCommand = vi.fn(async () => undefined);
+        const config = await buildConfig(baseOpts({ triggerHostCommand }));
+        const callbacks = [
+            [ config.internalLink?.openDialog, "addLinkToText" ],
+            [ config.markdownImport?.open, "pasteMarkdownIntoText" ],
+            [ config.contentEmbed?.pickNote, "addIncludeNoteToText" ],
+            [ config.cutToNote?.cut, "cutIntoNote" ],
+            [ config.cutToNote?.saveNow, "saveNoteDetailNow" ]
+        ] as const;
+
+        for (const [ callback, command ] of callbacks) {
+            await callback?.();
+            expect(triggerHostCommand).toHaveBeenLastCalledWith(command);
+        }
+        expect(triggerHostCommand).toHaveBeenCalledTimes(callbacks.length);
+    });
+
+    it("shows the icon picker the editor asks for, and none without a host for it", async () => {
+        const release = vi.fn();
+        const showIconPicker = vi.fn(() => release);
+        const request = { container: document.createElement("div"), onSelect: vi.fn() };
+
+        expect((await buildConfig(baseOpts({ showIconPicker }))).inlineIcon?.showPicker(request)).toBe(release);
+        expect(showIconPicker).toHaveBeenCalledWith(request);
+        expect((await buildConfig(baseOpts())).inlineIcon?.showPicker(request)).toBeNull();
+    });
+
+    it("copies block and tab references from the reference source, and none without one", async () => {
+        const getEditor = vi.fn(() => null);
+        const referenceSource = {
+            getEditor, getNote: () => null, getNotePath: () => undefined, save: vi.fn()
+        };
+        const config = await buildConfig(baseOpts({ referenceSource }));
+
+        config.blockReference?.copyReference?.();
+        config.tabs?.copyReference?.();
+
+        expect(getEditor).toHaveBeenCalledTimes(2);
+        const bare = await buildConfig(baseOpts());
+        expect(bare.blockReference).toBeUndefined();
+        expect(bare.tabs).toBeUndefined();
+    });
+
+    it("converts images to drawings in the note open at the time, as changes of the host", async () => {
+        let noteId: string | undefined = "n1";
+        const config = await buildConfig(baseOpts({
+            getNoteId: () => noteId,
+            getComponentId: () => "component1"
+        }));
+
+        expect(await config.imageToDrawing?.convert?.("api/images/a.png")).toBe("d1");
+        noteId = undefined;
+        expect(await config.imageToDrawing?.convert?.("api/images/b.png")).toBeNull();
+
+        expect(convertImageToDrawing).toHaveBeenCalledExactlyOnceWith("n1", "api/images/a.png", "component1");
+    });
+
+    it("hands embeds to the content embed handlers of the moment, and falls back without any", async () => {
+        const tools = { getTools: () => [], execute: vi.fn(), subscribe: () => () => {} };
+        const first = {
+            loadNote: vi.fn(),
+            loadAttachment: vi.fn(),
+            loadInline: vi.fn(),
+            focusAttachment: vi.fn(),
+            getAttachmentHref: vi.fn(async () => "#root/n1?viewMode=attachments&attachmentId=a1"),
+            openMenu: vi.fn(),
+            getTools: vi.fn(() => tools),
+            enter: vi.fn(() => true)
+        };
+        const second = { ...first, loadNote: vi.fn() };
+        let handlers: typeof first | undefined = first;
+        const embed = document.createElement("figure");
+        const wrapper = document.createElement("div");
+        const source = {} as InlineEmbedSource;
+        const onBlockChange = vi.fn();
+        const host = (await buildConfig(baseOpts({ getContentEmbedHandlers: () => handlers })))
+            .contentEmbed;
+
+        host?.loadNote?.("n1", wrapper, "small", "b1", onBlockChange);
+        handlers = second;
+        host?.loadNote?.("n2", wrapper, undefined, undefined, onBlockChange);
+        host?.loadAttachment?.("a1", wrapper, "medium");
+        host?.loadInline?.(source, wrapper, "full", { isFocused: true });
+        host?.focusAttachment?.("a1");
+        host?.openMenu?.(embed, wrapper);
+
+        expect(first.loadNote).toHaveBeenCalledExactlyOnceWith("n1", wrapper, "small", "b1", onBlockChange);
+        expect(second.loadNote).toHaveBeenCalledExactlyOnceWith("n2", wrapper, undefined, undefined, onBlockChange);
+        expect(first.loadAttachment).toHaveBeenCalledWith("a1", wrapper, "medium");
+        expect(first.loadInline).toHaveBeenCalledWith(source, wrapper, "full", { isFocused: true });
+        expect(first.focusAttachment).toHaveBeenCalledWith("a1");
+        expect(first.openMenu).toHaveBeenCalledWith(embed, wrapper);
+        expect(await host?.getAttachmentHref?.("a1")).toBe("#root/n1?viewMode=attachments&attachmentId=a1");
+        expect(host?.getTools?.(embed)).toBe(tools);
+        expect(host?.enter?.(embed, "end")).toBe(true);
+        expect(first.enter).toHaveBeenCalledWith(embed, "end");
+
+        handlers = undefined;
+        expect(await host?.getAttachmentHref?.("a1")).toBeNull();
+        expect(host?.getTools?.(embed)).toBeNull();
+        expect(host?.enter?.(embed, "start")).toBe(false);
+        expect(() => host?.loadNote?.("n1", wrapper, undefined, undefined, onBlockChange)).not.toThrow();
+    });
+
+    it("titles reference links through the link service, in the note open at the time", async () => {
+        const loadTitle = vi.spyOn(linkService, "loadReferenceLinkTitle").mockResolvedValue();
+        onTestFinished(() => loadTitle.mockRestore());
+        let noteId = "n1";
+        const referenceLink = (await buildConfig(baseOpts({ getNoteId: () => noteId }))).referenceLink;
+        const element = document.createElement("span");
+
+        referenceLink?.renderTitle?.(element, "#root/n2", "Stored");
+        noteId = "n3";
+        referenceLink?.renderTitle?.(element, "#root/n2");
+
+        expect(referenceLink?.getTitle).toBe(linkService.getReferenceLinkTitle);
+        expect(referenceLink?.getTitleSync).toBe(linkService.getReferenceLinkTitleSync);
+        expect(loadTitle.mock.calls.map(([ $el, ...rest ]) => [ $el[0], ...rest ])).toEqual([
+            [ element, "#root/n2", "n1", "Stored" ],
+            [ element, "#root/n2", "n3", undefined ]
+        ]);
+    });
+
+    it("asks the host to fix a link to a missing note through the add link dialog", async () => {
+        const triggerHostCommand = vi.fn(async () => undefined);
+        const fix = vi.fn();
+        const referenceLink = (await buildConfig(baseOpts({ triggerHostCommand }))).referenceLink;
+
+        referenceLink?.fixLink?.("Gone", fix);
+
+        expect(triggerHostCommand).toHaveBeenCalledExactlyOnceWith("showAddLinkDialog", expect.objectContaining({
+            text: "Gone", hasSelection: false, fixLink: true
+        }));
+        const [ , dialog ] = triggerHostCommand.mock.calls[0] as unknown as [ string, AddLinkOpts ];
+        await dialog.addLink("root/n9", null);
+        expect(fix).toHaveBeenCalledExactlyOnceWith("#root/n9");
     });
 });
 

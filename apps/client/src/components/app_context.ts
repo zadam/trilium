@@ -386,6 +386,7 @@ export type CommandMappings = {
     insertDateTimeToText: CommandData;
     pasteMarkdownIntoText: CommandData;
     cutIntoNote: CommandData;
+    saveNoteDetailNow: CommandData;
     addIncludeNoteToText: CommandData;
     editReadOnlyNote: CommandData;
     toggleRibbonTabClassicEditor: CommandData;

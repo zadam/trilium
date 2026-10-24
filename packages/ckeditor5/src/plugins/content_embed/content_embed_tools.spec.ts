@@ -5,7 +5,6 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import ReferenceLink from "../referencelink.js";
 import ContentEmbed from "./content_embed.js";
 import ContentEmbedBoxSizeDropdown from "./content_embed_box_size_dropdown.js";
@@ -57,14 +56,10 @@ describe("ContentEmbedTools", () => {
     beforeEach(async () => {
         provider = createProvider([ SELECTION, RECTANGLE ]);
         getContentEmbedTools = vi.fn(() => provider);
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote: vi.fn(), getContentEmbedTools })
-        });
-
         editor = await createTestEditor([
             Essentials, Paragraph, Widget, LinkEditing, ReferenceLink, ContentEmbed,
             ContentEmbedBoxSizeDropdown, ContentEmbedTools
-        ]);
+        ], { contentEmbed: { getTools: getContentEmbedTools } });
     });
 
     afterEach(() => {
@@ -283,12 +278,8 @@ describe("ContentEmbedTools", () => {
         selectEmbed();
         expect(tools.isVisible).toBe(false);
 
-        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote: vi.fn() }) });
+        editor.config.set("contentEmbed", { getTools: undefined });
         selectEmbed();
-        expect(tools.isVisible).toBe(false);
-
-        installGlobMock({ getComponentByEl: () => undefined });
-        editor.ui.update();
         expect(tools.isVisible).toBe(false);
     });
 

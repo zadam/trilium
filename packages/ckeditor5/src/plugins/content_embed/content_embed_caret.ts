@@ -23,7 +23,7 @@ export type EmbedEdge = "start" | "end";
  * Moves the caret between the text and the editors in embeds with the arrow keys.
  *
  * When an arrow key reaches an embed, the host focuses the editor of the embed at its near edge,
- * through `enterContentEmbed()`. In the editor of an embed, `focusAt()` and `getEdgeLeftBy()`
+ * through `contentEmbed.enter()`. In the editor of an embed, `focusAt()` and `getEdgeLeftBy()`
  * do the same for its own content, and `leaveEmbed()` of the editor around it takes the caret back.
  */
 export default class ContentEmbedCaret extends Plugin {
@@ -187,8 +187,7 @@ export default class ContentEmbedCaret extends Plugin {
     private enterEmbed(embed: ModelElement, edge: EmbedEdge) {
         const editor = this.editor;
         const domElement = getContentEmbedDom(editor, embed);
-        const component = glob.getComponentByEl<EditorComponent>(editor.editing.view.getDomRoot());
-        return !!domElement && !!component?.enterContentEmbed?.(domElement, edge);
+        return !!domElement && !!editor.config.get("contentEmbed")?.enter?.(domElement, edge);
     }
 
     /**

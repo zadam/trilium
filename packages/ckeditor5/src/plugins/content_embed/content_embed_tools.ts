@@ -13,7 +13,7 @@ export const CONTENT_EMBED_TOOLS = "contentEmbedTools";
 
 /**
  * Shows the buttons that the content of the selected embed adds to the embed's toolbar, such as
- * the tools of a canvas drawing. The host supplies them through `getContentEmbedTools()`.
+ * the tools of a canvas drawing. The host supplies them through `contentEmbed.getTools()`.
  */
 export default class ContentEmbedTools extends Plugin {
 

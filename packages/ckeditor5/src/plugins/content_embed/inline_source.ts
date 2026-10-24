@@ -63,7 +63,7 @@ const SIZE_PROPERTIES = [
  * attributes, and is saved as the code block, with its box size, flags and size on the `<pre>`,
  * so that anything reading the note sees a plain code block.
  *
- * The content renders through the host's `loadInlineEmbed()`, which receives an
+ * The content renders through the host's `contentEmbed.loadInline()`, which receives an
  * {@link InlineEmbedSource} rather than an ID.
  */
 export default class ContentEmbedInlineSource extends Plugin {
@@ -102,9 +102,8 @@ export default class ContentEmbedInlineSource extends Plugin {
 	/** Has the host render the source of `embed` into `wrapper`. */
 	load( embed: ModelElement, wrapper: HTMLElement, boxSize: string | undefined ) {
 		const editor = this.editor;
-		const component = glob.getComponentByEl<EditorComponent>( editor.editing.view.getDomRoot() );
 		const isFocused = this.focusedEmbeds.delete( embed );
-		component.loadInlineEmbed?.( this.getSource( embed ), $( wrapper ), boxSize, { isFocused } );
+		editor.config.get( 'contentEmbed' )?.loadInline?.( this.getSource( embed ), wrapper, boxSize, { isFocused } );
 	}
 
 	/** Marks `embed` for its content to take the focus once it renders. */
@@ -312,18 +311,4 @@ declare module 'ckeditor5' {
 		[ ContentEmbedInlineSource.pluginName ]: ContentEmbedInlineSource;
 	}
 
-	interface EditorConfig {
-		contentEmbed?: {
-			/**
-			 * The languages whose `<pre><code class="language-…">` code blocks show as embeds of
-			 * their source, rendered by the host's `loadInlineEmbed()`.
-			 */
-			inlineLanguages?: string[];
-			/**
-			 * Renders the `source` of an inline language into `container`, outside an embed, as
-			 * the AI assistant previews a response.
-			 */
-			renderInlinePreview?: ( language: string, source: string, container: HTMLElement ) => void;
-		};
-	}
 }

@@ -1,7 +1,8 @@
 import type { ModelPosition } from "@triliumnext/ckeditor5";
 import { describe, expect, it } from "vitest";
 
-import { getClickIndex } from "./AttributeEditor";
+import link from "../../services/link";
+import { buildAttributeEditorConfig, getClickIndex } from "./AttributeEditor";
 
 describe("getClickIndex", () => {
     it("measures every sibling before the pressed one as the text it stands for", () => {
@@ -22,5 +23,15 @@ describe("getClickIndex", () => {
         expect(getClickIndex({ offset: 4, textNode: text } as unknown as ModelPosition)).toBe(4);
         // A press where there is no text node at all still resolves to a position.
         expect(getClickIndex({ offset: 7, textNode: null } as unknown as ModelPosition)).toBe(7);
+    });
+});
+
+describe("buildAttributeEditorConfig", () => {
+    it("titles the notes picked as relation targets", () => {
+        const referenceLink = buildAttributeEditorConfig([]).referenceLink;
+
+        expect(referenceLink?.getTitle).toBe(link.getReferenceLinkTitle);
+        expect(referenceLink?.getTitleSync).toBe(link.getReferenceLinkTitleSync);
+        expect(referenceLink?.renderTitle).toBeTypeOf("function");
     });
 });

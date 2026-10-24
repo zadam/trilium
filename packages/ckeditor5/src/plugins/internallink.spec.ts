@@ -5,22 +5,19 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import { installGlobMock } from "../../test/globals-test-kit.js";
 import InternalLinkPlugin, {
     COMMAND_NAME, getLinkAtSelection, replaceLinkAtSelection
 } from "./internallink.js";
 
 describe("InternalLinkPlugin", () => {
     let editor: ClassicEditor;
-    let triggerCommand: ReturnType<typeof vi.fn>;
+    let openDialog: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
-        triggerCommand = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({ triggerCommand })
+        openDialog = vi.fn();
+        editor = await createTestEditor([Essentials, Paragraph, CodeBlock, InternalLinkPlugin], {
+            internalLink: { openDialog }
         });
-
-        editor = await createTestEditor([Essentials, Paragraph, CodeBlock, InternalLinkPlugin]);
     });
 
     it("loads the plugin and registers the command and toolbar button", () => {
@@ -29,9 +26,9 @@ describe("InternalLinkPlugin", () => {
         expect(editor.ui.componentFactory.has("internalLink")).toBe(true);
     });
 
-    it("triggers the addLinkToText command on the Trilium component when executed", () => {
+    it("has the host open the Add link dialog when executed", () => {
         editor.execute(COMMAND_NAME);
-        expect(triggerCommand).toHaveBeenCalledWith("addLinkToText");
+        expect(openDialog).toHaveBeenCalledOnce();
     });
 
     it("labels the button without the shortcut, leaving that to the keystroke", () => {
@@ -75,14 +72,13 @@ describe("InternalLinkPlugin", () => {
 
 describe("the link at the selection", () => {
     let editor: ClassicEditor;
+    let getTitle: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
-        installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined }),
-            getReferenceLinkTitle: async () => "Target",
-            getReferenceLinkTitleSync: () => "Target"
+        getTitle = vi.fn(async () => "Target");
+        editor = await createTestEditor([Essentials, Paragraph, Bold, LinkEditing, InternalLinkPlugin], {
+            referenceLink: { getTitle, getTitleSync: () => "Target" }
         });
-        editor = await createTestEditor([Essentials, Paragraph, Bold, LinkEditing, InternalLinkPlugin]);
     });
 
     const LINKED = "<paragraph>a <$text bold=\"true\" linkHref=\"https://a.example\">fo[]o</$text> b"
@@ -134,13 +130,7 @@ describe("the link at the selection", () => {
         editor.execute("undo");
         expect(data()).toBe(original);
 
-        installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined }),
-            getReferenceLinkTitle: async () => {
-                throw new Error("not found");
-            },
-            getReferenceLinkTitleSync: () => "Target"
-        });
+        getTitle.mockRejectedValue(new Error("not found"));
         setModelData(editor.model, LINKED);
         const replacing = replaceLinkAtSelection(editor, "#root/abc", null);
         await expect(replacing).rejects.toThrow("not found");
@@ -176,14 +166,13 @@ describe("the link at the selection", () => {
 
 describe("the edit button of the link toolbar", () => {
     let editor: ClassicEditor;
-    let triggerCommand: ReturnType<typeof vi.fn>;
+    let openDialog: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
-        triggerCommand = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({ triggerCommand })
+        openDialog = vi.fn();
+        editor = await createTestEditor([Essentials, Paragraph, Link, InternalLinkPlugin], {
+            internalLink: { openDialog }
         });
-        editor = await createTestEditor([Essentials, Paragraph, Link, InternalLinkPlugin]);
     });
 
     it("opens the Add link dialog in place of the link form, closing the toolbar", () => {
@@ -199,7 +188,7 @@ describe("the edit button of the link toolbar", () => {
         expect(edit).toBeInstanceOf(ButtonView);
         edit?.fire("execute");
 
-        expect(triggerCommand).toHaveBeenCalledWith("addLinkToText");
+        expect(openDialog).toHaveBeenCalledOnce();
         expect(toolbarView && balloon.hasView(toolbarView)).toBe(false);
         expect(linkUI.formView && balloon.hasView(linkUI.formView)).toBe(false);
     });

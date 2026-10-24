@@ -1,15 +1,6 @@
 import "ckeditor5";
 
-import type { StandaloneApi } from "@triliumnext/commons";
-
-import type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
-
 declare global {
-    interface Component {
-        componentId: string;
-        triggerCommand(command: string): void;
-    }
-
     interface LinkEmbedMetadata {
         url: string;
         embedType: string;
@@ -25,13 +16,6 @@ declare global {
          * `@triliumnext/commons`, which is what the host actually returns.
          */
         unresolved?: boolean;
-    }
-
-    interface IconPickerRequest {
-        /** The element to paint the picker into, which the editor owns and places. */
-        container: HTMLElement;
-        /** Receives the class of the icon picked, e.g. `bx bx-star`. */
-        onSelect(iconClass: string): void;
     }
 
     /** A button that the content of an embed adds to the toolbar of the embed. */
@@ -95,123 +79,5 @@ declare global {
          */
         hasDisplayModes?: boolean;
     }
-
-    interface EditorComponent extends Component {
-        /**
-         * Paints the host's icon picker into `container`, and answers with the way to take it down
-         * again. A host that shows the picker somewhere of its own — a phone, which has no room for
-         * a balloon — leaves `container` alone and answers `null`.
-         */
-        showIconPicker(request: IconPickerRequest): (() => void) | null;
-        /**
-         * Formats `date` for insertion in the Day.js `format`, or in the user's
-         * `customDateTimeFormat` when none is given.
-         */
-        formatDateTime(date: Date, format?: string): string;
-        loadReferenceLinkTitle(
-            $el: JQuery<HTMLElement>, href: string, storedTitle?: string
-        ): Promise<void>;
-        /**
-         * Lets the user pick the note a reference link to a missing note should point at instead,
-         * starting from `storedTitle`, and calls `fix()` with the new href.
-         */
-        fixReferenceLink?(storedTitle: string, fix: (href: string) => void): void;
-        /**
-         * Fills an embed with the note, or with the `block` of it, a `block` link parameter. An
-         * editor of those blocks calls `onBlockChange()` once the blocks at its edges change.
-         */
-        loadEmbeddedNote(
-            noteId: string,
-            $el: JQuery<HTMLElement>,
-            boxSize?: string,
-            block?: string,
-            onBlockChange?: (block: string) => void
-        ): void;
-        loadEmbeddedAttachment(
-            attachmentId: string,
-            $el: JQuery<HTMLElement>,
-            boxSize?: string
-        ): void;
-        /**
-         * Fills an embed box with what `source` shows, for an embed that keeps its content in the
-         * note. Hosts without such embeds leave it out.
-         */
-        loadInlineEmbed?(
-            source: InlineEmbedSource,
-            $el: JQuery<HTMLElement>,
-            boxSize: string | undefined,
-            options: { isFocused: boolean }
-        ): void;
-        /** The href of a reference link to the attachment, or `null` once it is deleted. */
-        getAttachmentHref(attachmentId: string): Promise<string | null>;
-        /** The note the editor holds. Hosts without a note of their own leave it out. */
-        getNoteId?(): string | undefined;
-        /**
-         * The box size of a new embed of a file being uploaded, from its media type. Hosts without
-         * embeds leave it out.
-         */
-        getEmbedBoxSize?(mime: string, size: number): string;
-        /**
-         * Opens the context menu of what `embed` shows, below `anchor`. Hosts without embeds
-         * leave it out.
-         */
-        openContentEmbedMenu?(embed: HTMLElement, anchor: HTMLElement): void;
-        /**
-         * Opens the menu of the block handle at `event`, for `count` selected blocks. Hosts
-         * without block references leave it out.
-         */
-        openBlockHandleMenu?(event: MouseEvent, count: number): void;
-        /**
-         * Copies a link to the tab that holds the selection. Hosts without block references leave
-         * it out.
-         */
-        copyTabReference?(): void;
-        /**
-         * The buttons that what `embed` shows adds to the toolbar of the embed, or `null`. Hosts
-         * without embeds leave it out.
-         */
-        getContentEmbedTools?(embed: HTMLElement): ContentEmbedToolProvider | null;
-        /**
-         * Focuses the editor that `embed` shows, with the caret at `edge` of its content, and
-         * returns whether it did. Hosts without embeds leave it out.
-         */
-        enterContentEmbed?(embed: HTMLElement, edge: "start" | "end"): boolean;
-        /**
-         * Gives the focus to what the embed of the attachment shows, once it renders. Hosts
-         * without embeds leave it out.
-         */
-        focusContentEmbed?(attachmentId: string): void;
-        /**
-         * Attaches a drawing canvas that shows the image at `src`, and answers with the ID of its
-         * attachment, or `null` when that fails. Hosts without drawings leave it out.
-         */
-        convertImageToDrawing?(src: string): Promise<string | null>;
-        /**
-         * Reads a page's preview metadata through the host. Never rejects: any failure — network
-         * error, HTTP error, unparseable page — resolves as `{ unresolved: true }` with
-         * hostname-derived placeholders, so callers branch on `unresolved` instead of catching.
-         */
-        fetchLinkMetadata(url: string): Promise<LinkEmbedMetadata>;
-        detectEmbedType(url: string): string;
-        renderLinkEmbed(container: HTMLElement, metadata: LinkEmbedMetadata, editable?: boolean): void;
-        renderLinkMention(container: HTMLElement, metadata: Pick<LinkEmbedMetadata, "url" | "title" | "favicon">, editable?: boolean): void;
-    }
-
-    type LocalUpload = NonNullable<StandaloneApi["localUpload"]>;
-
-    var glob: {
-        getComponentByEl<T extends Component>(el: unknown): T;
-        getActiveContextNote(): {
-            noteId: string;
-        };
-        /** The headers of a request to the server, with `headers` added to them. */
-        getHeaders(headers?: Record<string, string | undefined>): Promise<Record<string, string>>;
-        /**
-         * The host's in-page upload to its local server, when it has one. Uploads go through it
-         * because a raw request with a body cannot reach that server from every platform.
-         */
-        getLocalUpload?(): LocalUpload | undefined;
-        getReferenceLinkTitle(href: string): Promise<string>;
-        getReferenceLinkTitleSync(href: string, storedTitle?: string): string;
-    };
 }
+

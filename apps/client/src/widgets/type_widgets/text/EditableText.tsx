@@ -7,48 +7,37 @@ import {
     CKTextEditor,
     type FileUploadData,
     type FileUploadEvent,
-    type InlineEmbedSource,
     SnippetDefinition
 } from "@triliumnext/ckeditor5";
 import { deferred, formatBlockRange, parseBlockRange } from "@triliumnext/commons";
-import { createPortal } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../../components/app_context";
-import {
-    consumeBlockReference, copyBlockReference, copyBlockShareLink, copyTabReference,
-    openBlockHandleMenu
-} from "../../../services/block_reference";
+import { consumeBlockReference } from "../../../services/block_reference";
 import { consumeBookmark } from "../../../services/bookmark_jump";
-import { getUploadBoxSize } from "../../../services/content_renderer";
 import dialog from "../../../services/dialog";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
 import link, { parseNavigationStateFromUrl, type ViewScope } from "../../../services/link";
 import type LoadResults from "../../../services/load_results";
 import note_create from "../../../services/note_create";
-import options from "../../../services/options";
 import { consumeSearchTerms } from "../../../services/search_jump";
-import { getNoteShareLink } from "../../../services/share_link";
 import toast from "../../../services/toast";
 import utils, { isMobile } from "../../../services/utils";
 import type { AddLinkOpts } from "../../dialogs/add_link";
-import type { IconPickerOpts } from "../../dialogs/icon_picker";
 import {
     useEditorSpacedUpdate, useLegacyImperativeHandlers, useNoteLabel, useSameNoteSwitch,
     useSearchTermsConsumer, useTriliumEvent, useTriliumOption, useTriliumOptionBool
 } from "../../react/hooks";
-import IconPicker from "../../react/IconPicker";
 import { setEditorNoteId } from "../../react/NoteStore";
-import { convertImageToDrawing } from "../canvas/image_to_drawing";
 import { TypeWidgetProps } from "../type_widget";
 import AttachmentSaves, { InlineSourceSaves, useNoteEditor } from "./attachment_saves";
 import CKEditor, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditor";
+import type { ContentEmbedHandlers } from "./config";
 import { enterContentEmbed, getContentEmbedTools } from "./content_embed_tools";
 import { useEmbedEditors } from "./editable_embed";
 import EmbedHistories from "./embed_history";
 import getTemplates, { updateTemplateCache } from "./snippets.js";
-import linkEmbedService from "../../../services/link_embed";
 import { usesClassicToolbar } from "./toolbar";
 import {
     getAttachmentHref,
@@ -90,8 +79,6 @@ export default function EditableText({
     const stopWatchingEmbedsRef = useRef<(() => void) | undefined>(undefined);
     const stopTodoCheckboxTapsRef = useRef<(() => void) | undefined>(undefined);
     const editorApiRef = useRef<CKEditorApi>(null);
-    /** The open icon picker request and its balloon container, or `null` when none is open. */
-    const [ iconPickerRequest, setIconPickerRequest ] = useState<IconPickerOpts & { container: HTMLElement } | null>(null);
     const [ language ] = useNoteLabel(note, "language");
     const [ textNoteEditorType ] = useTriliumOption("textNoteEditorType");
     const [ codeBlockWordWrap ] = useTriliumOptionBool("codeBlockWordWrap");
@@ -198,19 +185,6 @@ export default function EditableText({
         consumeBlockReference(root, noteContext?.viewScope);
     }
 
-    async function copyReference(
-        copy: (editor: CKTextEditor, notePath: string, noteTitle: string) => void | Promise<void>
-            = copyBlockReference
-    ) {
-        const editor = editorRef.current;
-        if (!editor) return;
-
-        const notePath = noteContext?.notePath ?? `root/${note.noteId}`;
-        await copy(editor, notePath, note.title);
-        // Saved now, so that the link resolves at once.
-        spacedUpdate.updateNowIfNecessary();
-    }
-
     useTriliumEvent("scrollToEnd", () => {
         const editor = editorRef.current;
         if (!editor) return;
@@ -234,41 +208,51 @@ export default function EditableText({
         editor.editing.view.focus();
     });
 
+    const contentEmbedHandlers: ContentEmbedHandlers = {
+        loadNote(noteId, wrapper, boxSize, embedBlock, onEmbedBlockChange) {
+            void loadEmbeddedNote(noteId, $(wrapper), boxSize, {
+                noteEditor: embedNoteEditor,
+                histories,
+                block: embedBlock,
+                onBlockChange: onEmbedBlockChange
+            });
+        },
+        loadAttachment(attachmentId, wrapper, boxSize) {
+            const isFocused = focusedAttachmentIdRef.current === attachmentId;
+            if (isFocused) {
+                focusedAttachmentIdRef.current = undefined;
+            }
+            void loadEmbeddedAttachment(attachmentId, $(wrapper), boxSize, {
+                attachmentEditor: embedAttachmentEditor,
+                histories,
+                isFocused
+            });
+        },
+        loadInline(source, wrapper, boxSize, options) {
+            void loadInlineEmbed(source, $(wrapper), boxSize, {
+                ...options, saves: inlineSourceSaves, histories
+            });
+        },
+        focusAttachment(attachmentId) {
+            focusedAttachmentIdRef.current = attachmentId;
+        },
+        getAttachmentHref,
+        openMenu: (embed, anchor) => void openContentEmbedMenu(embed, anchor),
+        getTools: getContentEmbedTools,
+        enter: enterContentEmbed
+    };
+
     useLegacyImperativeHandlers({
         addLinkToTextCommand() {
             if (!editorApiRef.current) return;
             const opts = getAddLinkOpts(editorApiRef.current, waitForEditor);
             parentComponent?.triggerCommand("showAddLinkDialog", opts);
         },
-        fixReferenceLink(storedTitle: string, fix: (href: string) => void) {
-            parentComponent?.triggerCommand("showAddLinkDialog", {
-                text: storedTitle,
-                hasSelection: false,
-                fixLink: true,
-                async addLink(notePath) {
-                    fix(`#${notePath}`);
-                }
-            });
-        },
         pasteMarkdownIntoTextCommand() {
             if (!editorApiRef.current) return;
             parentComponent?.triggerCommand("showPasteMarkdownDialog", {
                 editorApi: editorApiRef.current,
             });
-        },
-        // CKEditor creates and positions the balloon; `IconPicker` renders into its container.
-        // On mobile, `showIconPickerDialog` opens the picker in a modal instead.
-        showIconPicker(request: IconPickerOpts & { container: HTMLElement }) {
-            if (isMobile()) {
-                parentComponent?.triggerCommand("showIconPickerDialog", { onSelect: request.onSelect });
-                return null;
-            }
-
-            setIconPickerRequest(request);
-            return () => setIconPickerRequest(null);
-        },
-        formatDateTime(date: Date, format?: string) {
-            return utils.formatDateTime(date, format ?? options.get("customDateTimeFormat"));
         },
         // Keyboard shortcut
         async insertDateTimeToTextCommand() {
@@ -282,80 +266,6 @@ export default function EditableText({
                 editorApi: editorApiRef.current,
                 sizeEditable: true
             });
-        },
-        loadEmbeddedNote(
-            noteId: string,
-            $el: JQuery<HTMLElement>,
-            boxSize?: string,
-            embedBlock?: string,
-            onBlockChange?: (block: string) => void
-        ) {
-            return loadEmbeddedNote(noteId, $el, boxSize, {
-                noteEditor: embedNoteEditor,
-                histories,
-                block: embedBlock,
-                onBlockChange
-            });
-        },
-        loadEmbeddedAttachment(attachmentId: string, $el: JQuery<HTMLElement>, boxSize?: string) {
-            const isFocused = focusedAttachmentIdRef.current === attachmentId;
-            if (isFocused) {
-                focusedAttachmentIdRef.current = undefined;
-            }
-            return loadEmbeddedAttachment(attachmentId, $el, boxSize, {
-                attachmentEditor: embedAttachmentEditor,
-                histories,
-                isFocused
-            });
-        },
-        loadInlineEmbed(
-            source: InlineEmbedSource,
-            $el: JQuery<HTMLElement>,
-            boxSize: string | undefined,
-            options: { isFocused: boolean }
-        ) {
-            return loadInlineEmbed(source, $el, boxSize, {
-                ...options, saves: inlineSourceSaves, histories
-            });
-        },
-        focusContentEmbed(attachmentId: string) {
-            focusedAttachmentIdRef.current = attachmentId;
-        },
-        convertImageToDrawing(src: string) {
-            return convertImageToDrawing(note.noteId, src, parentComponent?.componentId);
-        },
-        getAttachmentHref,
-        getNoteId() {
-            return note.noteId;
-        },
-        getEmbedBoxSize: getUploadBoxSize,
-        openContentEmbedMenu,
-        openBlockHandleMenu(event: MouseEvent, count: number) {
-            const shareLink = getNoteShareLink(note);
-            openBlockHandleMenu(event, count, {
-                copyReference: () => void copyReference(),
-                copyShareLink: shareLink
-                    ? () => void copyReference((editor) => copyBlockShareLink(editor, shareLink))
-                    : undefined
-            });
-        },
-        copyBlockReference: () => copyReference(),
-        copyTabReference: () => void copyReference(copyTabReference),
-        getContentEmbedTools,
-        enterContentEmbed,
-        // Link preview functionality. The insert flow itself lives in the editor (a balloon form),
-        // so the host only has to supply the metadata and the rendering.
-        async fetchLinkMetadata(url: string) {
-            return await linkEmbedService.fetchMetadata(url, note.noteId);
-        },
-        detectEmbedType(url: string) {
-            return linkEmbedService.detectEmbedType(url);
-        },
-        renderLinkEmbed(container, metadata, editable) {
-            linkEmbedService.renderEmbedPreview(container, metadata, editable);
-        },
-        renderLinkMention(container, metadata, editable) {
-            linkEmbedService.renderMentionPreview(container, metadata, editable);
         },
         // Keyboard shortcut
         async followLinkUnderCursorCommand() {
@@ -412,7 +322,7 @@ export default function EditableText({
             });
         },
         async saveNoteDetailNowCommand() {
-            // used by cutToNote in CKEditor build
+            // Used by `cutToNote` and by the block and tab references the editor copies.
             spacedUpdate.updateNowIfNecessary();
         }
     });
@@ -592,6 +502,7 @@ export default function EditableText({
                 onNotificationInfo={onNotificationInfo}
                 onEditorError={(error) => reportEditorError(error, reloadEditor)}
                 rebuildKey={editorRebuildKey}
+                contentEmbedHandlers={contentEmbedHandlers}
                 onChange={() => {
                     spacedUpdate.scheduleUpdate();
                     const editor = editorRef.current;
@@ -631,14 +542,6 @@ export default function EditableText({
                 }}
             />}
 
-            {iconPickerRequest && createPortal(
-                <IconPicker
-                    columnCount={ICON_PICKER_COLUMNS}
-                    compact
-                    onSelect={iconPickerRequest.onSelect}
-                />,
-                iconPickerRequest.container
-            )}
         </>
     );
 }
@@ -753,9 +656,6 @@ function getEditorBlocks(editor: CKTextEditor, block: string) {
     const range = editor.plugins.get("BlockReferenceEditing").getRange(parseBlockRange(block));
     return range ? formatBlockRange(range) : undefined;
 }
-
-/** The number of icons per row of the picker in the editor's balloon. */
-const ICON_PICKER_COLUMNS = 9;
 
 /**
  * Inserts an empty paragraph at the very top of the document and places the cursor in it, giving the

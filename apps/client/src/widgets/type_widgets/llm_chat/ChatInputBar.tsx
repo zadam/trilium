@@ -1,6 +1,6 @@
 import "./ChatInputBar.css";
 
-import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, MentionHostedFeed } from "@triliumnext/ckeditor5";
+import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, EditorConfig, MentionHostedFeed } from "@triliumnext/ckeditor5";
 import type { DISPLAYABLE_LOCALE_IDS, LlmPermissionMode, LlmReasoningEffort } from "@triliumnext/commons";
 import { Fragment } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
@@ -13,7 +13,7 @@ import Button from "../../react/Button.js";
 import CKEditor, { type CKEditorApi } from "../../react/CKEditor.js";
 import Dropdown from "../../react/Dropdown.js";
 import { FormListHeader, FormListItem } from "../../react/FormList.js";
-import { useLegacyImperativeHandlers, useTriliumOption } from "../../react/hooks.js";
+import { useTriliumOption } from "../../react/hooks.js";
 import Icon from "../../react/Icon.js";
 import LightboxLink from "../../react/LightboxLink.js";
 import AddProviderModal, { type LlmProviderConfig, type ProviderStep } from "../options/llm/AddProviderModal.js";
@@ -114,16 +114,6 @@ export default function ChatInputBar({
 
     // Clipboard / drag-drop / file-picker upload management.
     const attachments = useChatAttachments(chat);
-
-    // CKEditor's ReferenceLink plugin calls back into the parent component to
-    // resolve a note's title from its href.
-    useLegacyImperativeHandlers({
-        async loadReferenceLinkTitle(
-            $el: JQuery<HTMLElement>, href: string | null = null, storedTitle?: string
-        ) {
-            await link.loadReferenceLinkTitle($el, href, undefined, storedTitle);
-        }
-    });
 
     const baseSubmit = onSubmit ?? chat.handleSubmit;
     // Clear the editor immediately when a submit fires with non-empty, non-streaming
@@ -313,14 +303,7 @@ export default function ChatInputBar({
                         apiRef={editorApiRef}
                         className="llm-chat-input"
                         editor={ckEditor.editor}
-                        config={{
-                        // Markdown autoformatting (block quotes, code fences, lists, links) without a toolbar.
-                            extraPlugins: ckEditor.plugins,
-                            toolbar: { items: [] },
-                            placeholder: t("llm_chat.placeholder"),
-                            mention: { feeds: [], hostedFeeds: hostedMentions },
-                            licenseKey: "GPL"
-                        }}
+                        config={buildChatInputConfig(ckEditor.plugins)}
                         // The strings the box shows of its own — the link balloon it raises on Ctrl+K —
                         // in the language the rest of Trilium is read in; the dictionary is fetched for
                         // it before the editor is raised.
@@ -568,6 +551,25 @@ export default function ChatInputBar({
             />
         </>
     );
+}
+
+/** The config of the chat input's editor, which loads `plugins` on top of its own. */
+export function buildChatInputConfig(plugins: EditorConfig["extraPlugins"]): EditorConfig {
+    return {
+        // Markdown autoformatting (block quotes, code fences, lists, links) without a toolbar.
+        extraPlugins: plugins,
+        toolbar: { items: [] },
+        placeholder: t("llm_chat.placeholder"),
+        mention: { feeds: [], hostedFeeds: hostedMentions },
+        referenceLink: {
+            getTitle: link.getReferenceLinkTitle,
+            getTitleSync: link.getReferenceLinkTitleSync,
+            renderTitle: (element, href, storedTitle) => {
+                void link.loadReferenceLinkTitle($(element), href, undefined, storedTitle);
+            }
+        },
+        licenseKey: "GPL"
+    };
 }
 
 /** A pending attachment above the input, marked when the selected model can't read it. */

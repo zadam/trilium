@@ -96,7 +96,7 @@ interface ScopedEditorProps {
 /** The editor, once the note context of the embed holds `note`. */
 function ScopedEditor({ rootRef, note, block, onBlockChange }: ScopedEditorProps) {
     const { note: contextNote, noteContext, ntxId, parentComponent } = useNoteContext();
-    // The plugins of the editor find their host by the element of its component.
+    // `appContext.getComponentByEl()` finds the host of the editor by this element.
     useLegacyComponentElement(rootRef);
     const badgeSlot = useEmbedBadgeSlot(rootRef);
     useEditorFindTarget(ntxId);
