@@ -35,6 +35,21 @@ export interface MenuSeparatorItem {
 export interface MenuHeader {
     title: string;
     kind: "header";
+    /** Icon buttons at the end of the heading, for secondary actions such as help or options. */
+    actions?: MenuHeaderActions;
+}
+
+/** The actions of a {@link MenuHeader}: at most three. */
+export type MenuHeaderActions = [] | [MenuHeaderAction] | [MenuHeaderAction, MenuHeaderAction]
+    | [MenuHeaderAction, MenuHeaderAction, MenuHeaderAction];
+
+export interface MenuHeaderAction {
+    /** The classes of the icon, such as `bx bx-help-circle`. */
+    icon: string;
+    /** The name of the action, shown as the button's tooltip. */
+    caption: string;
+    /** Called after the menu closes. */
+    callback: (e: MouseEvent) => void;
 }
 
 /** A row of items side by side, each drawn as its icon over its title. */
@@ -96,6 +111,8 @@ export interface MenuCommandItem<T> {
     checked?: boolean;
     /** Classes put on the item itself, for a menu styling one of its entries differently. */
     className?: string;
+    /** Plain text at the trailing edge of the item, where a shortcut would go, such as a note's path. */
+    trailingText?: string;
     /** An icon shown at the trailing edge of the item, where a shortcut would go. */
     trailingIcon?: string;
     /**

@@ -640,17 +640,28 @@ describe("contextMenu", () => {
             });
         });
 
-        it("waits before the first submenu it opens under the pointer, and not before one that replaces it", async () => {
+        it("waits before a submenu it opens under the pointer, unless it replaces one in view", async () => {
+            const layer = () => menuElement()?.querySelector("div.dropdown-submenu > .dropdown-menu");
             /** Whether the open layer skips the stylesheet's opening delay and fade. */
-            const immediate = () => menuElement()?.querySelector("div.dropdown-submenu > .dropdown-menu")?.classList.contains("tn-menu-immediate");
+            const immediate = () => layer()?.classList.contains("tn-menu-immediate");
             await openMenu();
 
             // The pointer might only be passing over the row.
             hover(row("Insert child note"));
-            await vi.waitFor(() => expect(layers()).toHaveLength(1));
+            await vi.waitFor(() => expect(layers()).toEqual([ [ "Text", "Code" ] ]));
             expect(immediate()).toBe(false);
 
-            // One submenu is open, so the user is going through them: its sibling shows at once.
+            // It passed on before that submenu showed, so the next one waits as well.
+            hover(row("Templates"));
+            await vi.waitFor(() => expect(layers()).toEqual([ [ "Meeting" ] ]));
+            expect(immediate()).toBe(false);
+
+            // The browser starts the fade once the delay is over. With a submenu in view, the user
+            // is going through them, so its sibling shows at once, and so does the one after.
+            layer()?.dispatchEvent(new Event("animationstart", { bubbles: true }));
+            hover(row("Insert child note"));
+            await vi.waitFor(() => expect(layers()).toEqual([ [ "Text", "Code" ] ]));
+            expect(immediate()).toBe(true);
             hover(row("Templates"));
             await vi.waitFor(() => expect(layers()).toEqual([ [ "Meeting" ] ]));
             expect(immediate()).toBe(true);
@@ -1173,6 +1184,40 @@ describe("contextMenu", () => {
                     height = 400;
                     await relayout();
                     expect(submenuLayer()?.style.top).toBe(top);
+                } finally {
+                    vi.restoreAllMocks();
+                }
+            });
+
+            it("holds its width while filtered, widening only for a wider match", async () => {
+                // As wide as its longest row, and no narrower than its `min-width`.
+                const width = function (this: HTMLElement) {
+                    if (!this.matches(".dropdown-menu")) return 0;
+                    const rows = [ ...this.querySelectorAll("li.dropdown-item") ].map((row) => row.textContent?.length ?? 0);
+                    return Math.max(parseFloat(this.style.minWidth) || 0, 10 * Math.max(0, ...rows));
+                };
+                vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(width);
+                const submenuLayer = () => menuElement()?.querySelector<HTMLElement>("div.dropdown-submenu > .dropdown-menu");
+                try {
+                    await openFilterable();
+                    await openSubmenuByKeys();
+                    // "Meeting & notes".
+                    expect(submenuLayer()?.offsetWidth).toBe(150);
+                    expect(submenuLayer()?.style.minWidth).toBe("");
+
+                    type("py");
+                    await vi.waitFor(() => expect(layer().rows).toEqual([ "Python|Code" ]));
+                    expect(submenuLayer()?.style.minWidth).toBe("150px");
+                    // "Board" with its badge and path, wider than the submenu was.
+                    edit("collection");
+                    await vi.waitFor(() => expect(layer().rows).toHaveLength(2));
+                    edit("tab");
+                    await vi.waitFor(() => expect(layer().rows).toEqual([ "Table|Collection" ]));
+                    expect(submenuLayer()?.style.minWidth).toBe("180px");
+
+                    edit("");
+                    await vi.waitFor(() => expect(layer().rows).toEqual(unfiltered));
+                    expect(submenuLayer()?.style.minWidth).toBe("");
                 } finally {
                     vi.restoreAllMocks();
                 }

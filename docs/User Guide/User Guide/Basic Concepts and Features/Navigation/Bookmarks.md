@@ -9,7 +9,9 @@ If bookmarks don't appear in the launch bar, then most likely the bookmark secti
 
 Space in the left panel is limited, and you might want to bookmark many items. One possible solution is to bookmark a folder, so it shows its children:
 
-To do this, bookmark a folder and assign it the `#bookmarkFolder` label.
+To do this, bookmark a folder, then right click its button in the <a class="reference-link" href="../UI%20Elements/Launch%20Bar.md">Launch Bar</a> and check _Show as a folder_. The button then opens a list of the note's children instead of the note itself. Uncheck _Show as a folder_ to turn it back into a regular bookmark.
+
+_Show as a folder_ assigns the `#bookmarkFolder` label to the note, so adding the label by hand works as well. Because the label belongs to the note, a note that is both bookmarked and dropped onto the launch bar shows its children in both places.
 
 ## Mobile
 

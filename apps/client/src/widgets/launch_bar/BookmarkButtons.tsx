@@ -91,7 +91,11 @@ function MobileBookmarkFolder({ note }: { note: FNote }) {
     );
 }
 
-function BookmarkFolder({ note }: { note: FNote }) {
+/**
+ * A note with `#bookmarkFolder` in the launch bar, which lists its children. `parentNoteId` is the
+ * launch bar section that shows it, see `ShowLauncherContextMenuOptions`.
+ */
+export function BookmarkFolder({ note, parentNoteId }: { note: FNote, parentNoteId?: string }) {
     const { icon, title } = useLauncherIconAndTitle(note);
     const childNotes = useChildNotes(note.noteId);
 
@@ -99,6 +103,7 @@ function BookmarkFolder({ note }: { note: FNote }) {
         <LaunchBarDropdownButton
             panel
             launcherNote={note}
+            parentNoteId={parentNoteId}
             icon={icon}
             title={title}
         >
