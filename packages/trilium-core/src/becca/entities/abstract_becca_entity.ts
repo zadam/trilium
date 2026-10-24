@@ -10,6 +10,8 @@ import { getLog } from "../../services/log.js";
 import getInstanceId from "../../services/instance_id.js";
 import protectedSessionService from "../../services/protected_session.js";
 import becca from "../becca.js";
+import type BAttribute from "./battribute.js";
+import type BNote from "./bnote.js";
 import type { ConstructorData,default as Becca } from "../becca-interface.js";
 import { getSql } from "../../services/sql";
 import { concat2, encodeUtf8, unwrapStringOrBuffer, wrapStringOrBuffer } from "../../services/utils/binary";
@@ -338,7 +340,7 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
                 primaryKey: constructorData.primaryKeyName,
                 id: entityId,
                 deleteId,
-                entity: this,
+                entity: this as unknown as BNote,
                 touchDateModified: !!this.dateModified,
                 entityChange: {
                     entityName,
@@ -352,6 +354,10 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
                     instanceId: getInstanceId()
                 }
             });
+
+            if (entityName === "attributes") {
+                bulkDeletion.detachAttribute(this as unknown as BAttribute);
+            }
 
             eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
             return;

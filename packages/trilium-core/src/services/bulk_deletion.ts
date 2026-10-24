@@ -12,31 +12,17 @@ import getInstanceId from "./instance_id.js";
 import entityChangesService from "./entity_changes.js";
 
 /**
- * Buffers the low-level soft-delete writes and becca bookkeeping produced by
- * a subtree deletion (see {@link BBranch.deleteBranch}) so they can be
- * executed in bulk.
- *
- * A large subtree delete used to issue two SQL statements plus one
- * `entity_changes` insert for every single deleted entity, and the
- * ENTITY_DELETED listener in `becca_loader` removed each attribute from the
- * shared `attributeIndex` bucket one by one — an O(bucket) array filter per
- * entity. Trees with hundreds of thousands of same-named attributes
- * (e.g. line anchors produced by imports) turned a subtree delete into
- * hours of 100% CPU with the whole application blocked. With the buffer
- * active, `markAsDeleted()` only records the entity, and the outermost
- * `deleteBranch()` flushes everything as a handful of chunked
- * `UPDATE ... WHERE pk IN (...)` statements, bulk `entity_changes` inserts
- * and one set-based becca cleanup pass.
- *
- * Event dispatch semantics are unchanged: ENTITY_DELETED fires per entity at
- * the same point of the recursion as before (handler scripts, inverse
- * relations, sorting re-checks all keep working). Only the mechanical
- * becca map/index maintenance is deferred to the bulk pass.
+ * Buffers the soft-delete writes and becca bookkeeping of a subtree deletion
+ * (see {@link BBranch.deleteBranch}) so the flush can execute them in bulk:
+ * chunked per-table `UPDATE`s, bulk `entity_changes` inserts and a set-based
+ * attribute maintenance pass instead of per-entity statements and per-attribute
+ * `attributeIndex` bucket filters. Events still fire per entity at the same
+ * recursion points as in the unbatched path.
  */
 const UPDATE_CHUNK = 900;
 const ENTITY_CHANGES_CHUNK = 300;
 
-interface BufferedDeletion {
+export interface BufferedDeletion {
     entityName: string;
     primaryKey: string;
     id: string;
@@ -47,6 +33,7 @@ interface BufferedDeletion {
 }
 
 let buffer: BufferedDeletion[] | null = null;
+const bufferedKeys = new Set<string>();
 
 export function isActive(): boolean {
     return buffer !== null;
@@ -63,11 +50,43 @@ export function begin(): boolean {
     }
 
     buffer = [];
+    bufferedKeys.clear();
     return true;
 }
 
 export function add(deletion: BufferedDeletion): void {
-    buffer!.push(deletion);
+    if (!buffer) {
+        throw new Error("Cannot buffer a deletion without an active batch.");
+    }
+
+    const key = `${deletion.entityName}/${deletion.id}`;
+
+    if (bufferedKeys.has(key)) {
+        // handlers can mark the same entity deleted again; keep one entry
+        return;
+    }
+
+    bufferedKeys.add(key);
+    buffer.push(deletion);
+}
+
+/** Removes an attribute from its owner's arrays immediately, so event
+ *  handlers and inverse-relation cascades stop seeing it; the expensive
+ *  map / index / cache work is deferred to {@link flush}. */
+export function detachAttribute(attribute: BAttribute): void {
+    const note = becca.notes[attribute.noteId];
+
+    if (note) {
+        note.ownedAttributes = note.ownedAttributes.filter((attr) => attr.attributeId !== attribute.attributeId);
+    }
+
+    if (attribute.type === "relation") {
+        const targetNote = becca.notes[attribute.value];
+
+        if (targetNote) {
+            targetNote.targetRelations = targetNote.targetRelations.filter((rel) => rel.attributeId !== attribute.attributeId);
+        }
+    }
 }
 
 function bulkUpdate(entries: BufferedDeletion[]): void {
@@ -153,7 +172,7 @@ function bulkUpdate(entries: BufferedDeletion[]): void {
  * per deleted attribute. Branch and note maintenance stays per-entity (it is
  * cheap and the deletion recursion depends on it being immediate).
  */
-function bulkAttributeMaintenance(entries: BufferedDeletion[]): void {
+export function bulkAttributeMaintenance(entries: BufferedDeletion[]): void {
     const deletedAttributeIds = new Set(entries.map((entry) => entry.id));
     const deletedByNoteId = new Map<string, BAttribute[]>();
     const affectedIndexKeys = new Set<string>();
@@ -232,6 +251,7 @@ function bulkAttributeMaintenance(entries: BufferedDeletion[]): void {
 export function flush(): void {
     const entries = buffer;
     buffer = null;
+    bufferedKeys.clear();
 
     if (!entries || entries.length === 0) {
         return;
@@ -240,9 +260,8 @@ export function flush(): void {
     const startTimestamp = Date.now();
     const counts: Record<string, number> = {};
 
-    // Events were already dispatched per entity by markAsDeleted() at the same
-    // recursion points as in the unbatched path; handlers that deleted further
-    // entities (inverse-relation cascades) went through the same buffered path.
+    // events already fired per entity from markAsDeleted(); handler cascades
+    // went through the same buffered path
     bulkUpdate(entries);
     bulkAttributeMaintenance(entries.filter((entry) => entry.entityName === "attributes"));
     entityChangesService.recalculateMaxEntityChangeId();
