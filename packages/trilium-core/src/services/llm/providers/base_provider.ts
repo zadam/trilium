@@ -48,7 +48,7 @@ export const TELEMETRY_OFF = { isEnabled: false } as const;
 
 /**
  * A model as reported by a provider's models endpoint. Only what the listing
- * APIs actually return — pricing is never part of it.
+ * APIs actually return.
  */
 export interface RemoteModel {
     id: string;
@@ -56,6 +56,8 @@ export interface RemoteModel {
     name?: string;
     /** Context window in tokens, when the API provides one (e.g. Google's `inputTokenLimit`). */
     contextWindow?: number;
+    /** Price, when the API provides one (OpenRouter's `pricing`). The vendor APIs don't. */
+    pricing?: ModelPricing;
 }
 
 /**
@@ -155,7 +157,7 @@ export function getProviderPrices(provider: string): ProviderPrices {
  *
  * The remote list is the source of truth for *availability* and *display name*:
  * base entries absent from it are dropped, remote models unknown to the base
- * list are included with whatever metadata the endpoint reported (no pricing).
+ * list are included with whatever metadata the endpoint reported.
  * The base list supplies pricing and context window (and, offline, a fallback
  * name) for the models it knows; the endpoint's display name always wins when
  * present.
@@ -177,7 +179,8 @@ export function mergeModelLists(curated: ModelInfo[], remote: RemoteModel[]): Mo
                 // The endpoint is authoritative for display names (e.g. Anthropic's
                 // `display_name`); the base name is only an offline fallback.
                 name: remoteModel?.name ?? m.name,
-                contextWindow: m.contextWindow ?? remoteModel?.contextWindow
+                contextWindow: m.contextWindow ?? remoteModel?.contextWindow,
+                pricing: m.pricing ?? remoteModel?.pricing
             };
         });
 
@@ -188,7 +191,8 @@ export function mergeModelLists(curated: ModelInfo[], remote: RemoteModel[]): Mo
         .map<ModelInfo>(m => ({
             id: m.id,
             name: m.name ?? m.id,
-            contextWindow: m.contextWindow
+            contextWindow: m.contextWindow,
+            ...(m.pricing && { pricing: m.pricing })
         }));
 
     const merged = [...known, ...unknown];

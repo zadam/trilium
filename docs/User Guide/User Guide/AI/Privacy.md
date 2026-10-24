@@ -7,7 +7,7 @@ Once you send a message or run the <a class="reference-link" href="../Note%20Ty
 
 | Provider type | Destination |
 | --- | --- |
-| Cloud providers | The provider's servers (Anthropic, OpenAI, Google, DeepSeek) |
+| Cloud providers | The provider's servers (Anthropic, OpenAI, Google, DeepSeek). OpenRouter passes each message on to the lab that runs the chosen model, according to the privacy settings of your OpenRouter account. |
 | Subscription-based | The provider's servers, via Claude Code running locally |
 | Local / self-hosted | Nothing leaves the machine running the model |
 | Custom endpoint | Wherever it was pointed, which may be your own hardware or a hosted service |

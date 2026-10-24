@@ -9,12 +9,22 @@ Currently, the following cloud providers are supported:
 *   <span class="tn-icon tn-brand tn-brand-openai"></span> OpenAI
 *   <span class="tn-icon tn-brand tn-brand-gemini"></span> Gemini
 *   <span class="tn-icon tn-brand tn-brand-deepseek"></span> DeepSeek
+*   <span class="tn-icon tn-brand tn-brand-openrouter"></span> [OpenRouter](https://openrouter.ai/settings/keys)
 
 For all the providers, an API key is needed. Note that this is charged separately from the subscription you might already have (e.g. Claude Pro). If that might be a problem, consider using either a subscription provider (see below) or using it externally via MCP.
 
-Do note that most other LLM providers (e.g. OpenRouter, Groq, Mistral) can still be used in Trilium via the OpenAI-compatible custom endpoint (see below).
+Do note that most other LLM providers (e.g. Groq, Mistral, Together) can still be used in Trilium via the OpenAI-compatible custom endpoint (see below).
 
 If you are using a proxy or gateway, you can also configure the base URL, otherwise the default will be used.
+
+For OpenRouter, the models are billed to your OpenRouter credits, and their prices, context windows and the attachments they read come from OpenRouter's own model list:
+
+*   The _Latest_ models that can use tools are selected by default, such as _Anthropic: Claude Sonnet Latest_. OpenRouter points each of them at the newest model of its line, so the selection stays current without editing the provider.
+*   Models that reason have a reasoning effort dropdown in the chat (_Low_, _Medium_ or _High_).
+*   _Auto Router_ (`openrouter/auto`) picks a model for each message, so the cost of a conversation that uses it is not displayed.
+*   Image generation models and the deferred _batch_ variants are not listed.
+*   Chat titles are generated with _Anthropic: Claude Haiku Latest_.
+*   Requests are attributed to Trilium on your OpenRouter activity page.
 
 For Gemini, a chat that doesn't specify a model uses `gemini-3.8-flash`, and the automatically generated chat titles use `gemini-3.5-flash-lite`. A model you select explicitly is used as is and isn't affected by these defaults.
 
@@ -54,7 +64,7 @@ Even for local providers that are not directly supported by Trilium, you can sti
 
 ## Custom endpoints
 
-If your desired hosted (e.g. OpenRouter, Groq, Mistral) or local LLM provider is not listed in Trilium, you can use the dedicated _OpenAI-compatible_ provider from the _Custom endpoint_ section.
+If your desired hosted (e.g. Groq, Mistral, Together) or local LLM provider is not listed in Trilium, you can use the dedicated _OpenAI-compatible_ provider from the _Custom endpoint_ section.
 
 This allows you to set the base URL to an OpenAI-compatible API, with an optional API key if required by the service.
 

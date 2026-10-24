@@ -23,6 +23,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
     "ollama": "tn-brand tn-brand-ollama",
     "openai": "tn-brand tn-brand-openai",
     "openai-compatible": "bx bx-bot",
+    "openrouter": "tn-brand tn-brand-openrouter",
     "perplexity": "tn-brand tn-brand-perplexity",
     "searxng": "tn-brand tn-brand-searxng",
     "serper": "tn-brand tn-brand-serper",

@@ -173,7 +173,7 @@ describe("mergeModelLists", () => {
         expect(merged.map(m => m.id)).toEqual(["gpt-4.1", "gpt-4.1-mini", "gpt-5", "gpt-9"]);
         // Base entries keep their pricing/default metadata...
         expect(merged[0]).toMatchObject({ name: "GPT-4.1", pricing: { input: 2, output: 8 }, isDefault: true });
-        // ...unknown ones carry no pricing.
+        // ...unknown ones carry no pricing unless the endpoint lists one.
         expect(merged[2]).toEqual({ id: "gpt-5", name: "gpt-5", contextWindow: undefined });
     });
 
@@ -197,6 +197,14 @@ describe("mergeModelLists", () => {
     it("fills a curated model's missing context window from the remote data", () => {
         const curated: ModelInfo[] = [{ id: "m", name: "M", pricing: { input: 1, output: 1 } }];
         expect(mergeModelLists(curated, [{ id: "m", contextWindow: 32000 }])[0].contextWindow).toBe(32000);
+    });
+
+    it("takes a listed price where the base list has none, and keeps the base list's otherwise", () => {
+        const merged = mergeModelLists(
+            [{ id: "m", name: "M", pricing: { input: 1, output: 1 } }],
+            [{ id: "m", pricing: { input: 9, output: 9 } }, { id: "n", pricing: { input: 0.1, output: 0.5 } }]
+        );
+        expect(merged.map(m => m.pricing)).toEqual([{ input: 1, output: 1 }, { input: 0.1, output: 0.5 }]);
     });
 
     it("promotes the first model to default when the curated default is unavailable", () => {

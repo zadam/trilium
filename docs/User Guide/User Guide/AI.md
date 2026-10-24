@@ -39,6 +39,7 @@ Trilium supports four different types of providers:
     *   <span class="tn-icon tn-brand tn-brand-openai"></span> OpenAI GPT
     *   <span class="tn-icon tn-brand tn-brand-gemini"></span> Google Gemini
     *   <span class="tn-icon tn-brand tn-brand-deepseek"></span> DeepSeek
+    *   <span class="tn-icon tn-brand tn-brand-openrouter"></span> OpenRouter, which reaches the models of most labs with one key
 
 === "<span class="tn-icon bx bx-coin"></span> Subscription-based"
 
@@ -56,7 +57,7 @@ Trilium supports four different types of providers:
 
 === "<span class="tn-icon bx bx-code-curly"></span> Custom endpoints"
 
-    For other providers that are not directly supported by Trilium, either local or hosted (e.g. OpenRouter, Groq, Mistral).
+    For other providers that are not directly supported by Trilium, either local or hosted (e.g. Groq, Mistral, Together).
 
 > [!TIP]
 > For more information about each provider, see <a class="reference-link" href="AI/Providers.md">Providers</a>. See the dedicated <a class="reference-link" href="AI/Privacy.md">Privacy</a> to better understand what data is sent to providers.
@@ -101,7 +102,7 @@ The AI can optionally search the web to find more information about a specific t
 Where the search comes from is chosen in the _Web search_ submenu of the <span class="tn-icon bx bx-shield-quarter"></span>_Tools_ menu next to the model selector at the bottom of the chat, whose row shows the source in use:
 
 *   _Disabled_ turns web search off for this chat.
-*   _Use the model's built-in search_, the default, lets the model search with its provider's own search. Anthropic, OpenAI, Google Gemini and DeepSeek models have one, as do Claude Code, Google Antigravity and OpenAI Codex. Ollama, LM Studio and custom endpoints don't, so this choice is disabled for their models. DeepSeek's search is billed per search on your DeepSeek account and works only with DeepSeek's own endpoint, not with a custom base URL.
+*   _Use the model's built-in search_, the default, lets the model search with its provider's own search. Anthropic, OpenAI, Google Gemini and DeepSeek models have one, as do Claude Code, Google Antigravity and OpenAI Codex. OpenRouter, Ollama, LM Studio and custom endpoints don't, so this choice is disabled for their models. DeepSeek's search is billed per search on your DeepSeek account and works only with DeepSeek's own endpoint, not with a custom base URL.
 *   A search provider (Brave Search, Tavily, Exa, Serper, Perplexity or SearXNG) searches through that service instead, whichever model is answering. Search providers are added in the _Search Providers_ section of the AI settings, which _Manage search providers_ at the bottom of the submenu opens. The browser version can't use Brave Search, Exa or Perplexity, whose services refuse requests made from a web page, so they're shown disabled there.
 
 To use SearXNG, enable its JSON output by adding `json` to the search formats in the instance's `settings.yml`. SearXNG turns JSON off by default, and without it every search fails.
@@ -128,7 +129,7 @@ Some models reason before they answer. While the model is thinking, its reasonin
 How much a model thinks is set per chat, in one of two ways depending on the model:
 
 *   Most models have an <span class="tn-icon bx bx-brain"></span>_Extended thinking_ button, next to the <span class="tn-icon bx bx-shield-quarter"></span>_Tools_ button.
-*   Models that offer several levels of reasoning (DeepSeek V4, OpenAI Codex, Antigravity) have a <span class="tn-icon bx bx-brain"></span>reasoning effort dropdown next to the model selector instead. _None_, where offered, turns thinking off; higher levels give better answers to hard questions, but take longer and cost more.
+*   Models that offer several levels of reasoning (DeepSeek V4, OpenRouter models that reason, OpenAI Codex, Antigravity) have a <span class="tn-icon bx bx-brain"></span>reasoning effort dropdown next to the model selector instead. _None_, where offered, turns thinking off; higher levels give better answers to hard questions, but take longer and cost more.
 
 > [!NOTE]
 > The effort dropdown only appears once Trilium knows the model's levels. For a DeepSeek provider set up with an earlier version of Trilium, edit the provider in the model selection box and press _Save_ once.

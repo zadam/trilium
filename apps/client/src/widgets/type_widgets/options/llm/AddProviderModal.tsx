@@ -114,7 +114,7 @@ const PROVIDER_GROUPS = [
     { id: "subscription", columns: 2, headingKey: "llm.provider_group_subscription", descriptionKey: "llm.provider_group_subscription_description" },
     { id: "local", columns: 2, headingKey: "llm.provider_group_local", descriptionKey: "llm.provider_group_local_description" },
     // Kept apart from the local runtimes: the same card reaches a hosted
-    // OpenAI-compatible service (OpenRouter, Groq, …), so neither "no usage cost"
+    // OpenAI-compatible service (Groq, Together, …), so neither "no usage cost"
     // nor "stays on your machine" can be claimed for it.
     { id: "custom", columns: 1, headingKey: "llm.provider_group_custom", descriptionKey: "llm.provider_group_custom_description" }
 ] as const;
@@ -134,6 +134,9 @@ export const PROVIDER_TYPES: ProviderType[] = [
     // but carded here so its models resolve against the committed price table,
     // which a nameless endpoint never can.
     { id: "deepseek", name: "DeepSeek", group: "cloud", defaultBaseUrl: "https://api.deepseek.com/v1", icon: PROVIDER_ICONS.deepseek },
+    // Also reachable through the custom endpoint card, but carded so its models are priced and
+    // described from OpenRouter's own listing.
+    { id: "openrouter", name: "OpenRouter", group: "cloud", defaultBaseUrl: "https://openrouter.ai/api/v1", icon: PROVIDER_ICONS.openrouter },
     // Uses the Claude Agent SDK on the server; auth belongs to Claude Code (`claude /login`),
     // and usage is covered by the subscription rather than charged per token.
     { id: "claude-agent", name: "Claude Code", group: "subscription", defaultBaseUrl: "", icon: PROVIDER_ICONS["claude-agent"], connectionDescription: t("llm.claude_agent_description"), apiKey: "none", baseUrl: "none", needsHostProcess: true },
