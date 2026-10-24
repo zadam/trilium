@@ -335,6 +335,16 @@ describe("CK config - tables", () => {
         expect((await buildConfig(baseOpts())).autoSort)
             .toEqual({ dateFormats: ["DD.MM.YYYY HH:mm"] });
     });
+
+    it("formats inserted dates in a chosen format or the user's current one", async () => {
+        const { formatDateTime } = await buildConfig(baseOpts());
+        const date = new Date(2026, 8, 25, 10, 30);
+
+        expect(formatDateTime?.(date, "YYYY")).toBe("2026");
+
+        optionsState.map.customDateTimeFormat = "DD.MM.YYYY HH:mm";
+        expect(formatDateTime?.(date)).toBe("25.09.2026 10:30");
+    });
 });
 
 describe("CK config - licensing", () => {

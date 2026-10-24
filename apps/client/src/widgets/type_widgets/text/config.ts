@@ -14,7 +14,7 @@ import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
 import { getSourceEmbedTypeByLanguage, SOURCE_EMBED_TYPES } from "../../../services/source_embeds.js";
 import { ensureMimeTypesForHighlighting, isSyntaxHighlightEnabled } from "../../../services/syntax_highlight.js";
 import { getTaskStateDefinitions, openCustomTaskStateConfig } from "../../../services/task_states.js";
-import { isMac, isMobile } from "../../../services/utils.js";
+import { formatDateTime, isMac, isMobile } from "../../../services/utils.js";
 import { resolveContentLanguage } from "../../../utils/formatters.js";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams.js";
 import buildAiAssistantStream, { type AiNoteLocationProvider, buildAiAssistantQuickActions } from "./ai_assistant_stream.js";
@@ -196,6 +196,8 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             copy: copyTextWithToast,
             copyHtml: copyHtmlWithToast
         },
+        // Reads `customDateTimeFormat` on each call, so a changed format applies to open editors.
+        formatDateTime: (date, format) => formatDateTime(date, format ?? options.get("customDateTimeFormat")),
         slashCommand: {
             // Drop CKEditor's built-in list slash commands, whose Title Case titles the palette
             // re-defines in sentence case.

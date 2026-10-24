@@ -27,7 +27,6 @@ import { t } from "../../../services/i18n";
 import link, { parseNavigationStateFromUrl, type ViewScope } from "../../../services/link";
 import type LoadResults from "../../../services/load_results";
 import note_create from "../../../services/note_create";
-import options from "../../../services/options";
 import { consumeSearchTerms } from "../../../services/search_jump";
 import { getNoteShareLink } from "../../../services/share_link";
 import toast from "../../../services/toast";
@@ -266,9 +265,6 @@ export default function EditableText({
 
             setIconPickerRequest(request);
             return () => setIconPickerRequest(null);
-        },
-        formatDateTime(date: Date, format?: string) {
-            return utils.formatDateTime(date, format ?? options.get("customDateTimeFormat"));
         },
         // Keyboard shortcut
         async insertDateTimeToTextCommand() {

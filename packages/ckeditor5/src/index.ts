@@ -52,6 +52,7 @@ import "./plugins/content_embed/content_embed.js";
 import "./plugins/content_embed/content_embed_caret.js";
 import "./plugins/find_in_link_widgets.js";
 import "./plugins/find_reveal.js";
+import "./plugins/insert_date_time.js";
 import "./plugins/math/math.js";
 import "./plugins/tabs/tabs.js";
 import "./plugins/multicolumn/multicolumn.js";

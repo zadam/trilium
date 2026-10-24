@@ -17,7 +17,6 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import { COMMAND_NAME as CONTENT_EMBED_COMMAND } from "../content_embed/content_embed.js";
 import { INSERT_ICON_COMMAND } from "../inline_icon/inline_icon_editing.js";
 import InlineIconUI from "../inline_icon/inline_icon_ui.js";
@@ -698,8 +697,7 @@ describe("buildTriliumSlashCommands", () => {
 
         beforeEach(async () => {
             formatDateTime = vi.fn((_date: Date, format?: string) => format ?? "2026-09-25 10:30");
-            installGlobMock({ getComponentByEl: () => ({ formatDateTime }) });
-            editor = await createTestEditor([ Essentials, Paragraph, InsertDateTimePlugin ]);
+            editor = await createTestEditor([ Essentials, Paragraph, InsertDateTimePlugin ], { formatDateTime });
         });
 
         function dateTimeEntries() {
