@@ -11,7 +11,6 @@ function setupGlobs() {
 
     window.glob.getComponentByEl = (el) => appContext.getComponentByEl(el);
     window.glob.getHeaders = server.getHeaders;
-    window.glob.getLocalUpload = server.getLocalUpload;
     window.glob.getReferenceLinkTitle = (href) => linkService.getReferenceLinkTitle(href);
     window.glob.getReferenceLinkTitleSync = (href, storedTitle) =>
         linkService.getReferenceLinkTitleSync(href, storedTitle);

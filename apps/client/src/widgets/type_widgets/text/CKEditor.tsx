@@ -285,7 +285,8 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
                 contentLanguage: contentLanguage ?? null,
                 templates: templatesRef.current,
                 getNoteLocation: () => noteLocationRef.current,
-                getNoteId: () => noteIdRef.current
+                getNoteId: () => noteIdRef.current,
+                getComponentId: () => parentComponent?.componentId
             });
 
             if (isStale) {

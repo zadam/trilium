@@ -37,14 +37,16 @@ standalone packages (and legacy specs mid-migration) still hand-roll the scaffol
 
 Host services that need no component come through the editor config, so a spec passes them to
 `createTestEditor( plugins, { … } )` instead of mocking `glob`: `formatDateTime` (date/time),
-`referenceLink: { getTitle, getTitleSync }` (reference links) and `linkEmbed` (link previews —
-`createLinkEmbedHost()` in `test/link-embed-kit.ts` builds the mocked entry). Each falls back to a
-placeholder when left out, so a spec that does not assert on it can omit it.
+`referenceLink: { getTitle, getTitleSync }` (reference links), `linkEmbed` (link previews —
+`createLinkEmbedHost()` in `test/link-embed-kit.ts` builds the mocked entry), and `getNoteId` plus
+`attachmentUpload: { getHeaders, getLocalUpload, getEmbedBoxSize }` (uploads). Each falls back to a
+placeholder when left out (an upload without `getNoteId` is rejected), so a spec that does not
+assert on it can omit it. A spec sharing one editor across tests can swap an entry with
+`editor.config.set()`, which the plugins read at call time.
 
 Many in-aggregate plugins still reach for a global `glob` (the Trilium bridge — typed in
-`packages/ckeditor5/src/augmentation.ts` with `getComponentByEl`, `getActiveContextNote`,
-`getHeaders`, `getLocalUpload`), some buttons hit
-`navigator.clipboard`, and some converters call jQuery `$(...)` (e.g. the `editingDowncast`
+`packages/ckeditor5/src/augmentation.ts` with `getComponentByEl` and `getActiveContextNote`), some
+buttons hit `navigator.clipboard`, and some converters call jQuery `$(...)` (e.g. the `editingDowncast`
 converter in `packages/ckeditor5/src/plugins/referencelink.ts`). Use the globals kit
 (`test/globals-test-kit.ts`) so each stub **tears itself down** after the test — never hand-roll
 `globalThis.glob = …` plus a manual `delete`:

@@ -20,7 +20,6 @@ import {
     openBlockHandleMenu
 } from "../../../services/block_reference";
 import { consumeBookmark } from "../../../services/bookmark_jump";
-import { getUploadBoxSize } from "../../../services/content_renderer";
 import dialog from "../../../services/dialog";
 import froca from "../../../services/froca";
 import { t } from "../../../services/i18n";
@@ -323,7 +322,6 @@ export default function EditableText({
         getNoteId() {
             return note.noteId;
         },
-        getEmbedBoxSize: getUploadBoxSize,
         openContentEmbedMenu,
         openBlockHandleMenu(event: MouseEvent, count: number) {
             const shareLink = getNoteShareLink(note);

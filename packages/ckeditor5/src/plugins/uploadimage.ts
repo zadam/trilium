@@ -1,3 +1,4 @@
+import type { StandaloneApi } from "@triliumnext/commons";
 import {
 	FileRepository,
 	Plugin,
@@ -59,18 +60,23 @@ class Adapter implements UploadAdapter {
 	 * @see module:upload/filerepository~Adapter#upload
 	 */
 	upload() {
-		const localUpload = glob.getLocalUpload?.();
-		if (localUpload) {
-			return this._uploadLocally(localUpload) as Promise<any>;
-		}
+		return this.loader.file.then((file): Promise<unknown> => {
+			if (!file) {
+				throw "Missing file";
+			}
 
-		return this.loader.file
-			.then( file => new Promise<File | null>( ( resolve, reject ) => {
-				this._initRequest().then(() => {
-					this._initListeners(resolve, reject);
-					this._sendRequest();
-				});
-			} ) ) as Promise<any>;
+			const localUpload = this.editor.config.get('attachmentUpload')?.getLocalUpload?.();
+			if (localUpload) {
+				return this._uploadLocally(localUpload, file);
+			}
+
+			return new Promise<File | null>((resolve, reject) => {
+				this._initRequest(file).then(() => {
+					this._initListeners(file, resolve, reject);
+					this._sendRequest(file);
+				}, reject);
+			});
+		}) as Promise<any>;
 	}
 
 	/**
@@ -90,14 +96,9 @@ class Adapter implements UploadAdapter {
 	 * Hands the file to the host's local server. A raw request with a body cannot reach it: the
 	 * mobile app's native request bridges answer GET and HEAD only.
 	 */
-	private async _uploadLocally(localUpload: LocalUpload) {
-		const file = await this.loader.file;
-		if (!file) {
-			throw "Missing file";
-		}
-
+	private async _uploadLocally(localUpload: LocalUpload, file: File) {
 		const genericError = this.t('Cannot upload file:') + ` ${file.name}.`;
-		const { url, headers } = await this._getRequestTarget();
+		const { url, headers } = await this._getRequestTarget(file);
 		const aborted = new Promise<never>((_, reject) => {
 			this.rejectLocal = () => reject();
 		});
@@ -129,8 +130,8 @@ class Adapter implements UploadAdapter {
 	 *
 	 * @private
 	 */
-	_initRequest() {
-		return this._getRequestTarget().then(({ url, headers }) => {
+	_initRequest(file: File) {
+		return this._getRequestTarget(file).then(({ url, headers }) => {
 			const xhr = this.xhr = new XMLHttpRequest();
 
 			xhr.open('POST', url, true);
@@ -142,17 +143,18 @@ class Adapter implements UploadAdapter {
 		});
 	}
 
-	/** The relative URL of the upload route for the editor's note, and the request headers. */
-	private async _getRequestTarget() {
-		const domRoot = this.editor.editing.view.getDomRoot();
-		const component = glob.getComponentByEl<EditorComponent>( domRoot );
+	/**
+	 * The relative URL of the upload route for the note `getNoteId` names, and the request headers.
+	 * Rejects when the editor names no note to attach `file` to.
+	 */
+	private async _getRequestTarget(file: File) {
+		const config = this.editor.config;
+		const noteId = config.get('getNoteId')?.();
+		if (!noteId) {
+			throw this.t('Cannot upload file:') + ` ${file.name}.`;
+		}
 
-		// Sent as a change of the host, which then does not redraw the links and embeds it shows.
-		const headers = await glob.getHeaders({ "trilium-component-id": component?.componentId });
-
-		// The note the editor holds, which is not the active tab's in a split or the quick edit
-		// popup. A host that does not say falls back to the active tab's.
-		const noteId = component?.getNoteId?.() ?? glob.getActiveContextNote().noteId;
+		const headers = await config.get('attachmentUpload')?.getHeaders?.() ?? {};
 		const query = isUploadAsLink(this.loader) ? "?link=true" : "";
 
 		// this must be a relative path
@@ -166,7 +168,7 @@ class Adapter implements UploadAdapter {
 	 * @param resolve Callback function to be called when the request is successful.
 	 * @param reject Callback function to be called when the request cannot be completed.
 	 */
-	async _initListeners(resolve: (value: File | PromiseLike<File | null> | null) => void, reject: (reason?: any) => void) {
+	_initListeners(file: File, resolve: (value: File | PromiseLike<File | null> | null) => void, reject: (reason?: any) => void) {
 		const xhr = this.xhr;
         /* v8 ignore next 4 -- unreachable: _initListeners runs only after _initRequest() resolves, which always assigns this.xhr */
         if (!xhr) {
@@ -175,12 +177,6 @@ class Adapter implements UploadAdapter {
         }
 
 		const loader = this.loader;
-		const file = await loader.file;
-        if (!file) {
-            reject("Missing file");
-            return;
-        }
-
 		const t = this.t;
 		const genericError = t('Cannot upload file:') + ` ${file.name}.`;
 
@@ -215,17 +211,10 @@ class Adapter implements UploadAdapter {
 	 *
 	 * @private
 	 */
-	async _sendRequest() {
-		// Prepare form data.
+	_sendRequest(file: File) {
 		const data = new FormData();
-
-        const file = await this.loader.file;
-        if (file) {
-            data.append('upload', file);
-
-            // Send request.
-            this.xhr?.send(data);
-        }
+		data.append('upload', file);
+		this.xhr?.send(data);
 	}
 }
 
@@ -257,4 +246,27 @@ function describeUploadFailure(t: LocaleTranslate, status: number, response: { e
 	}
 
 	return '';
+}
+
+type LocalUpload = NonNullable<StandaloneApi["localUpload"]>;
+
+/** The services the host provides for uploading attachments, through the `attachmentUpload` config entry. */
+export interface AttachmentUploadHost {
+	/** The headers of an upload request. */
+	getHeaders(): Promise<Record<string, string>>;
+	/**
+	 * The host's in-page upload to its local server, when it has one. Uploads go through it
+	 * because a raw request with a body cannot reach that server from every platform.
+	 */
+	getLocalUpload(): LocalUpload | undefined;
+	/** The box size a new embed of an uploaded file starts at, from its media type and size. */
+	getEmbedBoxSize(mime: string, size: number): string;
+}
+
+declare module "ckeditor5" {
+	interface EditorConfig {
+		/** The ID of the note the editor holds, which uploads attach to. */
+		getNoteId?(): string | undefined;
+		attachmentUpload?: Partial<AttachmentUploadHost>;
+	}
 }

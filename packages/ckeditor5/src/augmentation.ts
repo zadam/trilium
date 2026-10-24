@@ -1,7 +1,5 @@
 import "ckeditor5";
 
-import type { StandaloneApi } from "@triliumnext/commons";
-
 import type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
 
 declare global {
@@ -142,11 +140,6 @@ declare global {
         /** The note the editor holds. Hosts without a note of their own leave it out. */
         getNoteId?(): string | undefined;
         /**
-         * The box size of a new embed of a file being uploaded, from its media type. Hosts without
-         * embeds leave it out.
-         */
-        getEmbedBoxSize?(mime: string, size: number): string;
-        /**
          * Opens the context menu of what `embed` shows, below `anchor`. Hosts without embeds
          * leave it out.
          */
@@ -183,19 +176,11 @@ declare global {
         convertImageToDrawing?(src: string): Promise<string | null>;
     }
 
-    type LocalUpload = NonNullable<StandaloneApi["localUpload"]>;
-
     var glob: {
         getComponentByEl<T extends Component>(el: unknown): T;
         getActiveContextNote(): {
             noteId: string;
         };
-        /** The headers of a request to the server, with `headers` added to them. */
-        getHeaders(headers?: Record<string, string | undefined>): Promise<Record<string, string>>;
-        /**
-         * The host's in-page upload to its local server, when it has one. Uploads go through it
-         * because a raw request with a body cannot reach that server from every platform.
-         */
-        getLocalUpload?(): LocalUpload | undefined;
     };
 }
+

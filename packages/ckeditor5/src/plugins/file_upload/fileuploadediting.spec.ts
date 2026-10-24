@@ -607,7 +607,6 @@ describe("FileUploadEditing with embeds", () => {
         const focusContentEmbed = vi.fn();
         installGlobMock({
             getComponentByEl: () => ({
-                getEmbedBoxSize: () => "small",
                 loadEmbeddedAttachment,
                 focusContentEmbed
             })
@@ -615,7 +614,7 @@ describe("FileUploadEditing with embeds", () => {
         const editor = await createTestEditor([
             Essentials, Paragraph, FileRepository, Notification, Clipboard, ReferenceSchema,
             ContentEmbed, FileUploadEditing
-        ]);
+        ], { attachmentUpload: { getEmbedBoxSize: () => "small" } });
         const controls = installUploadAdapter(editor);
         setModelData(editor.model, "<paragraph>[]</paragraph>");
 

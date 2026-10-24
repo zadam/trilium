@@ -2,7 +2,6 @@ import { ClassicEditor, Essentials, FileRepository, Paragraph, type FileLoader, 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../test/editor-kit.js";
-import { installGlobMock } from "../../test/globals-test-kit.js";
 import UploadimagePlugin, {
     isUploadAsLink,
     uploadAsLink
@@ -92,22 +91,23 @@ function createFakeLoader(file: File | null): FileLoader {
 describe("UploadimagePlugin", () => {
     let editor: ClassicEditor;
     let getHeaders: ReturnType<typeof vi.fn>;
+    let noteId: string | undefined;
+    let localUpload: ReturnType<typeof vi.fn> | undefined;
     let originalXHR: typeof window.XMLHttpRequest;
 
     beforeEach(async () => {
         getHeaders = vi.fn(async () => ({ Authorization: "Bearer token", "x-csrf": "abc" }));
-        installGlobMock({
-            getHeaders,
-            getActiveContextNote: () => ({ noteId: "noteAbc" }),
-            // A host whose editor does not name its note, such as the chat input.
-            getComponentByEl: () => ({})
-        });
+        noteId = "noteAbc";
+        localUpload = undefined;
 
         originalXHR = window.XMLHttpRequest;
         window.XMLHttpRequest = FakeXHR as unknown as typeof window.XMLHttpRequest;
         FakeXHR.last = undefined;
 
-        editor = await createTestEditor([Essentials, Paragraph, FileRepository, UploadimagePlugin]);
+        editor = await createTestEditor([Essentials, Paragraph, FileRepository, UploadimagePlugin], {
+            getNoteId: () => noteId,
+            attachmentUpload: { getHeaders, getLocalUpload: () => localUpload }
+        });
     });
 
     afterEach(() => {
@@ -163,18 +163,24 @@ describe("UploadimagePlugin", () => {
         await expect(uploadPromise).resolves.toEqual({ default: "http://example.com/pic.png" });
     });
 
-    it("uploads to the note its editor holds, rather than to the active tab's", async () => {
-        installGlobMock({
-            getHeaders,
-            getActiveContextNote: () => ({ noteId: "noteAbc" }),
-            getComponentByEl: () => ({ componentId: "editor1", getNoteId: () => "editorNote" })
-        });
-
+    it("uploads to the note the host names when the upload starts, and nowhere without one", async () => {
+        noteId = "otherNote";
         void createAdapter(new File(["content"], "pic.png", { type: "image/png" })).upload();
+        expect((await awaitSentXhr()).url).toBe("api/notes/otherNote/attachments/upload");
 
-        expect((await awaitSentXhr()).url).toBe("api/notes/editorNote/attachments/upload");
-        // As a change of the editor, which then does not redraw the embed it completes.
-        expect(getHeaders).toHaveBeenCalledWith({ "trilium-component-id": "editor1" });
+        FakeXHR.last = undefined;
+        noteId = undefined;
+        await expect(createAdapter(new File(["content"], "pic.png", { type: "image/png" })).upload())
+            .rejects.toBe("Cannot upload file: pic.png.");
+        expect(FakeXHR.last).toBeUndefined();
+    });
+
+    it("cannot upload without the getNoteId config entry", async () => {
+        const plainEditor = await createTestEditor([Essentials, Paragraph, FileRepository, UploadimagePlugin]);
+        const adapter = plainEditor.plugins.get(FileRepository)
+            .createUploadAdapter?.(createFakeLoader(new File(["content"], "pic.png", { type: "image/png" })));
+
+        await expect(adapter?.upload()).rejects.toBe("Cannot upload file: pic.png.");
     });
 
     it("asks for a link only for a loader marked to upload as one", async () => {
@@ -339,20 +345,12 @@ describe("UploadimagePlugin", () => {
     });
 
     describe("with a local server", () => {
-        let localUpload: ReturnType<typeof vi.fn>;
-
         function answerWith(body: string, status = 200, contentType = "application/json") {
-            localUpload.mockResolvedValue(new Response(body, { status, headers: { "content-type": contentType } }));
+            localUpload?.mockResolvedValue(new Response(body, { status, headers: { "content-type": contentType } }));
         }
 
         beforeEach(() => {
             localUpload = vi.fn();
-            installGlobMock({
-                getHeaders,
-                getActiveContextNote: () => ({ noteId: "noteAbc" }),
-                getComponentByEl: () => ({}),
-                getLocalUpload: () => localUpload
-            });
         });
 
         it("hands the file to the local server instead of sending a request", async () => {
@@ -380,13 +378,13 @@ describe("UploadimagePlugin", () => {
             await expect(createAdapter(file).upload()).rejects.toBe(
                 "Cannot upload file: pic.png. The file is too large to be uploaded (HTTP 413). If Trilium is behind a reverse proxy, raise its request body size limit.");
 
-            localUpload.mockRejectedValue(new Error("Worker gone"));
+            localUpload?.mockRejectedValue(new Error("Worker gone"));
             await expect(createAdapter(file).upload()).rejects.toBe("Cannot upload file: pic.png.");
         });
 
         it("rejects with no reason when aborted, and ignores the late answer", async () => {
             let answer: (response: Response) => void = () => {};
-            localUpload.mockReturnValue(new Promise<Response>(resolve => {
+            localUpload?.mockReturnValue(new Promise<Response>(resolve => {
                 answer = resolve;
             }));
             const adapter = createAdapter(new File(["content"], "pic.png", { type: "image/png" }));

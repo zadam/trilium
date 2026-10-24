@@ -94,6 +94,22 @@ vi.mock("../../../services/dialog.js", () => ({
 }));
 vi.mock("@triliumnext/highlightjs", () => ({ default: { name: "hljs-stub" } }));
 vi.mock("../../../services/math.js", () => ({ default: { name: "katex-stub" } }));
+vi.mock("../../../services/content_renderer.js", () => ({ getUploadBoxSize: vi.fn(() => "medium") }));
+vi.mock("../../../services/server.js", async (importOriginal) => {
+    const original = await importOriginal<typeof import("../../../services/server.js")>();
+    return {
+        default: {
+            ...original.default,
+            // `keyboard_actions` loads its actions through `get` on import.
+            get: vi.fn(async () => []),
+            getHeaders: vi.fn(async (headers?: Record<string, string | null | undefined>) => ({
+                "x-csrf-token": "csrf",
+                "trilium-hoisted-note-id": null,
+                ...headers
+            }))
+        }
+    };
+});
 vi.mock("../../../services/link_embed.js", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../../../services/link_embed.js")>()),
     fetchMetadata: vi.fn(async (url: string, ownerNoteId: string) => ({ url, embedType: "opengraph", title: ownerNoteId }))
@@ -361,6 +377,16 @@ describe("CK config - tables", () => {
         noteId = undefined;
         expect(await linkEmbed?.fetchMetadata?.("https://a.example/")).toMatchObject({ unresolved: true });
         expect(linkEmbed?.detectEmbedType?.("https://youtube.com/watch?v=abc12345678")).toBe("youtube");
+    });
+
+    it("uploads to the open note, as a change of the editor's component", async () => {
+        const config = await buildConfig(baseOpts({ getNoteId: () => "noteAbc", getComponentId: () => "editor1" }));
+
+        expect(config.getNoteId?.()).toBe("noteAbc");
+        // Headers without a value are left out rather than sent as the text "null".
+        expect(await config.attachmentUpload?.getHeaders?.())
+            .toStrictEqual({ "x-csrf-token": "csrf", "trilium-component-id": "editor1" });
+        expect(config.attachmentUpload?.getEmbedBoxSize?.("image/png", 1)).toBe("medium");
     });
 
     it("titles reference links through the link service", async () => {

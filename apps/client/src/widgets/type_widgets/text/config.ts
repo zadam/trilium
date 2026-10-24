@@ -1,9 +1,10 @@
-import { type EditorConfig, getCkLocale, type LinkEmbedHost, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
+import { type AttachmentUploadHost, type EditorConfig, getCkLocale, type LinkEmbedHost, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
 
 import { copyHtmlWithToast, copyTextWithToast } from "../../../services/clipboard_ext.js";
+import { getUploadBoxSize } from "../../../services/content_renderer.js";
 import { prompt } from "../../../services/dialog.js";
 import { t } from "../../../services/i18n.js";
 import imageService from "../../../services/image.js";
@@ -13,6 +14,7 @@ import { detectEmbedType, fetchMetadata, renderEmbedPreview, renderMentionPrevie
 import { default as mimeTypesService, getHighlightJsNameForMime } from "../../../services/mime_types.js";
 import options from "../../../services/options.js";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
+import server from "../../../services/server.js";
 import { getSourceEmbedTypeByLanguage, SOURCE_EMBED_TYPES } from "../../../services/source_embeds.js";
 import { ensureMimeTypesForHighlighting, isSyntaxHighlightEnabled } from "../../../services/syntax_highlight.js";
 import { getTaskStateDefinitions, openCustomTaskStateConfig } from "../../../services/task_states.js";
@@ -50,6 +52,8 @@ export interface BuildEditorOptions {
     getNoteLocation?: AiNoteLocationProvider;
     /** The ID of the note the editor is open on. A getter for the same reason as `getNoteLocation`. */
     getNoteId?: () => string | undefined;
+    /** The ID of the component that hosts the editor, which changes the editor makes are sent as. */
+    getComponentId?: () => string | undefined;
 }
 
 export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfig> {
@@ -207,6 +211,8 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             getTitleSync: linkService.getReferenceLinkTitleSync
         },
         linkEmbed: buildLinkEmbedHost(opts.getNoteId),
+        getNoteId: opts.getNoteId,
+        attachmentUpload: buildAttachmentUploadHost(opts.getComponentId),
         slashCommand: {
             // Drop CKEditor's built-in list slash commands, whose Title Case titles the palette
             // re-defines in sentence case.
@@ -341,6 +347,25 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     return {
         ...config,
         ...buildToolbarConfig(opts.isClassicEditor, !!aiAssistantStream)
+    };
+}
+
+/** The upload services of the editor, sending its uploads as changes of `getComponentId()`. */
+function buildAttachmentUploadHost(getComponentId?: () => string | undefined): AttachmentUploadHost {
+    return {
+        async getHeaders() {
+            // Sent as a change of the host, which then does not redraw the links and embeds it shows.
+            const headers = await server.getHeaders({ "trilium-component-id": getComponentId?.() });
+            const sent: Record<string, string> = {};
+            for (const [ name, value ] of Object.entries(headers)) {
+                if (value) {
+                    sent[name] = value;
+                }
+            }
+            return sent;
+        },
+        getLocalUpload: server.getLocalUpload,
+        getEmbedBoxSize: getUploadBoxSize
     };
 }
 
