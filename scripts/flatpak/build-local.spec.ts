@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseIgnoredPaths, useLocalDirSource } from "./build-local.mjs";
+import { parseIgnoredPaths, useLocalDirSource, useTestAppId } from "./build-local.mjs";
 
 const SOURCES = (pin: string) => `\
     sources:
@@ -38,12 +38,45 @@ describe("useLocalDirSource", () => {
     });
 });
 
+describe("useTestAppId", () => {
+    it("renames the app and builds its exports from the release's files", () => {
+        const manifest = `\
+app-id: org.triliumnotes.Trilium
+runtime: org.freedesktop.Platform
+modules:
+  - name: trilium
+    build-commands:
+      - install -Dm644 apps/desktop/flatpak/\${FLATPAK_ID}.desktop /app/share/applications/\${FLATPAK_ID}.desktop
+      - install -Dm644 apps/desktop/flatpak/\${FLATPAK_ID}.metainfo.xml /app/share/metainfo/\${FLATPAK_ID}.metainfo.xml
+`;
+        expect(useTestAppId(manifest)).toBe(`\
+app-id: org.triliumnotes.Trilium.Test
+rename-desktop-file: org.triliumnotes.Trilium.desktop
+rename-appdata-file: org.triliumnotes.Trilium.metainfo.xml
+rename-icon: org.triliumnotes.Trilium
+desktop-file-name-suffix: " (Test)"
+runtime: org.freedesktop.Platform
+modules:
+  - name: trilium
+    build-commands:
+      - install -Dm644 apps/desktop/flatpak/org.triliumnotes.Trilium.desktop /app/share/applications/org.triliumnotes.Trilium.desktop
+      - install -Dm644 apps/desktop/flatpak/org.triliumnotes.Trilium.metainfo.xml /app/share/metainfo/org.triliumnotes.Trilium.metainfo.xml
+`);
+    });
+
+    it("fails on a manifest for another app", () => {
+        expect(() => useTestAppId("app-id: org.example.App\n")).toThrow(/app-id/);
+    });
+});
+
 describe("parseIgnoredPaths", () => {
-    it("strips directory slashes and drops paths inside another ignored one", () => {
-        const output = ".flatpak-builder/\n.flatpak-builder/ccache/\napps/client/dist/\n"
-            + "apps/client/tsconfig.tsbuildinfo\nnode_modules/\nnode_modules_backup/\n";
+    it("keeps each NUL-separated path exactly, minus directory slashes and nested paths", () => {
+        const output = [
+            ".flatpak-builder/", ".flatpak-builder/ccache/", "apps/client/dist/",
+            " notes with spaces .md", "Ünïcode \"quoted\"/", "node_modules/", "node_modules_backup/", ""
+        ].join("\0");
         expect(parseIgnoredPaths(output)).toEqual([
-            ".flatpak-builder", "apps/client/dist", "apps/client/tsconfig.tsbuildinfo",
+            ".flatpak-builder", "apps/client/dist", " notes with spaces .md", "Ünïcode \"quoted\"",
             "node_modules", "node_modules_backup"
         ]);
     });
