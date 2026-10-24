@@ -1,6 +1,6 @@
 import "./AttributeEditor.css";
 
-import type { AttributeEditor as CKEditorAttributeEditor, ModelElement, ModelNode, ModelPosition, MentionHostedFeed } from "@triliumnext/ckeditor5";
+import type { AttributeEditor as CKEditorAttributeEditor, EditorConfig, ModelElement, ModelNode, ModelPosition, MentionHostedFeed } from "@triliumnext/ckeditor5";
 import { AttributeType } from "@triliumnext/commons";
 import clsx from "clsx";
 import { createPortal, RefObject } from "preact";
@@ -243,14 +243,7 @@ export default function AttributeEditor({ api, note, componentId, notePath, ntxI
                         tabIndex={200}
                         editor={editorClass}
                         currentValue={currentValue}
-                        config={{
-                            toolbar: { items: [] },
-                            placeholder: t("attribute_editor.placeholder"),
-                            mention: { feeds: [], hostedFeeds: hostedMentions },
-                            referenceLink: { renderTitle: renderReferenceTitle },
-                            licenseKey: "GPL",
-                            language: "en"
-                        }}
+                        config={buildAttributeEditorConfig(hostedMentions)}
                         onChange={(currentValue) => {
                             currentValueRef.current = currentValue ?? "";
 
@@ -368,6 +361,22 @@ export default function AttributeEditor({ api, note, componentId, notePath, ntxI
             {createPortal(attributeDetailWidgetEl, document.body)}
         </>
     );
+}
+
+/** The config of the attribute editor, which completes what is typed from `hostedMentions`. */
+export function buildAttributeEditorConfig(hostedMentions: MentionHostedFeed[]): EditorConfig {
+    return {
+        toolbar: { items: [] },
+        placeholder: t("attribute_editor.placeholder"),
+        mention: { feeds: [], hostedFeeds: hostedMentions },
+        referenceLink: {
+            getTitle: link.getReferenceLinkTitle,
+            getTitleSync: link.getReferenceLinkTitleSync,
+            renderTitle: renderReferenceTitle
+        },
+        licenseKey: "GPL",
+        language: "en"
+    };
 }
 
 /** Fills `element` with the title of the note a relation's reference link points to. */

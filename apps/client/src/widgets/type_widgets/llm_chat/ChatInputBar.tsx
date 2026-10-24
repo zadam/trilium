@@ -1,6 +1,6 @@
 import "./ChatInputBar.css";
 
-import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, MentionHostedFeed } from "@triliumnext/ckeditor5";
+import type { AttributeEditor as CKEditorAttributeEditor, CKTextEditor, EditorConfig, MentionHostedFeed } from "@triliumnext/ckeditor5";
 import type { DISPLAYABLE_LOCALE_IDS, LlmPermissionMode, LlmReasoningEffort } from "@triliumnext/commons";
 import { Fragment } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
@@ -303,19 +303,7 @@ export default function ChatInputBar({
                         apiRef={editorApiRef}
                         className="llm-chat-input"
                         editor={ckEditor.editor}
-                        config={{
-                        // Markdown autoformatting (block quotes, code fences, lists, links) without a toolbar.
-                            extraPlugins: ckEditor.plugins,
-                            toolbar: { items: [] },
-                            placeholder: t("llm_chat.placeholder"),
-                            mention: { feeds: [], hostedFeeds: hostedMentions },
-                            referenceLink: {
-                                renderTitle: (element, href, storedTitle) => {
-                                    void link.loadReferenceLinkTitle($(element), href, undefined, storedTitle);
-                                }
-                            },
-                            licenseKey: "GPL"
-                        }}
+                        config={buildChatInputConfig(ckEditor.plugins)}
                         // The strings the box shows of its own — the link balloon it raises on Ctrl+K —
                         // in the language the rest of Trilium is read in; the dictionary is fetched for
                         // it before the editor is raised.
@@ -563,6 +551,25 @@ export default function ChatInputBar({
             />
         </>
     );
+}
+
+/** The config of the chat input's editor, which loads `plugins` on top of its own. */
+export function buildChatInputConfig(plugins: EditorConfig["extraPlugins"]): EditorConfig {
+    return {
+        // Markdown autoformatting (block quotes, code fences, lists, links) without a toolbar.
+        extraPlugins: plugins,
+        toolbar: { items: [] },
+        placeholder: t("llm_chat.placeholder"),
+        mention: { feeds: [], hostedFeeds: hostedMentions },
+        referenceLink: {
+            getTitle: link.getReferenceLinkTitle,
+            getTitleSync: link.getReferenceLinkTitleSync,
+            renderTitle: (element, href, storedTitle) => {
+                void link.loadReferenceLinkTitle($(element), href, undefined, storedTitle);
+            }
+        },
+        licenseKey: "GPL"
+    };
 }
 
 /** A pending attachment above the input, marked when the selected model can't read it. */
