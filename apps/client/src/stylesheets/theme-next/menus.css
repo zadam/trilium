@@ -295,6 +295,30 @@ body.mobile .dropdown-menu.note-autocomplete-menu {
     body.mobile .tn-dropdown-portal.global-menu .dropdown-menu {
         border-radius: var(--dropdown-border-radius) var(--dropdown-border-radius) 0 0;
     }
+
+    /* On iOS, a sheet floats clear of the screen's edges as a pane of glass. */
+    body.mobile.ios :is(
+        .tn-dropdown-portal:is(.global-menu, .right-dropdown-widget) > .dropdown-menu,
+        .dropdown-menu.mobile-bottom-menu:not(.keyboard-panel)
+    ).show {
+        --mobile-sheet-margin: 8px;
+        --menu-background-color: var(--glass-background);
+        margin: 0 var(--mobile-sheet-margin) var(--mobile-sheet-margin);
+        max-height: calc(var(--tn-modal-max-height) - var(--dropdown-bottom) - var(--mobile-sheet-margin));
+        border: 1px solid var(--glass-edge-color);
+        border-radius: 28px;
+        box-shadow:
+            inset 0 1px 0 var(--glass-highlight-color),
+            0 12px 32px rgba(0, 0, 0, var(--dropdown-shadow-opacity));
+    }
+
+    body.mobile.ios :is(#context-menu-container, .dropdown-menu).mobile-bottom-menu:not(.keyboard-panel).show {
+        padding-bottom: var(--menu-padding-size) !important;
+    }
+}
+
+body.mobile.ios .dropdown-menu {
+    --mobile-menu-group-radius: 12px;
 }
 
 /* Beside its toggle in a tablet's wider mobile layout, wide enough for its rows to be tapped. */
@@ -310,6 +334,7 @@ body.mobile .dropdown-menu.note-autocomplete-menu {
 }
 
 body.mobile .dropdown-menu:where(:not(.note-autocomplete-menu)) {
+    --mobile-menu-group-radius: 6px;
     --dropdown-menu-padding-vertical: 0.7em;
     --dropdown-menu-padding-horizontal: 1em;
     --hover-item-background-color: var(--card-background-color);
@@ -335,16 +360,16 @@ body.mobile .dropdown-menu:where(:not(.note-autocomplete-menu)) {
     .dropdown-divider + .dropdown-item,
     .dropdown-custom-item:first-of-type,
     .dropdown-divider + .dropdown-custom-item {
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
+        border-top-left-radius: var(--mobile-menu-group-radius);
+        border-top-right-radius: var(--mobile-menu-group-radius);
     }
 
     .dropdown-item:last-of-type,
     .dropdown-item:has(+ .dropdown-divider),
     .dropdown-custom-item:last-of-type,
     .dropdown-custom-item:has(+ .dropdown-divider) {
-        border-bottom-left-radius: 6px;
-        border-bottom-right-radius: 6px;
+        border-bottom-left-radius: var(--mobile-menu-group-radius);
+        border-bottom-right-radius: var(--mobile-menu-group-radius);
         border-bottom: 0 !important;
     }
 
