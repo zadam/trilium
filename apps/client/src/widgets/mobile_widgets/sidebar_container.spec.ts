@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from "vitest";
 
+import type NoteContext from "../../components/note_context";
 import options from "../../services/options";
 import { handleSystemBack } from "../../services/system_back";
 import SidebarContainer from "./sidebar_container";
@@ -99,6 +100,24 @@ describe("SidebarContainer", () => {
             sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
             handleSystemBack();
             expect(triggerCommand).not.toHaveBeenCalled();
+        });
+
+        it("shows each tab on the screen it was left on", () => {
+            const sidebar = render(true);
+            const triggerCommand = vi.spyOn(sidebar, "triggerCommand").mockImplementation(() => undefined);
+            const switchTo = (ntxId: string) => sidebar.activeContextChangedEvent({
+                noteContext: { getMainContext: () => ({ ntxId }) } as unknown as NoteContext
+            });
+
+            switchTo("first");
+            sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
+
+            switchTo("second");
+            expect(triggerCommand).toHaveBeenLastCalledWith("setActiveScreen", { screen: "detail" });
+            sidebar.activeScreenChangedEvent({ activeScreen: "detail" });
+
+            switchTo("first");
+            expect(triggerCommand).toHaveBeenLastCalledWith("setActiveScreen", { screen: "tree" });
         });
 
         it("puts the tree back beside the note once the screen widens to a tablet", () => {

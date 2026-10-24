@@ -13,6 +13,7 @@ Here is a non-exhaustive list of differences between the desktop version and the
 
 *   On a phone, the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> lies under the note. The <span class="tn-icon bx bx-chevron-left"></span> button in the top-left of the screen slides the note away to reveal the tree, and opening a note from the tree slides it back in.
     *   A swipe from the left edge of the screen also reveals the tree, but the system's or the browser's back gesture can take it over, depending on the platform.
+    *   Each tab remembers whether it was showing the tree or its note, and switching tabs brings that back.
     *   In the Android app, the system back gesture or button closes the menu or dialog on top first, then a settings page in <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Options.md">Options</a>, then slides the note away to reveal the tree, then goes up one level in the tree. At the top of the tree, it sends the app to the background.
     *   On wider screens, such as a tablet in landscape, the note tree is displayed as a sidebar next to the note instead. There, a <span class="tn-icon bx bx-sidebar"></span> button hides and shows it, and the choice is remembered together with the left pane of the desktop version.
     *   A note with children shows how many it has and a <span class="tn-icon bx bx-chevron-right"></span>: tapping it lists its children, and tapping any other note opens it.

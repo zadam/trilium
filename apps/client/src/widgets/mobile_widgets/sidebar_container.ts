@@ -26,6 +26,10 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
     private screenName: Screen;
     /** The screen name that is currently active, according to the screen changed event. */
     private activeScreenName?: Screen;
+    /** The main context ntxId of the active tab. */
+    private activeTabId?: string;
+    /** The screen each tab was left on, by its main context ntxId; a tab not in it shows its note. */
+    private screenByTab = new Map<string, Screen>();
     private currentTranslate: number;
     private dragState: number;
     private startX?: number;
@@ -197,6 +201,20 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         this.$widget.toggleClass("left-pane-hidden", !this.leftPaneVisible);
 
         options.save("leftPaneVisible", this.leftPaneVisible.toString());
+    }
+
+    activeContextChangedEvent({ noteContext }: EventData<"activeContextChanged">) {
+        const tabId = noteContext.getMainContext().ntxId;
+        if (!tabId || tabId === this.activeTabId) return;
+
+        if (this.activeTabId && this.activeScreenName) {
+            this.screenByTab.set(this.activeTabId, this.activeScreenName);
+        }
+        this.activeTabId = tabId;
+
+        if (isNarrowLayout()) {
+            this.triggerCommand("setActiveScreen", { screen: this.screenByTab.get(tabId) ?? "detail" });
+        }
     }
 
     activeScreenChangedEvent({ activeScreen }: EventData<"activeScreenChanged">) {
