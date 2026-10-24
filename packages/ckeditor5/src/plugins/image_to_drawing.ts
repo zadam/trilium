@@ -66,11 +66,10 @@ export class ConvertImageToDrawingCommand extends Command {
         if (!image || typeof src !== "string") return;
 
         const size = this.getShownSize(image);
-        const host = glob.getComponentByEl<EditorComponent>(editor.editing.view.getDomRoot());
         this.forceDisabled(CONVERTING);
         let attachmentId: string | null | undefined;
         try {
-            attachmentId = await host.convertImageToDrawing?.(src);
+            attachmentId = await editor.config.get("imageToDrawing")?.convert?.(src);
         } finally {
             this.clearForceDisabled(CONVERTING);
         }
@@ -142,4 +141,16 @@ function toEm(value: number, min: number) {
 function isInDocument(element: ModelElement) {
     const root = element.root;
     return root.is("rootElement") && root.rootName !== "$graveyard";
+}
+
+declare module "ckeditor5" {
+    interface EditorConfig {
+        imageToDrawing?: {
+            /**
+             * Attaches a drawing canvas that shows the image at `src`, and answers with the ID of
+             * its attachment, or `null` when that fails.
+             */
+            convert?(src: string): Promise<string | null>;
+        };
+    }
 }

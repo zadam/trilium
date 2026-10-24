@@ -22,6 +22,7 @@ import { ensureMimeTypesForHighlighting, isSyntaxHighlightEnabled } from "../../
 import { getTaskStateDefinitions, openCustomTaskStateConfig } from "../../../services/task_states.js";
 import { formatDateTime, isMac, isMobile } from "../../../services/utils.js";
 import { resolveContentLanguage } from "../../../utils/formatters.js";
+import { convertImageToDrawing } from "../canvas/image_to_drawing.js";
 import SAMPLE_DIAGRAMS from "../mermaid/sample_diagrams.js";
 import buildAiAssistantStream, { type AiNoteLocationProvider, buildAiAssistantQuickActions } from "./ai_assistant_stream.js";
 import diffAiResponse from "./ai_diff.js";
@@ -236,6 +237,12 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         markdownImport: { open: bindHostCommand(opts, "pasteMarkdownIntoText") },
         inlineIcon: { showPicker: (request) => opts.showIconPicker?.(request) ?? null },
         ...(opts.referenceSource && buildReferenceConfig(opts.referenceSource)),
+        imageToDrawing: {
+            async convert(src) {
+                const noteId = opts.getNoteId?.();
+                return noteId ? convertImageToDrawing(noteId, src, opts.getComponentId?.()) : null;
+            }
+        },
         cutToNote: {
             cut: bindHostCommand(opts, "cutIntoNote"),
             saveNow: bindHostCommand(opts, "saveNoteDetailNow")

@@ -89,11 +89,6 @@ declare global {
          * starting from `storedTitle`, and calls `fix()` with the new href.
          */
         fixReferenceLink?(storedTitle: string, fix: (href: string) => void): void;
-        /**
-         * Attaches a drawing canvas that shows the image at `src`, and answers with the ID of its
-         * attachment, or `null` when that fails. Hosts without drawings leave it out.
-         */
-        convertImageToDrawing?(src: string): Promise<string | null>;
     }
 
     var glob: {

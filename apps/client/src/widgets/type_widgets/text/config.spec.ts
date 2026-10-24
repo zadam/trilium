@@ -95,6 +95,10 @@ vi.mock("../../../services/dialog.js", () => ({
 vi.mock("@triliumnext/highlightjs", () => ({ default: { name: "hljs-stub" } }));
 vi.mock("../../../services/math.js", () => ({ default: { name: "katex-stub" } }));
 vi.mock("../../../services/content_renderer.js", () => ({ getUploadBoxSize: vi.fn(() => "medium") }));
+const { convertImageToDrawing } = vi.hoisted(() => ({
+    convertImageToDrawing: vi.fn(async () => "d1")
+}));
+vi.mock("../canvas/image_to_drawing.js", () => ({ convertImageToDrawing }));
 vi.mock("../../../services/server.js", async (importOriginal) => {
     const original = await importOriginal<typeof import("../../../services/server.js")>();
     return {
@@ -431,6 +435,20 @@ describe("CK config - tables", () => {
         const bare = await buildConfig(baseOpts());
         expect(bare.blockReference).toBeUndefined();
         expect(bare.tabs).toBeUndefined();
+    });
+
+    it("converts images to drawings in the note open at the time, as changes of the host", async () => {
+        let noteId: string | undefined = "n1";
+        const config = await buildConfig(baseOpts({
+            getNoteId: () => noteId,
+            getComponentId: () => "component1"
+        }));
+
+        expect(await config.imageToDrawing?.convert?.("api/images/a.png")).toBe("d1");
+        noteId = undefined;
+        expect(await config.imageToDrawing?.convert?.("api/images/b.png")).toBeNull();
+
+        expect(convertImageToDrawing).toHaveBeenCalledExactlyOnceWith("n1", "api/images/a.png", "component1");
     });
 
     it("hands embeds to the content embed handlers of the moment, and falls back without any", async () => {

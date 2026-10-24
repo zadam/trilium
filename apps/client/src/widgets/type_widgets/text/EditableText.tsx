@@ -30,7 +30,6 @@ import {
     useSearchTermsConsumer, useTriliumEvent, useTriliumOption, useTriliumOptionBool
 } from "../../react/hooks";
 import { setEditorNoteId } from "../../react/NoteStore";
-import { convertImageToDrawing } from "../canvas/image_to_drawing";
 import { TypeWidgetProps } from "../type_widget";
 import AttachmentSaves, { InlineSourceSaves, useNoteEditor } from "./attachment_saves";
 import CKEditor, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditor";
@@ -277,9 +276,6 @@ export default function EditableText({
                 editorApi: editorApiRef.current,
                 sizeEditable: true
             });
-        },
-        convertImageToDrawing(src: string) {
-            return convertImageToDrawing(note.noteId, src, parentComponent?.componentId);
         },
         // Keyboard shortcut
         async followLinkUnderCursorCommand() {
