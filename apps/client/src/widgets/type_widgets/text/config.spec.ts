@@ -407,6 +407,16 @@ describe("CK config - tables", () => {
         expect(triggerHostCommand).toHaveBeenCalledTimes(callbacks.length);
     });
 
+    it("shows the icon picker the editor asks for, and none without a host for it", async () => {
+        const release = vi.fn();
+        const showIconPicker = vi.fn(() => release);
+        const request = { container: document.createElement("div"), onSelect: vi.fn() };
+
+        expect((await buildConfig(baseOpts({ showIconPicker }))).inlineIcon?.showPicker(request)).toBe(release);
+        expect(showIconPicker).toHaveBeenCalledWith(request);
+        expect((await buildConfig(baseOpts())).inlineIcon?.showPicker(request)).toBeNull();
+    });
+
     it("titles reference links through the link service", async () => {
         expect((await buildConfig(baseOpts())).referenceLink).toStrictEqual({
             getTitle: linkService.getReferenceLinkTitle,

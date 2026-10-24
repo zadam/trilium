@@ -20,13 +20,6 @@ declare global {
         unresolved?: boolean;
     }
 
-    interface IconPickerRequest {
-        /** The element to paint the picker into, which the editor owns and places. */
-        container: HTMLElement;
-        /** Receives the class of the icon picked, e.g. `bx bx-star`. */
-        onSelect(iconClass: string): void;
-    }
-
     /** A button that the content of an embed adds to the toolbar of the embed. */
     interface ContentEmbedTool {
         id: string;
@@ -90,12 +83,6 @@ declare global {
     }
 
     interface EditorComponent {
-        /**
-         * Paints the host's icon picker into `container`, and answers with the way to take it down
-         * again. A host that shows the picker somewhere of its own — a phone, which has no room for
-         * a balloon — leaves `container` alone and answers `null`.
-         */
-        showIconPicker(request: IconPickerRequest): (() => void) | null;
         loadReferenceLinkTitle(
             $el: JQuery<HTMLElement>, href: string, storedTitle?: string
         ): Promise<void>;

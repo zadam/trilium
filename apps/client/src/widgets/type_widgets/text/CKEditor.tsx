@@ -1,14 +1,16 @@
 import {
-    type CKEditorError, CKTextEditor, ClassicEditor, getLinkAtSelection, onTextEditorError,
-    PopupEditor, replaceLinkAtSelection, SnippetDefinition
+    type CKEditorError, CKTextEditor, ClassicEditor, getLinkAtSelection, type IconPickerRequest,
+    onTextEditorError, PopupEditor, replaceLinkAtSelection, SnippetDefinition
 } from "@triliumnext/ckeditor5";
 import { DISPLAYABLE_LOCALE_IDS } from "@triliumnext/commons";
-import { HTMLAttributes, RefObject } from "preact";
+import { createPortal, HTMLAttributes, RefObject } from "preact";
 import { useEffect, useImperativeHandle, useRef, useState } from "preact/hooks";
 
 import froca from "../../../services/froca";
 import link from "../../../services/link";
+import { isMobile } from "../../../services/utils";
 import { useKeyboardShortcuts, useLegacyImperativeHandlers, useNoteContext, useSyncedRef, useTriliumOption, useTriliumOptionBool } from "../../react/hooks";
+import IconPicker from "../../react/IconPicker";
 import type { AiNoteLocation } from "./ai_assistant_stream";
 import { useAiMenuFooter, useAiQuickActions } from "./ai_quick_actions";
 import { buildConfig, BuildEditorOptions } from "./config";
@@ -134,6 +136,20 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
     noteLocationRef.current = note ? { title: note.title, notePath } : null;
     const noteIdRef = useRef<string | undefined>(undefined);
     noteIdRef.current = note?.noteId;
+    /** The open icon picker request and its balloon container, or `null` when none is open. */
+    const [ iconPickerRequest, setIconPickerRequest ] = useState<IconPickerRequest | null>(null);
+
+    // CKEditor creates and positions the balloon; `IconPicker` renders into its container.
+    // On mobile, `showIconPickerDialog` opens the picker in a modal instead.
+    function showIconPicker(request: IconPickerRequest) {
+        if (isMobile()) {
+            parentComponent?.triggerCommand("showIconPickerDialog", { onSelect: request.onSelect });
+            return null;
+        }
+
+        setIconPickerRequest(request);
+        return () => setIconPickerRequest(null);
+    }
 
     useKeyboardShortcuts("text-detail", containerRef, parentComponent, ntxId);
 
@@ -287,7 +303,8 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
                 getNoteLocation: () => noteLocationRef.current,
                 getNoteId: () => noteIdRef.current,
                 getComponentId: () => parentComponent?.componentId,
-                triggerHostCommand: (command) => parentComponent?.triggerCommand(command)
+                triggerHostCommand: (command) => parentComponent?.triggerCommand(command),
+                showIconPicker
             });
 
             if (isStale) {
@@ -409,9 +426,22 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
     }, [ editor, onChange ]);
 
     return (
-        <div ref={containerRef} className={className} tabIndex={tabIndex} />
+        <>
+            <div ref={containerRef} className={className} tabIndex={tabIndex} />
+            {iconPickerRequest && createPortal(
+                <IconPicker
+                    columnCount={ICON_PICKER_COLUMNS}
+                    compact
+                    onSelect={iconPickerRequest.onSelect}
+                />,
+                iconPickerRequest.container
+            )}
+        </>
     );
 }
+
+/** The number of icons per row of the picker in the editor's balloon. */
+const ICON_PICKER_COLUMNS = 9;
 
 async function buildEditor(element: HTMLElement, isClassicEditor: boolean, opts: BuildEditorOptions) {
     const editorClass = isClassicEditor ? ClassicEditor : PopupEditor;

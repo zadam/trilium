@@ -1,4 +1,4 @@
-import { type AttachmentUploadHost, type EditorConfig, getCkLocale, type LinkEmbedHost, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
+import { type AttachmentUploadHost, type EditorConfig, getCkLocale, type IconPickerRequest, type LinkEmbedHost, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
@@ -57,6 +57,8 @@ export interface BuildEditorOptions {
     getComponentId?: () => string | undefined;
     /** Triggers `command` on the component that hosts the editor. */
     triggerHostCommand?: (command: CommandNames) => Promise<unknown> | undefined | null;
+    /** Shows the icon picker the editor asks for, as `inlineIcon.showPicker` does. */
+    showIconPicker?: (request: IconPickerRequest) => (() => void) | null;
 }
 
 export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfig> {
@@ -219,6 +221,7 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         attachmentUpload: buildAttachmentUploadHost(opts.getComponentId),
         internalLink: { openDialog: bindHostCommand(opts, "addLinkToText") },
         markdownImport: { open: bindHostCommand(opts, "pasteMarkdownIntoText") },
+        inlineIcon: { showPicker: (request) => opts.showIconPicker?.(request) ?? null },
         cutToNote: {
             cut: bindHostCommand(opts, "cutIntoNote"),
             saveNow: bindHostCommand(opts, "saveNoteDetailNow")

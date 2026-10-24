@@ -11,7 +11,6 @@ import {
     SnippetDefinition
 } from "@triliumnext/ckeditor5";
 import { deferred, formatBlockRange, parseBlockRange } from "@triliumnext/commons";
-import { createPortal } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import appContext from "../../../components/app_context";
@@ -31,12 +30,10 @@ import { getNoteShareLink } from "../../../services/share_link";
 import toast from "../../../services/toast";
 import utils, { isMobile } from "../../../services/utils";
 import type { AddLinkOpts } from "../../dialogs/add_link";
-import type { IconPickerOpts } from "../../dialogs/icon_picker";
 import {
     useEditorSpacedUpdate, useLegacyImperativeHandlers, useNoteLabel, useSameNoteSwitch,
     useSearchTermsConsumer, useTriliumEvent, useTriliumOption, useTriliumOptionBool
 } from "../../react/hooks";
-import IconPicker from "../../react/IconPicker";
 import { setEditorNoteId } from "../../react/NoteStore";
 import { convertImageToDrawing } from "../canvas/image_to_drawing";
 import { TypeWidgetProps } from "../type_widget";
@@ -87,8 +84,6 @@ export default function EditableText({
     const stopWatchingEmbedsRef = useRef<(() => void) | undefined>(undefined);
     const stopTodoCheckboxTapsRef = useRef<(() => void) | undefined>(undefined);
     const editorApiRef = useRef<CKEditorApi>(null);
-    /** The open icon picker request and its balloon container, or `null` when none is open. */
-    const [ iconPickerRequest, setIconPickerRequest ] = useState<IconPickerOpts & { container: HTMLElement } | null>(null);
     const [ language ] = useNoteLabel(note, "language");
     const [ textNoteEditorType ] = useTriliumOption("textNoteEditorType");
     const [ codeBlockWordWrap ] = useTriliumOptionBool("codeBlockWordWrap");
@@ -252,17 +247,6 @@ export default function EditableText({
             parentComponent?.triggerCommand("showPasteMarkdownDialog", {
                 editorApi: editorApiRef.current,
             });
-        },
-        // CKEditor creates and positions the balloon; `IconPicker` renders into its container.
-        // On mobile, `showIconPickerDialog` opens the picker in a modal instead.
-        showIconPicker(request: IconPickerOpts & { container: HTMLElement }) {
-            if (isMobile()) {
-                parentComponent?.triggerCommand("showIconPickerDialog", { onSelect: request.onSelect });
-                return null;
-            }
-
-            setIconPickerRequest(request);
-            return () => setIconPickerRequest(null);
         },
         // Keyboard shortcut
         async insertDateTimeToTextCommand() {
@@ -607,14 +591,6 @@ export default function EditableText({
                 }}
             />}
 
-            {iconPickerRequest && createPortal(
-                <IconPicker
-                    columnCount={ICON_PICKER_COLUMNS}
-                    compact
-                    onSelect={iconPickerRequest.onSelect}
-                />,
-                iconPickerRequest.container
-            )}
         </>
     );
 }
@@ -729,9 +705,6 @@ function getEditorBlocks(editor: CKTextEditor, block: string) {
     const range = editor.plugins.get("BlockReferenceEditing").getRange(parseBlockRange(block));
     return range ? formatBlockRange(range) : undefined;
 }
-
-/** The number of icons per row of the picker in the editor's balloon. */
-const ICON_PICKER_COLUMNS = 9;
 
 /**
  * Inserts an empty paragraph at the very top of the document and places the cursor in it, giving the
