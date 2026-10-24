@@ -88,7 +88,7 @@
     "jimp": "1.6.1",
     "marked": "18.1.1",
     "mime-types": "3.0.2",
-    "multer": "2.4.0",
+    "multer": "2.5.0",
     "officeparser": "8.2.0",
     "openid-client": "6.8.8",
     "rand-token": "1.0.1",
