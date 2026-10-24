@@ -31,8 +31,11 @@ import { renderShortcutKbds } from "./shortcut_kbd";
 const DROPDOWN_MIN_WIDTH = 500;
 /** Keyboard hints are left out on mobile, as `Button` leaves out its shortcut. */
 const cachedIsMobile = isMobile();
-/** How many notes {@link NoteMentionList} shows; typing more of the title narrows them down. */
-const MENTION_NOTE_LIMIT = 10;
+/**
+ * How many notes {@link NoteMentionList} shows; typing more of the title narrows them down. Fewer on
+ * mobile, where the list shares the screen with the keyboard.
+ */
+const MENTION_NOTE_LIMIT = cachedIsMobile ? 6 : 10;
 
 export interface NoteAutocompleteProps {
     id?: string;
