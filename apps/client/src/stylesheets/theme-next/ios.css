@@ -37,6 +37,16 @@ body.mobile.ios {
         background: var(--grouped-background-color);
     }
 
+    /* Safari tints its bars from the page's background and from `theme-color`, which
+       `#initThemeColor()` in root_container.ts copies from `#background-color-tracker`. */
+    &.navigation-stack:has(#mobile-sidebar-wrapper.show) {
+        background-color: var(--grouped-background-color);
+
+        #background-color-tracker {
+            color: var(--grouped-background-color) !important;
+        }
+    }
+
     .mobile-note-navigator {
         --navigator-group-inset: 16px;
         --navigator-group-radius: 22px;
