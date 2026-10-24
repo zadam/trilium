@@ -154,8 +154,8 @@ Here are a few tools that Trilium provides for the LLM:
     *   Rename or delete a note.
 *   At attribute level:
     *   Get the full list of attributes, or a specific attribute.
-    *   Set the value of an attribute.
-        *   An attribute that runs code, such as `#run`, `#widget` or `~renderNote`, is saved with a `disabled:` prefix (for example `#disabled:widget`), the same way a safe import disables it (see <a class="reference-link" href="Basic%20Concepts%20and%20Features/Active%20content.md">Active content</a>). If the note already had that attribute enabled, the AI removes it, so none of it runs until you enable the new value. The AI tells you which note it is on; review the code, then enable it with the toggle next to the active content badge beside the note's title or, for a <a class="reference-link" href="Note%20Types/Render%20Note.md">Render Note</a>, the _Enable render note_ button in the note.
+    *   Set the value of an attribute, or add another value next to the existing ones (such as a second `#tag`). When setting a value replaces an existing one, the AI is told which value it replaced.
+        *   An attribute that runs code, such as `#run`, `#widget` or `~renderNote`, is saved with a `disabled:` prefix (for example `#disabled:widget`), the same way a safe import disables it (see <a class="reference-link" href="Basic%20Concepts%20and%20Features/Active%20content.md">Active content</a>). If the note already had that attribute enabled and the AI sets rather than adds the value, the AI removes the enabled one, so none of it runs until you enable the new value. The AI tells you which note it is on; review the code, then enable it with the toggle next to the active content badge beside the note's title or, for a <a class="reference-link" href="Note%20Types/Render%20Note.md">Render Note</a>, the _Enable render note_ button in the note.
     *   Delete an attribute.
 *   At tree level:
     *   Get the direct children of a note.

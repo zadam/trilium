@@ -102,6 +102,55 @@ describe("attribute_tools", () => {
             expect(result.value).toBe("");
         });
 
+        it("appends same-name labels in add mode instead of replacing them", () => {
+            const note = createNote("Add mode host");
+            for (const value of [ "MCP", "AI", "Blender" ]) {
+                const result = cls.init(() => getTool("set_attribute").execute({
+                    noteId: note.noteId, type: "label", name: "tag", value, mode: "add"
+                }));
+                expect(result).toEqual({
+                    success: true, noteId: note.noteId, type: "label", name: "tag", value
+                });
+            }
+            expect(note.getOwnedLabels("tag").map((l) => l.value)).toEqual([ "MCP", "AI", "Blender" ]);
+        });
+
+        it("reports the value it replaced in set mode", () => {
+            const note = createNote("Replace host");
+            cls.init(() => note.addLabel("tag", "MCP"));
+
+            const result = cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "tag", value: "Blender"
+            }));
+            expect(result).toMatchObject({
+                success: true, value: "Blender", previousValue: "MCP",
+                message: expect.stringContaining("mode \"add\"")
+            });
+            expect(note.getOwnedLabels("tag").map((l) => l.value)).toEqual([ "Blender" ]);
+
+            const unchanged = cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "tag", value: "Blender"
+            }));
+            expect(unchanged).not.toHaveProperty("previousValue");
+            expect(unchanged).not.toHaveProperty("message");
+        });
+
+        it("names the same-name labels it left untouched in set mode", () => {
+            const note = createNote("Several tags host");
+            cls.init(() => {
+                note.addLabel("tag", "MCP");
+                note.addLabel("tag", "AI");
+            });
+
+            const result = cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "tag", value: "Blender"
+            }));
+            expect(result).toMatchObject({
+                previousValue: "MCP", message: expect.stringContaining("1 other #tag")
+            });
+            expect(note.getOwnedLabels("tag").map((l) => l.value)).toEqual([ "Blender", "AI" ]);
+        });
+
         it("rejects a missing note, protected note, and missing relation target", () => {
             expect(getTool("set_attribute").execute({ noteId: "missing", type: "label", name: "x" }))
                 .toEqual({ error: "Note not found" });
@@ -158,6 +207,23 @@ describe("attribute_tools", () => {
             });
             expect(note.getOwnedLabels("run")).toHaveLength(0);
             expect(note.getOwnedLabelValue("disabled:run")).toBe("hourly");
+        });
+
+        it("keeps active and disabled dangerous attributes when adding a disabled one", () => {
+            const note = createNote("Add danger host");
+            cls.init(() => {
+                note.addLabel("run", "frontendStartup");
+                note.addLabel("disabled:run", "backendStartup");
+            });
+
+            const result = cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "run", value: "hourly", mode: "add"
+            }));
+            expect(result).toMatchObject({ success: true, name: "disabled:run", disabled: true });
+            expect((result as { message: string }).message).not.toContain("removed");
+            expect(note.getOwnedLabels("run").map((l) => l.value)).toEqual([ "frontendStartup" ]);
+            expect(note.getOwnedLabels("disabled:run").map((l) => l.value))
+                .toEqual([ "backendStartup", "hourly" ]);
         });
 
         it("creates a relation to an existing target note", () => {
