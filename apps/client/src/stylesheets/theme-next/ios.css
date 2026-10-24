@@ -162,9 +162,20 @@ body.mobile.ios {
             }
         }
 
-        &:not(.keyboard-panel-open) #root-widget:not(.virtual-keyboard-opened) .note-split > .scrolling-container {
-            padding-bottom: var(--mobile-bottom-bar-height);
-            scroll-padding-bottom: var(--mobile-bottom-bar-height);
+        &:not(.keyboard-panel-open) #root-widget:not(.virtual-keyboard-opened) {
+            --mobile-toolbar-clearance: calc(
+                var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap) + var(--mobile-bottom-bar-height)
+            );
+
+            .note-split > .scrolling-container:not(:has(~ .classic-toolbar-outer-container.visible)) {
+                padding-bottom: var(--mobile-bottom-bar-height);
+                scroll-padding-bottom: var(--mobile-bottom-bar-height);
+            }
+
+            /* With no keyboard, the formatting toolbar stands above the launch bar. */
+            .classic-toolbar-island {
+                bottom: calc(var(--tn-layout-overhang, 0px) + var(--mobile-bottom-bar-height));
+            }
         }
 
         .note-split:not(.options) > .title-row {
