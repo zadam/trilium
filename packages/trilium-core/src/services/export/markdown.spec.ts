@@ -131,9 +131,8 @@ describe("Markdown export", () => {
         expect(exported).toContain('<a href="https://e.com/?a=1&amp;b=2">A &amp; B &lt;x&gt;</a>');
 
         // The section wrapper and its data attributes survive so the preview re-imports losslessly.
-        // The escaping of `<`/`>` inside data-title is left to turndown's serializer, which differs by
-        // environment (server/node uses domino and escapes them; standalone/happy-dom uses the browser
-        // serializer and leaves them raw). It is not asserted because both forms decode to the same value.
+        // The escaping of `<`/`>` inside data-title is left to Turnish's serializer and is not asserted,
+        // since the escaped and raw forms decode to the same value.
         expect(exported).toContain('<section class="link-embed" data-url="https://e.com/?a=1&amp;b=2" data-embed-type="opengraph"');
     });
 

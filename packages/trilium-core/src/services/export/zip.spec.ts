@@ -26,8 +26,8 @@ import {
     type ZipExportProviderFactory
 } from "./zip_export_provider_factory.js";
 
-// happy-dom (standalone/WASM) exposes `window`; the Node server suite does not.
-const isBrowserRuntime = typeof window !== "undefined";
+// Standalone runs core in a Web Worker, whose scope has `self`; the Node server suite has none.
+const isBrowserRuntime = typeof self !== "undefined";
 
 let counter = 0;
 

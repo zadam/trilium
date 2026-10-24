@@ -3,7 +3,7 @@ import { join, resolve, sep } from "path";
 
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 import prefresh from "@prefresh/vite";
-import { defineConfig, type Plugin } from "vite";
+import { defaultClientConditions, defineConfig, type Plugin } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 import { shareTheme, stripUniverEmojiData, stripUniverHyphenation } from "../client/vite-plugins.mjs";
@@ -483,9 +483,31 @@ export default defineConfig(() => ({
             // package dir to match the other apps and the CI upload path.
             ["junit", { outputFile: join(__dirname, "test-output/vitest/junit.xml"), addFileAttribute: true }]
         ],
-        include: [
-            "src/**/*.{test,spec}.{ts,tsx}",
-            "../../packages/trilium-core/src/**/*.{test,spec}.{ts,tsx}"
+        projects: [
+            {
+                extends: true,
+                test: {
+                    name: "standalone",
+                    include: ["src/**/*.{test,spec}.{ts,tsx}"]
+                }
+            },
+            // Core runs in a dedicated Web Worker, so its specs run in a scope shaped like one, with
+            // dependencies resolved as the worker bundle resolves them. `ssr.resolve.conditions`
+            // reaches the packages Node loads itself, through `--conditions`.
+            {
+                extends: true,
+                resolve: { conditions: defaultClientConditions },
+                ssr: { resolve: { conditions: ["browser", "development|production"] } },
+                test: {
+                    name: "core",
+                    include: ["../../packages/trilium-core/src/**/*.{test,spec}.{ts,tsx}"],
+                    environment: join(__dirname, "src/test_environment_worker.ts"),
+                    alias: {
+                        // The specs make their test images with Jimp, whose `browser` entry is an empty stub.
+                        jimp: join(__dirname, "../../node_modules/jimp/dist/esm/index.js")
+                    }
+                }
+            }
         ],
         coverage: {
             // Absolute path for the same reason as the junit reporter above: the

@@ -22,7 +22,8 @@ apps/standalone/
   src/lightweight/                # browser implementations of every core provider + standalone-only routes
   src/services/                   # image provider, Capacitor HTTP handler
   src/stubs/                      # officeparser entry + Buffer polyfill, empty stubs for pdfjs/tesseract/puppeteer
-  src/test_setup.ts               # boots core with the real lightweight providers under vitest/happy-dom
+  src/test_setup.ts               # boots core with the real lightweight providers, for both test projects
+  src/test_environment_worker.ts  # the Vitest environment core's specs run in: a worker's scope, no DOM
   public/_headers, manifest.webmanifest, favicon.ico
   e2e/multi_tab.spec.ts, extra_window.spec.ts
   vite.config.mts                 # root is src/; aliases, stubs, asset copies, worker + SW build, vitest config
@@ -93,4 +94,4 @@ pnpm --filter standalone e2e                         # Playwright: multi-tab lea
 
 ## Testing
 
-`pnpm --filter standalone test <pattern>` — Vitest, happy-dom, **real sqlite-wasm**. `test_setup.ts` shims wasm loading (happy-dom's `fetch` refuses `file://` and its `Response` breaks `instantiateStreaming`) and boots core with the real lightweight providers, so a spec exercises the same code path as the browser. `local-server-worker.ts` is excluded from coverage on purpose (it boots a second core). This suite is also the **second runtime for every `packages/trilium-core` spec** — green under `pnpm --filter server test` is not proof; the cross-runtime traps (capability gaps, provider differences, `serialize()`, backup) are in the `writing-unit-tests` skill.
+`pnpm --filter standalone test <pattern>` — Vitest, **real sqlite-wasm**, in two projects: `standalone` runs `src/**` under happy-dom, and `core` runs every `packages/trilium-core` spec in `test_environment_worker.ts`, a scope with no `window`, `document` or `DOMParser`, resolving dependencies with the `browser` condition as the worker bundle does. A dependency whose browser build needs a page fails there as it does in production; fix it with a `resolve.alias` in `vite.config.mts` (see `turnish`), never by giving the project a DOM. `test_setup.ts` shims wasm loading (happy-dom's `fetch` refuses `file://` and its `Response` breaks `instantiateStreaming`) and boots core with the real lightweight providers, so a spec exercises the same code path as the browser. `local-server-worker.ts` is excluded from coverage on purpose (it boots a second core). This suite is also the **second runtime for every `packages/trilium-core` spec** — green under `pnpm --filter server test` is not proof; the cross-runtime traps (capability gaps, provider differences, `serialize()`, backup) are in the `writing-unit-tests` skill.
