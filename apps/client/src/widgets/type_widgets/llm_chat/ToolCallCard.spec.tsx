@@ -635,6 +635,21 @@ describe("ToolCallCard", () => {
         expect(pills(disabled)).toEqual([ "#disabled:run=frontendStartup" ]);
     });
 
+    it("names a set_attribute call in add mode Add attribute, grouped apart from setting one", () => {
+        const target = renderCard([
+            { id: "1", toolName: "set_attribute", input: { noteId: "n", type: "label", name: "tag", value: "MCP", mode: "add" } },
+            { id: "2", toolName: "set_attribute", input: { noteId: "n", type: "label", name: "tag", value: "AI", mode: "add" } },
+            { id: "3", toolName: "set_attribute", input: { noteId: "n", type: "label", name: "year", value: "1954" } }
+        ]);
+        const lines = [ ...(target.querySelector(".llm-chat-tool-calls")?.children ?? []) ];
+        const name = (line: Element | undefined) => line?.querySelector(".llm-chat-tool-call-name")?.textContent;
+
+        expect(lines).toHaveLength(2);
+        expect(name(lines[0])).toBe("add_attribute");
+        expect(lines[0]?.querySelector(".llm-chat-tool-call-count")?.textContent).toBe("×2");
+        expect(name(lines[1])).toBe("set_attribute");
+    });
+
     it("shows the icons an icon search found, and how many it left out", () => {
         const target = renderCard([ {
             id: "1",

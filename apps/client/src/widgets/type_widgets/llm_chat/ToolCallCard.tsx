@@ -15,7 +15,7 @@ import { NewNoteLink } from "../../react/NoteLink.js";
 import { providerIcon } from "../options/llm/provider_icons.js";
 import { EditNoteContentDiff, isSmallEdit, parseNoteContentEdits } from "./EditNoteContentDiff.js";
 import { ExpandableSection } from "./ExpandableCard.js";
-import { isFailedToolCall, type ToolCall } from "./llm_chat_types.js";
+import { isFailedToolCall, type ToolCall, toolCallLabelKey } from "./llm_chat_types.js";
 import { ExternalLink, getToolCallView, type ToolCallView } from "./ToolCallViews.js";
 
 /**
@@ -202,7 +202,7 @@ function ToolCallLabel({ toolCall, view }: { toolCall: ToolCall; view: ToolCallV
 
     return (
         <>
-            <span className="llm-chat-tool-call-name">{t(`llm.tools.${toolCall.toolName}`, { defaultValue: toolCall.toolName })}</span>
+            <span className="llm-chat-tool-call-name">{t(toolCallLabelKey(toolCall), { defaultValue: toolCall.toolName })}</span>
             {scopeNoteId && detail ? (
                 <span className="llm-chat-tool-call-scope">
                     <Trans
@@ -368,7 +368,7 @@ function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
         : searchProvider && toolCalls.every(tc => readSearchProvider(tc)?.type === searchProvider.type)
             ? <SearchProviderIcon {...searchProvider} />
             : toolNameIcon(first.toolName);
-    const friendlyName = t(`llm.tools.${first.toolName}`, { defaultValue: first.toolName });
+    const friendlyName = t(toolCallLabelKey(first), { defaultValue: first.toolName });
     const label = (
         <>
             <span className="llm-chat-tool-call-name">{friendlyName}</span>
@@ -392,18 +392,18 @@ function ToolCallGroupSection({ toolCalls }: { toolCalls: ToolCall[] }) {
 }
 
 /**
- * Group consecutive tool calls that share the same tool name. Singletons pass through unchanged, and
+ * Group consecutive tool calls that share the same label. Singletons pass through unchanged, and
  * a call that waits for approval stays out of any group.
  */
-function groupByToolName(toolCalls: ToolCall[]): Array<ToolCall | ToolCall[]> {
+function groupByLabel(toolCalls: ToolCall[]): Array<ToolCall | ToolCall[]> {
     const groups: Array<ToolCall | ToolCall[]> = [];
     for (const tc of toolCalls) {
         const last = groups[groups.length - 1];
         if (tc.approval === "pending" || (last && !Array.isArray(last) && last.approval === "pending")) {
             groups.push(tc);
-        } else if (Array.isArray(last) && last[0].toolName === tc.toolName) {
+        } else if (Array.isArray(last) && toolCallLabelKey(last[0]) === toolCallLabelKey(tc)) {
             last.push(tc);
-        } else if (last && !Array.isArray(last) && last.toolName === tc.toolName) {
+        } else if (last && !Array.isArray(last) && toolCallLabelKey(last) === toolCallLabelKey(tc)) {
             groups[groups.length - 1] = [last, tc];
         } else {
             groups.push(tc);
@@ -414,7 +414,7 @@ function groupByToolName(toolCalls: ToolCall[]): Array<ToolCall | ToolCall[]> {
 
 /** One or more sequential tool calls, each a disclosure line like a thought. */
 export default function ToolCallCard({ toolCalls }: { toolCalls: ToolCall[] }) {
-    const groups = groupByToolName(toolCalls);
+    const groups = groupByLabel(toolCalls);
     return (
         <div className="llm-chat-tool-calls">
             {groups.map((group, idx) => (

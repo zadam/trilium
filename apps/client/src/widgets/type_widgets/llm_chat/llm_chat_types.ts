@@ -127,6 +127,14 @@ export function isFailedToolCall(toolCall: ToolCall): boolean {
         && (!!toolCall.isError || isToolErrorResult(toolCall.result));
 }
 
+/** The `llm.tools.*` key that names a tool call: `set_attribute` in add mode reads as "Add attribute". */
+export function toolCallLabelKey(toolCall: ToolCall): string {
+    const name = toolCall.toolName === "set_attribute" && toolCall.input.mode === "add"
+        ? "add_attribute"
+        : toolCall.toolName;
+    return `llm.tools.${name}`;
+}
+
 export function getMessageToolCalls(message: StoredMessage): ToolCall[] {
     if (Array.isArray(message.content)) {
         return message.content

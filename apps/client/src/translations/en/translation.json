@@ -4357,6 +4357,7 @@
       "get_attributes": "Get attributes",
       "get_attribute": "Get attribute",
       "set_attribute": "Set attribute",
+      "add_attribute": "Add attribute",
       "delete_attribute": "Delete attribute",
       "get_child_notes": "Get child notes",
       "get_subtree": "Get subtree",
