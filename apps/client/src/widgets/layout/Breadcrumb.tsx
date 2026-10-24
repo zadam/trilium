@@ -189,7 +189,7 @@ interface BreadcrumbSeparatorProps {
     hideArchivedNotes: boolean;
 }
 
-function BreadcrumbSeparator(props: BreadcrumbSeparatorProps) {
+export function BreadcrumbSeparator(props: BreadcrumbSeparatorProps) {
     const notePathComponents = (props.notePath ?? "").split("/");
     const parentNoteId = notePathComponents.at(-1);
     const parentNote = useNote(parentNoteId);
@@ -207,7 +207,7 @@ function BreadcrumbSeparator(props: BreadcrumbSeparatorProps) {
             hideToggleArrow
             dropdownContainerClassName="breadcrumb-child-list"
             placement="top"
-            filterable
+            filterable={!!parentNote?.hasChildren()}
             keepOrder
         >
             <BreadcrumbSeparatorDropdownContent {...props} />
