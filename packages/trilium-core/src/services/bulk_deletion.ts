@@ -37,9 +37,19 @@ export interface BufferedDeletion {
 
 let buffer: BufferedDeletion[] | null = null;
 const bufferedKeys = new Set<string>();
+let hiddenAttributeIds: Set<string> | null = null;
 
 export function isActive(): boolean {
     return buffer !== null;
+}
+
+/**
+ * Attribute ids already buffered for deletion, for BNote's readers to hide
+ * them from handlers and scripts until the flush compacts the arrays.
+ * `null` when no batch is active.
+ */
+export function hiddenAttributes(): Set<string> | null {
+    return hiddenAttributeIds;
 }
 
 /**
@@ -54,12 +64,17 @@ export function begin(): boolean {
 
     buffer = [];
     bufferedKeys.clear();
+    hiddenAttributeIds = new Set();
     return true;
 }
 
 export function add(deletion: BufferedDeletion): boolean {
     if (!buffer) {
         throw new Error("Cannot buffer a deletion without an active batch.");
+    }
+
+    if (deletion.entityName === "attributes") {
+        hiddenAttributeIds?.add(deletion.id);
     }
 
     const key = `${deletion.entityName}/${deletion.id}`;
@@ -239,6 +254,7 @@ export function flush(): void {
     bufferedKeys.clear();
 
     if (!entries || entries.length === 0) {
+        hiddenAttributeIds = null;
         return;
     }
 
@@ -250,6 +266,7 @@ export function flush(): void {
     bulkUpdate(entries);
     bulkAttributeMaintenance(entries.filter((entry) => entry.entityName === "attributes"));
     entityChangesService.recalculateMaxEntityChangeId();
+    hiddenAttributeIds = null;
 
     for (const entry of entries) {
         counts[entry.entityName] = (counts[entry.entityName] ?? 0) + 1;

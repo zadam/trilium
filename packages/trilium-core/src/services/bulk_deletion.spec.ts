@@ -120,6 +120,36 @@ describe("bulk deletion", () => {
                 .toEqual([keptLabel.attributeId]);
         });
 
+        it("hides buffered attributes from readers before the flush and compacts the arrays afterwards", () => {
+            const note1 = makeNote("bulk-deletion-visibility-1");
+            const note2 = makeNote("bulk-deletion-visibility-2");
+            const label = makeLabel(note1.noteId, "bulkvis", "x");
+            const relation = makeRelation(note1.noteId, "bulkvisrel", note2.noteId);
+
+            note1.getAttributes(); // populate the attribute cache
+
+            expect(bulkDeletion.begin()).toBe(true);
+            try {
+                bulkDeletion.add(entry(label.attributeId));
+                bulkDeletion.add(entry(relation.attributeId));
+
+                // readers do not see batch-deleted attributes
+                expect(note1.getOwnedAttributes().some((attr) => attr.attributeId === label.attributeId)).toBe(false);
+                expect(note1.getOwnedAttributes().some((attr) => attr.attributeId === relation.attributeId)).toBe(false);
+                expect(note1.getAttributes().some((attr) => attr.attributeId === label.attributeId)).toBe(false);
+                expect(note2.getTargetRelations().some((rel) => rel.attributeId === relation.attributeId)).toBe(false);
+
+                // the raw arrays are untouched until the flush
+                expect(note1.ownedAttributes.some((attr) => attr.attributeId === label.attributeId)).toBe(true);
+            } finally {
+                clsInit(() => bulkDeletion.flush());
+            }
+
+            expect(note1.ownedAttributes.some((attr) => attr.attributeId === label.attributeId)).toBe(false);
+            expect(becca.attributes[label.attributeId]).toBeUndefined();
+            expect(bulkDeletion.hiddenAttributes()).toBeNull();
+        });
+
         it("terminates reciprocal inverse relations through the batched deleteBranch and compacts both owners", () => {
             const note1 = makeNote("bulk-deletion-reciprocal-1");
             const note2 = makeNote("bulk-deletion-reciprocal-2");

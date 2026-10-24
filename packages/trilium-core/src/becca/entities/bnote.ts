@@ -2,6 +2,7 @@ import type { AttachmentRow, AttributeType, CloneResponse, EraseExcessRevisionsO
 import { dayjs, getNoteIcon, isMarkdownMime } from "@triliumnext/commons";
 
 import cloningService from "../../services/cloning.js";
+import * as bulkDeletion from "../../services/bulk_deletion.js";
 import dateUtils from "../../services/utils/date.js";
 import eraseService from "../../services/erase.js";
 import eventService from "../../services/events.js";
@@ -343,14 +344,19 @@ class BNote extends AbstractBeccaEntity<BNote> {
             throw new Error("Attribute cache not available.");
         }
 
+        // same hiding contract as getOwnedAttributes(), applied to the
+        // (possibly inherited) cached view
+        const hidden = bulkDeletion.hiddenAttributes();
+        const attributes = hidden ? this.__attributeCache.filter((attr) => !hidden.has(attr.attributeId)) : this.__attributeCache;
+
         if (type && name) {
-            return this.__attributeCache.filter((attr) => attr.name === name && attr.type === type);
+            return attributes.filter((attr) => attr.name === name && attr.type === type);
         } else if (type) {
-            return this.__attributeCache.filter((attr) => attr.type === type);
+            return attributes.filter((attr) => attr.type === type);
         } else if (name) {
-            return this.__attributeCache.filter((attr) => attr.name === name);
+            return attributes.filter((attr) => attr.name === name);
         }
-        return this.__attributeCache;
+        return attributes;
     }
 
     private __ensureAttributeCacheIsAvailable() {
@@ -567,16 +573,21 @@ class BNote extends AbstractBeccaEntity<BNote> {
     getOwnedAttributes(type: string | null = null, name: string | null = null, value: string | null = null) {
         this.__validateTypeName(type, name);
 
+        // while a subtree-deletion batch is open, already-buffered attributes
+        // stay hidden from readers until the flush compacts the arrays
+        const hidden = bulkDeletion.hiddenAttributes();
+        const owned = hidden ? this.ownedAttributes.filter((attr) => !hidden.has(attr.attributeId)) : this.ownedAttributes;
+
         if (type && name && value !== undefined && value !== null) {
-            return this.ownedAttributes.filter((attr) => attr.name === name && attr.value === value && attr.type === type);
+            return owned.filter((attr) => attr.name === name && attr.value === value && attr.type === type);
         } else if (type && name) {
-            return this.ownedAttributes.filter((attr) => attr.name === name && attr.type === type);
+            return owned.filter((attr) => attr.name === name && attr.type === type);
         } else if (type) {
-            return this.ownedAttributes.filter((attr) => attr.type === type);
+            return owned.filter((attr) => attr.type === type);
         } else if (name) {
-            return this.ownedAttributes.filter((attr) => attr.name === name);
+            return owned.filter((attr) => attr.name === name);
         }
-        return this.ownedAttributes;
+        return owned;
     }
 
     getOwnedAttribute(type: string, name: string, value: string | null = null) {
@@ -953,7 +964,9 @@ class BNote extends AbstractBeccaEntity<BNote> {
     }
 
     getTargetRelations() {
-        return this.targetRelations;
+        const hidden = bulkDeletion.hiddenAttributes();
+
+        return hidden ? this.targetRelations.filter((rel) => !hidden.has(rel.attributeId)) : this.targetRelations;
     }
 
     getInheritingNotes(): BNote[] {
