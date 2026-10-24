@@ -178,6 +178,16 @@ describe("OpenRouterProvider model listing", () => {
         expect(fetchMock).toHaveBeenCalledWith("https://gateway.example/v1/key", expect.anything());
     });
 
+    it("offers the Auto Router as the default before and after listing", async () => {
+        // `runChat()` falls back to this list's default when a request names no model.
+        const provider = new OpenRouterProvider("sk-or");
+        expect(provider.getAvailableModels().find(m => m.isDefault)?.id).toBe("openrouter/auto");
+
+        stubListing(fetchMock);
+        const models = await provider.listModels();
+        expect(models.filter(m => m.isDefault).map(m => m.id)).toEqual([ "openrouter/auto" ]);
+    });
+
     it("pre-selects the rolling aliases that can call tools", async () => {
         stubListing(fetchMock);
         const provider = new OpenRouterProvider("sk-or");

@@ -117,6 +117,14 @@ export class OpenRouterProvider extends BaseProvider {
         });
     }
 
+    /**
+     * The fallback list, and the base `listModels()` merges the listing into. The committed price
+     * table has no OpenRouter slice, so it holds the Auto Router alone, as the default.
+     */
+    override getAvailableModels(): ModelInfo[] {
+        return [ { id: this.defaultModel, name: "Auto Router", isDefault: true } ];
+    }
+
     override getModelPricing(model: string): ModelPricing | undefined {
         const entry = this.catalog.get(model);
         return entry ? openRouterPricing(entry) : super.getModelPricing(model);
