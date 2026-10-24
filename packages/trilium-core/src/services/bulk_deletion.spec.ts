@@ -183,9 +183,8 @@ describe("bulk deletion", () => {
             expect(becca.attributes[forward.attributeId]).toBeDefined();
             expect(becca.attributes[backward.attributeId]).toBeDefined();
 
-            // deleting note1 cascades to the backward relation on note2 via the
-            // inverse-relation handler; completing this call (no RangeError from
-            // unbounded re-marks) is part of what is asserted
+            // deleting note1 cascades to note2's relation via the inverse
+            // handler; this call completing is part of the assertion
             clsInit(() => note1.getParentBranches()[0].deleteBranch());
 
             expect(becca.notes[note1.noteId]).toBeUndefined();

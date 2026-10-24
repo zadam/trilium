@@ -326,10 +326,8 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENT
     }
 
     if (entityName === "attributes" && bulkDeletion.isActive()) {
-        // array compaction, attributeIndex and cache work happen once, set-based,
-        // in bulk_deletion.flush(); re-marks of already-deleted attributes are
-        // idempotent there. Branch and note maintenance stays per-entity because
-        // the deletion recursion and clone handling depend on it being immediate.
+        // this maintenance runs set-based in bulk_deletion.flush(); branch and
+        // note handling stays here (the deletion recursion needs it immediate)
         return;
     }
 

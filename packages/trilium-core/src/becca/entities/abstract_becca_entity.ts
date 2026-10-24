@@ -331,10 +331,8 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
         }
 
         if (bulkDeletion.isActive()) {
-            // Inside a subtree deletion the writes are flushed in bulk by the
-            // outermost deleteBranch(). A re-mark of an already-buffered entity
-            // (handler cascade, e.g. reciprocal inverse relations) is dropped
-            // without a second ENTITY_DELETED, which terminates the cascade.
+            // inside a subtree deletion the outermost deleteBranch() flushes in
+            // bulk; a re-mark of a buffered entity drops its second ENTITY_DELETED
             const buffered = bulkDeletion.add({
                 entityName,
                 primaryKey: constructorData.primaryKeyName,

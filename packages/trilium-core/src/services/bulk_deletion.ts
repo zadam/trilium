@@ -13,14 +13,11 @@ import entityChangesService from "./entity_changes.js";
 
 /**
  * Buffers the soft-delete writes and becca bookkeeping of a subtree deletion
- * (see {@link BBranch.deleteBranch}) so the flush can execute them in bulk:
- * chunked per-table `UPDATE`s, bulk `entity_changes` inserts and one
- * set-based attribute maintenance pass (per-note array compaction, one
- * rebuild per affected `attributeIndex` bucket) instead of per-entity
- * statements and per-attribute filters. Events fire per entity as in the
- * unbatched path; a re-mark of an already-buffered entity is idempotent
- * (deduplicated, not re-emitted), which terminates handler cascades such as
- * reciprocal inverse relations without any per-attribute array work.
+ * (see {@link BBranch.deleteBranch}); the outermost deleteBranch() flushes
+ * them in bulk: chunked per-table UPDATEs, bulk entity_changes inserts and
+ * one set-based attribute maintenance pass. Events fire per entity as in the
+ * unbatched path; a re-mark of a buffered entity is deduplicated and its
+ * ENTITY_DELETED is not re-emitted, which terminates handler cascades.
  */
 const UPDATE_CHUNK = 900;
 const ENTITY_CHANGES_CHUNK = 300;
@@ -44,17 +41,15 @@ export function isActive(): boolean {
 }
 
 /**
- * Attribute ids already buffered for deletion, for BNote's readers to hide
- * them from handlers and scripts until the flush compacts the arrays.
- * `null` when no batch is active.
+ * Attribute ids buffered for deletion, hidden from BNote's readers until
+ * the flush compacts the arrays; `null` when no batch is active.
  */
 export function hiddenAttributes(): Set<string> | null {
     return hiddenAttributeIds;
 }
 
 /**
- * Starts buffering when no batch is active. Returns `true` when this call
- * started the batch (i.e., the caller is the outermost deletion and must
+ * Starts buffering, returning true for the outermost deletion (which must
  * call {@link flush}); nested deletions keep adding to the running batch.
  */
 export function begin(): boolean {
@@ -244,9 +239,8 @@ export function bulkAttributeMaintenance(entries: BufferedDeletion[]): void {
 }
 
 /**
- * Executes all buffered writes and becca maintenance. Must be called by the
- * outermost deletion, ideally in a `finally` block so buffered marks persist
- * just as the interleaved per-entity writes would have.
+ * Executes all buffered writes and becca maintenance; call from the
+ * outermost deletion, in a `finally` block.
  */
 export function flush(): void {
     const entries = buffer;
