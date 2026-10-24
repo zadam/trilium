@@ -68,6 +68,7 @@ body#trilium-app.backdrop-effects-disabled *::after {
     --bs-body-color: var(--main-text-color);
     /* What a menu, the sidebar or a dialog dims the page behind it with in the phone layout. */
     --mobile-backdrop-color: rgba(0, 0, 0, 0.5);
+    --mobile-modal-backdrop-color: var(--mobile-backdrop-color);
 }
 
 html {
@@ -1877,41 +1878,47 @@ pre.code-embed-editor.read-only .cm-activeLine {
         padding-bottom: calc(max(var(--menu-padding-size), var(--safe-area-inset-bottom, env(safe-area-inset-bottom)))) !important;
     }
 
-    #mobile-sidebar-container {
-        position: fixed;
-        top: 0;
-        inset-inline-start: 0;
-        inset-inline-end: 0;
-        bottom: 0;
-        z-index: 1000;
-        transition: background-color 250ms ease-in-out;
-        visibility: hidden;
-        background: rgba(0, 0, 0, 0.4);
-    }
-
-    #mobile-sidebar-container.show {
-        visibility: visible;
+    #mobile-rest-container {
+        overflow: clip;
+        position: relative;
     }
 
     #mobile-rest-container > #mobile-sidebar-wrapper {
         position: absolute;
         top: 0;
         inset-inline-start: 0;
-        height: 100dvh;
-        width: 85vw;
+        height: 100%;
+        width: 100%;
         padding-top: var(--safe-area-inset-top, env(safe-area-inset-top));
-        transform: translateX(-100%);
         transition: transform 250ms ease-in-out;
         background: var(--main-background-color);
-        z-index: 2000;
-    }
-
-    body[dir="rtl"] #mobile-rest-container > #mobile-sidebar-wrapper {
-        transform: translateX(100%);
+        z-index: 0;
     }
 
     #detail-container {
         width: 100%;
+        z-index: 1;
+        background: var(--main-background-color);
+        transition: transform 250ms ease-in-out;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset-block: 0;
+            inset-inline-end: 100%;
+            width: 24px;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.12), transparent);
+            pointer-events: none;
+            transition: opacity 250ms ease-in-out;
+        }
+    }
+
+    body:has(#mobile-sidebar-wrapper.show) #detail-container::before {
+        opacity: 0;
+    }
+
+    body[dir="rtl"] #detail-container::before {
+        background: linear-gradient(to right, rgba(0, 0, 0, 0.12), transparent);
     }
 
     .note-split.empty-note {
@@ -1922,16 +1929,12 @@ pre.code-embed-editor.read-only .cm-activeLine {
         margin: 15px;
     }
 
-    #mobile-sidebar-container.show #mobile-sidebar-wrapper {
-        transform: translateX(0);
-    }
-
     body.mobile #launcher-container {
         justify-content: space-evenly;
     }
 
     body.mobile .modal.show {
-        background-color: var(--mobile-backdrop-color);
+        background-color: var(--mobile-modal-backdrop-color);
     }
 
     body.mobile .modal-backdrop {

@@ -295,6 +295,7 @@ body.mobile .dropdown-menu.note-autocomplete-menu {
     body.mobile .tn-dropdown-portal.global-menu .dropdown-menu {
         border-radius: var(--dropdown-border-radius) var(--dropdown-border-radius) 0 0;
     }
+
 }
 
 /* Beside its toggle in a tablet's wider mobile layout, wide enough for its rows to be tapped. */
@@ -310,6 +311,7 @@ body.mobile .dropdown-menu.note-autocomplete-menu {
 }
 
 body.mobile .dropdown-menu:where(:not(.note-autocomplete-menu)) {
+    --mobile-menu-group-radius: 6px;
     --dropdown-menu-padding-vertical: 0.7em;
     --dropdown-menu-padding-horizontal: 1em;
     --hover-item-background-color: var(--card-background-color);
@@ -335,16 +337,16 @@ body.mobile .dropdown-menu:where(:not(.note-autocomplete-menu)) {
     .dropdown-divider + .dropdown-item,
     .dropdown-custom-item:first-of-type,
     .dropdown-divider + .dropdown-custom-item {
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
+        border-top-left-radius: var(--mobile-menu-group-radius);
+        border-top-right-radius: var(--mobile-menu-group-radius);
     }
 
     .dropdown-item:last-of-type,
     .dropdown-item:has(+ .dropdown-divider),
     .dropdown-custom-item:last-of-type,
     .dropdown-custom-item:has(+ .dropdown-divider) {
-        border-bottom-left-radius: 6px;
-        border-bottom-right-radius: 6px;
+        border-bottom-left-radius: var(--mobile-menu-group-radius);
+        border-bottom-right-radius: var(--mobile-menu-group-radius);
         border-bottom: 0 !important;
     }
 

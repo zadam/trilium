@@ -5,7 +5,7 @@ import { useMemo } from "preact/hooks";
 import zoomService from "../../../components/zoom";
 import { ColorScheme, resolveColorScheme, THEME_FAMILY_SCHEMES } from "../../../services/color_scheme";
 import { t } from "../../../services/i18n";
-import { isElectron, isMobile } from "../../../services/utils";
+import { isElectron, isIOS, isMobile } from "../../../services/utils";
 import { Card, CardSection, OptionCardSection } from "../../react/Card";
 import Dropdown from "../../react/Dropdown";
 import { FormListHeader, FormListItem } from "../../react/FormList";
@@ -313,7 +313,7 @@ function Performance() {
                 <FormToggle currentValue={shadowsEnabled} onChange={setShadowsEnabled} />
             </OptionCardSection>
 
-            {!isMobile() && (
+            {(!isMobile() || isIOS()) && (
                 <OptionCardSection name="backdrop-effects-enabled" label={t("ui-performance.enable-backdrop-effects")}>
                     <FormToggle currentValue={backdropEffectsEnabled} onChange={setBackdropEffectsEnabled} />
                 </OptionCardSection>

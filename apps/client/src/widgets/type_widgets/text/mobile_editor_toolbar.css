@@ -2,9 +2,17 @@ body.mobile {
     /* Read by `PopupEditor.css` to clear the toolbar. */
     --mobile-toolbar-button-size: 44px;
     --mobile-toolbar-icon-size: 22px;
-    /* The 2px is the island's border. */
-    --mobile-toolbar-height: calc(var(--mobile-toolbar-button-size) + 2px);
+    --mobile-toolbar-border: 1px;
+    --mobile-toolbar-height: calc(var(--mobile-toolbar-button-size) + 2 * var(--mobile-toolbar-border));
     --mobile-toolbar-gap: 6px;
+    --mobile-toolbar-radius: 6px;
+    --mobile-toolbar-pill-radius: 6px;
+    --mobile-toolbar-pill-press-scale: 1;
+    --mobile-toolbar-item-gap: 0px;
+    --mobile-toolbar-items-inset: 0px;
+    /* How far a menu in the keyboard's place rises over the gap to meet the toolbar. */
+    --keyboard-panel-rise: var(--mobile-toolbar-gap);
+    --keyboard-panel-margin: 0px;
     --mobile-toolbar-clearance: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap));
 
     .classic-toolbar-outer-container {
@@ -32,8 +40,8 @@ body.mobile {
         inset-inline-end: 0;
         height: var(--mobile-toolbar-height);
         margin: 0 var(--mobile-toolbar-gap) var(--mobile-toolbar-gap);
-        border: 1px solid var(--card-border-color, var(--main-border-color));
-        border-radius: 6px;
+        border: var(--mobile-toolbar-border) solid var(--card-border-color, var(--main-border-color));
+        border-radius: var(--mobile-toolbar-radius);
         /* `--card-background-color` is translucent in theme-next, so it tints an opaque backdrop. */
         background:
             linear-gradient(
@@ -62,7 +70,7 @@ body.mobile {
         inset-inline-start: 0;
         inset-inline-end: 0;
         height: 100%;
-        border-radius: 5px;
+        border-radius: calc(var(--mobile-toolbar-radius) - var(--mobile-toolbar-border));
         overflow: scroll;
         display: flex;
         align-items: flex-end;
@@ -83,10 +91,18 @@ body.mobile {
 
     /* A menu of the toolbar in the place of the keyboard (see `useKeyboardPanel`). */
     &.keyboard-panel-open {
+        /* `useKeyboardPanel()` measures a menu of its own height as if it rose by the whole gap. */
+        --keyboard-panel-place-offset: calc(
+            var(--mobile-toolbar-gap) - var(--keyboard-panel-rise) + var(--keyboard-panel-margin)
+        );
         --keyboard-panel-lift: max(
             0px,
             calc(
-                var(--tn-keyboard-place-height, var(--tn-keyboard-height, 0px))
+                var(
+                    --tn-keyboard-place-height,
+                    calc(var(--tn-keyboard-height, 0px) - var(--keyboard-panel-place-offset))
+                )
+                + var(--keyboard-panel-place-offset)
                 - var(--tn-layout-shrink, 0px)
             )
         );
@@ -100,17 +116,6 @@ body.mobile {
 
         .classic-toolbar-island {
             bottom: var(--keyboard-panel-lift);
-            border-end-start-radius: 0;
-            border-end-end-radius: 0;
-
-            .classic-toolbar-widget {
-                border-end-start-radius: 0;
-                border-end-end-radius: 0;
-            }
-
-            .hide-keyboard-action .icon-action {
-                border-end-end-radius: 0;
-            }
         }
     }
 
@@ -144,13 +149,17 @@ body.mobile {
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
         --dropdown-bottom: calc(-1 * var(--tn-layout-shrink, 0px));
-        height: calc(var(--tn-keyboard-height) + var(--mobile-toolbar-gap));
-        max-height: calc(var(--tn-keyboard-height) + var(--mobile-toolbar-gap));
+        height: calc(var(--tn-keyboard-height) + var(--keyboard-panel-rise) - var(--keyboard-panel-margin));
+        max-height: calc(var(--tn-keyboard-height) + var(--keyboard-panel-rise) - var(--keyboard-panel-margin));
+        margin: 0 var(--keyboard-panel-margin) var(--keyboard-panel-margin);
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
         height: auto;
-        max-height: min(50vh, calc(var(--tn-keyboard-height, 50vh) + var(--mobile-toolbar-gap)));
+        max-height: min(
+            50vh,
+            calc(var(--tn-keyboard-height, 50vh) + var(--keyboard-panel-rise) - var(--keyboard-panel-margin))
+        );
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.replaces-panel[data-reveal]:not([data-closing]) {
@@ -205,8 +214,8 @@ body.mobile {
             --icon-button-icon-ratio: 0.5;
             border-inline-start: 1px solid var(--main-border-color);
             border-radius: 0;
-            border-start-end-radius: 5px;
-            border-end-end-radius: 5px;
+            border-start-end-radius: calc(var(--mobile-toolbar-radius) - var(--mobile-toolbar-border));
+            border-end-end-radius: calc(var(--mobile-toolbar-radius) - var(--mobile-toolbar-border));
         }
     }
 
@@ -218,6 +227,11 @@ body.mobile {
         --ck-toolbar-padding: 0;
         position: absolute;
         border: none;
+
+        > .ck-toolbar__items {
+            gap: var(--mobile-toolbar-item-gap);
+            padding-inline-start: var(--mobile-toolbar-items-inset);
+        }
 
         > .ck-toolbar__items > * {
             margin-block: 0;
@@ -256,11 +270,16 @@ body.mobile {
                 position: absolute;
                 inset: 6px 2px;
                 z-index: -1;
-                border-radius: 6px;
+                border-radius: var(--mobile-toolbar-pill-radius);
                 background:
                     linear-gradient(var(--mobile-toolbar-pill-tint), var(--mobile-toolbar-pill-tint)),
                     var(--mobile-toolbar-pill);
                 box-shadow: var(--mobile-toolbar-pill-shadow);
+                transition: scale 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
+            }
+
+            &:not(.ck-disabled):active::before {
+                scale: var(--mobile-toolbar-pill-press-scale);
             }
 
             &.ck-on {

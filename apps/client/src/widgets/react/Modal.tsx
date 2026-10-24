@@ -270,9 +270,12 @@ export default function Modal({ children, className = "", size, title, customTit
         return style;
     }, [maxWidth, minWidth]);
 
+    const [ dialogElement, setDialogElement ] = useState<HTMLDivElement | null>(null);
+    const isTall = useIsTallerThanHalfScreen(dialogElement);
+
     return (
         <div className={renderedClassName.current} tabIndex={-1} style={dialogStyle} role="dialog" aria-label={ariaLabel} ref={modalRef}>
-            {(show || keepInDom) && <ContainerVisibilityContext.Provider value={show}><div className={clsx("modal-dialog", `modal-${size}`, {"modal-dialog-scrollable": scrollable, "modal-dialog-full-page-on-mobile": isFullPageOnMobile, "modal-content-with-sidebar": sidebar})} style={documentStyle} role="document">
+            {(show || keepInDom) && <ContainerVisibilityContext.Provider value={show}><div className={clsx("modal-dialog", `modal-${size}`, {"modal-dialog-scrollable": scrollable, "modal-dialog-full-page-on-mobile": isFullPageOnMobile, "modal-content-with-sidebar": sidebar, "modal-dialog-tall": isTall})} style={documentStyle} role="document" ref={setDialogElement}>
                 <div className={clsx("modal-content", sidebar && "modal-content-with-sidebar")}>
                     {sidebar && <div className="modal-sidebar">
                         {title && !hideSidebarHeader && <div className="modal-sidebar-header">
@@ -342,6 +345,29 @@ export function ScriptModal(props: ModalProps) {
             document.body
         )}
     </>;
+}
+
+/**
+ * Whether the dialog takes up more than half the screen. iOS shows such a dialog as an opaque sheet
+ * attached to the screen's edges, and a shorter one as a floating glass sheet. A tall dialog turns
+ * short again only below 45%, since the wider tall sheet can rewrap its content a little shorter.
+ */
+function useIsTallerThanHalfScreen(dialog: HTMLElement | null) {
+    const [ isTall, setIsTall ] = useState(false);
+
+    useEffect(() => {
+        if (!dialog) return;
+        const update = () => setIsTall((wasTall) => dialog.offsetHeight > window.innerHeight * (wasTall ? 0.45 : 0.5));
+        const observer = new ResizeObserver(update);
+        observer.observe(dialog);
+        window.addEventListener("resize", update);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("resize", update);
+        };
+    }, [ dialog ]);
+
+    return isTall;
 }
 
 /** The classes a host asked for, as `classList` takes them. */

@@ -1,18 +1,22 @@
 import "./toggle_sidebar_button.css";
 
+import { useEffect, useState } from "preact/hooks";
+
 import { t } from "../../services/i18n";
-import { isNarrowLayout } from "../../services/utils";
+import { isNarrowLayout, onNarrowLayoutChange } from "../../services/utils";
 import ActionButton from "../react/ActionButton";
 import { useNoteContext } from "../react/hooks";
 
 export default function ToggleSidebarButton() {
     const { noteContext, parentComponent } = useNoteContext();
+    const [ isPhone, setPhone ] = useState(isNarrowLayout);
+    useEffect(() => onNarrowLayoutChange(() => setPhone(isNarrowLayout())), []);
 
     return (
         <div className="toggle-sidebar-button">
             { noteContext?.isMainContext() && <ActionButton
-                icon="bx bx-sidebar"
-                text={t("note_tree.toggle-sidebar")}
+                icon={isPhone ? `bx ${glob.isRtl ? "bx-chevron-right" : "bx-chevron-left"}` : "bx bx-sidebar"}
+                text={isPhone ? t("note_tree.back-to-tree") : t("note_tree.toggle-sidebar")}
                 onClick={(e) => {
                     // `SplitNoteContainer` activates the split a click lands in, so letting this one
                     // bubble would focus the main split -- the one this button sits in -- every time

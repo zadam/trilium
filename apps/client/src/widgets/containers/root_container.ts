@@ -195,7 +195,7 @@ export default class RootContainer extends FlexContainer<BasicWidget> {
     }
 
     #setBackdropEffects() {
-        const enabled = options.is("backdropEffectsEnabled") && !isMobile();
+        const enabled = options.is("backdropEffectsEnabled") && (!isMobile() || isIOS());
         document.body.classList.toggle("backdrop-effects-disabled", !enabled);
     }
 

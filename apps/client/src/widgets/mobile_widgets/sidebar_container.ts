@@ -1,6 +1,7 @@
 import type { EventData } from "../../components/app_context.js";
 import type { Screen } from "../../components/mobile_screen_switcher.js";
 import options from "../../services/options.js";
+import { isNarrowLayout, onNarrowLayoutChange } from "../../services/utils.js";
 import type BasicWidget from "../basic_widget.js";
 import FlexContainer, { type FlexDirection } from "../containers/flex_container.js";
 
@@ -8,14 +9,18 @@ const DRAG_STATE_NONE = 0;
 const DRAG_STATE_INITIAL_DRAG = 1;
 const DRAG_STATE_DRAGGING = 2;
 
-/** Percentage of drag that the user has to do in order for the popup to open (0-100). */
+/** Percentage of drag that the user has to do in order for the tree to open (0-100). */
 const DRAG_OPEN_THRESHOLD = 10;
 
-/** The number of pixels the user has to drag across the screen to the right when the sidebar is closed to trigger the drag open animation. */
-const DRAG_CLOSED_START_THRESHOLD = 10;
-/** The number of pixels the user has to drag across the screen to the left when the sidebar is opened to trigger the drag close animation. */
-const DRAG_OPENED_START_THRESHOLD = 100;
+/** The number of pixels the user has to drag across the screen to trigger the drag open animation. */
+const DRAG_START_THRESHOLD = 10;
+/** How far the tree lies toward the start while the note covers it (0-100). */
+const STACK_PARALLAX = 30;
 
+/**
+ * The note tree of the mobile layout. On a phone, the tree and the note form a navigation stack: the
+ * tree lies under the note, which slides away to reveal it. On a tablet, the tree sits next to the note.
+ */
 export default class SidebarContainer extends FlexContainer<BasicWidget> {
     private screenName: Screen;
     /** The screen name that is currently active, according to the screen changed event. */
@@ -25,9 +30,9 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
     private startX?: number;
     private translatePercentage: number;
     private sidebarEl!: HTMLElement;
-    private backdropEl!: HTMLElement;
+    private detailEl?: HTMLElement;
     private originalSidebarTransition: string;
-    private originalBackdropTransition: string;
+    private originalDetailTransition: string;
     private screenWidth: number;
     /** Whether the sidebar is shown in tablet mode, where it sits next to the note (same option as the left pane on desktop). */
     private leftPaneVisible: boolean;
@@ -41,7 +46,7 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         this.translatePercentage = 0;
         this.dragState = DRAG_STATE_NONE;
         this.originalSidebarTransition = "";
-        this.originalBackdropTransition = "";
+        this.originalDetailTransition = "";
         this.screenWidth = document.body.getBoundingClientRect().width;
     }
 
@@ -51,18 +56,25 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         // Only has an effect in tablet mode, see `style.css`.
         this.$widget.toggleClass("left-pane-hidden", !this.leftPaneVisible);
 
+        onNarrowLayoutChange(() => this.#setSidebarOpen(this.currentTranslate === 0));
+
         document.addEventListener("touchstart", (e) => this.#onDragStart(e));
         document.addEventListener("touchmove", (e) => this.#onDragMove(e), { passive: false });
         document.addEventListener("touchend", (e) => this.#onDragEnd(e));
     }
 
     #onDragStart(e: TouchEvent | MouseEvent) {
+        // The note comes back by opening it, not by a swipe.
+        if (!isNarrowLayout() || this.currentTranslate !== -100) {
+            return;
+        }
+
         const x = "touches" in e ? e.touches[0].clientX : e.clientX;
         this.startX = x;
 
-        // Prevent dragging if too far from the edge of the screen and the menu is closed.
+        // Prevent dragging if too far from the edge of the screen.
         const dragRefX = glob.isRtl ? this.screenWidth - x : x;
-        if (dragRefX > 30 && this.currentTranslate === -100) {
+        if (dragRefX > 30) {
             return;
         }
 
@@ -79,32 +91,18 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         const x = "touches" in e ? e.touches[0].clientX : e.clientX;
         const deltaX = glob.isRtl ? this.startX - x : x - this.startX;
         if (this.dragState === DRAG_STATE_INITIAL_DRAG) {
-            if (this.currentTranslate === -100 ? deltaX > DRAG_CLOSED_START_THRESHOLD : deltaX < -DRAG_OPENED_START_THRESHOLD) {
+            if (deltaX > DRAG_START_THRESHOLD) {
                 /* Disable the transitions since they affect performance, they are going to reenabled once drag ends. */
                 this.sidebarEl.style.transition = "none";
-                this.backdropEl.style.transition = "none";
-
-                this.backdropEl.style.opacity = String(this.currentTranslate === -100 ? 0 : 1);
-                this.backdropEl.classList.add("show");
+                if (this.detailEl) this.detailEl.style.transition = "none";
 
                 this.dragState = DRAG_STATE_DRAGGING;
-            }
-
-            if (this.currentTranslate !== -100) {
-                // Return early to avoid consuming the event, this allows the user to scroll vertically.
-                return;
             }
         } else if (this.dragState === DRAG_STATE_DRAGGING) {
             const width = this.sidebarEl.offsetWidth;
             const translatePercentage = Math.min(0, Math.max(this.currentTranslate + (deltaX / width) * 100, -100));
-            const backdropOpacity = Math.max(0, 1 + translatePercentage / 100);
             this.translatePercentage = translatePercentage;
-            if (glob.isRtl) {
-                this.sidebarEl.style.transform = `translateX(${-translatePercentage}%)`;
-            } else {
-                this.sidebarEl.style.transform = `translateX(${translatePercentage}%)`;
-            }
-            this.backdropEl.style.opacity = String(backdropOpacity);
+            this.#applyTranslate(translatePercentage);
         }
 
         // Consume the event to prevent the user from doing the back to previous page gesture on iOS.
@@ -121,9 +119,8 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
             return;
         }
 
-        // If the sidebar is closed, snap the sidebar open only if the user swiped over a threshold.
-        // When the sidebar is open, always close for a smooth experience.
-        const isOpen = this.currentTranslate === -100 && this.translatePercentage > -(100 - DRAG_OPEN_THRESHOLD);
+        // Snap the tree open only if the user swiped over a threshold.
+        const isOpen = this.translatePercentage > -(100 - DRAG_OPEN_THRESHOLD);
         const screen = isOpen ? "tree" : "detail";
 
         if (this.activeScreenName !== screen) {
@@ -131,7 +128,7 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
             // This allows the toggle sidebar button to work, by knowing the right state.
             this.triggerCommand("setActiveScreen", { screen });
         } else {
-            // If the active screen hasn't changed, usually due to the user making a very short gesture that results in the sidebar not being closed/opened,
+            // If the active screen hasn't changed, usually due to the user making a very short gesture that results in the tree not being opened,
             // we need to hide the animation but setActiveScreen command will not trigger the event since we are still on the same screen.
             this.#setSidebarOpen(isOpen);
         }
@@ -144,19 +141,32 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         }
 
         const sidebarEl = document.getElementById("mobile-sidebar-wrapper");
-        const backdropEl = document.getElementById("mobile-sidebar-container");
-        backdropEl?.addEventListener("click", () => {
-            this.triggerCommand("setActiveScreen", { screen: "detail" });
-        });
-
-        if (!sidebarEl || !backdropEl) {
-            throw new Error("Unable to find the sidebar or backdrop.");
+        if (!sidebarEl) {
+            throw new Error("Unable to find the sidebar.");
         }
 
         this.sidebarEl = sidebarEl;
-        this.backdropEl = backdropEl;
         this.originalSidebarTransition = this.sidebarEl.style.transition;
-        this.originalBackdropTransition = this.backdropEl.style.transition;
+
+        this.detailEl = document.getElementById("detail-container") ?? undefined;
+        this.originalDetailTransition = this.detailEl?.style.transition ?? "";
+    }
+
+    /**
+     * Places the tree `translatePercentage` of the way from open (0) to closed (-100) by moving the
+     * note off it. On a tablet, both stay in place.
+     */
+    #applyTranslate(translatePercentage: number) {
+        if (!isNarrowLayout()) {
+            this.sidebarEl.style.transform = "";
+            if (this.detailEl) this.detailEl.style.transform = "";
+            return;
+        }
+
+        const direction = glob.isRtl ? -1 : 1;
+        const openness = 100 + translatePercentage;
+        this.sidebarEl.style.transform = `translateX(${-direction * STACK_PARALLAX * (100 - openness) / 100}%)`;
+        if (this.detailEl) this.detailEl.style.transform = `translateX(${direction * openness}%)`;
     }
 
     #setSidebarOpen(isOpen: boolean) {
@@ -165,18 +175,9 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
         }
 
         this.sidebarEl.classList.toggle("show", isOpen);
-        if (isOpen) {
-            this.sidebarEl.style.transform = "translateX(0)";
-        } else if (glob.isRtl) {
-            this.sidebarEl.style.transform = "translateX(100%)";
-        } else {
-            this.sidebarEl.style.transform = "translateX(-100%)";
-        }
+        this.#applyTranslate(isOpen ? 0 : -100);
         this.sidebarEl.style.transition = this.originalSidebarTransition;
-
-        this.backdropEl.classList.toggle("show", isOpen);
-        this.backdropEl.style.transition = this.originalBackdropTransition;
-        this.backdropEl.style.opacity = String(isOpen ? 1 : 0);
+        if (this.detailEl) this.detailEl.style.transition = this.originalDetailTransition;
 
         this.currentTranslate = isOpen ? 0 : -100;
         this.dragState = DRAG_STATE_NONE;

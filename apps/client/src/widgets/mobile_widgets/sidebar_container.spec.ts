@@ -48,4 +48,54 @@ describe("SidebarContainer", () => {
         expect(sidebar.$widget.hasClass("left-pane-hidden")).toBe(false);
         expect(save).not.toHaveBeenCalled();
     });
+
+    describe("on a phone", () => {
+        let tree: HTMLElement;
+        let detail: HTMLElement;
+        let isNarrow: boolean;
+        let onLayoutChange: () => void;
+
+        beforeEach(() => {
+            isNarrow = true;
+            onLayoutChange = () => {};
+            vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+                matches: isNarrow && query === "(max-width: 991px)",
+                media: query,
+                addEventListener: (_type: string, listener: () => void) => { onLayoutChange = listener; },
+                removeEventListener: vi.fn()
+            }) as unknown as MediaQueryList);
+
+            tree = document.body.appendChild(document.createElement("div"));
+            tree.id = "mobile-sidebar-wrapper";
+            detail = document.body.appendChild(document.createElement("div"));
+            detail.id = "detail-container";
+        });
+
+        afterEach(() => {
+            document.body.innerHTML = "";
+        });
+
+        it("slides the note off the tree, which lies under it", () => {
+            const sidebar = render(true);
+
+            sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
+            expect(detail.style.transform).toBe("translateX(100%)");
+            expect(tree.style.transform).toBe("translateX(0%)");
+
+            sidebar.activeScreenChangedEvent({ activeScreen: "detail" });
+            expect(detail.style.transform).toBe("translateX(0%)");
+            expect(tree.style.transform).toBe("translateX(-30%)");
+        });
+
+        it("puts the tree back beside the note once the screen widens to a tablet", () => {
+            const sidebar = render(true);
+            sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
+            expect(detail.style.transform).toBe("translateX(100%)");
+
+            isNarrow = false;
+            onLayoutChange();
+            expect(detail.style.transform).toBe("");
+            expect(tree.style.transform).toBe("");
+        });
+    });
 });

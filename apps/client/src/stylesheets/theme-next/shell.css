@@ -678,18 +678,6 @@ body[dir=rtl] :is(#left-pane, .tree-popup-sidebar) span.fancytree-node.protected
     transform: translateX(-25%);
 }
 
-@media (max-width: 991px) {
-    body.mobile #mobile-sidebar-container {
-        background-color: var(--mobile-backdrop-color);
-    }
-
-    body.mobile #mobile-sidebar-wrapper {
-        border-top-right-radius: 12px;
-        border-bottom-right-radius: 12px;
-        border-inline-end: 1px solid var(--subtle-border-color);
-    }
-}
-
 :is(#left-pane, .tree-popup-sidebar) .fancytree-expander,
 .nested-note-list-item .note-expander {
     opacity: 0.65;

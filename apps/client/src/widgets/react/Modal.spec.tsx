@@ -246,6 +246,45 @@ describe("Modal", () => {
         expect(mocks.raising).toEqual([ "suspendModalFocusTraps", "openDialog" ]);
     });
 
+    it("marks a dialog taller than half the screen", async () => {
+        let onResize = () => {};
+        vi.stubGlobal("ResizeObserver", class {
+            constructor(callback: () => void) { onResize = callback; }
+            observe() {}
+            disconnect() {}
+        });
+        vi.stubGlobal("innerHeight", 800);
+
+        await act(async () => {
+            render(<Modal size="md" show onHidden={() => {}}>body</Modal>, container);
+        });
+        const dialog = container.querySelector<HTMLElement>(".modal-dialog");
+        expect(dialog).not.toBeNull();
+        let height = 500;
+        Object.defineProperty(dialog, "offsetHeight", { get: () => height });
+
+        act(() => onResize());
+        expect(dialog?.classList).toContain("modal-dialog-tall");
+
+        // Going tall widens the dialog, which can rewrap it a little shorter.
+        height = 380;
+        act(() => onResize());
+        expect(dialog?.classList).toContain("modal-dialog-tall");
+
+        height = 300;
+        act(() => onResize());
+        expect(dialog?.classList).not.toContain("modal-dialog-tall");
+
+        // The screen can change height without the dialog changing size.
+        height = 380;
+        act(() => onResize());
+        expect(dialog?.classList).not.toContain("modal-dialog-tall");
+        vi.stubGlobal("innerHeight", 700);
+        act(() => { window.dispatchEvent(new Event("resize")); });
+        expect(dialog?.classList).toContain("modal-dialog-tall");
+        vi.unstubAllGlobals();
+    });
+
     it("opens a dialog that starts closed only once it is asked to show", async () => {
         const onHidden = vi.fn();
 
