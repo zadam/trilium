@@ -130,6 +130,30 @@
         }
     }
 
+    body.mobile & {
+        > span:not([class]) {
+            align-items: center;
+        }
+
+        .note-suggestion-header {
+            flex-direction: column-reverse;
+            align-items: stretch;
+            gap: 0;
+        }
+
+        .note-suggestion-path {
+            flex: none;
+            min-width: 0;
+            text-align: start;
+            font-size: 0.75em;
+            line-height: 1.3;
+        }
+    }
+
+    body.mobile:not([dir=rtl]) & .note-suggestion-path {
+        text-align: left;
+    }
+
     .note-suggestion-description {
         display: block;
         font-size: small;
