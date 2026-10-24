@@ -34,7 +34,6 @@ export default class MobileLayout {
         const rootContainer = new RootContainer(true)
             .setParent(appContext)
             .class("horizontal-layout")
-            .child(new FlexContainer("column").id("mobile-sidebar-container"))
             .child(
                 new FlexContainer("row")
                     .filling()

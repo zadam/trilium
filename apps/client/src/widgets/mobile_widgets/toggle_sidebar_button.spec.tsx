@@ -58,18 +58,16 @@ describe("ToggleSidebarButton", () => {
         expect(triggerCommand).not.toHaveBeenCalledWith("toggleLeftPane");
     });
 
-    it("goes back to the tree on an iPhone, where the tree lies under the note", () => {
+    it("goes back to the tree on a phone, where the tree lies under the note", () => {
         mockWidth("phone");
-        const userAgent = vi.spyOn(navigator, "userAgent", "get");
-
-        userAgent.mockReturnValue("Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile");
-        expect(renderInto(<ToggleSidebarButton />).querySelector("button.bx-sidebar")).not.toBeNull();
-
-        userAgent.mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) Mobile");
         const button = renderInto(<ToggleSidebarButton />).querySelector<HTMLButtonElement>("button.bx-chevron-left");
         expect(button).not.toBeNull();
         button?.click();
         expect(triggerCommand).toHaveBeenCalledWith("setActiveScreen", { screen: "tree" });
+
+        vi.restoreAllMocks();
+        mockWidth("tablet");
+        expect(renderInto(<ToggleSidebarButton />).querySelector("button.bx-sidebar")).not.toBeNull();
     });
 
     it("toggles the sidebar on a tablet, where it sits next to the note", () => {

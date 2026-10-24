@@ -52,17 +52,19 @@ describe("SidebarContainer", () => {
     describe("on a phone", () => {
         let tree: HTMLElement;
         let detail: HTMLElement;
+        let isNarrow: boolean;
+        let onLayoutChange: () => void;
 
         beforeEach(() => {
+            isNarrow = true;
+            onLayoutChange = () => {};
             vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
-                matches: query === "(max-width: 991px)",
+                matches: isNarrow && query === "(max-width: 991px)",
                 media: query,
-                addEventListener: vi.fn(),
+                addEventListener: (_type: string, listener: () => void) => { onLayoutChange = listener; },
                 removeEventListener: vi.fn()
             }) as unknown as MediaQueryList);
 
-            const backdrop = document.body.appendChild(document.createElement("div"));
-            backdrop.id = "mobile-sidebar-container";
             tree = document.body.appendChild(document.createElement("div"));
             tree.id = "mobile-sidebar-wrapper";
             detail = document.body.appendChild(document.createElement("div"));
@@ -71,30 +73,10 @@ describe("SidebarContainer", () => {
 
         afterEach(() => {
             document.body.innerHTML = "";
-            document.body.classList.remove("navigation-stack");
         });
 
-        function renderOn(userAgent: string) {
-            vi.spyOn(navigator, "userAgent", "get").mockReturnValue(userAgent);
-            return render(true);
-        }
-
-        it("slides the tree over the note as a drawer", () => {
-            const sidebar = renderOn("Mozilla/5.0 (Linux; Android 15; Pixel 9) Mobile");
-            expect(document.body.classList.contains("navigation-stack")).toBe(false);
-
-            sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
-            expect(tree.style.transform).toBe("translateX(0%)");
-            expect(detail.style.transform).toBe("");
-
-            sidebar.activeScreenChangedEvent({ activeScreen: "detail" });
-            expect(tree.style.transform).toBe("translateX(-100%)");
-            expect(detail.style.transform).toBe("");
-        });
-
-        it("slides the note off the tree on an iPhone, as a navigation stack", () => {
-            const sidebar = renderOn("Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X) Mobile");
-            expect(document.body.classList.contains("navigation-stack")).toBe(true);
+        it("slides the note off the tree, which lies under it", () => {
+            const sidebar = render(true);
 
             sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
             expect(detail.style.transform).toBe("translateX(100%)");
@@ -103,6 +85,17 @@ describe("SidebarContainer", () => {
             sidebar.activeScreenChangedEvent({ activeScreen: "detail" });
             expect(detail.style.transform).toBe("translateX(0%)");
             expect(tree.style.transform).toBe("translateX(-30%)");
+        });
+
+        it("puts the tree back beside the note once the screen widens to a tablet", () => {
+            const sidebar = render(true);
+            sidebar.activeScreenChangedEvent({ activeScreen: "tree" });
+            expect(detail.style.transform).toBe("translateX(100%)");
+
+            isNarrow = false;
+            onLayoutChange();
+            expect(detail.style.transform).toBe("");
+            expect(tree.style.transform).toBe("");
         });
     });
 });
