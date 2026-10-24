@@ -18,7 +18,7 @@ import ToggleSidebarButton from "./toggle_sidebar_button";
 /** Renders the button at a phone or tablet width and clicks it. */
 function clickAt(width: "phone" | "tablet") {
     const matchMedia = vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
-        matches: width === "tablet" && query === "(min-width: 992px)",
+        matches: width === "phone" && query === "(max-width: 991px)",
         media: query
     }) as MediaQueryList);
 
@@ -31,7 +31,7 @@ function clickAt(width: "phone" | "tablet") {
     expect(button).not.toBeNull();
     button?.click();
 
-    expect(matchMedia).toHaveBeenCalledWith("(min-width: 992px)");
+    expect(matchMedia).toHaveBeenCalledWith("(max-width: 991px)");
     expect(activateSplit).not.toHaveBeenCalled();
 }
 

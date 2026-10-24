@@ -2034,7 +2034,6 @@ pre.code-embed-editor.read-only .cm-activeLine {
         background-color: var(--left-pane-background-color) !important;
     }
 
-    /* Hidden by the sidebar toggle in the title row, like the left pane on desktop. */
     #mobile-rest-container > #mobile-sidebar-wrapper.left-pane-hidden {
         display: none !important;
     }
