@@ -15,7 +15,7 @@ function setupGlobs() {
     window.glob.getReferenceLinkTitleSync = (href, storedTitle) =>
         linkService.getReferenceLinkTitleSync(href, storedTitle);
 
-    // required for ESLint plugin and CKEditor
+    // required for ESLint plugin
     window.glob.getActiveContextNote = () => appContext.tabManager.getActiveContextNote();
     window.glob.appContext = appContext; // for debugging
     window.glob.froca = froca;

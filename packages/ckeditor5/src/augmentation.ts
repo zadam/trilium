@@ -137,8 +137,6 @@ declare global {
         ): void;
         /** The href of a reference link to the attachment, or `null` once it is deleted. */
         getAttachmentHref(attachmentId: string): Promise<string | null>;
-        /** The note the editor holds. Hosts without a note of their own leave it out. */
-        getNoteId?(): string | undefined;
         /**
          * Opens the context menu of what `embed` shows, below `anchor`. Hosts without embeds
          * leave it out.
@@ -178,9 +176,6 @@ declare global {
 
     var glob: {
         getComponentByEl<T extends Component>(el: unknown): T;
-        getActiveContextNote(): {
-            noteId: string;
-        };
     };
 }
 

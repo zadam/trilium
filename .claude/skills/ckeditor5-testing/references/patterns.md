@@ -45,7 +45,7 @@ assert on it can omit it. A spec sharing one editor across tests can swap an ent
 `editor.config.set()`, which the plugins read at call time.
 
 Many in-aggregate plugins still reach for a global `glob` (the Trilium bridge — typed in
-`packages/ckeditor5/src/augmentation.ts` with `getComponentByEl` and `getActiveContextNote`), some
+`packages/ckeditor5/src/augmentation.ts` with `getComponentByEl`, which finds the host component), some
 buttons hit `navigator.clipboard`, and some converters call jQuery `$(...)` (e.g. the `editingDowncast`
 converter in `packages/ckeditor5/src/plugins/referencelink.ts`). Use the globals kit
 (`test/globals-test-kit.ts`) so each stub **tears itself down** after the test — never hand-roll

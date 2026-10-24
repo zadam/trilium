@@ -319,9 +319,6 @@ export default function EditableText({
             return convertImageToDrawing(note.noteId, src, parentComponent?.componentId);
         },
         getAttachmentHref,
-        getNoteId() {
-            return note.noteId;
-        },
         openContentEmbedMenu,
         openBlockHandleMenu(event: MouseEvent, count: number) {
             const shareLink = getNoteShareLink(note);

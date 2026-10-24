@@ -31,11 +31,7 @@ export default class CopyAnchorLinkButton extends Plugin {
 
                 if (selectedElement?.name === "bookmark") {
                     const bookmarkId = selectedElement.getAttribute("bookmarkId") as string;
-                    // The note the editor holds, which is not the active tab's in an included note.
-                    const component = glob.getComponentByEl<EditorComponent>(
-                        editor.editing.view.getDomRoot()
-                    );
-                    const noteId = component?.getNoteId?.() ?? glob.getActiveContextNote()?.noteId;
+                    const noteId = editor.config.get("getNoteId")?.();
 
                     if (noteId && bookmarkId) {
                         const href = `#root/${noteId}?bookmark=${encodeURIComponent(bookmarkId)}`;

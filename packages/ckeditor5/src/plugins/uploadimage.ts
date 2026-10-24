@@ -265,7 +265,7 @@ export interface AttachmentUploadHost {
 
 declare module "ckeditor5" {
 	interface EditorConfig {
-		/** The ID of the note the editor holds, which uploads attach to. */
+		/** The ID of the note the editor holds, which uploads attach to and anchor links point to. */
 		getNoteId?(): string | undefined;
 		attachmentUpload?: Partial<AttachmentUploadHost>;
 	}
