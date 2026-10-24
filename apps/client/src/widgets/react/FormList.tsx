@@ -617,7 +617,7 @@ function SubmenuLayer({ level, submenu, filter, children }: {
     children: ComponentChildren
 }) {
     const layerRef = useRef<HTMLDivElement>(null);
-    const { dropStart: dropStartLevels, setDropStart } = useMenu();
+    const { dropStart: dropStartLevels, setDropStart, submenuShown } = useMenu();
     const dropStart = !!dropStartLevels[level - 1];
     const pinned = !!filter?.text;
     /** How far below its row's top the layer stands while pinned. */
@@ -677,6 +677,10 @@ function SubmenuLayer({ level, submenu, filter, children }: {
                 <div
                     ref={layerRef} role="menu" aria-labelledby={titleId(submenu.anchor.id)}
                     className={clsx("dropdown-menu show tn-menu", submenu.immediate && "tn-menu-immediate")}
+                    // The fade starts once the opening delay is over.
+                    onAnimationStart={(e) => {
+                        if (e.target === e.currentTarget) submenuShown(submenu);
+                    }}
                 >
                     <MenuList filter={filter}>{children}</MenuList>
                 </div>

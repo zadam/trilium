@@ -640,17 +640,28 @@ describe("contextMenu", () => {
             });
         });
 
-        it("waits before the first submenu it opens under the pointer, and not before one that replaces it", async () => {
+        it("waits before a submenu it opens under the pointer, unless it replaces one in view", async () => {
+            const layer = () => menuElement()?.querySelector("div.dropdown-submenu > .dropdown-menu");
             /** Whether the open layer skips the stylesheet's opening delay and fade. */
-            const immediate = () => menuElement()?.querySelector("div.dropdown-submenu > .dropdown-menu")?.classList.contains("tn-menu-immediate");
+            const immediate = () => layer()?.classList.contains("tn-menu-immediate");
             await openMenu();
 
             // The pointer might only be passing over the row.
             hover(row("Insert child note"));
-            await vi.waitFor(() => expect(layers()).toHaveLength(1));
+            await vi.waitFor(() => expect(layers()).toEqual([ [ "Text", "Code" ] ]));
             expect(immediate()).toBe(false);
 
-            // One submenu is open, so the user is going through them: its sibling shows at once.
+            // It passed on before that submenu showed, so the next one waits as well.
+            hover(row("Templates"));
+            await vi.waitFor(() => expect(layers()).toEqual([ [ "Meeting" ] ]));
+            expect(immediate()).toBe(false);
+
+            // The browser starts the fade once the delay is over. With a submenu in view, the user
+            // is going through them, so its sibling shows at once, and so does the one after.
+            layer()?.dispatchEvent(new Event("animationstart", { bubbles: true }));
+            hover(row("Insert child note"));
+            await vi.waitFor(() => expect(layers()).toEqual([ [ "Text", "Code" ] ]));
+            expect(immediate()).toBe(true);
             hover(row("Templates"));
             await vi.waitFor(() => expect(layers()).toEqual([ [ "Meeting" ] ]));
             expect(immediate()).toBe(true);

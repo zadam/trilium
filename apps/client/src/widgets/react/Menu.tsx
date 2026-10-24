@@ -99,15 +99,22 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         else if (elementRef) elementRef.current = element;
     }, [ elementRef ]);
     const [ open, setOpen ] = useState<OpenSubmenu[]>([]);
+    /** The submenus whose layer waited out the stylesheet's opening delay. */
+    const shownSubmenus = useRef(new WeakSet<OpenSubmenu>()).current;
 
     const openSubmenu = useCallback((level: number, rowId?: string, anchor?: HTMLElement, chosen = false) => {
         setOpen((current) => {
             if (rowId ? current[level]?.id === rowId : current.length <= level) return current;
             const kept = current.slice(0, level);
-            const immediate = chosen || !!current[level];
+            const replaced = current[level];
+            const immediate = chosen
+                || (!!replaced && (replaced.immediate || shownSubmenus.has(replaced)));
             return rowId && anchor ? [ ...kept, { id: rowId, anchor, immediate } ] : kept;
         });
-    }, []);
+    }, [ shownSubmenus ]);
+    const submenuShown = useCallback((submenu: OpenSubmenu) => {
+        shownSubmenus.add(submenu);
+    }, [ shownSubmenus ]);
     const [ dropStart, setDropStartLevels ] = useState<boolean[]>([]);
     const setDropStart = useCallback((level: number, value: boolean) => {
         setDropStartLevels((current) => {
@@ -171,7 +178,8 @@ export default function Menu<T>({ id, className, anchor, placement, bottomSheet,
         });
     }, [ rows ]);
     const context: MenuContextValue = {
-        open, openSubmenu, active, setActive, rows, registerRow, keyboardDriven, isReversed, dropStart, setDropStart, close, filter, setFilter, layerHost
+        open, openSubmenu, submenuShown, active, setActive, rows, registerRow, keyboardDriven,
+        isReversed, dropStart, setDropStart, close, filter, setFilter, layerHost
     };
 
     /** The ids of the rows the keys can stand on at `level`, in the order they stand in. */
