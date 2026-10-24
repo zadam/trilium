@@ -456,7 +456,8 @@
     "location": "Location",
     "location_placeholder": "Default location if left empty",
     "modal_title": "Choose note type",
-    "templates": "Templates"
+    "templates": "Templates",
+    "manage_templates": "Manage templates in Content Manager"
   },
   "password_not_set": {
     "title": "Password is not set",
