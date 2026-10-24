@@ -2930,7 +2930,7 @@
     "copy_tab_to_new_window": "Copy this tab to a new window",
     "new_tab": "New tab",
     "leave_full_screen": "Leave full screen",
-    "add_new_tab_hint": "Right click for more options.",
+    "add_new_tab_hint": "Right click or hold for more options.",
     "show_all_recent_changes": "Show all recent changes",
     "recently_changed_notes": "Recently changed notes"
   },

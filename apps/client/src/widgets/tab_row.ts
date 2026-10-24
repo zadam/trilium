@@ -16,7 +16,7 @@ import { buildTabTitle, TAB_TITLE_SEPARATOR } from "../services/tab_title.js";
 import utils from "../services/utils.js";
 import BasicWidget from "./basic_widget.js";
 import { noteTitleHtml } from "./layout/Breadcrumb.js";
-import { setupHorizontalScrollViaWheel } from "./widget_utils.js";
+import { setupHoldContextMenu, setupHorizontalScrollViaWheel } from "./widget_utils.js";
 
 const isDesktop = utils.isDesktop();
 
@@ -942,7 +942,7 @@ export default class TabRowWidget extends BasicWidget {
             delay: { show: 500, hide: 0 }
         });
 
-        this.$newTab.on("contextmenu", (e) => {
+        setupHoldContextMenu(this.$newTab[0], (e) => {
             e.preventDefault();
             void this.showNewTabContextMenu(e.pageX, e.pageY);
         });
