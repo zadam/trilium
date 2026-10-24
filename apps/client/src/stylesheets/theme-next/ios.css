@@ -1,0 +1,135 @@
+/*
+ * iOS: the glass surfaces of iOS 26, drawn with the `--glass-*` tokens. The components define what
+ * these variables control and their default values; this file sets them for iOS, and holds the
+ * rules that only iOS has.
+ */
+
+body.mobile.ios {
+    --dropdown-backdrop-filter: blur(16px) saturate(1.5) brightness(1.15);
+    --mobile-sheet-margin: 8px;
+    --mobile-sheet-radius: 28px;
+
+    /* The formatting toolbar: a capsule, with its buttons spaced out. */
+    --mobile-toolbar-border: 0px;
+    --mobile-toolbar-gap: 10px;
+    --mobile-toolbar-radius: calc(var(--mobile-toolbar-height) / 2);
+    --mobile-toolbar-pill-radius: 999px;
+    --mobile-toolbar-pill-press-scale: 1.12;
+    --mobile-toolbar-item-gap: 14px;
+    --mobile-toolbar-items-inset: 8px;
+
+    /* A menu in the keyboard's place stands a gap below the toolbar, as the keyboard does. */
+    --keyboard-panel-rise: 0px;
+    --keyboard-panel-margin: var(--mobile-sheet-margin);
+
+    .classic-toolbar-island {
+        background: var(--glass-background);
+        backdrop-filter: var(--dropdown-backdrop-filter);
+        box-shadow: var(--glass-shadow);
+    }
+
+    .dropdown-menu {
+        --mobile-menu-group-radius: 12px;
+    }
+}
+
+@media (max-width: 991px) {
+    body.mobile.ios {
+        --mobile-bottom-offset: max(
+            12px,
+            calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 8px)
+        );
+        --mobile-bottom-bar-height: calc(var(--launcher-pane-horiz-size) + var(--mobile-bottom-offset));
+        --mobile-backdrop-color: transparent;
+        /* Must equal the height of `.title-row` in style.css. */
+        --mobile-title-row-height: 50px;
+
+        /* Sheets, including the toolbar's menu in the keyboard's place. */
+        :is(
+            .tn-dropdown-portal:is(.global-menu, .right-dropdown-widget) > .dropdown-menu,
+            .dropdown-menu.mobile-bottom-menu
+        ).show {
+            --menu-background-color: var(--glass-background);
+            border: 0;
+            border-radius: var(--mobile-sheet-radius);
+            box-shadow: var(--glass-shadow);
+        }
+
+        :is(
+            .tn-dropdown-portal:is(.global-menu, .right-dropdown-widget) > .dropdown-menu,
+            .dropdown-menu.mobile-bottom-menu:not(.keyboard-panel)
+        ).show {
+            margin: 0 var(--mobile-sheet-margin) var(--mobile-sheet-margin);
+            max-height: calc(var(--tn-modal-max-height) - var(--dropdown-bottom) - var(--mobile-sheet-margin));
+        }
+
+        :is(#context-menu-container, .dropdown-menu).mobile-bottom-menu.show {
+            padding-bottom: var(--menu-padding-size) !important;
+        }
+
+        /* The title row and the launcher bar float over the note, which scrolls beneath them. */
+        #mobile-bottom-bar {
+            position: relative;
+            z-index: 999;
+            height: var(--mobile-bottom-bar-height);
+            margin-top: calc(-1 * var(--mobile-bottom-bar-height));
+            padding-inline: 16px;
+            border-top: 0;
+            background: transparent;
+            pointer-events: none;
+        }
+
+        #mobile-bottom-bar > #launcher-pane {
+            pointer-events: auto;
+            border: 0;
+            border-radius: calc(var(--launcher-pane-horiz-size) / 2);
+            background: var(--glass-background) !important;
+            backdrop-filter: var(--dropdown-backdrop-filter);
+            box-shadow: var(--glass-shadow);
+
+            .launcher-button {
+                border-radius: 50%;
+            }
+        }
+
+        &:not(.keyboard-panel-open) #root-widget:not(.virtual-keyboard-opened) .note-split > .scrolling-container {
+            padding-bottom: var(--mobile-bottom-bar-height);
+            scroll-padding-bottom: var(--mobile-bottom-bar-height);
+        }
+
+        .note-split:not(.options) > .title-row {
+            position: relative;
+            z-index: 999;
+            isolation: isolate;
+            margin-bottom: calc(-1 * var(--mobile-title-row-height));
+            padding-inline: 8px;
+            border-bottom: 0;
+
+            &::before {
+                content: "";
+                position: absolute;
+                inset: 0 0 -16px;
+                z-index: -1;
+                background: linear-gradient(var(--main-background-color) 55%, transparent);
+                pointer-events: none;
+            }
+
+            .icon-action:not(.note-icon) {
+                border-radius: 50%;
+                background: var(--glass-background);
+                backdrop-filter: var(--dropdown-backdrop-filter);
+                box-shadow: var(--glass-shadow);
+                transition: scale 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
+
+                &:active {
+                    scale: 0.92;
+                }
+            }
+        }
+
+        .note-split:not(.options) > .title-row + .scrolling-container {
+            padding-top: var(--mobile-title-row-height);
+            scroll-padding-top: var(--mobile-title-row-height);
+        }
+    }
+}

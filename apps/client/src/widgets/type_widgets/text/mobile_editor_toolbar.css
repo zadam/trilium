@@ -7,6 +7,12 @@ body.mobile {
     --mobile-toolbar-gap: 6px;
     --mobile-toolbar-radius: 6px;
     --mobile-toolbar-pill-radius: 6px;
+    --mobile-toolbar-pill-press-scale: 1;
+    --mobile-toolbar-item-gap: 0px;
+    --mobile-toolbar-items-inset: 0px;
+    /* How far a menu in the keyboard's place rises over the gap to meet the toolbar. */
+    --keyboard-panel-rise: var(--mobile-toolbar-gap);
+    --keyboard-panel-margin: 0px;
     --mobile-toolbar-clearance: calc(var(--mobile-toolbar-height) + 2 * var(--mobile-toolbar-gap));
 
     .classic-toolbar-outer-container {
@@ -58,38 +64,6 @@ body.mobile {
         visibility: hidden;
     }
 
-    &.ios {
-        --mobile-toolbar-border: 0px;
-        --mobile-toolbar-gap: 10px;
-        --mobile-toolbar-radius: calc(var(--mobile-toolbar-height) / 2);
-        --mobile-toolbar-pill-radius: 999px;
-
-        .classic-toolbar-island {
-            background: var(--glass-background, var(--main-background-color));
-            backdrop-filter: var(--dropdown-backdrop-filter);
-            box-shadow: var(--glass-shadow, inset 0 0 0 1px var(--main-border-color));
-        }
-
-        .classic-toolbar-widget .ck.ck-toolbar .ck-toolbar__items {
-            gap: 14px;
-            padding-inline-start: 8px;
-        }
-
-        .classic-toolbar-widget .ck.ck-toolbar .ck-toolbar__items > :is(
-            .ck-button,
-            .ck-dropdown > .ck-button,
-            .ck-dropdown > .ck-splitbutton > .ck-button
-        ) {
-            &::before {
-                transition: scale 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
-            }
-
-            &:not(.ck-disabled):active::before {
-                scale: 1.12;
-            }
-        }
-    }
-
     .classic-toolbar-widget {
         position: absolute;
         bottom: 0;
@@ -117,10 +91,18 @@ body.mobile {
 
     /* A menu of the toolbar in the place of the keyboard (see `useKeyboardPanel`). */
     &.keyboard-panel-open {
+        /* `useKeyboardPanel()` measures a menu of its own height as if it rose by the whole gap. */
+        --keyboard-panel-place-offset: calc(
+            var(--mobile-toolbar-gap) - var(--keyboard-panel-rise) + var(--keyboard-panel-margin)
+        );
         --keyboard-panel-lift: max(
             0px,
             calc(
-                var(--tn-keyboard-place-height, var(--tn-keyboard-height, 0px))
+                var(
+                    --tn-keyboard-place-height,
+                    calc(var(--tn-keyboard-height, 0px) - var(--keyboard-panel-place-offset))
+                )
+                + var(--keyboard-panel-place-offset)
                 - var(--tn-layout-shrink, 0px)
             )
         );
@@ -167,41 +149,17 @@ body.mobile {
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
         --dropdown-bottom: calc(-1 * var(--tn-layout-shrink, 0px));
-        height: calc(var(--tn-keyboard-height) + var(--mobile-toolbar-gap));
-        max-height: calc(var(--tn-keyboard-height) + var(--mobile-toolbar-gap));
+        height: calc(var(--tn-keyboard-height) + var(--keyboard-panel-rise) - var(--keyboard-panel-margin));
+        max-height: calc(var(--tn-keyboard-height) + var(--keyboard-panel-rise) - var(--keyboard-panel-margin));
+        margin: 0 var(--keyboard-panel-margin) var(--keyboard-panel-margin);
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
         height: auto;
-        max-height: min(50vh, calc(var(--tn-keyboard-height, 50vh) + var(--mobile-toolbar-gap)));
-    }
-
-    /* On iOS, the menu is an island of its own, a gap below the toolbar as the keyboard is. */
-    &.ios {
-        --keyboard-panel-margin: 8px;
-
-        /* `useKeyboardPanel()` measures the place as if the menu rose by the gap to the toolbar. */
-        &.keyboard-panel-open:has(.dropdown-menu.keyboard-panel-own-height) {
-            --keyboard-panel-lift: calc(
-                var(--tn-keyboard-place-height, 0px) + var(--mobile-toolbar-gap) + var(--keyboard-panel-margin)
-            );
-        }
-
-        .dropdown-menu.mobile-bottom-menu.keyboard-panel.show {
-            --menu-background-color: var(--glass-background, var(--menu-background-color-no-backdrop));
-            height: calc(var(--tn-keyboard-height) - var(--keyboard-panel-margin));
-            max-height: calc(var(--tn-keyboard-height) - var(--keyboard-panel-margin));
-            margin: 0 var(--keyboard-panel-margin) var(--keyboard-panel-margin);
-            padding-bottom: var(--menu-padding-size, 8px) !important;
-            border: 0;
-            border-radius: 28px;
-            box-shadow: var(--glass-shadow, inset 0 0 0 1px var(--dropdown-border-color));
-        }
-
-        .dropdown-menu.mobile-bottom-menu.keyboard-panel.keyboard-panel-own-height.show {
-            height: auto;
-            max-height: min(50vh, calc(var(--tn-keyboard-height, 50vh) - var(--keyboard-panel-margin)));
-        }
+        max-height: min(
+            50vh,
+            calc(var(--tn-keyboard-height, 50vh) + var(--keyboard-panel-rise) - var(--keyboard-panel-margin))
+        );
     }
 
     .dropdown-menu.mobile-bottom-menu.keyboard-panel.replaces-panel[data-reveal]:not([data-closing]) {
@@ -270,6 +228,11 @@ body.mobile {
         position: absolute;
         border: none;
 
+        > .ck-toolbar__items {
+            gap: var(--mobile-toolbar-item-gap);
+            padding-inline-start: var(--mobile-toolbar-items-inset);
+        }
+
         > .ck-toolbar__items > * {
             margin-block: 0;
         }
@@ -312,6 +275,11 @@ body.mobile {
                     linear-gradient(var(--mobile-toolbar-pill-tint), var(--mobile-toolbar-pill-tint)),
                     var(--mobile-toolbar-pill);
                 box-shadow: var(--mobile-toolbar-pill-shadow);
+                transition: scale 250ms cubic-bezier(0.3, 1.6, 0.5, 1);
+            }
+
+            &:not(.ck-disabled):active::before {
+                scale: var(--mobile-toolbar-pill-press-scale);
             }
 
             &.ck-on {

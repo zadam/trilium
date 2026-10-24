@@ -296,27 +296,6 @@ body.mobile .dropdown-menu.note-autocomplete-menu {
         border-radius: var(--dropdown-border-radius) var(--dropdown-border-radius) 0 0;
     }
 
-    /* On iOS, a sheet floats clear of the screen's edges as a pane of glass. */
-    body.mobile.ios :is(
-        .tn-dropdown-portal:is(.global-menu, .right-dropdown-widget) > .dropdown-menu,
-        .dropdown-menu.mobile-bottom-menu:not(.keyboard-panel)
-    ).show {
-        --mobile-sheet-margin: 8px;
-        --menu-background-color: var(--glass-background);
-        margin: 0 var(--mobile-sheet-margin) var(--mobile-sheet-margin);
-        max-height: calc(var(--tn-modal-max-height) - var(--dropdown-bottom) - var(--mobile-sheet-margin));
-        border: 0;
-        border-radius: 28px;
-        box-shadow: var(--glass-shadow);
-    }
-
-    body.mobile.ios :is(#context-menu-container, .dropdown-menu).mobile-bottom-menu:not(.keyboard-panel).show {
-        padding-bottom: var(--menu-padding-size) !important;
-    }
-}
-
-body.mobile.ios .dropdown-menu {
-    --mobile-menu-group-radius: 12px;
 }
 
 /* Beside its toggle in a tablet's wider mobile layout, wide enough for its rows to be tapped. */

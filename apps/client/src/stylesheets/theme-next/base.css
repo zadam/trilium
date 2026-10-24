@@ -6,6 +6,7 @@
 @import url(./notes/text.css);
 @import url(./notes/canvas.css);
 @import url(./menus.css);
+@import url(./ios.css);
 
 @font-face {
     font-family: "Inter";
