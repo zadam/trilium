@@ -811,8 +811,8 @@ importers:
         specifier: 2.4.0
         version: 2.4.0
       officeparser:
-        specifier: 8.1.1
-        version: 8.1.1(encoding@0.1.13)(supports-color@10.2.2)
+        specifier: 8.2.0
+        version: 8.2.0(encoding@0.1.13)(supports-color@10.2.2)
       openid-client:
         specifier: 6.8.8
         version: 6.8.8
@@ -1506,8 +1506,8 @@ importers:
         specifier: 9.0.5
         version: 9.0.5
       officeparser:
-        specifier: 8.1.1
-        version: 8.1.1(encoding@0.1.13)(supports-color@10.2.2)
+        specifier: 8.2.0
+        version: 8.2.0(encoding@0.1.13)(supports-color@10.2.2)
       sanitize-filename:
         specifier: 1.6.4
         version: 1.6.4
@@ -9491,14 +9491,17 @@ packages:
     resolution: {integrity: sha512-5vvB5+W7ePv+p3uqxi+RcW1XAzLW0/hxt3/4X4Lc4qHudzOhmBiBwOY6DRob4WnanAEGvNcLjF+KNOufrUoEQw==}
     engines: {node: '>=12.20.0'}
 
-  officeparser@8.1.1:
-    resolution: {integrity: sha512-dU5fvPk/ChGLazMO2FkrehWA+tKeWqvxhTmR1jxdN2gGEoSIY4K4CJnW9xmGdqRKOL3no4PbugZY5y9RUNcGEQ==}
+  officeparser@8.2.0:
+    resolution: {integrity: sha512-9NNNRbtuMQmxXySS3SzXty1Z+sGd8L0rQJLn0Rl+UUv60uW5G/tajK5oIhJchrLiyGvOfpIe9CbDP+xeiV5RZw==}
     engines: {node: '>=22.13.0'}
     hasBin: true
     peerDependencies:
-      pdf-lib: ^1.17.1
+      '@pdf-lib/fontkit': ^1.1.1 || ^2.0.0
+      pdf-lib: ^1.17.1 || ^2.0.0
       puppeteer: '>=22'
     peerDependenciesMeta:
+      '@pdf-lib/fontkit':
+        optional: true
       pdf-lib:
         optional: true
       puppeteer:
@@ -21940,7 +21943,7 @@ snapshots:
 
   obug@3.0.0: {}
 
-  officeparser@8.1.1(encoding@0.1.13)(supports-color@10.2.2):
+  officeparser@8.2.0(encoding@0.1.13)(supports-color@10.2.2):
     dependencies:
       '@xmldom/xmldom': 0.9.12
       fflate: 0.8.3
