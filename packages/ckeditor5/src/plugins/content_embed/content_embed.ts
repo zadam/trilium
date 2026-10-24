@@ -33,8 +33,9 @@ import { encodeBlockParameter, parseBlockRange } from '@triliumnext/commons';
 import { getAttachmentId, getNoteId } from '../referencelink.js';
 import ResizableWidgets, { SIZE_ATTRIBUTES } from '../resizable_widgets/resizable_widgets.js';
 import { restoreRendererFocusOnInput } from '../widget_utils.js';
+import type { EmbedEdge } from './content_embed_caret.js';
 import EmbedHistory from './embed_history.js';
-import ContentEmbedInlineSource, { isInlineSourceEmbed } from './inline_source.js';
+import ContentEmbedInlineSource, { type InlineEmbedSource, isInlineSourceEmbed } from './inline_source.js';
 import './nested_editor_events.js';
 
 export const COMMAND_NAME = 'insertContentEmbed';
@@ -1078,11 +1079,9 @@ class ConvertEmbedToLinkCommand extends Command {
 			return;
 		}
 
-		const editorEl = editor.editing.view.getDomRoot();
-		const component = glob.getComponentByEl<EditorComponent>( editorEl );
 		const blockQuery = block ? `?block=${ encodeBlockParameter( block ) }` : '';
 		const href = attachmentId
-			? await component.getAttachmentHref( attachmentId )
+			? await editor.config.get( 'contentEmbed' )?.getAttachmentHref?.( attachmentId )
 			: `#root/${ noteId }${ blockQuery }`;
 
 		// The embed can be removed while the host looks the link up.
@@ -1361,9 +1360,7 @@ function getEmbedTools(
 		return null;
 	}
 
-	const component: EditorComponent | undefined =
-		glob.getComponentByEl<EditorComponent>( editor.editing.view.getDomRoot() );
-	return component?.getContentEmbedTools?.( domElement ) ?? null;
+	return editor.config.get( 'contentEmbed' )?.getTools?.( domElement ) ?? null;
 }
 
 /** Has the host open the context menu of the selected embed, below `anchor`. */
@@ -1373,8 +1370,7 @@ function openContentEmbedMenu( editor: Editor, anchor: HTMLElement | null ) {
 		return;
 	}
 
-	const component = glob.getComponentByEl<EditorComponent>( editor.editing.view.getDomRoot() );
-	component.openContentEmbedMenu?.( domElement, anchor );
+	editor.config.get( 'contentEmbed' )?.openMenu?.( domElement, anchor );
 }
 
 /** The rendered `<figure>` of `embed`, or `null`. */
@@ -1474,17 +1470,15 @@ function loadEmbeddedContent(
 		return;
 	}
 
-	const $wrapper = $( wrapper );
-	const editorEl = editor.editing.view.getDomRoot();
-	const component = glob.getComponentByEl<EditorComponent>( editorEl );
+	const host = editor.config.get( 'contentEmbed' );
 	const attachmentId = element.getAttribute( 'attachmentId' ) as string | undefined;
 	const noteId = element.getAttribute( 'noteId' ) as string | undefined;
 
 	if ( attachmentId ) {
-		component.loadEmbeddedAttachment( attachmentId, $wrapper, boxSize );
+		host?.loadAttachment?.( attachmentId, wrapper, boxSize );
 	} else if ( noteId ) {
 		const block = element.getAttribute( 'block' ) as string | undefined;
-		component.loadEmbeddedNote( noteId, $wrapper, boxSize, block, newBlock => {
+		host?.loadNote?.( noteId, wrapper, boxSize, block, newBlock => {
 			setEmbedBlock( editor, element, wrapper, newBlock );
 		} );
 	}
@@ -1666,21 +1660,57 @@ declare module 'ckeditor5' {
 	}
 
 	interface EditorConfig {
-		contentEmbed?: {
-			/** Opens the dialog that picks a note to include at the selection. */
-			pickNote?: () => void;
-			/**
-			 * The languages whose `<pre><code class="language-…">` code blocks show as embeds of
-			 * their source, rendered by the host's `loadInlineEmbed()`.
-			 */
-			inlineLanguages?: string[];
-			/**
-			 * Renders the `source` of an inline language into `container`, outside an embed, as
-			 * the AI assistant previews a response.
-			 */
-			renderInlinePreview?: ( language: string, source: string, container: HTMLElement ) => void;
-		};
+		contentEmbed?: Partial<ContentEmbedHost>;
 	}
+}
+
+/** What the host of the editor renders into embeds, and does with them. */
+export interface ContentEmbedHost {
+	/** Opens the dialog that picks a note to include at the selection. */
+	pickNote(): void;
+	/**
+	 * The languages whose `<pre><code class="language-…">` code blocks show as embeds of their
+	 * source, rendered by `loadInline()`.
+	 */
+	inlineLanguages: string[];
+	/**
+	 * Renders the `source` of an inline language into `container`, outside an embed, as the AI
+	 * assistant previews a response.
+	 */
+	renderInlinePreview( language: string, source: string, container: HTMLElement ): void;
+	/**
+	 * Fills `wrapper` with the note, or with the `block` of it, a `block` link parameter. An
+	 * editor of those blocks calls `onBlockChange()` once the blocks at its edges change.
+	 */
+	loadNote(
+		noteId: string,
+		wrapper: HTMLElement,
+		boxSize: string | undefined,
+		block: string | undefined,
+		onBlockChange: ( block: string ) => void
+	): void;
+	/** Fills `wrapper` with the attachment. */
+	loadAttachment( attachmentId: string, wrapper: HTMLElement, boxSize: string | undefined ): void;
+	/** Fills `wrapper` with the source of an inline embed, focused if `isFocused`. */
+	loadInline(
+		source: InlineEmbedSource,
+		wrapper: HTMLElement,
+		boxSize: string | undefined,
+		options: { isFocused: boolean }
+	): void;
+	/** Gives the focus to what the embed of the attachment shows, once it renders. */
+	focusAttachment( attachmentId: string ): void;
+	/** The href of a reference link to the attachment, or `null` once it is deleted. */
+	getAttachmentHref( attachmentId: string ): Promise<string | null>;
+	/** Opens the context menu of what `embed` shows, below `anchor`. */
+	openMenu( embed: HTMLElement, anchor: HTMLElement ): void;
+	/** The buttons that what `embed` shows adds to the toolbar of the embed, or `null`. */
+	getTools( embed: HTMLElement ): ContentEmbedToolProvider | null;
+	/**
+	 * Focuses the editor that `embed` shows, with the caret at `edge` of its content, and
+	 * returns whether it did.
+	 */
+	enter( embed: HTMLElement, edge: EmbedEdge ): boolean;
 }
 
 /** A toolbar separator that shows only while `isVisible`, as the items on both sides do. */

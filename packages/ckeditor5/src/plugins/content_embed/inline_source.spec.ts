@@ -14,7 +14,6 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import { SIZE_ATTRIBUTES } from "../resizable_widgets/resizable_widgets.js";
 import ContentEmbedBoxSizeDropdown, {
     CONTENT_EMBED_BOX_SIZE_DROPDOWN
@@ -36,16 +35,10 @@ describe("ContentEmbedInlineSource", () => {
 
     beforeEach(async () => {
         loadInlineEmbed = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadEmbeddedNote: vi.fn(), loadInlineEmbed
-            })
-        });
-
         editor = await createTestEditor([
             Essentials, Paragraph, Undo, Widget, ContentEmbed, ContentEmbedBoxSizeDropdown
         ], {
-            contentEmbed: { inlineLanguages: [ "mermaid" ] }
+            contentEmbed: { inlineLanguages: [ "mermaid" ], loadInline: loadInlineEmbed }
         });
     });
 
@@ -146,12 +139,11 @@ describe("ContentEmbedInlineSource", () => {
         editor.setData(`<pre><code class="language-mermaid">graph TD;</code></pre>`);
 
         expect(loadInlineEmbed).toHaveBeenCalledOnce();
-        const [ source, $el, boxSize, options ] = loadInlineEmbed.mock.calls[0];
+        const [ source, wrapper, boxSize, options ] = loadInlineEmbed.mock.calls[0];
         expect(source.language).toBe("mermaid");
         expect(source.getSource()).toBe("graph TD;");
         expect(source.isReadOnly()).toBe(false);
-        // `test/setup.ts` stubs jQuery as the identity, so the wrapper arrives as is.
-        expect(($el as HTMLElement).classList.contains("include-note-wrapper")).toBe(true);
+        expect((wrapper as HTMLElement).classList.contains("include-note-wrapper")).toBe(true);
         expect(boxSize).toBe("medium");
         expect(options).toEqual({ isFocused: false });
 

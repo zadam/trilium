@@ -51,12 +51,8 @@ describe("ContentEmbed", () => {
     beforeEach(async () => {
         pickNote = vi.fn();
         loadEmbeddedNote = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote })
-        });
-
         editor = await createTestEditor([Essentials, Paragraph, Widget, ContentEmbed], {
-            contentEmbed: { pickNote }
+            contentEmbed: { pickNote, loadNote: loadEmbeddedNote }
         });
     });
 
@@ -174,6 +170,18 @@ describe("ContentEmbed", () => {
         const reloadCall = loadEmbeddedNote.mock.calls[1];
         expect(reloadCall?.[0]).toBe("noteReload");
         expect(reloadCall?.[2]).toBe("expandable");
+    });
+
+    it("leaves the embeds empty without a host to render them", async () => {
+        const bareEditor = await createTestEditor([ Essentials, Paragraph, Widget, ContentEmbed ]);
+        bareEditor.setData("<figure class=\"include-note\" data-note-id=\"n1\" data-box-size=\"small\">"
+            + "</figure><figure class=\"include-note\" data-attachment-id=\"a1\" data-box-size=\"small\">"
+            + "</figure>");
+
+        const wrappers = bareEditor.editing.view.getDomRoot()?.querySelectorAll("div.include-note-wrapper");
+
+        expect(wrappers).toHaveLength(2);
+        expect([ ...wrappers ?? [] ].map((wrapper) => wrapper.childElementCount)).toEqual([ 0, 0 ]);
     });
 
     it("handles a boxSize change from an empty old value (no class to remove)", () => {
@@ -387,11 +395,6 @@ describe("ContentEmbed", () => {
         });
 
         it("keeps the renderer's focus off for a press on a link preview", async () => {
-            installGlobMock({
-                getComponentByEl: () => ({
-                    loadEmbeddedNote
-                })
-            });
             const linkEditor = await createTestEditor([
                 Essentials, Paragraph, Widget, ContentEmbed, LinkEmbed
             ]);
@@ -801,9 +804,6 @@ describe("ContentEmbed with attachments", () => {
         getAttachmentHref = vi.fn(async () => LINK_HREF);
         installGlobMock({
             getComponentByEl: () => ({
-                loadEmbeddedNote,
-                loadEmbeddedAttachment,
-                getAttachmentHref,
                 loadReferenceLinkTitle: vi.fn(async () => undefined)
             })
         });
@@ -811,7 +811,12 @@ describe("ContentEmbed with attachments", () => {
         editor = await createTestEditor([
             Essentials, Paragraph, Undo, Widget, LinkEditing, ReferenceLink, ContentEmbed
         ], {
-            referenceLink: { getTitle: async () => "report.pdf", getTitleSync: () => "report.pdf" }
+            referenceLink: { getTitle: async () => "report.pdf", getTitleSync: () => "report.pdf" },
+            contentEmbed: {
+                loadNote: loadEmbeddedNote,
+                loadAttachment: loadEmbeddedAttachment,
+                getAttachmentHref
+            }
         });
     });
 
@@ -1183,13 +1188,9 @@ describe("ContentEmbed captions", () => {
 
     beforeEach(async () => {
         loadEmbeddedNote = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote })
-        });
-
         editor = await createTestEditor([
             Essentials, Paragraph, Bold, Undo, Widget, ContentEmbed
-        ]);
+        ], { contentEmbed: { loadNote: loadEmbeddedNote } });
     });
 
     function getCommand() {
@@ -1381,11 +1382,9 @@ describe("ContentEmbed title", () => {
     beforeEach(async () => {
         loadEmbeddedNote = vi.fn();
         openContentEmbedMenu = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote, openContentEmbedMenu })
+        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ], {
+            contentEmbed: { loadNote: loadEmbeddedNote, openMenu: openContentEmbedMenu }
         });
-
-        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ]);
     });
 
     function getCommand() {
@@ -1505,11 +1504,9 @@ describe("ContentEmbed code view", () => {
 
     beforeEach(async () => {
         loadEmbeddedAttachment = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote: vi.fn(), loadEmbeddedAttachment })
+        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ], {
+            contentEmbed: { loadAttachment: loadEmbeddedAttachment }
         });
-
-        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ]);
     });
 
     function getCommand() {
@@ -1605,11 +1602,9 @@ describe("ContentEmbed editable flag", () => {
     beforeEach(async () => {
         loadEmbeddedNote = vi.fn();
         getContentEmbedTools = vi.fn(() => ({ hasEditableFlag: true }));
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote, getContentEmbedTools })
+        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ], {
+            contentEmbed: { loadNote: loadEmbeddedNote, getTools: getContentEmbedTools }
         });
-
-        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ]);
     });
 
     function getCommand() {
@@ -1690,7 +1685,7 @@ describe("ContentEmbed editable flag", () => {
         editor.ui.update();
         expect(getCommand().isEnabled).toBe(false);
 
-        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote }) });
+        editor.config.set("contentEmbed", { getTools: undefined });
         editor.ui.update();
         expect(getCommand().isEnabled).toBe(false);
     });
@@ -1758,13 +1753,9 @@ describe("ContentEmbed display mode", () => {
 
     beforeEach(async () => {
         getContentEmbedTools = vi.fn(() => ({ hasDisplayModes: true }));
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadEmbeddedAttachment: vi.fn(), loadEmbeddedNote: vi.fn(), getContentEmbedTools
-            })
+        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ], {
+            contentEmbed: { getTools: getContentEmbedTools }
         });
-
-        editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ]);
     });
 
     function getCommand() {
@@ -1919,7 +1910,6 @@ describe("ContentEmbed resizing", () => {
     let editor: ClassicEditor;
 
     beforeEach(async () => {
-        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote: vi.fn() }) });
         editor = await createTestEditor([ Essentials, Paragraph, Undo, Widget, ContentEmbed ]);
     });
 

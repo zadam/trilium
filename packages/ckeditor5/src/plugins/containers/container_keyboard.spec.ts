@@ -5,10 +5,9 @@ import {
     Essentials,
     Paragraph
 } from "ckeditor5";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { createTestEditor, pressKey as press } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import ContentEmbed from "../content_embed/content_embed.js";
 import Multicolumn from "../multicolumn/multicolumn.js";
 import Tabs from "../tabs/tabs.js";
@@ -48,7 +47,6 @@ describe("container keyboard shortcuts", () => {
     });
 
     it("leave the keys pressed in an embed to the editor of the embed", async () => {
-        installGlobMock({ getComponentByEl: () => ({ loadEmbeddedNote: vi.fn() }) });
         const editor = await createTestEditor([Essentials, Paragraph, Multicolumn, ContentEmbed]);
         const data = columns(p("a[]"), EMBED);
         setModelData(editor.model, data);

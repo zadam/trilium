@@ -76,7 +76,7 @@ export class ConvertImageToDrawingCommand extends Command {
         }
         if (!attachmentId || !isInDocument(image)) return;
 
-        host.focusContentEmbed?.(attachmentId);
+        editor.config.get("contentEmbed")?.focusAttachment?.(attachmentId);
         // CKEditor's renderer draws a figure that replaces another in the same render twice, so
         // the embed goes in and the image out in two changes, of one batch for a single undo.
         const model = editor.model;

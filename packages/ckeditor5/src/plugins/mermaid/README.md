@@ -13,8 +13,9 @@ template in `mermaid.samples`. Load the `Mermaid` glue plugin; it pulls in `Merm
 This package has no Mermaid editing or rendering of its own. A diagram is a `contentEmbed` that
 keeps its source in the note (`content_embed/inline_source.ts`): it is saved as
 `<pre><code class="language-mermaid">…</code></pre>`, with the box size, flags and size of the
-embed on the `<pre>`, and the host renders and edits it through `loadInlineEmbed()`. The host must
-list `mermaid` in `contentEmbed.inlineLanguages`, or a diagram loads as a plain code block.
+embed on the `<pre>`, and the host renders and edits it through `contentEmbed.loadInline()`. The
+host must list `mermaid` in `contentEmbed.inlineLanguages`, or a diagram loads as a plain code
+block.
 
 ## Provenance
 

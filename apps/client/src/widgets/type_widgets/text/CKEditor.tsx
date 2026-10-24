@@ -13,7 +13,7 @@ import { useKeyboardShortcuts, useLegacyImperativeHandlers, useNoteContext, useS
 import IconPicker from "../../react/IconPicker";
 import type { AiNoteLocation } from "./ai_assistant_stream";
 import { useAiMenuFooter, useAiQuickActions } from "./ai_quick_actions";
-import { buildConfig, BuildEditorOptions } from "./config";
+import { buildConfig, BuildEditorOptions, type ContentEmbedHandlers } from "./config";
 
 export type BoxSize = "tiny" | "small" | "medium" | "full" | "expandable";
 
@@ -66,9 +66,11 @@ interface CKEditorProps extends Pick<HTMLAttributes<HTMLDivElement>, "className"
     /** Rebuilds the editor each time it changes, e.g. to recover from an error. */
     rebuildKey?: number;
     containerRef?: RefObject<HTMLDivElement | null>;
+    /** What renders the embeds of the editor and acts on them. Editors without embeds leave it out. */
+    contentEmbedHandlers?: ContentEmbedHandlers;
 }
 
-export default function CKEditor({ containerRef: externalContainerRef, contentLanguage, className, tabIndex, isClassicEditor, editorRef: externalEditorRef, onNotificationWarning, onNotificationInfo, onEditorError, onChange, onEditorInitialized, editorApi, templates, rebuildKey }: CKEditorProps) {
+export default function CKEditor({ containerRef: externalContainerRef, contentLanguage, className, tabIndex, isClassicEditor, editorRef: externalEditorRef, onNotificationWarning, onNotificationInfo, onEditorError, onChange, onEditorInitialized, editorApi, templates, rebuildKey, contentEmbedHandlers }: CKEditorProps) {
     const containerRef = useSyncedRef<HTMLDivElement>(externalContainerRef, null);
     const editorRef = useRef<CKTextEditor>(null);
     const stopReportingErrorsRef = useRef<() => void>(undefined);
@@ -136,6 +138,8 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
     noteLocationRef.current = note ? { title: note.title, notePath } : null;
     const noteRef = useRef(note);
     noteRef.current = note;
+    const contentEmbedHandlersRef = useRef(contentEmbedHandlers);
+    contentEmbedHandlersRef.current = contentEmbedHandlers;
     /** The open icon picker request and its balloon container, or `null` when none is open. */
     const [ iconPickerRequest, setIconPickerRequest ] = useState<IconPickerRequest | null>(null);
 
@@ -310,7 +314,8 @@ export default function CKEditor({ containerRef: externalContainerRef, contentLa
                     getNote: () => noteRef.current,
                     getNotePath: () => noteLocationRef.current?.notePath,
                     save: () => parentComponent?.triggerCommand("saveNoteDetailNow")
-                }
+                },
+                getContentEmbedHandlers: () => contentEmbedHandlersRef.current
             });
 
             if (isStale) {

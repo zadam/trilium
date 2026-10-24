@@ -41,7 +41,8 @@ Host services that need no component come through the editor config, so a spec p
 `createLinkEmbedHost()` in `test/link-embed-kit.ts` builds the mocked entry), and `getNoteId` plus
 `attachmentUpload: { getHeaders, getLocalUpload, getEmbedBoxSize }` (uploads), and the dialogs a
 button hands over to the host: `internalLink: { openDialog }`, `markdownImport: { open }`,
-`contentEmbed: { pickNote }`, `cutToNote: { cut, saveNow }`, `inlineIcon: { showPicker }`,
+`contentEmbed` (`pickNote`, the `load…` renderers, `getTools`, `enter` and the rest of
+`ContentEmbedHost`), `cutToNote: { cut, saveNow }`, `inlineIcon: { showPicker }`,
 `blockReference: { openHandleMenu, copyReference }` and `tabs: { copyReference }`. Each falls
 back to a placeholder or a no-op when left out (an upload without `getNoteId` is rejected), so
 a spec that does not assert on it can omit it. A spec sharing one editor across tests can swap

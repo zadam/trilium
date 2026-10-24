@@ -10,10 +10,9 @@ import {
     SplitButtonView,
     Widget
 } from "ckeditor5";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import ContentEmbed from "../content_embed/content_embed.js";
 import Mermaid from "./mermaid.js";
 
@@ -26,12 +25,6 @@ describe("MermaidUI", () => {
     let editor: ClassicEditor;
 
     beforeEach(async () => {
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadEmbeddedNote: vi.fn(), loadInlineEmbed: vi.fn()
-            })
-        });
-
         editor = await createTestEditor([ Essentials, Paragraph, Widget, ContentEmbed, Mermaid ], {
             contentEmbed: { inlineLanguages: [ "mermaid" ] },
             mermaid: { samples: SAMPLES }

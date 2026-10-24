@@ -2,7 +2,6 @@ import { ClassicEditor, Essentials, Paragraph, Widget, _setModelData as setModel
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestEditor } from "../../../test/editor-kit.js";
-import { installGlobMock } from "../../../test/globals-test-kit.js";
 import ContentEmbedBoxSizeDropdown from "./content_embed_box_size_dropdown.js";
 import ContentEmbed, { BOX_SIZE_COMMAND_NAME, BOX_SIZES } from "./content_embed.js";
 
@@ -10,11 +9,6 @@ describe("ContentEmbedBoxSizeDropdown", () => {
     let editor: ClassicEditor;
 
     beforeEach(async () => {
-        const loadEmbeddedNote = vi.fn();
-        installGlobMock({
-            getComponentByEl: () => ({ loadEmbeddedNote })
-        });
-
         editor = await createTestEditor([Essentials, Paragraph, Widget, ContentEmbed, ContentEmbedBoxSizeDropdown]);
     });
 
@@ -83,12 +77,7 @@ describe("ContentEmbedBoxSizeDropdown", () => {
             execute: () => {},
             subscribe: () => () => {}
         };
-        installGlobMock({
-            getComponentByEl: () => ({
-                loadEmbeddedNote: vi.fn(),
-                getContentEmbedTools: () => provider
-            })
-        });
+        editor.config.set("contentEmbed", { getTools: () => provider });
         const dropdownView = editor.ui.componentFactory.create("contentEmbedBoxSizeDropdown") as unknown as {
             buttonView: { icon?: string; label: string; withText: boolean; tooltip: boolean };
         };

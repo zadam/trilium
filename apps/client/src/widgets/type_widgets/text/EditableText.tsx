@@ -7,7 +7,6 @@ import {
     CKTextEditor,
     type FileUploadData,
     type FileUploadEvent,
-    type InlineEmbedSource,
     SnippetDefinition
 } from "@triliumnext/ckeditor5";
 import { deferred, formatBlockRange, parseBlockRange } from "@triliumnext/commons";
@@ -35,6 +34,7 @@ import { convertImageToDrawing } from "../canvas/image_to_drawing";
 import { TypeWidgetProps } from "../type_widget";
 import AttachmentSaves, { InlineSourceSaves, useNoteEditor } from "./attachment_saves";
 import CKEditor, { CKEditorApi, NotificationEventData, NotificationEventInfo } from "./CKEditor";
+import type { ContentEmbedHandlers } from "./config";
 import { enterContentEmbed, getContentEmbedTools } from "./content_embed_tools";
 import { useEmbedEditors } from "./editable_embed";
 import EmbedHistories from "./embed_history";
@@ -209,6 +209,40 @@ export default function EditableText({
         editor.editing.view.focus();
     });
 
+    const contentEmbedHandlers: ContentEmbedHandlers = {
+        loadNote(noteId, wrapper, boxSize, embedBlock, onEmbedBlockChange) {
+            void loadEmbeddedNote(noteId, $(wrapper), boxSize, {
+                noteEditor: embedNoteEditor,
+                histories,
+                block: embedBlock,
+                onBlockChange: onEmbedBlockChange
+            });
+        },
+        loadAttachment(attachmentId, wrapper, boxSize) {
+            const isFocused = focusedAttachmentIdRef.current === attachmentId;
+            if (isFocused) {
+                focusedAttachmentIdRef.current = undefined;
+            }
+            void loadEmbeddedAttachment(attachmentId, $(wrapper), boxSize, {
+                attachmentEditor: embedAttachmentEditor,
+                histories,
+                isFocused
+            });
+        },
+        loadInline(source, wrapper, boxSize, options) {
+            void loadInlineEmbed(source, $(wrapper), boxSize, {
+                ...options, saves: inlineSourceSaves, histories
+            });
+        },
+        focusAttachment(attachmentId) {
+            focusedAttachmentIdRef.current = attachmentId;
+        },
+        getAttachmentHref,
+        openMenu: (embed, anchor) => void openContentEmbedMenu(embed, anchor),
+        getTools: getContentEmbedTools,
+        enter: enterContentEmbed
+    };
+
     useLegacyImperativeHandlers({
         addLinkToTextCommand() {
             if (!editorApiRef.current) return;
@@ -244,51 +278,9 @@ export default function EditableText({
                 sizeEditable: true
             });
         },
-        loadEmbeddedNote(
-            noteId: string,
-            $el: JQuery<HTMLElement>,
-            boxSize?: string,
-            embedBlock?: string,
-            onBlockChange?: (block: string) => void
-        ) {
-            return loadEmbeddedNote(noteId, $el, boxSize, {
-                noteEditor: embedNoteEditor,
-                histories,
-                block: embedBlock,
-                onBlockChange
-            });
-        },
-        loadEmbeddedAttachment(attachmentId: string, $el: JQuery<HTMLElement>, boxSize?: string) {
-            const isFocused = focusedAttachmentIdRef.current === attachmentId;
-            if (isFocused) {
-                focusedAttachmentIdRef.current = undefined;
-            }
-            return loadEmbeddedAttachment(attachmentId, $el, boxSize, {
-                attachmentEditor: embedAttachmentEditor,
-                histories,
-                isFocused
-            });
-        },
-        loadInlineEmbed(
-            source: InlineEmbedSource,
-            $el: JQuery<HTMLElement>,
-            boxSize: string | undefined,
-            options: { isFocused: boolean }
-        ) {
-            return loadInlineEmbed(source, $el, boxSize, {
-                ...options, saves: inlineSourceSaves, histories
-            });
-        },
-        focusContentEmbed(attachmentId: string) {
-            focusedAttachmentIdRef.current = attachmentId;
-        },
         convertImageToDrawing(src: string) {
             return convertImageToDrawing(note.noteId, src, parentComponent?.componentId);
         },
-        getAttachmentHref,
-        openContentEmbedMenu,
-        getContentEmbedTools,
-        enterContentEmbed,
         // Keyboard shortcut
         async followLinkUnderCursorCommand() {
             const editor = await waitForEditor();
@@ -524,6 +516,7 @@ export default function EditableText({
                 onNotificationInfo={onNotificationInfo}
                 onEditorError={(error) => reportEditorError(error, reloadEditor)}
                 rebuildKey={editorRebuildKey}
+                contentEmbedHandlers={contentEmbedHandlers}
                 onChange={() => {
                     spacedUpdate.scheduleUpdate();
                     const editor = editorRef.current;

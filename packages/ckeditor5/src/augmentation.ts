@@ -1,7 +1,5 @@
 import "ckeditor5";
 
-import type { InlineEmbedSource } from "./plugins/content_embed/inline_source.js";
-
 declare global {
     interface LinkEmbedMetadata {
         url: string;
@@ -91,54 +89,6 @@ declare global {
          * starting from `storedTitle`, and calls `fix()` with the new href.
          */
         fixReferenceLink?(storedTitle: string, fix: (href: string) => void): void;
-        /**
-         * Fills an embed with the note, or with the `block` of it, a `block` link parameter. An
-         * editor of those blocks calls `onBlockChange()` once the blocks at its edges change.
-         */
-        loadEmbeddedNote(
-            noteId: string,
-            $el: JQuery<HTMLElement>,
-            boxSize?: string,
-            block?: string,
-            onBlockChange?: (block: string) => void
-        ): void;
-        loadEmbeddedAttachment(
-            attachmentId: string,
-            $el: JQuery<HTMLElement>,
-            boxSize?: string
-        ): void;
-        /**
-         * Fills an embed box with what `source` shows, for an embed that keeps its content in the
-         * note. Hosts without such embeds leave it out.
-         */
-        loadInlineEmbed?(
-            source: InlineEmbedSource,
-            $el: JQuery<HTMLElement>,
-            boxSize: string | undefined,
-            options: { isFocused: boolean }
-        ): void;
-        /** The href of a reference link to the attachment, or `null` once it is deleted. */
-        getAttachmentHref(attachmentId: string): Promise<string | null>;
-        /**
-         * Opens the context menu of what `embed` shows, below `anchor`. Hosts without embeds
-         * leave it out.
-         */
-        openContentEmbedMenu?(embed: HTMLElement, anchor: HTMLElement): void;
-        /**
-         * The buttons that what `embed` shows adds to the toolbar of the embed, or `null`. Hosts
-         * without embeds leave it out.
-         */
-        getContentEmbedTools?(embed: HTMLElement): ContentEmbedToolProvider | null;
-        /**
-         * Focuses the editor that `embed` shows, with the caret at `edge` of its content, and
-         * returns whether it did. Hosts without embeds leave it out.
-         */
-        enterContentEmbed?(embed: HTMLElement, edge: "start" | "end"): boolean;
-        /**
-         * Gives the focus to what the embed of the attachment shows, once it renders. Hosts
-         * without embeds leave it out.
-         */
-        focusContentEmbed?(attachmentId: string): void;
         /**
          * Attaches a drawing canvas that shows the image at `src`, and answers with the ID of its
          * attachment, or `null` when that fails. Hosts without drawings leave it out.

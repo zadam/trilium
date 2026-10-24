@@ -1,4 +1,4 @@
-import type { EditorConfig } from "@triliumnext/ckeditor5";
+import type { EditorConfig, InlineEmbedSource } from "@triliumnext/ckeditor5";
 import { DISPLAYABLE_LOCALE_IDS, IMAGE_MIMES, LOCALES, SANITIZER_DEFAULT_ALLOWED_TAGS } from "@triliumnext/commons";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -431,6 +431,53 @@ describe("CK config - tables", () => {
         const bare = await buildConfig(baseOpts());
         expect(bare.blockReference).toBeUndefined();
         expect(bare.tabs).toBeUndefined();
+    });
+
+    it("hands embeds to the content embed handlers of the moment, and falls back without any", async () => {
+        const tools = { getTools: () => [], execute: vi.fn(), subscribe: () => () => {} };
+        const first = {
+            loadNote: vi.fn(),
+            loadAttachment: vi.fn(),
+            loadInline: vi.fn(),
+            focusAttachment: vi.fn(),
+            getAttachmentHref: vi.fn(async () => "#root/n1?viewMode=attachments&attachmentId=a1"),
+            openMenu: vi.fn(),
+            getTools: vi.fn(() => tools),
+            enter: vi.fn(() => true)
+        };
+        const second = { ...first, loadNote: vi.fn() };
+        let handlers: typeof first | undefined = first;
+        const embed = document.createElement("figure");
+        const wrapper = document.createElement("div");
+        const source = {} as InlineEmbedSource;
+        const onBlockChange = vi.fn();
+        const host = (await buildConfig(baseOpts({ getContentEmbedHandlers: () => handlers })))
+            .contentEmbed;
+
+        host?.loadNote?.("n1", wrapper, "small", "b1", onBlockChange);
+        handlers = second;
+        host?.loadNote?.("n2", wrapper, undefined, undefined, onBlockChange);
+        host?.loadAttachment?.("a1", wrapper, "medium");
+        host?.loadInline?.(source, wrapper, "full", { isFocused: true });
+        host?.focusAttachment?.("a1");
+        host?.openMenu?.(embed, wrapper);
+
+        expect(first.loadNote).toHaveBeenCalledExactlyOnceWith("n1", wrapper, "small", "b1", onBlockChange);
+        expect(second.loadNote).toHaveBeenCalledExactlyOnceWith("n2", wrapper, undefined, undefined, onBlockChange);
+        expect(first.loadAttachment).toHaveBeenCalledWith("a1", wrapper, "medium");
+        expect(first.loadInline).toHaveBeenCalledWith(source, wrapper, "full", { isFocused: true });
+        expect(first.focusAttachment).toHaveBeenCalledWith("a1");
+        expect(first.openMenu).toHaveBeenCalledWith(embed, wrapper);
+        expect(await host?.getAttachmentHref?.("a1")).toBe("#root/n1?viewMode=attachments&attachmentId=a1");
+        expect(host?.getTools?.(embed)).toBe(tools);
+        expect(host?.enter?.(embed, "end")).toBe(true);
+        expect(first.enter).toHaveBeenCalledWith(embed, "end");
+
+        handlers = undefined;
+        expect(await host?.getAttachmentHref?.("a1")).toBeNull();
+        expect(host?.getTools?.(embed)).toBeNull();
+        expect(host?.enter?.(embed, "start")).toBe(false);
+        expect(() => host?.loadNote?.("n1", wrapper, undefined, undefined, onBlockChange)).not.toThrow();
     });
 
     it("titles reference links through the link service", async () => {

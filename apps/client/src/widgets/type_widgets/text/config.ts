@@ -1,4 +1,4 @@
-import { type AttachmentUploadHost, type EditorConfig, getCkLocale, type IconPickerRequest, type LinkEmbedHost, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
+import { type AttachmentUploadHost, type ContentEmbedHost, type EditorConfig, getCkLocale, type IconPickerRequest, type LinkEmbedHost, SnippetDefinition, type TextTransformationConfig } from "@triliumnext/ckeditor5";
 import emojiDefinitionsUrl from "@triliumnext/ckeditor5/src/emoji_definitions/en.json?url";
 import { ALLOWED_PROTOCOLS, DISPLAYABLE_LOCALE_IDS, formatShortcut, IMAGE_UPLOAD_SUBTYPES, joinShortcut, KATEX_MACROS, MIME_TYPE_AUTO, normalizeMimeTypeForCKEditor } from "@triliumnext/commons";
 import i18next from "i18next";
@@ -62,7 +62,16 @@ export interface BuildEditorOptions {
     showIconPicker?: (request: IconPickerRequest) => (() => void) | null;
     /** The note that the block and tab references the editor copies point to. */
     referenceSource?: ReferenceSource;
+    /**
+     * What renders the embeds of the editor and acts on them. A getter: the handlers hold the
+     * state of the component that hosts the editor, which changes as it renders.
+     */
+    getContentEmbedHandlers?: () => ContentEmbedHandlers | undefined;
 }
+
+/** The members of `contentEmbed` that the component hosting the editor implements. */
+export type ContentEmbedHandlers =
+    Omit<ContentEmbedHost, "pickNote" | "inlineLanguages" | "renderInlinePreview">;
 
 export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfig> {
     // `undefined` when the AI features are off or no LLM provider is configured. Decided once:
@@ -95,7 +104,8 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
             inlineLanguages: SOURCE_EMBED_TYPES.map((type) => type.language),
             renderInlinePreview: (language, source, container) => {
                 void getSourceEmbedTypeByLanguage(language)?.renderPreview(source, container);
-            }
+            },
+            ...bindContentEmbedHandlers(opts.getContentEmbedHandlers)
         },
         image: {
             styles: {
@@ -364,6 +374,23 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
     return {
         ...config,
         ...buildToolbarConfig(opts.isClassicEditor, !!aiAssistantStream)
+    };
+}
+
+/** The `contentEmbed` members that call the handlers `getHandlers()` returns at the time. */
+function bindContentEmbedHandlers(
+    getHandlers: () => ContentEmbedHandlers | undefined = () => undefined
+): ContentEmbedHandlers {
+    return {
+        loadNote: (...args) => getHandlers()?.loadNote(...args),
+        loadAttachment: (...args) => getHandlers()?.loadAttachment(...args),
+        loadInline: (...args) => getHandlers()?.loadInline(...args),
+        focusAttachment: (attachmentId) => getHandlers()?.focusAttachment(attachmentId),
+        getAttachmentHref: async (attachmentId) =>
+            (await getHandlers()?.getAttachmentHref(attachmentId)) ?? null,
+        openMenu: (embed, anchor) => getHandlers()?.openMenu(embed, anchor),
+        getTools: (embed) => getHandlers()?.getTools(embed) ?? null,
+        enter: (embed, edge) => getHandlers()?.enter(embed, edge) ?? false
     };
 }
 

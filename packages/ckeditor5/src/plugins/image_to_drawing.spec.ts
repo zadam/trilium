@@ -36,15 +36,18 @@ describe("ImageToDrawing", () => {
         });
         installGlobMock({
             getComponentByEl: () => ({
-                convertImageToDrawing,
-                focusContentEmbed: (id: string) => calls.push(`focus ${id}`),
-                loadEmbeddedAttachment: (id: string) => calls.push(`load ${id}`)
+                convertImageToDrawing
             })
         });
         editor = await createTestEditor([
             Essentials, Paragraph, Image, ImageBlock, ImageInline, ImageCaption, ContentEmbed,
             ImageToDrawing
-        ]);
+        ], {
+            contentEmbed: {
+                focusAttachment: (id: string) => calls.push(`focus ${id}`),
+                loadAttachment: (id: string) => calls.push(`load ${id}`)
+            }
+        });
     });
 
     /** Holds the next conversion until the returned function finishes it with an attachment ID. */

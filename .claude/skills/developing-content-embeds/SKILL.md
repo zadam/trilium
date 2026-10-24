@@ -1,7 +1,7 @@
 ---
 name: developing-content-embeds
 description: >-
-  Use when building or changing an embed in a text note — an included note, an attachment embed such as a canvas drawing (`CanvasDrawing`), or a source embed such as a Mermaid diagram (`MermaidDiagram`, `SOURCE_EMBED_TYPES`) — or adding an embed kind. Covers the storage forms (`data-note-id`, `data-attachment-id`, inline `<pre><code class="language-…">`), the editor plugin (`packages/ckeditor5/src/plugins/content_embed/`: `content_embed.ts`, `inline_source.ts`, toolbar, box-size dropdown), the host contract (`loadEmbeddedAttachment()`, `loadInlineEmbed()`), the client box (`ContentEmbed`, `text/utils.ts`), the content component contract (`useEditableEmbed()`, `ContentEmbedToolProvider`, Editable, display modes, fullscreen), reusing the note type's component as canvas and Mermaid do, the read-only paths (AI chat, Markdown preview, print, share), and traps hit (detached content, CodeMirror read-only fixed at creation, the CKEditor `:first-child` separator rule, untitled box sizes, class clashes).
+  Use when building or changing an embed in a text note — an included note, an attachment embed such as a canvas drawing (`CanvasDrawing`), or a source embed such as a Mermaid diagram (`MermaidDiagram`, `SOURCE_EMBED_TYPES`) — or adding an embed kind. Covers the storage forms (`data-note-id`, `data-attachment-id`, inline `<pre><code class="language-…">`), the editor plugin (`packages/ckeditor5/src/plugins/content_embed/`: `content_embed.ts`, `inline_source.ts`, toolbar, box-size dropdown), the host contract (`contentEmbed.loadAttachment()`, `contentEmbed.loadInline()`), the client box (`ContentEmbed`, `text/utils.ts`), the content component contract (`useEditableEmbed()`, `ContentEmbedToolProvider`, Editable, display modes, fullscreen), reusing the note type's component as canvas and Mermaid do, the read-only paths (AI chat, Markdown preview, print, share), and traps hit (detached content, CodeMirror read-only fixed at creation, the CKEditor `:first-child` separator rule, untitled box sizes, class clashes).
 ---
 
 # Developing content embeds
@@ -71,10 +71,12 @@ All three carry `boxSize`, `hideTitle`, `editable`, `displayMode` (`data-box-siz
    `content_embed_toolbar.ts` lists the toolbar items; `content_embed_tools.ts` turns the
    content's tools into buttons; `content_embed_box_size_dropdown.ts` the size menu. The editing
    view renders an `.include-note-wrapper` and asks the **host** to fill it.
-2. **Host contract** (`packages/ckeditor5/src/augmentation.ts`, implemented in
-   `apps/client/src/widgets/type_widgets/text/EditableText.tsx`): `loadEmbeddedNote()`,
-   `loadEmbeddedAttachment()`, `loadInlineEmbed(source, $el, boxSize, { isFocused })`,
-   `focusContentEmbed()`, `openContentEmbedMenu()`. The plugin never imports client code.
+2. **Host contract** (`ContentEmbedHost` in `content_embed.ts`, read from the editor config
+   as `contentEmbed`): `loadNote()`, `loadAttachment()`,
+   `loadInline(source, wrapper, boxSize, { isFocused })`, `focusAttachment()`, `openMenu()`,
+   `getTools()`, `enter()` and `getAttachmentHref()`. `EditableText.tsx` implements them as
+   `contentEmbedHandlers`, which `CKEditor.tsx` hands to `buildConfig()` through a getter. The
+   plugin never imports client code.
 3. **Box** (`text/utils.ts`). `loadEmbeddedAttachment()` / `loadInlineEmbed()` render the content
    with `content_renderer`, wrap it in `ContentEmbed` (`text/ContentEmbed.tsx`: title row,
    fullscreen, exit-fullscreen overlay) and `mountEmbedBox()`. Content that left the page while it
@@ -234,7 +236,7 @@ editors of one note in several tabs reload each other's saves and mix up the res
 
 | Where | Path | What an embed gets |
 |---|---|---|
-| Read-only note, AI chat replies, tool results | `ReadOnlyTextContent` (`text/ReadOnlyText.tsx`) | `applyContentEmbeds()` → `loadEmbedded*()`; `applySourceEmbeds()` → `loadInlineEmbed()` with a fixed read-only source. Same box and component as the editor. |
+| Read-only note, AI chat replies, tool results | `ReadOnlyTextContent` (`text/ReadOnlyText.tsx`) | `applyContentEmbeds()` → `loadEmbedded*()`; `applySourceEmbeds()` → `loadInlineEmbed()` (`text/utils.ts`) with a fixed read-only source. Same box and component as the editor. |
 | Markdown note preview, a chat reply while streaming | `ReadOnlyTextContent` with `isChanging` | Diagrams drawn in place (`rewriteMermaidDiagramsInContainer()` + `applyInlineMermaid()`), which keep the last drawing while the next renders; a box would remount on every update. |
 | Print (`glob.device === "print"`), included notes, previews | `postProcessRichContent()` in `services/content_renderer_text.ts` | Drawn in place; printing snapshots before a box would draw. |
 | Share pages | server `share/content_renderer.ts`, share theme `content/mermaid.ts` | Static: the drawing's picture as `<img>`, Mermaid drawn over its code block. No box. |
