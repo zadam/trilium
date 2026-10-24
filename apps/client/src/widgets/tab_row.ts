@@ -14,6 +14,7 @@ import { clampDragDestination } from "../services/tab_pinning.js";
 import { buildTabTitle, TAB_TITLE_SEPARATOR } from "../services/tab_title.js";
 import utils from "../services/utils.js";
 import BasicWidget from "./basic_widget.js";
+import { noteTitleHtml } from "./layout/Breadcrumb.js";
 import { setupHorizontalScrollViaWheel } from "./widget_utils.js";
 
 const isDesktop = utils.isDesktop();
@@ -176,6 +177,24 @@ const TAB_ROW_TPL = `
     .tab-row-widget .note-tab[active] .note-tab-segment:not(.note-tab-segment-active) {
         opacity: 0.55;
         font-weight: normal;
+    }
+
+    .tab-row-widget .note-tab .protected-title,
+    .tooltip .protected-title {
+        font-style: italic;
+    }
+
+    .tab-row-widget .note-tab .protected-icon,
+    .tooltip .protected-icon {
+        margin-inline-start: 6px;
+    }
+
+    .tab-row-widget .note-tab .protected-icon {
+        color: var(--quick-search-result-highlight-color);
+    }
+
+    .tab-row-widget .note-tab:not([active]) .protected-icon {
+        opacity: 0.5;
     }
 
     .tab-row-widget .note-tab .note-tab-icon {
@@ -630,8 +649,8 @@ export default class TabRowWidget extends BasicWidget {
         // than .note-tab, whose `pointer-events: none` makes Bootstrap's hover tracking misfire. The
         // close button sits above the handle (higher z-index) with its own tooltip, so they never overlap.
         new Tooltip($tab.find(".note-tab-drag-handle")[0], {
-            // titles are pre-escaped in buildTabTitle (only the active <strong> wrapper is trusted);
-            // Bootstrap's own sanitizer stays on as a second layer
+            // titles are pre-escaped in buildTabTitle (only the <strong> wrapper and a split's
+            // `html` are trusted); Bootstrap's own sanitizer stays on as a second layer
             html: true,
             title: () => $tab.attr("data-tab-title") || "",
             trigger: "hover",
@@ -1079,6 +1098,9 @@ export default class TabRowWidget extends BasicWidget {
         const splits = await Promise.all(
             subContexts.map(async (ctx) => ({
                 title: ctx.note ? await ctx.getNavigationTitle() : null,
+                html: ctx.note && !ctx.note.isContentAvailable()
+                    ? noteTitleHtml(ctx.note)
+                    : undefined,
                 active: !!ctx.ntxId && ctx.ntxId === focusedNtxId
             }))
         );
@@ -1099,7 +1121,7 @@ export default class TabRowWidget extends BasicWidget {
             if (idx > 0) {
                 $title.append(document.createTextNode(TAB_TITLE_SEPARATOR));
             }
-            const $segment = $("<span>").addClass("note-tab-segment").text(segment.text);
+            const $segment = $("<span>").addClass("note-tab-segment").html(segment.html);
             if (segment.active) {
                 $segment.addClass("note-tab-segment-active");
             }
