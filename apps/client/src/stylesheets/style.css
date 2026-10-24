@@ -2034,6 +2034,14 @@ pre.code-embed-editor.read-only .cm-activeLine {
         background-color: var(--left-pane-background-color) !important;
     }
 
+    #mobile-rest-container > #mobile-sidebar-wrapper.left-pane-hidden {
+        display: none !important;
+    }
+
+    #mobile-rest-container > #mobile-sidebar-wrapper.left-pane-hidden ~ #detail-container {
+        width: 100%;
+    }
+
     #mobile-rest-container {
         background-color: var(--root-background);
     }

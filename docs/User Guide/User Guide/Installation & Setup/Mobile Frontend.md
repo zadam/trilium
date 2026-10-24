@@ -13,6 +13,7 @@ Here is a non-exhaustive list of differences between the desktop version and the
 
 *   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree.md">Note Tree</a> is displayed as a sidebar. To display the sidebar, press the button in the top-left of the screen.
     *   There is also a swipe gesture that can be done from the left of the screen, but the browser's navigation gesture interferes with it most of the time (depending on the platform).
+    *   On wider screens, such as a tablet in landscape, the sidebar is displayed next to the note instead. There, the same <span class="tn-icon bx bx-sidebar"></span> button hides and shows it, and the choice is remembered together with the left pane of the desktop version.
     *   Press and hold a note to display the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Note%20Tree/Note%20tree%20contextual%20menu.md">Note tree contextual menu</a>.
 *   The <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Navigation/Quick%20search.md">Quick search</a> bar is also displayed at the top of the note tree.
 *   The full <a class="reference-link" href="../Basic%20Concepts%20and%20Features/Navigation/Search.md">Search</a> function can be triggered either from either the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Global%20menu.md">Global menu</a> or from the <a class="reference-link" href="../Basic%20Concepts%20and%20Features/UI%20Elements/Launch%20Bar.md">Launch Bar</a>, if configured.

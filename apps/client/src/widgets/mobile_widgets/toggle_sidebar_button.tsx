@@ -1,6 +1,7 @@
 import "./toggle_sidebar_button.css";
 
 import { t } from "../../services/i18n";
+import { isNarrowLayout } from "../../services/utils";
 import ActionButton from "../react/ActionButton";
 import { useNoteContext } from "../react/hooks";
 
@@ -20,6 +21,14 @@ export default function ToggleSidebarButton() {
 
                     // Remove focus to prevent tooltip showing on top of the sidebar.
                     (e.currentTarget as HTMLButtonElement).blur();
+
+                    // In the tablet mode of the mobile layout (see `style.css`) the sidebar sits next
+                    // to the note instead of sliding over it, so the button hides and shows it like the
+                    // left pane toggle on desktop.
+                    if (!isNarrowLayout()) {
+                        parentComponent?.triggerCommand("toggleLeftPane");
+                        return;
+                    }
 
                     parentComponent?.triggerCommand("setActiveScreen", {
                         screen: "tree"
