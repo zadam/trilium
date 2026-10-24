@@ -22,7 +22,14 @@ node --max-old-space-size=8192 .claude/skills/profiling-client-performance/analy
 node ... analyze-trace.mjs <trace> spikes      # self time inside the long tasks only — usually the answer
 node ... analyze-trace.mjs <trace> profile 25  # top self/total time across the whole trace
 node ... analyze-trace.mjs <trace> timeline    # ASCII busy-per-bucket, for spotting a beat
+node ... analyze-trace.mjs <trace> phases --maps <dist>/src  # per performance.mark() window: kinds + source modules
 ```
+
+`phases` answers "where does a startup (or any marked sequence) spend its time": record with
+`performance.mark()` calls at the boundaries, and it reports each window's main-thread time by kind
+(script, compile, style, layout, `other` for the browser's own tasks) and its CPU samples by source
+module, resolved through the build's `.map` files (build with `vite build --sourcemap`). A native
+frame such as `appendChild` is charged to the script that called it.
 
 `spikes` is the one to reach for: a stutter *is* the long tasks, and aggregating self time inside
 them with a stack attached names the culprit directly. `summary` prints each long task with the gap

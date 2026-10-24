@@ -7,19 +7,25 @@
  * reads a production build just as well as a dev one, which `debug_perf` cannot: no source changes,
  * no rebuild, and it works on a trace someone else recorded.
  *
- *   node analyze-trace.mjs <trace> [summary|profile|spikes|timeline] [options]
+ *   node analyze-trace.mjs <trace> [summary|profile|spikes|timeline|phases] [options]
+ *
+ * `phases` splits the renderer main thread at the page's `performance.mark()` calls and reports
+ * each window's busy time by kind (script, compile, style, layout, ...) and its script self time by
+ * source module. `--maps <dir>` resolves frames through the build's `.map` files; `--marks <prefix>`
+ * keeps only the marks whose name starts with the prefix.
  *
  * A 90 MB trace needs a bigger heap than the default:
  *   node --max-old-space-size=8192 analyze-trace.mjs trace.json profile
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 
 const [ , , tracePath, command = "summary", ...rest ] = process.argv;
 
 if (!tracePath) {
-    console.error("usage: analyze-trace.mjs <trace.json|.json.gz> [summary|profile|spikes|timeline]");
+    console.error("usage: analyze-trace.mjs <trace.json|.json.gz> [summary|profile|spikes|timeline|phases]");
     process.exit(1);
 }
 
@@ -32,6 +38,7 @@ switch (command) {
     case "profile": profile(numeric(rest, 25)); break;
     case "spikes": spikes(numeric(rest, 150)); break;
     case "timeline": timeline(numeric(rest, 100)); break;
+    case "phases": phases(option(rest, "--maps"), option(rest, "--marks")); break;
     default:
         console.error(`unknown command "${command}"`);
         process.exit(1);
@@ -58,8 +65,14 @@ function describeThreads(events) {
     return { processNames, threadNames, describe: (pid, tid) => `${processNames.get(pid) ?? "?"} / ${threadNames.get(`${pid}/${tid}`) ?? "?"}` };
 }
 
+/**
+ * The top-level tasks of every thread. `RunTask` is recorded only under the
+ * `disabled-by-default-devtools.timeline` category, which the Performance panel enables; a trace
+ * recorded without it still has the scheduler's `ThreadControllerImpl::RunTask`, which wraps it.
+ */
 function runTasks(events) {
-    return events.filter((e) => e.ph === "X" && e.name === "RunTask" && e.dur > 0);
+    const name = events.some((e) => e.name === "RunTask") ? "RunTask" : "ThreadControllerImpl::RunTask";
+    return events.filter((e) => e.ph === "X" && e.name === name && e.dur > 0);
 }
 
 /**
@@ -138,13 +151,18 @@ function reportLongTasks(tasks, start) {
  *
  * Keyed on pid *and* id: every process numbers its profiles from the same sequence, so keying on id
  * alone silently merges the browser process's profile into the renderer's and attributes main-process
- * frames to page code.
+ * frames to page code. Within the renderer, each thread running script (the main thread and every
+ * worker) has a profile of its own; only the `Profile` event names the thread, since its chunks are
+ * emitted from the sampler's thread, so the ids are taken from there.
  */
-function buildProfile(pid) {
+function buildProfile(pid, tid) {
     const profile = { nodes: new Map(), samples: [], deltas: [], startTime: 0 };
+    const ids = new Set(events
+        .filter((e) => e.pid === pid && e.tid === tid && e.name === "Profile")
+        .map((e) => e.id));
 
     for (const e of events) {
-        if (e.pid !== pid) continue;
+        if (e.pid !== pid || !ids.has(e.id)) continue;
 
         if (e.name === "Profile" && e.args?.data) {
             profile.startTime = e.args.data.startTime;
@@ -185,7 +203,7 @@ function* walkSamples(profile) {
 }
 
 function profile(topN) {
-    const profile = buildProfile(renderer.pid);
+    const profile = buildProfile(renderer.pid, renderer.tid);
     if (!profile.samples.length) {
         console.log("No CPU profile in this trace. Record with the Performance panel's default settings.");
         return;
@@ -224,7 +242,7 @@ function profile(topN) {
 
 /** Aggregates self time inside the long tasks only, which is what a stutter is made of. */
 function spikes(thresholdMs) {
-    const profile = buildProfile(renderer.pid);
+    const profile = buildProfile(renderer.pid, renderer.tid);
     const tasks = runTasks(events)
         .filter((t) => t.pid === renderer.pid && t.tid === renderer.tid && t.dur > thresholdMs * 1000);
 
@@ -270,6 +288,202 @@ function timeline(bucketMs) {
         const bar = "#".repeat(Math.min(60, Math.round(ms / (bucketMs / 30))));
         console.log(`${((i * bucketMs) / 1000).toFixed(1).padStart(7)}s ${String(Math.round(ms)).padStart(4)}ms ${bar}`);
     }
+}
+
+/**
+ * Main-thread time between consecutive `performance.mark()` calls, split by what the thread was
+ * doing and, for script, by the source module the CPU was in.
+ *
+ * Trace events nest (`RunTask` > `FunctionCall` > `v8.compileModule`), so each event is charged its
+ * self time only, and the kind comes from the event's name.
+ */
+function phases(mapsDir, markPrefix) {
+    const marks = events
+        // `performance.mark()` records an instant ("I"); the navigation timing marks are "R".
+        .filter((e) => e.pid === renderer.pid && e.cat?.includes("blink.user_timing") && e.ph === "I"
+            && (!markPrefix || e.name.startsWith(markPrefix)))
+        .sort((a, b) => a.ts - b.ts);
+    if (marks.length < 2) {
+        console.log("Fewer than two performance.mark() calls on the renderer: nothing to split at.");
+        return;
+    }
+
+    const windows = marks.slice(0, -1).map((mark, index) => ({
+        name: `${mark.name} -> ${marks[index + 1].name}`,
+        start: mark.ts,
+        end: marks[index + 1].ts,
+        kinds: new Map(),
+        modules: new Map()
+    }));
+    const windowAt = (ts) => windows.find((w) => ts >= w.start && ts < w.end);
+
+    for (const [ event, selfUs ] of selfTimes(renderer.pid, renderer.tid)) {
+        const window = windowAt(event.ts);
+        if (!window) continue;
+        const kind = kindOf(event.name);
+        window.kinds.set(kind, (window.kinds.get(kind) ?? 0) + selfUs);
+    }
+
+    const profile = buildProfile(renderer.pid, renderer.tid);
+    const resolver = createSourceResolver(mapsDir);
+    for (const [ ts, id, dur ] of walkSamples(profile)) {
+        const window = windowAt(ts);
+        if (!window) continue;
+        const module = moduleOf(profile, id, resolver);
+        window.modules.set(module, (window.modules.get(module) ?? 0) + dur);
+    }
+
+    for (const window of windows) {
+        const wallMs = (window.end - window.start) / 1000;
+        const busyMs = [ ...window.kinds.values() ].reduce((sum, us) => sum + us, 0) / 1000;
+        console.log(`\n=== ${window.name}: ${wallMs.toFixed(0)}ms wall, ${busyMs.toFixed(0)}ms main-thread busy ===`);
+        const kinds = [ ...window.kinds.entries() ].sort((a, b) => b[1] - a[1]);
+        console.log("  " + kinds.map(([ kind, us ]) => `${kind} ${(us / 1000).toFixed(0)}ms`).join(", "));
+        for (const [ module, us ] of [ ...window.modules.entries() ].sort((a, b) => b[1] - a[1]).slice(0, 12)) {
+            if (us < 2000) break;
+            console.log(`${(us / 1000).toFixed(1).padStart(9)}ms  ${module}`);
+        }
+    }
+}
+
+/**
+ * The module a sample is charged to: its own frame's, or for a native frame (a DOM call, a
+ * built-in) the nearest caller's that has a script URL. A sample with no script anywhere on its
+ * stack keeps its V8 name, such as `(program)` or `(garbage collector)`.
+ */
+function moduleOf(profile, id, resolver) {
+    for (let cur = id, guard = 0; cur != null && guard < 200; cur = profile.parents.get(cur), guard++) {
+        const frame = profile.nodes.get(cur)?.callFrame;
+        if (frame?.url) return resolver(frame.url, frame.lineNumber, frame.columnNumber);
+    }
+    return profile.nodes.get(id)?.callFrame?.functionName || "(unknown)";
+}
+
+/** Yields each complete event on one thread with its self time: its duration minus its children's. */
+function* selfTimes(pid, tid) {
+    const own = events
+        .filter((e) => e.pid === pid && e.tid === tid && e.ph === "X" && e.dur > 0)
+        .sort((a, b) => a.ts - b.ts || b.dur - a.dur);
+    const stack = [];
+    const childUs = new Map();
+
+    for (const event of own) {
+        while (stack.length && stack[stack.length - 1].ts + stack[stack.length - 1].dur <= event.ts) {
+            const done = stack.pop();
+            yield [ done, done.dur - (childUs.get(done) ?? 0) ];
+        }
+        const parent = stack[stack.length - 1];
+        if (parent) childUs.set(parent, (childUs.get(parent) ?? 0) + event.dur);
+        stack.push(event);
+    }
+    while (stack.length) {
+        const done = stack.pop();
+        yield [ done, done.dur - (childUs.get(done) ?? 0) ];
+    }
+}
+
+function kindOf(name) {
+    if (/compile|parseOnBackground|V8\.Parse/i.test(name)) return "compile";
+    if (/GC|V8\.GC_/.test(name)) return "gc";
+    if (name === "UpdateLayoutTree" || name === "RecalculateStyles") return "style";
+    if (name === "ParseAuthorStyleSheet") return "css-parse";
+    if (name === "Layout") return "layout";
+    if (/^(Paint|PrePaint|Layerize|UpdateLayer|PaintImage|Commit|Decode)/.test(name)) return "paint";
+    if (name === "ParseHTML") return "html";
+    if (/FunctionCall|EvaluateScript|evaluateModule|RunMicrotasks|TimerFire|EventDispatch|FireAnimationFrame|HandlePostMessage|FireIdleCallback|v8\.run|V8\.Execute/i.test(name)) return "script";
+    return "other";
+}
+
+/**
+ * Maps a profile frame to the module it came from. With a maps directory, a hashed chunk such as
+ * `desktop-mmUUZnv-.js` resolves through its `.map` to the original path; without one, or for a
+ * frame no map covers, the chunk name stands in.
+ */
+function createSourceResolver(mapsDir) {
+    const maps = new Map();
+
+    const load = (chunk) => {
+        if (maps.has(chunk)) return maps.get(chunk);
+        const path = mapsDir ? join(mapsDir, `${chunk}.map`) : null;
+        const map = path && existsSync(path) ? parseSourceMap(JSON.parse(readFileSync(path, "utf8"))) : null;
+        maps.set(chunk, map);
+        return map;
+    };
+
+    return (url, line, column) => {
+        const chunk = url.split("/").pop().split("?")[0];
+        const map = load(chunk);
+        const source = map?.lookup(line, column);
+        return source ? shortenSource(source) : chunk;
+    };
+}
+
+/** Decodes a v3 source map's `mappings` into per-line segment lists, for a line/column lookup. */
+function parseSourceMap(map) {
+    const lines = [];
+    let sourceIndex = 0;
+
+    for (const lineText of map.mappings.split(";")) {
+        const segments = [];
+        let column = 0;
+        for (const segmentText of lineText.split(",")) {
+            if (!segmentText) continue;
+            const fields = decodeVlq(segmentText);
+            column += fields[0];
+            if (fields.length > 1) {
+                sourceIndex += fields[1];
+                segments.push([ column, sourceIndex ]);
+            }
+            // Fields 2-4 (source line, source column, name) are relative too, but only the source
+            // file is needed here.
+        }
+        lines.push(segments);
+    }
+
+    return {
+        lookup(line, column) {
+            const segments = lines[line];
+            if (!segments?.length) return null;
+            let found = null;
+            for (const segment of segments) {
+                if (segment[0] > column) break;
+                found = segment;
+            }
+            return map.sources[(found ?? segments[0])[1]] ?? null;
+        }
+    };
+}
+
+function decodeVlq(text) {
+    // Local rather than module-level: the command runs at the top of the file, before a
+    // module-level `const` below it is initialized.
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const values = [];
+    let value = 0;
+    let shift = 0;
+    for (const char of text) {
+        const digit = alphabet.indexOf(char);
+        value += (digit & 31) << shift;
+        if (digit & 32) {
+            shift += 5;
+        } else {
+            values.push(value & 1 ? -(value >>> 1) : value >>> 1);
+            value = 0;
+            shift = 0;
+        }
+    }
+    return values;
+}
+
+/** `../../node_modules/.pnpm/jquery@4/node_modules/jquery/dist/x.js` becomes `jquery/dist/x.js`. */
+function shortenSource(source) {
+    const packaged = source.split("node_modules/").pop();
+    return packaged === source ? source.replace(/^(\.\.\/)+/, "") : packaged;
+}
+
+function option(args, name) {
+    const index = args.indexOf(name);
+    return index >= 0 ? args[index + 1] : undefined;
 }
 
 function numeric(args, fallback) {
