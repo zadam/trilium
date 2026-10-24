@@ -183,7 +183,10 @@ export default class SidebarContainer extends FlexContainer<BasicWidget> {
     }
 
     setLeftPaneVisibilityEvent({ leftPaneVisible }: EventData<"setLeftPaneVisibility">) {
-        this.leftPaneVisible = leftPaneVisible ?? !this.leftPaneVisible;
+        const visible = leftPaneVisible ?? !this.leftPaneVisible;
+        if (visible === this.leftPaneVisible) return;
+
+        this.leftPaneVisible = visible;
         this.$widget.toggleClass("left-pane-hidden", !this.leftPaneVisible);
 
         options.save("leftPaneVisible", this.leftPaneVisible.toString());

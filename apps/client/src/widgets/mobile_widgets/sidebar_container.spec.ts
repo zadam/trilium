@@ -41,5 +41,11 @@ describe("SidebarContainer", () => {
         expect(sidebar.$widget.hasClass("left-pane-hidden")).toBe(true);
         sidebar.setLeftPaneVisibilityEvent({ leftPaneVisible: true });
         expect(sidebar.$widget.hasClass("left-pane-hidden")).toBe(false);
+
+        // Showing an already visible sidebar leaves the option alone.
+        save.mockClear();
+        sidebar.setLeftPaneVisibilityEvent({ leftPaneVisible: true });
+        expect(sidebar.$widget.hasClass("left-pane-hidden")).toBe(false);
+        expect(save).not.toHaveBeenCalled();
     });
 });
