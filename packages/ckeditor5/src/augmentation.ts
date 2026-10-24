@@ -206,7 +206,5 @@ declare global {
          * because a raw request with a body cannot reach that server from every platform.
          */
         getLocalUpload?(): LocalUpload | undefined;
-        getReferenceLinkTitle(href: string): Promise<string>;
-        getReferenceLinkTitleSync(href: string, storedTitle?: string): string;
     };
 }

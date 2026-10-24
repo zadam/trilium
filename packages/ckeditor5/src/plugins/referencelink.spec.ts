@@ -16,12 +16,12 @@ describe("ReferenceLink", () => {
         getReferenceLinkTitleSync = vi.fn(() => "Some title");
         loadReferenceLinkTitle = vi.fn(async () => undefined);
         installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle }),
-            getReferenceLinkTitle,
-            getReferenceLinkTitleSync
+            getComponentByEl: () => ({ loadReferenceLinkTitle })
         });
 
-        editor = await createTestEditor([Essentials, Paragraph, LinkEditing, ReferenceLink]);
+        editor = await createTestEditor([Essentials, Paragraph, LinkEditing, ReferenceLink], {
+            referenceLink: { getTitle: getReferenceLinkTitle, getTitleSync: getReferenceLinkTitleSync }
+        });
     });
 
     it("loads the plugin, registers the schema and the command", () => {
@@ -284,6 +284,17 @@ describe("ReferenceLink", () => {
         expect(data).toContain("Some title");
     });
 
+    it("titles a reference with its stored title, or else its href, without referenceLink", async () => {
+        const plainEditor = await createTestEditor([Essentials, Paragraph, LinkEditing, ReferenceLink]);
+
+        plainEditor.setData('<p><a class="reference-link" href="#root/noteAbc">Stored</a></p>');
+        expect(plainEditor.getData()).toContain(">Stored</a>");
+
+        setModelData(plainEditor.model, "<paragraph>[]</paragraph>");
+        plainEditor.execute("referenceLink", { href: "#root/noteNew" });
+        await vi.waitFor(() => expect(plainEditor.getData()).toContain('href="#root/noteNew">#root/noteNew</a>'));
+    });
+
     it("maps a view position inside the reference widget to a model position outside of it", () => {
         editor.setData('<p><a class="reference-link" href="#root/noteAbc">Some title</a></p>');
 
@@ -359,9 +370,7 @@ describe("ReferenceLink", () => {
             el.classList.toggle("reference-link-missing", href === "#root/gone");
         });
         installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle, fixReferenceLink }),
-            getReferenceLinkTitle,
-            getReferenceLinkTitleSync
+            getComponentByEl: () => ({ loadReferenceLinkTitle, fixReferenceLink })
         });
         editor.setData(
             '<p><a class="reference-link" href="#root/noteAbc">Fine</a>'
@@ -395,9 +404,7 @@ describe("ReferenceLink", () => {
             el.classList.add("reference-link-missing");
         });
         installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle, fixReferenceLink }),
-            getReferenceLinkTitle,
-            getReferenceLinkTitleSync
+            getComponentByEl: () => ({ loadReferenceLinkTitle, fixReferenceLink })
         });
         editor.setData(
             '<p><a class="reference-link" href="#root/gone"></a><a href="https://x.org">x</a></p>'

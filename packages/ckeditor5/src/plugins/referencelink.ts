@@ -1,5 +1,5 @@
 import {
-	ClickObserver, Command, LinkEditing, ModelElement, ModelLivePosition, Plugin, toWidget,
+	ClickObserver, Command, type Editor, LinkEditing, ModelElement, ModelLivePosition, Plugin, toWidget,
 	type ViewDocumentClickEvent, ViewElement, viewToModelPositionOutsideModelElement, Widget
 } from "ckeditor5";
 
@@ -22,7 +22,7 @@ class ReferenceLinkCommand extends Command {
 		const editor = this.editor;
 
 		if (replace) {
-			glob.getReferenceLinkTitle(href).then(title => {
+			getReferenceTitle(editor, href).then(title => {
 				const root = replace.root;
 				if (!root.is('rootElement') || root.rootName === '$graveyard') {
 					return;
@@ -49,7 +49,7 @@ class ReferenceLinkCommand extends Command {
 		const insertionPosition = ModelLivePosition.fromPosition(selectionPosition, 'toPrevious');
 
 		// make sure the referenced note is in cache before adding the reference element
-		glob.getReferenceLinkTitle(href).then(title => {
+		getReferenceTitle(editor, href).then(title => {
 			if (insertionPosition.root.rootName === '$graveyard') {
 				// The context the user picked in was deleted while the title loaded.
 				return;
@@ -286,7 +286,7 @@ export class ReferenceLinkEditing extends Plugin {
 				// A note deleted while the editor is open keeps the title saved last, not the loaded one.
 				const storedTitle = this._savedTitles.get( modelItem )
 					?? modelItem.getAttribute('storedTitle') as string | undefined;
-				const title = glob.getReferenceLinkTitleSync(href, storedTitle);
+				const title = getReferenceTitleSync(editor, href, storedTitle);
 				this._savedTitles.set( modelItem, title );
 
 				const innerText = viewWriter.createText(title);
@@ -296,6 +296,24 @@ export class ReferenceLinkEditing extends Plugin {
 			}
 		} );
 	}
+}
+
+/**
+ * The title of the note or attachment `href` points to, as `referenceLink.getTitle` resolves it.
+ * Without that config entry, the title is `href` itself.
+ */
+export function getReferenceTitle( editor: Editor, href: string ): Promise<string> {
+	const getTitle = editor.config.get( 'referenceLink' )?.getTitle;
+	return getTitle ? getTitle( href ) : Promise.resolve( href );
+}
+
+/**
+ * The title of the note or attachment `href` points to, as `referenceLink.getTitleSync` reads
+ * it. Without that config entry, the title is `storedTitle`, or else `href`.
+ */
+export function getReferenceTitleSync( editor: Editor, href: string, storedTitle?: string ): string {
+	const getTitleSync = editor.config.get( 'referenceLink' )?.getTitleSync;
+	return getTitleSync ? getTitleSync( href, storedTitle ) : storedTitle ?? href;
 }
 
 /** The attributes of a `reference` to `href`, with `storedTitle` when there is one to keep. */
@@ -330,5 +348,17 @@ export function getNoteId( href: unknown ) {
 declare module "ckeditor5" {
 	interface PluginsMap {
 		[ReferenceLinkEditing.pluginName]: ReferenceLinkEditing;
+	}
+
+	interface EditorConfig {
+		referenceLink?: {
+			/** Resolves the title of the note or attachment `href` points to, loading it if needed. */
+			getTitle( href: string ): Promise<string>;
+			/**
+			 * The title of the note or attachment `href` points to, from what is already loaded.
+			 * `storedTitle` is the title the saved content holds, for a note that is not loaded.
+			 */
+			getTitleSync( href: string, storedTitle?: string ): string;
+		};
 	}
 }

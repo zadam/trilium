@@ -102,12 +102,12 @@ describe("a reference link pasted from a rendered page", () => {
     // beside the link.
     it("loses the icon the renderer drew inside it, leaving the link alone", async () => {
         installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle: () => Promise.resolve() }),
-            getReferenceLinkTitleSync: () => "Some note",
-            getReferenceLinkTitle: async () => "Some note"
+            getComponentByEl: () => ({ loadReferenceLinkTitle: () => Promise.resolve() })
         });
 
-        const editor = await createTestEditor([ Paragraph, Link, ReferenceLink, InlineIcon ]);
+        const editor = await createTestEditor([ Paragraph, Link, ReferenceLink, InlineIcon ], {
+            referenceLink: { getTitle: async () => "Some note", getTitleSync: () => "Some note" }
+        });
 
         editor.setData(`<p>See <a class="reference-link" href="#root/abc">`
             + `<span><span class="tn-icon bx bx-file"></span>Some note</span></a> for more.</p>`);

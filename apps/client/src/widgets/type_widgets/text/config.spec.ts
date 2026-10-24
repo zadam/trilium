@@ -3,6 +3,7 @@ import { DISPLAYABLE_LOCALE_IDS, IMAGE_MIMES, LOCALES, SANITIZER_DEFAULT_ALLOWED
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import imageService from "../../../services/image.js";
+import linkService from "../../../services/link.js";
 import { ensureMimeTypesForHighlighting } from "../../../services/syntax_highlight.js";
 import { buildConfig, type BuildEditorOptions, OPEN_SOURCE_LICENSE_KEY } from "./config.js";
 
@@ -344,6 +345,13 @@ describe("CK config - tables", () => {
 
         optionsState.map.customDateTimeFormat = "DD.MM.YYYY HH:mm";
         expect(formatDateTime?.(date)).toBe("25.09.2026 10:30");
+    });
+
+    it("titles reference links through the link service", async () => {
+        expect((await buildConfig(baseOpts())).referenceLink).toStrictEqual({
+            getTitle: linkService.getReferenceLinkTitle,
+            getTitleSync: linkService.getReferenceLinkTitleSync
+        });
     });
 });
 

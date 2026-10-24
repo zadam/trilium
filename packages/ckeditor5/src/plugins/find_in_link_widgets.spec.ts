@@ -43,9 +43,7 @@ describe("FindInLinkWidgets", () => {
                 renderLinkMention: vi.fn((container: HTMLElement, metadata: LinkEmbedMetadata) => {
                     appendText(container, metadata.title || safeHostname(metadata.url));
                 })
-            }),
-            getReferenceLinkTitle: vi.fn(async () => "Reference match"),
-            getReferenceLinkTitleSync: vi.fn(() => "Reference match")
+            })
         });
 
         editor = await createTestEditor([
@@ -56,7 +54,12 @@ describe("FindInLinkWidgets", () => {
             LinkEmbedEditing,
             FindAndReplaceEditing,
             FindInLinkWidgets
-        ]);
+        ], {
+            referenceLink: {
+                getTitle: vi.fn(async () => "Reference match"),
+                getTitleSync: vi.fn(() => "Reference match")
+            }
+        });
     });
 
     it("finds text and all rendered link widgets in document order", () => {

@@ -75,14 +75,16 @@ describe("InternalLinkPlugin", () => {
 
 describe("the link at the selection", () => {
     let editor: ClassicEditor;
+    let getTitle: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
         installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined }),
-            getReferenceLinkTitle: async () => "Target",
-            getReferenceLinkTitleSync: () => "Target"
+            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined })
         });
-        editor = await createTestEditor([Essentials, Paragraph, Bold, LinkEditing, InternalLinkPlugin]);
+        getTitle = vi.fn(async () => "Target");
+        editor = await createTestEditor([Essentials, Paragraph, Bold, LinkEditing, InternalLinkPlugin], {
+            referenceLink: { getTitle, getTitleSync: () => "Target" }
+        });
     });
 
     const LINKED = "<paragraph>a <$text bold=\"true\" linkHref=\"https://a.example\">fo[]o</$text> b"
@@ -134,13 +136,7 @@ describe("the link at the selection", () => {
         editor.execute("undo");
         expect(data()).toBe(original);
 
-        installGlobMock({
-            getComponentByEl: () => ({ loadReferenceLinkTitle: async () => undefined }),
-            getReferenceLinkTitle: async () => {
-                throw new Error("not found");
-            },
-            getReferenceLinkTitleSync: () => "Target"
-        });
+        getTitle.mockRejectedValue(new Error("not found"));
         setModelData(editor.model, LINKED);
         const replacing = replaceLinkAtSelection(editor, "#root/abc", null);
         await expect(replacing).rejects.toThrow("not found");

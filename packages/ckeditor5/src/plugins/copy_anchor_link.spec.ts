@@ -18,14 +18,14 @@ describe("CopyAnchorLinkButton", () => {
         getComponentByEl = vi.fn(() => ({}));
         installGlobMock({
             getActiveContextNote,
-            getReferenceLinkTitleSync,
             getComponentByEl
         });
 
         copyHtml = vi.fn();
 
         editor = await createTestEditor([Essentials, Paragraph, Bold, Bookmark, CopyAnchorLinkButton], {
-            clipboard: { copy: vi.fn(), copyHtml }
+            clipboard: { copy: vi.fn(), copyHtml },
+            referenceLink: { getTitle: async () => "Some title", getTitleSync: getReferenceLinkTitleSync }
         });
     });
 
@@ -44,7 +44,7 @@ describe("CopyAnchorLinkButton", () => {
         getButton().fire("execute");
 
         const href = "#root/noteAbc?bookmark=my%20anchor";
-        expect(getReferenceLinkTitleSync).toHaveBeenCalledWith(href);
+        expect(getReferenceLinkTitleSync).toHaveBeenCalledWith(href, undefined);
         expect(copyHtml).toHaveBeenCalledWith(`<a class="reference-link" href="${href}">Some title</a>`, href);
     });
 

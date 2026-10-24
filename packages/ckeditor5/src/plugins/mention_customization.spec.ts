@@ -21,9 +21,7 @@ describe("MentionCustomization", () => {
         installGlobMock({
             getComponentByEl: () => ({
                 loadReferenceLinkTitle: vi.fn(async () => {})
-            }),
-            getReferenceLinkTitle: vi.fn(async () => "Some title"),
-            getReferenceLinkTitleSync: () => "Some title"
+            })
         });
 
         editor = await createTestEditor([
@@ -33,7 +31,12 @@ describe("MentionCustomization", () => {
             TriliumMentionUI,
             ReferenceLink,
             MentionCustomization
-        ]);
+        ], {
+            referenceLink: {
+                getTitle: vi.fn(async () => "Some title"),
+                getTitleSync: () => "Some title"
+            }
+        });
     });
 
     it("loads the plugin, requires the mention editing/UI pair and overrides the mention command", () => {
@@ -69,7 +72,7 @@ describe("MentionCustomization", () => {
         });
 
         // The referenceLink command inserts the reference element only after
-        // glob.getReferenceLinkTitle resolves.
+        // referenceLink.getTitle resolves.
         await Promise.resolve();
         await Promise.resolve();
 
@@ -101,7 +104,7 @@ describe("MentionCustomization", () => {
         });
 
         // The referenceLink command inserts the reference element only after
-        // glob.getReferenceLinkTitle resolves.
+        // referenceLink.getTitle resolves.
         await Promise.resolve();
         await Promise.resolve();
 

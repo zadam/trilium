@@ -806,13 +806,14 @@ describe("ContentEmbed with attachments", () => {
                 loadEmbeddedAttachment,
                 getAttachmentHref,
                 loadReferenceLinkTitle: vi.fn(async () => undefined)
-            }),
-            getReferenceLinkTitleSync: () => "report.pdf"
+            })
         });
 
         editor = await createTestEditor([
             Essentials, Paragraph, Undo, Widget, LinkEditing, ReferenceLink, ContentEmbed
-        ]);
+        ], {
+            referenceLink: { getTitle: async () => "report.pdf", getTitleSync: () => "report.pdf" }
+        });
     });
 
     /** Querying the DOM root forces the UIElement render callbacks to run. */

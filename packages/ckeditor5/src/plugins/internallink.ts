@@ -3,7 +3,7 @@ import {
 } from 'ckeditor5';
 import type { Editor, ModelRange } from 'ckeditor5';
 import internalLinkIcon from '../icons/trilium.svg?raw';
-import ReferenceLink, { referenceAttributes } from './referencelink';
+import ReferenceLink, { getReferenceTitle, referenceAttributes } from './referencelink';
 
 export const COMMAND_NAME = 'insertInternalLink';
 
@@ -109,7 +109,7 @@ export function getLinkAtSelection(editor: Editor): { href: string; text: string
 /**
  * Replaces the link around the selection with `text` linking to `href`, keeping the formatting of
  * its start, or with a reference to the note at `href` when `text` is `null`. A reference replaces
- * the link once `glob.getReferenceLinkTitle()` resolves, in one undo step with the removal, and
+ * the link once `getReferenceTitle()` resolves, in one undo step with the removal, and
  * takes the caret along only if the user has not moved it in the meantime.
  */
 export async function replaceLinkAtSelection(editor: Editor, href: string, text: string | null) {
@@ -128,7 +128,7 @@ export async function replaceLinkAtSelection(editor: Editor, href: string, text:
         };
         selection.on('change:range', onSelectionChange);
         try {
-            const title = await glob.getReferenceLinkTitle(href);
+            const title = await getReferenceTitle(editor, href);
             if (range.root.rootName === '$graveyard') {
                 return;
             }

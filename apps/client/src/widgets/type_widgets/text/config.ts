@@ -8,6 +8,7 @@ import { prompt } from "../../../services/dialog.js";
 import { t } from "../../../services/i18n.js";
 import imageService from "../../../services/image.js";
 import { getNoteImageSourceToLoad } from "../../../services/image_urls.js";
+import linkService from "../../../services/link.js";
 import { default as mimeTypesService, getHighlightJsNameForMime } from "../../../services/mime_types.js";
 import options from "../../../services/options.js";
 import { sanitizeNoteContentHtml } from "../../../services/sanitize_content.js";
@@ -198,6 +199,10 @@ export async function buildConfig(opts: BuildEditorOptions): Promise<EditorConfi
         },
         // Reads `customDateTimeFormat` on each call, so a changed format applies to open editors.
         formatDateTime: (date, format) => formatDateTime(date, format ?? options.get("customDateTimeFormat")),
+        referenceLink: {
+            getTitle: linkService.getReferenceLinkTitle,
+            getTitleSync: linkService.getReferenceLinkTitleSync
+        },
         slashCommand: {
             // Drop CKEditor's built-in list slash commands, whose Title Case titles the palette
             // re-defines in sentence case.
