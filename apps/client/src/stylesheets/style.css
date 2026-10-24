@@ -1925,6 +1925,8 @@ pre.code-embed-editor.read-only .cm-activeLine {
         #mobile-rest-container > #mobile-sidebar-wrapper {
             width: 100%;
             z-index: 0;
+            border-inline-end: 0;
+            border-radius: 0;
         }
 
         #detail-container {

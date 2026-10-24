@@ -50,7 +50,6 @@ export default class MobileLayout {
                             .child(
                                 new FlexContainer("column")
                                     .filling()
-                                    .id("mobile-sidebar-wrapper")
                                     .child(<QuickSearch />)
                                     .child(<MobileNoteNavigator />)
                             )
