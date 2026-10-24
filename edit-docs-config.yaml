@@ -25,11 +25,13 @@ noteMappings:
         tsconfig: "packages/commons/tsconfig.lib.json"
         root: "BackendApi"
         stripPrefixes: [ "Script" ]
+        skillReference: "packages/trilium-core/src/assets/llm/skills/backend_scripting_api.md"
       - noteId: "Q2z6av6JZVWm" # Scripting › Script API › Frontend API
         entryPoint: "packages/commons/src/lib/script_api.ts"
         tsconfig: "packages/commons/tsconfig.lib.json"
         root: "FrontendApi"
         stripPrefixes: [ "Script" ]
+        skillReference: "packages/trilium-core/src/assets/llm/skills/frontend_scripting_api.md"
 
   - rootNoteId: "jdjRLhLV3TtI"
     path: "docs/Developer Guide"

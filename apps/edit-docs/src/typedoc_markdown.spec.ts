@@ -3,7 +3,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { runTypeDoc, typeDocToMarkdown } from "./typedoc_markdown.js";
+import { runTypeDoc, typeDocToDeclarations, typeDocToMarkdown } from "./typedoc_markdown.js";
 
 const FIXTURE = `
 /**
@@ -73,6 +73,9 @@ export interface DemoWindowApi {
     /** @deprecated Use {@link resize}. */
     maximize(): void;
 
+    /** Reloads the window, e.g. after an update. Unsaved changes are lost. */
+    reload(): void;
+
     /** Reads a stored value. */
     read<T extends string | number = string, K = string>(key: K): T | null;
 
@@ -90,6 +93,24 @@ export interface DemoApi {
     window: DemoWindowApi;
     /** The version, as in \`1.2.3\`. */
     readonly version: string;
+}
+`;
+
+/** A second root, whose interface extends one of `FIXTURE`'s. */
+const DOCKING = `
+/** A window that can also be docked. */
+export interface DockableWindowApi extends DemoWindowApi {
+    /** Docks the window. */
+    dock(): void;
+}
+
+export interface DockApi {
+    window: DemoWindowApi;
+    docked: DockableWindowApi;
+}
+
+export interface DockOnlyApi {
+    docked: DockableWindowApi;
 }
 `;
 
@@ -282,5 +303,75 @@ describe("typeDocToMarkdown", () => {
     it("refuses prefixes that would give two declarations one name", () => {
         expect(() => typeDocToMarkdown(project, { root: "DemoApi", stripPrefixes: [ "Demo", "DemoWindow" ] }))
             .toThrow("DemoApi and DemoWindowApi would both be named Api");
+    });
+});
+
+describe("typeDocToDeclarations", () => {
+    let dir: string;
+    let project: Awaited<ReturnType<typeof runTypeDoc>>;
+    let declarations: string;
+
+    beforeAll(async () => {
+        dir = await mkdtemp(join(tmpdir(), "typedoc-declarations-"));
+        await writeFile(join(dir, "api.ts"), FIXTURE + DOCKING);
+        await writeFile(join(dir, "audience.ts"), IMPORTED);
+        await writeFile(join(dir, "tsconfig.json"), JSON.stringify({
+            compilerOptions: { strict: true, target: "ES2022", module: "ESNext", moduleResolution: "bundler" },
+            files: [ "api.ts", "audience.ts" ]
+        }));
+        project = await runTypeDoc(join(dir, "api.ts"), join(dir, "tsconfig.json"));
+        declarations = typeDocToDeclarations(project, { root: "DemoApi", stripPrefixes: [ "Demo" ] });
+    }, 60_000);
+
+    afterAll(async () => {
+        await rm(dir, { recursive: true, force: true });
+    });
+
+    it("writes the root and what it reaches as TypeScript, each member under its first sentence", () => {
+        expect(declarations.startsWith([
+            "/** The root of the API. */",
+            "interface Api {",
+            "    /** Window controls, as `WindowApi` lists them. */",
+            "    window: WindowApi;",
+            "    /** The version, as in `1.2.3`. */",
+            "    readonly version: string;",
+            "}"
+        ].join("\n"))).toBe(true);
+        expect(declarations).toContain([
+            "    /** Resizes the window. */",
+            "    resize(options: ResizeOptions): Promise<boolean>;"
+        ].join("\n"));
+        expect(declarations).toContain("    read<T extends string | number = string, K = string>(key: K): T | null;");
+        expect(declarations).toContain("    /** Reloads the window, e.g. after an update. */\n    reload(): void;");
+        expect(declarations).toContain("    animate?: boolean;");
+        expect(declarations).toContain("/** A size in pixels. */\ntype Size = number | \"auto\";");
+        expect(declarations).not.toContain("Unreached");
+    });
+
+    it("writes out a union of literals that one member uses, and links nothing", () => {
+        expect(declarations).toContain("    screen: \"primary\" | \"secondary\";");
+        expect(declarations).toContain("    audience: Audience;");
+        expect(declarations).not.toContain("](#");
+    });
+
+    it("leaves out deprecated members", () => {
+        expect(declarations).not.toContain("maximize");
+    });
+
+    it("declares an inherited member only on the interface it comes from, when that one is written too", () => {
+        const docking = typeDocToDeclarations(project, { root: "DockApi" });
+        expect(docking).toContain([
+            "/** A window that can also be docked. */",
+            "interface DockableWindowApi extends DemoWindowApi {",
+            "    /** Docks the window. */",
+            "    dock(): void;",
+            "}"
+        ].join("\n"));
+        expect(docking.match(/ resize\(/g)).toHaveLength(1);
+
+        // The selection does not follow `extends`, so without its parent the interface keeps them.
+        const dockOnly = typeDocToDeclarations(project, { root: "DockOnlyApi" });
+        expect(dockOnly).not.toContain("interface DemoWindowApi");
+        expect(dockOnly.match(/ resize\(/g)).toHaveLength(1);
     });
 });

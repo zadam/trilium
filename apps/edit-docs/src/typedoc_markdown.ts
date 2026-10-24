@@ -64,21 +64,13 @@ export async function runTypeDoc(entryPoint: string, tsconfig: string): Promise<
  * they use follow under "Types". A union of literals that one place uses is written out there
  * instead of getting an entry. A reference to a declaration the page shows links to its heading.
  */
-export function typeDocToMarkdown(project: Project, { root, stripPrefixes = [] }: TypeDocMarkdownOptions = {}): string {
-    const { declarations, inlined } = selectDeclarations(project, root);
-    inlinedAliases = inlined;
-    displayNames = stripNames(declarations.map((declaration) => declaration.name), stripPrefixes);
-    shownNames = new Set(declarations.map((declaration) => declaration.name));
-    try {
+export function typeDocToMarkdown(project: Project, options: TypeDocMarkdownOptions = {}): string {
+    return renderSelection(project, options, true, ({ apis, types }) => {
         const blocks: string[] = [];
         if (project.comment) {
             blocks.push(renderComment(project.comment));
         }
 
-        const isApi = (declaration: Declaration) => declaration.name === root
-            || !!declaration.children?.some((member) => member.kind === KIND.method);
-        const apis = declarations.filter(isApi);
-        const types = declarations.filter((declaration) => !isApi(declaration));
         for (const declaration of apis) {
             blocks.push(...renderDeclaration(declaration, "##"));
         }
@@ -91,11 +83,20 @@ export function typeDocToMarkdown(project: Project, { root, stripPrefixes = [] }
         }
 
         return blocks.filter(Boolean).join("\n\n");
-    } finally {
-        inlinedAliases = new Map();
-        displayNames = new Map();
-        shownNames = new Set();
-    }
+    });
+}
+
+/**
+ * Renders the declarations `typeDocToMarkdown()` shows as compact TypeScript: every member on one
+ * line, under the first sentence of its description, for an LLM to read where the page would cost
+ * too many tokens. Deprecated declarations and members are left out.
+ */
+export function typeDocToDeclarations(project: Project, options: TypeDocMarkdownOptions = {}): string {
+    return renderSelection(project, options, false, ({ apis, types }) => {
+        const declarations = [ ...apis, ...types ].filter((declaration) => !isDeprecated(declaration.comment));
+        const names = new Set(declarations.map((declaration) => declaration.name));
+        return declarations.map((declaration) => declarationToString(declaration, names)).join("\n\n");
+    });
 }
 
 export interface TypeDocMarkdownOptions {
@@ -131,6 +132,35 @@ let shownNames = new Set<string>();
 let markingLinks = false;
 const LINK_START = "\u0002";
 const LINK_END = "\u0003";
+
+/**
+ * Selects what a page shows and sets the naming state `typeToString()` reads while `render` runs.
+ * `root` and the interfaces with methods are the APIs; the rest are the types they use. Only a
+ * `linked` rendering marks the names it can link to a heading.
+ */
+function renderSelection(
+    project: Project,
+    { root, stripPrefixes = [] }: TypeDocMarkdownOptions,
+    linked: boolean,
+    render: (selection: { apis: Declaration[]; types: Declaration[] }) => string
+) {
+    const { declarations, inlined } = selectDeclarations(project, root);
+    inlinedAliases = inlined;
+    displayNames = stripNames(declarations.map((declaration) => declaration.name), stripPrefixes);
+    shownNames = linked ? new Set(declarations.map((declaration) => declaration.name)) : new Set();
+    try {
+        const isApi = (declaration: Declaration) => declaration.name === root
+            || !!declaration.children?.some((member) => member.kind === KIND.method);
+        return render({
+            apis: declarations.filter(isApi),
+            types: declarations.filter((declaration) => !isApi(declaration))
+        });
+    } finally {
+        inlinedAliases = new Map();
+        displayNames = new Map();
+        shownNames = new Set();
+    }
+}
 
 /**
  * Maps each name that starts with one of `prefixes`, before an uppercase letter, to the name
@@ -302,6 +332,72 @@ function renderDeclaration(declaration: Declaration, heading: string) {
         markdownToHtml(member.kind === KIND.method ? methodDetails(member) : propertyDetails(member))
     ])));
     return blocks;
+}
+
+/**
+ * A declaration as TypeScript, under the first sentence of its description. A member inherited
+ * from one of `written`, the declarations written alongside, is left to that declaration.
+ */
+function declarationToString(declaration: Declaration, written: Set<string>) {
+    const name = `${displayName(declaration.name)}${typeParametersToString(declaration.typeParameters)}`;
+    const comment = summaryComment(declaration.comment, "");
+    if (declaration.kind === KIND.typeAlias) {
+        return `${comment}type ${name} = ${typeToString(declaration.type)};`;
+    }
+
+    const extended = declaration.extendedTypes?.length
+        ? ` extends ${declaration.extendedTypes.map(typeToString).join(", ")}`
+        : "";
+    const members = (declaration.children ?? [])
+        .filter((member) => !written.has(member.inheritedFrom?.name.split(".")[0] ?? ""))
+        .flatMap(memberToLines);
+    return members.length
+        ? `${comment}interface ${name}${extended} {\n${members.join("\n")}\n}`
+        : `${comment}interface ${name}${extended} {}`;
+}
+
+/** A member's lines in an interface: the first sentence of its description, then one line per signature. */
+function memberToLines(member: Declaration): string[] {
+    const indent = "    ";
+    const optional = member.flags.isOptional ? "?" : "";
+    let comment: Comment | undefined;
+    let lines: string[];
+    if (member.kind === KIND.method) {
+        const signatures = member.signatures ?? [];
+        comment = (signatures.find((candidate) => candidate.comment) ?? signatures[0])?.comment;
+        lines = signatures.map((signature) =>
+            `${indent}${member.name}${optional}${parametersToString(signature)}: ${typeToString(signature.type)};`);
+    } else if (member.kind === KIND.property || member.kind === KIND.accessor) {
+        const isAccessor = member.kind === KIND.accessor;
+        comment = member.comment ?? member.getSignature?.comment;
+        const readonly = member.flags.isReadonly || (isAccessor && !member.setSignature) ? "readonly " : "";
+        const type = isAccessor ? member.getSignature?.type : member.type;
+        lines = [ `${indent}${readonly}${member.name}${optional}: ${typeToString(type)};` ];
+    } else {
+        return [];
+    }
+
+    if (isDeprecated(comment)) {
+        return [];
+    }
+    const summary = summaryComment(comment, indent);
+    return summary ? [ summary.trimEnd(), ...lines ] : lines;
+}
+
+/** The first sentence of a comment's summary as a `/** … *\/` line, or nothing without one. */
+function summaryComment(comment: Comment | undefined, indent: string) {
+    const summary = comment ? oneLine(partsToMarkdown(comment.summary)) : "";
+    if (!summary) {
+        return "";
+    }
+
+    // A sentence ends at a stop followed by a capital, which keeps "e.g. `x`" in one piece.
+    const sentence = /^.*?[.!?](?=\s+[A-Z]|$)/.exec(summary)?.[0] ?? summary;
+    return `${indent}/** ${sentence.replaceAll("*/", "*\\/")} */\n`;
+}
+
+function isDeprecated(comment: Comment | undefined) {
+    return !!comment?.blockTags?.some((tag) => tag.tag === "@deprecated");
 }
 
 function propertyDetails(property: Declaration) {

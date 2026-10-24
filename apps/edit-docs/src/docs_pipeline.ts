@@ -19,7 +19,7 @@ import { deferred } from "../../../packages/commons/src/index.js";
 import { buildHelpBundle } from "./help_bundle_generator.js";
 import { buildHelpMeta, serializeHelpMeta, stripAppVersion } from "./help_meta_generator.js";
 import { openApiToMarkdown, type OpenApiSpec } from "./openapi_markdown.js";
-import { runTypeDoc, type TypeDocMarkdownOptions, typeDocToMarkdown } from "./typedoc_markdown.js";
+import { runTypeDoc, typeDocToDeclarations, type TypeDocMarkdownOptions, typeDocToMarkdown } from "./typedoc_markdown.js";
 
 export interface NoteMapping {
     rootNoteId: string;
@@ -54,6 +54,11 @@ export interface TypeDocPage extends TypeDocMarkdownOptions {
     entryPoint: string;
     /** The tsconfig that compiles it. Relative to the configuration file. */
     tsconfig: string;
+    /**
+     * Where to also write the declarations as compact TypeScript, for the LLM skill sheets that
+     * `load_skill` serves. Relative to the configuration file.
+     */
+    skillReference?: string;
 }
 
 export interface Config {
@@ -88,7 +93,8 @@ export async function loadConfig(configPath?: string): Promise<Config> {
             typeDocPages: mapping.typeDocPages?.map((page) => ({
                 ...page,
                 entryPoint: path.resolve(configDir, page.entryPoint),
-                tsconfig: path.resolve(configDir, page.tsconfig)
+                tsconfig: path.resolve(configDir, page.tsconfig),
+                skillReference: page.skillReference ? path.resolve(configDir, page.skillReference) : undefined
             }))
         }))
     };
@@ -179,7 +185,10 @@ export async function exportMappings(mappings: NoteMapping[], baseUrl: string) {
     }
 }
 
-/** Regenerates the Markdown of the mapping's `openApiPages` and `typeDocPages` from their sources. */
+/**
+ * Regenerates the Markdown of the mapping's `openApiPages` and `typeDocPages` from their sources,
+ * and the skill references of the `typeDocPages` that name one.
+ */
 async function writeGeneratedPages(mapping: NoteMapping) {
     const pages = [
         ...(mapping.openApiPages ?? []).map((page) => ({
@@ -188,7 +197,13 @@ async function writeGeneratedPages(mapping: NoteMapping) {
         })),
         ...(mapping.typeDocPages ?? []).map((page) => ({
             noteId: page.noteId,
-            render: async () => typeDocToMarkdown(await runTypeDoc(page.entryPoint, page.tsconfig), page)
+            render: async () => {
+                const project = await runTypeDoc(page.entryPoint, page.tsconfig);
+                if (page.skillReference) {
+                    await writeArtifact(page.skillReference, renderSkillReference(project, page));
+                }
+                return typeDocToMarkdown(project, page);
+            }
         }))
     ];
     if (!pages.length) {
@@ -205,6 +220,16 @@ async function writeGeneratedPages(mapping: NoteMapping) {
         const markdown = await toExportedMarkdown(await page.render(), found.note.title ?? "");
         await fs.writeFile(path.join(mapping.path, found.dataFile), markdown);
     }
+}
+
+/** The skill reference of a TypeDoc page: its declarations under a heading `readSkill()` appends. */
+function renderSkillReference(project: Awaited<ReturnType<typeof runTypeDoc>>, page: TypeDocPage) {
+    return [
+        `<!-- Generated from ${path.basename(page.entryPoint)} by \`pnpm edit-docs:sync-docs\`. Do not edit. -->`,
+        "## API reference",
+        "Every member of `api` and of the objects it returns, as TypeScript declarations, each under the first sentence of its description.",
+        `\`\`\`ts\n${typeDocToDeclarations(project, page)}\n\`\`\``
+    ].join("\n\n") + "\n";
 }
 
 /**
