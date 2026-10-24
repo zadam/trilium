@@ -37,6 +37,7 @@ import { BookmarkUI, type Editor, type MentionFeedObjectItem, Plugin } from "cke
 import collapsibleIcon from "../../icons/collapsible.svg?raw";
 import dateTimeIcon from "../../icons/date-time.svg?raw";
 import insertFootnoteIcon from "../../icons/insert-footnote.svg?raw";
+import linkPreviewIcon from "../../icons/link-preview.svg?raw";
 import importMarkdownIcon from "../../icons/markdown-mark.svg?raw";
 import mathIcon from "../../icons/math.svg?raw";
 import noteIcon from "../../icons/note.svg?raw";
@@ -51,6 +52,8 @@ import { INSERT_ICON_COMMAND } from "../inline_icon/inline_icon_editing.js";
 import InlineIconUI from "../inline_icon/inline_icon_ui.js";
 import InsertDateTimePlugin, { COMMAND_NAME as INSERT_DATE_TIME_COMMAND, getDateTimeFormatOptions } from "../insert_date_time.js";
 import { COMMAND_NAME as INTERNAL_LINK_COMMAND } from "../internallink.js";
+import { LINK_EMBED_COMMAND } from "../link_embed/link_embed_commands.js";
+import LinkEmbedUI from "../link_embed/link_embed_ui.js";
 import { COMMAND_NAME as MARKDOWN_IMPORT_COMMAND } from "../markdownimport.js";
 import MathUI from "../math/math_ui.js";
 import { INSERT_INLINE_EMBED_COMMAND } from "../content_embed/inline_source.js";
@@ -389,6 +392,20 @@ export function buildTriliumSlashCommands(editor: Editor): SlashCommandDefinitio
             aliases: [ "internal link", "trilium link", "reference link" ],
             icon: internalLinkIcon,
             commandName: INTERNAL_LINK_COMMAND
+        },
+        {
+            id: "link-preview",
+            title: t("Link preview"),
+            description: t("Insert a preview of a web page or a video"),
+            aliases: [ "embed", "url", "website", "youtube", "video" ],
+            icon: linkPreviewIcon,
+            // `commandName` supplies the enabled state; `execute` opens the form that asks for the URL.
+            commandName: LINK_EMBED_COMMAND,
+            // Deferred for the reason the anchor entry is: the form opens in a balloon placed at the
+            // caret, which the palette has not put back until the tick is over.
+            execute: (target: Editor) => {
+                setTimeout(() => target.plugins.get(LinkEmbedUI).showForm(), 0);
+            }
         },
         {
             id: "attach-file",

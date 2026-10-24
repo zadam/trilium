@@ -37,7 +37,7 @@ export default class LinkEmbedUI extends Plugin {
                 buttonView.bind('isEnabled').to(command as Observable & { isEnabled: boolean }, 'isEnabled');
             }
 
-            this.listenTo(buttonView, 'execute', () => this._showForm());
+            this.listenTo(buttonView, 'execute', () => this.showForm());
             return buttonView;
         });
     }
@@ -47,7 +47,8 @@ export default class LinkEmbedUI extends Plugin {
         this._formView?.destroy();
     }
 
-    private _showForm() {
+    /** Opens the balloon form at the selection, unless it is already open. */
+    showForm() {
         const editor = this.editor;
         const balloon = editor.plugins.get(ContextualBalloon);
         const form = this._getFormView();
