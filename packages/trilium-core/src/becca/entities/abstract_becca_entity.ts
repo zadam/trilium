@@ -10,7 +10,6 @@ import { getLog } from "../../services/log.js";
 import getInstanceId from "../../services/instance_id.js";
 import protectedSessionService from "../../services/protected_session.js";
 import becca from "../becca.js";
-import type BAttribute from "./battribute.js";
 import type BNote from "./bnote.js";
 import type { ConstructorData,default as Becca } from "../becca-interface.js";
 import { getSql } from "../../services/sql";
@@ -333,9 +332,10 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
 
         if (bulkDeletion.isActive()) {
             // Inside a subtree deletion the writes are flushed in bulk by the
-            // outermost deleteBranch(): events keep firing here, per-entity
-            // SQL does not.
-            bulkDeletion.add({
+            // outermost deleteBranch(). A re-mark of an already-buffered entity
+            // (handler cascade, e.g. reciprocal inverse relations) is dropped
+            // without a second ENTITY_DELETED, which terminates the cascade.
+            const buffered = bulkDeletion.add({
                 entityName,
                 primaryKey: constructorData.primaryKeyName,
                 id: entityId,
@@ -355,11 +355,10 @@ abstract class AbstractBeccaEntity<T extends AbstractBeccaEntity<T>> {
                 }
             });
 
-            if (entityName === "attributes") {
-                bulkDeletion.detachAttribute(this as unknown as BAttribute);
+            if (buffered) {
+                eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
             }
 
-            eventService.emit(eventService.ENTITY_DELETED, { entityName, entityId, entity: this });
             return;
         }
 

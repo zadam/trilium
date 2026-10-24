@@ -67,8 +67,8 @@ describe("bulk deletion", () => {
 
             expect(bulkDeletion.begin()).toBe(true);
             try {
-                bulkDeletion.add(entry(label.attributeId));
-                bulkDeletion.add(entry(label.attributeId)); // deduplicated
+                expect(bulkDeletion.add(entry(label.attributeId))).toBe(true);
+                expect(bulkDeletion.add(entry(label.attributeId))).toBe(false); // deduplicated
                 expect(bulkDeletion.isActive()).toBe(true);
                 clsInit(() => bulkDeletion.flush());
                 expect(bulkDeletion.isActive()).toBe(false);
@@ -118,6 +118,32 @@ describe("bulk deletion", () => {
             // the shared bucket was rebuilt once and keeps only the survivor
             expect(becca.attributeIndex["label-bulkdel"].map((attr) => attr.attributeId))
                 .toEqual([keptLabel.attributeId]);
+        });
+
+        it("terminates reciprocal inverse relations through the batched deleteBranch and compacts both owners", () => {
+            const note1 = makeNote("bulk-deletion-reciprocal-1");
+            const note2 = makeNote("bulk-deletion-reciprocal-2");
+            // #relation:spouse definition with inverseRelation=spouse on both sides
+            makeLabel(note1.noteId, "relation:spouse", "inverseRelation=spouse");
+            makeLabel(note2.noteId, "relation:spouse", "inverseRelation=spouse");
+            const forward = makeRelation(note1.noteId, "spouse", note2.noteId);
+            const backward = makeRelation(note2.noteId, "spouse", note1.noteId);
+
+            expect(becca.attributes[forward.attributeId]).toBeDefined();
+            expect(becca.attributes[backward.attributeId]).toBeDefined();
+
+            // deleting note1 cascades to the backward relation on note2 via the
+            // inverse-relation handler; completing this call (no RangeError from
+            // unbounded re-marks) is part of what is asserted
+            clsInit(() => note1.getParentBranches()[0].deleteBranch());
+
+            expect(becca.notes[note1.noteId]).toBeUndefined();
+            expect(becca.notes[note2.noteId]).toBeDefined(); // outside the subtree, still alive
+            expect(becca.attributes[forward.attributeId]).toBeUndefined();
+            expect(becca.attributes[backward.attributeId]).toBeUndefined();
+            expect(note2.ownedAttributes.some((attr) => attr.attributeId === backward.attributeId)).toBe(false);
+            expect(note2.targetRelations.some((rel) => rel.attributeId === forward.attributeId)).toBe(false);
+            expect(becca.attributeIndex["relation-spouse"].filter((attr) => attr.attributeId === forward.attributeId || attr.attributeId === backward.attributeId)).toEqual([]);
         });
 
         it("invalidates the attribute caches of affected notes", () => {

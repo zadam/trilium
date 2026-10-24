@@ -326,10 +326,10 @@ eventService.subscribeBeccaLoader([eventService.ENTITY_DELETED, eventService.ENT
     }
 
     if (entityName === "attributes" && bulkDeletion.isActive()) {
-        // attribute bookkeeping (incl. the O(bucket) attributeIndex update) is
-        // performed set-based in bulk_deletion.flush(); branch and note
-        // maintenance stays per-entity because the deletion recursion and the
-        // clone handling depend on it being immediate
+        // array compaction, attributeIndex and cache work happen once, set-based,
+        // in bulk_deletion.flush(); re-marks of already-deleted attributes are
+        // idempotent there. Branch and note maintenance stays per-entity because
+        // the deletion recursion and clone handling depend on it being immediate.
         return;
     }
 

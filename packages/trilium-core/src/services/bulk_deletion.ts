@@ -14,10 +14,13 @@ import entityChangesService from "./entity_changes.js";
 /**
  * Buffers the soft-delete writes and becca bookkeeping of a subtree deletion
  * (see {@link BBranch.deleteBranch}) so the flush can execute them in bulk:
- * chunked per-table `UPDATE`s, bulk `entity_changes` inserts and a set-based
- * attribute maintenance pass instead of per-entity statements and per-attribute
- * `attributeIndex` bucket filters. Events still fire per entity at the same
- * recursion points as in the unbatched path.
+ * chunked per-table `UPDATE`s, bulk `entity_changes` inserts and one
+ * set-based attribute maintenance pass (per-note array compaction, one
+ * rebuild per affected `attributeIndex` bucket) instead of per-entity
+ * statements and per-attribute filters. Events fire per entity as in the
+ * unbatched path; a re-mark of an already-buffered entity is idempotent
+ * (deduplicated, not re-emitted), which terminates handler cascades such as
+ * reciprocal inverse relations without any per-attribute array work.
  */
 const UPDATE_CHUNK = 900;
 const ENTITY_CHANGES_CHUNK = 300;
@@ -54,7 +57,7 @@ export function begin(): boolean {
     return true;
 }
 
-export function add(deletion: BufferedDeletion): void {
+export function add(deletion: BufferedDeletion): boolean {
     if (!buffer) {
         throw new Error("Cannot buffer a deletion without an active batch.");
     }
@@ -63,30 +66,12 @@ export function add(deletion: BufferedDeletion): void {
 
     if (bufferedKeys.has(key)) {
         // handlers can mark the same entity deleted again; keep one entry
-        return;
+        return false;
     }
 
     bufferedKeys.add(key);
     buffer.push(deletion);
-}
-
-/** Removes an attribute from its owner's arrays immediately, so event
- *  handlers and inverse-relation cascades stop seeing it; the expensive
- *  map / index / cache work is deferred to {@link flush}. */
-export function detachAttribute(attribute: BAttribute): void {
-    const note = becca.notes[attribute.noteId];
-
-    if (note) {
-        note.ownedAttributes = note.ownedAttributes.filter((attr) => attr.attributeId !== attribute.attributeId);
-    }
-
-    if (attribute.type === "relation") {
-        const targetNote = becca.notes[attribute.value];
-
-        if (targetNote) {
-            targetNote.targetRelations = targetNote.targetRelations.filter((rel) => rel.attributeId !== attribute.attributeId);
-        }
-    }
+    return true;
 }
 
 function bulkUpdate(entries: BufferedDeletion[]): void {
