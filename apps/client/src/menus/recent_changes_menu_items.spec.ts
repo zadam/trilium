@@ -4,7 +4,9 @@ import type { CommandNames } from "../components/app_context";
 import froca from "../services/froca";
 import { buildNote } from "../test/easy-froca";
 import type { MenuItem } from "./context_menu";
-import { getRecentChangesMenuItems } from "./recent_changes_menu_items";
+import {
+    getRecentChangesMenuItems, getRecentlyChangedNotesMenuItems
+} from "./recent_changes_menu_items";
 
 const mocks = vi.hoisted(() => ({
     get: vi.fn(async (_url: string): Promise<string[]> => []),
@@ -102,6 +104,19 @@ describe("getRecentChangesMenuItems", () => {
             { kind: "header", title: "tab_row.recently_changed_notes" },
             SHOW_ALL
         ]);
+    });
+});
+
+describe("getRecentlyChangedNotesMenuItems", () => {
+    it("lists the heading and the notes without the dialog entry, or nothing", async () => {
+        mocks.get.mockResolvedValueOnce([ "plan3" ]);
+        expect((await getRecentlyChangedNotesMenuItems()).map(describeItem)).toEqual([
+            [ "header", "tab_row.recently_changed_notes" ],
+            [ "Plan 3", "Work" ]
+        ]);
+
+        mocks.get.mockResolvedValueOnce([]);
+        expect(await getRecentlyChangedNotesMenuItems()).toEqual([]);
     });
 });
 
