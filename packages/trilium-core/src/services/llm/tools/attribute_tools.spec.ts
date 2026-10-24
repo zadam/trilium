@@ -151,6 +151,51 @@ describe("attribute_tools", () => {
             expect(note.getOwnedLabels("tag").map((l) => l.value)).toEqual([ "Blender", "AI" ]);
         });
 
+        it("updates the attribute an attributeId names, keeping its place among same-name ones", () => {
+            const note = createNote("By id host");
+            const [ , ai ] = cls.init(() => [ note.addLabel("tag", "MCP"), note.addLabel("tag", "AI") ]);
+
+            const result = cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "tag", value: "Blender", attributeId: ai.attributeId
+            }));
+            expect(result).toEqual({
+                success: true, noteId: note.noteId, type: "label", name: "tag", value: "Blender", previousValue: "AI"
+            });
+            expect(note.getOwnedLabels("tag").map((l) => [ l.attributeId, l.value ]))
+                .toEqual([ [ expect.any(String), "MCP" ], [ ai.attributeId, "Blender" ] ]);
+        });
+
+        it("rejects an attributeId that is missing, on another note, of another name, or paired with add mode", () => {
+            const note = createNote("By id errors host");
+            const other = createNote("By id other host");
+            const [ tag, foreign ] = cls.init(() => [ note.addLabel("tag", "MCP"), other.addLabel("tag", "AI") ]);
+            const call = (args: object) => cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "tag", value: "x", ...args
+            }));
+
+            expect(call({ attributeId: "missing" })).toEqual({ error: "Attribute not found" });
+            expect(call({ attributeId: foreign.attributeId }))
+                .toEqual({ error: "Attribute does not belong to the specified note" });
+            expect(call({ attributeId: tag.attributeId, name: "status" }))
+                .toEqual({ error: "Attribute is #tag, not #status" });
+            expect(call({ attributeId: tag.attributeId, mode: "add" }))
+                .toEqual({ error: "attributeId updates an existing attribute, so it cannot be combined with mode \"add\"" });
+            expect(note.getOwnedLabels("tag").map((l) => l.value)).toEqual([ "MCP" ]);
+            expect(note.hasOwnedLabel("status")).toBe(false);
+        });
+
+        it("points to attributeId and add mode when set mode replaces one of several values", () => {
+            const note = createNote("Hint host");
+            cls.init(() => {
+                note.addLabel("tag", "MCP");
+                note.addLabel("tag", "AI");
+            });
+            const result = cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "tag", value: "Blender"
+            })) as { message: string };
+            expect(result.message).toContain("attributeId");
+        });
+
         it("rejects a missing note, protected note, and missing relation target", () => {
             expect(getTool("set_attribute").execute({ noteId: "missing", type: "label", name: "x" }))
                 .toEqual({ error: "Note not found" });
@@ -207,6 +252,22 @@ describe("attribute_tools", () => {
             });
             expect(note.getOwnedLabels("run")).toHaveLength(0);
             expect(note.getOwnedLabelValue("disabled:run")).toBe("hourly");
+        });
+
+        it("disables only the dangerous attribute an attributeId names", () => {
+            const note = createNote("Danger by id host");
+            const [ , hourly ] = cls.init(() => [ note.addLabel("run", "frontendStartup"), note.addLabel("run", "hourly") ]);
+
+            const result = cls.init(() => getTool("set_attribute").execute({
+                noteId: note.noteId, type: "label", name: "run", value: "daily", attributeId: hourly.attributeId
+            }));
+            expect(result).toMatchObject({
+                success: true, name: "disabled:run", value: "daily", disabled: true,
+                message: expect.stringContaining("removed the active #run=hourly it replaced")
+            });
+            expect(becca.getAttribute(hourly.attributeId)).toBeNull();
+            expect(note.getOwnedLabels("run").map((l) => l.value)).toEqual([ "frontendStartup" ]);
+            expect(note.getOwnedLabels("disabled:run").map((l) => l.value)).toEqual([ "daily" ]);
         });
 
         it("keeps active and disabled dangerous attributes when adding a disabled one", () => {
