@@ -1912,8 +1912,9 @@ pre.code-embed-editor.read-only .cm-activeLine {
 
     /* The tree lies under the note, which `SidebarContainer` slides away to reveal it. */
     body.navigation-stack {
+        /* Outranks the `display` that `FlexContainer` sets inline. */
         #mobile-sidebar-container {
-            display: none;
+            display: none !important;
         }
 
         #mobile-rest-container {
