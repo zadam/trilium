@@ -48,6 +48,15 @@ async function removeFromLaunchBar(launcherNote: FNote, parentNoteId: string | u
         return;
     }
 
+    // A note dropped onto the launch bar is a clone, so removing it deletes the clone. When the
+    // clone is the note's last placement, the server refuses and the clone moves like a launcher.
+    if (launcherNote.type !== "launcher") {
+        const resp = await server.put<ToggleInParentResponse>(
+            `notes/${launcherNote.noteId}/toggle-in-parent/${launcherBranch.parentNoteId}/false`
+        );
+        if (resp.success) return;
+    }
+
     const isMobileLauncher = launcherBranch.parentNoteId === "_lbMobileVisibleLaunchers";
     // Branch IDs in the hidden subtree follow the `${parentNoteId}_${noteId}` convention,
     // so the branch linking `_lb(Mobile)?Root` to the "available" launchers root is predictable.
