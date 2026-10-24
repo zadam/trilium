@@ -249,6 +249,7 @@ body.layout-horizontal > .horizontal {
             calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 8px)
         );
         --mobile-bottom-bar-height: calc(var(--launcher-pane-horiz-size) + var(--mobile-bottom-offset));
+        --mobile-backdrop-color: transparent;
         /* Must equal the height of `.title-row` in style.css. */
         --mobile-title-row-height: 50px;
 
